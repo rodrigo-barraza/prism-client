@@ -1013,7 +1013,7 @@ export default class PrismService {
    * @returns {Promise<Array>}
    */
   static async getWorkflows() {
-    return PrismService._request("/workflows?source=retina", { method: "GET" });
+    return PrismService._request("/workflows?source=prism-client", { method: "GET" });
   }
 
   /**
@@ -1032,7 +1032,7 @@ export default class PrismService {
    */
   static async saveWorkflow(workflow) {
     return PrismService._request("/workflows", {
-      body: { ...workflow, source: "retina" },
+      body: { ...workflow, source: "prism-client" },
     });
   }
 

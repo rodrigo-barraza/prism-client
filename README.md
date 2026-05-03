@@ -1,4 +1,4 @@
-# Retina — AI Chat Interface
+# Prism Client — AI Chat Interface
 
 A feature-rich Next.js frontend for interacting with AI models through the [Prism AI Gateway](../prism). Supports multi-provider chat, streaming responses, image generation, text-to-speech, speech-to-text, and includes a built-in admin dashboard for monitoring usage and costs.
 
@@ -53,7 +53,7 @@ Requires `ADMIN_SECRET` to be configured in `secrets.js`.
 ## 📂 Directory Structure
 
 ```
-retina/
+prism-client/
 ├── public/                                  # Static assets
 │   ├── pcm-processor.js                     # AudioWorklet for real-time PCM capture
 │   ├── playback-processor.js                # AudioWorklet for PCM playback
@@ -196,4 +196,4 @@ npm run format   # Format with Prettier
 
 ## ☀️ Part of [Sun](https://github.com/rodrigo-barraza)
 
-Retina is one frontend in a collection of composable backend services and frontends by Rodrigo Barraza.
+Prism Client is one frontend in a collection of composable backend services and frontends by Rodrigo Barraza.

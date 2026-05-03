@@ -1,5 +1,5 @@
 # ============================================================
-# Retina — Multi-stage Docker Build
+# Prism Client — Multi-stage Docker Build
 # ============================================================
 # AI chat interface built with Next.js. Uses standalone output
 # mode for minimal image size. Secrets are resolved from Vault

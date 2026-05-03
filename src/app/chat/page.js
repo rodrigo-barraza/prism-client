@@ -6,7 +6,7 @@ import AgentComponent from "../../components/AgentComponent";
 import PrismService from "../../services/PrismService";
 import styles from "./page.module.css";
 
-const LS_ACTIVE_AGENT = "retina:activeAgent";
+const LS_ACTIVE_AGENT = "prism:activeAgent";
 
 /** Synthetic "No Agent" entry — direct model chat with all tools. */
 const NONE_AGENT = {

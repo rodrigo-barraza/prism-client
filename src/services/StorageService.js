@@ -4,7 +4,7 @@
  * StorageService — localStorage wrapper with namespacing,
  * JSON serialization, and fallback for SSR environments.
  */
-const NAMESPACE = "retina";
+const NAMESPACE = "prism";
 
 function makeKey(key) {
   return `${NAMESPACE}:${key}`;

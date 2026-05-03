@@ -1,5 +1,5 @@
 // ============================================================
-// Retina — Next.js Configuration
+// Prism Client — Next.js Configuration
 // ============================================================
 // Bootstraps secrets from Vault (or .env fallback) at startup
 // and injects them into process.env for the app.
@@ -21,7 +21,7 @@ Object.assign(process.env, secrets);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  allowedDevOrigins: ["retina.rod.dev"],
+  allowedDevOrigins: ["prism.rod.dev"],
   turbopack: {},
   transpilePackages: ["@rodrigo-barraza/components", "@rodrigo-barraza/utilities"],
 
@@ -29,7 +29,7 @@ const nextConfig = {
   // Only non-sensitive config values are exposed here.
   // config.js re-exports these directly — no hardcoded overrides.
   env: {
-    RETINA_CLIENT_PORT: secrets.RETINA_CLIENT_PORT || "3333",
+    PRISM_CLIENT_PORT: secrets.PRISM_CLIENT_PORT || "3333",
     PRISM_SERVICE_URL: secrets.PRISM_SERVICE_URL || "http://localhost:7777",
     PRISM_WS_URL: secrets.PRISM_WS_URL || "ws://localhost:7777",
     TOOLS_SERVICE_URL: secrets.TOOLS_SERVICE_URL || "http://localhost:5590",

@@ -14,7 +14,7 @@ export function getBaseHeaders() {
 
   // Include the active workspace root path if one is selected (client-side only)
   if (typeof window !== "undefined") {
-    const workspaceRoot = localStorage.getItem("retina:workspace");
+    const workspaceRoot = localStorage.getItem("prism:workspace");
     if (workspaceRoot) {
       headers["x-workspace-root"] = workspaceRoot;
     }

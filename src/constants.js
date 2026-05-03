@@ -4,20 +4,20 @@
  * All localStorage key strings live here so they're discoverable,
  * searchable, and impossible to silently misspell.
  *
- * Keys used via StorageService are automatically prefixed with "retina:"
+ * Keys used via StorageService are automatically prefixed with "prism:"
  * by the service itself — these constants hold the *un-prefixed* key.
  *
  * Keys used via raw localStorage are stored exactly as-is — these
  * constants hold the full key string.
  */
 
-// -- StorageService keys (auto-prefixed "retina:<key>") -----------
+// -- StorageService keys (auto-prefixed "prism:<key>") -----------
 export const SK_THEME = "theme";
 export const SK_LAST_PROVIDER = "lastProvider";
 export const SK_LAST_MODEL = "lastModel";
 export const SK_INFERENCE_MODE = "inferenceMode";
 
-// -- Page-scoped model memory keys (auto-prefixed "retina:<key>") --
+// -- Page-scoped model memory keys (auto-prefixed "prism:<key>") --
 // Each page remembers the last-used model independently.
 // Value shape: { provider, model, isLocal }
 export const SK_MODEL_MEMORY_AGENT = "modelMemory:agent";
@@ -25,7 +25,7 @@ export const SK_MODEL_MEMORY_AGENT_PREFIX = "modelMemory:agent:";
 export const SK_MODEL_MEMORY_SYNTHESIS = "modelMemory:synthesis";
 export const SK_MODEL_MEMORY_BENCHMARKS = "modelMemory:benchmarks";
 
-// -- Page-scoped tool toggle memory keys (auto-prefixed "retina:<key>") --
+// -- Page-scoped tool toggle memory keys (auto-prefixed "prism:<key>") --
 // Each page remembers which tools are toggled on/off.
 // Value shape: { disabledBuiltIns: string[], toolToggles: { key: boolean } }
 export const SK_TOOL_MEMORY_AGENT = "toolMemory:agent";
@@ -48,13 +48,13 @@ export const LOCAL_PROVIDERS = new Set(["lm-studio", "ollama", "vllm", "llama-cp
 export const LS_PANEL_LEFT = "panel_left";
 export const LS_PANEL_RIGHT = "panel_right";
 export const LS_PANEL_NAV = "panel_nav";
-export const LS_SYSTEM_INSTRUCTIONS = "retina_system_instructions";
+export const LS_SYSTEM_INSTRUCTIONS = "prism_system_instructions";
 export const LS_WORKFLOW_INSPECTOR_WIDTH = "workflow-inspector-width";
 export const LS_WORKFLOW_EXPANDED_NODES = "workflow-expanded-nodes";
 export const LS_WORKFLOW_VIEWS = "workflow-views";
 export const LS_ADMIN_PROJECT_FILTER = "admin:projectFilter";
-export const LS_DATE_RANGE = "retina-date-range";
-export const LS_WORKSPACE_ROOT = "retina:workspace";
+export const LS_DATE_RANGE = "prism-date-range";
+export const LS_WORKSPACE_ROOT = "prism:workspace";
 
 // -- Settings defaults (shared by Agent, admin) ------
 export const SETTINGS_DEFAULTS = {

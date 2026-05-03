@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# Retina — Build & Deploy to Synology NAS
+# Prism Client — Build & Deploy to Synology NAS
 #
 # Thin wrapper — all logic lives in ../deploy-kit/lib.sh
 # Hook: injects VAULT_SERVICE_URL/VAULT_SERVICE_TOKEN as build args for
@@ -15,8 +15,8 @@
 # ============================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-IMAGE_NAME="retina-client"
-DISPLAY_NAME="👁️ Retina Client"
+IMAGE_NAME="prism-client"
+DISPLAY_NAME="🔷 Prism Client"
 BUILD_EXTRA_FLAGS="--network=host"
 BUILD_TAIL_LINES=30
 

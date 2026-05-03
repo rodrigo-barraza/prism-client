@@ -1,10 +1,10 @@
 {
-  "name": "retina-client",
+  "name": "prism-client",
   "version": "0.1.0",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev -p $(node -e \"import('./next.config.mjs').then(c=>console.log(c.default.env.RETINA_PORT||3333))\")",
+    "dev": "next dev -p $(node -e \"import('./next.config.mjs').then(c=>console.log(c.default.env.PRISM_CLIENT_PORT||3333))\")",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

@@ -1,8 +1,8 @@
 // ============================================================
-// Retina Client — Utilities
+// Prism Client — Utilities
 // ============================================================
 // Functions shared across the workspace are re-exported from
-// @rodrigo-barraza/utilities. Retina-specific helpers remain
+// @rodrigo-barraza/utilities. Prism-specific helpers remain
 // defined here as local exports.
 // ============================================================
 
@@ -33,7 +33,7 @@ export {
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities";
 
-// -- Retina-specific utilities ---------------------------------
+// -- Prism-specific utilities ---------------------------------
 
 /**
  * Build the JSON body for LM Studio load requests.

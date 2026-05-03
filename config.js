@@ -1,5 +1,5 @@
 // ============================================================
-// Retina — Runtime Configuration
+// Prism Client — Runtime Configuration
 // ============================================================
 // All values are resolved from the Vault via secrets.js.
 // No environment branching needed — the Vault serves the correct
@@ -7,7 +7,7 @@
 // ============================================================
 
 import {
-  RETINA_CLIENT_PORT as SECRETS_PORT,
+  PRISM_CLIENT_PORT as SECRETS_PORT,
   PRISM_SERVICE_URL,
   PRISM_WS_URL,
   TOOLS_SERVICE_URL,
@@ -23,6 +23,7 @@ export const IS_PRODUCTION =
 
 export const IS_LOCALHOST = !IS_PRODUCTION;
 
+// Legacy: kept as "retina-web"/"retina" for MongoDB data compatibility (conversations, requests, etc.)
 export const PROJECT_NAME = IS_PRODUCTION ? "retina-web" : "retina";
 
 export { PRISM_SERVICE_URL, PRISM_WS_URL, TOOLS_SERVICE_URL };

@@ -29,7 +29,7 @@ export const metadata = {
 const themeInitScript = `
 (function(){
   try {
-    var raw = localStorage.getItem('retina:theme');
+    var raw = localStorage.getItem('prism:theme');
     if (raw) {
       var theme = JSON.parse(raw);
       if (theme === 'light' || theme === 'dark') {

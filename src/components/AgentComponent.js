@@ -933,7 +933,7 @@ export default function AgentComponent({
                 title: resolvedTitle,
                 ...(settings.systemPrompt ? { systemPrompt: settings.systemPrompt } : {}),
               },
-              // Omit project — falls back to x-project header ("retina"),
+              // Omit project — falls back to x-project header ("prism"),
               // routing to the conversations collection
               traceId,
             }
