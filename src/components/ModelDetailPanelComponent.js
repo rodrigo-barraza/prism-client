@@ -244,7 +244,6 @@ export default function ModelDetailPanelComponent({ model, onClose }) {
           <div className={styles.useModelActions}>
             <ButtonComponent
               variant="primary"
-              size="sm"
               icon={Bot}
               fullWidth
               onClick={() => {

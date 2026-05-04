@@ -87,7 +87,6 @@ export default function BenchmarkPageComponent({ navSidebar, rightSidebar }) {
       headerControls={
         <ButtonComponent
           variant="primary"
-          size="sm"
           onClick={handleSave}
           loading={saving}
           disabled={!isValid}

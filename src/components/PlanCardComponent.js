@@ -70,7 +70,6 @@ export default function PlanCardComponent({
             <div className={styles.actions}>
               <ButtonComponent
                 variant="primary"
-                size="sm"
                 icon={Check}
                 className={styles.approveBtn}
                 onClick={onApprove}
@@ -79,7 +78,6 @@ export default function PlanCardComponent({
               </ButtonComponent>
               <ButtonComponent
                 variant="destructive"
-                size="sm"
                 icon={X}
                 className={styles.rejectBtn}
                 onClick={onReject}

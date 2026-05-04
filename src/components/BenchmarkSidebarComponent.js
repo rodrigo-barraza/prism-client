@@ -117,7 +117,6 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }) {
       {/* New Benchmark */}
       <ButtonComponent
         variant="primary"
-        size="sm"
         icon={Plus}
         onClick={navigateToNew}
         disabled={isOnNewPage}

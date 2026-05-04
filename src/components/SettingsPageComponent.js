@@ -445,7 +445,6 @@ export default function SettingsPageComponent() {
         <CardComponent.Footer>
           <ButtonComponent
             variant="disabled"
-            size="sm"
             icon={RotateCcw}
             onClick={handleResetMemory}
             disabled={saving}
@@ -492,7 +491,6 @@ export default function SettingsPageComponent() {
         <CardComponent.Footer>
           <ButtonComponent
             variant="disabled"
-            size="sm"
             icon={RotateCcw}
             onClick={handleResetAgents}
             disabled={saving}

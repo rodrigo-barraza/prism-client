@@ -193,7 +193,6 @@ export default function HistoryPanel({
         <ButtonComponent
           ref={newBtnRef}
           variant="primary"
-          size="sm"
           icon={glitchLabel ? undefined : Plus}
           onClick={handleNew}
           disabled={disableNew !== undefined ? disableNew : !activeId}

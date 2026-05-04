@@ -139,7 +139,6 @@ export default function AgentAssertionsComponent({
           <div className={styles.addDropdown}>
             <ButtonComponent
               variant="disabled"
-              size="xs"
               icon={Plus}
               onClick={() => addAssertion(availableTypes[0].value)}
             >

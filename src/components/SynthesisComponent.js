@@ -698,7 +698,6 @@ export default function SynthesisComponent() {
                 />
                 <ButtonComponent
                   variant="secondary"
-                  size="sm"
                   icon={Download}
                   onClick={handleDownload}
                   title="Download JSON"
@@ -768,7 +767,6 @@ export default function SynthesisComponent() {
           <div className={styles.headerActions}>
             <ButtonComponent
               variant="secondary"
-              size="sm"
               icon={RotateCcw}
               onClick={handleReset}
               disabled={isGenerating}
@@ -779,7 +777,6 @@ export default function SynthesisComponent() {
             {isGenerating ? (
               <ButtonComponent
                 variant="destructive"
-                size="sm"
                 icon={Square}
                 onClick={handleStop}
               >
@@ -788,7 +785,6 @@ export default function SynthesisComponent() {
             ) : (
               <ButtonComponent
                 variant="primary"
-                size="sm"
                 icon={Play}
                 onClick={handleGenerate}
                 disabled={!settings.provider || !settings.model}
@@ -946,7 +942,6 @@ export default function SynthesisComponent() {
               <div className={styles.addSeedRow}>
                 <ButtonComponent
                   variant="disabled"
-                  size="sm"
                   icon={Plus}
                   onClick={() => addSeedMessage("user")}
                   className={styles.addSeedBtn}
@@ -955,7 +950,6 @@ export default function SynthesisComponent() {
                 </ButtonComponent>
                 <ButtonComponent
                   variant="disabled"
-                  size="sm"
                   icon={Plus}
                   onClick={() => addSeedMessage("assistant")}
                   className={styles.addSeedBtn}

@@ -381,7 +381,6 @@ export default function RequestsPage() {
           variant="secondary"
           icon={Download}
           onClick={exportCSV}
-          size="small"
         >
           Export CSV
         </ButtonComponent>

@@ -180,7 +180,6 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }) {
             )}
             <ButtonComponent
               variant="disabled"
-              size="xs"
               icon={Plus}
               onClick={addAssertion}
             >

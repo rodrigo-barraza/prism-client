@@ -300,7 +300,6 @@ export default function ToolRequestsPage() {
           variant="secondary"
           icon={Download}
           onClick={exportCSV}
-          size="small"
         >
           Export CSV
         </ButtonComponent>

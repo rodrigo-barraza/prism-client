@@ -290,7 +290,6 @@ export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }
       headerControls={
         <ButtonComponent
           variant="primary"
-          size="sm"
           onClick={() => router.push("/benchmarks/new")}
         >
           New Benchmark
@@ -311,7 +310,6 @@ export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }
           >
             <ButtonComponent
               variant="primary"
-              size="sm"
               onClick={() => router.push("/benchmarks/new")}
             >
               Create Benchmark

@@ -707,7 +707,6 @@ export default function CustomToolsPanel({
           )}
           <ButtonComponent
             variant="primary"
-            size="xs"
             icon={Plus}
             onClick={handleCreate}
           >
@@ -800,7 +799,6 @@ export default function CustomToolsPanel({
                   <div className={styles.toolCardFooter}>
                     <ButtonComponent
                       variant="secondary"
-                      size="xs"
                       icon={Edit3}
                       onClick={() => handleEdit(tool)}
                     >
@@ -813,14 +811,12 @@ export default function CustomToolsPanel({
                         </span>
                         <ButtonComponent
                           variant="destructive"
-                          size="xs"
                           onClick={() => confirmDelete(id)}
                         >
                           Yes
                         </ButtonComponent>
                         <ButtonComponent
                           variant="secondary"
-                          size="xs"
                           onClick={() => setConfirmingDeleteId(null)}
                         >
                           No
@@ -829,7 +825,6 @@ export default function CustomToolsPanel({
                     ) : (
                       <ButtonComponent
                         variant="destructive"
-                        size="xs"
                         icon={Trash2}
                         onClick={() => handleDelete(id)}
                       >

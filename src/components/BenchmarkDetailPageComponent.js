@@ -1034,7 +1034,6 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
         <div className={styles.contentMainHeader}>
           <ButtonComponent
             variant="disabled"
-            size="sm"
             icon={Trash2}
             onClick={() => setShowDeleteModal(true)}
           >
@@ -1042,7 +1041,6 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
           </ButtonComponent>
           <ButtonComponent
             variant="disabled"
-            size="sm"
             icon={Copy}
             onClick={openClone}
           >
@@ -1150,7 +1148,6 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
                 </div>
                 <ButtonComponent
                   variant="destructive"
-                  size="xs"
                   icon={Square}
                   onClick={handleStop}
                   className={styles.stopBtn}
@@ -1288,14 +1285,12 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
             <>
               <ButtonComponent
                 variant="secondary"
-                size="sm"
                 onClick={() => setShowModal(false)}
               >
                 Cancel
               </ButtonComponent>
               <ButtonComponent
                 variant="primary"
-                size="sm"
                 onClick={handleSave}
                 loading={saving}
                 disabled={(() => {
@@ -1329,14 +1324,12 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
             <>
               <ButtonComponent
                 variant="secondary"
-                size="sm"
                 onClick={() => setShowDeleteModal(false)}
               >
                 Cancel
               </ButtonComponent>
               <ButtonComponent
                 variant="destructive"
-                size="sm"
                 icon={Trash2}
                 onClick={handleDelete}
                 loading={deleting}

@@ -234,7 +234,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }) {
               size="mini"
             />
           )}
-          <ButtonComponent variant="disabled" size="xs" icon={Plus} onClick={handleCreate}>
+          <ButtonComponent variant="disabled" icon={Plus} onClick={handleCreate}>
             New
           </ButtonComponent>
         </div>
@@ -251,7 +251,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }) {
             system prompt. Add coding conventions, project rules, or
             domain-specific context.
           </div>
-          <ButtonComponent variant="disabled" size="sm" icon={Plus} onClick={handleCreate}>
+          <ButtonComponent variant="disabled" icon={Plus} onClick={handleCreate}>
             Create your first skill
           </ButtonComponent>
         </div>

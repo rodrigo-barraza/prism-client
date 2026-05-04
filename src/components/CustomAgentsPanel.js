@@ -536,14 +536,12 @@ export default function CustomAgentsPanel({
         <div className={styles.formFooter}>
           <ButtonComponent
             variant="disabled"
-            size="sm"
             onClick={handleCancel}
           >
             Cancel
           </ButtonComponent>
           <ButtonComponent
             variant="primary"
-            size="sm"
             icon={Save}
             onClick={handleSave}
             disabled={saving || !editingAgent.name?.trim()}
@@ -563,7 +561,6 @@ export default function CustomAgentsPanel({
         <div className={styles.panelHeader}>
           <ButtonComponent
             variant="disabled"
-            size="sm"
             icon={Plus}
             onClick={handleCreate}
           >
@@ -584,7 +581,6 @@ export default function CustomAgentsPanel({
           </span>
           <ButtonComponent
             variant="primary"
-            size="sm"
             icon={Plus}
             onClick={handleCreate}
           >
@@ -625,14 +621,12 @@ export default function CustomAgentsPanel({
                       <span className={styles.confirmText}>Delete?</span>
                       <ButtonComponent
                         variant="destructive"
-                        size="xs"
                         onClick={() => confirmDelete(agent._id)}
                       >
                         Yes
                       </ButtonComponent>
                       <ButtonComponent
                         variant="disabled"
-                        size="xs"
                         onClick={() => setConfirmingDeleteId(null)}
                       >
                         No

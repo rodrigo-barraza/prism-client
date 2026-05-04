@@ -1154,7 +1154,6 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           {/* New Workflow button */}
           <ButtonComponent
             variant="primary"
-            size="sm"
             icon={Plus}
             onClick={handleNewWorkflow}
             disabled={!workflowId && nodes.length === 0}
@@ -1220,7 +1219,6 @@ export default function WorkflowsPage({ initialWorkflowId }) {
         <div className={styles.headerControls}>
           <ButtonComponent
             variant="disabled"
-            size="xs"
             icon={Download}
             onClick={() => {
               const data = JSON.stringify({ nodes, edges }, null, 2);
@@ -1237,7 +1235,6 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           />
           <ButtonComponent
             variant="disabled"
-            size="xs"
             icon={Upload}
             onClick={() => importRef.current?.click()}
             title="Import workflow"
@@ -1245,7 +1242,6 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           />
           <ButtonComponent
             variant="disabled"
-            size="xs"
             icon={Undo2}
             onClick={handleUndo}
             disabled={undoCount === 0}
@@ -1254,7 +1250,6 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           />
           <ButtonComponent
             variant="disabled"
-            size="xs"
             icon={RotateCcw}
             onClick={handleResetWorkflow}
             disabled={isRunning || Object.keys(nodeStatuses).length === 0}
@@ -1349,7 +1344,6 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           />
           <ButtonComponent
             variant="primary"
-            size="sm"
             icon={Save}
             onClick={handleSaveWorkflow}
             disabled={!hasUnsavedChanges}
