@@ -15,7 +15,7 @@ import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContext";
 import {
   formatNumber,
-  formatLatency,
+  formatLatencyMs,
   formatDateTime,
   formatFileSize,
   buildDateRangeParams,
@@ -48,7 +48,7 @@ function getToolColumns() {
       description: "Mean execution time across all calls",
       sortable: true,
       align: "right",
-      render: (r) => formatLatency(r.avgMs / 1000),
+      render: (r) => formatLatencyMs(r.avgMs),
     },
     {
       key: "minMs",
@@ -56,7 +56,7 @@ function getToolColumns() {
       description: "Fastest execution time recorded",
       sortable: true,
       align: "right",
-      render: (r) => formatLatency(r.minMs / 1000),
+      render: (r) => formatLatencyMs(r.minMs),
     },
     {
       key: "maxMs",
@@ -64,7 +64,7 @@ function getToolColumns() {
       description: "Slowest execution time recorded",
       sortable: true,
       align: "right",
-      render: (r) => formatLatency(r.maxMs / 1000),
+      render: (r) => formatLatencyMs(r.maxMs),
     },
     {
       key: "errors",
@@ -131,7 +131,7 @@ function getDomainColumns() {
       label: "Avg Latency",
       sortable: true,
       align: "right",
-      render: (r) => formatLatency(r.avgMs / 1000),
+      render: (r) => formatLatencyMs(r.avgMs),
     },
     {
       key: "errors",
@@ -172,7 +172,7 @@ function getSlowestColumns() {
       label: "Latency",
       sortable: false,
       align: "right",
-      render: (r) => formatLatency(r.elapsedMs / 1000),
+      render: (r) => formatLatencyMs(r.elapsedMs),
     },
     {
       key: "success",
@@ -337,7 +337,7 @@ export default function ToolCallsPage() {
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>
-              {formatLatency(avgLatencyAll / 1000)}
+              {formatLatencyMs(avgLatencyAll)}
             </span>
             <span className={styles.statLabel}>Avg Latency</span>
           </div>

@@ -7,7 +7,7 @@ import PrismService from "../services/PrismService.js";
 import DateTimeBadgeComponent from "./DateTimeBadgeComponent";
 import { DatePickerComponent, SearchInputComponent } from "@rodrigo-barraza/components";
 import { parseDateValue } from "../utils/datePresets";
-import { formatTimeAgo, formatLatency } from "../utils/utilities";
+import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
 import styles from "./MemoriesPanel.module.css";
 
 
@@ -369,7 +369,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
               <div className={styles.historyStats}>
                 <span><GitMerge size={9} /> {run.actionsApplied} action{run.actionsApplied !== 1 ? "s" : ""}</span>
                 <span>{run.memoriesBefore} → {run.memoriesAfter} memories</span>
-                {run.durationMs && <span>{formatLatency(run.durationMs / 1000)}</span>}
+                {run.durationMs && <span>{formatLatencyMs(run.durationMs)}</span>}
               </div>
             </div>
           ))}

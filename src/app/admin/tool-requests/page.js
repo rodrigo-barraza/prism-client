@@ -17,7 +17,7 @@ import RequestDetailsComponent from "../../../components/RequestDetailsComponent
 import { useAdminHeader } from "../../../components/AdminHeaderContext";
 import {
   formatNumber,
-  formatLatency,
+  formatLatencyMs,
   formatDateTime,
   formatFileSize,
   buildDateRangeParams,
@@ -189,7 +189,7 @@ export default function ToolRequestsPage() {
           {
             label: "Latency",
             value: tc.elapsedMs
-              ? formatLatency(tc.elapsedMs / 1000)
+              ? formatLatencyMs(tc.elapsedMs)
               : "—",
           },
           {

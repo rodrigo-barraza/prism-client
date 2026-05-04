@@ -5,7 +5,7 @@ import {
   statusColumn,
   emptyDash,
 } from "../../../utils/tableColumns";
-import { formatLatency, formatFileSize } from "../../../utils/utilities";
+import { formatLatencyMs, formatFileSize } from "../../../utils/utilities";
 
 /**
  * getToolRequestsColumns — column definitions for the tool-call telemetry table.
@@ -77,8 +77,8 @@ export const getToolRequestsColumns = ({ totalDuration = 1 } = {}) => [
     align: "right",
     render: (r) => {
       if (!r.elapsedMs || r.elapsedMs <= 0) return emptyDash();
-      // Convert ms to seconds for formatLatency
-      return formatLatency(r.elapsedMs / 1000);
+      // Convert ms to human-readable latency
+      return formatLatencyMs(r.elapsedMs);
     },
   },
   {
