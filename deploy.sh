@@ -3,8 +3,8 @@
 # Prism Client — Build & Deploy to Synology NAS
 #
 # Thin wrapper — all logic lives in ../deploy-kit/lib.sh
-# Hook: injects VAULT_SERVICE_URL/VAULT_SERVICE_TOKEN as build args for
-#       Next.js secret resolution at build time.
+# Hook: injects VAULT_SERVICE_URL as build arg and VAULT_SERVICE_TOKEN
+#       as a BuildKit secret for Next.js secret resolution at build time.
 # Extra: --network=host for build, 30 tail lines
 #
 # Usage:
@@ -20,7 +20,7 @@ DISPLAY_NAME="🔷 Prism Client"
 BUILD_EXTRA_FLAGS="--network=host"
 BUILD_TAIL_LINES=30
 
-# ── Inject Vault credentials as Docker build args ─────────────
+# ── Inject Vault credentials for Docker build ─────────────────
 PRE_BUILD() {
   if [ -f "${SCRIPT_DIR}/.env.deploy" ]; then
     set -a; source "${SCRIPT_DIR}/.env.deploy"; set +a
@@ -31,7 +31,7 @@ PRE_BUILD() {
     info "Vault URL: ${VAULT_SERVICE_URL}"
   fi
   if [ -n "${VAULT_SERVICE_TOKEN:-}" ]; then
-    BUILD_ARGS="${BUILD_ARGS} --build-arg VAULT_SERVICE_TOKEN=${VAULT_SERVICE_TOKEN}"
+    BUILD_SECRETS="--secret id=VAULT_SERVICE_TOKEN,env=VAULT_SERVICE_TOKEN"
     info "Vault token: ****${VAULT_SERVICE_TOKEN: -8}"
   fi
 }
