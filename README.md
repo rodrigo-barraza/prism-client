@@ -194,6 +194,3 @@ npm run lint     # Run ESLint
 npm run format   # Format with Prettier
 ```
 
-## ☀️ Part of [Sun](https://github.com/rodrigo-barraza)
-
-Prism Client is one frontend in a collection of composable backend services and frontends by Rodrigo Barraza.
