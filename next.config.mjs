@@ -18,6 +18,11 @@ const secrets = await vault.fetch();
 // Inject into process.env so secrets.js can read them
 Object.assign(process.env, secrets);
 
+// Resolved tools-service URL for the rewrite proxy (server-side only).
+// Tools-service is internal (no public hostname) — the browser calls
+// /api/tools/* which Next.js rewrites to this destination.
+const TOOLS_SERVICE_URL = secrets.TOOLS_SERVICE_URL || "http://localhost:5590";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
@@ -26,14 +31,28 @@ const nextConfig = {
   transpilePackages: ["@rodrigo-barraza/components", "@rodrigo-barraza/utilities"],
 
   // Expose resolved values to both server and client bundles.
-  // Only non-sensitive config values are exposed here.
-  // config.js re-exports these directly — no hardcoded overrides.
+  // config.js applies environment-aware overrides for browser contexts
+  // (e.g. public domain for prism-service, proxy path for tools-service).
   env: {
     PRISM_CLIENT_PORT: secrets.PRISM_CLIENT_PORT || "3333",
     PRISM_SERVICE_URL: secrets.PRISM_SERVICE_URL || "http://localhost:7777",
     PRISM_WS_URL: secrets.PRISM_WS_URL || "ws://localhost:7777",
-    TOOLS_SERVICE_URL: secrets.TOOLS_SERVICE_URL || "http://localhost:5590",
+    TOOLS_SERVICE_URL: TOOLS_SERVICE_URL,
     MINIO_PUBLIC_URL: secrets.MINIO_PUBLIC_URL || "",
+  },
+
+  // ── Rewrite Proxy ──────────────────────────────────────────
+  // Tools-service is internal-only (no public hostname like api.*.rod.dev).
+  // Proxy /api/tools/* → tools-service so the browser never makes direct
+  // requests to LAN IPs. Prism-service does NOT need a rewrite — it has
+  // a public domain (api.prism.rod.dev), set in config.js for production.
+  async rewrites() {
+    return [
+      {
+        source: "/api/tools/:path*",
+        destination: `${TOOLS_SERVICE_URL}/:path*`,
+      },
+    ];
   },
 };
 
