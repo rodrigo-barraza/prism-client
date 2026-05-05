@@ -12,7 +12,6 @@
  */
 
 // -- StorageService keys (auto-prefixed "prism:<key>") -----------
-export const SK_THEME = "theme";
 export const SK_LAST_PROVIDER = "lastProvider";
 export const SK_LAST_MODEL = "lastModel";
 export const SK_INFERENCE_MODE = "inferenceMode";

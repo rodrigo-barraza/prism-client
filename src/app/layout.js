@@ -1,7 +1,6 @@
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "../components/ThemeProvider";
+import { ThemeProvider, ComponentsProvider } from "@rodrigo-barraza/components";
 import { WorkspaceProvider } from "../components/WorkspaceContext";
-import { ComponentsProvider } from "@rodrigo-barraza/components";
 import "./globals.css";
 
 // Force all pages to render dynamically — prevents SSG prerender
@@ -56,7 +55,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={inter.variable}>
-        <ThemeProvider>
+        <ThemeProvider storageKey="prism:theme" defaultTheme="light">
           <ComponentsProvider sound>
             <WorkspaceProvider>{children}</WorkspaceProvider>
           </ComponentsProvider>
