@@ -468,7 +468,7 @@ export default function SettingsPageComponent() {
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Subagent Model</span>
               <span className={styles.rowDescription}>
-                Pick a default subagent model for Retina to use when it spawns subagents.
+                Pick a default subagent model for Prism to use when it spawns subagents.
                 If not set, it will use the current active model.
               </span>
             </div>

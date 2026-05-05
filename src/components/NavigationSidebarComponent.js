@@ -526,7 +526,7 @@ export default function NavigationSidebarComponent({
                     onClick={() => setMobileOpen(false)}
                   >
                     <ArrowLeft className={styles.navIcon} />
-                    <span className={styles.navLabel}>Back to Retina</span>
+                    <span className={styles.navLabel}>Back to Prism</span>
                   </Link>
                 ) : isLocal ? (
                   <Link
@@ -646,10 +646,10 @@ export default function NavigationSidebarComponent({
         {/* Footer */}
         <div className={styles.footer}>
           {isAdmin ? (
-            <TooltipComponent label="Back to Retina" position="right" delay={200} disabled={showNav} className={styles.tooltipFill}>
+            <TooltipComponent label="Back to Prism" position="right" delay={200} disabled={showNav} className={styles.tooltipFill}>
               <Link href="/" className={styles.navLink} onMouseEnter={(e) => SoundService.playHover({ event: e })} onClick={(e) => SoundService.playClick({ event: e })}>
                 <ArrowLeft className={styles.navIcon} />
-                <span className={styles.navLabel}>Back to Retina</span>
+                <span className={styles.navLabel}>Back to Prism</span>
               </Link>
             </TooltipComponent>
           ) : isLocal ? (

@@ -1,5 +1,5 @@
 /**
- * ThreeService — Three.js lifecycle manager for Retina.
+ * ThreeService — Three.js lifecycle manager for Prism.
  *
  * Provides a clean API for creating WebGL renderers, scenes, cameras,
  * and lighting rigs. Manages a shared requestAnimationFrame loop with

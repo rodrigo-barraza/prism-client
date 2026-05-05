@@ -1,5 +1,5 @@
 /**
- * constants.js — Centralized constants for the Retina app.
+ * constants.js — Centralized constants for the Prism app.
  *
  * All localStorage key strings live here so they're discoverable,
  * searchable, and impossible to silently misspell.

@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Retina Playground",
+  title: "Prism Playground",
   description: "Advanced Developer Playground for Prism AI Gateway",
 };
 

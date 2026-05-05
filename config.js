@@ -39,8 +39,8 @@ const IS_BROWSER = typeof window !== "undefined";
 export const IS_PRODUCTION = IS_BROWSER && window.location.hostname.endsWith(".dev");
 export const IS_LOCALHOST = !IS_PRODUCTION;
 
-// Legacy: kept as "retina-web"/"retina" for MongoDB data compatibility (conversations, requests, etc.)
-export const PROJECT_NAME = IS_PRODUCTION ? "retina-web" : "retina";
+// Environment-aware project name — isolates data between dev and prod
+export const PROJECT_NAME = IS_PRODUCTION ? "prism-client" : "prism-client-dev";
 
 // ── Prism Service URL ──────────────────────────────────────────
 // Production browser: public API domain (reverse-proxied to prism-service).
