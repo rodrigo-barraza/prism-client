@@ -23,6 +23,14 @@ Object.assign(process.env, secrets);
 // /api/tools/* which Next.js rewrites to this destination.
 const TOOLS_SERVICE_URL = secrets.TOOLS_SERVICE_URL;
 
+if (!TOOLS_SERVICE_URL) {
+  throw new Error(
+    "TOOLS_SERVICE_URL is not set — Vault may be unreachable from the Docker build context. " +
+    "Ensure --network=host is set and the Vault service is running at " +
+    (secrets.VAULT_SERVICE_URL || process.env.VAULT_SERVICE_URL || "http://localhost:5599")
+  );
+}
+
 // Resolved client domain for allowedDevOrigins (from vault).
 const PRISM_CLIENT_DOMAIN = secrets.PRISM_CLIENT_DOMAIN;
 
