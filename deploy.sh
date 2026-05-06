@@ -22,9 +22,10 @@ BUILD_TAIL_LINES=30
 
 # ── Inject Vault credentials for Docker build ─────────────────
 PRE_BUILD() {
-  if [ -f "${SCRIPT_DIR}/.env.deploy" ]; then
-    set -a; source "${SCRIPT_DIR}/.env.deploy"; set +a
-    info "Loaded .env.deploy"
+  local CENTRAL_ENV="${DEPLOY_KIT_DIR}/.env.deploy"
+  if [ -f "$CENTRAL_ENV" ]; then
+    set -a; source "$CENTRAL_ENV"; set +a
+    info "Loaded deploy-kit/.env.deploy"
   fi
   if [ -n "${VAULT_SERVICE_URL:-}" ]; then
     BUILD_ARGS="--build-arg VAULT_SERVICE_URL=${VAULT_SERVICE_URL}"
