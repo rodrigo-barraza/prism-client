@@ -23,7 +23,7 @@ import TextContentComponent from "./TextContentComponent";
 import MessageList from "./MessageList";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import AssetInputOptions from "./AssetInputOptions";
-import { ToggleComponent } from "@rodrigo-barraza/components";
+import { ToggleComponent } from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import { copyToClipboard } from "../utils/utilities";
 

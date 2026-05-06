@@ -31,9 +31,9 @@ import {
   BarChart3,
   AlertCircle,
 } from "lucide-react";
-import { useTheme } from "@rodrigo-barraza/components";
+import { useTheme } from "@rodrigo-barraza/components-library";
 import SpinningCatComponent from "./SpinningCatComponent";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./NavigationSidebarComponent.module.css";
 import { LS_PANEL_NAV, LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
 import { generateUUID } from "../utils/utilities";

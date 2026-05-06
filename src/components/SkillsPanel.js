@@ -11,7 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import PrismService from "../services/PrismService.js";
-import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
 import styles from "./SkillsPanel.module.css";
 
 const CONTENT_WARN_CHARS = 2000;

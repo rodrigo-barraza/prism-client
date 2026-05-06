@@ -12,7 +12,7 @@ import {
   X,
   Radio,
 } from "lucide-react";
-import { SliderComponent, TooltipComponent } from "@rodrigo-barraza/components";
+import { SliderComponent, TooltipComponent } from "@rodrigo-barraza/components-library";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import styles from "./AudioPlayerRecorderComponent.module.css";
 

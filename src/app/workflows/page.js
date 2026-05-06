@@ -30,7 +30,7 @@ import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComp
 import HistoryList from "../../components/HistoryList";
 import ThreePanelLayout from "../../components/ThreePanelLayout";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
-import { ButtonComponent, useToast } from "@rodrigo-barraza/components";
+import { ButtonComponent, useToast } from "@rodrigo-barraza/components-library";
 import { copyToClipboard } from "../../utils/utilities";
 import styles from "./page.module.css";
 

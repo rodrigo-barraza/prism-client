@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ModalComponent } from "@rodrigo-barraza/components";
+import { ModalComponent } from "@rodrigo-barraza/components-library";
 import styles from "./DocumentViewer.module.css";
 
 function decodeDataUrl(dataUrl) {

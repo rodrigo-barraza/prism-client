@@ -10,7 +10,7 @@ import {
   Activity,
 } from "lucide-react";
 import ToolsApiService from "../../../services/ToolsApiService";
-import { BadgeComponent, TableComponent } from "@rodrigo-barraza/components";
+import { BadgeComponent, TableComponent } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContext";
 import {

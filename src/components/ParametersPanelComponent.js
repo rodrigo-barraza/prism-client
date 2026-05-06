@@ -1,7 +1,7 @@
 "use client";
 
 import { Settings2 } from "lucide-react";
-import { SelectComponent, SliderComponent } from "@rodrigo-barraza/components";
+import { SelectComponent, SliderComponent } from "@rodrigo-barraza/components-library";
 import styles from "./SettingsPanel.module.css";
 
 export default function ParametersPanelComponent({

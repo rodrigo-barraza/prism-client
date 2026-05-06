@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { SelectComponent } from "@rodrigo-barraza/components";
+import { SelectComponent } from "@rodrigo-barraza/components-library";
 import { useAdminHeader } from "../../../components/AdminHeaderContext";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import TextPageComponent from "../../../components/TextPageComponent";

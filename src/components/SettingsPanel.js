@@ -11,7 +11,7 @@ import {
   Layers,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogos";
-import { SelectComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components";
+import { SelectComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components-library";
 import CycleButton from "./CycleButton";
 import ModalityIconComponent from "./ModalityIconComponent";
 import SystemPromptModal from "./SystemPromptModal";

@@ -7,7 +7,7 @@ import {
   Filter,
   Calendar,
 } from "lucide-react";
-import { DatePickerComponent } from "@rodrigo-barraza/components";
+import { DatePickerComponent } from "@rodrigo-barraza/components-library";
 import { DATE_PRESETS, formatDateDisplay, getActiveDatePreset } from "../utils/datePresets";
 import SoundService from "@/services/SoundService";
 import styles from "./FilterDropdownComponent.module.css";

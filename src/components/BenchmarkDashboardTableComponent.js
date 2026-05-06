@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { TableComponent } from "@rodrigo-barraza/components";
+import { TableComponent } from "@rodrigo-barraza/components-library";
 import styles from "./BenchmarkDashboardComponent.module.css";
 import {
   dashboardModelColumn,

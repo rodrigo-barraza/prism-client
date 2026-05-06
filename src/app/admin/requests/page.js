@@ -19,7 +19,7 @@ import {
 } from "../../../utils/requestDetailHelpers";
 
 import RequestsTableComponent from "../../../components/RequestsTableComponent";
-import { ButtonComponent, PaginationComponent, SelectComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent, PaginationComponent, SelectComponent } from "@rodrigo-barraza/components-library";
 
 
 import { ErrorMessage } from "../../../components/StateMessageComponent";

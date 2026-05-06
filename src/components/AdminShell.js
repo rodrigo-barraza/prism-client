@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import IrisService from "../services/IrisService";
 
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
-import { DatePickerComponent } from "@rodrigo-barraza/components";
+import { DatePickerComponent } from "@rodrigo-barraza/components-library";
 import { AdminHeaderProvider, useAdminHeader } from "./AdminHeaderContext";
 import styles from "./AdminShell.module.css";
 

@@ -10,7 +10,7 @@ import {
   Cpu,
   Layers,
 } from "lucide-react";
-import { BadgeComponent } from "@rodrigo-barraza/components";
+import { BadgeComponent } from "@rodrigo-barraza/components-library";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 import { AGENT_ASSERTION_TYPES } from "./AgentAssertionsComponent";
 import styles from "./BenchmarkPreviewSidebarComponent.module.css";

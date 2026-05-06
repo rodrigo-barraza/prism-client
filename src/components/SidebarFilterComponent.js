@@ -20,7 +20,7 @@ import {
 import ProviderLogo from "./ProviderLogos";
 import { resolveProviderLabel } from "./ProviderLogos";
 import { MODALITY_COLORS, TOOL_COLORS } from "./WorkflowNodeConstants";
-import { DatePickerComponent } from "@rodrigo-barraza/components";
+import { DatePickerComponent } from "@rodrigo-barraza/components-library";
 import { DATE_PRESETS, formatDateDisplay, getActiveDatePreset } from "../utils/datePresets";
 import styles from "./SidebarFilterComponent.module.css";
 

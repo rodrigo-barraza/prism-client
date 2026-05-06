@@ -29,7 +29,7 @@ import useSessionStats from "../hooks/useSessionStats.js";
 import { PROJECT_AGENT } from "../constants.js";
 import chatStyles from "./ChatArea.module.css";
 import styles from "./AdminAgentViewerComponent.module.css";
-import { EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components";
+import { EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
 
 /**
  * AdminAgentViewerComponent — read-only admin viewer for agent sessions.

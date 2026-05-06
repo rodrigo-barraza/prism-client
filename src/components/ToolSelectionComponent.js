@@ -35,7 +35,7 @@ import {
   FlaskConical,
 } from "lucide-react";
 import { renderToolName } from "../utils/utilities";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ToolSelectionComponent.module.css";
 
 // -- Domain icon mapping (mirrors CustomToolsPanel) --------------

@@ -1,5 +1,5 @@
 import { MessageSquare, Volume2, Cpu } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ModelTypeBadgeComponent.module.css";
 
 /**

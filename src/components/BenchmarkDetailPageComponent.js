@@ -16,7 +16,7 @@ import {
 import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayout";
 import RunHistorySidebarComponent from "./RunHistorySidebarComponent";
-import { BadgeComponent, ButtonComponent, ModalComponent } from "@rodrigo-barraza/components";
+import { BadgeComponent, ButtonComponent, ModalComponent } from "@rodrigo-barraza/components-library";
 
 import BenchmarkFormComponent from "./BenchmarkFormComponent";
 import SummaryBarComponent from "./SummaryBarComponent";

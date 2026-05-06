@@ -34,7 +34,7 @@ import ProportionBarComponent from "../components/ProportionBarComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 
 import ToolIconComponent from "../components/ToolIconComponent";
-import { BadgeComponent } from "@rodrigo-barraza/components";
+import { BadgeComponent } from "@rodrigo-barraza/components-library";
 import ProviderLogo from "../components/ProviderLogos";
 import { resolveProviderLabel } from "../components/ProviderLogos";
 import {
@@ -47,7 +47,7 @@ import { PROVIDER_COLORS } from "../constants";
 import DateTimeBadgeComponent from "../components/DateTimeBadgeComponent";
 import StopwatchBadgeComponent from "../components/StopwatchBadgeComponent";
 import TokenCountBadgeComponent from "../components/TokenCountBadgeComponent";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "../components/TableComponents.module.css";
 
 /* -- Helpers ---------------------------------------------- */

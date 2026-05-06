@@ -31,7 +31,7 @@ const nextConfig = {
   output: "standalone",
   allowedDevOrigins: PRISM_CLIENT_DOMAIN ? [PRISM_CLIENT_DOMAIN] : undefined,
   turbopack: {},
-  transpilePackages: ["@rodrigo-barraza/components", "@rodrigo-barraza/utilities"],
+  transpilePackages: ["@rodrigo-barraza/components-library", "@rodrigo-barraza/utilities"],
 
   // Expose resolved values to both server and client bundles.
   // config.js applies environment-aware overrides for browser contexts

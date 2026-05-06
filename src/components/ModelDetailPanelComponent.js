@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ButtonComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import {
   X,
   Brain,

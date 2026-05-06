@@ -17,7 +17,7 @@ import {
   Shield,
 } from "lucide-react";
 import PrismService from "../services/PrismService.js";
-import { ButtonComponent, TextAreaComponent, ToggleComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent, TextAreaComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import styles from "./CustomToolsPanel.module.css";
 

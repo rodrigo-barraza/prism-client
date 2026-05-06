@@ -32,7 +32,7 @@ import {
   FilterBarComponent,
   FilterSelectComponent,
 } from "./FilterBarComponent";
-import { PageHeaderComponent, SelectComponent, StatsCardComponent as StatsCard, TabBarComponent } from "@rodrigo-barraza/components";
+import { PageHeaderComponent, SelectComponent, StatsCardComponent as StatsCard, TabBarComponent } from "@rodrigo-barraza/components-library";
 import { LoadingMessage, ErrorMessage } from "./StateMessageComponent";
 import styles from "./VramBenchmarkComponent.module.css";
 

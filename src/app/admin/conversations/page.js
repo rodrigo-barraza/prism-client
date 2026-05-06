@@ -23,7 +23,7 @@ import ParametersPanelComponent from "../../../components/ParametersPanelCompone
 import HistoryPanel from "../../../components/HistoryPanel";
 
 import ThreePanelLayout from "../../../components/ThreePanelLayout";
-import { SelectComponent, TabBarComponent } from "@rodrigo-barraza/components";
+import { SelectComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
 
 import ModelPickerPopoverComponent from "../../../components/ModelPickerPopoverComponent";
 import { ErrorMessage } from "../../../components/StateMessageComponent";

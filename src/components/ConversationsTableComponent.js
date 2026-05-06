@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { TableComponent } from "@rodrigo-barraza/components";
+import { TableComponent } from "@rodrigo-barraza/components-library";
 import {
   conversationTitleColumn,
   projectBadgeColumn,

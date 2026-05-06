@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import styles from "./RequestDetailsComponent.module.css";
-import { CloseButtonComponent } from "@rodrigo-barraza/components";
+import { CloseButtonComponent } from "@rodrigo-barraza/components-library";
 
 /**
  * RequestDetailsComponent — a slide-in drawer for displaying request detail views.

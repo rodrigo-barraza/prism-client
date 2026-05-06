@@ -6,7 +6,7 @@ import MarkdownContent from "./MarkdownContent";
 import DateTimeBadgeComponent from "./DateTimeBadgeComponent";
 import { formatLatency } from "../utils/utilities";
 import styles from "./WorkerNotificationComponent.module.css";
-import { IconButtonComponent } from "@rodrigo-barraza/components";
+import { IconButtonComponent } from "@rodrigo-barraza/components-library";
 
 /**
  * WorkerNotificationComponent — renders a task-notification card

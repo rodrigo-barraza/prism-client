@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Cpu, HardDrive, Zap, Database, Loader2 } from "lucide-react";
-import { ModalComponent, SliderComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components";
+import { ModalComponent, SliderComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components-library";
 import ProviderLogo from "./ProviderLogos";
 import { formatFileSize, formatContextTokens } from "../utils/utilities";
 import styles from "./ModelLoadConfigPanel.module.css";

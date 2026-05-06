@@ -1,5 +1,5 @@
 import { LetterText } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./WordBadgeComponent.module.css";
 
 /**

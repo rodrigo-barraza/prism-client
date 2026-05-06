@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import IrisService from "../../../services/IrisService";
 import PrismService from "../../../services/PrismService";
-import { SelectComponent, TableComponent } from "@rodrigo-barraza/components";
+import { SelectComponent, TableComponent } from "@rodrigo-barraza/components-library";
 import { resolveProviderLabel } from "../../../components/ProviderLogos";
 
 

@@ -27,7 +27,7 @@ import {
   MODALITY_COLORS,
   TOOL_COLORS,
 } from "./WorkflowNodeConstants";
-import { TableComponent, TooltipComponent, SearchInputComponent } from "@rodrigo-barraza/components";
+import { TableComponent, TooltipComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
 import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
 import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";

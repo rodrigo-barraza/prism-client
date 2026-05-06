@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Timer } from "lucide-react";
 import { formatElapsedTime } from "../utils/utilities";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./StopwatchBadgeComponent.module.css";
 
 /**

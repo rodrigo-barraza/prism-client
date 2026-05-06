@@ -9,7 +9,7 @@ import ModelLoadConfigPanel from "./ModelLoadConfigPanel";
 import ModelDetailPanelComponent from "./ModelDetailPanelComponent";
 
 import { ErrorMessage } from "./StateMessageComponent";
-import { PageHeaderComponent, useToast } from "@rodrigo-barraza/components";
+import { PageHeaderComponent, useToast } from "@rodrigo-barraza/components-library";
 import styles from "./ModelsPageComponent.module.css";
 
 /**

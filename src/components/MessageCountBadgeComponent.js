@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { MessageSquare } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./MessageCountBadgeComponent.module.css";
 
 /** Duration of the count-up tween in ms. */

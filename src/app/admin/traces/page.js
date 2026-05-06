@@ -11,9 +11,9 @@ import {
   buildRequestDetailSections,
   reconstructChatMessages,
 } from "../../../utils/requestDetailHelpers";
-import { PaginationComponent } from "@rodrigo-barraza/components";
+import { PaginationComponent } from "@rodrigo-barraza/components-library";
 import TracesTableComponent from "../../../components/TracesTableComponent";
-import { SelectComponent } from "@rodrigo-barraza/components";
+import { SelectComponent } from "@rodrigo-barraza/components-library";
 import { useAdminHeader } from "../../../components/AdminHeaderContext";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import RequestDetailsComponent from "../../../components/RequestDetailsComponent";

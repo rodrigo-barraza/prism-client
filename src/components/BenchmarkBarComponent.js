@@ -1,6 +1,6 @@
 "use client";
 
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./BenchmarkBarComponent.module.css";
 
 /**

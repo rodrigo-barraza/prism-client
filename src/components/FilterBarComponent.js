@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./FilterBarComponent.module.css";
 
 export function FilterBarComponent({ children, className = "" }) {

@@ -6,7 +6,7 @@ import { Target } from "lucide-react";
 import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayout";
 import BenchmarkPreviewSidebarComponent from "./BenchmarkPreviewSidebarComponent";
-import { ButtonComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import BenchmarkFormComponent from "./BenchmarkFormComponent";
 import styles from "./BenchmarkPageComponent.module.css";
 

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { ResponsiveContainer, PieChart, Pie, Cell, Sector } from "recharts";
-import { SelectComponent } from "@rodrigo-barraza/components";
+import { SelectComponent } from "@rodrigo-barraza/components-library";
 import ChartTabsComponent from "./ChartTabsComponent";
 import { formatNumber, formatCost, formatLatency } from "../utils/utilities";
 import styles from "./DistributionChartComponent.module.css";

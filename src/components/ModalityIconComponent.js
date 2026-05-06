@@ -8,7 +8,7 @@ import {
   FileText as DocIcon,
   Hash,
 } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { MODALITY_COLORS } from "./WorkflowNodeConstants";
 import styles from "./ModalityIconComponent.module.css";
 

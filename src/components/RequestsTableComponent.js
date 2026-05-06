@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { TableComponent } from "@rodrigo-barraza/components";
+import { TableComponent } from "@rodrigo-barraza/components-library";
 import { getRequestsColumns } from "../app/admin/requestsColumns";
 
 /**

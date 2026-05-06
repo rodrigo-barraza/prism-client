@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Download } from "lucide-react";
 import ToolsApiService from "../../../services/ToolsApiService";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
-import { ButtonComponent, PaginationComponent, TableComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent, PaginationComponent, TableComponent } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import {
   FilterBarComponent,

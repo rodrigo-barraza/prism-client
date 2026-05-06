@@ -15,7 +15,7 @@ import styles from "./HistoryItemComponent.module.css";
 import CostBadgeComponent from "./CostBadgeComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
 import SoundService from "@/services/SoundService";
-import { IconButtonComponent } from "@rodrigo-barraza/components";
+import { IconButtonComponent } from "@rodrigo-barraza/components-library";
 
 /**
  * HistoryItemComponent — a single row within HistoryList or any list that

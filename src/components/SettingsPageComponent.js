@@ -8,7 +8,7 @@ import { useWorkspace } from "./WorkspaceContext";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import CustomAgentsPanel from "./CustomAgentsPanel";
-import { ButtonComponent, CardComponent, PageHeaderComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent, CardComponent, PageHeaderComponent } from "@rodrigo-barraza/components-library";
 import styles from "./SettingsPageComponent.module.css";
 
 /**

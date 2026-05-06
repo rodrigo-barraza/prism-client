@@ -1,5 +1,5 @@
 import { User } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./UserBadgeComponent.module.css";
 
 /**

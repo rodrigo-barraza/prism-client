@@ -12,7 +12,7 @@ import {
   Send,
   Square,
 } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ChatInputButton.module.css";
 import SoundService from "@/services/SoundService";
 

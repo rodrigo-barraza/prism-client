@@ -1,7 +1,7 @@
 "use client";
 
 import { Wrench } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { TOOL_ICON_MAP, TOOL_COLORS } from "./WorkflowNodeConstants";
 import styles from "./ToolIconComponent.module.css";
 

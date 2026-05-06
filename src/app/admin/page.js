@@ -30,7 +30,7 @@ import {
   formatElapsedTime,
   buildDateRangeParams,
 } from "../../utils/utilities";
-import { SelectComponent, StatsCardComponent as StatsCard } from "@rodrigo-barraza/components";
+import { SelectComponent, StatsCardComponent as StatsCard } from "@rodrigo-barraza/components-library";
 
 import TimelineChartComponent from "../../components/TimelineChartComponent";
 import DistributionChartComponent from "../../components/DistributionChartComponent";

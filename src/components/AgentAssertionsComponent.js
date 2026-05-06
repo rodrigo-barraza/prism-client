@@ -2,7 +2,7 @@
 
 import { Plus, Trash2, MessageSquare, Wrench, Brain, RotateCcw } from "lucide-react";
 
-import { BadgeComponent, ButtonComponent, FormGroupComponent, IconButtonComponent } from "@rodrigo-barraza/components";
+import { BadgeComponent, ButtonComponent, FormGroupComponent, IconButtonComponent } from "@rodrigo-barraza/components-library";
 import styles from "./AgentAssertionsComponent.module.css";
 
 /**

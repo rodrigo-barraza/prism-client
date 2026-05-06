@@ -19,7 +19,7 @@ import { ModelToolsRow } from "./ToolBadgeComponent";
 import SoundService from "@/services/SoundService";
 import { LOCAL_PROVIDERS } from "../constants.js";
 import styles from "./ModelPickerPopoverComponent.module.css";
-import { CloseButtonComponent } from "@rodrigo-barraza/components";
+import { CloseButtonComponent } from "@rodrigo-barraza/components-library";
 
 // -- Shared model-search store ------------------------------------------
 // Module-scoped so every ModelPickerPopoverComponent instance shares the

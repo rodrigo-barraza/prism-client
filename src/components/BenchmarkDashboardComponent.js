@@ -8,7 +8,7 @@ import ThreePanelLayout from "./ThreePanelLayout";
 import SummaryBarComponent from "./SummaryBarComponent";
 import ModelsTableComponent from "./ModelsTableComponent";
 
-import { ButtonComponent, EmptyStateComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent, EmptyStateComponent } from "@rodrigo-barraza/components-library";
 import { formatCost } from "../utils/utilities";
 import styles from "./BenchmarkDashboardComponent.module.css";
 

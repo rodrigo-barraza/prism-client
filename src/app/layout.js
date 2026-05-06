@@ -1,5 +1,5 @@
 import { Inter } from "next/font/google";
-import { ThemeProvider, ComponentsProvider } from "@rodrigo-barraza/components";
+import { ThemeProvider, ComponentsProvider } from "@rodrigo-barraza/components-library";
 import { WorkspaceProvider } from "../components/WorkspaceContext";
 import "./globals.css";
 

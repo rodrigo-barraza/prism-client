@@ -36,7 +36,7 @@ import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, generateUUID } from "
 import { PROJECT_AGENT, SETTINGS_DEFAULTS, SK_MODEL_MEMORY_AGENT, SK_MODEL_MEMORY_AGENT_PREFIX, SK_TOOL_MEMORY_AGENT, SK_TOOL_MEMORY_AGENT_PREFIX, MAX_TOOL_ITERATIONS } from "../constants.js";
 import chatStyles from "./ChatArea.module.css";
 import ChatInputButton from "./ChatInputButton.js";
-import { ButtonComponent, EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components";
+import { ButtonComponent, EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
 import useToolToggles from "../hooks/useToolToggles.js";
 import useModelMemory from "../hooks/useModelMemory.js";
 import AgentPickerComponent from "./AgentPickerComponent.js";

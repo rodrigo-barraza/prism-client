@@ -65,7 +65,7 @@ Feature-rich frontend for interacting with AI models through the [Prism AI Gatew
 |---|---|
 | Next.js 16 | React framework (App Router) |
 | React 19 | UI library |
-| `@rodrigo-barraza/components` | Shared component library |
+| `@rodrigo-barraza/components-library` | Shared component library |
 | `@rodrigo-barraza/utilities` | Shared utility functions |
 | react-markdown | Markdown rendering |
 | react-syntax-highlighter | Code block syntax highlighting |

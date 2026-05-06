@@ -1,4 +1,4 @@
-import { TableComponent } from "@rodrigo-barraza/components";
+import { TableComponent } from "@rodrigo-barraza/components-library";
 import {
   projectColumn,
   requestsColumn,

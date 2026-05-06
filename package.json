@@ -17,7 +17,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@rodrigo-barraza/components": "git+https://github.com/rodrigo-barraza/components-library.git",
+    "@rodrigo-barraza/components-library": "git+https://github.com/rodrigo-barraza/components-library.git",
     "@rodrigo-barraza/utilities": "git+https://github.com/rodrigo-barraza/utilities-library.git",
     "chart.js": "^4.5.1",
     "gifuct-js": "^2.1.2",

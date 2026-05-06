@@ -20,7 +20,7 @@ import NavigationSidebarComponent from "./NavigationSidebarComponent.js";
 import ThreePanelLayout from "./ThreePanelLayout.js";
 import SettingsPanel from "./SettingsPanel.js";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent.js";
-import { BadgeComponent, ButtonComponent, CollapsibleBlockComponent, CopyButtonComponent, EmptyStateComponent, IconButtonComponent, SelectComponent, TabBarComponent, TextAreaComponent } from "@rodrigo-barraza/components";
+import { BadgeComponent, ButtonComponent, CollapsibleBlockComponent, CopyButtonComponent, EmptyStateComponent, IconButtonComponent, SelectComponent, TabBarComponent, TextAreaComponent } from "@rodrigo-barraza/components-library";
 
 import PromptSectionComponent from "./PromptSectionComponent.js";
 
