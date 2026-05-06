@@ -5,7 +5,9 @@
 // the single source of truth — next.config.mjs hydrates
 // process.env from the Vault before any module imports run.
 //
-// This file contains NO defaults and NO secrets.
+// This file contains NO defaults, NO secrets, and NO hardcoded
+// URLs. All public domain URLs come from the vault registry
+// (services.json → PRISM_SERVICE_PUBLIC_URL, PRISM_WS_PUBLIC_URL).
 //
 // Browser requests must NEVER hit localhost or LAN IPs when loaded
 // from a public domain — that triggers Chrome's Private Network
@@ -13,8 +15,8 @@
 //
 // Strategy:
 //   Production (*.rod.dev):
-//     • PRISM_SERVICE_URL  → https://api.prism.rod.dev (public API domain)
-//     • PRISM_WS_URL       → wss://api.prism.rod.dev
+//     • PRISM_SERVICE_URL  → PRISM_SERVICE_PUBLIC_URL from vault
+//     • PRISM_WS_URL       → PRISM_WS_PUBLIC_URL from vault
 //     • TOOLS_SERVICE_URL  → /api/tools — Next.js rewrite proxy (internal service)
 //
 //   Local dev (localhost):
@@ -42,10 +44,14 @@ const RAW_PRISM_URL = process.env.PRISM_SERVICE_URL;
 const RAW_WS_URL = process.env.PRISM_WS_URL;
 const RAW_TOOLS_URL = process.env.TOOLS_SERVICE_URL;
 
+// ── Public URLs from vault (browser production overrides) ──────
+const PUBLIC_PRISM_URL = process.env.PRISM_SERVICE_PUBLIC_URL;
+const PUBLIC_WS_URL = process.env.PRISM_WS_PUBLIC_URL;
+
 // ── Prism Service URL ──────────────────────────────────────────
 function resolvePrismUrl() {
   if (!IS_BROWSER) return RAW_PRISM_URL;
-  if (IS_PRODUCTION) return "https://api.prism.rod.dev";
+  if (IS_PRODUCTION && PUBLIC_PRISM_URL) return PUBLIC_PRISM_URL;
   return RAW_PRISM_URL;
 }
 
@@ -54,7 +60,7 @@ export const PRISM_SERVICE_URL = resolvePrismUrl();
 // ── Prism WebSocket URL ────────────────────────────────────────
 function resolveWsUrl() {
   if (!IS_BROWSER) return RAW_WS_URL;
-  if (IS_PRODUCTION) return "wss://api.prism.rod.dev";
+  if (IS_PRODUCTION && PUBLIC_WS_URL) return PUBLIC_WS_URL;
   return RAW_WS_URL;
 }
 

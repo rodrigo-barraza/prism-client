@@ -23,10 +23,13 @@ Object.assign(process.env, secrets);
 // /api/tools/* which Next.js rewrites to this destination.
 const TOOLS_SERVICE_URL = secrets.TOOLS_SERVICE_URL || "http://localhost:5590";
 
+// Resolved client domain for allowedDevOrigins (from vault).
+const PRISM_CLIENT_DOMAIN = secrets.PRISM_CLIENT_DOMAIN || "";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  allowedDevOrigins: ["prism.rod.dev"],
+  allowedDevOrigins: PRISM_CLIENT_DOMAIN ? [PRISM_CLIENT_DOMAIN] : [],
   turbopack: {},
   transpilePackages: ["@rodrigo-barraza/components", "@rodrigo-barraza/utilities"],
 
@@ -35,17 +38,20 @@ const nextConfig = {
   // (e.g. public domain for prism-service, proxy path for tools-service).
   env: {
     PRISM_CLIENT_PORT: secrets.PRISM_CLIENT_PORT || "3333",
+    PRISM_CLIENT_DOMAIN: PRISM_CLIENT_DOMAIN,
     PRISM_SERVICE_URL: secrets.PRISM_SERVICE_URL || "http://localhost:7777",
+    PRISM_SERVICE_PUBLIC_URL: secrets.PRISM_SERVICE_PUBLIC_URL || "",
     PRISM_WS_URL: secrets.PRISM_WS_URL || "ws://localhost:7777",
+    PRISM_WS_PUBLIC_URL: secrets.PRISM_WS_PUBLIC_URL || "",
     TOOLS_SERVICE_URL: TOOLS_SERVICE_URL,
     MINIO_PUBLIC_URL: secrets.MINIO_PUBLIC_URL || "",
   },
 
   // ── Rewrite Proxy ──────────────────────────────────────────
-  // Tools-service is internal-only (no public hostname like api.*.rod.dev).
+  // Tools-service is internal-only (no public hostname).
   // Proxy /api/tools/* → tools-service so the browser never makes direct
   // requests to LAN IPs. Prism-service does NOT need a rewrite — it has
-  // a public domain (api.prism.rod.dev), set in config.js for production.
+  // a public domain (PRISM_SERVICE_PUBLIC_URL from vault) for production.
   async rewrites() {
     return [
       {
