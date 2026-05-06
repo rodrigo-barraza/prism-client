@@ -274,12 +274,12 @@
   }
 
   :global([data-theme="tropical"]) & {
-    background: #183030;
-    color: #9ab8a8;
+    background: #2e221a;
+    color: #c4a882;
 
     &:hover {
-      background: #1e3c3c;
-      color: #f0e6d3;
+      background: #3a2c20;
+      color: #faebd7;
     }
   }
 }

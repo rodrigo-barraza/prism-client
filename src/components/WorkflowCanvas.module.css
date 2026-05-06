@@ -22,10 +22,10 @@
 :global([data-theme="tropical"]) .canvas {
   background: radial-gradient(
     circle at 50% 70%,
-    #183030 0%,
-    #122424 30%,
-    #0c1a1a 70%,
-    #081414 100%
+    #2e221a 0%,
+    #241a14 30%,
+    #1a120e 70%,
+    #140e0a 100%
   );
 }
 
