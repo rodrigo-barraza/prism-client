@@ -45,6 +45,7 @@ const nextConfig = {
     PRISM_WS_PUBLIC_URL: secrets.PRISM_WS_PUBLIC_URL,
     TOOLS_SERVICE_URL: TOOLS_SERVICE_URL,
     MINIO_PUBLIC_URL: secrets.MINIO_PUBLIC_URL,
+    PRISM_SERVICE_MINIO_BUCKET_NAME: secrets.PRISM_SERVICE_MINIO_BUCKET_NAME,
   },
 
   // ── Rewrite Proxy ──────────────────────────────────────────
