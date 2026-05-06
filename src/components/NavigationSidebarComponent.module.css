@@ -282,6 +282,16 @@
       color: #faebd7;
     }
   }
+
+  :global([data-theme="oceanic"]) & {
+    background: #0b1628;
+    color: #7ba7c2;
+
+    &:hover {
+      background: #111f38;
+      color: #d0e8f2;
+    }
+  }
 }
 
 .navIcon {

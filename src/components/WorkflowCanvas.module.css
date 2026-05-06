@@ -29,6 +29,16 @@
   );
 }
 
+:global([data-theme="oceanic"]) .canvas {
+  background: radial-gradient(
+    circle at 50% 40%,
+    #111f38 0%,
+    #0b1628 30%,
+    #060d18 70%,
+    #040a14 100%
+  );
+}
+
 .canvas.panning {
   cursor: grabbing;
 }
@@ -48,6 +58,10 @@
 
 :global([data-theme="tropical"]) .starfield {
   opacity: 0.3;
+}
+
+:global([data-theme="oceanic"]) .starfield {
+  opacity: 0.45;
 }
 
 .svg {

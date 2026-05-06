@@ -183,6 +183,47 @@
   --select-option-text: #faebd7;
 }
 
+/* ── Oceanic Mode ──────────────────────────────────────────── */
+/* Deep sea palette — dark navy surfaces, cerulean accent, seafoam
+   borders, bioluminescent glow. Should feel like a deep-ocean terminal. */
+
+[data-theme="oceanic"] {
+  --bg-primary: #060d18;
+  --bg-secondary: #0b1628;
+  --bg-tertiary: #111f38;
+  --bg-surface: rgba(11, 22, 40, 0.72);
+  --bg-card: rgba(11, 22, 40, 0.94);
+  --border-color: rgba(0, 180, 216, 0.12);
+  --border-subtle: rgba(0, 180, 216, 0.06);
+  --text-primary: #d0e8f2;
+  --text-secondary: #7ba7c2;
+  --text-tertiary: #4a7a96;
+  --text-muted: #365a72;
+  --accent-color: #00b4d8;
+  --accent-hover: #0096c7;
+  --accent-glow: rgba(0, 180, 216, 0.4);
+  --accent-subtle: rgba(0, 180, 216, 0.12);
+  --danger: #ff6b6b;
+  --danger-subtle: rgba(255, 107, 107, 0.14);
+  --success: #48e0a0;
+  --success-subtle: rgba(72, 224, 160, 0.14);
+  --warning: #ffc857;
+  --warning-subtle: rgba(255, 200, 87, 0.14);
+  --info: #90e0ef;
+  --info-subtle: rgba(144, 224, 239, 0.14);
+  --color-success: var(--success);
+  --color-error: var(--danger);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 24px rgba(0, 180, 216, 0.18);
+  --select-bg: rgba(11, 22, 40, 0.65);
+  --select-option-bg: #0b1628;
+  --select-option-text: #d0e8f2;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
