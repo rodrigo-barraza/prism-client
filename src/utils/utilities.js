@@ -2,13 +2,13 @@
 // Prism Client — Utilities
 // ============================================================
 // Functions shared across the workspace are re-exported from
-// @rodrigo-barraza/utilities. Prism-specific helpers remain
+// @rodrigo-barraza/utilities-library. Prism-specific helpers remain
 // defined here as local exports.
 // ============================================================
 
 import { DateTime } from "luxon";
 
-// -- Re-exports from @rodrigo-barraza/utilities ----------------
+// -- Re-exports from @rodrigo-barraza/utilities-library ----------------
 // These were previously defined inline. Consumers don't need
 // to change their import paths.
 
@@ -31,7 +31,7 @@ export {
   humanizeToolName,
   sleep,
   timeAgo as formatTimeAgo,
-} from "@rodrigo-barraza/utilities";
+} from "@rodrigo-barraza/utilities-library";
 
 // -- Prism-specific utilities ---------------------------------
 

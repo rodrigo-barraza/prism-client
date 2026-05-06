@@ -5,7 +5,7 @@
 // and injects them into process.env for the app.
 // ============================================================
 
-import { createVaultClient } from "@rodrigo-barraza/utilities/node";
+import { createVaultClient } from "@rodrigo-barraza/utilities-library/node";
 
 // ── Bootstrap secrets at build/dev time ────────────────────────
 const vault = createVaultClient({
@@ -39,7 +39,7 @@ const nextConfig = {
   output: "standalone",
   allowedDevOrigins: PRISM_CLIENT_DOMAIN ? [PRISM_CLIENT_DOMAIN] : undefined,
   turbopack: {},
-  transpilePackages: ["@rodrigo-barraza/components-library", "@rodrigo-barraza/utilities"],
+  transpilePackages: ["@rodrigo-barraza/components-library", "@rodrigo-barraza/utilities-library"],
 
   // Expose resolved values to both server and client bundles.
   // config.js applies environment-aware overrides for browser contexts
