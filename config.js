@@ -1,8 +1,11 @@
 // ============================================================
 // Prism Client — Runtime Configuration
 // ============================================================
-// Resolves service URLs for both server-side (Next.js SSR/API routes)
-// and client-side (browser) contexts.
+// Typed accessor layer over process.env. The Vault service is
+// the single source of truth — next.config.mjs hydrates
+// process.env from the Vault before any module imports run.
+//
+// This file contains NO defaults and NO secrets.
 //
 // Browser requests must NEVER hit localhost or LAN IPs when loaded
 // from a public domain — that triggers Chrome's Private Network
@@ -15,23 +18,15 @@
 //     • TOOLS_SERVICE_URL  → /api/tools — Next.js rewrite proxy (internal service)
 //
 //   Local dev (localhost):
-//     • PRISM_SERVICE_URL  → vault/env value (LAN IP or localhost — same network)
-//     • PRISM_WS_URL       → vault/env value
+//     • PRISM_SERVICE_URL  → vault value (LAN IP or localhost — same network)
+//     • PRISM_WS_URL       → vault value
 //     • TOOLS_SERVICE_URL  → /api/tools — Next.js rewrite proxy (avoids CORS)
 //
 //   Server-side (SSR):
-//     • All URLs use full values from vault/secrets (LAN IPs for Docker)
+//     • All URLs use full values from vault (LAN IPs for Docker)
 // ============================================================
 
-import {
-  PRISM_CLIENT_PORT as SECRETS_PORT,
-  PRISM_SERVICE_URL as RAW_PRISM_URL,
-  PRISM_WS_URL as RAW_WS_URL,
-  TOOLS_SERVICE_URL as RAW_TOOLS_URL,
-  MINIO_PUBLIC_URL,
-} from "./secrets.js";
-
-export const PORT = SECRETS_PORT || 3333;
+export const PORT = process.env.PRISM_CLIENT_PORT;
 
 const IS_BROWSER = typeof window !== "undefined";
 
@@ -42,10 +37,12 @@ export const IS_LOCALHOST = !IS_PRODUCTION;
 // Environment-aware project name — isolates data between dev and prod
 export const PROJECT_NAME = IS_PRODUCTION ? "prism-client" : "prism-client-dev";
 
+// ── Raw values from process.env ────────────────────────────────
+const RAW_PRISM_URL = process.env.PRISM_SERVICE_URL;
+const RAW_WS_URL = process.env.PRISM_WS_URL;
+const RAW_TOOLS_URL = process.env.TOOLS_SERVICE_URL;
+
 // ── Prism Service URL ──────────────────────────────────────────
-// Production browser: public API domain (reverse-proxied to prism-service).
-// Local dev browser: vault/env value (LAN IP or localhost — same network, no PNA).
-// Server-side: vault/env value (LAN IP for Docker container-to-container calls).
 function resolvePrismUrl() {
   if (!IS_BROWSER) return RAW_PRISM_URL;
   if (IS_PRODUCTION) return "https://api.prism.rod.dev";
@@ -55,9 +52,6 @@ function resolvePrismUrl() {
 export const PRISM_SERVICE_URL = resolvePrismUrl();
 
 // ── Prism WebSocket URL ────────────────────────────────────────
-// Production browser: public domain with wss:// for TLS.
-// Local dev browser: vault/env value.
-// Server-side: vault/env value.
 function resolveWsUrl() {
   if (!IS_BROWSER) return RAW_WS_URL;
   if (IS_PRODUCTION) return "wss://api.prism.rod.dev";
@@ -70,8 +64,8 @@ export const PRISM_WS_URL = resolveWsUrl();
 // Browser (all environments): proxied through Next.js rewrites at
 // /api/tools → TOOLS_SERVICE_URL. Tools-service is internal-only
 // (no public hostname), so the browser must NEVER call it directly.
-// Server-side: vault/env value (LAN IP).
+// Server-side: vault value (LAN IP).
 export const TOOLS_SERVICE_URL = IS_BROWSER ? "/api/tools" : RAW_TOOLS_URL;
 
 // MinIO file storage (direct bucket URL)
-export const MINIO_URL = MINIO_PUBLIC_URL;
+export const MINIO_URL = process.env.MINIO_PUBLIC_URL;
