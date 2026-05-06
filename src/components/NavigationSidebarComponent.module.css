@@ -272,6 +272,16 @@
       color: #333;
     }
   }
+
+  :global([data-theme="tropical"]) & {
+    background: #183030;
+    color: #9ab8a8;
+
+    &:hover {
+      background: #1e3c3c;
+      color: #f0e6d3;
+    }
+  }
 }
 
 .navIcon {

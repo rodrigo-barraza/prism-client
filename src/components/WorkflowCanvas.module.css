@@ -19,6 +19,16 @@
   );
 }
 
+:global([data-theme="tropical"]) .canvas {
+  background: radial-gradient(
+    circle at 50% 70%,
+    #183030 0%,
+    #122424 30%,
+    #0c1a1a 70%,
+    #081414 100%
+  );
+}
+
 .canvas.panning {
   cursor: grabbing;
 }
@@ -34,6 +44,10 @@
 :global([data-theme="light"]) .starfield {
   opacity: 0;
   pointer-events: none;
+}
+
+:global([data-theme="tropical"]) .starfield {
+  opacity: 0.3;
 }
 
 .svg {

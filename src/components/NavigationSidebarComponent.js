@@ -13,6 +13,7 @@ import {
   GitBranch,
   Sun,
   Moon,
+  Palmtree,
   Image as ImageIcon,
   Layers,
   Type,
@@ -544,11 +545,13 @@ export default function NavigationSidebarComponent({
                 >
                   {theme === "dark" ? (
                     <Sun className={styles.navIcon} />
+                  ) : theme === "light" ? (
+                    <Palmtree className={styles.navIcon} />
                   ) : (
                     <Moon className={styles.navIcon} />
                   )}
                   <span className={styles.navLabel}>
-                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                    {theme === "dark" ? "Light Mode" : theme === "light" ? "Tropical Mode" : "Dark Mode"}
                   </span>
                 </button>
               </div>
@@ -660,18 +663,20 @@ export default function NavigationSidebarComponent({
               </Link>
             </TooltipComponent>
           ) : null}
-          <TooltipComponent label={theme === "dark" ? "Light Mode" : "Dark Mode"} position="right" delay={200} disabled={showNav} className={styles.tooltipFill}>
+          <TooltipComponent label={theme === "dark" ? "Light Mode" : theme === "light" ? "Tropical Mode" : "Dark Mode"} position="right" delay={200} disabled={showNav} className={styles.tooltipFill}>
             <button
               className={`${styles.navLink} ${styles.themeToggle}`}
               onClick={toggleTheme}
             >
               {theme === "dark" ? (
                 <Sun className={styles.navIcon} />
+              ) : theme === "light" ? (
+                <Palmtree className={styles.navIcon} />
               ) : (
                 <Moon className={styles.navIcon} />
               )}
               <span className={styles.navLabel}>
-                {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                {theme === "dark" ? "Light Mode" : theme === "light" ? "Tropical Mode" : "Dark Mode"}
               </span>
             </button>
           </TooltipComponent>
