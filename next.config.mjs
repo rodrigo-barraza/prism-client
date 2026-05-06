@@ -21,15 +21,15 @@ Object.assign(process.env, secrets);
 // Resolved tools-service URL for the rewrite proxy (server-side only).
 // Tools-service is internal (no public hostname) — the browser calls
 // /api/tools/* which Next.js rewrites to this destination.
-const TOOLS_SERVICE_URL = secrets.TOOLS_SERVICE_URL || "http://localhost:5590";
+const TOOLS_SERVICE_URL = secrets.TOOLS_SERVICE_URL;
 
 // Resolved client domain for allowedDevOrigins (from vault).
-const PRISM_CLIENT_DOMAIN = secrets.PRISM_CLIENT_DOMAIN || "";
+const PRISM_CLIENT_DOMAIN = secrets.PRISM_CLIENT_DOMAIN;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  allowedDevOrigins: PRISM_CLIENT_DOMAIN ? [PRISM_CLIENT_DOMAIN] : [],
+  allowedDevOrigins: PRISM_CLIENT_DOMAIN ? [PRISM_CLIENT_DOMAIN] : undefined,
   turbopack: {},
   transpilePackages: ["@rodrigo-barraza/components", "@rodrigo-barraza/utilities"],
 
@@ -37,14 +37,14 @@ const nextConfig = {
   // config.js applies environment-aware overrides for browser contexts
   // (e.g. public domain for prism-service, proxy path for tools-service).
   env: {
-    PRISM_CLIENT_PORT: secrets.PRISM_CLIENT_PORT || "3333",
+    PRISM_CLIENT_PORT: secrets.PRISM_CLIENT_PORT,
     PRISM_CLIENT_DOMAIN: PRISM_CLIENT_DOMAIN,
-    PRISM_SERVICE_URL: secrets.PRISM_SERVICE_URL || "http://localhost:7777",
-    PRISM_SERVICE_PUBLIC_URL: secrets.PRISM_SERVICE_PUBLIC_URL || "",
-    PRISM_WS_URL: secrets.PRISM_WS_URL || "ws://localhost:7777",
-    PRISM_WS_PUBLIC_URL: secrets.PRISM_WS_PUBLIC_URL || "",
+    PRISM_SERVICE_URL: secrets.PRISM_SERVICE_URL,
+    PRISM_SERVICE_PUBLIC_URL: secrets.PRISM_SERVICE_PUBLIC_URL,
+    PRISM_WS_URL: secrets.PRISM_WS_URL,
+    PRISM_WS_PUBLIC_URL: secrets.PRISM_WS_PUBLIC_URL,
     TOOLS_SERVICE_URL: TOOLS_SERVICE_URL,
-    MINIO_PUBLIC_URL: secrets.MINIO_PUBLIC_URL || "",
+    MINIO_PUBLIC_URL: secrets.MINIO_PUBLIC_URL,
   },
 
   // ── Rewrite Proxy ──────────────────────────────────────────
