@@ -73,5 +73,5 @@ export const PRISM_WS_URL = resolveWsUrl();
 // Server-side: vault value (LAN IP).
 export const TOOLS_SERVICE_URL = IS_BROWSER ? "/api/tools" : RAW_TOOLS_URL;
 
-// MinIO file storage (direct bucket URL)
+// MinIO file storage (public bucket URL via storage.rod.dev)
 export const MINIO_URL = process.env.MINIO_PUBLIC_URL;
