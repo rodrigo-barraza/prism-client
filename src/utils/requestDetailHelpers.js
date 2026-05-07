@@ -12,11 +12,12 @@ import {
   formatLatency,
   formatTokensPerSec,
 } from "./utilities";
-import { BadgeComponent } from "@rodrigo-barraza/components-library";
+import { BadgeComponent   DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 import ModelBadgeComponent from "../components/ModelBadgeComponent";
 import ProvidersBadgeComponent from "../components/ProvidersBadgeComponent";
 import TokenCountBadgeComponent from "../components/TokenCountBadgeComponent";
-import DateTimeBadgeComponent from "../components/DateTimeBadgeComponent";
+
 import StopwatchBadgeComponent from "../components/StopwatchBadgeComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 

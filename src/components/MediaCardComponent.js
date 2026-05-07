@@ -1,3 +1,4 @@
+import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 "use client";
 
 import {
@@ -13,7 +14,7 @@ import {
 import Link from "next/link";
 import PrismService from "../services/PrismService";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
-import DateTimeBadgeComponent from "./DateTimeBadgeComponent";
+
 import ModelBadgeComponent from "./ModelBadgeComponent";
 import { MODALITY_COLORS } from "./WorkflowNodeConstants";
 import styles from "./MediaCardComponent.module.css";

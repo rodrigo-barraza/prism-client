@@ -32,8 +32,9 @@ import ModelBadgeComponent from "./ModelBadgeComponent";
 import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
 import CostBadgeComponent from "./CostBadgeComponent";
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
-import DateTimeBadgeComponent from "./DateTimeBadgeComponent";
-import { BadgeComponent, CopyButtonComponent, IconButtonComponent } from "@rodrigo-barraza/components-library";
+
+import { BadgeComponent, CopyButtonComponent, IconButtonComponent, DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 import WordBadgeComponent from "./WordBadgeComponent";
 import WorkerNotificationComponent from "./WorkerNotificationComponent";
 import PlanCardComponent from "./PlanCardComponent.js";

@@ -1,9 +1,10 @@
+import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { Activity, AlertCircle, Users } from "lucide-react";
 import ProviderLogo from "./ProviderLogos";
-import DateTimeBadgeComponent from "./DateTimeBadgeComponent";
+
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
 import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
 import IrisService from "../services/IrisService";

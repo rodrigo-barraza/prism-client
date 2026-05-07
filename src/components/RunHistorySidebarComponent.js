@@ -14,11 +14,12 @@ import {
 } from "lucide-react";
 import AgentCardComponent from "./AgentCardComponent";
 import ModelCardComponent from "./ModelCardComponent";
-import { BadgeComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
+import { BadgeComponent, TabBarComponent   DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
 import CostBadgeComponent from "./CostBadgeComponent";
-import DateTimeBadgeComponent from "./DateTimeBadgeComponent";
+
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
 import SoundService from "@/services/SoundService";
 import styles from "./RunHistorySidebarComponent.module.css";

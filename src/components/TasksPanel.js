@@ -1,3 +1,4 @@
+import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -7,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 import ToolsApiService from "../services/ToolsApiService.js";
-import DateTimeBadgeComponent from "./DateTimeBadgeComponent";
+
 import styles from "./TasksPanel.module.css";
 
 

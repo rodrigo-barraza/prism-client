@@ -16,7 +16,8 @@ import {
 import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayout";
 import RunHistorySidebarComponent from "./RunHistorySidebarComponent";
-import { BadgeComponent, ButtonComponent, ModalComponent } from "@rodrigo-barraza/components-library";
+import { BadgeComponent, ButtonComponent, ModalComponent   DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 
 import BenchmarkFormComponent from "./BenchmarkFormComponent";
 import SummaryBarComponent from "./SummaryBarComponent";
@@ -24,7 +25,7 @@ import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import AgentPickerComponent from "./AgentPickerComponent";
 import BenchmarksTableComponent from "./BenchmarksTableComponent";
 import ChatPreviewComponent from "./ChatPreviewComponent";
-import DateTimeBadgeComponent from "./DateTimeBadgeComponent";
+
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
 
 import StorageService from "../services/StorageService";
