@@ -1,4 +1,3 @@
-import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 "use client";
 
 import {
@@ -11,6 +10,7 @@ import {
   Film,
   FileText,
 } from "lucide-react";
+import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 import Link from "next/link";
 import PrismService from "../services/PrismService";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";

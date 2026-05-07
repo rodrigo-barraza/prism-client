@@ -1,8 +1,8 @@
-import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { Activity, AlertCircle, Users } from "lucide-react";
+import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 import ProviderLogo from "./ProviderLogos";
 
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";

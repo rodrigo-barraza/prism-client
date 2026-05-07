@@ -11,8 +11,7 @@ import {
   Clock,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import { ButtonComponent, SearchInputComponent   DateTimeBadgeComponent,
-} from "@rodrigo-barraza/components-library";
+import { ButtonComponent, SearchInputComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 import CostBadgeComponent from "./CostBadgeComponent";
 
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
