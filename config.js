@@ -28,7 +28,7 @@
 //     • All URLs use full values from vault (LAN IPs for Docker)
 // ============================================================
 
-export const PORT = process.env.PRISM_CLIENT_PORT;
+export const PORT = (process.env.NEXT_PUBLIC_PRISM_CLIENT_PORT || process.env.PRISM_CLIENT_PORT);
 
 const IS_BROWSER = typeof window !== "undefined";
 
@@ -40,13 +40,13 @@ export const IS_LOCALHOST = !IS_PRODUCTION;
 export const PROJECT_NAME = IS_PRODUCTION ? "prism-client" : "prism-client-dev";
 
 // ── Raw values from process.env ────────────────────────────────
-const RAW_PRISM_URL = process.env.PRISM_SERVICE_URL;
-const RAW_WS_URL = process.env.PRISM_WS_URL;
-const RAW_TOOLS_URL = process.env.TOOLS_SERVICE_URL;
+const RAW_PRISM_URL = (process.env.NEXT_PUBLIC_PRISM_SERVICE_URL || process.env.PRISM_SERVICE_URL);
+const RAW_WS_URL = (process.env.NEXT_PUBLIC_PRISM_WS_URL || process.env.PRISM_WS_URL);
+const RAW_TOOLS_URL = (process.env.NEXT_PUBLIC_TOOLS_SERVICE_URL || process.env.TOOLS_SERVICE_URL);
 
 // ── Public URLs from vault (browser production overrides) ──────
-const PUBLIC_PRISM_URL = process.env.PRISM_SERVICE_PUBLIC_URL;
-const PUBLIC_WS_URL = process.env.PRISM_WS_PUBLIC_URL;
+const PUBLIC_PRISM_URL = (process.env.NEXT_PUBLIC_PRISM_SERVICE_PUBLIC_URL || process.env.PRISM_SERVICE_PUBLIC_URL);
+const PUBLIC_WS_URL = (process.env.NEXT_PUBLIC_PRISM_WS_PUBLIC_URL || process.env.PRISM_WS_PUBLIC_URL);
 
 // ── Prism Service URL ──────────────────────────────────────────
 function resolvePrismUrl() {
@@ -77,7 +77,7 @@ export const TOOLS_SERVICE_URL = IS_BROWSER ? "/api/tools" : RAW_TOOLS_URL;
 // MINIO_PUBLIC_URL is the root (e.g. https://storage.rod.dev).
 // Append the bucket name so file refs resolve to the correct path:
 //   https://storage.rod.dev/prism/{object-key}
-const MINIO_ROOT = process.env.MINIO_PUBLIC_URL;
-const MINIO_BUCKET = process.env.PRISM_SERVICE_MINIO_BUCKET_NAME;
+const MINIO_ROOT = (process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL || process.env.MINIO_PUBLIC_URL);
+const MINIO_BUCKET = (process.env.NEXT_PUBLIC_PRISM_SERVICE_MINIO_BUCKET_NAME || process.env.PRISM_SERVICE_MINIO_BUCKET_NAME);
 export const MINIO_URL =
   MINIO_ROOT && MINIO_BUCKET ? `${MINIO_ROOT}/${MINIO_BUCKET}` : null;
