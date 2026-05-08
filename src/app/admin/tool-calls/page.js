@@ -10,7 +10,7 @@ import {
   Activity,
 } from "lucide-react";
 import ToolsApiService from "../../../services/ToolsApiService";
-import { BadgeComponent, TableComponent } from "@rodrigo-barraza/components-library";
+import { BadgeComponent, TableComponent, LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContext";
 import {
@@ -300,7 +300,13 @@ export default function ToolCallsPage() {
   }, [stats]);
 
   if (loading && !stats) {
-    return <div className={styles.page}><div className={styles.loadingState}>Loading tool call statistics…</div></div>;
+    return (
+      <div className={styles.page}>
+        <div className={styles.loadingState}>
+          <LoadingIndicatorComponent size="small" color="inherit" label="Loading tool call statistics…" />
+        </div>
+      </div>
+    );
   }
 
   return (

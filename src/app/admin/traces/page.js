@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { FolderOpen, Loader, MessageSquare, GitBranch } from "lucide-react";
+import { FolderOpen, MessageSquare, GitBranch } from "lucide-react";
+import { LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import { useRouter } from "next/navigation";
 import IrisService from "../../../services/IrisService";
 import { buildDateRangeParams } from "../../../utils/utilities";
@@ -187,8 +188,7 @@ export default function TracesPage() {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>
-          <Loader size={16} className={styles.spinning} />
-          Loading traces…
+          <LoadingIndicatorComponent size="small" color="inherit" label="Loading traces…" />
         </div>
       </div>
     );

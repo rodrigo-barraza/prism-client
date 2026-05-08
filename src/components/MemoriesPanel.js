@@ -6,6 +6,7 @@ import Link from "next/link";
 import PrismService from "../services/PrismService.js";
 
 import { DatePickerComponent, SearchInputComponent, DateTimeBadgeComponent,
+  LoadingIndicatorComponent,
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
 import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
@@ -256,8 +257,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
     return (
       <div className={styles.container}>
         <div className={styles.loading}>
-          <RefreshCw size={14} className={styles.refreshSpin} />
-          Loading memories…
+          <LoadingIndicatorComponent size="small" color="inherit" label="Loading memories…" />
         </div>
       </div>
     );

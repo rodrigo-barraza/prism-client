@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import IrisService from "../../../services/IrisService";
 import WorkflowComponent from "../../../components/WorkflowComponent";
 import WorkflowHeaderStatsComponent from "../../../components/WorkflowHeaderStatsComponent";
-import { SelectComponent, useToast } from "@rodrigo-barraza/components-library";
+import { SelectComponent, LoadingIndicatorComponent, useToast } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContext";
 import useProjectFilter from "../../../hooks/useProjectFilter";
@@ -208,7 +208,9 @@ function AdminWorkflowsPageInner() {
       {/* Body */}
       <div className={styles.body}>
         {loadingDetail && !selectedWorkflow ? (
-          <div className={styles.emptyCanvas}>Loading workflow…</div>
+          <div className={styles.emptyCanvas}>
+            <LoadingIndicatorComponent size="small" color="inherit" label="Loading workflow…" />
+          </div>
         ) : (
           <WorkflowComponent
             readOnly

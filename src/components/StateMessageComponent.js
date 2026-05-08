@@ -1,10 +1,11 @@
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import styles from "./StateMessageComponent.module.css";
 
 export function LoadingMessage({ message = "Loading..." }) {
   return (
     <div className={styles.container}>
-      <Loader2 size={18} className={styles.spinner} />
+      <LoadingIndicatorComponent size="small" color="inherit" />
       <span>{message}</span>
     </div>
   );
