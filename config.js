@@ -7,7 +7,7 @@
 //
 // This file contains NO defaults, NO secrets, and NO hardcoded
 // URLs. All public domain URLs come from the vault registry
-// (services.json → PRISM_SERVICE_PUBLIC_URL, PRISM_WS_PUBLIC_URL).
+// (projects.json → PRISM_SERVICE_PUBLIC_URL, PRISM_WS_PUBLIC_URL).
 //
 // Browser requests must NEVER hit localhost or LAN IPs when loaded
 // from a public domain — that triggers Chrome's Private Network
