@@ -11,9 +11,6 @@ import {
   ArrowLeft,
   Server,
   GitBranch,
-  Sun,
-  Moon,
-  Palmtree,
   Image as ImageIcon,
   Layers,
   Type,
@@ -31,7 +28,7 @@ import {
   BarChart3,
   AlertCircle,
 } from "lucide-react";
-import { useTheme } from "@rodrigo-barraza/components-library";
+import { useTheme, ThemePickerComponent } from "@rodrigo-barraza/components-library";
 import SpinningCatComponent from "./SpinningCatComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./NavigationSidebarComponent.module.css";
@@ -133,7 +130,7 @@ export default function NavigationSidebarComponent({
     text: textCount,
   };
   const pathname = usePathname();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, themes, setTheme } = useTheme();
   const [showNav, setShowNav] = useState(false);
   const [navReady, setNavReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -539,21 +536,11 @@ export default function NavigationSidebarComponent({
                     <span className={styles.navLabel}>Admin</span>
                   </Link>
                 ) : null}
-                <button
-                  className={`${styles.navLink} ${styles.themeToggle}`}
-                  onClick={toggleTheme}
-                >
-                  {theme === "dark" ? (
-                    <Sun className={styles.navIcon} />
-                  ) : theme === "light" ? (
-                    <Palmtree className={styles.navIcon} />
-                  ) : (
-                    <Moon className={styles.navIcon} />
-                  )}
-                  <span className={styles.navLabel}>
-                    {theme === "dark" ? "Light Mode" : theme === "light" ? "Tropical Mode" : "Dark Mode"}
-                  </span>
-                </button>
+                <ThemePickerComponent
+                  theme={theme}
+                  themes={themes}
+                  onSelectTheme={setTheme}
+                />
               </div>
             </div>
           </>
@@ -663,23 +650,12 @@ export default function NavigationSidebarComponent({
               </Link>
             </TooltipComponent>
           ) : null}
-          <TooltipComponent label={theme === "dark" ? "Light Mode" : theme === "light" ? "Tropical Mode" : "Dark Mode"} position="right" delay={200} disabled={showNav} className={styles.tooltipFill}>
-            <button
-              className={`${styles.navLink} ${styles.themeToggle}`}
-              onClick={toggleTheme}
-            >
-              {theme === "dark" ? (
-                <Sun className={styles.navIcon} />
-              ) : theme === "light" ? (
-                <Palmtree className={styles.navIcon} />
-              ) : (
-                <Moon className={styles.navIcon} />
-              )}
-              <span className={styles.navLabel}>
-                {theme === "dark" ? "Light Mode" : theme === "light" ? "Tropical Mode" : "Dark Mode"}
-              </span>
-            </button>
-          </TooltipComponent>
+          <ThemePickerComponent
+            theme={theme}
+            themes={themes}
+            onSelectTheme={setTheme}
+            collapsed={!showNav}
+          />
           {isAdmin && (
             <div className={styles.statusRow}>
               <span
