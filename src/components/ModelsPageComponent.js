@@ -9,7 +9,7 @@ import ModelLoadConfigPanel from "./ModelLoadConfigPanel";
 import ModelDetailPanelComponent from "./ModelDetailPanelComponent";
 
 import { ErrorMessage } from "./StateMessageComponent";
-import { PageHeaderComponent, useToast } from "@rodrigo-barraza/components-library";
+import { PageHeaderComponent, ToastComponent, useToast } from "@rodrigo-barraza/components-library";
 import styles from "./ModelsPageComponent.module.css";
 
 /**
@@ -57,7 +57,7 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionInProgress, setActionInProgress] = useState(null);
-  const [toastElement, showToast] = useToast(4000);
+  const { toasts, addToast, removeToast } = useToast(4000);
   const [favoriteKeys, setFavoriteKeys] = useState([]);
   const [loadConfigModel, setLoadConfigModel] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
@@ -251,10 +251,10 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }) {
     try {
       const lmService = isAdmin ? IrisService : PrismService;
       await lmService.loadLmStudioModel(modelKey, options);
-      showToast(`Loaded ${modelKey}`, "success");
+      addToast(`Loaded ${modelKey}`, "success");
       await fetchModels();
     } catch (err) {
-      showToast(`Failed to load: ${err.message}`, "error");
+      addToast(`Failed to load: ${err.message}`, "error");
     } finally {
       setActionInProgress(null);
     }
@@ -265,10 +265,10 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }) {
     try {
       const lmService = isAdmin ? IrisService : PrismService;
       await lmService.unloadLmStudioModel(instanceId);
-      showToast(`Unloaded ${instanceId}`, "success");
+      addToast(`Unloaded ${instanceId}`, "success");
       await fetchModels();
     } catch (err) {
-      showToast(`Failed to unload: ${err.message}`, "error");
+      addToast(`Failed to unload: ${err.message}`, "error");
     } finally {
       setActionInProgress(null);
     }
@@ -371,7 +371,7 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }) {
       <div className={isAdmin ? styles.adminContent : styles.content}>
         <ErrorMessage message={error} />
 
-        {toastElement}
+        <ToastComponent toasts={toasts} onRemove={removeToast} />
 
         {loading && allModels.length === 0 ? (
           <div className={styles.loadingState}>

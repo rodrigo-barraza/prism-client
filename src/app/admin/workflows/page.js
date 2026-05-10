@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import IrisService from "../../../services/IrisService";
 import WorkflowComponent from "../../../components/WorkflowComponent";
 import WorkflowHeaderStatsComponent from "../../../components/WorkflowHeaderStatsComponent";
-import { SelectComponent, LoadingIndicatorComponent, useToast } from "@rodrigo-barraza/components-library";
+import { SelectComponent, LoadingIndicatorComponent, ToastComponent, useToast } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContext";
 import useProjectFilter from "../../../hooks/useProjectFilter";
@@ -35,7 +35,7 @@ function AdminWorkflowsPageInner() {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const [toastElement, showToast] = useToast();
+  const { toasts, addToast, removeToast } = useToast();
 
   const loadWorkflows = useCallback(async () => {
     try {
@@ -143,9 +143,9 @@ function AdminWorkflowsPageInner() {
       a.download = `workflow-${id}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast("Workflow downloaded");
+      addToast("Workflow downloaded");
     } catch (err) {
-      showToast(`Download failed: ${err.message}`, "error");
+      addToast(`Download failed: ${err.message}`, "error");
     }
   }, []);
 
@@ -156,9 +156,9 @@ function AdminWorkflowsPageInner() {
       if (!wf) return;
       const data = JSON.stringify(wf, null, 2);
       await copyToClipboard(data);
-      showToast("Workflow copied to clipboard");
+      addToast("Workflow copied to clipboard");
     } catch (err) {
-      showToast(`Copy failed: ${err.message}`, "error");
+      addToast(`Copy failed: ${err.message}`, "error");
     }
   }, []);
 
@@ -236,7 +236,7 @@ function AdminWorkflowsPageInner() {
         )}
       </div>
 
-      {toastElement}
+      <ToastComponent toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

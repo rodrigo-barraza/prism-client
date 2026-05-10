@@ -30,7 +30,7 @@ import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComp
 import HistoryList from "../../components/HistoryList";
 import ThreePanelLayout from "../../components/ThreePanelLayout";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
-import { ButtonComponent, useToast } from "@rodrigo-barraza/components-library";
+import { ButtonComponent, ToastComponent, useToast } from "@rodrigo-barraza/components-library";
 import { copyToClipboard } from "../../utils/utilities";
 import styles from "./page.module.css";
 
@@ -132,7 +132,7 @@ export default function WorkflowsPage({ initialWorkflowId }) {
   const [_config, setConfig] = useState(null);
   const [allModels, setAllModels] = useState([]);
   const [savedWorkflows, setSavedWorkflows] = useState([]);
-  const [toastElement, showToast] = useToast();
+  const { toasts, addToast, removeToast } = useToast();
   const [wfFavoriteKeys, setWfFavoriteKeys] = useState([]);
   const [modelFavoriteKeys, setModelFavoriteKeys] = useState([]);
 
@@ -252,7 +252,7 @@ export default function WorkflowsPage({ initialWorkflowId }) {
         setWorkflowName(
           data.title ? `${data.title} (workflow)` : "Imported Conversation",
         );
-        showToast(
+        addToast(
           `Imported conversation with ${data.messages.length} messages`,
         );
       }
@@ -632,7 +632,7 @@ export default function WorkflowsPage({ initialWorkflowId }) {
         );
       }
     } catch (err) {
-      showToast(`Execution failed: ${err.message}`, "error");
+      addToast(`Execution failed: ${err.message}`, "error");
     } finally {
       setIsRunning(false);
     }
@@ -839,9 +839,9 @@ export default function WorkflowsPage({ initialWorkflowId }) {
       setSavedSnapshotVersion((v) => v + 1);
       const wfs = await WorkflowService.getWorkflows();
       setSavedWorkflows(wfs.map((w) => ({ ...w, id: w._id || w.id })));
-      showToast("Workflow saved");
+      addToast("Workflow saved");
     } catch (err) {
-      showToast(`Failed to save: ${err.message}`, "error");
+      addToast(`Failed to save: ${err.message}`, "error");
     }
   }, [workflowId, workflowName, nodes, edges, nodeResults, nodeStatuses]);
 
@@ -875,9 +875,9 @@ export default function WorkflowsPage({ initialWorkflowId }) {
       });
       setSavedSnapshotVersion((v) => v + 1);
       updateUrl(`/workflows/${loadedId}`);
-      showToast("Workflow loaded");
+      addToast("Workflow loaded");
     } catch (err) {
-      showToast(`Failed to load: ${err.message}`, "error");
+      addToast(`Failed to load: ${err.message}`, "error");
     }
   }, []);
 
@@ -897,9 +897,9 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           setNodeStatuses({});
           updateUrl("/workflows");
         }
-        showToast("Workflow deleted");
+        addToast("Workflow deleted");
       } catch (err) {
-        showToast(`Failed to delete: ${err.message}`, "error");
+        addToast(`Failed to delete: ${err.message}`, "error");
       }
     },
     [workflowId],
@@ -1030,9 +1030,9 @@ export default function WorkflowsPage({ initialWorkflowId }) {
       a.download = `workflow-${id}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast("Workflow downloaded");
+      addToast("Workflow downloaded");
     } catch (err) {
-      showToast(`Download failed: ${err.message}`, "error");
+      addToast(`Download failed: ${err.message}`, "error");
     }
   }, []);
 
@@ -1041,9 +1041,9 @@ export default function WorkflowsPage({ initialWorkflowId }) {
       const wf = await WorkflowService.getWorkflow(id);
       if (!wf) return;
       await copyToClipboard(JSON.stringify(wf, null, 2));
-      showToast("Workflow copied to clipboard");
+      addToast("Workflow copied to clipboard");
     } catch (err) {
-      showToast(`Copy failed: ${err.message}`, "error");
+      addToast(`Copy failed: ${err.message}`, "error");
     }
   }, []);
 
@@ -1353,7 +1353,7 @@ export default function WorkflowsPage({ initialWorkflowId }) {
         </div>
       </div>
 
-      {toastElement}
+      <ToastComponent toasts={toasts} onRemove={removeToast} />
     </ThreePanelLayout>
   );
 }
