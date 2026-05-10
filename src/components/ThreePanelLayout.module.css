@@ -237,8 +237,6 @@
   pointer-events: auto;
 }
 
-/* mobileSlit removed — sidebars slide in without a scrim */
-
 @media (max-width: 767px) {
   .leftSidebar,
   .rightSidebar {

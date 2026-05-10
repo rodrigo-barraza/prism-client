@@ -9,8 +9,6 @@
 import { DateTime } from "luxon";
 
 // -- Re-exports from @rodrigo-barraza/utilities-library ----------------
-// These were previously defined inline. Consumers don't need
-// to change their import paths.
 
 export {
   generateUUID,
