@@ -13,7 +13,7 @@
     "format:check": "prettier --check .",
     "deploy": "bash deploy.sh",
     "deploy:dry": "bash deploy.sh --dry-run",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },
   "dependencies": {
