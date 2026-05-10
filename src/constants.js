@@ -82,3 +82,12 @@ export const PROVIDER_COLORS = [
   "#6366f1", "#a855f7", "#ec4899", "#f59e0b",
   "#10b981", "#3b82f6", "#ef4444", "#06b6d4",
 ];
+
+// -- Polling intervals (re-exported from utilities-library) -------
+export {
+  POLL_FAST,        // 3s  — benchmarks, workers
+  POLL_STANDARD,    // 5s  — conversations, requests, traces
+  POLL_MODERATE,    // 15s — model lists, analytics
+  POLL_SLOW,        // 30s — health checks
+  POLL_LAZY,        // 60s — dashboard refresh
+} from "@rodrigo-barraza/utilities-library";

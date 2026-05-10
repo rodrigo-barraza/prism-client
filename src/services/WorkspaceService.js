@@ -21,6 +21,21 @@ export default class WorkspaceService {
   }
 
   /**
+   * Full workspace config including connected workspace-service agent metadata.
+   * Used by the Settings page for the richer workspace management UI.
+   * @returns {Promise<{ workspaces: object[], agents: object[], staticRoots: string[] }>}
+   */
+  static async listFull() {
+    const res = await fetch(`${API_BASE}/workspaces/full`, {
+      method: "GET",
+      headers: getBaseHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`WorkspaceService.listFull failed: ${res.status}`);
+    return res.json();
+  }
+
+  /**
    * Update user-configured workspace roots.
    * @param {string[]} roots - Array of absolute paths to set as user roots
    * @returns {Promise<object>} Updated workspace config with workspaceRoots, staticRoots, userRoots

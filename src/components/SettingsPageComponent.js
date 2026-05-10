@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Brain, Network, Bot, RotateCcw, Loader2, Check, FolderOpen, Lock, X, Plus, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { Brain, Network, Bot, RotateCcw, Loader2, Check, FolderOpen, Lock, X, Plus, ArrowRight, CheckCircle2, XCircle, Server, Wifi, WifiOff, FolderTree, Settings2 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import WorkspaceService from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContext";
@@ -15,6 +15,8 @@ import styles from "./SettingsPageComponent.module.css";
  * SettingsPageComponent — server-side settings management.
  *
  * Exposes:
+ *   - "Workspaces" section with agent connection status + workspace management
+ *   - "Custom Agents" section for user-defined personas
  *   - "Memory Models" section for extraction, consolidation, and embedding
  *   - "Agent Defaults" section for subagent/worker model configuration
  */
@@ -31,17 +33,32 @@ export default function SettingsPageComponent() {
   // -- Workspace state ------------------------------------------------
   const { refreshWorkspaces } = useWorkspace();
   const [wsWorkspaces, setWsWorkspaces] = useState([]);
+  const [wsAgents, setWsAgents] = useState([]);
   const [wsAddPath, setWsAddPath] = useState("");
   const [wsValidation, setWsValidation] = useState(null);
   const [wsAdding, setWsAdding] = useState(false);
   const wsValidateTimer = useRef(null);
 
   /** Detect Windows-style path for instant client-side preview */
-  const isWindowsPath = (p) => /^[A-Za-z]:[\\\/]/.test(p);
+  const isWindowsPath = (p) => /^[A-Za-z]:[/\\]/.test(p);
   const windowsToWslPreview = (p) => {
-    const m = p.match(/^([A-Za-z]):[\\\/](.*)/);
+    const m = p.match(/^([A-Za-z]):[/\\](.*)/);
     if (!m) return null;
     return `/mnt/${m[1].toLowerCase()}/${m[2].replace(/\\/g, "/")}`;
+  };
+
+  /** Format uptime duration from ISO date */
+  const formatUptime = (isoDate) => {
+    if (!isoDate) return "";
+    const ms = Date.now() - new Date(isoDate).getTime();
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ${minutes % 60}m`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ${hours % 24}h`;
   };
 
   // -- Load config + settings on mount --------------------------------
@@ -69,9 +86,12 @@ export default function SettingsPageComponent() {
       .then(setAvailableTools)
       .catch(console.error);
 
-    // Fetch workspaces for the workspace management section
-    WorkspaceService.list()
-      .then(setWsWorkspaces)
+    // Fetch full workspace config (workspaces + agents)
+    WorkspaceService.listFull()
+      .then(({ workspaces, agents }) => {
+        setWsWorkspaces(workspaces || []);
+        setWsAgents(agents || []);
+      })
       .catch(console.error);
   }, []);
 
@@ -190,8 +210,10 @@ export default function SettingsPageComponent() {
       // Resolve the new path — if Windows, the backend will translate
       const newPath = wsAddPath.trim();
       await WorkspaceService.update([...currentUserRoots, newPath]);
-      const updated = await WorkspaceService.list();
-      setWsWorkspaces(updated);
+      // Refresh full config
+      const { workspaces, agents } = await WorkspaceService.listFull();
+      setWsWorkspaces(workspaces || []);
+      setWsAgents(agents || []);
       setWsAddPath("");
       setWsValidation(null);
       await refreshWorkspaces();
@@ -209,8 +231,9 @@ export default function SettingsPageComponent() {
         .filter((w) => !w.isPinned && w.path !== pathToRemove)
         .map((w) => w.path);
       await WorkspaceService.update(remainingUserRoots);
-      const updated = await WorkspaceService.list();
-      setWsWorkspaces(updated);
+      const { workspaces, agents } = await WorkspaceService.listFull();
+      setWsWorkspaces(workspaces || []);
+      setWsAgents(agents || []);
       await refreshWorkspaces();
     } catch (err) {
       console.error("Failed to remove workspace:", err);
@@ -234,6 +257,10 @@ export default function SettingsPageComponent() {
     }
   }, []);
 
+  // -- Derived workspace data -----------------------------------------
+  const localStaticRoots = wsWorkspaces.filter((w) => w.isPinned && !w.isAgentServed);
+  const userRoots = wsWorkspaces.filter((w) => !w.isPinned && !w.isAgentServed);
+
   // -- Loading state --------------------------------------------------
   if (!config || !settings) {
     return (
@@ -252,6 +279,8 @@ export default function SettingsPageComponent() {
 
   const mem = settings.memory || {};
   const agentDefaults = settings.agents || {};
+  const hasAgents = wsAgents.length > 0;
+  const hasAnyWorkspaces = wsWorkspaces.length > 0;
 
   return (
     <div className={styles.container}>
@@ -274,38 +303,149 @@ export default function SettingsPageComponent() {
         />
 
         <CardComponent.Body>
-          {wsWorkspaces.length === 0 && (
-            <div className={styles.emptyWorkspaces}>No workspaces configured</div>
+          {/* Agent status banner */}
+          <div className={styles.agentStatusBanner}>
+            <div className={`${styles.agentStatusDot} ${hasAgents ? styles.connected : styles.disconnected}`} />
+            <span className={styles.agentStatusText}>
+              {hasAgents ? (
+                <><strong>{wsAgents.length}</strong> workspace agent{wsAgents.length !== 1 ? "s" : ""} connected</>
+              ) : (
+                "No workspace agents connected"
+              )}
+            </span>
+            <span className={styles.agentStatusMeta}>
+              {wsWorkspaces.length} root{wsWorkspaces.length !== 1 ? "s" : ""} total
+            </span>
+          </div>
+
+          {/* Connected Agents */}
+          {hasAgents && (
+            <>
+              <div className={styles.sectionLabel}>
+                <Server size={10} />
+                Remote Agents
+              </div>
+              {wsAgents.map((agent) => (
+                <div key={agent.id} className={styles.agentCard}>
+                  <div className={styles.agentCardHeader}>
+                    <div className={styles.agentIcon}>
+                      <Wifi size={16} />
+                    </div>
+                    <div className={styles.agentInfo}>
+                      <div className={styles.agentNameRow}>
+                        <span className={styles.agentName}>{agent.name}</span>
+                        {agent.version && (
+                          <span className={styles.agentVersion}>v{agent.version}</span>
+                        )}
+                      </div>
+                      <div className={styles.agentMeta}>
+                        <span className={styles.agentMetaItem}>{agent.clientIp}</span>
+                        <span className={styles.agentMetaSeparator} />
+                        <span className={styles.agentMetaItem}>
+                          up {formatUptime(agent.connectedAt)}
+                        </span>
+                        {agent.pendingRpcs > 0 && (
+                          <>
+                            <span className={styles.agentMetaSeparator} />
+                            <span className={styles.agentMetaItem}>
+                              {agent.pendingRpcs} pending
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.agentCapabilities}>
+                      {(agent.capabilities || []).map((cap) => (
+                        <span key={cap} className={styles.capabilityTag}>{cap}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Roots served by this agent */}
+                  {agent.roots?.length > 0 && (
+                    <div className={styles.agentRoots}>
+                      {agent.roots.map((root) => (
+                        <div key={root} className={styles.agentRootItem}>
+                          <FolderTree size={11} className={styles.agentRootIcon} />
+                          {root}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
           )}
 
-          {wsWorkspaces.map((ws) => (
-            <div key={ws.id} className={styles.workspaceItem}>
-              <div className={styles.workspaceItemInfo}>
-                <FolderOpen size={16} className={styles.workspaceItemIcon} />
-                <div className={styles.workspaceItemDetails}>
-                  <span className={styles.workspaceItemName}>
-                    {ws.name}
-                    {ws.isPinned && (
-                      <span className={styles.pinnedBadge}>
-                        <Lock size={8} />
-                        Pinned
-                      </span>
-                    )}
-                  </span>
-                  <span className={styles.workspaceItemPath}>{ws.path}</span>
-                </div>
+          {/* Local static roots (from env config, not agent-served) */}
+          {localStaticRoots.length > 0 && (
+            <>
+              <div className={styles.workspaceDivider} />
+              <div className={styles.sectionLabel}>
+                <Settings2 size={10} />
+                Static Roots
               </div>
-              {!ws.isPinned && (
-                <button
-                  className={styles.removeButton}
-                  onClick={() => handleRemoveWorkspace(ws.path)}
-                  title="Remove workspace"
-                >
-                  <X size={14} />
-                </button>
-              )}
+              {localStaticRoots.map((ws) => (
+                <div key={ws.id} className={styles.workspaceItem}>
+                  <div className={styles.workspaceItemInfo}>
+                    <FolderOpen size={16} className={styles.workspaceItemIcon} />
+                    <div className={styles.workspaceItemDetails}>
+                      <span className={styles.workspaceItemName}>
+                        {ws.name}
+                        <span className={styles.staticBadge}>
+                          <Lock size={8} />
+                          Static
+                        </span>
+                      </span>
+                      <span className={styles.workspaceItemPath}>{ws.path}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* User-configured workspace roots */}
+          {userRoots.length > 0 && (
+            <>
+              <div className={styles.workspaceDivider} />
+              <div className={styles.sectionLabel}>
+                <FolderOpen size={10} />
+                User Workspaces
+              </div>
+              {userRoots.map((ws) => (
+                <div key={ws.id} className={styles.workspaceItem}>
+                  <div className={styles.workspaceItemInfo}>
+                    <FolderOpen size={16} className={styles.workspaceItemIcon} />
+                    <div className={styles.workspaceItemDetails}>
+                      <span className={styles.workspaceItemName}>{ws.name}</span>
+                      <span className={styles.workspaceItemPath}>{ws.path}</span>
+                    </div>
+                  </div>
+                  <button
+                    className={styles.removeButton}
+                    onClick={() => handleRemoveWorkspace(ws.path)}
+                    title="Remove workspace"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Onboarding when nothing is configured */}
+          {!hasAnyWorkspaces && !hasAgents && (
+            <div className={styles.onboardingCard}>
+              <WifiOff size={24} style={{ color: "var(--text-muted)", margin: "0 auto" }} />
+              <span className={styles.onboardingTitle}>No workspaces configured</span>
+              <span className={styles.onboardingDescription}>
+                Deploy the <span className={styles.onboardingCode}>workspace-service</span> on a
+                device to give the agent remote file, git, and shell access. Or add a local
+                workspace path below.
+              </span>
             </div>
-          ))}
+          )}
 
           {/* Add workspace input */}
           <div className={styles.addWorkspaceRow}>
