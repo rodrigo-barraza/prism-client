@@ -7,7 +7,7 @@ import {
   PanelRightClose,
   PanelRight,
 } from "lucide-react";
-import styles from "./ThreePanelLayout.module.css";
+import styles from "./ThreePanelLayoutComponent.module.css";
 import { LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
 
 /**

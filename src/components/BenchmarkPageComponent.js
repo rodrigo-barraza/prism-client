@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Target } from "lucide-react";
 import PrismService from "../services/PrismService";
-import ThreePanelLayout from "./ThreePanelLayout";
+import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import BenchmarkPreviewSidebarComponent from "./BenchmarkPreviewSidebarComponent";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import BenchmarkFormComponent from "./BenchmarkFormComponent";

@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 
 import { BadgeComponent, ButtonComponent, FormGroupComponent, IconButtonComponent, TextAreaComponent } from "@rodrigo-barraza/components-library";
 
-import BenchmarkModeSelector from "./BenchmarkModeSelector";
+import BenchmarkModeSelector from "./BenchmarkModeSelectorComponent";
 import AgentAssertionsComponent from "./AgentAssertionsComponent";
 import { benchmarkPresets } from "../utils/benchmarkPresets";
 import styles from "./BenchmarkFormComponent.module.css";

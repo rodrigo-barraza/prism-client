@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronDown, X } from "lucide-react";
-import styles from "./ComboboxFilter.module.css";
+import styles from "./ComboboxFilterComponent.module.css";
 
 /**
  * Combobox filter: an input that shows a filtered dropdown as you type.

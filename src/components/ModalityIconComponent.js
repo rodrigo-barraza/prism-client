@@ -9,7 +9,7 @@ import {
   Hash,
 } from "lucide-react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import { MODALITY_COLORS } from "./WorkflowNodeConstants";
+import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import styles from "./ModalityIconComponent.module.css";
 
 /**

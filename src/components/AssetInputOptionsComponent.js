@@ -2,9 +2,9 @@
 
 import { useRef, useState, useCallback } from "react";
 import { Paperclip, ImageIcon, Mic2, Video } from "lucide-react";
-import DrawingCanvas from "./DrawingCanvas";
+import DrawingCanvas from "./DrawingCanvasComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
-import styles from "./AssetInputOptions.module.css";
+import styles from "./AssetInputOptionsComponent.module.css";
 
 /**
  * Shared asset input options for empty file input nodes.

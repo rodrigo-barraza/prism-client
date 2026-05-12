@@ -13,8 +13,8 @@ import {
   Workflow,
   Parentheses,
 } from "lucide-react";
-import HistoryList from "./HistoryList";
-import styles from "./WorkflowSidebar.module.css";
+import HistoryList from "./HistoryListComponent";
+import styles from "./WorkflowSidebarComponent.module.css";
 
 export default function WorkflowSidebar({
   admin = false,

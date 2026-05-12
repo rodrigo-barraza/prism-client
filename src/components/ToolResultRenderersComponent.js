@@ -22,16 +22,16 @@ import {
   StopCircle,
   Zap,
 } from "lucide-react";
-import MarkdownContent from "./MarkdownContent";
+import MarkdownContent from "./MarkdownContentComponent";
 // Lazy-load MessageList to break circular dependency:
 // MessageList → ToolResultRenderers → MessageList
-const LazyMessageList = lazy(() => import("./MessageList"));
-import { prepareDisplayMessages } from "./MessageList";
+const LazyMessageList = lazy(() => import("./MessageListComponent"));
+import { prepareDisplayMessages } from "./MessageListComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent.js";
 import PrismService from "../services/PrismService";
 import { formatLatency, renderToolName } from "../utils/utilities";
-import styles from "./ToolResultRenderers.module.css";
+import styles from "./ToolResultRenderersComponent.module.css";
 
 // --- Helpers ----------------------------------------------------------
 

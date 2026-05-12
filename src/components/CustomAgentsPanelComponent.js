@@ -74,7 +74,7 @@ import PrismService from "../services/PrismService.js";
 import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
-import styles from "./CustomAgentsPanel.module.css";
+import styles from "./CustomAgentsPanelComponent.module.css";
 
 
 

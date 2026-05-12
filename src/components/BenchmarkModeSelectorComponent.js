@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Cpu, Bot, Layers } from "lucide-react";
-import styles from "./BenchmarkModeSelector.module.css";
+import styles from "./BenchmarkModeSelectorComponent.module.css";
 
 /**
  * Benchmark Mode — the three ways to run a benchmark.

@@ -1,55 +1,22 @@
+/* ════════════════════════════════════════════════════════════
+   Prism — Globals
+   Imports the shared design system from components-library,
+   then declares Prism-specific accent tokens and overrides.
+   ════════════════════════════════════════════════════════════ */
+
+@import "@rodrigo-barraza/components-library/src/styles/base.css";
+
+/* ── Prism Accent Tokens ──────────────────────────────────── */
 
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #13141c;
-  --bg-tertiary: #1a1b26;
-  --bg-surface: rgba(19, 20, 28, 0.65);
-  --bg-card: rgba(19, 20, 28, 0.95);
-  --border-color: rgba(255, 255, 255, 0.06);
-  --border-subtle: rgba(255, 255, 255, 0.03);
-  --text-primary: #f8f8f8;
-  --text-secondary: #8e95ae;
-  --text-tertiary: #6b728e;
-  --text-muted: #5a6078;
+  /* Indigo accent */
   --accent-color: #6366f1;
   --accent-hover: #4f46e5;
   --accent-glow: rgba(99, 102, 241, 0.4);
   --accent-subtle: rgba(99, 102, 241, 0.1);
-  --danger: #ef4444;
-  --danger-subtle: rgba(239, 68, 68, 0.1);
-  --success: #10b981;
-  --success-subtle: rgba(16, 185, 129, 0.1);
-  --warning: #f59e0b;
-  --warning-subtle: rgba(245, 158, 11, 0.1);
-  --info: #3b82f6;
-  --info-subtle: rgba(59, 130, 246, 0.1);
-  --color-success: var(--success);
-  --color-error: var(--danger);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
-  --border-radius-sm: 2px;
-  --border-radius-md: 2px;
-  --border-radius-lg: 2px;
-  --border-radius-xl: 2px;
-  --input-height: 40px;
-  --button-height: 44px;
-  --sidebar-width: 320px;
-  --sidebar-collapsed: 72px;
-  --header-height: 64px;
-  --font-sans:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
-  --select-bg: rgba(0, 0, 0, 0.4);
-  --select-option-bg: #1a1b26;
-  --select-option-text: #f8f8f8;
-  --font-mono:
-    "JetBrains Mono", "SF Mono", "Fira Code", "Fira Mono", Menlo, monospace;
+
+  /* Prism rainbow conic gradient */
   --prism-conic: conic-gradient(
     #ff0000,
     #ff8800,
@@ -60,459 +27,8 @@
     #ff0088,
     #ff0000
   );
-}
 
-/* ── Dark Mode ──────────────────────────────────────────────── */
-/* Must be explicit so data-theme="dark" overrides light/tropical */
-
-[data-theme="dark"] {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #13141c;
-  --bg-tertiary: #1a1b26;
-  --bg-surface: rgba(19, 20, 28, 0.65);
-  --bg-card: rgba(19, 20, 28, 0.95);
-  --border-color: rgba(255, 255, 255, 0.06);
-  --border-subtle: rgba(255, 255, 255, 0.03);
-  --text-primary: #f8f8f8;
-  --text-secondary: #8e95ae;
-  --text-tertiary: #6b728e;
-  --text-muted: #5a6078;
-  --accent-color: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-glow: rgba(99, 102, 241, 0.4);
-  --accent-subtle: rgba(99, 102, 241, 0.1);
-  --danger: #ef4444;
-  --danger-subtle: rgba(239, 68, 68, 0.1);
-  --success: #10b981;
-  --success-subtle: rgba(16, 185, 129, 0.1);
-  --warning: #f59e0b;
-  --warning-subtle: rgba(245, 158, 11, 0.1);
-  --info: #3b82f6;
-  --info-subtle: rgba(59, 130, 246, 0.1);
-  --color-success: var(--success);
-  --color-error: var(--danger);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
-  --select-bg: rgba(0, 0, 0, 0.4);
-  --select-option-bg: #1a1b26;
-  --select-option-text: #f8f8f8;
-}
-
-/* ── Light Mode ─────────────────────────────────────────────── */
-
-[data-theme="light"] {
-  --bg-primary: #f5f5f7;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #edeef2;
-  --bg-surface: rgba(255, 255, 255, 0.75);
-  --bg-card: rgba(255, 255, 255, 0.95);
-  --border-color: rgba(0, 0, 0, 0.1);
-  --border-subtle: rgba(0, 0, 0, 0.04);
-  --text-primary: #1a1a2e;
-  --text-secondary: #64748b;
-  --text-tertiary: #78849c;
-  --text-muted: #94a3b8;
-  --accent-color: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-glow: rgba(79, 70, 229, 0.2);
-  --accent-subtle: rgba(79, 70, 229, 0.06);
-  --danger: #dc2626;
-  --danger-subtle: rgba(220, 38, 38, 0.06);
-  --success: #059669;
-  --success-subtle: rgba(5, 150, 105, 0.06);
-  --warning: #d97706;
-  --warning-subtle: rgba(217, 119, 6, 0.06);
-  --info: #2563eb;
-  --info-subtle: rgba(37, 99, 235, 0.06);
-  --color-success: var(--success);
-  --color-error: var(--danger);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.08);
-  --select-bg: #ffffff;
-  --select-option-bg: #ffffff;
-  --select-option-text: #1a1a2e;
-}
-
-/* ── Tropical Mode ──────────────────────────────────────────── */
-/* Warm sunset palette — sand surfaces, coral accent, teal borders,
-   golden amber warnings. Should feel like a beachside terminal. */
-
-[data-theme="tropical"] {
-  --bg-primary: #1a120e;
-  --bg-secondary: #241a14;
-  --bg-tertiary: #2e221a;
-  --bg-surface: rgba(36, 26, 20, 0.72);
-  --bg-card: rgba(36, 26, 20, 0.94);
-  --border-color: rgba(0, 206, 170, 0.12);
-  --border-subtle: rgba(0, 206, 170, 0.06);
-  --text-primary: #faebd7;
-  --text-secondary: #c4a882;
-  --text-tertiary: #8a7560;
-  --text-muted: #6b5a48;
-  --accent-color: #ff6b6b;
-  --accent-hover: #ff4757;
-  --accent-glow: rgba(255, 107, 107, 0.4);
-  --accent-subtle: rgba(255, 107, 107, 0.12);
-  --danger: #ff5252;
-  --danger-subtle: rgba(255, 82, 82, 0.14);
-  --success: #00d4aa;
-  --success-subtle: rgba(0, 212, 170, 0.14);
-  --warning: #ffb347;
-  --warning-subtle: rgba(255, 179, 71, 0.14);
-  --info: #4fc3f7;
-  --info-subtle: rgba(79, 195, 247, 0.14);
-  --color-success: var(--success);
-  --color-error: var(--danger);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
-  --shadow-glow: 0 0 24px rgba(255, 107, 107, 0.18);
-  --select-bg: rgba(36, 26, 20, 0.65);
-  --select-option-bg: #241a14;
-  --select-option-text: #faebd7;
-}
-
-/* ── Oceanic Mode ──────────────────────────────────────────── */
-/* Deep sea palette — dark navy surfaces, cerulean accent, seafoam
-   borders, bioluminescent glow. Should feel like a deep-ocean terminal. */
-
-[data-theme="oceanic"] {
-  --bg-primary: #060d18;
-  --bg-secondary: #0b1628;
-  --bg-tertiary: #111f38;
-  --bg-surface: rgba(11, 22, 40, 0.72);
-  --bg-card: rgba(11, 22, 40, 0.94);
-  --border-color: rgba(0, 180, 216, 0.12);
-  --border-subtle: rgba(0, 180, 216, 0.06);
-  --text-primary: #d0e8f2;
-  --text-secondary: #7ba7c2;
-  --text-tertiary: #4a7a96;
-  --text-muted: #365a72;
-  --accent-color: #00b4d8;
-  --accent-hover: #0096c7;
-  --accent-glow: rgba(0, 180, 216, 0.4);
-  --accent-subtle: rgba(0, 180, 216, 0.12);
-  --danger: #ff6b6b;
-  --danger-subtle: rgba(255, 107, 107, 0.14);
-  --success: #48e0a0;
-  --success-subtle: rgba(72, 224, 160, 0.14);
-  --warning: #ffc857;
-  --warning-subtle: rgba(255, 200, 87, 0.14);
-  --info: #90e0ef;
-  --info-subtle: rgba(144, 224, 239, 0.14);
-  --color-success: var(--success);
-  --color-error: var(--danger);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 24px rgba(0, 180, 216, 0.18);
-  --select-bg: rgba(11, 22, 40, 0.65);
-  --select-option-bg: #0b1628;
-  --select-option-text: #d0e8f2;
-}
-
-/* ── Punk Mode ─────────────────────────────────────────────── */
-/* Riotous palette — gunmetal surfaces, hot fuchsia accent,
-   amber gold highlights, spiked shadows. Should feel like a
-   spray-painted club terminal with neon glow and leather grain. */
-
-[data-theme="punk"] {
-  --bg-primary: #0e0a10;
-  --bg-secondary: #171119;
-  --bg-tertiary: #211828;
-  --bg-surface: rgba(23, 17, 25, 0.72);
-  --bg-card: rgba(23, 17, 25, 0.94);
-  --border-color: rgba(255, 45, 155, 0.14);
-  --border-subtle: rgba(255, 45, 155, 0.06);
-  --text-primary: #f0e6f4;
-  --text-secondary: #b893c4;
-  --text-tertiary: #7d5f8e;
-  --text-muted: #5e4570;
-  --accent-color: #ff2d9b;
-  --accent-hover: #e6187f;
-  --accent-glow: rgba(255, 45, 155, 0.45);
-  --accent-subtle: rgba(255, 45, 155, 0.12);
-  --danger: #ff3d5a;
-  --danger-subtle: rgba(255, 61, 90, 0.14);
-  --success: #39ff76;
-  --success-subtle: rgba(57, 255, 118, 0.14);
-  --warning: #f0b429;
-  --warning-subtle: rgba(240, 180, 41, 0.14);
-  --info: #a78bfa;
-  --info-subtle: rgba(167, 139, 250, 0.14);
-  --color-success: var(--success);
-  --color-error: var(--danger);
-  --color-warning: var(--warning);
-  --color-info: var(--info);
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
-  --shadow-glow: 0 0 24px rgba(255, 45, 155, 0.22);
-  --select-bg: rgba(23, 17, 25, 0.65);
-  --select-option-bg: #171119;
-  --select-option-text: #f0e6f4;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  height: 100dvh;
-  width: 100vw;
-  overflow: hidden;
-  display: flex;
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.15);
-  border-radius: 2px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.3);
-}
-
-/* Global input/button resets */
-button {
-  background: none;
-  border: none;
-  color: inherit;
-  font-family: inherit;
-  cursor: pointer;
-}
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-input,
-select,
-textarea {
-  font-family: inherit;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  border-radius: var(--border-radius-sm);
-  height: var(--input-height);
-  padding: 0 12px;
-  font-size: 14px;
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-textarea {
-  height: auto;
-  padding: 10px 12px;
-}
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--accent-glow);
-}
-
-select option {
-  background: var(--select-option-bg);
-  color: var(--select-option-text);
-}
-
-/* Utils */
-.frosted-panel {
-  background: var(--bg-surface);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
-}
-
-.page-wrapper {
-  display: flex;
-  width: 100%;
-  height: 100dvh;
-  overflow: hidden;
-}
-
-/* ── Shared Keyframes ──────────────────────────────────────
-   All reusable @keyframes live here so CSS Modules can
-   reference them by name without re-declaring.
-   ──────────────────────────────────────────────────────── */
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInPure {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInOut {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes rainbowHue {
-  to {
-    filter: hue-rotate(360deg);
-  }
-}
-
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes iconScrollUp {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  51% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes popoverInUp {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes popoverInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-
-/* ── Prism Rainbow Gradient ── */
-:root {
+  /* Prism rainbow linear gradient */
   --prism-colors: #ff0000, #ff8800, #ffff00, #00ff88, #0088ff, #8800ff, #ff0088;
   --prism-gradient: linear-gradient(
     var(--prism-angle, 0deg),
@@ -520,6 +36,68 @@ select option {
   );
   --prism-speed: 2s;
 }
+
+/* ── Dark Mode ─────────────────────────────────────────────── */
+/* Accent overrides — surface/text/semantic tokens come from base.css */
+
+[data-theme="dark"] {
+  --accent-color: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-glow: rgba(99, 102, 241, 0.4);
+  --accent-subtle: rgba(99, 102, 241, 0.1);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+/* ── Light Mode ────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  --accent-color: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-glow: rgba(79, 70, 229, 0.2);
+  --accent-subtle: rgba(79, 70, 229, 0.06);
+  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.08);
+}
+
+/* ── Tropical Mode ─────────────────────────────────────────── */
+
+[data-theme="tropical"] {
+  --accent-color: #ff6b6b;
+  --accent-hover: #ff4757;
+  --accent-glow: rgba(255, 107, 107, 0.4);
+  --accent-subtle: rgba(255, 107, 107, 0.12);
+  --shadow-glow: 0 0 24px rgba(255, 107, 107, 0.18);
+}
+
+/* ── Oceanic Mode ──────────────────────────────────────────── */
+
+[data-theme="oceanic"] {
+  --accent-color: #00b4d8;
+  --accent-hover: #0096c7;
+  --accent-glow: rgba(0, 180, 216, 0.4);
+  --accent-subtle: rgba(0, 180, 216, 0.12);
+  --shadow-glow: 0 0 24px rgba(0, 180, 216, 0.18);
+}
+
+/* ── Punk Mode ─────────────────────────────────────────────── */
+/* Accent overrides — base surface/text/semantic tokens come from base.css */
+
+[data-theme="punk"] {
+  --accent-color: #ff2d9b;
+  --accent-hover: #e6187f;
+  --accent-glow: rgba(255, 45, 155, 0.45);
+  --accent-subtle: rgba(255, 45, 155, 0.12);
+  --shadow-glow: 0 0 24px rgba(255, 45, 155, 0.22);
+}
+
+/* ── Body Overrides ────────────────────────────────────────── */
+
+body {
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+}
+
+/* ── Prism Rainbow Gradient ────────────────────────────────── */
 
 @keyframes prismRotate {
   from {

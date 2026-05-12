@@ -35,12 +35,13 @@ import ModalityIconComponent from "../components/ModalityIconComponent";
 
 import ToolIconComponent from "../components/ToolIconComponent";
 import { BadgeComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
-import ProviderLogo from "../components/ProviderLogos";
-import { resolveProviderLabel } from "../components/ProviderLogos";
+import ProviderLogo from "../components/ProviderLogosComponent";
+import { resolveProviderLabel } from "../components/ProviderLogosComponent";
 import {
   formatTokenCount,
   formatLatency,
   formatTokensPerSec,
+  formatDuration,
   getTotalInputTokens,
 } from "./utilities";
 import { PROVIDER_COLORS } from "../constants";
@@ -79,19 +80,7 @@ export function getDurationMs(row) {
   return Math.max(0, new Date(end) - new Date(start));
 }
 
-/** Format ms duration into human-readable string */
-export function formatDuration(ms) {
-  if (!ms || ms <= 0) return null;
-  if (ms < 1000) return "<1s";
-  const secs = Math.round(ms / 1000);
-  if (secs < 60) return `${secs}s`;
-  const mins = Math.floor(secs / 60);
-  const rem = secs % 60;
-  if (mins < 60) return rem > 0 ? `${mins}m ${rem}s` : `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  const remMins = mins % 60;
-  return remMins > 0 ? `${hrs}h ${remMins}m` : `${hrs}h`;
-}
+// formatDuration(ms) imported from @rodrigo-barraza/utilities-library via ./utilities
 
 // Re-export PROVIDER_COLORS so existing consumers don't need to change imports
 export { PROVIDER_COLORS };

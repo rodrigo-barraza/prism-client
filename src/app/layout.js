@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
 import { ThemeProvider, ComponentsProvider } from "@rodrigo-barraza/components-library";
-import { WorkspaceProvider } from "../components/WorkspaceContext";
+import { WorkspaceProvider } from "../components/WorkspaceContextComponent";
 import "./globals.css";
 
 // Force all pages to render dynamically — prevents SSG prerender

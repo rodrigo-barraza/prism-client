@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import PrismService from "../services/PrismService.js";
 import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
-import styles from "./SkillsPanel.module.css";
+import styles from "./SkillsPanelComponent.module.css";
 
 const CONTENT_WARN_CHARS = 2000;
 const CONTENT_MAX_CHARS = 10000;

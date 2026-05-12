@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, Bot, CheckCircle2, Coins, Cpu, Loader2, XCircle } from "lucide-react";
 import PrismService from "../services/PrismService";
-import ThreePanelLayout from "./ThreePanelLayout";
+import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import SummaryBarComponent from "./SummaryBarComponent";
 import ModelsTableComponent from "./ModelsTableComponent";
 

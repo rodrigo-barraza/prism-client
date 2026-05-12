@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { SelectComponent, TextAreaComponent, InputComponent, ModalComponent } from "@rodrigo-barraza/components-library";
-import styles from "./SystemPromptModal.module.css";
+import styles from "./SystemPromptModalComponent.module.css";
 import { LS_SYSTEM_INSTRUCTIONS } from "../constants";
 
 function loadInstructions() {

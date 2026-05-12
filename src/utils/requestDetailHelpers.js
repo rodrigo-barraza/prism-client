@@ -22,7 +22,7 @@ import ModalityIconComponent from "../components/ModalityIconComponent";
 
 import CostBadgeComponent from "../components/CostBadgeComponent";
 import ToolIconComponent from "../components/ToolIconComponent";
-import { prepareDisplayMessages } from "../components/MessageList";
+import { prepareDisplayMessages } from "../components/MessageListComponent";
 
 /* -- Media extraction -------------------------------------------- */
 

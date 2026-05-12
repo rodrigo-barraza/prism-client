@@ -31,7 +31,7 @@ import {
   Calendar,
   TrendingUp,
 } from "lucide-react";
-import ProviderLogo, { resolveProviderLabel } from "./ProviderLogos";
+import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import StorageService from "../services/StorageService.js";
 import {
   SK_MODEL_MEMORY_AGENT,
@@ -43,7 +43,7 @@ import {
   MODALITY_ICONS,
   MODALITY_COLORS,
   TOOL_COLORS,
-} from "./WorkflowNodeConstants";
+} from "./WorkflowNodeConstantsComponent";
 import {
   formatContextTokens,
   formatFileSize,

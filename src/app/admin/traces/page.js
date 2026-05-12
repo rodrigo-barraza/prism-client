@@ -15,7 +15,7 @@ import {
 import { PaginationComponent } from "@rodrigo-barraza/components-library";
 import TracesTableComponent from "../../../components/TracesTableComponent";
 import { SelectComponent } from "@rodrigo-barraza/components-library";
-import { useAdminHeader } from "../../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";

@@ -14,7 +14,7 @@ import {
   FilterClearButton,
 } from "../../../components/FilterBarComponent";
 import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
-import { useAdminHeader } from "../../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import {
   formatNumber,
   formatLatencyMs,

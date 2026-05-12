@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { X, Eye, EyeOff, PanelLeftClose, PanelLeft } from "lucide-react";
-import WorkflowNode from "./WorkflowNode";
+import WorkflowNode from "./WorkflowNodeComponent";
 import StarfieldComponent from "./StarfieldComponent";
 import {
   MODALITY_COLORS,
@@ -13,8 +13,8 @@ import {
   getNodeHeight,
   getPortPosition,
   edgePath,
-} from "./WorkflowNodeConstants";
-import styles from "./WorkflowCanvas.module.css";
+} from "./WorkflowNodeConstantsComponent";
+import styles from "./WorkflowCanvasComponent.module.css";
 import { LS_WORKFLOW_EXPANDED_NODES, LS_WORKFLOW_VIEWS } from "../constants";
 
 const COLLISION_PADDING = 20; // min gap between nodes

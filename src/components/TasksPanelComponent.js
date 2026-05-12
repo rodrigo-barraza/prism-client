@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import ToolsApiService from "../services/ToolsApiService.js";
 
-import styles from "./TasksPanel.module.css";
+import styles from "./TasksPanelComponent.module.css";
 
 
 const STATUS_CONFIG = {

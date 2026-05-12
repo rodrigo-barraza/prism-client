@@ -10,7 +10,7 @@ import { formatDuration } from "../utils/tableColumns.js";
 import CostBadgeComponent from "./CostBadgeComponent.js";
 import ModelBadgeComponent from "./ModelBadgeComponent.js";
 import ModalityIconComponent from "./ModalityIconComponent";
-import styles from "./WorkersPanel.module.css";
+import styles from "./WorkersPanelComponent.module.css";
 
 
 const STATUS_LABEL = {

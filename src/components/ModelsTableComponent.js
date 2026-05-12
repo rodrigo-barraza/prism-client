@@ -21,12 +21,12 @@ import {
   Bot,
   Wrench,
 } from "lucide-react";
-import ProviderLogo, { PROVIDER_LABELS, resolveProviderLabel } from "./ProviderLogos";
+import ProviderLogo, { PROVIDER_LABELS, resolveProviderLabel } from "./ProviderLogosComponent";
 import {
   MODALITY_ICONS,
   MODALITY_COLORS,
   TOOL_COLORS,
-} from "./WorkflowNodeConstants";
+} from "./WorkflowNodeConstantsComponent";
 import { TableComponent, TooltipComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
 import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";

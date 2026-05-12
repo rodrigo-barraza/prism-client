@@ -10,13 +10,13 @@ import {
   AudioLines,
   Layers,
 } from "lucide-react";
-import ProviderLogo, { resolveProviderLabel } from "./ProviderLogos";
+import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import { SelectComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components-library";
-import CycleButton from "./CycleButton";
+import CycleButton from "./CycleButtonComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
-import SystemPromptModal from "./SystemPromptModal";
+import SystemPromptModal from "./SystemPromptModalComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
-import styles from "./SettingsPanel.module.css";
+import styles from "./SettingsPanelComponent.module.css";
 import CostBadgeComponent from "./CostBadgeComponent";
 import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
 import RequestCountBadgeComponent from "./RequestCountBadgeComponent";
@@ -24,7 +24,7 @@ import MessageCountBadgeComponent from "./MessageCountBadgeComponent";
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
 import StatsTabBarComponent from "./StatsTabBarComponent";
 import { formatCost, CAPABILITY_TOOL_NAMES } from "../utils/utilities";
-import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstants";
+import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstantsComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
 import ThroughputBadgeComponent from "./ThroughputBadgeComponent";

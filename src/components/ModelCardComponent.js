@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { X, Brain, Wrench, Copy } from "lucide-react";
 import ToggleButtonComponent from "./ToggleButtonComponent";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
-import ProviderLogo from "./ProviderLogos";
+import ProviderLogo from "./ProviderLogosComponent";
 import styles from "./ModelCardComponent.module.css";
 
 /**

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import IrisService from "../../../services/IrisService";
 import PrismService from "../../../services/PrismService";
 import { SelectComponent, TableComponent } from "@rodrigo-barraza/components-library";
-import { resolveProviderLabel } from "../../../components/ProviderLogos";
+import { resolveProviderLabel } from "../../../components/ProviderLogosComponent";
 
 
 import {
@@ -21,7 +21,7 @@ import {
   buildDateRangeParams,
 } from "../../../utils/utilities";
 import { PROVIDER_COLORS } from "../../../constants";
-import { useAdminHeader } from "../../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import styles from "./page.module.css";
 

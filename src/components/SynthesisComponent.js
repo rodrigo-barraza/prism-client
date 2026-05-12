@@ -17,14 +17,14 @@ import {
 } from "lucide-react";
 import PrismService from "../services/PrismService.js";
 import NavigationSidebarComponent from "./NavigationSidebarComponent.js";
-import ThreePanelLayout from "./ThreePanelLayout.js";
-import SettingsPanel from "./SettingsPanel.js";
+import ThreePanelLayout from "./ThreePanelLayoutComponent.js";
+import SettingsPanel from "./SettingsPanelComponent.js";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent.js";
 import { BadgeComponent, ButtonComponent, CollapsibleBlockComponent, CopyButtonComponent, EmptyStateComponent, IconButtonComponent, SelectComponent, TabBarComponent, TextAreaComponent } from "@rodrigo-barraza/components-library";
 
 import PromptSectionComponent from "./PromptSectionComponent.js";
 
-import MessageList from "./MessageList.js";
+import MessageList from "./MessageListComponent.js";
 
 import JsonViewerComponent from "./JsonViewerComponent.js";
 import SynthesisHistoryPanel from "./SynthesisHistoryPanel.js";

@@ -19,7 +19,7 @@ import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
 import MediaCardComponent from "./MediaCardComponent";
 import SearchFilterComponent from "./SearchFilterComponent";
-import ProviderLogo, { resolveProviderLabel } from "./ProviderLogos";
+import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import { PageHeaderComponent, PaginationComponent, SearchInputComponent, TableComponent } from "@rodrigo-barraza/components-library";
@@ -30,7 +30,7 @@ import {
   FilterBarComponent,
   ViewModeToggleComponent,
 } from "./FilterBarComponent";
-import { MODALITY_COLORS } from "./WorkflowNodeConstants";
+import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import { buildDateRangeParams } from "../utils/utilities";
 import styles from "./MediaPageComponent.module.css";
 import { LS_DATE_RANGE } from "../constants";

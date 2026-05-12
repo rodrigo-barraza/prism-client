@@ -7,7 +7,7 @@ import WorkflowComponent from "../../../components/WorkflowComponent";
 import WorkflowHeaderStatsComponent from "../../../components/WorkflowHeaderStatsComponent";
 import { SelectComponent, LoadingIndicatorComponent, ToastComponent, useToast } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
-import { useAdminHeader } from "../../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import { copyToClipboard, buildDateRangeParams } from "../../../utils/utilities";
 import styles from "./page.module.css";

@@ -2,7 +2,7 @@
 
 import { Settings2 } from "lucide-react";
 import { SelectComponent, SliderComponent } from "@rodrigo-barraza/components-library";
-import styles from "./SettingsPanel.module.css";
+import styles from "./SettingsPanelComponent.module.css";
 
 export default function ParametersPanelComponent({
   settings,

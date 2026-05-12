@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Bot, ChevronDown, Wrench, Check, Plus, Skull, Sticker, Apple, Lightbulb, Hammer, MessageSquare } from "lucide-react";
-import { resolveIconComponent } from "./CustomAgentsPanel";
+import { resolveIconComponent } from "./CustomAgentsPanelComponent";
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import styles from "./AgentPickerComponent.module.css";

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import AdminShell from "../../components/AdminShell";
+import AdminShell from "../../components/AdminShellComponent";
 
 export const metadata = {
   title: "Iris — Prism Admin Dashboard",

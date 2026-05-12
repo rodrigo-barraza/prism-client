@@ -15,19 +15,19 @@ import {
   BookOpen,
   Parentheses,
 } from "lucide-react";
-import ProviderLogo from "./ProviderLogos";
-import { MODALITY_ICONS } from "./WorkflowNodeConstants";
+import ProviderLogo from "./ProviderLogosComponent";
+import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
 import { renderToolName } from "../utils/utilities";
-import MarkdownContent from "./MarkdownContent";
+import MarkdownContent from "./MarkdownContentComponent";
 import TextContentComponent from "./TextContentComponent";
-import MessageList from "./MessageList";
+import MessageList from "./MessageListComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
-import AssetInputOptions from "./AssetInputOptions";
+import AssetInputOptions from "./AssetInputOptionsComponent";
 import { ToggleComponent } from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import { copyToClipboard } from "../utils/utilities";
 
-import styles from "./WorkflowInspector.module.css";
+import styles from "./WorkflowInspectorComponent.module.css";
 import { LS_WORKFLOW_INSPECTOR_WIDTH } from "../constants";
 const MIN_WIDTH = 320;
 const MAX_WIDTH = 800;

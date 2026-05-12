@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { MessageSquare } from "lucide-react";
-import ProviderLogo from "./ProviderLogos";
-import { MODALITY_ICONS } from "./WorkflowNodeConstants";
+import ProviderLogo from "./ProviderLogosComponent";
+import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
 import styles from "./WorkflowHeaderStatsComponent.module.css";
 
 export default function WorkflowHeaderStatsComponent({

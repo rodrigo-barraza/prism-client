@@ -5,7 +5,7 @@ import { Loader2, Power, PowerOff, RefreshCw } from "lucide-react";
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
 import ModelsTableComponent from "./ModelsTableComponent";
-import ModelLoadConfigPanel from "./ModelLoadConfigPanel";
+import ModelLoadConfigPanel from "./ModelLoadConfigPanelComponent";
 import ModelDetailPanelComponent from "./ModelDetailPanelComponent";
 
 import { ErrorMessage } from "./StateMessageComponent";

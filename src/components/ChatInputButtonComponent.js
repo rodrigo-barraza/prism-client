@@ -13,7 +13,7 @@ import {
   Square,
 } from "lucide-react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import styles from "./ChatInputButton.module.css";
+import styles from "./ChatInputButtonComponent.module.css";
 import SoundService from "@/services/SoundService";
 
 const TYPE_ICON_MAP = {

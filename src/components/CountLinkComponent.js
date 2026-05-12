@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import styles from "./TableComponents.module.css";
+import styles from "./TableComponentsComponent.module.css";
 
 /**
  * CountLinkComponent — renders a count as a navigable link with an icon,

@@ -1,7 +1,7 @@
 "use client";
 
 import { Zap, Trash2 } from "lucide-react";
-import MarkdownContent from "./MarkdownContent";
+import MarkdownContent from "./MarkdownContentComponent";
 
 
 import { formatLatency } from "../utils/utilities";

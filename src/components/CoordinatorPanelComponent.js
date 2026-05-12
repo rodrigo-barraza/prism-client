@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { GitBranch, RefreshCw, Play, Check, X, AlertTriangle, Loader } from "lucide-react";
 import PrismService from "../services/PrismService.js";
-import styles from "./CoordinatorPanel.module.css";
+import styles from "./CoordinatorPanelComponent.module.css";
 
 const STATUS_CLASSES = {
   pending: "statusPending",

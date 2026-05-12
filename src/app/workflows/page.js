@@ -23,12 +23,12 @@ import {
 import PrismService from "../../services/PrismService";
 import WorkflowService from "../../services/WorkflowService";
 import { executeWorkflow } from "../../services/WorkflowExecutor";
-import WorkflowCanvas from "../../components/WorkflowCanvas";
-import WorkflowInspector from "../../components/WorkflowInspector";
+import WorkflowCanvas from "../../components/WorkflowCanvasComponent";
+import WorkflowInspector from "../../components/WorkflowInspectorComponent";
 import WorkflowHeaderStatsComponent from "../../components/WorkflowHeaderStatsComponent";
 import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComponent";
-import HistoryList from "../../components/HistoryList";
-import ThreePanelLayout from "../../components/ThreePanelLayout";
+import HistoryList from "../../components/HistoryListComponent";
+import ThreePanelLayout from "../../components/ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
 import { ButtonComponent, ToastComponent, useToast } from "@rodrigo-barraza/components-library";
 import { copyToClipboard } from "../../utils/utilities";

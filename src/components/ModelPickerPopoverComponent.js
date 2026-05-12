@@ -10,7 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Search, X, Loader2 } from "lucide-react";
-import ProviderLogo, { resolveProviderLabel } from "./ProviderLogos";
+import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import PrismService from "../services/PrismService";
 import ModelsTableComponent from "./ModelsTableComponent";
 import ModalityIconComponent from "./ModalityIconComponent";

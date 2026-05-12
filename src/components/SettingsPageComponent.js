@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Brain, Network, Bot, RotateCcw, Loader2, Check, FolderOpen, Lock, X, Plus, ArrowRight, CheckCircle2, XCircle, Server, Wifi, WifiOff, FolderTree, Settings2 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import WorkspaceService from "../services/WorkspaceService";
-import { useWorkspace } from "./WorkspaceContext";
+import { useWorkspace } from "./WorkspaceContextComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
-import CustomAgentsPanel from "./CustomAgentsPanel";
+import CustomAgentsPanel from "./CustomAgentsPanelComponent";
 import { ButtonComponent, CardComponent, PageHeaderComponent } from "@rodrigo-barraza/components-library";
 import styles from "./SettingsPageComponent.module.css";
 

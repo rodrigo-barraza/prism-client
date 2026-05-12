@@ -12,7 +12,7 @@ import {
   Wrench,
 } from "lucide-react";
 import PrismService from "../services/PrismService.js";
-import styles from "./MCPServersPanel.module.css";
+import styles from "./MCPServersPanelComponent.module.css";
 
 /**
  * MCPServersPanel — Manage MCP (Model Context Protocol) server connections.

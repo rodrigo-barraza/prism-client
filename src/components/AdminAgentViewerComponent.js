@@ -9,25 +9,25 @@ import {
 import IrisService from "../services/IrisService.js";
 import PrismService from "../services/PrismService.js";
 import ToolsApiService from "../services/ToolsApiService.js";
-import HistoryPanel from "./HistoryPanel.js";
-import SettingsPanel from "./SettingsPanel.js";
-import ModelInfoPanel from "./ModelInfoPanel.js";
-import CustomToolsPanel from "./CustomToolsPanel.js";
-import SkillsPanel from "./SkillsPanel.js";
-import MemoriesPanel from "./MemoriesPanel.js";
-import TasksPanel from "./TasksPanel.js";
-import MCPServersPanel from "./MCPServersPanel.js";
-import CoordinatorPanel from "./CoordinatorPanel.js";
-import WorkersPanel from "./WorkersPanel.js";
-import MessageList, { prepareDisplayMessages } from "./MessageList.js";
+import HistoryPanel from "./HistoryPanelComponent.js";
+import SettingsPanel from "./SettingsPanelComponent.js";
+import ModelInfoPanel from "./ModelInfoPanelComponent.js";
+import CustomToolsPanel from "./CustomToolsPanelComponent.js";
+import SkillsPanel from "./SkillsPanelComponent.js";
+import MemoriesPanel from "./MemoriesPanelComponent.js";
+import TasksPanel from "./TasksPanelComponent.js";
+import MCPServersPanel from "./MCPServersPanelComponent.js";
+import CoordinatorPanel from "./CoordinatorPanelComponent.js";
+import WorkersPanel from "./WorkersPanelComponent.js";
+import MessageList, { prepareDisplayMessages } from "./MessageListComponent.js";
 
 import ModelBadgeComponent from "./ModelBadgeComponent.js";
-import { useAdminHeader } from "./AdminHeaderContext.js";
+import { useAdminHeader } from "./AdminHeaderContextComponent.js";
 
 import { formatNumber } from "../utils/utilities.js";
 import useSessionStats from "../hooks/useSessionStats.js";
 import { PROJECT_AGENT } from "../constants.js";
-import chatStyles from "./ChatArea.module.css";
+import chatStyles from "./ChatAreaComponent.module.css";
 import styles from "./AdminAgentViewerComponent.module.css";
 import { EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
 

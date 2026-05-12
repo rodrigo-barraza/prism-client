@@ -12,7 +12,7 @@ import {
   Square,
   Circle as CircleIcon,
 } from "lucide-react";
-import styles from "./DrawingCanvas.module.css";
+import styles from "./DrawingCanvasComponent.module.css";
 
 const COLORS = [
   { value: "#000000", label: "Black" },

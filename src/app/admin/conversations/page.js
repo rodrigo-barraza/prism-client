@@ -16,18 +16,18 @@ import IrisService from "../../../services/IrisService";
 import PrismService from "../../../services/PrismService";
 import MessageList, {
   prepareDisplayMessages,
-} from "../../../components/MessageList";
-import SettingsPanel from "../../../components/SettingsPanel";
-import ModelInfoPanel from "../../../components/ModelInfoPanel";
+} from "../../../components/MessageListComponent";
+import SettingsPanel from "../../../components/SettingsPanelComponent";
+import ModelInfoPanel from "../../../components/ModelInfoPanelComponent";
 import ParametersPanelComponent from "../../../components/ParametersPanelComponent";
-import HistoryPanel from "../../../components/HistoryPanel";
+import HistoryPanel from "../../../components/HistoryPanelComponent";
 
-import ThreePanelLayout from "../../../components/ThreePanelLayout";
+import ThreePanelLayout from "../../../components/ThreePanelLayoutComponent";
 import { SelectComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
 
 import ModelPickerPopoverComponent from "../../../components/ModelPickerPopoverComponent";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
-import { useAdminHeader } from "../../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import ProjectBadgeComponent from "../../../components/ProjectBadgeComponent";
 import UserBadgeComponent from "../../../components/UserBadgeComponent";

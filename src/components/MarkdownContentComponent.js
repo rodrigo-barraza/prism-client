@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-import styles from "./MarkdownContent.module.css";
+import styles from "./MarkdownContentComponent.module.css";
 import { CopyButtonComponent } from "@rodrigo-barraza/components-library";
 
 function FencedCodeBlock({ language, children }) {

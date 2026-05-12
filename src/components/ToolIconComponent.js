@@ -2,7 +2,7 @@
 
 import { Wrench } from "lucide-react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import { TOOL_ICON_MAP, TOOL_COLORS } from "./WorkflowNodeConstants";
+import { TOOL_ICON_MAP, TOOL_COLORS } from "./WorkflowNodeConstantsComponent";
 import styles from "./ToolIconComponent.module.css";
 
 /**

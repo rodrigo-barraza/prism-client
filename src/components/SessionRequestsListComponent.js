@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Activity, AlertCircle, Users } from "lucide-react";
 import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
-import ProviderLogo from "./ProviderLogos";
+import ProviderLogo from "./ProviderLogosComponent";
 
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
 import TokenCountBadgeComponent from "./TokenCountBadgeComponent";

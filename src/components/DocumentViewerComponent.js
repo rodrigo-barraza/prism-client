@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { ModalComponent } from "@rodrigo-barraza/components-library";
-import styles from "./DocumentViewer.module.css";
+import styles from "./DocumentViewerComponent.module.css";
 
 function decodeDataUrl(dataUrl) {
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);

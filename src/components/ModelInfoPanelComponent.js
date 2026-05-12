@@ -9,9 +9,9 @@ import {
   Brain,
   DollarSign,
 } from "lucide-react";
-import styles from "./SettingsPanel.module.css";
+import styles from "./SettingsPanelComponent.module.css";
 import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";
-import { MODALITY_COLORS } from "./WorkflowNodeConstants";
+import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 
 /**
  * ModelInfoPanel — Displays model metadata: type badge,

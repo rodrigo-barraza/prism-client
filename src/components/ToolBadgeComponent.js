@@ -2,7 +2,7 @@
 
 import React from "react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import { resolveToolVisuals } from "./WorkflowNodeConstants";
+import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 import { renderToolName } from "../utils/utilities";
 import styles from "./ToolBadgeComponent.module.css";
 

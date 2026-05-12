@@ -13,12 +13,12 @@ import {
   Minus,
   Wrench,
 } from "lucide-react";
-import ProviderLogo from "./ProviderLogos";
+import ProviderLogo from "./ProviderLogosComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
-import AssetInputOptions from "./AssetInputOptions";
+import AssetInputOptions from "./AssetInputOptionsComponent";
 import PrismService from "../services/PrismService";
 import { renderToolName } from "../utils/utilities";
-import { MODALITY_ICONS } from "./WorkflowNodeConstants";
+import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
 import {
   MODALITY_COLORS,
   ASSET_ICONS,
@@ -32,8 +32,8 @@ import {
   getBaseModality,
   getNodeWidth,
   getAssetContentHeight,
-} from "./WorkflowNodeConstants";
-import styles from "./WorkflowNode.module.css";
+} from "./WorkflowNodeConstantsComponent";
+import styles from "./WorkflowNodeComponent.module.css";
 
 /**
  * Renders input and output ports for a node.

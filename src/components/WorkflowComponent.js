@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import WorkflowSidebar from "./WorkflowSidebar";
-import WorkflowCanvas from "./WorkflowCanvas";
-import WorkflowInspector from "./WorkflowInspector";
+import WorkflowSidebar from "./WorkflowSidebarComponent";
+import WorkflowCanvas from "./WorkflowCanvasComponent";
+import WorkflowInspector from "./WorkflowInspectorComponent";
 import styles from "./WorkflowComponent.module.css";
 
 const noop = () => {};

@@ -2,12 +2,12 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Star } from "lucide-react";
-import ProviderLogo, { PROVIDER_LABELS, resolveProviderLabel } from "./ProviderLogos";
+import ProviderLogo, { PROVIDER_LABELS, resolveProviderLabel } from "./ProviderLogosComponent";
 import { MODALITY_FILTERS, TOOL_FILTERS } from "./SidebarFilterComponent";
 import FilterDropdownComponent from "./FilterDropdownComponent";
 import { SearchInputComponent, LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import HistoryItemComponent from "./HistoryItemComponent";
-import styles from "./HistoryList.module.css";
+import styles from "./HistoryListComponent.module.css";
 import { LS_DATE_RANGE } from "../constants";
 
 /**

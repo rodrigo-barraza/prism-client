@@ -42,7 +42,7 @@ import ConversationsTableComponent from "../../components/ConversationsTableComp
 import TracesTableComponent from "../../components/TracesTableComponent";
 
 import { ErrorMessage } from "../../components/StateMessageComponent";
-import { useAdminHeader } from "../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../hooks/useProjectFilter";
 import ResourceCardComponent from "../../components/ResourceCardComponent";
 import styles from "./page.module.css";

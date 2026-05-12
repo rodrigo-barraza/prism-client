@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { SelectComponent } from "@rodrigo-barraza/components-library";
-import { useAdminHeader } from "../../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import ModelsPageComponent from "../../../components/ModelsPageComponent";
 

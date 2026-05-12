@@ -12,7 +12,7 @@ import {
 import ToolsApiService from "../../../services/ToolsApiService";
 import { BadgeComponent, TableComponent, LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
-import { useAdminHeader } from "../../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import {
   formatNumber,
   formatLatencyMs,

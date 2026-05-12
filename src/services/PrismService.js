@@ -1,7 +1,7 @@
 import { PRISM_SERVICE_URL, MINIO_URL } from "../../config.js";
 import { getBaseHeaders } from "./serviceHeaders.js";
 import { buildLmStudioLoadBody } from "../utils/utilities.js";
-import { setLocalProviderMeta } from "../components/ProviderLogos.js";
+import { setLocalProviderMeta } from "../components/ProviderLogosComponent.js";
 
 const API_BASE = PRISM_SERVICE_URL;
 

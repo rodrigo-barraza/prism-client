@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, Monitor, Lock, Plus, CheckCircle2, XCircle, ArrowRight, FolderOpen } from "lucide-react";
-import { useWorkspace } from "./WorkspaceContext";
+import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
 import styles from "./WorkspaceSelectorComponent.module.css";
 

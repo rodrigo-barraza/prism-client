@@ -14,7 +14,7 @@ import {
   CircleX,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import ThreePanelLayout from "./ThreePanelLayout";
+import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import RunHistorySidebarComponent from "./RunHistorySidebarComponent";
 import { BadgeComponent, ButtonComponent, ModalComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 

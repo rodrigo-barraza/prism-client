@@ -33,7 +33,7 @@ import {
 import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
 import ChatPreviewComponent from "../../../components/ChatPreviewComponent";
 import MediaCardComponent from "../../../components/MediaCardComponent";
-import { useAdminHeader } from "../../../components/AdminHeaderContext";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import styles from "./page.module.css";
 

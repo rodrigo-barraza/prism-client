@@ -10,7 +10,7 @@ import { DatePickerComponent, SearchInputComponent, DateTimeBadgeComponent,
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
 import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
-import styles from "./MemoriesPanel.module.css";
+import styles from "./MemoriesPanelComponent.module.css";
 
 
 

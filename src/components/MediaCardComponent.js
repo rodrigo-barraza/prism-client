@@ -16,7 +16,7 @@ import PrismService from "../services/PrismService";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 
 import ModelBadgeComponent from "./ModelBadgeComponent";
-import { MODALITY_COLORS } from "./WorkflowNodeConstants";
+import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import styles from "./MediaCardComponent.module.css";
 
 /* -- Helpers -- */

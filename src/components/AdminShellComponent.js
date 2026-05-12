@@ -7,8 +7,8 @@ import IrisService from "../services/IrisService";
 
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import { DatePickerComponent } from "@rodrigo-barraza/components-library";
-import { AdminHeaderProvider, useAdminHeader } from "./AdminHeaderContext";
-import styles from "./AdminShell.module.css";
+import { AdminHeaderProvider, useAdminHeader } from "./AdminHeaderContextComponent";
+import styles from "./AdminShellComponent.module.css";
 
 function AdminShellInner({ children }) {
   const [newCount, setNewCount] = useState(0);

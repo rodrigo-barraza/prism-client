@@ -17,9 +17,9 @@ import {
   Filter,
   Calendar,
 } from "lucide-react";
-import ProviderLogo from "./ProviderLogos";
-import { resolveProviderLabel } from "./ProviderLogos";
-import { MODALITY_COLORS, TOOL_COLORS } from "./WorkflowNodeConstants";
+import ProviderLogo from "./ProviderLogosComponent";
+import { resolveProviderLabel } from "./ProviderLogosComponent";
+import { MODALITY_COLORS, TOOL_COLORS } from "./WorkflowNodeConstantsComponent";
 import { DatePickerComponent, DATE_PRESETS, formatDateDisplay, getActiveDatePreset } from "@rodrigo-barraza/components-library";
 import styles from "./SidebarFilterComponent.module.css";
 

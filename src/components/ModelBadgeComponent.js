@@ -1,5 +1,5 @@
 import { Cpu } from "lucide-react";
-import ProviderLogo from "./ProviderLogos";
+import ProviderLogo from "./ProviderLogosComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ModelBadgeComponent.module.css";
 

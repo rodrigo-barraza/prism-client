@@ -20,12 +20,12 @@ import {
   Bot,
   Terminal,
 } from "lucide-react";
-import { resolveToolVisuals } from "./WorkflowNodeConstants";
-import MarkdownContent from "./MarkdownContent";
+import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
+import MarkdownContent from "./MarkdownContentComponent";
 import StreamingCursorComponent from "./StreamingCursorComponent";
 
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
-import { ToolResultView } from "./ToolResultRenderers";
+import { ToolResultView } from "./ToolResultRenderersComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
@@ -38,7 +38,7 @@ import { BadgeComponent, CopyButtonComponent, IconButtonComponent, DateTimeBadge
 import WordBadgeComponent from "./WordBadgeComponent";
 import WorkerNotificationComponent from "./WorkerNotificationComponent";
 import PlanCardComponent from "./PlanCardComponent.js";
-import styles from "./MessageList.module.css";
+import styles from "./MessageListComponent.module.css";
 import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
 import { getTotalInputTokens, renderToolName } from "../utils/utilities";

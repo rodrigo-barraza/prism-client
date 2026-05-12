@@ -1,4 +1,4 @@
-import MessageList from "./MessageList";
+import MessageList from "./MessageListComponent";
 import styles from "./ChatPreviewComponent.module.css";
 
 /**

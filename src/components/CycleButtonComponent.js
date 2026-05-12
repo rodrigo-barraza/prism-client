@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import styles from "./CycleButton.module.css";
+import styles from "./CycleButtonComponent.module.css";
 import SoundService from "@/services/SoundService";
 
 /** Duration of the count-up tween in ms. */

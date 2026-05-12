@@ -2,10 +2,10 @@
 
 import { useMemo, useRef, useCallback, useState } from "react";
 import { MessageSquare, Plus } from "lucide-react";
-import HistoryList from "./HistoryList";
+import HistoryList from "./HistoryListComponent";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import { getModalities } from "../utils/utilities";
-import styles from "./HistoryPanel.module.css";
+import styles from "./HistoryPanelComponent.module.css";
 
 /* -- Glitch text generator (ported from CycleButton) -------- */
 const SYMBOLS = "!@#$%^&*†‡§¶∆∇≈≠±×÷√∫∑∏⊗⊕⊘⊙◊♠♣♥♦★☆◈⬡⬢⟁⟐⧫⬟";

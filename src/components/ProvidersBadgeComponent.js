@@ -1,5 +1,5 @@
 import { Layers } from "lucide-react";
-import ProviderLogo, { resolveProviderLabel } from "./ProviderLogos";
+import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ProvidersBadgeComponent.module.css";
 
