@@ -15,6 +15,7 @@ const inter = Inter({
 export const metadata = {
   title: "Prism Playground",
   description: "Advanced Developer Playground for Prism AI Gateway",
+  icons: { icon: "/favicon.ico" },
 };
 
 /**
@@ -31,7 +32,7 @@ const themeInitScript = `
     var raw = localStorage.getItem('prism:theme');
     if (raw) {
       var theme = JSON.parse(raw);
-      if (theme === 'light' || theme === 'dark' || theme === 'tropical' || theme === 'oceanic') {
+      if (theme === 'light' || theme === 'dark' || theme === 'tropical' || theme === 'oceanic' || theme === 'punk') {
         document.documentElement.setAttribute('data-theme', theme);
       }
     }
@@ -55,7 +56,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={inter.variable}>
-        <ThemeProvider storageKey="prism:theme" defaultTheme="light">
+        <ThemeProvider storageKey="prism:theme" defaultTheme="light" themes={["dark", "light", "tropical", "oceanic", "punk"]}>
           <ComponentsProvider sound>
             <WorkspaceProvider>{children}</WorkspaceProvider>
           </ComponentsProvider>
