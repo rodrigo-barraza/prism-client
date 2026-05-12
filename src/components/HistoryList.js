@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Star } from "lucide-react";
 import ProviderLogo, { PROVIDER_LABELS, resolveProviderLabel } from "./ProviderLogos";
 import { MODALITY_FILTERS, TOOL_FILTERS } from "./SidebarFilterComponent";
 import FilterDropdownComponent from "./FilterDropdownComponent";
-import { SearchInputComponent } from "@rodrigo-barraza/components-library";
+import { SearchInputComponent, LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import HistoryItemComponent from "./HistoryItemComponent";
 import styles from "./HistoryList.module.css";
 import { LS_DATE_RANGE } from "../constants";
@@ -51,6 +51,10 @@ export default function HistoryList({
   countLabel,
   onOpenInNewTab,
   generatingSessionIds,
+  // Pagination
+  hasMore = false,
+  loadingMore = false,
+  onLoadMore,
 }) {
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [activeModalities, setActiveModalities] = useState(new Set());
@@ -151,6 +155,26 @@ export default function HistoryList({
     dateRange,
   ]);
 
+  // -- Infinite scroll via IntersectionObserver -----------------
+  const sentinelRef = useRef(null);
+  const listRef = useRef(null);
+
+  useEffect(() => {
+    if (!hasMore || !onLoadMore || loadingMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          onLoadMore();
+        }
+      },
+      { root: listRef.current, rootMargin: "200px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, onLoadMore, loadingMore]);
+
 
   return (
     <div className={styles.container}>
@@ -237,13 +261,13 @@ export default function HistoryList({
         <div className={styles.countRow}>
           <span className={styles.countLabel}>
             {filtered.length === items.length
-              ? `${items.length} ${countLabel}`
-              : `${filtered.length} of ${items.length} ${countLabel}`}
+              ? `${items.length}${hasMore ? "+" : ""} ${countLabel}`
+              : `${filtered.length} of ${items.length}${hasMore ? "+" : ""} ${countLabel}`}
           </span>
         </div>
       )}
 
-      <div className={styles.list}>
+      <div className={styles.list} ref={listRef}>
         {filtered.map((item) => (
           <HistoryItemComponent
             key={item.id}
@@ -264,9 +288,16 @@ export default function HistoryList({
             isGenerating={generatingSessionIds?.has?.(item.id)}
           />
         ))}
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !loadingMore && (
           <div className={styles.empty}>
             {searchQuery.trim() ? "No matches" : emptyLabel}
+          </div>
+        )}
+        {/* Infinite scroll sentinel */}
+        {hasMore && <div ref={sentinelRef} className={styles.sentinel} />}
+        {loadingMore && (
+          <div className={styles.loadingMore}>
+            <LoadingIndicatorComponent size={18} />
           </div>
         )}
       </div>

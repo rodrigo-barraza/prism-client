@@ -196,11 +196,18 @@ export default class PrismService {
   // ---------------------------------------------------------------------------
 
   /**
-   * List all conversations.
-   * @returns {Promise<Array>}
+   * List conversations with cursor-based pagination.
+   * @param {object} [options]
+   * @param {number} [options.limit=50] - Page size
+   * @param {string} [options.cursor] - ISO date cursor from previous page
+   * @returns {Promise<{ items: Array, nextCursor: string|null, hasMore: boolean }>}
    */
-  static async getConversations() {
-    return PrismService._request("/conversations", { method: "GET" });
+  static async getConversations({ limit, cursor } = {}) {
+    const qs = new URLSearchParams();
+    if (limit) qs.set("limit", String(limit));
+    if (cursor) qs.set("cursor", cursor);
+    const query = qs.toString();
+    return PrismService._request(`/conversations${query ? `?${query}` : ""}`, { method: "GET" });
   }
 
   /**
@@ -227,13 +234,20 @@ export default class PrismService {
   // -- Agent Sessions -----------------------------------------
 
   /**
-   * List agent sessions for a specific project.
+   * List agent sessions for a specific project with cursor-based pagination.
    * @param {string} project
-   * @returns {Promise<Array>}
+   * @param {object} [options]
+   * @param {number} [options.limit=50] - Page size
+   * @param {string} [options.cursor] - ISO date cursor from previous page
+   * @returns {Promise<{ items: Array, nextCursor: string|null, hasMore: boolean }>}
    */
-  static async getAgentSessions(project) {
+  static async getAgentSessions(project, { limit, cursor } = {}) {
+    const qs = new URLSearchParams();
+    qs.set("project", project);
+    if (limit) qs.set("limit", String(limit));
+    if (cursor) qs.set("cursor", cursor);
     return PrismService._request(
-      `/agent-sessions?project=${encodeURIComponent(project)}`,
+      `/agent-sessions?${qs}`,
       { method: "GET" },
     );
   }

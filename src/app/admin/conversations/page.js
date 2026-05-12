@@ -54,6 +54,10 @@ function ConversationsPageInner({ initialId = null, traceId = null }) {
   const traceParam = searchParams.get("trace") || traceId;
   const { setControls, setTitleBadge, dateRange, sessionFilter, setSessionFilter } = useAdminHeader();
   const [conversations, setConversations] = useState([]);
+  const [conversationsHasMore, setConversationsHasMore] = useState(false);
+  const [conversationsLoading, setConversationsLoading] = useState(false);
+  const conversationsPageRef = useRef(1);
+  const conversationsTotalRef = useRef(0);
 
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(initialId);
@@ -156,6 +160,11 @@ function ConversationsPageInner({ initialId = null, traceId = null }) {
         setFingerprint(fp);
       }
 
+      // Track pagination state
+      conversationsPageRef.current = 1;
+      conversationsTotalRef.current = data.total || 0;
+      setConversationsHasMore(list.length < (data.total || 0));
+
       // Track new IDs
       const currentIds = new Set(list.map((c) => c.id));
       if (knownIdsRef.current === null) {
@@ -189,6 +198,39 @@ function ConversationsPageInner({ initialId = null, traceId = null }) {
       setError(err.message);
     }
   }, [projectFilter, providerFilter, modelFilter, dateRange, activeSession]);
+
+  const loadMoreConversations = useCallback(async () => {
+    if (conversationsLoading || !conversationsHasMore) return;
+    try {
+      setConversationsLoading(true);
+      const nextPage = conversationsPageRef.current + 1;
+      const params = {
+        page: nextPage,
+        limit: 200,
+        sort: "updatedAt",
+        order: "desc",
+      };
+      if (activeSession) {
+        params.trace = activeSession;
+      } else {
+        Object.assign(params, buildDateRangeParams(dateRange));
+        if (projectFilter) params.project = projectFilter;
+      }
+      if (providerFilter) params.provider = providerFilter;
+      if (modelFilter) params.model = modelFilter;
+      const data = await IrisService.getConversations(params);
+      const list = data.data || [];
+      conversationsPageRef.current = nextPage;
+      setConversations((prev) => [...prev, ...list]);
+      setConversationsHasMore(
+        (conversations.length + list.length) < (data.total || 0),
+      );
+    } catch (err) {
+      console.error("Failed to load more conversations:", err);
+    } finally {
+      setConversationsLoading(false);
+    }
+  }, [conversationsLoading, conversationsHasMore, activeSession, dateRange, projectFilter, providerFilter, modelFilter, conversations.length]);
 
   // Initial stats fetch (SSE subscription for generating count is handled
   // globally by AdminShell to avoid duplicate SSE connections).
@@ -501,9 +543,12 @@ function ConversationsPageInner({ initialId = null, traceId = null }) {
               initialProviders={providerFilter ? [providerFilter] : undefined}
               initialSearch={modelFilter || ""}
               countLabel="conversations"
+              hasMore={conversationsHasMore}
+              loadingMore={conversationsLoading}
+              onLoadMore={loadMoreConversations}
             />
           }
-          rightTitle={`${conversations.length} Conversations`}
+          rightTitle={`${conversations.length}${conversationsHasMore ? "+" : ""} Conversations`}
           headerTitle={convTitle}
           headerMeta={
             selectedConv && (

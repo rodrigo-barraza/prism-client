@@ -57,6 +57,10 @@ export default function HistoryPanel({
   countLabel,
   onOpenInNewTab,
   generatingSessionIds,
+  // Pagination
+  hasMore,
+  loadingMore,
+  onLoadMore,
 }) {
   const newBtnRef = useRef(null);
   const rainbowTimer = useRef(null);
@@ -223,6 +227,9 @@ export default function HistoryPanel({
         countLabel={countLabel}
         onOpenInNewTab={onOpenInNewTab}
         generatingSessionIds={generatingSessionIds}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        onLoadMore={onLoadMore}
       />
     </div>
   );

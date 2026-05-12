@@ -126,6 +126,9 @@ export default function AgentComponent({
   );
   const [traceId, setTraceId] = useState(() => generateUUID());
   const [sessions, setSessions] = useState([]);
+  const sessionsCursorRef = useRef(null);
+  const [sessionsHasMore, setSessionsHasMore] = useState(false);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
   const [activeId, setActiveId] = useState(null);
   const [config, setConfig] = useState(null);
   const [title, setTitle] = useState(isNoAgent ? "Direct Chat" : "Agent");
@@ -508,14 +511,37 @@ export default function AgentComponent({
   // Load session history — Direct Chat reads from conversations collection
   const loadSessions = useCallback(async () => {
     try {
-      const list = isNoAgent
+      setSessionsLoading(true);
+      const result = isNoAgent
         ? await PrismService.getConversations()
         : await PrismService.getAgentSessions(agentProject);
-      setSessions(list);
+      setSessions(result.items);
+      sessionsCursorRef.current = result.nextCursor;
+      setSessionsHasMore(result.hasMore);
     } catch (err) {
       console.error("Failed to load sessions:", err);
+    } finally {
+      setSessionsLoading(false);
     }
   }, [agentProject, isNoAgent]);
+
+  const loadMoreSessions = useCallback(async () => {
+    if (!sessionsCursorRef.current || sessionsLoading) return;
+    try {
+      setSessionsLoading(true);
+      const opts = { cursor: sessionsCursorRef.current };
+      const result = isNoAgent
+        ? await PrismService.getConversations(opts)
+        : await PrismService.getAgentSessions(agentProject, opts);
+      setSessions((prev) => [...prev, ...result.items]);
+      sessionsCursorRef.current = result.nextCursor;
+      setSessionsHasMore(result.hasMore);
+    } catch (err) {
+      console.error("Failed to load more sessions:", err);
+    } finally {
+      setSessionsLoading(false);
+    }
+  }, [agentProject, isNoAgent, sessionsLoading]);
 
   useEffect(() => {
     loadSessions();
@@ -2813,9 +2839,12 @@ export default function AgentComponent({
           searchText="Search sessions..."
           countLabel="sessions"
           generatingSessionIds={generatingSessionIds}
+          hasMore={sessionsHasMore}
+          loadingMore={sessionsLoading}
+          onLoadMore={loadMoreSessions}
         />
       }
-      rightTitle={`${sessions.length} Sessions`}
+      rightTitle={`${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`}
       sessionType="agent"
       headerTitle={title}
       headerCenter={
