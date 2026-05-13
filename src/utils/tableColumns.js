@@ -49,7 +49,7 @@ import { PROVIDER_COLORS } from "../constants";
 import StopwatchBadgeComponent from "../components/StopwatchBadgeComponent";
 import TokenCountBadgeComponent from "../components/TokenCountBadgeComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import styles from "../components/TableComponents.module.css";
+import styles from "../components/TableComponentsComponent.module.css";
 
 /* -- Helpers ---------------------------------------------- */
 
