@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo, Suspense, lazy } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback, Suspense, lazy } from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -502,16 +502,144 @@ function formatInputPrompt(input, language, cwd) {
   return lines.map((line, i) => `${i === 0 ? pathPrefix + prompt : contPrompt}${line}`).join("\n");
 }
 
+// ── ANSI escape-code → React span parser ──────────────────────
+const ANSI_RE = /\x1b\[([0-9;]*)m/g;
+
+const ANSI_COLORS = [
+  null,           // 0 – default
+  "#ef4444",      // 1 – red
+  "#22c55e",      // 2 – green
+  "#eab308",      // 3 – yellow
+  "#3b82f6",      // 4 – blue
+  "#a855f7",      // 5 – magenta
+  "#06b6d4",      // 6 – cyan
+  "#d4d4d8",      // 7 – white
+];
+
+const ANSI_BRIGHT_COLORS = [
+  "#71717a",      // 0 – bright black (gray)
+  "#f87171",      // 1 – bright red
+  "#4ade80",      // 2 – bright green
+  "#fde047",      // 3 – bright yellow
+  "#60a5fa",      // 4 – bright blue
+  "#c084fc",      // 5 – bright magenta
+  "#22d3ee",      // 6 – bright cyan
+  "#ffffff",      // 7 – bright white
+];
+
+function ansi256ToHex(n) {
+  if (n < 8) return ANSI_COLORS[n];
+  if (n < 16) return ANSI_BRIGHT_COLORS[n - 8];
+  if (n < 232) {
+    const idx = n - 16;
+    const r = Math.floor(idx / 36) * 51;
+    const g = (Math.floor(idx / 6) % 6) * 51;
+    const b = (idx % 6) * 51;
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  }
+  const v = (n - 232) * 10 + 8;
+  return `#${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}`;
+}
+
+function stripAnsi(text) {
+  return text.replace(/\x1b\[[0-9;]*m/g, "");
+}
+
+function parseAnsi(text) {
+  if (!text.includes("\x1b")) return text;
+  const parts = [];
+  let lastIndex = 0;
+  let key = 0;
+  let color = null, bgColor = null, bold = false, dim = false, italic = false, underline = false;
+  let match;
+  ANSI_RE.lastIndex = 0;
+  while ((match = ANSI_RE.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      const chunk = text.slice(lastIndex, match.index);
+      if (color || bgColor || bold || dim || italic || underline) {
+        const style = {};
+        if (color) style.color = color;
+        if (bgColor) style.backgroundColor = bgColor;
+        if (bold) style.fontWeight = 700;
+        if (dim) style.opacity = 0.6;
+        if (italic) style.fontStyle = "italic";
+        if (underline) style.textDecoration = "underline";
+        parts.push(<span key={key++} style={style}>{chunk}</span>);
+      } else {
+        parts.push(chunk);
+      }
+    }
+    lastIndex = match.index + match[0].length;
+    const codes = match[1] ? match[1].split(";").map(Number) : [0];
+    for (let i = 0; i < codes.length; i++) {
+      const c = codes[i];
+      if (c === 0) { color = null; bgColor = null; bold = false; dim = false; italic = false; underline = false; }
+      else if (c === 1) bold = true;
+      else if (c === 2) dim = true;
+      else if (c === 3) italic = true;
+      else if (c === 4) underline = true;
+      else if (c === 22) { bold = false; dim = false; }
+      else if (c === 23) italic = false;
+      else if (c === 24) underline = false;
+      else if (c === 39) color = null;
+      else if (c === 49) bgColor = null;
+      else if (c >= 30 && c <= 37) color = ANSI_COLORS[c - 30];
+      else if (c >= 40 && c <= 47) bgColor = ANSI_COLORS[c - 40];
+      else if (c >= 90 && c <= 97) color = ANSI_BRIGHT_COLORS[c - 90];
+      else if (c >= 100 && c <= 107) bgColor = ANSI_BRIGHT_COLORS[c - 100];
+      else if (c === 38 && codes[i + 1] === 5 && codes[i + 2] != null) { color = ansi256ToHex(codes[i + 2]); i += 2; }
+      else if (c === 48 && codes[i + 1] === 5 && codes[i + 2] != null) { bgColor = ansi256ToHex(codes[i + 2]); i += 2; }
+    }
+  }
+  if (lastIndex < text.length) {
+    const chunk = text.slice(lastIndex);
+    if (color || bgColor || bold || dim || italic || underline) {
+      const style = {};
+      if (color) style.color = color;
+      if (bgColor) style.backgroundColor = bgColor;
+      if (bold) style.fontWeight = 700;
+      if (dim) style.opacity = 0.6;
+      if (italic) style.fontStyle = "italic";
+      if (underline) style.textDecoration = "underline";
+      parts.push(<span key={key++} style={style}>{chunk}</span>);
+    } else {
+      parts.push(chunk);
+    }
+  }
+  return parts.length === 1 ? parts[0] : parts;
+}
+
+function detectTerminalLevel(text) {
+  const clean = stripAnsi(text);
+  if (/\bERR(?:OR)?\b/i.test(clean)) return "error";
+  if (/\bWARN(?:ING)?\b/i.test(clean)) return "warn";
+  if (/\bINFO\b/i.test(clean)) return "info";
+  if (/\b(?:OK|SUCCESS|PASS(?:ED)?)\b/i.test(clean)) return "success";
+  if (/\bDBG|DEBUG\b/i.test(clean)) return "debug";
+  return null;
+}
+
+const TERM_LEVEL_CLASS = {
+  error: styles.termLineError,
+  warn: styles.termLineWarn,
+  success: styles.termLineSuccess,
+};
+
+const TERM_CONTENT_LEVEL_CLASS = {
+  error: styles.termContentError,
+  warn: styles.termContentWarn,
+  info: styles.termContentInfo,
+  success: styles.termContentSuccess,
+  debug: styles.termContentDebug,
+};
+
 function TerminalRenderer({ result, args, streamingOutput, language }) {
-  const preRef = useRef(null);
+  const bodyRef = useRef(null);
+  const [autoScroll, setAutoScroll] = useState(true);
   const input = args?.command || args?.code || null;
   const cwd = args?.cwd || null;
   const isStreaming = !result;
   const output = streamingOutput || "";
-
-  useEffect(() => {
-    if (preRef.current) preRef.current.scrollTop = preRef.current.scrollHeight;
-  }, [output]);
 
   // Parse final result for exit code
   const parsed = tryParse(result);
@@ -525,6 +653,34 @@ function TerminalRenderer({ result, args, streamingOutput, language }) {
     : (stdout || stderr || parsedError || output);
 
   const formattedInput = formatInputPrompt(input, language, cwd);
+
+  // Split output into lines for per-line rendering
+  const outputLines = useMemo(() => {
+    if (!displayOutput) return [];
+    return displayOutput.split("\n");
+  }, [displayOutput]);
+
+  const inputLines = useMemo(() => {
+    if (!formattedInput) return [];
+    return formattedInput.split("\n");
+  }, [formattedInput]);
+
+  const totalLines = inputLines.length + outputLines.length;
+
+  // Auto-scroll to bottom on new output
+  useEffect(() => {
+    if (autoScroll && bodyRef.current) {
+      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    }
+  }, [displayOutput, autoScroll]);
+
+  // Detect user scroll position
+  const handleScroll = useCallback(() => {
+    if (!bodyRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = bodyRef.current;
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 40;
+    setAutoScroll(isAtBottom);
+  }, []);
 
   if (!displayOutput && !formattedInput) return <RawResultToggle result={result} />;
 
@@ -540,17 +696,42 @@ function TerminalRenderer({ result, args, streamingOutput, language }) {
         {exitCode == null && success === false && (
           <StatusBadge success={false} label="error" />
         )}
+        {totalLines > 0 && (
+          <span className={styles.terminalLineCount}>
+            {totalLines.toLocaleString()}
+          </span>
+        )}
       </div>
-      <pre ref={preRef} className={styles.terminalBody}>
-        {formattedInput && (
-          <span className={styles.terminalInput}>{formattedInput}{"\n"}</span>
+      <div ref={bodyRef} className={styles.terminalBody} onScroll={handleScroll}>
+        {/* Input command lines */}
+        {inputLines.map((line, i) => (
+          <div key={`in-${i}`} className={styles.termLine}>
+            <span className={styles.termLineNum}>{i + 1}</span>
+            <span className={`${styles.termLineContent} ${styles.terminalInput}`}>{line}</span>
+          </div>
+        ))}
+        {/* Output lines */}
+        {outputLines.map((line, i) => {
+          const level = detectTerminalLevel(line);
+          const lineNum = inputLines.length + i + 1;
+          return (
+            <div key={`out-${i}`} className={`${styles.termLine} ${TERM_LEVEL_CLASS[level] || ""}`}>
+              <span className={styles.termLineNum}>{lineNum}</span>
+              <span className={`${styles.termLineContent} ${level ? TERM_CONTENT_LEVEL_CLASS[level] || "" : ""}`}>
+                {parseAnsi(line)}
+              </span>
+            </div>
+          );
+        })}
+        {isStreaming && (
+          <div className={styles.termLine}>
+            <span className={styles.termLineNum} />
+            <span className={styles.termLineContent}>
+              <span className={styles.terminalCursor}>▊</span>
+            </span>
+          </div>
         )}
-        {!isStreaming && !stdout && !stderr && parsedError && (
-          <span className={styles.terminalError}>{parsedError}</span>
-        )}
-        {(stdout || stderr || (isStreaming && output)) && displayOutput}
-        {isStreaming && <span className={styles.terminalCursor}>▊</span>}
-      </pre>
+      </div>
     </div>
   );
 }

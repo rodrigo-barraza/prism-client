@@ -335,7 +335,9 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  background: #0d1117;
+  background: #09090e;
+  display: flex;
+  flex-direction: column;
 }
 
 .terminalHeader {
@@ -346,8 +348,9 @@
   font-size: 11px;
   font-weight: 600;
   color: #8b949e;
-  background: #161b22;
+  background: rgba(255, 255, 255, 0.015);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 
 .terminalLive {
@@ -362,19 +365,108 @@
   50% { opacity: 0.4; }
 }
 
+.terminalLineCount {
+  margin-left: auto;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.2);
+  font-family: var(--font-mono, monospace);
+  font-weight: 400;
+}
+
 .terminalBody {
   margin: 0;
-  padding: 8px 10px;
+  padding: 4px 0;
   font-size: 11px;
   font-family: var(--font-mono, "Menlo", "Consolas", monospace);
-  line-height: 1.5;
+  line-height: 1.55;
   color: #c9d1d9;
   overflow-x: auto;
-  max-height: 300px;
   overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
+  max-height: 340px;
+  scrollbar-width: thin;
 }
+
+/* ── Terminal Line ─────────────────────────────────────────── */
+
+.termLine {
+  display: flex;
+  padding: 0 10px;
+  gap: 0;
+  white-space: pre;
+  border-left: 2px solid transparent;
+  transition: background 60ms ease;
+}
+
+.termLine:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── Line Number Gutter ────────────────────────────────────── */
+
+.termLineNum {
+  flex-shrink: 0;
+  width: 32px;
+  text-align: right;
+  padding-right: 10px;
+  color: rgba(255, 255, 255, 0.08);
+  font-size: 10px;
+  user-select: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.03);
+  margin-right: 10px;
+}
+
+.termLine:hover .termLineNum {
+  color: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Line Content ──────────────────────────────────────────── */
+
+.termLineContent {
+  flex: 1;
+  color: #c8c8cd;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/* ── Log Level Line Accents ────────────────────────────────── */
+
+.termLineError {
+  border-left-color: rgba(248, 113, 113, 0.5);
+  background: rgba(239, 68, 68, 0.03);
+}
+
+.termLineWarn {
+  border-left-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.02);
+}
+
+.termLineSuccess {
+  border-left-color: rgba(52, 211, 153, 0.4);
+}
+
+/* ── Log Level Content Colors ──────────────────────────────── */
+
+.termContentError {
+  color: #f87171;
+}
+
+.termContentWarn {
+  color: #fbbf24;
+}
+
+.termContentInfo {
+  color: #60a5fa;
+}
+
+.termContentSuccess {
+  color: #34d399;
+}
+
+.termContentDebug {
+  color: #a78bfa;
+}
+
+/* ── Input / Prompt ────────────────────────────────────────── */
 
 .terminalInput {
   color: #3fb950;
@@ -389,6 +481,13 @@
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
+}
+
+/* ── Terminal error ───────────────────────────────────────── */
+
+.terminalError {
+  color: #f87171;
+  font-weight: 500;
 }
 
 /* ── Git ───────────────────────────────────────────────────── */
