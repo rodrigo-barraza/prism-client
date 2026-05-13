@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import {
   Cpu,
   Edit3,
@@ -9,6 +9,11 @@ import {
   ExternalLink,
   AudioLines,
   Layers,
+  FolderOpen,
+  File,
+  ChevronRight,
+  ChevronDown,
+  FolderTree,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import { SelectComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components-library";
@@ -29,7 +34,64 @@ import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
 import ThroughputBadgeComponent from "./ThroughputBadgeComponent";
 import useTokenRate from "../hooks/useTokenRate";
+import { useWorkspace } from "./WorkspaceContextComponent";
+import WorkspaceService from "../services/WorkspaceService";
 import useTtft from "../hooks/useTtft";
+
+// ─── Recursive Directory Tree Node ──────────────────────────
+const TreeNode = memo(function TreeNode({ node, depth = 0 }) {
+  const [expanded, setExpanded] = useState(depth < 1);
+  const isDir = node.type === "directory";
+  const hasChildren = isDir && node.children?.length > 0;
+
+  const formatSize = (bytes) => {
+    if (!bytes) return "";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  return (
+    <div className={styles.treeNode}>
+      <button
+        className={`${styles.treeRow} ${isDir ? styles.treeRowDir : ""}`}
+        style={{ paddingLeft: `${8 + depth * 14}px` }}
+        onClick={() => isDir && setExpanded((v) => !v)}
+        type="button"
+      >
+        {isDir ? (
+          <>
+            {expanded ? (
+              <ChevronDown size={10} className={styles.treeChevron} />
+            ) : (
+              <ChevronRight size={10} className={styles.treeChevron} />
+            )}
+            <FolderOpen size={11} className={styles.treeFolderIcon} />
+          </>
+        ) : (
+          <>
+            <span className={styles.treeChevronSpacer} />
+            <File size={10} className={styles.treeFileIcon} />
+          </>
+        )}
+        <span className={styles.treeName}>{node.name}</span>
+        {!isDir && node.sizeBytes != null && (
+          <span className={styles.treeSize}>{formatSize(node.sizeBytes)}</span>
+        )}
+        {isDir && hasChildren && (
+          <span className={styles.treeCount}>{node.children.length}</span>
+        )}
+      </button>
+      {isDir && expanded && hasChildren && (
+        <div className={styles.treeChildren}>
+          {node.children.map((child) => (
+            <TreeNode key={child.name} node={child} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
 
 export default function SettingsPanel({
   config,
@@ -51,6 +113,7 @@ export default function SettingsPanel({
   agentToggles,
 }) {
   const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
+  const { currentWorkspace } = useWorkspace();
   const { _providers = {}, textToText = {} } = config || {};
   const textModelsMap = textToText.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
@@ -122,6 +185,36 @@ export default function SettingsPanel({
 
   // -- Stats tab (All / Orchestrator / Workers) --------------
   const [statsTab, setStatsTab] = useState("all");
+
+  // -- Workspace directory tree --------------------------------
+  const [treeData, setTreeData] = useState(null);
+  const [treeLoading, setTreeLoading] = useState(false);
+  const [treeExpanded, setTreeExpanded] = useState(false);
+
+  const fetchTree = useCallback(async () => {
+    if (!currentWorkspace?.path) return;
+    setTreeLoading(true);
+    try {
+      const data = await WorkspaceService.tree(currentWorkspace.path);
+      setTreeData(data);
+    } catch {
+      setTreeData(null);
+    } finally {
+      setTreeLoading(false);
+    }
+  }, [currentWorkspace?.path]);
+
+  // Fetch on first expand
+  useEffect(() => {
+    if (treeExpanded && !treeData && !treeLoading) {
+      fetchTree();
+    }
+  }, [treeExpanded, treeData, treeLoading, fetchTree]);
+
+  // Reset tree when workspace changes
+  useEffect(() => {
+    setTreeData(null);
+  }, [currentWorkspace?.path]);
   const showStatsTabBar =
     canSpawnWorkers && !!(sessionStats?.orchestrator || sessionStats?.workers);
 
@@ -325,6 +418,48 @@ export default function SettingsPanel({
             </div>
           )}
         </div>
+
+        {/* -- Workspace Directory Tree ── */}
+        {currentWorkspace && (
+          <div className={styles.section}>
+            <button
+              className={styles.sectionHeaderToggle}
+              onClick={() => setTreeExpanded((v) => !v)}
+              type="button"
+            >
+              <FolderTree size={11} style={{ marginRight: 4, opacity: 0.7 }} />
+              <span>{currentWorkspace.name}</span>
+              <span className={styles.treeToggleChevron}>
+                {treeExpanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+              </span>
+            </button>
+            {treeExpanded && (
+              <div className={styles.treeContainer}>
+                {treeLoading && (
+                  <div className={styles.treeLoading}>Loading…</div>
+                )}
+                {!treeLoading && treeData?.tree && treeData.tree.length > 0 && (
+                  <div className={styles.treeRoot}>
+                    {treeData.tree.map((node) => (
+                      <TreeNode key={node.name} node={node} />
+                    ))}
+                  </div>
+                )}
+                {!treeLoading && treeData && (!treeData.tree || treeData.tree.length === 0) && (
+                  <div className={styles.treeLoading}>Empty directory</div>
+                )}
+                {!treeLoading && !treeData && (
+                  <div className={styles.treeLoading}>Unable to load tree</div>
+                )}
+                {treeData?.totalEntries > 0 && (
+                  <div className={styles.treeSummary}>
+                    {treeData.totalEntries} entries{treeData.truncated ? " (truncated)" : ""}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {workflows.length > 0 && (
           <div className={styles.section} style={{ marginBottom: 12 }}>

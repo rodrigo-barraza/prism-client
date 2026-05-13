@@ -89,12 +89,12 @@ export default function AgentComponent({
   initialFcEnabled = false,
   initialThinkingEnabled = false,
   initialModel = null,
-  initialConversationId = null,
+  initialSessionId = null,
 }) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef(false);
-  // Track whether the URL conversation param has been consumed
-  const urlConversationAppliedRef = useRef(false);
+  // Track whether the URL session param has been consumed
+  const urlSessionAppliedRef = useRef(false);
   const agentId = propAgentId;
   const isNoAgent = agentId === "NONE";
   const activeAgentData = agents.find((a) => a.id === agentId);
@@ -547,18 +547,18 @@ export default function AgentComponent({
     loadSessions();
   }, [loadSessions]);
 
-  // -- Auto-load conversation from URL ?conversation= param ------
+  // -- Auto-load session from URL ?session= param ----------------
   // Runs once on mount. Fetches the full session and applies it.
   // Uses a ref guard to prevent double-loading on StrictMode re-mounts.
   useEffect(() => {
-    if (!initialConversationId || urlConversationAppliedRef.current) return;
-    urlConversationAppliedRef.current = true;
+    if (!initialSessionId || urlSessionAppliedRef.current) return;
+    urlSessionAppliedRef.current = true;
 
     (async () => {
       try {
         const full = isNoAgent
-          ? await PrismService.getConversation(initialConversationId)
-          : await PrismService.getAgentSession(initialConversationId, agentProject);
+          ? await PrismService.getConversation(initialSessionId)
+          : await PrismService.getAgentSession(initialSessionId, agentProject);
         if (!full) return;
 
         const displayMessages = prepareDisplayMessages(full.messages || []);
@@ -592,7 +592,7 @@ export default function AgentComponent({
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
       } catch (err) {
-        console.error("Failed to preload conversation from URL:", err);
+        console.error("Failed to preload session from URL:", err);
       }
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1960,7 +1960,7 @@ export default function AgentComponent({
     tokenHwmRef.current = { input: 0, output: 0, total: 0 };
     isUserNearBottomRef.current = true;
     textareaRef.current?.focus();
-    // Clear conversation from URL
+    // Clear session from URL
     window.dispatchEvent(new CustomEvent("conversation:change", { detail: { conversationId: null } }));
   }, [isNoAgent]);
 

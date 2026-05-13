@@ -70,9 +70,9 @@ function AgentsPageInner() {
   const forceFc = searchParams.get("fc") === "true";
   const forceThinking = searchParams.get("thinking") === "true";
 
-  // -- Deep-link params: model + conversation ------------------
+  // -- Deep-link params: model + session ------------------------
   const initialModel = searchParams.get("model") || null;
-  const initialConversationId = searchParams.get("conversation") || null;
+  const initialSessionId = searchParams.get("session") || null;
 
   // Fetch agent personas on mount — prepend "No Agent" synthetic entry
   useEffect(() => {
@@ -81,12 +81,12 @@ function AgentsPageInner() {
       .catch(console.error);
   }, []);
 
-  // -- Strip stale URL params on mount when conversation is present --
-  // If the URL arrives with ?conversation=...&model=...&agent=..., remove
-  // model and agent immediately — the conversation data owns those values.
+  // -- Strip stale URL params on mount when session is present ----
+  // If the URL arrives with ?session=...&model=...&agent=..., remove
+  // model and agent immediately — the session data owns those values.
   useEffect(() => {
-    const conv = searchParams.get("conversation");
-    if (!conv) return;
+    const sess = searchParams.get("session");
+    if (!sess) return;
     const hasModel = searchParams.has("model");
     const hasAgent = searchParams.has("agent");
     if (hasModel || hasAgent) {
@@ -130,23 +130,23 @@ function AgentsPageInner() {
   );
 
   // Listen for conversation:change events from AgentComponent — sync URL
-  // When a conversation is active, strip model & agent from URL — the
-  // conversation data is the source of truth for those values.
+  // When a session is active, strip model & agent from URL — the
+  // session data is the source of truth for those values.
   const handleConversationChange = useCallback(
     (e) => {
       const { conversationId } = e.detail || {};
-      const current = searchParams.get("conversation");
+      const current = searchParams.get("session");
       if (current === (conversationId || null)) return;
       if (conversationId) {
-        // Conversation active → keep only conversation param
+        // Session active → keep only session param
         router.replace(
-          buildUrl(searchParams, { conversation: conversationId, model: null, agent: null }),
+          buildUrl(searchParams, { session: conversationId, model: null, agent: null }),
           { scroll: false },
         );
       } else {
-        // New chat → clear conversation param, keep everything else
+        // New chat → clear session param, keep everything else
         router.replace(
-          buildUrl(searchParams, { conversation: null }),
+          buildUrl(searchParams, { session: null }),
           { scroll: false },
         );
       }
@@ -179,7 +179,7 @@ function AgentsPageInner() {
         initialFcEnabled={forceFc}
         initialThinkingEnabled={forceThinking}
         initialModel={initialModel}
-        initialConversationId={initialConversationId}
+        initialSessionId={initialSessionId}
       />
     </main>
   );

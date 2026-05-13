@@ -339,3 +339,151 @@
     opacity: 0.7;
   }
 }
+
+/* ── Workspace Directory Tree ── */
+
+.sectionHeaderToggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: none;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+  }
+}
+
+.treeToggleChevron {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.sectionHeaderToggle:hover .treeToggleChevron {
+  opacity: 1;
+}
+
+.treeContainer {
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.treeRoot {
+  padding: 2px 0;
+}
+
+.treeNode {
+  display: contents;
+}
+
+.treeRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 2px 8px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  cursor: default;
+  transition: background 0.1s;
+  text-align: left;
+  white-space: nowrap;
+  min-height: 22px;
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent-color) 6%, transparent);
+  }
+}
+
+.treeRowDir {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.treeChevron {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  width: 10px;
+}
+
+.treeChevronSpacer {
+  width: 10px;
+  flex-shrink: 0;
+}
+
+.treeFolderIcon {
+  flex-shrink: 0;
+  color: var(--accent-color);
+  opacity: 0.8;
+}
+
+.treeFileIcon {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.treeName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.treeSize {
+  font-size: 9px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  padding-left: 8px;
+  flex-shrink: 0;
+}
+
+.treeCount {
+  font-size: 9px;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  margin-left: auto;
+  padding-left: 8px;
+  flex-shrink: 0;
+}
+
+.treeChildren {
+  display: block;
+}
+
+.treeLoading {
+  padding: 8px 10px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.treeSummary {
+  padding: 4px 10px;
+  font-size: 9px;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  border-top: 1px solid var(--border-color);
+  text-align: right;
+}

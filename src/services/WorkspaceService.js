@@ -64,5 +64,23 @@ export default class WorkspaceService {
     if (!res.ok) throw new Error(`WorkspaceService.validate failed: ${res.status}`);
     return res.json();
   }
+
+  /**
+   * Fetch the directory tree for a workspace path.
+   * @param {string} path - Workspace root path
+   * @param {number} [maxDepth=3] - Max depth for tree traversal
+   * @returns {Promise<object>} Project summary with tree structure
+   */
+  static async tree(path, maxDepth = 3) {
+    const params = new URLSearchParams({ path });
+    if (maxDepth !== 3) params.set("maxDepth", String(maxDepth));
+    const res = await fetch(`${API_BASE}/workspaces/tree?${params}`, {
+      method: "GET",
+      headers: getBaseHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`WorkspaceService.tree failed: ${res.status}`);
+    return res.json();
+  }
 }
 
