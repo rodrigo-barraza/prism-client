@@ -42,6 +42,8 @@ import useModelMemory from "../hooks/useModelMemory.js";
 import AgentPickerComponent from "./AgentPickerComponent.js";
 import AgentBadgeComponent from "./AgentBadgeComponent.js";
 import WorkspaceSelectorComponent from "./WorkspaceSelectorComponent";
+import { useWorkspace } from "./WorkspaceContextComponent.js";
+import WorkspaceService from "../services/WorkspaceService.js";
 
 // -- Per-agent empty state config ---------------------------------
 const AGENT_EMPTY_STATE = {
@@ -118,6 +120,8 @@ export default function AgentComponent({
     ...rawEmptyState,
     subtitle: activeAgentData?.description || rawEmptyState.subtitle,
   };
+
+  const { currentWorkspace } = useWorkspace();
 
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState([]);
@@ -216,7 +220,6 @@ export default function AgentComponent({
   const [favoriteKeys, setFavoriteKeys] = useState([]);
 
   const [pendingImages, setPendingImages] = useState([]);
-  const [contextFiles, setContextFiles] = useState([]); // @-mentioned file/dir paths
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -825,6 +828,8 @@ export default function AgentComponent({
     const el = e.target;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
+    // -- Mention autocomplete detection --
+    detectMentionQueryRef.current?.(el);
   }, []);
 
   // Helper to programmatically set the textarea value (quick prompts, queue cancel)
@@ -839,17 +844,126 @@ export default function AgentComponent({
   }, []);
 
   // -- File mention handler (@ in workspace tree) ---------------
+  // Inserts `@path` directly into the textarea at the current cursor position.
   const handleMentionFile = useCallback((filePath) => {
-    setContextFiles((prev) => {
-      if (prev.includes(filePath)) return prev;
-      return [...prev, filePath];
-    });
-    // Focus the textarea so the user can immediately type
-    textareaRef.current?.focus();
+    const el = textareaRef.current;
+    if (!el) return;
+    const mention = `@${filePath} `;
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? start;
+    // Insert at cursor, replacing any selection
+    const before = el.value.slice(0, start);
+    const after = el.value.slice(end);
+    // Add a space before if cursor is right after a non-space character
+    const needsLeadingSpace = before.length > 0 && before[before.length - 1] !== " " && before[before.length - 1] !== "\n";
+    const insert = (needsLeadingSpace ? " " : "") + mention;
+    const newValue = before + insert + after;
+    el.value = newValue;
+    inputValueRef.current = newValue;
+    setHasInput(newValue.trim().length > 0);
+    // Move cursor to after the inserted mention
+    const newPos = start + insert.length;
+    el.setSelectionRange(newPos, newPos);
+    // Auto-resize
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+    el.focus();
   }, []);
 
-  const removeContextFile = useCallback((filePath) => {
-    setContextFiles((prev) => prev.filter((f) => f !== filePath));
+  // ── Mention Autocomplete ───────────────────────────────────────
+  // Lazily fetches and caches the flat file list from the workspace tree.
+  // The dropdown appears when the user types `@` and filters as they type.
+  const mentionCacheRef = useRef(null);        // cached flat paths [{ path, name, type }]
+  const mentionLoadingRef = useRef(false);
+  const [mentionOpen, setMentionOpen] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const mentionAnchorRef = useRef(0);           // cursor position of the `@`
+  const mentionListRef = useRef(null);          // ref for the dropdown list
+
+  /** Flatten a tree node array into { path, name, type } entries. */
+  const flattenTree = useCallback((nodes, prefix = "") => {
+    const out = [];
+    for (const n of nodes) {
+      const p = prefix ? `${prefix}/${n.name}` : n.name;
+      out.push({ path: p, name: n.name, type: n.type });
+      if (n.type === "directory" && n.children?.length) {
+        out.push(...flattenTree(n.children, p));
+      }
+    }
+    return out;
+  }, []);
+
+  /** Ensure the flat file cache is populated (lazy-load on first @). */
+  const ensureMentionCache = useCallback(async () => {
+    if (mentionCacheRef.current || mentionLoadingRef.current) return;
+    if (!currentWorkspace?.path) return;
+    mentionLoadingRef.current = true;
+    try {
+      const data = await WorkspaceService.tree(currentWorkspace.path, 5);
+      if (data?.tree) {
+        mentionCacheRef.current = flattenTree(data.tree);
+      }
+    } catch { /* ignore — autocomplete just won't work */ }
+    mentionLoadingRef.current = false;
+  }, [currentWorkspace?.path, flattenTree]);
+
+  /** Invalidate the mention cache when the tree refreshes. */
+  useEffect(() => {
+    mentionCacheRef.current = null;
+  }, [workspaceTreeRefreshKey]);
+
+  /** Detect if the cursor sits inside a `@query` token. */
+  const detectMentionQuery = useCallback((el) => {
+    const pos = el.selectionStart ?? 0;
+    const text = el.value;
+    // Walk backwards from cursor to find the @ anchor
+    let i = pos - 1;
+    while (i >= 0 && text[i] !== "@" && text[i] !== " " && text[i] !== "\n") i--;
+    if (i >= 0 && text[i] === "@" && (i === 0 || text[i - 1] === " " || text[i - 1] === "\n")) {
+      const query = text.slice(i + 1, pos);
+      mentionAnchorRef.current = i;
+      setMentionQuery(query);
+      setMentionIndex(0);
+      setMentionOpen(true);
+      ensureMentionCache();
+    } else {
+      setMentionOpen(false);
+    }
+  }, [ensureMentionCache]);
+  const detectMentionQueryRef = useRef(detectMentionQuery);
+  detectMentionQueryRef.current = detectMentionQuery;
+
+  /** Filtered mention results. */
+  const mentionResults = useMemo(() => {
+    if (!mentionOpen || !mentionCacheRef.current) return [];
+    const q = mentionQuery.toLowerCase();
+    const all = mentionCacheRef.current;
+    if (!q) return all.slice(0, 20);
+    return all
+      .filter((entry) => entry.path.toLowerCase().includes(q) || entry.name.toLowerCase().includes(q))
+      .slice(0, 20);
+  }, [mentionOpen, mentionQuery]);
+
+  /** Apply the selected mention — replace @query with @path. */
+  const applyMention = useCallback((entry) => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const anchor = mentionAnchorRef.current;
+    const pos = el.selectionStart ?? el.value.length;
+    const before = el.value.slice(0, anchor);
+    const after = el.value.slice(pos);
+    const insert = `@${entry.path} `;
+    const newValue = before + insert + after;
+    el.value = newValue;
+    inputValueRef.current = newValue;
+    setHasInput(newValue.trim().length > 0);
+    const newPos = anchor + insert.length;
+    el.setSelectionRange(newPos, newPos);
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+    setMentionOpen(false);
+    el.focus();
   }, []);
 
   // -- Image handlers ------------------------------------------
@@ -1702,13 +1816,14 @@ export default function AgentComponent({
               const op = data.operation || "";
               const isBackground = op.startsWith("memory:") || op.startsWith("embed:");
               if (isBackground) {
-                const bg = last._backgroundUsage || { inputTokens: 0, outputTokens: 0 };
+                const bg = last._backgroundUsage || { inputTokens: 0, outputTokens: 0, cost: 0 };
                 updated[updated.length - 1] = {
                   ...last,
                   _backgroundUsage: {
                     inputTokens: bg.inputTokens + (data.usage?.inputTokens || 0),
                     outputTokens: bg.outputTokens + (data.usage?.outputTokens || 0),
                     requests: (bg.requests || 0) + (data.usage?.requests || 1),
+                    cost: bg.cost + (data.usage?.estimatedCost || 0),
                   },
                 };
               } else if (!last.usage) {
@@ -1809,8 +1924,6 @@ export default function AgentComponent({
   // handleSend on every keystroke (the main cause of input lag).
   const pendingImagesRef = useRef(pendingImages);
   pendingImagesRef.current = pendingImages;
-  const contextFilesRef = useRef(contextFiles);
-  contextFilesRef.current = contextFiles;
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const titleRef = useRef(title);
@@ -1829,22 +1942,19 @@ export default function AgentComponent({
       
       const text = overridePayload ? overridePayload.text : inputValueRef.current.trim();
       const currentImages = overridePayload ? overridePayload.images : [...pendingImagesRef.current];
-      const currentContextFiles = overridePayload ? (overridePayload.contextFiles || []) : [...contextFilesRef.current];
       
       if (!text && currentImages.length === 0) return;
 
       if (isQueueing) {
-        setQueuedNextTurn({ text, images: currentImages, contextFiles: currentContextFiles });
+        setQueuedNextTurn({ text, images: currentImages });
         setTextareaValue("");
         setPendingImages([]);
-        setContextFiles([]);
         return;
       }
 
       if (!overridePayload) {
         setTextareaValue("");
         setPendingImages([]);
-        setContextFiles([]);
       }
 
       setIsGenerating(true);
@@ -1880,15 +1990,9 @@ export default function AgentComponent({
       }
 
       setCurrentTurnStart(Date.now());
-      // Build final message content — append @-mentioned file paths
-      let finalContent = text;
-      if (currentContextFiles.length > 0) {
-        const mentions = currentContextFiles.map((f) => `@${f}`).join("\n");
-        finalContent = `${text}\n\n<context_files>\n${mentions}\n</context_files>`;
-      }
       const userMessage = {
         role: "user",
-        content: finalContent,
+        content: text,
         timestamp: new Date().toISOString(),
         ...(currentImages.length > 0 ? { images: currentImages } : {}),
       };
@@ -1965,6 +2069,38 @@ export default function AgentComponent({
 
   const handleKeyDown = useCallback(
     (e) => {
+      // -- Mention autocomplete keyboard nav --
+      if (mentionOpen && mentionResults.length > 0) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setMentionIndex((i) => {
+            const next = Math.min(i + 1, mentionResults.length - 1);
+            // Scroll selected item into view
+            mentionListRef.current?.children[next]?.scrollIntoView({ block: "nearest" });
+            return next;
+          });
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setMentionIndex((i) => {
+            const next = Math.max(i - 1, 0);
+            mentionListRef.current?.children[next]?.scrollIntoView({ block: "nearest" });
+            return next;
+          });
+          return;
+        }
+        if (e.key === "Enter" || e.key === "Tab") {
+          e.preventDefault();
+          applyMention(mentionResults[mentionIndex]);
+          return;
+        }
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setMentionOpen(false);
+          return;
+        }
+      }
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         if (isGenerating) {
@@ -1974,7 +2110,7 @@ export default function AgentComponent({
         }
       }
     },
-    [handleSend, isGenerating],
+    [handleSend, isGenerating, mentionOpen, mentionResults, mentionIndex, applyMention],
   );
 
   // Auto-send queued message when generation completes
@@ -1994,7 +2130,6 @@ export default function AgentComponent({
     setToolActivity([]);
     setWorkerToolActivity({});
     setPendingImages([]);
-    setContextFiles([]);
     setPlanProposal(null);
     setAgentSessionId(generateUUID());
     setTraceId(null);
@@ -2405,7 +2540,7 @@ export default function AgentComponent({
                         tokenHwmRef.current = { input: t.input, output: t.output, total: t.total };
                         return t;
                       })(),
-                      totalCost: backendSessionStats.totalCost,
+                      totalCost: (backendSessionStats.totalCost || 0) + (bgUsage?.cost || 0),
                       originalTotalCost: 0,
                       // Merge backend toolCounts, client capabilities, and live
                       // worker tool counts into a single usedTools array
@@ -2463,7 +2598,7 @@ export default function AgentComponent({
                         tokenHwmRef.current = { input: t.input, output: t.output, total: t.total };
                         return t;
                       })(),
-                      totalCost,
+                      totalCost: totalCost + (bgUsage?.cost || 0),
                       originalTotalCost: 0,
                       // Merge client-side usedTools with live worker tool counts
                       usedTools: mergeUsedToolsWithWorkers(
@@ -2750,7 +2885,6 @@ export default function AgentComponent({
                   onClick={() => {
                     setTextareaValue(queuedNextTurn.text);
                     setPendingImages(queuedNextTurn.images);
-                    setContextFiles(queuedNextTurn.contextFiles || []);
                     setQueuedNextTurn(null);
                   }}
                   className={chatStyles.removeAttachment}
@@ -2799,28 +2933,6 @@ export default function AgentComponent({
               ))}
             </div>
           )}
-          {contextFiles.length > 0 && (
-            <div className={chatStyles.contextFiles}>
-              {contextFiles.map((filePath) => {
-                const isDir = !filePath.includes(".") || filePath.endsWith("/");
-                const basename = filePath.split("/").pop();
-                return (
-                  <div key={filePath} className={chatStyles.contextFileBadge} title={filePath}>
-                    {isDir ? <FolderOpen size={11} /> : <File size={11} />}
-                    <span className={chatStyles.contextFileLabel}>@{basename}</span>
-                    <button
-                      type="button"
-                      className={chatStyles.contextFileRemove}
-                      onClick={() => removeContextFile(filePath)}
-                      title="Remove"
-                    >
-                      <X size={10} />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
           <div className={chatStyles.inputRow}>
             {supportsImageInput && (
               <>
@@ -2844,9 +2956,29 @@ export default function AgentComponent({
               defaultValue=""
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              onBlur={() => setTimeout(() => setMentionOpen(false), 150)}
               placeholder={emptyState.placeholder}
               rows={1}
             />
+            {/* ── Mention Autocomplete Dropdown ── */}
+            {mentionOpen && mentionResults.length > 0 && (
+              <div className={chatStyles.mentionDropdown}>
+                <div className={chatStyles.mentionList} ref={mentionListRef}>
+                  {mentionResults.map((entry, i) => (
+                    <button
+                      key={entry.path}
+                      type="button"
+                      className={`${chatStyles.mentionItem} ${i === mentionIndex ? chatStyles.mentionItemActive : ""}`}
+                      onMouseDown={(e) => { e.preventDefault(); applyMention(entry); }}
+                      onMouseEnter={() => setMentionIndex(i)}
+                    >
+                      {entry.type === "directory" ? <FolderOpen size={12} /> : <File size={12} />}
+                      <span className={chatStyles.mentionItemPath}>{entry.path}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {isGenerating && (
               <ChatInputButton
                 variant="button"
