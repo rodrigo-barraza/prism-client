@@ -40,7 +40,7 @@ const themeInitScript = `
     if (nav === 'false') {
       document.documentElement.setAttribute('data-nav-collapsed', 'true');
     }
-  } catch(e) {}
+  } catch(e) { console.warn('Theme initialization failed:', e.message); }
 })();
 `;
 
