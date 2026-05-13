@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import PrismService from "../services/PrismService.js";
 import { renderToolName } from "../utils/utilities.js";
-import { formatDuration } from "../utils/tableColumns.js";
+import { formatDuration } from "../utils/utilities.js";
 import CostBadgeComponent from "./CostBadgeComponent.js";
 import ModelBadgeComponent from "./ModelBadgeComponent.js";
 import ModalityIconComponent from "./ModalityIconComponent";

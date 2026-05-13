@@ -27,7 +27,7 @@ import PromptSectionComponent from "./PromptSectionComponent.js";
 import MessageList from "./MessageListComponent.js";
 
 import JsonViewerComponent from "./JsonViewerComponent.js";
-import SynthesisHistoryPanel from "./SynthesisHistoryPanel.js";
+import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent.js";
 import { SETTINGS_DEFAULTS, SK_MODEL_MEMORY_SYNTHESIS } from "../constants.js";
 import { generateUUID } from "../utils/utilities.js";
 import styles from "./SynthesisComponent.module.css";
