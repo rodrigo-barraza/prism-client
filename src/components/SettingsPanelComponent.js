@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import {
   Cpu,
   Edit3,
@@ -111,6 +111,7 @@ export default function SettingsPanel({
   sessionType = "conversation",
   canSpawnWorkers = false,
   agentToggles,
+  workspaceTreeRefreshKey = 0,
 }) {
   const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
   const { currentWorkspace } = useWorkspace();
@@ -215,6 +216,22 @@ export default function SettingsPanel({
   useEffect(() => {
     setTreeData(null);
   }, [currentWorkspace?.path]);
+
+  // Live-refresh: debounced re-fetch when workspaceTreeRefreshKey changes
+  // (triggered by filesystem-mutating tool completions in the agent loop)
+  const treeRefreshTimerRef = useRef(null);
+  useEffect(() => {
+    if (workspaceTreeRefreshKey === 0 || !treeExpanded) return;
+    // Debounce: tools often fire in bursts — coalesce into one fetch
+    if (treeRefreshTimerRef.current) clearTimeout(treeRefreshTimerRef.current);
+    treeRefreshTimerRef.current = setTimeout(() => {
+      treeRefreshTimerRef.current = null;
+      fetchTree();
+    }, 1500);
+    return () => {
+      if (treeRefreshTimerRef.current) clearTimeout(treeRefreshTimerRef.current);
+    };
+  }, [workspaceTreeRefreshKey, treeExpanded, fetchTree]);
   const showStatsTabBar =
     canSpawnWorkers && !!(sessionStats?.orchestrator || sessionStats?.workers);
 

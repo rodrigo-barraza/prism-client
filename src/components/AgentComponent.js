@@ -140,6 +140,7 @@ export default function AgentComponent({
   const [mcpServers, setMcpServers] = useState([]);
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
+  const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
   const [workerToolActivity, setWorkerToolActivity] = useState({});
@@ -1228,6 +1229,11 @@ export default function AgentComponent({
                 .then((r) => setTotalMemoriesCount(r.total || 0))
                 .catch(() => {});
             }
+
+            // Auto-refresh workspace tree when filesystem-mutating tools complete
+            if (data.status !== "calling" && WORKSPACE_FS_TOOLS.has(tc.name)) {
+              setWorkspaceTreeRefreshKey((k) => k + 1);
+            }
           },
           // LM Studio native MCP tool calls (toolCall events)
           onToolCall: (tc) => {
@@ -2231,6 +2237,7 @@ export default function AgentComponent({
 
       {leftTab === "settings" && (
         <SettingsPanel
+          workspaceTreeRefreshKey={workspaceTreeRefreshKey}
           config={filteredConfig}
           settings={settings}
           onChange={isNoAgent
