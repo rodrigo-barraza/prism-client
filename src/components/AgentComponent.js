@@ -816,72 +816,135 @@ export default function AgentComponent({
     [messages],
   );
 
+  // ── Editable serialization ─────────────────────────────────────
+  // The input is a contentEditable div. Mention badges are non-editable
+  // <span data-mention-path="..."> elements. We serialize them back to
+  // `@full/path` when sending so the model gets the real file reference.
+  const serializeEditable = useCallback((el) => {
+    let text = "";
+    for (const node of el.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        text += node.textContent;
+      } else if (node.dataset?.mentionPath) {
+        text += `@${node.dataset.mentionPath}`;
+      } else if (node.tagName === "BR") {
+        text += "\n";
+      } else {
+        // Block wrappers created by Enter in contentEditable
+        if (text.length > 0 && !text.endsWith("\n")) text += "\n";
+        text += serializeEditable(node);
+      }
+    }
+    return text;
+  }, []);
+
+  /** Create a styled mention badge span. */
+  const createMentionBadge = useCallback((path, name, type) => {
+    const badge = document.createElement("span");
+    badge.contentEditable = "false";
+    badge.className = chatStyles.mentionBadge;
+    badge.dataset.mentionPath = path;
+    badge.dataset.mentionType = type || "file";
+    // Icon prefix (text-based for simplicity inside contentEditable)
+    const icon = type === "directory" ? "📁" : "📄";
+    badge.textContent = `${icon} ${name}`;
+    return badge;
+  }, []);
+
+  /** Place caret right after a given DOM node. */
+  const placeCaretAfter = useCallback((node) => {
+    const sel = window.getSelection();
+    const r = document.createRange();
+    r.setStartAfter(node);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }, []);
+
   // -- Stable input change handler -----------------------------
-  // Uncontrolled textarea: only flip hasInput on empty↔non-empty
-  // transitions to avoid re-rendering the entire component tree.
-  const handleInputChange = useCallback((e) => {
-    const val = e.target.value;
+  const handleInputChange = useCallback((_e) => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const val = serializeEditable(el);
     inputValueRef.current = val;
     const nowHasInput = val.trim().length > 0;
     setHasInput((prev) => (prev !== nowHasInput ? nowHasInput : prev));
-    // Auto-resize inline (no state/effect needed)
-    const el = e.target;
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
     // -- Mention autocomplete detection --
     detectMentionQueryRef.current?.(el);
-  }, []);
+  }, [serializeEditable]);
 
-  // Helper to programmatically set the textarea value (quick prompts, queue cancel)
+  // Helper to programmatically set the editable value (quick prompts, queue cancel)
   const setTextareaValue = useCallback((text) => {
     inputValueRef.current = text;
     setHasInput(text.trim().length > 0);
     if (textareaRef.current) {
-      textareaRef.current.value = text;
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+      textareaRef.current.textContent = text;
     }
   }, []);
 
+  /** Strip HTML on paste — contentEditable should only accept plain text. */
+  const handleEditablePaste = useCallback((e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text/plain");
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+    const textNode = document.createTextNode(text);
+    range.insertNode(textNode);
+    placeCaretAfter(textNode);
+    // Sync
+    const el = textareaRef.current;
+    if (el) {
+      inputValueRef.current = serializeEditable(el);
+      setHasInput(inputValueRef.current.trim().length > 0);
+    }
+  }, [serializeEditable, placeCaretAfter]);
+
   // -- File mention handler (@ in workspace tree) ---------------
-  // Inserts `@path` directly into the textarea at the current cursor position.
+  // Inserts a styled badge at the current cursor position.
   const handleMentionFile = useCallback((filePath) => {
     const el = textareaRef.current;
     if (!el) return;
-    const mention = `@${filePath} `;
-    const start = el.selectionStart ?? el.value.length;
-    const end = el.selectionEnd ?? start;
-    // Insert at cursor, replacing any selection
-    const before = el.value.slice(0, start);
-    const after = el.value.slice(end);
-    // Add a space before if cursor is right after a non-space character
-    const needsLeadingSpace = before.length > 0 && before[before.length - 1] !== " " && before[before.length - 1] !== "\n";
-    const insert = (needsLeadingSpace ? " " : "") + mention;
-    const newValue = before + insert + after;
-    el.value = newValue;
-    inputValueRef.current = newValue;
-    setHasInput(newValue.trim().length > 0);
-    // Move cursor to after the inserted mention
-    const newPos = start + insert.length;
-    el.setSelectionRange(newPos, newPos);
-    // Auto-resize
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
+    const name = filePath.split("/").pop();
+    const isDir = !name.includes(".");
+    const badge = createMentionBadge(filePath, name, isDir ? "directory" : "file");
+    const space = document.createTextNode(" ");
+    const sel = window.getSelection();
+    const range = sel.rangeCount && el.contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
+    if (range) {
+      // Add leading space if cursor follows a non-space character
+      const container = range.startContainer;
+      if (container.nodeType === Node.TEXT_NODE) {
+        const ch = container.textContent[range.startOffset - 1];
+        if (ch && ch !== " " && ch !== "\n") {
+          range.insertNode(document.createTextNode(" "));
+          range.collapse(false);
+        }
+      }
+      range.insertNode(space);
+      range.insertNode(badge);
+    } else {
+      // No cursor — append
+      if (el.textContent.length > 0) el.appendChild(document.createTextNode(" "));
+      el.appendChild(badge);
+      el.appendChild(space);
+    }
+    placeCaretAfter(space);
+    inputValueRef.current = serializeEditable(el);
+    setHasInput(true);
     el.focus();
-  }, []);
+  }, [serializeEditable, createMentionBadge, placeCaretAfter]);
 
   // ── Mention Autocomplete ───────────────────────────────────────
-  // Lazily fetches and caches the flat file list from the workspace tree.
-  // The dropdown appears when the user types `@` and filters as they type.
-  const mentionCacheRef = useRef(null);        // cached flat paths [{ path, name, type }]
+  const mentionCacheRef = useRef(null);
   const mentionLoadingRef = useRef(false);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionIndex, setMentionIndex] = useState(0);
-  const mentionAnchorRef = useRef(0);           // cursor position of the `@`
-  const mentionListRef = useRef(null);          // ref for the dropdown list
+  const mentionAnchorRef = useRef(null); // { node, offset } of the `@`
+  const mentionListRef = useRef(null);
 
-  /** Flatten a tree node array into { path, name, type } entries. */
   const flattenTree = useCallback((nodes, prefix = "") => {
     const out = [];
     for (const n of nodes) {
@@ -894,36 +957,32 @@ export default function AgentComponent({
     return out;
   }, []);
 
-  /** Ensure the flat file cache is populated (lazy-load on first @). */
   const ensureMentionCache = useCallback(async () => {
     if (mentionCacheRef.current || mentionLoadingRef.current) return;
     if (!currentWorkspace?.path) return;
     mentionLoadingRef.current = true;
     try {
       const data = await WorkspaceService.tree(currentWorkspace.path, 5);
-      if (data?.tree) {
-        mentionCacheRef.current = flattenTree(data.tree);
-      }
-    } catch { /* ignore — autocomplete just won't work */ }
+      if (data?.tree) mentionCacheRef.current = flattenTree(data.tree);
+    } catch { /* autocomplete unavailable */ }
     mentionLoadingRef.current = false;
   }, [currentWorkspace?.path, flattenTree]);
 
-  /** Invalidate the mention cache when the tree refreshes. */
-  useEffect(() => {
-    mentionCacheRef.current = null;
-  }, [workspaceTreeRefreshKey]);
+  useEffect(() => { mentionCacheRef.current = null; }, [workspaceTreeRefreshKey]);
 
-  /** Detect if the cursor sits inside a `@query` token. */
+  /** Detect @query from cursor position inside contentEditable. */
   const detectMentionQuery = useCallback((el) => {
-    const pos = el.selectionStart ?? 0;
-    const text = el.value;
-    // Walk backwards from cursor to find the @ anchor
+    const sel = window.getSelection();
+    if (!sel.rangeCount || !el.contains(sel.anchorNode)) { setMentionOpen(false); return; }
+    const anchor = sel.anchorNode;
+    if (anchor.nodeType !== Node.TEXT_NODE) { setMentionOpen(false); return; }
+    const text = anchor.textContent;
+    const pos = sel.anchorOffset;
     let i = pos - 1;
     while (i >= 0 && text[i] !== "@" && text[i] !== " " && text[i] !== "\n") i--;
     if (i >= 0 && text[i] === "@" && (i === 0 || text[i - 1] === " " || text[i - 1] === "\n")) {
-      const query = text.slice(i + 1, pos);
-      mentionAnchorRef.current = i;
-      setMentionQuery(query);
+      mentionAnchorRef.current = { node: anchor, offset: i };
+      setMentionQuery(text.slice(i + 1, pos));
       setMentionIndex(0);
       setMentionOpen(true);
       ensureMentionCache();
@@ -934,37 +993,45 @@ export default function AgentComponent({
   const detectMentionQueryRef = useRef(detectMentionQuery);
   detectMentionQueryRef.current = detectMentionQuery;
 
-  /** Filtered mention results. */
   const mentionResults = useMemo(() => {
     if (!mentionOpen || !mentionCacheRef.current) return [];
     const q = mentionQuery.toLowerCase();
     const all = mentionCacheRef.current;
     if (!q) return all.slice(0, 20);
     return all
-      .filter((entry) => entry.path.toLowerCase().includes(q) || entry.name.toLowerCase().includes(q))
+      .filter((e) => e.path.toLowerCase().includes(q) || e.name.toLowerCase().includes(q))
       .slice(0, 20);
   }, [mentionOpen, mentionQuery]);
 
-  /** Apply the selected mention — replace @query with @path. */
+  /** Apply mention — replace @query text with a badge span. */
   const applyMention = useCallback((entry) => {
     const el = textareaRef.current;
-    if (!el) return;
-    const anchor = mentionAnchorRef.current;
-    const pos = el.selectionStart ?? el.value.length;
-    const before = el.value.slice(0, anchor);
-    const after = el.value.slice(pos);
-    const insert = `@${entry.path} `;
-    const newValue = before + insert + after;
-    el.value = newValue;
-    inputValueRef.current = newValue;
-    setHasInput(newValue.trim().length > 0);
-    const newPos = anchor + insert.length;
-    el.setSelectionRange(newPos, newPos);
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
+    if (!el || !mentionAnchorRef.current) return;
+    const { node, offset } = mentionAnchorRef.current;
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const cursorOffset = sel.anchorOffset;
+    // Delete the @query text from the text node
+    const before = node.textContent.slice(0, offset);
+    const after = node.textContent.slice(cursorOffset);
+    node.textContent = before;
+    // Create badge + trailing space
+    const badge = createMentionBadge(entry.path, entry.name, entry.type);
+    const space = document.createTextNode(" ");
+    const afterNode = document.createTextNode(after);
+    // Insert badge, space, then remaining text after the current text node
+    const parent = node.parentNode;
+    const next = node.nextSibling;
+    parent.insertBefore(badge, next);
+    parent.insertBefore(space, badge.nextSibling);
+    if (after) parent.insertBefore(afterNode, space.nextSibling);
+    // Cursor after space
+    placeCaretAfter(space);
+    inputValueRef.current = serializeEditable(el);
+    setHasInput(inputValueRef.current.trim().length > 0);
     setMentionOpen(false);
     el.focus();
-  }, []);
+  }, [serializeEditable, createMentionBadge, placeCaretAfter]);
 
   // -- Image handlers ------------------------------------------
   const handleImageSelect = useCallback((e) => {
@@ -2108,6 +2175,22 @@ export default function AgentComponent({
         } else {
           handleSend();
         }
+      } else if (e.key === "Enter" && e.shiftKey) {
+        // Shift+Enter: insert a <br> for newline in contentEditable
+        e.preventDefault();
+        const sel = window.getSelection();
+        if (sel.rangeCount) {
+          const range = sel.getRangeAt(0);
+          range.deleteContents();
+          const br = document.createElement("br");
+          range.insertNode(br);
+          // Move cursor after the <br>
+          const newRange = document.createRange();
+          newRange.setStartAfter(br);
+          newRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+        }
       }
     },
     [handleSend, isGenerating, mentionOpen, mentionResults, mentionIndex, applyMention],
@@ -2951,14 +3034,18 @@ export default function AgentComponent({
                 />
               </>
             )}
-            <textarea
+            <div
               ref={textareaRef}
-              defaultValue=""
-              onChange={handleInputChange}
+              contentEditable
+              role="textbox"
+              aria-multiline="true"
+              className={chatStyles.editableInput}
+              onInput={handleInputChange}
               onKeyDown={handleKeyDown}
+              onPaste={handleEditablePaste}
               onBlur={() => setTimeout(() => setMentionOpen(false), 150)}
-              placeholder={emptyState.placeholder}
-              rows={1}
+              data-placeholder={emptyState.placeholder}
+              suppressContentEditableWarning
             />
             {/* ── Mention Autocomplete Dropdown ── */}
             {mentionOpen && mentionResults.length > 0 && (

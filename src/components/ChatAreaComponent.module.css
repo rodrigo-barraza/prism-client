@@ -188,11 +188,12 @@
 
 .inputRow {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 2px;
 }
 
-.inputRow textarea {
+.inputRow textarea,
+.editableInput {
   flex: 1;
   background: transparent;
   border: none;
@@ -201,10 +202,53 @@
   padding: 8px 4px;
   resize: none;
   overflow-y: auto;
+  outline: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.inputRow textarea:focus {
+.inputRow textarea:focus,
+.editableInput:focus {
   box-shadow: none;
+}
+
+/* Placeholder via :empty pseudo-element */
+.editableInput:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+/* ── Inline Mention Badge ──────────────────────────────── */
+
+.mentionBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px 1px 5px;
+  margin: 0 1px;
+  background: color-mix(in srgb, var(--accent-color) 10%, var(--bg-tertiary));
+  border: 1px solid color-mix(in srgb, var(--accent-color) 25%, var(--border-color));
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  color: var(--accent-color);
+  font-weight: 500;
+  white-space: nowrap;
+  vertical-align: baseline;
+  cursor: default;
+  user-select: all;
+  line-height: 1.6;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.mentionBadge:hover {
+  background: color-mix(in srgb, var(--accent-color) 16%, var(--bg-tertiary));
+  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
 }
 
 /* ── Mention Autocomplete Dropdown ──────────────────────── */
