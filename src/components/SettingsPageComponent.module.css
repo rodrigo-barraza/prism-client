@@ -399,7 +399,8 @@
 /* ── Add workspace input ─────────────────────────────────────────── */
 
 .addWorkspaceRow {
-  display: flex;
+  display: none; /* temporarily disabled */
+  /* display: flex; */
   align-items: center;
   gap: 8px;
   padding: 12px 24px;

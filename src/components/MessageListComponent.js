@@ -42,6 +42,7 @@ import styles from "./MessageListComponent.module.css";
 import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
 import { getTotalInputTokens, renderToolName } from "../utils/utilities";
+import { parseMentionTokens } from "../utils/mentionUtils";
 
 /* -- Task notification detection (Claude Code pattern) -------
  * Worker results arrive as user-role messages containing
@@ -63,6 +64,31 @@ function parseTaskNotification(content) {
     toolUses: tag("tool_uses"),
     durationMs: tag("duration_ms"),
   };
+}
+
+/* -- Render @path mentions as inline badges -------------------
+ * When a user sends a message with file/dir mentions, the
+ * contentEditable serializer stores them as `@path/to/file`
+ * strings. This function parses them back into styled badges
+ * for display in the message list.                             */
+
+function renderContentWithMentions(text) {
+  const segments = parseMentionTokens(text);
+  // Fast path: no mentions found, return plain string
+  if (segments.length === 1 && segments[0].type === "text") return text;
+
+  return segments.map((seg, i) => {
+    if (seg.type === "text") return seg.value;
+    const name = seg.value.split("/").pop() || seg.value;
+    const hasExt = name.includes(".");
+    const icon = hasExt ? "📄" : "📁";
+    return (
+      <span key={i} className={styles.mentionBadge} title={seg.value}>
+        <span className={styles.mentionIcon}>{icon}</span>
+        {name}
+      </span>
+    );
+  });
 }
 
 function getMimeCategory(ref) {
@@ -528,7 +554,7 @@ function EditableMessage({
 
   // Non-editing: user messages show plain text, assistant uses caller's rendering
   if (!isAssistant) {
-    return <div className={styles.text}>{content}</div>;
+    return <div className={styles.text}>{renderContentWithMentions(content)}</div>;
   }
   return null; // Assistant non-editing rendering is handled by the caller
 }
@@ -789,9 +815,11 @@ export default function MessageList({
             )}
             <span className={styles.stickyUserMsgText}>
               {stickyUserMsg?.content
-                ? stickyUserMsg.content.length > 200
-                  ? stickyUserMsg.content.slice(0, 200) + "…"
-                  : stickyUserMsg.content
+                ? renderContentWithMentions(
+                    stickyUserMsg.content.length > 200
+                      ? stickyUserMsg.content.slice(0, 200) + "…"
+                      : stickyUserMsg.content
+                  )
                 : "(no text)"}
             </span>
           </div>

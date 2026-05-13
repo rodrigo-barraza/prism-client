@@ -97,6 +97,45 @@ export function filterMentionResults(entries, query, limit = 20) {
     .slice(0, limit);
 }
 
+// ── Text → Mention Parsing (for rendering) ───────────────────────
+// Parse serialized `@path` tokens out of a plain text string so
+// they can be rendered as styled badges in the message list.
+
+/**
+ * Parse a text string into segments of plain text and @-mention tokens.
+ * Mention tokens match `@non-whitespace` sequences at word boundaries.
+ *
+ * @param {string} text — serialized message content
+ * @returns {{ type: "text" | "mention", value: string }[]}
+ */
+export function parseMentionTokens(text) {
+  if (!text) return [{ type: "text", value: "" }];
+
+  // Match @path tokens — path must contain at least one `/` or `.` to
+  // distinguish real file/dir mentions from casual "@someone" usage.
+  const mentionRe = /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+))/g;
+
+  const segments = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = mentionRe.exec(text)) !== null) {
+    // Text before this mention
+    if (match.index > lastIndex) {
+      segments.push({ type: "text", value: text.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: "mention", value: match[1] });
+    lastIndex = mentionRe.lastIndex;
+  }
+
+  // Trailing text
+  if (lastIndex < text.length) {
+    segments.push({ type: "text", value: text.slice(lastIndex) });
+  }
+
+  return segments.length > 0 ? segments : [{ type: "text", value: text }];
+}
+
 // ── Badge Creation ────────────────────────────────────────────────
 
 /**
