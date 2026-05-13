@@ -76,6 +76,12 @@ const DEFAULT_EMPTY_STATE = {
 // Tools that are always on and non-toggleable in the agent view
 const AGENT_LOCKED_TOOLS = new Set(["Tool Calling"]);
 
+// Filesystem-mutating tools that should trigger a workspace tree refresh
+const WORKSPACE_FS_TOOLS = new Set([
+  "write_file", "str_replace_file", "patch_file",
+  "move_file", "delete_file", "run_command", "notebook_edit",
+]);
+
 /** No-agent empty state — raw chat via /chat endpoint, no agentic loop. */
 const NONE_EMPTY_STATE = {
   title: "Direct Chat",
@@ -1304,6 +1310,11 @@ export default function AgentComponent({
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
                 .catch(() => {});
+            }
+
+            // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
+            if (tc.status !== "calling" && WORKSPACE_FS_TOOLS.has(tc.name)) {
+              setWorkspaceTreeRefreshKey((k) => k + 1);
             }
           },
           onToolOutput: (data) => {
