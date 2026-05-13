@@ -44,6 +44,15 @@ import AgentBadgeComponent from "./AgentBadgeComponent.js";
 import WorkspaceSelectorComponent from "./WorkspaceSelectorComponent";
 import { useWorkspace } from "./WorkspaceContextComponent.js";
 import WorkspaceService from "../services/WorkspaceService.js";
+import {
+  serializeEditable,
+  flattenTree,
+  detectMentionToken,
+  filterMentionResults,
+  createMentionBadge as _createMentionBadge,
+  placeCaretAfter,
+  applyMentionToTextNode,
+} from "../utils/mentionUtils.js";
 
 // -- Per-agent empty state config ---------------------------------
 const AGENT_EMPTY_STATE = {
@@ -820,45 +829,11 @@ export default function AgentComponent({
   // The input is a contentEditable div. Mention badges are non-editable
   // <span data-mention-path="..."> elements. We serialize them back to
   // `@full/path` when sending so the model gets the real file reference.
-  const serializeEditable = useCallback((el) => {
-    let text = "";
-    for (const node of el.childNodes) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        text += node.textContent;
-      } else if (node.dataset?.mentionPath) {
-        text += `@${node.dataset.mentionPath}`;
-      } else if (node.tagName === "BR") {
-        text += "\n";
-      } else {
-        // Block wrappers created by Enter in contentEditable
-        if (text.length > 0 && !text.endsWith("\n")) text += "\n";
-        text += serializeEditable(node);
-      }
-    }
-    return text;
-  }, []);
+  // Pure logic lives in mentionUtils.js; here we just wire it up.
 
-  /** Create a styled mention badge span. */
+  /** Create a styled mention badge span (wraps the pure fn with CSS class). */
   const createMentionBadge = useCallback((path, name, type) => {
-    const badge = document.createElement("span");
-    badge.contentEditable = "false";
-    badge.className = chatStyles.mentionBadge;
-    badge.dataset.mentionPath = path;
-    badge.dataset.mentionType = type || "file";
-    // Icon prefix (text-based for simplicity inside contentEditable)
-    const icon = type === "directory" ? "📁" : "📄";
-    badge.textContent = `${icon} ${name}`;
-    return badge;
-  }, []);
-
-  /** Place caret right after a given DOM node. */
-  const placeCaretAfter = useCallback((node) => {
-    const sel = window.getSelection();
-    const r = document.createRange();
-    r.setStartAfter(node);
-    r.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(r);
+    return _createMentionBadge(path, name, type, chatStyles.mentionBadge);
   }, []);
 
   // -- Stable input change handler -----------------------------
@@ -871,7 +846,7 @@ export default function AgentComponent({
     setHasInput((prev) => (prev !== nowHasInput ? nowHasInput : prev));
     // -- Mention autocomplete detection --
     detectMentionQueryRef.current?.(el);
-  }, [serializeEditable]);
+  }, []);
 
   // Helper to programmatically set the editable value (quick prompts, queue cancel)
   const setTextareaValue = useCallback((text) => {
@@ -899,7 +874,7 @@ export default function AgentComponent({
       inputValueRef.current = serializeEditable(el);
       setHasInput(inputValueRef.current.trim().length > 0);
     }
-  }, [serializeEditable, placeCaretAfter]);
+  }, []);
 
   // -- File mention handler (@ in workspace tree) ---------------
   // Inserts a styled badge at the current cursor position.
@@ -913,7 +888,6 @@ export default function AgentComponent({
     const sel = window.getSelection();
     const range = sel.rangeCount && el.contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
     if (range) {
-      // Add leading space if cursor follows a non-space character
       const container = range.startContainer;
       if (container.nodeType === Node.TEXT_NODE) {
         const ch = container.textContent[range.startOffset - 1];
@@ -925,7 +899,6 @@ export default function AgentComponent({
       range.insertNode(space);
       range.insertNode(badge);
     } else {
-      // No cursor — append
       if (el.textContent.length > 0) el.appendChild(document.createTextNode(" "));
       el.appendChild(badge);
       el.appendChild(space);
@@ -934,7 +907,7 @@ export default function AgentComponent({
     inputValueRef.current = serializeEditable(el);
     setHasInput(true);
     el.focus();
-  }, [serializeEditable, createMentionBadge, placeCaretAfter]);
+  }, [createMentionBadge]);
 
   // ── Mention Autocomplete ───────────────────────────────────────
   const mentionCacheRef = useRef(null);
@@ -945,18 +918,6 @@ export default function AgentComponent({
   const mentionAnchorRef = useRef(null); // { node, offset } of the `@`
   const mentionListRef = useRef(null);
 
-  const flattenTree = useCallback((nodes, prefix = "") => {
-    const out = [];
-    for (const n of nodes) {
-      const p = prefix ? `${prefix}/${n.name}` : n.name;
-      out.push({ path: p, name: n.name, type: n.type });
-      if (n.type === "directory" && n.children?.length) {
-        out.push(...flattenTree(n.children, p));
-      }
-    }
-    return out;
-  }, []);
-
   const ensureMentionCache = useCallback(async () => {
     if (mentionCacheRef.current || mentionLoadingRef.current) return;
     if (!currentWorkspace?.path) return;
@@ -966,7 +927,7 @@ export default function AgentComponent({
       if (data?.tree) mentionCacheRef.current = flattenTree(data.tree);
     } catch { /* autocomplete unavailable */ }
     mentionLoadingRef.current = false;
-  }, [currentWorkspace?.path, flattenTree]);
+  }, [currentWorkspace?.path]);
 
   useEffect(() => { mentionCacheRef.current = null; }, [workspaceTreeRefreshKey]);
 
@@ -976,13 +937,10 @@ export default function AgentComponent({
     if (!sel.rangeCount || !el.contains(sel.anchorNode)) { setMentionOpen(false); return; }
     const anchor = sel.anchorNode;
     if (anchor.nodeType !== Node.TEXT_NODE) { setMentionOpen(false); return; }
-    const text = anchor.textContent;
-    const pos = sel.anchorOffset;
-    let i = pos - 1;
-    while (i >= 0 && text[i] !== "@" && text[i] !== " " && text[i] !== "\n") i--;
-    if (i >= 0 && text[i] === "@" && (i === 0 || text[i - 1] === " " || text[i - 1] === "\n")) {
-      mentionAnchorRef.current = { node: anchor, offset: i };
-      setMentionQuery(text.slice(i + 1, pos));
+    const result = detectMentionToken(anchor.textContent, sel.anchorOffset);
+    if (result) {
+      mentionAnchorRef.current = { node: anchor, offset: result.anchorOffset };
+      setMentionQuery(result.query);
       setMentionIndex(0);
       setMentionOpen(true);
       ensureMentionCache();
@@ -995,12 +953,7 @@ export default function AgentComponent({
 
   const mentionResults = useMemo(() => {
     if (!mentionOpen || !mentionCacheRef.current) return [];
-    const q = mentionQuery.toLowerCase();
-    const all = mentionCacheRef.current;
-    if (!q) return all.slice(0, 20);
-    return all
-      .filter((e) => e.path.toLowerCase().includes(q) || e.name.toLowerCase().includes(q))
-      .slice(0, 20);
+    return filterMentionResults(mentionCacheRef.current, mentionQuery, 20);
   }, [mentionOpen, mentionQuery]);
 
   /** Apply mention — replace @query text with a badge span. */
@@ -1010,28 +963,14 @@ export default function AgentComponent({
     const { node, offset } = mentionAnchorRef.current;
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
-    const cursorOffset = sel.anchorOffset;
-    // Delete the @query text from the text node
-    const before = node.textContent.slice(0, offset);
-    const after = node.textContent.slice(cursorOffset);
-    node.textContent = before;
-    // Create badge + trailing space
     const badge = createMentionBadge(entry.path, entry.name, entry.type);
-    const space = document.createTextNode(" ");
-    const afterNode = document.createTextNode(after);
-    // Insert badge, space, then remaining text after the current text node
-    const parent = node.parentNode;
-    const next = node.nextSibling;
-    parent.insertBefore(badge, next);
-    parent.insertBefore(space, badge.nextSibling);
-    if (after) parent.insertBefore(afterNode, space.nextSibling);
-    // Cursor after space
+    const space = applyMentionToTextNode(node, offset, sel.anchorOffset, badge);
     placeCaretAfter(space);
     inputValueRef.current = serializeEditable(el);
     setHasInput(inputValueRef.current.trim().length > 0);
     setMentionOpen(false);
     el.focus();
-  }, [serializeEditable, createMentionBadge, placeCaretAfter]);
+  }, [createMentionBadge]);
 
   // -- Image handlers ------------------------------------------
   const handleImageSelect = useCallback((e) => {

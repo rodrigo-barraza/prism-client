@@ -1,0 +1,162 @@
+/**
+ * Mention Utilities — Pure functions for the @-mention system.
+ *
+ * Extracted from AgentComponent so they can be unit-tested without
+ * rendering the full component tree.
+ */
+
+// ── DOM Serialization ─────────────────────────────────────────────
+// Walks a contentEditable element's DOM and produces the text that
+// will be sent to the model. Mention badge spans are replaced with
+// their full `@path` representation.
+
+/**
+ * Serialize a contentEditable element's DOM to plain text.
+ * Mention badges (spans with data-mention-path) become `@full/path`.
+ *
+ * @param {HTMLElement} el — root contentEditable element
+ * @returns {string}
+ */
+export function serializeEditable(el) {
+  let text = "";
+  for (const node of el.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      text += node.textContent;
+    } else if (node.dataset?.mentionPath) {
+      text += `@${node.dataset.mentionPath}`;
+    } else if (node.tagName === "BR") {
+      text += "\n";
+    } else {
+      // Block wrappers created by Enter in contentEditable (div, p)
+      if (text.length > 0 && !text.endsWith("\n")) text += "\n";
+      text += serializeEditable(node);
+    }
+  }
+  return text;
+}
+
+// ── Tree Flattening ───────────────────────────────────────────────
+
+/**
+ * Flatten a workspace tree node array into a flat list of entries.
+ * Each entry has { path, name, type }.
+ *
+ * @param {Array} nodes — tree children (from WorkspaceService.tree)
+ * @param {string} prefix — accumulated path prefix
+ * @returns {{ path: string, name: string, type: string }[]}
+ */
+export function flattenTree(nodes, prefix = "") {
+  const out = [];
+  for (const n of nodes) {
+    const p = prefix ? `${prefix}/${n.name}` : n.name;
+    out.push({ path: p, name: n.name, type: n.type });
+    if (n.type === "directory" && n.children?.length) {
+      out.push(...flattenTree(n.children, p));
+    }
+  }
+  return out;
+}
+
+// ── Mention Query Detection ───────────────────────────────────────
+
+/**
+ * Given a text string and a cursor position, detect if the cursor is
+ * inside a `@query` token. Returns the query and the anchor offset,
+ * or null if not in a mention.
+ *
+ * @param {string} text — the text content of the text node
+ * @param {number} cursorOffset — cursor position within the text
+ * @returns {{ query: string, anchorOffset: number } | null}
+ */
+export function detectMentionToken(text, cursorOffset) {
+  let i = cursorOffset - 1;
+  while (i >= 0 && text[i] !== "@" && text[i] !== " " && text[i] !== "\n") i--;
+  if (i >= 0 && text[i] === "@" && (i === 0 || text[i - 1] === " " || text[i - 1] === "\n")) {
+    return { query: text.slice(i + 1, cursorOffset), anchorOffset: i };
+  }
+  return null;
+}
+
+// ── Mention Filtering ─────────────────────────────────────────────
+
+/**
+ * Filter a flat entries list by a query string.
+ * Matches against both path and name (case-insensitive).
+ *
+ * @param {Array} entries — flat list from flattenTree
+ * @param {string} query — search string (may be empty)
+ * @param {number} limit — max results to return
+ * @returns {Array}
+ */
+export function filterMentionResults(entries, query, limit = 20) {
+  if (!entries || !entries.length) return [];
+  if (!query) return entries.slice(0, limit);
+  const q = query.toLowerCase();
+  return entries
+    .filter((e) => e.path.toLowerCase().includes(q) || e.name.toLowerCase().includes(q))
+    .slice(0, limit);
+}
+
+// ── Badge Creation ────────────────────────────────────────────────
+
+/**
+ * Create a mention badge DOM element.
+ *
+ * @param {string} path — full file/directory path
+ * @param {string} name — display name (basename)
+ * @param {string} type — "file" or "directory"
+ * @param {string} badgeClassName — CSS class for styling
+ * @returns {HTMLSpanElement}
+ */
+export function createMentionBadge(path, name, type, badgeClassName) {
+  const badge = document.createElement("span");
+  badge.contentEditable = "false";
+  if (badgeClassName) badge.className = badgeClassName;
+  badge.dataset.mentionPath = path;
+  badge.dataset.mentionType = type || "file";
+  const icon = type === "directory" ? "📁" : "📄";
+  badge.textContent = `${icon} ${name}`;
+  return badge;
+}
+
+// ── Caret Utilities ───────────────────────────────────────────────
+
+/**
+ * Place the caret (cursor) immediately after a given DOM node.
+ *
+ * @param {Node} node — the node to place the caret after
+ */
+export function placeCaretAfter(node) {
+  const sel = window.getSelection();
+  const r = document.createRange();
+  r.setStartAfter(node);
+  r.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(r);
+}
+
+/**
+ * Apply a mention by replacing the @query text in a text node with
+ * a badge span element + trailing space.
+ *
+ * @param {Text} textNode — the text node containing the @query
+ * @param {number} anchorOffset — offset of the `@` character in the text node
+ * @param {number} cursorOffset — current cursor offset in the text node
+ * @param {HTMLSpanElement} badge — the badge element to insert
+ * @returns {Text} — the trailing space text node (for caret positioning)
+ */
+export function applyMentionToTextNode(textNode, anchorOffset, cursorOffset, badge) {
+  const before = textNode.textContent.slice(0, anchorOffset);
+  const after = textNode.textContent.slice(cursorOffset);
+  textNode.textContent = before;
+  const space = document.createTextNode(" ");
+  const parent = textNode.parentNode;
+  const next = textNode.nextSibling;
+  parent.insertBefore(badge, next);
+  parent.insertBefore(space, badge.nextSibling);
+  if (after) {
+    const afterNode = document.createTextNode(after);
+    parent.insertBefore(afterNode, space.nextSibling);
+  }
+  return space;
+}
