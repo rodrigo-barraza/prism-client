@@ -1,0 +1,96 @@
+/* ── Unified Mention Badge ─────────────────────────────────────
+ * Shared styles for @file/@directory mention badges used in both
+ * the contentEditable input (ChatArea) and the message list
+ * (MessageList). Tooltip, hover, and stale states live here.
+ * ─────────────────────────────────────────────────────────────── */
+
+.mentionBadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px 1px 5px;
+  margin: 0 1px;
+  background: color-mix(in srgb, var(--accent-color) 10%, var(--bg-tertiary));
+  border: 1px solid color-mix(in srgb, var(--accent-color) 25%, var(--border-color));
+  border-radius: var(--radius-full, 999px);
+  font-size: 12px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  color: var(--accent-color);
+  font-weight: 500;
+  white-space: nowrap;
+  vertical-align: baseline;
+  cursor: default;
+  line-height: 1.6;
+  transition: background 0.15s, border-color 0.15s, opacity 0.2s, filter 0.2s;
+}
+
+.mentionBadge:hover {
+  background: color-mix(in srgb, var(--accent-color) 16%, var(--bg-tertiary));
+  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
+}
+
+/* ── Tooltip (full path on hover) ────────────────────────────── */
+
+.mentionBadge::after {
+  content: attr(data-mention-path);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 4px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  color: var(--text-primary);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 200;
+}
+
+.mentionBadge:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Inside contentEditable inputs, overflow-y:auto clips the ::after tooltip.
+   These badges have contenteditable="false" and use native `title` instead. */
+.mentionBadge[contenteditable="false"]::after {
+  display: none;
+}
+
+/* ── Stale state (file/directory no longer exists) ───────────── */
+
+.mentionBadgeStale {
+  opacity: 0.45;
+  filter: grayscale(1);
+  border-style: dashed;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--text-muted) 6%, var(--bg-tertiary));
+  border-color: color-mix(in srgb, var(--text-muted) 20%, var(--border-color));
+}
+
+.mentionBadgeStale:hover {
+  opacity: 0.6;
+  background: color-mix(in srgb, var(--text-muted) 10%, var(--bg-tertiary));
+  border-color: color-mix(in srgb, var(--text-muted) 30%, var(--border-color));
+}
+
+/* Tooltip suffix for stale badges */
+.mentionBadgeStale::after {
+  content: attr(data-mention-path) " (deleted)";
+  color: var(--text-muted);
+}
+
+/* ── Mention Icon ────────────────────────────────────────────── */
+
+.mentionIcon {
+  font-size: 11px;
+  line-height: 1;
+  flex-shrink: 0;
+}

@@ -323,9 +323,23 @@ describe("createMentionBadge", () => {
     expect(badge.textContent).toContain("src");
   });
 
-  it("applies className when provided", () => {
-    const badge = createMentionBadge("x", "x", "file", "my-class");
-    expect(badge.className).toBe("my-class");
+  it("applies shared CSS module class by default", () => {
+    const badge = createMentionBadge("x", "x", "file");
+    // Should have a CSS module class (hashed), not empty
+    expect(badge.className).toBeTruthy();
+    expect(badge.className.length).toBeGreaterThan(0);
+  });
+
+  it("applies stale class when opts.stale is true", () => {
+    const badge = createMentionBadge("x", "x", "file", { stale: true });
+    // Should have two classes: base + stale
+    const classes = badge.className.split(" ");
+    expect(classes.length).toBe(2);
+  });
+
+  it("sets title attribute to the full path", () => {
+    const badge = createMentionBadge("src/utils/helpers.js", "helpers.js", "file");
+    expect(badge.title).toBe("src/utils/helpers.js");
   });
 
   it("defaults to file type when type is undefined", () => {

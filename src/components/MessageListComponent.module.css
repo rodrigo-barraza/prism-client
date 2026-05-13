@@ -622,36 +622,7 @@
   }
 }
 
-/* ── Inline Mention Badge (read-only in messages) ── */
-.mentionBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 1px 7px 1px 5px;
-  margin: 0 1px;
-  background: color-mix(in srgb, var(--accent-color) 10%, var(--bg-tertiary));
-  border: 1px solid color-mix(in srgb, var(--accent-color) 25%, var(--border-color));
-  border-radius: var(--radius-full, 999px);
-  font-size: 12px;
-  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  color: var(--accent-color);
-  font-weight: 500;
-  white-space: nowrap;
-  vertical-align: baseline;
-  line-height: 1.6;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.mentionBadge:hover {
-  background: color-mix(in srgb, var(--accent-color) 16%, var(--bg-tertiary));
-  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
-}
-
-.mentionIcon {
-  font-size: 11px;
-  line-height: 1;
-  flex-shrink: 0;
-}
+/* Badge styles moved to MentionBadgeComponent.module.css */
 
 /* ── Metadata badges row ── */
 .metaBadges {

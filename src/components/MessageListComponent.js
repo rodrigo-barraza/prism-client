@@ -43,6 +43,7 @@ import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
 import { getTotalInputTokens, renderToolName } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
+import MentionBadge from "./MentionBadgeComponent";
 
 /* -- Task notification detection (Claude Code pattern) -------
  * Worker results arrive as user-role messages containing
@@ -72,21 +73,19 @@ function parseTaskNotification(content) {
  * strings. This function parses them back into styled badges
  * for display in the message list.                             */
 
-function renderContentWithMentions(text) {
+function renderContentWithMentions(text, knownPaths) {
   const segments = parseMentionTokens(text);
   // Fast path: no mentions found, return plain string
   if (segments.length === 1 && segments[0].type === "text") return text;
 
   return segments.map((seg, i) => {
     if (seg.type === "text") return seg.value;
-    const name = seg.value.split("/").pop() || seg.value;
-    const hasExt = name.includes(".");
-    const icon = hasExt ? "📄" : "📁";
     return (
-      <span key={i} className={styles.mentionBadge} title={seg.value}>
-        <span className={styles.mentionIcon}>{icon}</span>
-        {name}
-      </span>
+      <MentionBadge
+        key={i}
+        path={seg.value}
+        knownPaths={knownPaths}
+      />
     );
   });
 }
@@ -427,6 +426,7 @@ function EditableMessage({
   onEdit,
   editing,
   onCancelEdit,
+  knownPaths,
 }) {
   const [editValue, setEditValue] = useState(content);
   const textareaRef = useRef(null);
@@ -554,7 +554,7 @@ function EditableMessage({
 
   // Non-editing: user messages show plain text, assistant uses caller's rendering
   if (!isAssistant) {
-    return <div className={styles.text}>{renderContentWithMentions(content)}</div>;
+    return <div className={styles.text}>{renderContentWithMentions(content, knownPaths)}</div>;
   }
   return null; // Assistant non-editing rendering is handled by the caller
 }
@@ -575,6 +575,7 @@ function EditableMessage({
  * @param {Function} [props.onDocClick]    - (resolvedUrl) => void
  * @param {Map}      [props.streamingOutputs] - toolCallId → accumulated output string
  * @param {object}   [props.workerToolActivity] - workerId → { currentTool, toolCount, iteration, maxIterations }
+ * @param {Set}      [props.knownPaths] - Set of workspace paths that currently exist (for mention staleness)
  */
 export default function MessageList({
   messages = [],
@@ -588,6 +589,7 @@ export default function MessageList({
   planProposal,
   onPlanApprove,
   onPlanReject,
+  knownPaths,
 
   onDelete,
   onRestore,
@@ -818,7 +820,8 @@ export default function MessageList({
                 ? renderContentWithMentions(
                     stickyUserMsg.content.length > 200
                       ? stickyUserMsg.content.slice(0, 200) + "…"
-                      : stickyUserMsg.content
+                      : stickyUserMsg.content,
+                    knownPaths,
                   )
                 : "(no text)"}
             </span>
@@ -1248,6 +1251,7 @@ export default function MessageList({
                             onEdit={onEdit}
                             editing={true}
                             onCancelEdit={() => setEditingIndex(null)}
+                            knownPaths={knownPaths}
                           />
                         </>
                       );
@@ -1335,6 +1339,7 @@ export default function MessageList({
                         onEdit={onEdit}
                         editing={editingIndex === i}
                         onCancelEdit={() => setEditingIndex(null)}
+                        knownPaths={knownPaths}
                       />
                     ) : msg.role === "assistant" && !readOnly && editingIndex === i ? (
                       <EditableMessage
@@ -1344,6 +1349,7 @@ export default function MessageList({
                         onEdit={onEdit}
                         editing={true}
                         onCancelEdit={() => setEditingIndex(null)}
+                        knownPaths={knownPaths}
                       />
                     ) : msg.content ? (
                       <MarkdownContent

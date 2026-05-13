@@ -5,6 +5,8 @@
  * rendering the full component tree.
  */
 
+import badgeStyles from "../components/MentionBadgeComponent.module.css";
+
 // ── DOM Serialization ─────────────────────────────────────────────
 // Walks a contentEditable element's DOM and produces the text that
 // will be sent to the model. Mention badge spans are replaced with
@@ -136,23 +138,31 @@ export function parseMentionTokens(text) {
   return segments.length > 0 ? segments : [{ type: "text", value: text }];
 }
 
-// ── Badge Creation ────────────────────────────────────────────────
+// ── Badge Creation ────────────────────────────────────────────
+// Uses the shared MentionBadgeComponent CSS module so both the
+// contentEditable input and the message list render identical badges.
 
 /**
- * Create a mention badge DOM element.
+ * Create a mention badge DOM element for use in contentEditable.
  *
  * @param {string} path — full file/directory path
  * @param {string} name — display name (basename)
  * @param {string} type — "file" or "directory"
- * @param {string} badgeClassName — CSS class for styling
+ * @param {object} [opts] — options
+ * @param {boolean} [opts.stale] — true if the path no longer exists
  * @returns {HTMLSpanElement}
  */
-export function createMentionBadge(path, name, type, badgeClassName) {
+export function createMentionBadge(path, name, type, opts = {}) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
-  if (badgeClassName) badge.className = badgeClassName;
+  const classes = [badgeStyles.mentionBadge];
+  if (opts.stale) classes.push(badgeStyles.mentionBadgeStale);
+  badge.className = classes.join(" ");
   badge.dataset.mentionPath = path;
   badge.dataset.mentionType = type || "file";
+  // Native title attribute — used as tooltip fallback inside overflow-clipped
+  // contentEditable containers where the ::after CSS tooltip gets cut off.
+  badge.title = path;
   const icon = type === "directory" ? "📁" : "📄";
   badge.textContent = `${icon} ${name}`;
   return badge;

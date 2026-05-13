@@ -831,9 +831,9 @@ export default function AgentComponent({
   // `@full/path` when sending so the model gets the real file reference.
   // Pure logic lives in mentionUtils.js; here we just wire it up.
 
-  /** Create a styled mention badge span (wraps the pure fn with CSS class). */
+  /** Create a styled mention badge span (wraps the pure fn). */
   const createMentionBadge = useCallback((path, name, type) => {
-    return _createMentionBadge(path, name, type, chatStyles.mentionBadge);
+    return _createMentionBadge(path, name, type);
   }, []);
 
   // -- Stable input change handler -----------------------------
@@ -917,6 +917,8 @@ export default function AgentComponent({
   const [mentionIndex, setMentionIndex] = useState(0);
   const mentionAnchorRef = useRef(null); // { node, offset } of the `@`
   const mentionListRef = useRef(null);
+  // Set of known workspace paths — used for mention badge staleness detection
+  const [knownPaths, setKnownPaths] = useState(null);
 
   const ensureMentionCache = useCallback(async () => {
     if (mentionCacheRef.current || mentionLoadingRef.current) return;
@@ -924,12 +926,27 @@ export default function AgentComponent({
     mentionLoadingRef.current = true;
     try {
       const data = await WorkspaceService.tree(currentWorkspace.path, 5);
-      if (data?.tree) mentionCacheRef.current = flattenTree(data.tree);
+      if (data?.tree) {
+        const flat = flattenTree(data.tree);
+        mentionCacheRef.current = flat;
+        setKnownPaths(new Set(flat.map((e) => e.path)));
+      }
     } catch { /* autocomplete unavailable */ }
     mentionLoadingRef.current = false;
   }, [currentWorkspace?.path]);
 
-  useEffect(() => { mentionCacheRef.current = null; }, [workspaceTreeRefreshKey]);
+  useEffect(() => {
+    mentionCacheRef.current = null;
+    setKnownPaths(null);
+    // Re-fetch immediately so knownPaths is available for badge staleness
+    ensureMentionCache();
+  }, [workspaceTreeRefreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Eagerly populate knownPaths on mount so message list badges can
+  // detect staleness without waiting for the user to type @.
+  useEffect(() => {
+    ensureMentionCache();
+  }, [ensureMentionCache]);
 
   /** Detect @query from cursor position inside contentEditable. */
   const detectMentionQuery = useCallback((el) => {
@@ -2757,6 +2774,7 @@ export default function AgentComponent({
           isGenerating={isGenerating}
           streamingOutputs={streamingOutputs}
           workerToolActivity={workerToolActivity}
+          knownPaths={knownPaths}
           planProposal={planProposal}
           onPlanApprove={() => {
             setPlanProposal((p) => p ? { ...p, status: "approved" } : null);
