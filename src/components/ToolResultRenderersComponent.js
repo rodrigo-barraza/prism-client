@@ -1345,6 +1345,7 @@ const TOOL_RESULT_REGISTRY = {
   execute_shell:      { Renderer: TerminalRenderer, language: "bash" },
   execute_python:     { Renderer: TerminalRenderer, language: "python" },
   execute_javascript: { Renderer: TerminalRenderer, language: "javascript" },
+  run_command:        { Renderer: TerminalRenderer, language: "bash" },
 
   // Git
   git_status:       { Renderer: GitStatusRenderer },
