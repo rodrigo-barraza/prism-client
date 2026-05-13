@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Brain, Network, Bot, RotateCcw, Loader2, Check, FolderOpen, Lock, X, Plus, ArrowRight, CheckCircle2, XCircle, Server, Wifi, WifiOff, FolderTree, Settings2 } from "lucide-react";
+import { Brain, Network, Bot, RotateCcw, Loader2, Check, FolderOpen, Lock, X, Plus, ArrowRight, CheckCircle2, XCircle, Server, Wifi, WifiOff, FolderTree, Settings2, Cpu } from "lucide-react";
 import PrismService from "../services/PrismService";
 import WorkspaceService from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContextComponent";
@@ -29,6 +29,7 @@ export default function SettingsPageComponent() {
   const savedTimerRef = useRef(null);
   const [customAgents, setCustomAgents] = useState([]);
   const [availableTools, setAvailableTools] = useState([]);
+  const [harnesses, setHarnesses] = useState([]);
 
   // -- Workspace state ------------------------------------------------
   const { refreshWorkspaces } = useWorkspace();
@@ -84,6 +85,11 @@ export default function SettingsPageComponent() {
     // Fetch all available tools (unfiltered) for the tool picker
     PrismService.getBuiltInToolSchemas()
       .then(setAvailableTools)
+      .catch(console.error);
+
+    // Fetch available harnesses
+    PrismService.getHarnesses()
+      .then(setHarnesses)
       .catch(console.error);
 
     // Fetch full workspace config (workspaces + agents)
@@ -168,6 +174,21 @@ export default function SettingsPageComponent() {
           ...settings?.agents,
           subagentProvider: provider || "",
           subagentModel: model || "",
+        },
+      };
+      setSettings((s) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  // -- Harness change handler -----------------------------------------
+  const handleHarnessSelect = useCallback(
+    (harnessId) => {
+      const updated = {
+        agents: {
+          ...settings?.agents,
+          harness: harnessId,
         },
       };
       setSettings((s) => ({ ...s, ...updated }));
@@ -603,6 +624,40 @@ export default function SettingsPageComponent() {
         />
 
         <CardComponent.Body>
+          {/* Harness Selector */}
+          <div className={styles.row}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Agentic Harness</span>
+              <span className={styles.rowDescription}>
+                The execution strategy used by the agent loop. Different harnesses
+                define how the model interacts with tools.
+              </span>
+            </div>
+          </div>
+          <div className={styles.harnessGrid}>
+            {harnesses.map((h) => {
+              const isActive = (agentDefaults.harness || "standard") === h.id;
+              return (
+                <button
+                  key={h.id}
+                  className={`${styles.harnessCard} ${isActive ? styles.harnessActive : ""}`}
+                  onClick={() => handleHarnessSelect(h.id)}
+                >
+                  <div className={styles.harnessCardHeader}>
+                    <Cpu size={16} className={styles.harnessIcon} />
+                    <span className={styles.harnessLabel}>{h.label}</span>
+                    {isActive && (
+                      <span className={styles.harnessBadge}>Current</span>
+                    )}
+                  </div>
+                  <span className={styles.harnessDescription}>{h.description}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className={styles.harnessDivider} />
+
           {/* Subagent Model */}
           <div className={styles.row}>
             <div className={styles.rowLabel}>

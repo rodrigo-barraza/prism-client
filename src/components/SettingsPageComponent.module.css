@@ -541,3 +541,86 @@
   background: var(--border-subtle);
   margin: 0;
 }
+
+/* ── Harness selector ────────────────────────────────────────────── */
+
+.harnessGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 0 24px 14px;
+}
+
+.harnessCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.harnessCard:hover {
+  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-subtle));
+  background: color-mix(in srgb, var(--accent-color) 3%, var(--bg-primary));
+}
+
+.harnessCard.harnessActive {
+  border-color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-color) 6%, var(--bg-primary));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 15%, transparent),
+              0 2px 8px color-mix(in srgb, var(--accent-color) 8%, transparent);
+}
+
+.harnessCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.harnessIcon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.harnessActive .harnessIcon {
+  color: var(--accent-color);
+}
+
+.harnessLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.harnessBadge {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent-color) 15%, transparent);
+  color: var(--accent-color);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.harnessDescription {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.45;
+}
+
+.harnessDivider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 24px 0;
+}

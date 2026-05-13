@@ -556,6 +556,14 @@ export default class PrismService {
     return PrismService._request("/settings/defaults", { method: "GET" });
   }
 
+  /**
+   * Fetch available agentic harnesses from the server.
+   * @returns {Promise<Array<{ id: string, label: string, description: string }>>}
+   */
+  static async getHarnesses() {
+    return PrismService._request("/settings/harnesses", { method: "GET" });
+  }
+
   // ---------------------------------------------------------------------------
   // MCP Servers
   // ---------------------------------------------------------------------------
