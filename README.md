@@ -109,16 +109,19 @@ Secrets are resolved in priority order:
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start dev server on configured port |
-| `npm run build` | Production build |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Auto-fix lint issues |
-| `npm run format` | Format with Prettier |
-| `npm run format:check` | Check formatting |
-| `npm run deploy` | Build & deploy to Synology NAS |
-| `npm run deploy:dry` | Dry-run deploy (validate only) |
+```bash
+npm run start         # Start production server
+npm run dev           # Start dev server (port 3333)
+npm run build         # Build for production
+npm run lint          # Run ESLint
+npm run lint:fix      # Auto-fix lint issues
+npm run format        # Format with Prettier
+npm run format:check  # Check formatting
+npm test              # Run tests (Vitest)
+npm run test:watch    # Run tests in watch mode
+npm run deploy        # Deploy to production
+npm run deploy:dry    # Validate deployment without deploying
+```
 
 ## Architecture
 
