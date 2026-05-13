@@ -82,6 +82,7 @@ function useSharedModelSearch() {
  *   modelTypeFilter — string — if set, only models whose modelType matches are shown
  *                     (e.g. "conversation" or "embed")
  *   allowDeselect   — boolean — if true, clicking the selected model clears it
+ *   placeholderLabel — string — overrides "Select Model" when no model is selected
  */
 export default function ModelPickerPopoverComponent({
   config,
@@ -99,6 +100,7 @@ export default function ModelPickerPopoverComponent({
   triggerIcon: triggerIconProp,
   modelTypeFilter,
   allowDeselect = false,
+  placeholderLabel,
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useSharedModelSearch();
@@ -408,7 +410,7 @@ export default function ModelPickerPopoverComponent({
     }
 
     // Single-select: show current model name
-    const rawLabel = currentModel?.label || settings?.model || "Select Model";
+    const rawLabel = currentModel?.label || settings?.model || placeholderLabel || "Select Model";
     const provider = currentModel?.provider || settings?.provider;
     if (!provider || LOCAL_PROVIDERS.has(provider)) return rawLabel;
     const providerName = resolveProviderLabel(provider);

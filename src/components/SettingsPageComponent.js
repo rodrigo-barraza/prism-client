@@ -677,6 +677,7 @@ export default function SettingsPageComponent() {
                 onSelectModel={handleSubagentModelSelect}
                 modelTypeFilter="conversation"
                 allowDeselect
+                placeholderLabel="Uses agent model"
               />
             </div>
           </div>
