@@ -39,6 +39,16 @@
   );
 }
 
+:global([data-theme="muted"]) .canvas {
+  background: radial-gradient(
+    circle at 50% 30%,
+    #e8e9ed 0%,
+    #d8dae0 20%,
+    #cdd0d8 50%,
+    #c0c4ce 100%
+  );
+}
+
 .canvas.panning {
   cursor: grabbing;
 }
@@ -62,6 +72,11 @@
 
 :global([data-theme="oceanic"]) .starfield {
   opacity: 0.45;
+}
+
+:global([data-theme="muted"]) .starfield {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .svg {

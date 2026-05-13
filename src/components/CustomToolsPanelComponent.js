@@ -51,6 +51,31 @@ const EMPTY_TOOL = {
   enabled: true,
 };
 
+/**
+ * Resolve domain:/label: shorthand entries into a flat Set of tool names.
+ * Mirrors ToolSelectionComponent's internal resolveEnabledTools logic so the
+ * consumer can correctly diff the enabled set after a group checkbox toggle.
+ */
+function resolveShorthands(entries, allTools) {
+  const resolved = new Set();
+  for (const entry of entries) {
+    if (entry.startsWith("label:")) {
+      const label = entry.slice(6);
+      for (const t of allTools) {
+        if (t.labels?.includes(label)) resolved.add(t.name);
+      }
+    } else if (entry.startsWith("domain:")) {
+      const domain = entry.slice(7);
+      for (const t of allTools) {
+        if (t.domain === domain) resolved.add(t.name);
+      }
+    } else {
+      resolved.add(entry);
+    }
+  }
+  return resolved;
+}
+
 
 export default function CustomToolsPanel({
   tools,
@@ -648,7 +673,7 @@ export default function CustomToolsPanel({
         availableTools={builtInTools}
         enabledTools={derivedEnabled}
         onEnabledToolsChange={(newEnabled) => {
-          const enabledSet = new Set(newEnabled);
+          const enabledSet = resolveShorthands(newEnabled, builtInTools);
           for (const tool of builtInTools) {
             const isDisabled = disabledBuiltIns.has(tool.name);
             const shouldBeEnabled = enabledSet.has(tool.name);
@@ -666,7 +691,7 @@ export default function CustomToolsPanel({
     .map((t) => t.name);
 
   const handleSelectionChange = (newEnabled) => {
-    const enabledSet = new Set(newEnabled);
+    const enabledSet = resolveShorthands(newEnabled, builtInTools);
     for (const tool of builtInTools) {
       const isDisabled = disabledBuiltIns.has(tool.name);
       const shouldBeEnabled = enabledSet.has(tool.name);

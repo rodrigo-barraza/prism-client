@@ -58,6 +58,16 @@
   --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.08);
 }
 
+/* ── Muted Mode ───────────────────────────────────────────── */
+
+[data-theme="muted"] {
+  --accent-color: #5550d9;
+  --accent-hover: #4843b8;
+  --accent-glow: rgba(85, 80, 217, 0.18);
+  --accent-subtle: rgba(85, 80, 217, 0.07);
+  --shadow-glow: 0 0 20px rgba(85, 80, 217, 0.06);
+}
+
 /* ── Tropical Mode ─────────────────────────────────────────── */
 
 [data-theme="tropical"] {

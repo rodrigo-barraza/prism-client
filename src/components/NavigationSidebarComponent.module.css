@@ -292,6 +292,16 @@
       color: #d0e8f2;
     }
   }
+
+  :global([data-theme="muted"]) & {
+    background: #2a2b30;
+    color: #959aac;
+
+    &:hover {
+      background: #35363d;
+      color: #d0d2da;
+    }
+  }
 }
 
 .navIcon {
