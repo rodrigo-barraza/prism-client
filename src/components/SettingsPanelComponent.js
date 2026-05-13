@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronDown,
   FolderTree,
+  AtSign,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import { SelectComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components-library";
@@ -39,10 +40,11 @@ import WorkspaceService from "../services/WorkspaceService";
 import useTtft from "../hooks/useTtft";
 
 // ─── Recursive Directory Tree Node ──────────────────────────
-const TreeNode = memo(function TreeNode({ node, depth = 0 }) {
+const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMentionFile }) {
   const [expanded, setExpanded] = useState(depth < 1);
   const isDir = node.type === "directory";
   const hasChildren = isDir && node.children?.length > 0;
+  const nodePath = parentPath ? `${parentPath}/${node.name}` : node.name;
 
   const formatSize = (bytes) => {
     if (!bytes) return "";
@@ -51,13 +53,19 @@ const TreeNode = memo(function TreeNode({ node, depth = 0 }) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const handleMention = (e) => {
+    e.stopPropagation();
+    onMentionFile?.(nodePath);
+  };
+
   return (
     <div className={styles.treeNode}>
-      <button
+      <div
         className={`${styles.treeRow} ${isDir ? styles.treeRowDir : ""}`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
         onClick={() => isDir && setExpanded((v) => !v)}
-        type="button"
+        role="button"
+        tabIndex={0}
       >
         {isDir ? (
           <>
@@ -75,17 +83,27 @@ const TreeNode = memo(function TreeNode({ node, depth = 0 }) {
           </>
         )}
         <span className={styles.treeName}>{node.name}</span>
+        {onMentionFile && (
+          <button
+            type="button"
+            className={styles.treeMentionBtn}
+            onClick={handleMention}
+            title={`Mention @${nodePath}`}
+          >
+            <AtSign size={10} />
+          </button>
+        )}
         {!isDir && node.sizeBytes != null && (
           <span className={styles.treeSize}>{formatSize(node.sizeBytes)}</span>
         )}
         {isDir && hasChildren && (
           <span className={styles.treeCount}>{node.children.length}</span>
         )}
-      </button>
+      </div>
       {isDir && expanded && hasChildren && (
         <div className={styles.treeChildren}>
           {node.children.map((child) => (
-            <TreeNode key={child.name} node={child} depth={depth + 1} />
+            <TreeNode key={child.name} node={child} depth={depth + 1} parentPath={nodePath} onMentionFile={onMentionFile} />
           ))}
         </div>
       )}
@@ -112,6 +130,7 @@ export default function SettingsPanel({
   canSpawnWorkers = false,
   agentToggles,
   workspaceTreeRefreshKey = 0,
+  onMentionFile,
 }) {
   const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
   const { currentWorkspace } = useWorkspace();
@@ -458,7 +477,7 @@ export default function SettingsPanel({
                 {!treeLoading && treeData?.tree && treeData.tree.length > 0 && (
                   <div className={styles.treeRoot}>
                     {treeData.tree.map((node) => (
-                      <TreeNode key={node.name} node={node} />
+                      <TreeNode key={node.name} node={node} onMentionFile={onMentionFile} />
                     ))}
                   </div>
                 )}

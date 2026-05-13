@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { BotMessageSquare, Paperclip, X, ClipboardList, Zap, Settings, Wrench, Brain, Plug, GitBranch, Repeat, ListChecks, BookOpen, Info, Activity, CornerDownLeft, Send, Square, SlidersHorizontal } from "lucide-react";
+import { BotMessageSquare, Paperclip, X, ClipboardList, Zap, Settings, Wrench, Brain, Plug, GitBranch, Repeat, ListChecks, BookOpen, Info, Activity, CornerDownLeft, Send, Square, SlidersHorizontal, File, FolderOpen } from "lucide-react";
 import PrismService from "../services/PrismService.js";
 import ToolsApiService from "../services/ToolsApiService.js";
 import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent.js";
@@ -216,6 +216,7 @@ export default function AgentComponent({
   const [favoriteKeys, setFavoriteKeys] = useState([]);
 
   const [pendingImages, setPendingImages] = useState([]);
+  const [contextFiles, setContextFiles] = useState([]); // @-mentioned file/dir paths
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -835,6 +836,20 @@ export default function AgentComponent({
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
     }
+  }, []);
+
+  // -- File mention handler (@ in workspace tree) ---------------
+  const handleMentionFile = useCallback((filePath) => {
+    setContextFiles((prev) => {
+      if (prev.includes(filePath)) return prev;
+      return [...prev, filePath];
+    });
+    // Focus the textarea so the user can immediately type
+    textareaRef.current?.focus();
+  }, []);
+
+  const removeContextFile = useCallback((filePath) => {
+    setContextFiles((prev) => prev.filter((f) => f !== filePath));
   }, []);
 
   // -- Image handlers ------------------------------------------
@@ -1794,6 +1809,8 @@ export default function AgentComponent({
   // handleSend on every keystroke (the main cause of input lag).
   const pendingImagesRef = useRef(pendingImages);
   pendingImagesRef.current = pendingImages;
+  const contextFilesRef = useRef(contextFiles);
+  contextFilesRef.current = contextFiles;
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const titleRef = useRef(title);
@@ -1812,19 +1829,22 @@ export default function AgentComponent({
       
       const text = overridePayload ? overridePayload.text : inputValueRef.current.trim();
       const currentImages = overridePayload ? overridePayload.images : [...pendingImagesRef.current];
+      const currentContextFiles = overridePayload ? (overridePayload.contextFiles || []) : [...contextFilesRef.current];
       
       if (!text && currentImages.length === 0) return;
 
       if (isQueueing) {
-        setQueuedNextTurn({ text, images: currentImages });
+        setQueuedNextTurn({ text, images: currentImages, contextFiles: currentContextFiles });
         setTextareaValue("");
         setPendingImages([]);
+        setContextFiles([]);
         return;
       }
 
       if (!overridePayload) {
         setTextareaValue("");
         setPendingImages([]);
+        setContextFiles([]);
       }
 
       setIsGenerating(true);
@@ -1860,9 +1880,15 @@ export default function AgentComponent({
       }
 
       setCurrentTurnStart(Date.now());
+      // Build final message content — append @-mentioned file paths
+      let finalContent = text;
+      if (currentContextFiles.length > 0) {
+        const mentions = currentContextFiles.map((f) => `@${f}`).join("\n");
+        finalContent = `${text}\n\n<context_files>\n${mentions}\n</context_files>`;
+      }
       const userMessage = {
         role: "user",
-        content: text,
+        content: finalContent,
         timestamp: new Date().toISOString(),
         ...(currentImages.length > 0 ? { images: currentImages } : {}),
       };
@@ -1968,6 +1994,7 @@ export default function AgentComponent({
     setToolActivity([]);
     setWorkerToolActivity({});
     setPendingImages([]);
+    setContextFiles([]);
     setPlanProposal(null);
     setAgentSessionId(generateUUID());
     setTraceId(null);
@@ -2462,6 +2489,7 @@ export default function AgentComponent({
                   })()
               : null
           }
+          onMentionFile={handleMentionFile}
         />
       )}
 
@@ -2722,6 +2750,7 @@ export default function AgentComponent({
                   onClick={() => {
                     setTextareaValue(queuedNextTurn.text);
                     setPendingImages(queuedNextTurn.images);
+                    setContextFiles(queuedNextTurn.contextFiles || []);
                     setQueuedNextTurn(null);
                   }}
                   className={chatStyles.removeAttachment}
@@ -2768,6 +2797,28 @@ export default function AgentComponent({
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+          {contextFiles.length > 0 && (
+            <div className={chatStyles.contextFiles}>
+              {contextFiles.map((filePath) => {
+                const isDir = !filePath.includes(".") || filePath.endsWith("/");
+                const basename = filePath.split("/").pop();
+                return (
+                  <div key={filePath} className={chatStyles.contextFileBadge} title={filePath}>
+                    {isDir ? <FolderOpen size={11} /> : <File size={11} />}
+                    <span className={chatStyles.contextFileLabel}>@{basename}</span>
+                    <button
+                      type="button"
+                      className={chatStyles.contextFileRemove}
+                      onClick={() => removeContextFile(filePath)}
+                      title="Remove"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
           <div className={chatStyles.inputRow}>

@@ -412,6 +412,11 @@
   &:hover {
     background: color-mix(in srgb, var(--accent-color) 6%, transparent);
   }
+
+  &:hover .treeMentionBtn {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .treeRowDir {
@@ -466,6 +471,34 @@
   margin-left: auto;
   padding-left: 8px;
   flex-shrink: 0;
+}
+
+.treeMentionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: var(--text-secondary);
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: none;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  will-change: opacity;
+
+  &:hover {
+    color: var(--accent-color);
+    background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
 }
 
 .treeChildren {
