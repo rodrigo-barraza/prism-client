@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 16px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   letter-spacing: 0.3px;
   color: var(--text-secondary);
   opacity: 0.7;
@@ -41,7 +41,7 @@
 .empty {
   padding: 20px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 

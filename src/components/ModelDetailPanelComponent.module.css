@@ -66,7 +66,7 @@
 }
 
 .headerName {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -76,7 +76,7 @@
 }
 
 .headerProvider {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -137,7 +137,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -158,7 +158,7 @@
 }
 
 .kvLabel {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-tertiary);
   padding: 5px 0;
@@ -166,7 +166,7 @@
 }
 
 .kvValue {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-primary);
   padding: 5px 0;
@@ -179,7 +179,7 @@
 }
 
 .kvValueMono {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-primary);
   padding: 5px 0;
@@ -215,7 +215,7 @@
   gap: 4px;
   padding: 3px 8px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   background: var(--bg-tertiary);
   color: var(--text-secondary);
@@ -243,7 +243,7 @@
   gap: 5px;
   padding: 4px 10px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   background: var(--bg-tertiary);
   color: var(--text-secondary);
@@ -276,14 +276,14 @@
 }
 
 .pricingLabel {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   padding: 7px 12px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .pricingValue {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-primary);
@@ -317,7 +317,7 @@
 }
 
 .arenaScore {
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 700;
   font-family: var(--font-mono);
   color: var(--accent-color);
@@ -325,7 +325,7 @@
 }
 
 .arenaLabel {
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -340,7 +340,7 @@
   gap: 4px;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -376,11 +376,12 @@
   height: 100%;
   border-radius: 3px;
   background: var(--accent-color);
-  transition: width 0.4s ease-out;
+  transform-origin: left;
+  transition: transform 0.4s ease-out;
 }
 
 .contextBarLabel {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-primary);
@@ -406,7 +407,7 @@
 }
 
 .mediaLimitType {
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -414,7 +415,7 @@
 }
 
 .mediaLimitValue {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-primary);
@@ -457,7 +458,7 @@
 }
 
 .statsCardValue {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   font-weight: 700;
   font-family: var(--font-mono);
   color: var(--text-primary);
@@ -466,7 +467,7 @@
 }
 
 .statsCardLabel {
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -485,21 +486,22 @@
 .successRateBar {
   height: 6px;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--danger, #ef4444) 20%, var(--bg-tertiary));
+  background: color-mix(in srgb, var(--danger, var(--color-danger)) 20%, var(--bg-tertiary));
   overflow: hidden;
 }
 
 .successRateFill {
   height: 100%;
   border-radius: 3px;
-  background: var(--success, #10b981);
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--success, var(--color-emerald));
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .successRateLabels {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   font-family: var(--font-mono);
 }
@@ -508,14 +510,14 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--success, #10b981);
+  color: var(--success, var(--color-emerald));
 }
 
 .errorLabel {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--danger, #ef4444);
+  color: var(--danger, var(--color-danger));
 }
 
 /* ── Responsive ─────────────────────────────────────── */

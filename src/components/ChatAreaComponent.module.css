@@ -34,7 +34,7 @@
 }
 
 .chatHeaderTitleText {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -60,7 +60,7 @@
   height: 28px;
   min-height: 28px;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 2px 8px var(--accent-glow);
   transition: filter 0.4s ease-out;
@@ -159,13 +159,13 @@
 }
 
 .readyPrompt h3 {
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .readyPrompt p {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   line-height: 1.5;
 }
 
@@ -203,7 +203,7 @@
   gap: 6px;
   max-width: 800px;
   margin: 0 auto 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   animation: fadeIn 0.2s ease-out;
 }
@@ -285,7 +285,7 @@
   opacity: 0.95;
   border-radius: var(--border-radius-md);
   color: var(--accent-color);
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 600;
   letter-spacing: 0.3px;
   pointer-events: none;
@@ -364,7 +364,7 @@
   border: none;
   background: none;
   text-align: left;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   color: var(--text-secondary);
   cursor: pointer;
@@ -397,7 +397,7 @@
   max-width: 800px;
   margin: 8px auto 0;
   text-align: right;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
 }
 
@@ -407,7 +407,7 @@
   padding: 2px 4px;
   border-radius: 2px;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 .pendingImages {
@@ -494,7 +494,7 @@
 }
 
 .mediaCardLabel {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-secondary);
   letter-spacing: 0.5px;
@@ -564,7 +564,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 700;
   color: var(--accent-color);
   text-transform: uppercase;
@@ -572,7 +572,7 @@
 }
 
 .queuedText {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   white-space: pre-wrap;
   word-break: break-word;
@@ -587,7 +587,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   opacity: 0.8;
   margin-top: 2px;
@@ -634,7 +634,7 @@
 
 .toolsBubbleHeader {
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-color);
@@ -668,7 +668,7 @@
 }
 
 .toolsBubbleItemName {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
@@ -693,7 +693,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -709,11 +709,11 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   border-radius: 999px;
   background: var(--accent-color);
-  color: #fff;
+  color: var(--color-white);
 }
 
 /* Staggered fade-in — offset by 2 to skip the header */
@@ -768,7 +768,7 @@
 
 .quickPrompt {
   padding: 8px 14px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -796,11 +796,11 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 8px 16px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: #34d399;
+  color: var(--color-success);
   background: rgba(52, 211, 153, 0.06);
   border: 1px solid rgba(52, 211, 153, 0.15);
   border-radius: var(--border-radius-sm);
@@ -811,7 +811,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #34d399;
+  background: var(--color-success);
   box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
   animation: liveStreamPulse 2s ease-in-out infinite;
   flex-shrink: 0;
@@ -857,7 +857,7 @@
 
 .liveMicBtn {
   position: relative;
-  background: #ef4444 !important;
+  background: var(--color-danger) !important;
   color: #fff !important;
 }
 
@@ -907,13 +907,13 @@
 }
 
 .statusBarIcon {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   line-height: 1;
   flex-shrink: 0;
 }
 
 .statusBarMessage {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
   letter-spacing: 0.02em;

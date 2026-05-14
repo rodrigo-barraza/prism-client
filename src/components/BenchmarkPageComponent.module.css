@@ -39,7 +39,7 @@
 }
 
 .createFormTitle {
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -47,7 +47,7 @@
 }
 
 .createFormSubtitle {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   margin-top: 4px;
   line-height: 1.4;
@@ -73,7 +73,7 @@
 
 .expectedValue {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--accent-color);
   background: var(--accent-subtle);
   padding: 1px 5px;
@@ -85,7 +85,7 @@
 }
 
 .tag {
-  font-size: 9px;
+  font-size: 0.5625rem;
   padding: 0 5px;
   border-radius: 2px;
   background: var(--bg-tertiary);
@@ -110,7 +110,7 @@
 }
 
 .detailTitle {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -139,7 +139,7 @@
 .resultsSectionTitle {
   display: flex;
   align-items: center;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -182,7 +182,7 @@
 }
 
 .progressText {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 

@@ -55,7 +55,7 @@
 
 /* ── Row 2: title ── */
 .title {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -68,7 +68,7 @@
 
 .newBadge {
   flex-shrink: 0;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   padding: 1px 5px;
@@ -121,7 +121,7 @@
   display: inline-flex;
   padding: 1px 5px;
   border-radius: 2px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   background: var(--accent-subtle);
   color: var(--accent-color);
@@ -131,7 +131,7 @@
   display: inline-flex;
   padding: 1px 5px;
   border-radius: 2px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   background: rgba(245, 158, 11, 0.12);
   color: rgb(245, 158, 11);
@@ -174,7 +174,7 @@
 }
 
 .favBtnActive {
-  color: #f59e0b;
+  color: var(--color-warning);
   opacity: 1;
 
   &:hover {

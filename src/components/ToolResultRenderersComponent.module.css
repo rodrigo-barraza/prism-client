@@ -17,7 +17,7 @@
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
@@ -37,18 +37,18 @@
   gap: 3px;
   padding: 1px 7px;
   border-radius: 10px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 
 .statusSuccess {
-  color: #34d399;
+  color: var(--color-success);
   background: rgba(52, 211, 153, 0.1);
 }
 
 .statusError {
-  color: #f87171;
+  color: var(--color-danger-light);
   background: rgba(248, 113, 113, 0.1);
 }
 
@@ -61,7 +61,7 @@
   padding: 1px 8px;
   border-radius: 4px;
   background: var(--bg-tertiary);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   color: var(--text-secondary);
   max-width: 360px;
@@ -86,7 +86,7 @@
   border-radius: 6px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
   color: var(--text-secondary);
@@ -107,7 +107,7 @@
   border-radius: 3px;
   background: var(--bg-tertiary);
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--accent-color);
   overflow-wrap: break-word;
 }
@@ -120,7 +120,7 @@
   border-radius: 6px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   line-height: 1.55;
   overflow-x: auto;
@@ -134,27 +134,27 @@
 }
 
 .diffAdded {
-  color: #34d399;
+  color: var(--color-success);
   background: rgba(52, 211, 153, 0.08);
   display: inline;
 }
 
 .diffRemoved {
-  color: #f87171;
+  color: var(--color-danger-light);
   background: rgba(248, 113, 113, 0.08);
   display: inline;
 }
 
 .diffHunk {
-  color: #60a5fa;
+  color: var(--color-info);
   opacity: 0.7;
 }
 
 /* ── Error text ────────────────────────────────────────────── */
 
 .errorText {
-  font-size: 11px;
-  color: #f87171;
+  font-size: var(--font-size-xs);
+  color: var(--color-danger-light);
   padding: 4px 8px;
   border-radius: 4px;
   background: rgba(248, 113, 113, 0.06);
@@ -175,7 +175,7 @@
   border: none;
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.15s;
@@ -194,7 +194,7 @@
   margin-top: 4px;
   max-height: 300px;
   overflow-y: auto;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 /* ── Grep search ───────────────────────────────────────────── */
@@ -214,7 +214,7 @@
 }
 
 .grepFilePath {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   font-weight: 600;
   color: var(--accent-color);
@@ -227,7 +227,7 @@
   align-items: baseline;
   gap: 8px;
   padding: 1px 0 1px 12px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
 }
@@ -263,7 +263,7 @@
   align-items: center;
   gap: 6px;
   padding: 2px 8px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   color: var(--text-secondary);
   border-radius: 3px;
@@ -274,7 +274,7 @@
 }
 
 .dirIcon {
-  color: #60a5fa;
+  color: var(--color-info);
   flex-shrink: 0;
 }
 
@@ -301,9 +301,9 @@
 }
 
 .searchLink {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  color: #60a5fa;
+  color: var(--color-info);
   text-decoration: none;
   display: block;
   overflow: hidden;
@@ -317,7 +317,7 @@
 
 .searchSnippet {
   margin: 2px 0 0;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   line-height: 1.4;
   display: -webkit-box;
@@ -345,7 +345,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: #8b949e;
   background: rgba(255, 255, 255, 0.015);
@@ -354,9 +354,9 @@
 }
 
 .terminalLive {
-  color: #3fb950;
+  color: var(--color-github-green);
   font-weight: 700;
-  font-size: 10px;
+  font-size: 0.625rem;
   animation: livePulse 1.5s ease-in-out infinite;
 }
 
@@ -367,7 +367,7 @@
 
 .terminalLineCount {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: rgba(255, 255, 255, 0.2);
   font-family: var(--font-mono, monospace);
   font-weight: 400;
@@ -376,7 +376,7 @@
 .terminalBody {
   margin: 0;
   padding: 4px 0;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, "Menlo", "Consolas", monospace);
   line-height: 1.55;
   color: #c9d1d9;
@@ -409,7 +409,7 @@
   text-align: right;
   padding-right: 10px;
   color: rgba(255, 255, 255, 0.08);
-  font-size: 10px;
+  font-size: 0.625rem;
   user-select: none;
   border-right: 1px solid rgba(255, 255, 255, 0.03);
   margin-right: 10px;
@@ -447,34 +447,34 @@
 /* ── Log Level Content Colors ──────────────────────────────── */
 
 .termContentError {
-  color: #f87171;
+  color: var(--color-danger-light);
 }
 
 .termContentWarn {
-  color: #fbbf24;
+  color: var(--color-warning-light);
 }
 
 .termContentInfo {
-  color: #60a5fa;
+  color: var(--color-info);
 }
 
 .termContentSuccess {
-  color: #34d399;
+  color: var(--color-success);
 }
 
 .termContentDebug {
-  color: #a78bfa;
+  color: var(--color-violet);
 }
 
 /* ── Input / Prompt ────────────────────────────────────────── */
 
 .terminalInput {
-  color: #3fb950;
+  color: var(--color-github-green);
   font-weight: 600;
 }
 
 .terminalCursor {
-  color: #3fb950;
+  color: var(--color-github-green);
   animation: blink 1s step-end infinite;
 }
 
@@ -486,20 +486,20 @@
 /* ── Terminal error ───────────────────────────────────────── */
 
 .terminalError {
-  color: #f87171;
+  color: var(--color-danger-light);
   font-weight: 500;
 }
 
 /* ── Git ───────────────────────────────────────────────────── */
 
 .gitStatus {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   font-family: var(--font-mono, monospace);
   padding: 0 4px;
   border-radius: 3px;
   background: rgba(96, 165, 250, 0.12);
-  color: #60a5fa;
+  color: var(--color-info);
   flex-shrink: 0;
 }
 
@@ -517,7 +517,7 @@
   gap: 8px;
   padding: 3px 6px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 .gitCommit:hover {
@@ -526,9 +526,9 @@
 
 .gitHash {
   font-family: var(--font-mono, monospace);
-  color: #f59e0b;
+  color: var(--color-warning);
   font-weight: 600;
-  font-size: 10px;
+  font-size: 0.625rem;
   flex-shrink: 0;
 }
 
@@ -542,7 +542,7 @@
 
 .gitAuthor {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
   flex-shrink: 0;
 }
 
@@ -581,7 +581,7 @@
 /* ── Terminal error ───────────────────────────────────────── */
 
 .terminalError {
-  color: #f87171;
+  color: var(--color-danger-light);
   font-weight: 500;
 }
 
@@ -600,7 +600,7 @@
   height: 16px;
   padding: 0 4px;
   border-radius: 8px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   background: color-mix(in srgb, var(--accent-color) 14%, transparent);
   color: var(--accent-color);
@@ -626,7 +626,7 @@
   gap: 8px;
   padding: 3px 4px;
   border-radius: 3px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
   transition: background 0.1s;
@@ -682,10 +682,10 @@
   height: 16px;
   padding: 0 4px;
   border-radius: 8px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
-  background: color-mix(in srgb, #2dd4bf 14%, transparent);
-  color: #2dd4bf;
+  background: color-mix(in srgb, var(--color-teal) 14%, transparent);
+  color: var(--color-teal);
   line-height: 1;
 }
 
@@ -708,7 +708,7 @@
   gap: 8px;
   padding: 3px 4px;
   border-radius: 3px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
   transition: background 0.1s;
@@ -721,7 +721,7 @@
 .outputArgKey {
   flex-shrink: 0;
   min-width: 60px;
-  color: #2dd4bf;
+  color: var(--color-teal);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -752,7 +752,7 @@
 .outputRawPre {
   margin: 0;
   padding: 4px 6px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   color: var(--text-primary);
   white-space: pre-wrap;
@@ -765,8 +765,8 @@
 .workerResultCard {
   margin-top: 6px;
   border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--accent-color, #6366f1) 20%, transparent);
-  background: color-mix(in srgb, var(--accent-color, #6366f1) 4%, var(--bg-secondary));
+  border: 1px solid color-mix(in srgb, var(--accent-color, var(--color-indigo)) 20%, transparent);
+  background: color-mix(in srgb, var(--accent-color, var(--color-indigo)) 4%, var(--bg-secondary));
   overflow: hidden;
   animation: workerResultFadeIn 0.3s ease-out;
 }
@@ -780,14 +780,14 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   text-align: left;
   transition: background 0.15s ease;
 }
 
 .workerResultToggle:hover {
-  background: color-mix(in srgb, var(--accent-color, #6366f1) 8%, transparent);
+  background: color-mix(in srgb, var(--accent-color, var(--color-indigo)) 8%, transparent);
 }
 
 .workerResultSummary {
@@ -800,18 +800,18 @@
 
 .workerResultMeta {
   flex-shrink: 0;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
   opacity: 0.7;
   padding: 1px 6px;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--accent-color, #6366f1) 10%, transparent);
+  background: color-mix(in srgb, var(--accent-color, var(--color-indigo)) 10%, transparent);
 }
 
 .workerResultBody {
   padding: 10px 6px 10px;
-  border-top: 1px solid color-mix(in srgb, var(--accent-color, #6366f1) 12%, transparent);
-  font-size: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--accent-color, var(--color-indigo)) 12%, transparent);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
@@ -834,11 +834,11 @@
   gap: 3px;
   padding: 1px 7px;
   border-radius: 10px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  color: #34d399;
+  color: var(--color-success);
   background: rgba(52, 211, 153, 0.08);
   border: 1px solid rgba(52, 211, 153, 0.25);
   animation: workerSpeedPulse 2s ease-in-out infinite;

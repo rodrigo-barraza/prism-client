@@ -58,7 +58,7 @@
 }
 
 .headerTitle {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -67,7 +67,7 @@
 }
 
 .headerSubtitle {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
   display: flex;
   align-items: center;
@@ -75,7 +75,7 @@
 }
 
 .statusBadge {
-  font-size: 9px;
+  font-size: 0.5625rem;
   padding: 1px 5px;
   border-radius: 3px;
   font-weight: 600;
@@ -123,7 +123,7 @@
 
 .sectionLabel {
   display: block;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -156,7 +156,7 @@
   align-items: center;
   gap: 3px;
   padding: 2px 7px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 500;
   color: var(--text-muted);
   background: transparent;
@@ -184,7 +184,7 @@
   padding: 4px;
 
   /* Scale down MessageList to fit inspector width */
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 /* ── Preview ── */
@@ -206,7 +206,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   background: var(--bg-primary);
   border: 1px solid var(--border-subtle);
@@ -240,7 +240,7 @@
 .clearBtn {
   display: block;
   margin-top: 4px;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--danger);
   background: transparent;
   border: none;
@@ -263,7 +263,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   padding: 3px 6px;
   background: var(--bg-primary);
@@ -300,11 +300,11 @@
 
 .connectionArrow {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 .connectionModality {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
   text-transform: capitalize;
 }
@@ -319,7 +319,7 @@
 }
 
 .resultType {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -370,7 +370,7 @@
 
 .resultText {
   padding: 8px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-primary);
   background: var(--bg-primary);
@@ -385,8 +385,8 @@
 /* ── Error ── */
 .errorBlock {
   padding: 8px;
-  font-size: 11px;
-  color: #f43f5e;
+  font-size: var(--font-size-xs);
+  color: var(--color-rose);
   background: rgba(244, 63, 94, 0.08);
   border: 1px solid rgba(244, 63, 94, 0.2);
   border-radius: var(--border-radius-sm);
@@ -405,7 +405,7 @@
   justify-content: space-between;
   width: 100%;
   padding: 6px 8px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-primary);
   background: var(--bg-primary);
   border: 1px solid var(--border-subtle);
@@ -479,7 +479,7 @@
 
 .modelDropdownSearchInput {
   flex: 1;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-primary);
   background: transparent;
   border: none;
@@ -517,7 +517,7 @@
 
 .modelDropdownEmpty {
   padding: 12px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   text-align: center;
 }
@@ -528,7 +528,7 @@
   gap: 6px;
   width: 100%;
   padding: 5px 8px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   background: transparent;
   border: none;
@@ -563,7 +563,7 @@
 }
 
 .modelDropdownItemArrow {
-  font-size: 8px;
+  font-size: 0.5rem;
   color: var(--text-muted);
   margin: 0 1px;
 }
@@ -576,14 +576,14 @@
 }
 
 .toolSummaryCount {
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
-  color: #f97316;
+  color: var(--color-orange);
   line-height: 1;
 }
 
 .toolSummaryLabel {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
@@ -595,7 +595,7 @@
   background: transparent;
   border: none;
   padding: 0 0 6px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -636,7 +636,7 @@
 }
 
 .toolRowName {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
@@ -650,7 +650,7 @@
 }
 
 .toolRowParams {
-  font-size: 9px;
+  font-size: 0.5625rem;
   color: var(--text-muted);
   flex-shrink: 0;
 }

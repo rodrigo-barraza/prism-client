@@ -101,7 +101,7 @@
 
 .value {
   font-weight: 700;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
   color: var(--text-primary);
@@ -109,7 +109,7 @@
 }
 
 .label {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;

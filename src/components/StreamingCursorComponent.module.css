@@ -55,7 +55,7 @@
 .standaloneCursor {
   display: block;
   padding: 2px 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1.6;
   animation: standaloneFadeIn 0.3s ease-out both;
 }

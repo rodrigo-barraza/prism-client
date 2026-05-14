@@ -20,7 +20,7 @@
 }
 
 .sectionAction {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--accent-color);
   cursor: pointer;
   text-decoration: none;

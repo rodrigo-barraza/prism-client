@@ -51,7 +51,7 @@
 }
 
 .headerTypeBadge {
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 500;
   font-family: var(--font-sans);
   opacity: 0.6;
@@ -98,7 +98,7 @@
 }
 
 .portLabel {
-  font-size: 10px;
+  font-size: 0.625rem;
   fill: var(--text-secondary);
   font-family: var(--font-sans);
 }
@@ -106,7 +106,7 @@
 /* ── Asset nodes (accent-color overrides come via inline style) ── */
 
 .nodeRenameInput {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   font-family: var(--font-sans);
   background: transparent;
@@ -122,7 +122,7 @@
   width: 100%;
   height: 100%;
   padding: 4px 6px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   line-height: 1.4;
   color: var(--text-primary);
@@ -181,7 +181,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-secondary);
 }
 
@@ -240,14 +240,14 @@
   justify-content: center;
   gap: 4px;
   height: 100%;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
   opacity: 0.6;
 }
 
 .viewerText {
   padding: 4px 6px;
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 1.4;
   color: var(--text-primary);
   overflow-y: auto;
@@ -268,8 +268,8 @@
   display: flex;
   align-items: center;
   padding: 4px 6px;
-  font-size: 10px;
-  color: #f43f5e;
+  font-size: 0.625rem;
+  color: var(--color-rose);
   background: rgba(244, 63, 94, 0.1);
   border: 1px solid rgba(244, 63, 94, 0.2);
   border-radius: 2px;
@@ -304,20 +304,20 @@
 }
 
 .nodeConfigMessageCount {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
 
 .nodeConfigMessageHint {
-  font-size: 9px;
+  font-size: 0.5625rem;
   color: var(--text-muted);
   opacity: 0.6;
   margin-left: auto;
 }
 
 .nodeConfigLabel {
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -334,7 +334,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   color: var(--text-muted);
   cursor: pointer;
   padding: 3px 6px;
@@ -353,7 +353,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   color: var(--text-secondary);
   padding: 2px 6px;
   background: var(--accent-subtle);
@@ -367,7 +367,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
   cursor: pointer;
   background: transparent;
@@ -401,10 +401,10 @@
 .toolNodePill {
   display: block;
   padding: 2px 6px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 500;
   font-family: var(--font-sans);
-  color: #f97316;
+  color: var(--color-orange);
   background: rgba(249, 115, 22, 0.08);
   border: 1px solid rgba(249, 115, 22, 0.15);
   border-radius: 3px;
@@ -418,7 +418,7 @@
 .toolNodePillMore {
   display: block;
   padding: 2px 6px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 500;
   color: var(--text-muted);
   font-style: italic;

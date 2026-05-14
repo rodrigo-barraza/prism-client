@@ -8,7 +8,7 @@
   border-radius: 6px;
   padding: 3px;
   flex-shrink: 0;
-  color: #fff;
+  color: var(--color-white);
   overflow: hidden;
 }
 
@@ -27,23 +27,23 @@
 /* ── Per-agent gradient defaults ────────────────────── */
 
 .badgeInner[data-agent="CODING"] {
-  background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+  background: linear-gradient(135deg, var(--color-indigo) 0%, #818cf8 100%);
 }
 
 .badgeInner[data-agent="LUPOS"] {
-  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-orange) 100%);
 }
 
 .badgeInner[data-agent="STICKERS"] {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(135deg, var(--color-emerald) 0%, var(--color-success) 100%);
 }
 
 .badgeInner[data-agent="DIGEST"] {
-  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-danger) 100%);
 }
 
 .badgeInner[data-agent="LIGHTS"] {
-  background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%);
+  background: linear-gradient(135deg, #eab308 0%, var(--color-warning) 100%);
 }
 
 .badgeInner[data-agent="OOG"] {
@@ -52,7 +52,7 @@
 
 /* Custom agents — fallback gradient for any agent not in the hardcoded list */
 .badgeInner:not([data-agent="CODING"]):not([data-agent="LUPOS"]):not([data-agent="STICKERS"]):not([data-agent="DIGEST"]):not([data-agent="OOG"]):not([data-agent="LIGHTS"]) {
-  background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, var(--color-cyan) 100%);
 }
 
 /* Ensure SVGs fill the badge space */

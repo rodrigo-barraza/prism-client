@@ -115,7 +115,7 @@
 }
 
 .streamingLabel {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: white;
   white-space: nowrap;
@@ -171,7 +171,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #ef4444;
+  background: var(--color-danger);
   border: none;
   color: white;
   cursor: pointer;
@@ -181,14 +181,14 @@
     transform 0.15s;
 
   &:hover {
-    background: #dc2626;
+    background: var(--color-danger-strong);
     transform: scale(1.1);
   }
 }
 
 /* ── Timer (shared base) ── */
 .timer {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
@@ -197,9 +197,9 @@
 }
 
 .recTimer {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  color: #ef4444;
+  color: var(--color-danger);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   flex-shrink: 0;

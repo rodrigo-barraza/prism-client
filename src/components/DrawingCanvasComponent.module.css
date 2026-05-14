@@ -20,7 +20,7 @@
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
-  color: #fff;
+  color: var(--color-white);
   width: 40px;
   height: 40px;
   display: flex;
@@ -69,7 +69,7 @@
 }
 
 .toolLabel {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -168,7 +168,7 @@
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
@@ -219,7 +219,7 @@
 .bgWhite {
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: var(--color-white);
 }
 
 .drawCanvas {
@@ -247,14 +247,14 @@
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
     background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    color: var(--color-white);
   }
 }
 
@@ -267,7 +267,7 @@
   background: var(--accent-color);
   border: none;
   color: white;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;

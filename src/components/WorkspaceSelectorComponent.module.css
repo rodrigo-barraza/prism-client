@@ -15,7 +15,7 @@
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
@@ -111,7 +111,7 @@
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
   text-align: left;
@@ -206,11 +206,11 @@
 }
 
 .addInput.invalid {
-  border-color: var(--danger, #ef4444);
+  border-color: var(--danger, var(--color-danger));
 }
 
 .addInput.valid {
-  border-color: var(--success, #22c55e);
+  border-color: var(--success, var(--color-success-bright));
 }
 
 .addButton {
@@ -244,16 +244,16 @@
   align-items: center;
   gap: 4px;
   padding: 2px 4px;
-  font-size: 10px;
+  font-size: 0.625rem;
   animation: wsSlideDown 0.1s ease-out;
 }
 
 .validationRow.success {
-  color: var(--success, #22c55e);
+  color: var(--success, var(--color-success-bright));
 }
 
 .validationRow.error {
-  color: var(--danger, #ef4444);
+  color: var(--danger, var(--color-danger));
 }
 
 .validationRow.info {

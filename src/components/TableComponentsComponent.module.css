@@ -77,7 +77,7 @@
 
 .sessionIdText {
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   letter-spacing: 0.3px;
 }
@@ -139,7 +139,7 @@
 }
 
 .benchmarkProgressPct {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-family: var(--font-mono);
   font-weight: 600;
   color: var(--success);
@@ -167,20 +167,20 @@
 }
 
 .benchmarkModelProvider {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
 .benchmarkResponseCell {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .benchmarkErrorMessage {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--danger);
   font-style: italic;
 }
@@ -190,7 +190,7 @@
   align-items: center;
   gap: 4px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 
@@ -203,7 +203,7 @@
 
 .monoCell {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
 }
 
@@ -276,12 +276,13 @@
 .dashboardRateBarFill {
   height: 100%;
   border-radius: 2px;
-  transition: width 0.3s ease-out;
+  transform-origin: left;
+  transition: transform 0.3s ease-out;
 }
 
 .dashboardRateValue {
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   min-width: 28px;
 }

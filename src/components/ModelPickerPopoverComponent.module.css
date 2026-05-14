@@ -12,7 +12,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
@@ -188,7 +188,7 @@
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 400;
   font-family: inherit;
   letter-spacing: 0;
@@ -226,7 +226,7 @@
   flex: 1;
   min-height: 0;
   overflow: visible;
-  font-size: 10px;
+  font-size: 0.625rem;
   display: flex;
   flex-direction: column;
 }

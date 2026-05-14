@@ -12,14 +12,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .badge {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 400;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -35,7 +35,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-family: var(--font-sans);
   line-height: 1.5;
   transition: border-color var(--transition-fast);

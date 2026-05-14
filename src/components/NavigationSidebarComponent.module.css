@@ -212,7 +212,7 @@
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   transition: background var(--transition-fast), color var(--transition-fast);
   position: relative;
@@ -325,7 +325,7 @@
   margin-top: 4px;
 
   & > span {
-    font-size: 10px;
+    font-size: 0.625rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.8px;
@@ -348,7 +348,7 @@
   align-items: center;
   justify-content: center;
   margin-left: auto;
-  color: #f59e0b;
+  color: var(--color-warning);
   flex-shrink: 0;
   animation: attentionPulse 2.5s ease-in-out infinite;
   cursor: help;
@@ -369,7 +369,7 @@
   border-radius: 2px;
   background: var(--accent-color);
   color: white;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -396,7 +396,7 @@
   align-items: center;
   gap: 8px;
   padding: 7px 12px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
 }
 
@@ -573,7 +573,7 @@
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -624,7 +624,7 @@
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
   text-align: left;
@@ -657,7 +657,7 @@
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 

@@ -20,7 +20,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   position: relative;
   user-select: none;
@@ -108,8 +108,8 @@
   }
 
   &[data-active="true"] {
-    background: color-mix(in srgb, var(--agent-accent, #6366f1) 12%, var(--bg-secondary));
-    border: 1px solid color-mix(in srgb, var(--agent-accent, #6366f1) 25%, transparent);
+    background: color-mix(in srgb, var(--agent-accent, var(--color-indigo)) 12%, var(--bg-secondary));
+    border: 1px solid color-mix(in srgb, var(--agent-accent, var(--color-indigo)) 25%, transparent);
   }
 }
 
@@ -122,7 +122,7 @@
 }
 
 .agentName {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
@@ -131,7 +131,7 @@
 }
 
 .agentMeta {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   display: flex;
   align-items: center;
@@ -149,12 +149,12 @@
   padding: 1px 5px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--text-tertiary) 10%, transparent);
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
 }
 
 .activeCheck {
-  color: #6366f1;
+  color: var(--color-indigo);
   flex-shrink: 0;
 }
 
@@ -202,7 +202,7 @@
   gap: 4px;
   padding: 4px 10px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-muted);
   border: 1px solid var(--border-color);

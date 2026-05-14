@@ -26,7 +26,7 @@
 }
 
 .title {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   display: flex;
@@ -40,7 +40,7 @@
 }
 
 .subtitle {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-secondary);
   font-weight: 400;
 }
@@ -57,7 +57,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
@@ -102,7 +102,7 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--bg-tertiary);
@@ -130,7 +130,7 @@
   max-width: 400px;
   height: 36px;
   padding: 0 12px 0 36px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
@@ -164,7 +164,7 @@
 .domainFilter {
   height: 36px;
   padding: 0 28px 0 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-primary);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
@@ -188,7 +188,7 @@
 .labelFilter {
   height: 36px;
   padding: 0 28px 0 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-primary);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
@@ -260,7 +260,7 @@
   border-bottom: 1px solid var(--border-color);
 
   & h2 {
-    font-size: 14px;
+    font-size: var(--font-size-base);
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: -0.01em;
@@ -268,7 +268,7 @@
 }
 
 .domainCount {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-tertiary);
   background: var(--bg-tertiary);
@@ -325,7 +325,7 @@
 }
 
 .toolName {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
   font-family: var(--font-mono);
@@ -333,7 +333,7 @@
 }
 
 .toolDomain {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--accent-color);
   background: var(--accent-subtle);
@@ -344,7 +344,7 @@
 }
 
 .toolDescription {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-secondary);
   display: -webkit-box;
@@ -364,7 +364,7 @@
 }
 
 .toolLabel {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-tertiary);
   background: var(--bg-primary);
@@ -385,7 +385,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   color: var(--agent-color, var(--accent-color));
   background: color-mix(in srgb, var(--agent-color, var(--accent-color)) 10%, transparent);
@@ -406,7 +406,7 @@
 .agentFilterSelect {
   height: 36px;
   padding: 0 28px 0 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-primary);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
@@ -428,7 +428,7 @@
 }
 
 .paramCount {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-tertiary);
   margin-left: auto;
@@ -473,7 +473,7 @@
 }
 
 .toolRowName {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-primary);
@@ -483,7 +483,7 @@
 }
 
 .toolRowDesc {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -549,14 +549,14 @@
 }
 
 .detailCleanName {
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 
 .detailTitle {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   font-family: var(--font-mono);
   color: var(--text-tertiary);
@@ -569,7 +569,7 @@
   display: inline-flex;
   align-items: center;
   gap: 1px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   border-radius: var(--border-radius-sm);
   overflow: hidden;
@@ -583,7 +583,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-weight: 700;
-  font-size: 9px;
+  font-size: 0.5625rem;
 }
 
 .dataSourceProvider {
@@ -597,7 +597,7 @@
   background: var(--bg-primary);
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 0.5625rem;
 }
 
 /* ── Output Fields Grid ────────────────────────────────────── */
@@ -609,7 +609,7 @@
 }
 
 .outputField {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--info);
   background: var(--info-subtle);
@@ -633,7 +633,7 @@
 }
 
 .rawChevron {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   transition: transform var(--transition-fast);
 
@@ -679,10 +679,10 @@
   width: 100%;
   padding: 12px;
   background: var(--accent-color);
-  color: #fff;
+  color: var(--color-white);
   border: none;
   border-radius: var(--border-radius-sm);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: opacity var(--transition-fast), transform 0.15s ease;
@@ -698,7 +698,7 @@
 }
 
 .detailDescription {
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.65;
   color: var(--text-secondary);
 }
@@ -710,7 +710,7 @@
 }
 
 .detailSectionTitle {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -758,7 +758,7 @@
 }
 
 .statCellValue {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -766,7 +766,7 @@
 }
 
 .statCellLabel {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -785,7 +785,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
 
   & svg {
@@ -827,7 +827,7 @@
 }
 
 .statsBreakdownTitle {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -850,7 +850,7 @@
 }
 
 .statsBreakdownName {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--text-secondary);
   overflow: hidden;
@@ -860,7 +860,7 @@
 }
 
 .statsBreakdownCount {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--accent-color);
@@ -875,7 +875,7 @@
   align-items: center;
   gap: 8px;
   padding: 16px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   background: var(--bg-tertiary);
   border: 1px dashed var(--border-color);
@@ -891,7 +891,7 @@
 .paramTable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 
   & th {
     text-align: left;
@@ -930,7 +930,7 @@
 
 .paramRequired {
   display: inline-block;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -942,7 +942,7 @@
 }
 
 .paramType {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--accent-color);
   opacity: 0.8;
@@ -956,7 +956,7 @@
 }
 
 .enumValue {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-family: var(--font-mono);
   color: var(--success);
   background: var(--success-subtle);
@@ -970,7 +970,7 @@
   border-radius: var(--border-radius-sm);
   padding: 14px 16px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   line-height: 1.6;
   color: var(--text-secondary);
   overflow-x: auto;
@@ -997,7 +997,7 @@
   }
 
   & p {
-    font-size: 14px;
+    font-size: var(--font-size-base);
     color: var(--text-tertiary);
   }
 }
@@ -1024,7 +1024,7 @@
 }
 
 .loadingText {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
 
@@ -1038,7 +1038,7 @@
   background: var(--danger-subtle);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: var(--border-radius-sm);
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--danger);
 
   & svg {

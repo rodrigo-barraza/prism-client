@@ -1,5 +1,5 @@
 .archBadge {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   padding: 2px 7px;
   border-radius: var(--border-radius-sm);
@@ -28,13 +28,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
 }
 
 .betaBadge {
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 600;
   padding: 1px 6px;
   border-radius: var(--border-radius-sm);
@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-primary);
 }
 
@@ -60,7 +60,7 @@
 
 .memoryValueLabel {
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 .memoryValueNum {
@@ -81,9 +81,10 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  background: linear-gradient(90deg, var(--color-info-strong), var(--color-info));
   border-radius: 3px;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 2px;
 }
 
@@ -94,7 +95,8 @@
   height: 100%;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Slider Section ── */
@@ -114,13 +116,13 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .sliderHint {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   margin-top: -2px;
 }
@@ -129,7 +131,7 @@
   width: 100px;
   height: 30px;
   text-align: right;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   background: rgba(0, 0, 0, 0.35);
@@ -155,7 +157,7 @@
 }
 
 .toggleLabel {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
   display: flex;
@@ -164,7 +166,7 @@
 }
 
 .toggleHint {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   font-weight: 400;
 }
@@ -178,7 +180,7 @@
 
 .cancelBtn {
   padding: 8px 20px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.05);
@@ -195,10 +197,10 @@
 
 .loadBtn {
   padding: 8px 24px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: #fff;
-  background: #3b82f6;
+  color: var(--color-white);
+  background: var(--color-info-strong);
   border: none;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
@@ -219,7 +221,7 @@
 }
 
 .loadBtnShortcut {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   opacity: 0.6;
   font-weight: 400;
 }
@@ -233,7 +235,7 @@
 }
 
 .infoBadge {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   padding: 3px 8px;
   border-radius: var(--border-radius-sm);
   background: rgba(255, 255, 255, 0.05);
@@ -256,12 +258,12 @@
 .rememberCheckbox {
   width: 16px;
   height: 16px;
-  accent-color: #3b82f6;
+  accent-color: var(--color-info-strong);
   cursor: pointer;
 }
 
 .rememberLabel {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   cursor: pointer;
 

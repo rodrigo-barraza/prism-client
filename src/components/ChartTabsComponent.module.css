@@ -9,7 +9,7 @@
 
 .tab {
   padding: 5px 12px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
   background: transparent;

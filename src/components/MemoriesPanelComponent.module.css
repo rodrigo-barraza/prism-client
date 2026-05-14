@@ -5,7 +5,7 @@
 
 .container {
   composes: container from './PanelShared.module.css';
-  --panel-accent: #f59e0b;
+  --panel-accent: var(--color-warning);
 }
 
 /* ── Filter Bar ────────────────────────────────────────────── */
@@ -21,7 +21,7 @@
   /* Override the SearchInputComponent's default input height for compact panel */
   & input {
     height: 30px;
-    font-size: 11px;
+    font-size: var(--font-size-xs);
   }
 
   & svg {
@@ -45,7 +45,7 @@
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-muted);
   background: transparent;
@@ -96,7 +96,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 16px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--accent-color);
   background: color-mix(in srgb, var(--accent-color) 10%, transparent);
@@ -135,30 +135,30 @@
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: color-mix(in srgb, #f59e0b 30%, var(--border-color));
-    box-shadow: 0 2px 8px color-mix(in srgb, #f59e0b 6%, transparent);
+    border-color: color-mix(in srgb, var(--color-warning) 30%, var(--border-color));
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-warning) 6%, transparent);
   }
 }
 
 .memoryCardNew {
-  border-color: #f59e0b;
-  box-shadow: 0 0 12px color-mix(in srgb, #f59e0b 20%, transparent);
+  border-color: var(--color-warning);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-warning) 20%, transparent);
   animation: memoryGlow 2s ease-in-out 3;
 
   &:hover {
-    border-color: #f59e0b;
-    box-shadow: 0 0 16px color-mix(in srgb, #f59e0b 30%, transparent);
+    border-color: var(--color-warning);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--color-warning) 30%, transparent);
   }
 }
 
 @keyframes memoryGlow {
   0%, 100% {
-    border-color: #f59e0b;
-    box-shadow: 0 0 8px color-mix(in srgb, #f59e0b 15%, transparent);
+    border-color: var(--color-warning);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-warning) 15%, transparent);
   }
   50% {
-    border-color: color-mix(in srgb, #f59e0b 70%, transparent);
-    box-shadow: 0 0 18px color-mix(in srgb, #f59e0b 30%, transparent);
+    border-color: color-mix(in srgb, var(--color-warning) 70%, transparent);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--color-warning) 30%, transparent);
   }
 }
 
@@ -176,30 +176,30 @@
   height: 28px;
   border-radius: 6px;
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 700;
   text-transform: uppercase;
 }
 
 /* Type-specific icon colors */
 .memoryIconUser {
-  background: color-mix(in srgb, #6366f1 12%, transparent);
-  color: #6366f1;
+  background: color-mix(in srgb, var(--color-indigo) 12%, transparent);
+  color: var(--color-indigo);
 }
 
 .memoryIconFeedback {
-  background: color-mix(in srgb, #10b981 12%, transparent);
-  color: #10b981;
+  background: color-mix(in srgb, var(--color-emerald) 12%, transparent);
+  color: var(--color-emerald);
 }
 
 .memoryIconProject {
-  background: color-mix(in srgb, #f59e0b 12%, transparent);
-  color: #f59e0b;
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
 }
 
 .memoryIconReference {
-  background: color-mix(in srgb, #06b6d4 12%, transparent);
-  color: #06b6d4;
+  background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
+  color: var(--color-cyan);
 }
 
 .memoryInfo {
@@ -208,7 +208,7 @@
 }
 
 .memoryTitle {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.4;
@@ -230,7 +230,7 @@
   display: inline-flex;
   align-items: center;
   padding: 1px 6px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -238,32 +238,32 @@
 }
 
 .badgeUser {
-  background: color-mix(in srgb, #6366f1 12%, transparent);
-  color: #6366f1;
+  background: color-mix(in srgb, var(--color-indigo) 12%, transparent);
+  color: var(--color-indigo);
 }
 
 .badgeFeedback {
-  background: color-mix(in srgb, #10b981 12%, transparent);
-  color: #10b981;
+  background: color-mix(in srgb, var(--color-emerald) 12%, transparent);
+  color: var(--color-emerald);
 }
 
 .badgeProject {
-  background: color-mix(in srgb, #f59e0b 12%, transparent);
-  color: #f59e0b;
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
 }
 
 .badgeReference {
-  background: color-mix(in srgb, #06b6d4 12%, transparent);
-  color: #06b6d4;
+  background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
+  color: var(--color-cyan);
 }
 
 .memoryAge {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
 }
 
 .memoryContent {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.5;
   white-space: pre-wrap;
@@ -287,10 +287,10 @@
   align-items: center;
   gap: 8px;
   padding: 12px;
-  font-size: 12px;
-  color: #f43f5e;
-  background: color-mix(in srgb, #f43f5e 8%, transparent);
-  border: 1px solid color-mix(in srgb, #f43f5e 20%, transparent);
+  font-size: var(--font-size-sm);
+  color: var(--color-rose);
+  background: color-mix(in srgb, var(--color-rose) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-rose) 20%, transparent);
   border-radius: 6px;
 }
 
@@ -316,8 +316,8 @@
   }
 
   &:hover {
-    color: #f43f5e;
-    background: color-mix(in srgb, #f43f5e 12%, transparent);
+    color: var(--color-rose);
+    background: color-mix(in srgb, var(--color-rose) 12%, transparent);
   }
 }
 
@@ -332,8 +332,8 @@
 
 .confirmLabel {
   flex: 1;
-  font-size: 11px;
-  color: #f43f5e;
+  font-size: var(--font-size-xs);
+  color: var(--color-rose);
   font-weight: 500;
 }
 
@@ -342,12 +342,12 @@
 }
 
 .confirmBtnYes {
-  background: color-mix(in srgb, #f43f5e 15%, transparent);
-  color: #f43f5e;
-  border-color: color-mix(in srgb, #f43f5e 30%, transparent);
+  background: color-mix(in srgb, var(--color-rose) 15%, transparent);
+  color: var(--color-rose);
+  border-color: color-mix(in srgb, var(--color-rose) 30%, transparent);
 
   &:hover {
-    background: color-mix(in srgb, #f43f5e 25%, transparent);
+    background: color-mix(in srgb, var(--color-rose) 25%, transparent);
   }
 }
 
@@ -365,7 +365,7 @@
 .toast {
   padding: 6px 10px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   line-height: 1.4;
   animation: toastSlideIn 0.25s ease-out;
 }
@@ -382,29 +382,29 @@
 }
 
 .toastSuccess {
-  background: color-mix(in srgb, #34d399 12%, transparent);
-  color: #34d399;
-  border: 1px solid color-mix(in srgb, #34d399 25%, transparent);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+  border: 1px solid color-mix(in srgb, var(--color-success) 25%, transparent);
 }
 
 .toastInfo {
-  background: color-mix(in srgb, #60a5fa 12%, transparent);
-  color: #60a5fa;
-  border: 1px solid color-mix(in srgb, #60a5fa 25%, transparent);
+  background: color-mix(in srgb, var(--color-info) 12%, transparent);
+  color: var(--color-info);
+  border: 1px solid color-mix(in srgb, var(--color-info) 25%, transparent);
 }
 
 .toastError {
-  background: color-mix(in srgb, #f87171 12%, transparent);
-  color: #f87171;
-  border: 1px solid color-mix(in srgb, #f87171 25%, transparent);
+  background: color-mix(in srgb, var(--color-danger-light) 12%, transparent);
+  color: var(--color-danger-light);
+  border: 1px solid color-mix(in srgb, var(--color-danger-light) 25%, transparent);
 }
 
 /* ── History Toggle ───────────────────────────────────────── */
 
 .historyBtnActive {
-  color: #a78bfa;
-  border-color: color-mix(in srgb, #a78bfa 40%, transparent);
-  background: color-mix(in srgb, #a78bfa 8%, transparent);
+  color: var(--color-violet);
+  border-color: color-mix(in srgb, var(--color-violet) 40%, transparent);
+  background: color-mix(in srgb, var(--color-violet) 8%, transparent);
 }
 
 /* ── Consolidation History Section ─────────────────────────── */
@@ -427,7 +427,7 @@
 }
 
 .historySectionTitle {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -435,7 +435,7 @@
 }
 
 .historyEmpty {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   text-align: center;
   padding: 12px 0;
@@ -452,7 +452,7 @@
   transition: border-color 0.15s ease;
 
   &:hover {
-    border-color: color-mix(in srgb, #a78bfa 30%, var(--border-color));
+    border-color: color-mix(in srgb, var(--color-violet) 30%, var(--border-color));
   }
 }
 
@@ -467,38 +467,38 @@
   display: inline-flex;
   align-items: center;
   padding: 1px 6px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-radius: 4px;
-  background: color-mix(in srgb, #a78bfa 12%, transparent);
-  color: #a78bfa;
+  background: color-mix(in srgb, var(--color-violet) 12%, transparent);
+  color: var(--color-violet);
 }
 
 .triggerManual {
-  background: color-mix(in srgb, #60a5fa 12%, transparent);
-  color: #60a5fa;
+  background: color-mix(in srgb, var(--color-info) 12%, transparent);
+  color: var(--color-info);
 }
 
 .triggerScheduled {
-  background: color-mix(in srgb, #a78bfa 12%, transparent);
-  color: #a78bfa;
+  background: color-mix(in srgb, var(--color-violet) 12%, transparent);
+  color: var(--color-violet);
 }
 
 /* stylelint-disable-next-line selector-class-pattern */
 .triggerSession_threshold {
-  background: color-mix(in srgb, #f59e0b 12%, transparent);
-  color: #f59e0b;
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
 }
 
 .historyTime {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
 }
 
 .historySummary {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.4;
 }
@@ -507,7 +507,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
 
   & span {

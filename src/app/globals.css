@@ -35,6 +35,36 @@
     var(--prism-colors)
   );
   --prism-speed: 2s;
+
+  /* ── Provider Colors ──────────────────────────────────── */
+  --provider-anthropic: #f43f5e;
+  --provider-google: #f59e0b;
+  --provider-openai: #60a5fa;
+  --provider-local: #a78bfa;
+  --provider-elevenlabs: #06b6d4;
+
+  /* ── Semantic Domain Colors ───────────────────────────── */
+  --color-success: #34d399;
+  --color-success-bright: #22c55e;
+  --color-success-muted: #10b981;
+  --color-danger: #ef4444;
+  --color-danger-light: #f87171;
+  --color-danger-strong: #dc2626;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fbbf24;
+  --color-info: #60a5fa;
+  --color-info-strong: #3b82f6;
+  --color-rose: #f43f5e;
+  --color-orange: #f97316;
+  --color-purple: #a855f7;
+  --color-violet: #a78bfa;
+  --color-indigo: #6366f1;
+  --color-cyan: #06b6d4;
+  --color-teal: #2dd4bf;
+  --color-emerald: #10b981;
+  --color-neutral: #94a3b8;
+  --color-white: #fff;
+  --color-github-green: #3fb950;
 }
 
 /* ── Dark Mode ─────────────────────────────────────────────── */

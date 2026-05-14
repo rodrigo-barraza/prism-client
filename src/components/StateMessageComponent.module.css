@@ -6,7 +6,7 @@
   padding: 60px 20px;
   text-align: center;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: var(--font-size-base);
 }
 
 .errorBanner {
@@ -15,7 +15,7 @@
   border-radius: var(--border-radius-md);
   padding: 14px 18px;
   color: var(--danger);
-  font-size: 14px;
+  font-size: var(--font-size-base);
   margin-bottom: 24px;
   display: flex;
   align-items: center;

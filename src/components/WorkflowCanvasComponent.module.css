@@ -12,7 +12,7 @@
 :global([data-theme="light"]) .canvas {
   background: radial-gradient(
     circle at 50% 30%,
-    #ffffff 0%,
+    var(--color-white) 0%,
     #e0f2fe 20%,
     #bae6fd 50%,
     #7dd3fc 100%
@@ -102,20 +102,20 @@
 }
 
 .emptyIcon {
-  font-size: 48px;
+  font-size: 3rem;
   opacity: 0.2;
   color: var(--accent-color);
 }
 
 .emptyTitle {
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--text-secondary);
   opacity: 0.6;
 }
 
 .emptySubtitle {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   max-width: 240px;
   text-align: center;
@@ -129,7 +129,7 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 6px 16px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   background: var(--bg-surface);
   backdrop-filter: blur(8px);

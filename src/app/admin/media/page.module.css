@@ -7,7 +7,7 @@
   padding: 60px 20px;
   text-align: center;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: var(--font-size-base);
 }
 
 /* ── Grid View ── */
@@ -22,7 +22,7 @@
   padding: 60px 20px;
   text-align: center;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: var(--font-size-base);
 }
 
 @media (max-width: 767px) {

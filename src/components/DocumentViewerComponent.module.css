@@ -12,7 +12,7 @@
 .textContent {
   margin: 0;
   padding: 24px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.65;
   color: var(--text-primary);
   font-family: var(--font-mono);

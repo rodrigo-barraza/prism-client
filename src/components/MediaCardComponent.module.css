@@ -48,7 +48,7 @@
 }
 
 .favBtnActive {
-  color: #f59e0b;
+  color: var(--color-warning);
   opacity: 1;
 }
 
@@ -104,7 +104,7 @@
   align-items: center;
   gap: 6px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   text-transform: capitalize;
 }
 
@@ -118,7 +118,7 @@
   gap: 3px;
   padding: 3px 8px;
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -146,7 +146,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   text-decoration: none;
   overflow: hidden;
@@ -181,15 +181,15 @@
 }
 
 .compact .convLink {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 .compact .modelTag {
-  font-size: 9px;
+  font-size: 0.5625rem;
 }
 
 .compact .time {
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 /* ── Standalone (no footer, just the preview) ── */

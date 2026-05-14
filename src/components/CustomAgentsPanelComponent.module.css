@@ -41,7 +41,7 @@
 }
 
 .agentName {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -71,7 +71,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-tertiary);
   background: var(--bg-tertiary);
@@ -144,7 +144,7 @@
 }
 
 .emptyTitle {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -174,7 +174,7 @@
 }
 
 .confirmText {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--error);
   font-weight: 500;
 }
@@ -199,7 +199,7 @@
 }
 
 .formHeader h3 {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -237,7 +237,7 @@
 }
 
 .formGroup label {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
   letter-spacing: 0.02em;
@@ -255,7 +255,7 @@
   border-radius: var(--border-radius-sm);
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-family: inherit;
   outline: none;
   transition: border-color var(--transition-fast);
@@ -294,7 +294,7 @@
 }
 
 .hint {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.3;
 }
@@ -326,7 +326,7 @@
 }
 
 .toggleHint {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
@@ -415,7 +415,7 @@
   }
 
   &[data-selected="true"] {
-    border-color: #fff;
+    border-color: var(--color-white);
     box-shadow:
       0 0 0 2px var(--swatch-color),
       0 0 12px var(--swatch-color);
@@ -464,7 +464,7 @@
   height: 20px;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.6);
-  color: #fff;
+  color: var(--color-white);
   cursor: pointer;
   transition: background 0.15s;
 }

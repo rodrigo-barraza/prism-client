@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  background: #000000;
+  background: var(--text-inverse);
   border-right: 1px solid var(--border-color);
   overflow: hidden;
   /* GPU-accelerated width transitions for open/close */
@@ -13,7 +13,7 @@
     width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: width, min-width, opacity;
+  will-change: opacity;
   opacity: 1;
 }
 
@@ -42,7 +42,7 @@
 }
 
 .titleBarLabel {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
   letter-spacing: 0.02em;
@@ -76,7 +76,7 @@
 
 .titleBarBtn:hover {
   background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  color: var(--color-white);
 }
 
 .titleBarBtn:active {
@@ -85,7 +85,7 @@
 
 .titleBarBtnActive {
   background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  color: var(--color-white);
 }
 
 .titleBarBtnActive:hover {
@@ -121,7 +121,7 @@
   border-right: 1px solid #222222;
   background: transparent;
   color: #808080;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   white-space: nowrap;
   cursor: pointer;
@@ -142,7 +142,7 @@
 }
 
 .tabActive {
-  background: #000000;
+  background: var(--text-inverse);
   color: #e0e0e0;
   border-bottom: 2px solid var(--accent-color);
   font-weight: 500;
@@ -180,7 +180,7 @@
   transition: opacity 0.15s, color 0.15s, background 0.15s;
 
   &:hover {
-    color: #ffffff;
+    color: var(--color-white);
     background: rgba(255, 255, 255, 0.12);
   }
 }
@@ -198,7 +198,7 @@
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: #000000;
+  background: var(--text-inverse);
 }
 
 /* ── Breadcrumb path bar ─────────────────────────────────── */
@@ -208,7 +208,7 @@
   align-items: center;
   gap: 4px;
   padding: 4px 12px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   color: #666666;
   border-bottom: 1px solid #1a1a1a;
@@ -231,7 +231,7 @@
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: #333333 transparent;
-  background: #000000;
+  background: var(--text-inverse);
 }
 
 /* Override react-syntax-highlighter's internal pre/code styles */
@@ -254,7 +254,7 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: #666666;
   gap: 8px;
 }
@@ -279,7 +279,7 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: #999999;
   padding: 24px;
   text-align: center;
@@ -293,7 +293,7 @@
   flex: 1;
   gap: 8px;
   color: #555555;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 /* ── File meta badge (line count, language) ───────────────── */
@@ -304,7 +304,7 @@
   gap: 8px;
   padding: 3px 12px;
   border-top: 1px solid #1a1a1a;
-  font-size: 10px;
+  font-size: 0.625rem;
   color: #555555;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
@@ -382,7 +382,7 @@
   border-radius: 4px;
   background: color-mix(in srgb, var(--accent-color) 14%, #1a1a1a);
   color: var(--accent-color);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   cursor: pointer;
@@ -412,7 +412,7 @@
 
 .lineMentionBtn:hover {
   background: var(--accent-color);
-  color: #fff;
+  color: var(--color-white);
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 25%, transparent);
   transform: translateY(-50%) scale(1.05);

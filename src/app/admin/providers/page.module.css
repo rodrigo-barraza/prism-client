@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -45,13 +45,13 @@
 }
 
 .modelCount {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-weight: 400;
 }
 
 .rateLimitBadge {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 10px;
@@ -73,13 +73,13 @@
 }
 
 .statValue {
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .statLabel {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -96,7 +96,8 @@
 .shareBarFill {
   height: 100%;
   border-radius: 2px;
-  transition: width 0.3s ease;
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
 .modelList {
@@ -125,7 +126,7 @@
 }
 
 .rateLimitTitle {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -133,7 +134,7 @@
 }
 
 .rateLimitMeta {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-style: italic;
 }
@@ -164,7 +165,7 @@
 }
 
 .rateLimitModelName {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -183,13 +184,13 @@
 }
 
 .rateLimitMetricValue {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .rateLimitMetricLabel {
-  font-size: 9px;
+  font-size: 0.5625rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -217,7 +218,7 @@
 }
 
 .limitBarLabel {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -225,7 +226,7 @@
 }
 
 .limitBarValues {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
@@ -241,12 +242,13 @@
 .progressBarFill {
   height: 100%;
   border-radius: 3px;
-  transition: width 0.4s ease, background 0.4s ease;
+  transform-origin: left;
+  transition: transform 0.4s ease, background 0.4s ease;
   min-width: 2px;
 }
 
 .rateLimitReset {
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--text-muted);
   font-style: italic;
 }

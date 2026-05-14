@@ -27,7 +27,7 @@
 }
 
 .headerTitle {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 500;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -42,7 +42,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   padding: 2px 8px;
   border-radius: 2px;
   background: var(--accent-subtle);
@@ -75,7 +75,7 @@
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: var(--border-radius-sm);
   color: var(--accent-color);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -92,13 +92,13 @@
   font-weight: 500;
   opacity: 0.7;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 0.625rem;
   letter-spacing: 0.05em;
 }
 
 .sessionBadgeId {
   font-family: var(--font-mono, "SF Mono", "Fira Code", monospace);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
 }
 

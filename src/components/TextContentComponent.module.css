@@ -12,7 +12,7 @@
 }
 
 .label {
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -34,7 +34,7 @@
   align-items: center;
   gap: 3px;
   padding: 2px 7px;
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: 500;
   color: var(--text-muted);
   background: transparent;
@@ -55,7 +55,7 @@
 
 .markdownPreview {
   padding: 8px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-primary);
   background: var(--bg-primary);
@@ -67,7 +67,7 @@
 }
 
 .previewEmpty {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-style: italic;
 }
@@ -75,7 +75,7 @@
 .textarea {
   width: 100%;
   padding: 8px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
   color: var(--text-primary);

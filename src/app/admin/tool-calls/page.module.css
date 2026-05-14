@@ -11,7 +11,7 @@
   justify-content: center;
   height: 300px;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: var(--font-size-base);
 }
 
 /* ── Summary Cards ────────────────────────────────────────── */
@@ -85,7 +85,7 @@
 }
 
 .statValue {
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -96,7 +96,7 @@
 }
 
 .statLabel {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -115,7 +115,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -177,14 +177,14 @@
 }
 
 .errorCardCount {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: hsl(0, 70%, 60%);
   white-space: nowrap;
 }
 
 .errorCardMessage {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
@@ -198,6 +198,6 @@
 }
 
 .errorCardTime {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
 }

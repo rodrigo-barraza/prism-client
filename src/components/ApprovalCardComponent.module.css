@@ -33,13 +33,13 @@
 
 .toolName {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--text-primary);
   font-family: var(--font-mono, "JetBrains Mono", monospace);
 }
 
 .tierBadge {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -98,7 +98,7 @@
   padding: 5px 10px;
   border-radius: 6px;
   border: 1px solid transparent;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
