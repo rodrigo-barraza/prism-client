@@ -853,8 +853,8 @@ export default function AgentComponent({
   // Pure logic lives in mentionUtils.js; here we just wire it up.
 
   /** Create a styled mention badge span (wraps the pure fn). */
-  const createMentionBadge = useCallback((path, name, type) => {
-    return _createMentionBadge(path, name, type);
+  const createMentionBadge = useCallback((path, name, type, opts) => {
+    return _createMentionBadge(path, name, type, opts);
   }, []);
 
   // -- Stable input change handler -----------------------------

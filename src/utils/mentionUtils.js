@@ -25,12 +25,12 @@ export function serializeEditable(el) {
     if (node.nodeType === Node.TEXT_NODE) {
       text += node.textContent;
     } else if (node.dataset?.mentionPath) {
-      // Include line range suffix if present (e.g. @path#L10 or @path#L10-L25)
+      // Include line range suffix if present (e.g. @path#L10 or @path#L10-25)
       let ref = `@${node.dataset.mentionPath}`;
       const ls = node.dataset.mentionLineStart;
       const le = node.dataset.mentionLineEnd;
       if (ls) {
-        ref += le && le !== ls ? `#L${ls}-L${le}` : `#L${ls}`;
+        ref += le && le !== ls ? `#L${ls}-${le}` : `#L${ls}`;
       }
       text += ref;
     } else if (node.tagName === "BR") {
@@ -122,8 +122,8 @@ export function parseMentionTokens(text) {
 
   // Match @path tokens — path must contain at least one `/` or `.` to
   // distinguish real file/dir mentions from casual "@someone" usage.
-  // Optionally captures a trailing `#Lstart` or `#Lstart-Lend` suffix.
-  const mentionRe = /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+?)(?:#L(\d+)(?:-L(\d+))?)?)(?=\s|$)/g;
+  // Optionally captures a trailing `#Lstart` or `#Lstart-end` suffix.
+  const mentionRe = /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+?)(?:#L(\d+)(?:-(\d+))?)?)(?=\s|$)/g;
 
   const segments = [];
   let lastIndex = 0;
@@ -185,15 +185,15 @@ export function createMentionBadge(path, name, type, opts = {}) {
   let displayName = name;
   if (opts.lineStart != null) {
     displayName += opts.lineEnd != null && opts.lineEnd !== opts.lineStart
-      ? ` #L${opts.lineStart}-L${opts.lineEnd}`
-      : ` #L${opts.lineStart}`;
+      ? `#L${opts.lineStart}-${opts.lineEnd}`
+      : `#L${opts.lineStart}`;
   }
   // Native title attribute — used as tooltip fallback inside overflow-clipped
   // contentEditable containers where the ::after CSS tooltip gets cut off.
   let titleText = path;
   if (opts.lineStart != null) {
     titleText += opts.lineEnd != null && opts.lineEnd !== opts.lineStart
-      ? `#L${opts.lineStart}-L${opts.lineEnd}`
+      ? `#L${opts.lineStart}-${opts.lineEnd}`
       : `#L${opts.lineStart}`;
   }
   badge.title = titleText;

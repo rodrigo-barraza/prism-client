@@ -26,8 +26,8 @@ function MentionBadge({ path, name, type, lineStart, lineEnd, stale, knownPaths,
   let displayName = baseName;
   if (lineStart != null) {
     displayName += lineEnd != null && lineEnd !== lineStart
-      ? ` #L${lineStart}-L${lineEnd}`
-      : ` #L${lineStart}`;
+      ? `#L${lineStart}-${lineEnd}`
+      : `#L${lineStart}`;
   }
   const resolvedType = type || (baseName.includes(".") ? "file" : "directory");
   const icon = resolvedType === "directory" ? "📁" : "📄";
@@ -52,7 +52,7 @@ function MentionBadge({ path, name, type, lineStart, lineEnd, stale, knownPaths,
   let tooltipPath = path;
   if (lineStart != null) {
     tooltipPath += lineEnd != null && lineEnd !== lineStart
-      ? `#L${lineStart}-L${lineEnd}`
+      ? `#L${lineStart}-${lineEnd}`
       : `#L${lineStart}`;
   }
 

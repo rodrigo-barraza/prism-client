@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
-import { File, X, FileCode, ChevronRight, AtSign } from "lucide-react";
+import { File, X, FileCode, ChevronRight } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ToolsApiService from "../services/ToolsApiService.js";
@@ -340,7 +340,7 @@ export default function FileViewerPanelComponent({
     return { start: sorted[0], end: sorted[sorted.length - 1] };
   }, [selectedLines]);
 
-  // Handle floating bar "Reference" click
+  // Handle inline @ button click — mentions the full selected range
   const handleMentionSelection = useCallback(() => {
     if (!selectionRange || !activeFile || !onMentionLines) return;
     onMentionLines(activeFile.path, selectionRange.start, selectionRange.end);
@@ -360,14 +360,19 @@ export default function FileViewerPanelComponent({
         position: "relative",
       },
       "data-line-number": lineNumber,
-      className: styles.codeLine,
+      className: `${styles.codeLine} ${isSelected ? styles.codeLineSelected : ""}`,
     };
   }, [selectedLines]);
 
-  // Event delegation — handles line number clicks and clears selection
+  // Event delegation — handles line number clicks, inline @ button, and clears selection
   const handleCodeAreaClick = useCallback((e) => {
-    // Don't interfere with floating bar clicks
-    if (e.target.closest(`.${styles.floatingMentionBar}`)) return;
+    // ── Inline @ mention button click ──
+    const mentionBtn = e.target.closest(`.${styles.lineMentionBtn}`);
+    if (mentionBtn) {
+      e.stopPropagation();
+      handleMentionSelection();
+      return;
+    }
 
     // Detect click on a line number span (react-syntax-highlighter uses this class)
     const lineNumEl = e.target.closest(".react-syntax-highlighter-line-number");
@@ -404,7 +409,35 @@ export default function FileViewerPanelComponent({
     // Click on code content — clear selection
     setSelectedLines(new Set());
     lastClickedLineRef.current = null;
-  }, [activeFile, onMentionLines]);
+  }, [activeFile, onMentionLines, handleMentionSelection]);
+
+  // ── Inject inline @ buttons into selected lines (DOM-level) ────
+  // Uses direct DOM manipulation post-render to avoid re-rendering
+  // the entire SyntaxHighlighter tree. Buttons use the lineMentionBtn
+  // class which is caught by event delegation in handleCodeAreaClick.
+  useEffect(() => {
+    const container = codeScrollRef.current;
+    if (!container || selectedLines.size === 0 || !onMentionLines) return;
+
+    const injected = [];
+    for (const lineNum of selectedLines) {
+      const el = container.querySelector(`[data-line-number="${lineNum}"]`);
+      if (!el) continue;
+      // Skip if already injected
+      if (el.querySelector(`.${styles.lineMentionBtn}`)) continue;
+      const btn = document.createElement("button");
+      btn.className = styles.lineMentionBtn;
+      btn.type = "button";
+      btn.title = "Reference this selection in chat";
+      btn.textContent = "@";
+      el.appendChild(btn);
+      injected.push(btn);
+    }
+
+    return () => {
+      for (const btn of injected) btn.remove();
+    };
+  }, [selectedLines, onMentionLines]);
 
   return (
     <div
@@ -491,32 +524,7 @@ export default function FileViewerPanelComponent({
               {cached.content}
             </SyntaxHighlighter>
 
-            {/* Floating mention bar — appears when lines are selected */}
-            {selectionRange && onMentionLines && (
-              <div className={styles.floatingMentionBar}>
-                <span className={styles.floatingMentionLabel}>
-                  {selectionRange.start === selectionRange.end
-                    ? `Line ${selectionRange.start}`
-                    : `Lines ${selectionRange.start}–${selectionRange.end}`
-                  }
-                </span>
-                <button
-                  className={styles.floatingMentionBtn}
-                  onClick={handleMentionSelection}
-                  title="Insert @file:line reference into chat"
-                >
-                  <AtSign size={12} />
-                  Reference
-                </button>
-                <button
-                  className={styles.floatingMentionDismiss}
-                  onClick={() => { setSelectedLines(new Set()); lastClickedLineRef.current = null; }}
-                  title="Clear selection"
-                >
-                  <X size={11} />
-                </button>
-              </div>
-            )}
+            {/* Inline @ mention buttons are injected via useEffect below */}
           </div>
         )}
 
