@@ -22,12 +22,12 @@ import styles from "./MentionBadgeComponent.module.css";
  */
 function MentionBadge({ path, name, type, lineStart, lineEnd, stale, knownPaths, onFileOpen }) {
   const baseName = name || path.split("/").pop() || path;
-  // Build display name with optional line suffix
+  // Build display name with optional line suffix (#L format — GitHub convention)
   let displayName = baseName;
   if (lineStart != null) {
     displayName += lineEnd != null && lineEnd !== lineStart
-      ? `:${lineStart}-${lineEnd}`
-      : `:${lineStart}`;
+      ? ` #L${lineStart}-L${lineEnd}`
+      : ` #L${lineStart}`;
   }
   const resolvedType = type || (baseName.includes(".") ? "file" : "directory");
   const icon = resolvedType === "directory" ? "📁" : "📄";
@@ -52,8 +52,8 @@ function MentionBadge({ path, name, type, lineStart, lineEnd, stale, knownPaths,
   let tooltipPath = path;
   if (lineStart != null) {
     tooltipPath += lineEnd != null && lineEnd !== lineStart
-      ? `:${lineStart}-${lineEnd}`
-      : `:${lineStart}`;
+      ? `#L${lineStart}-L${lineEnd}`
+      : `#L${lineStart}`;
   }
 
   return (

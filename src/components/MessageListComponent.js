@@ -80,8 +80,8 @@ function renderContentWithMentions(text, knownPaths, onMentionFileOpen) {
 
   return segments.map((seg, i) => {
     if (seg.type === "text") return seg.value;
-    // Strip the :lineStart-lineEnd suffix from the value to get a clean path
-    const cleanPath = seg.value.replace(/:\d+(-\d+)?$/, "");
+    // Strip the #Lstart-Lend suffix from the value to get a clean path
+    const cleanPath = seg.value.replace(/#L\d+(-L\d+)?$/, "");
     return (
       <MentionBadge
         key={i}

@@ -267,57 +267,27 @@
   }
 }
 
-/* ── Code line with gutter ───────────────────────────────── */
+/* ── Code line with hover effects (CSS-only, no React state) ─ */
 
 .codeLine {
-  display: flex;
-  align-items: baseline;
-  min-height: 18.6px;
-  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  font-size: 12px;
-  line-height: 1.55;
-  padding-left: 4px;
+  position: relative;
+  transition: background-color 0.08s;
 }
 
-.lineNumberClickable {
-  flex-shrink: 0;
+.codeLine:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
 }
 
-/* ── Gutter @ button (per-line) ──────────────────────────── */
-
-.lineGutterBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  border-radius: 3px;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.15);
-  opacity: 0;
-  transform: scale(0.8);
-  transition: opacity 0.12s, transform 0.12s, color 0.12s, background 0.12s;
-  margin-right: 2px;
-  vertical-align: middle;
+/* Brighten line numbers on hover */
+.codeLine:hover .react-syntax-highlighter-line-number {
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
-.lineGutterBtnVisible {
-  opacity: 1;
-  transform: scale(1);
-  color: rgba(255, 255, 255, 0.4);
+/* Selected lines override hover */
+.codeLine[style*="border-left: 2px solid var"] .react-syntax-highlighter-line-number {
+  color: var(--accent-color) !important;
 }
 
-.lineGutterBtn:hover {
-  opacity: 1;
-  transform: scale(1);
-  color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
-}
-
-.lineGutterBtn:active {
-  transform: scale(0.9);
-}
 
 /* ── Floating mention bar ────────────────────────────────── */
 
