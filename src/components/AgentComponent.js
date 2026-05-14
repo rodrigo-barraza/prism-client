@@ -2671,7 +2671,6 @@ export default function AgentComponent({
                   })()
               : null
           }
-          onMentionFile={handleMentionFile}
         />
       )}
 
