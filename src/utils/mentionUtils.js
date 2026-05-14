@@ -25,7 +25,14 @@ export function serializeEditable(el) {
     if (node.nodeType === Node.TEXT_NODE) {
       text += node.textContent;
     } else if (node.dataset?.mentionPath) {
-      text += `@${node.dataset.mentionPath}`;
+      // Include line range suffix if present (e.g. @path:10 or @path:10-25)
+      let ref = `@${node.dataset.mentionPath}`;
+      const ls = node.dataset.mentionLineStart;
+      const le = node.dataset.mentionLineEnd;
+      if (ls) {
+        ref += le && le !== ls ? `:${ls}-${le}` : `:${ls}`;
+      }
+      text += ref;
     } else if (node.tagName === "BR") {
       text += "\n";
     } else {
@@ -115,7 +122,8 @@ export function parseMentionTokens(text) {
 
   // Match @path tokens — path must contain at least one `/` or `.` to
   // distinguish real file/dir mentions from casual "@someone" usage.
-  const mentionRe = /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+))/g;
+  // Optionally captures a trailing `:lineStart` or `:lineStart-lineEnd` suffix.
+  const mentionRe = /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+?)(?::(\d+)(?:-(\d+))?)?)(?=\s|$)/g;
 
   const segments = [];
   let lastIndex = 0;
@@ -126,7 +134,13 @@ export function parseMentionTokens(text) {
     if (match.index > lastIndex) {
       segments.push({ type: "text", value: text.slice(lastIndex, match.index) });
     }
-    segments.push({ type: "mention", value: match[1] });
+    const segment = { type: "mention", value: match[1] };
+    // Extract line range if present
+    if (match[2]) {
+      segment.lineStart = parseInt(match[2], 10);
+      if (match[3]) segment.lineEnd = parseInt(match[3], 10);
+    }
+    segments.push(segment);
     lastIndex = mentionRe.lastIndex;
   }
 
@@ -160,11 +174,31 @@ export function createMentionBadge(path, name, type, opts = {}) {
   badge.className = classes.join(" ");
   badge.dataset.mentionPath = path;
   badge.dataset.mentionType = type || "file";
+  // Store line range in data attributes for serialization
+  if (opts.lineStart != null) {
+    badge.dataset.mentionLineStart = String(opts.lineStart);
+    if (opts.lineEnd != null && opts.lineEnd !== opts.lineStart) {
+      badge.dataset.mentionLineEnd = String(opts.lineEnd);
+    }
+  }
+  // Build display name with line suffix
+  let displayName = name;
+  if (opts.lineStart != null) {
+    displayName += opts.lineEnd != null && opts.lineEnd !== opts.lineStart
+      ? `:${opts.lineStart}-${opts.lineEnd}`
+      : `:${opts.lineStart}`;
+  }
   // Native title attribute — used as tooltip fallback inside overflow-clipped
   // contentEditable containers where the ::after CSS tooltip gets cut off.
-  badge.title = path;
+  let titleText = path;
+  if (opts.lineStart != null) {
+    titleText += opts.lineEnd != null && opts.lineEnd !== opts.lineStart
+      ? `:${opts.lineStart}-${opts.lineEnd}`
+      : `:${opts.lineStart}`;
+  }
+  badge.title = titleText;
   const icon = type === "directory" ? "📁" : "📄";
-  badge.textContent = `${icon} ${name}`;
+  badge.textContent = `${icon} ${displayName}`;
   return badge;
 }
 

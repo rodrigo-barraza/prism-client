@@ -14,13 +14,22 @@ import styles from "./MentionBadgeComponent.module.css";
  * @param {string}  props.path       — Full file/directory path
  * @param {string}  [props.name]     — Display name (defaults to basename of path)
  * @param {string}  [props.type]     — "file" or "directory" (auto-detected from name if omitted)
+ * @param {number}  [props.lineStart] — Start line for file-line mentions
+ * @param {number}  [props.lineEnd]   — End line for file-line range mentions
  * @param {boolean} [props.stale]    — True when the file/directory no longer exists
  * @param {Set}     [props.knownPaths] — Set of currently known workspace paths for staleness detection
  * @param {Function} [props.onFileOpen] — (path) => void — Callback to open a file in the file viewer
  */
-function MentionBadge({ path, name, type, stale, knownPaths, onFileOpen }) {
-  const displayName = name || path.split("/").pop() || path;
-  const resolvedType = type || (displayName.includes(".") ? "file" : "directory");
+function MentionBadge({ path, name, type, lineStart, lineEnd, stale, knownPaths, onFileOpen }) {
+  const baseName = name || path.split("/").pop() || path;
+  // Build display name with optional line suffix
+  let displayName = baseName;
+  if (lineStart != null) {
+    displayName += lineEnd != null && lineEnd !== lineStart
+      ? `:${lineStart}-${lineEnd}`
+      : `:${lineStart}`;
+  }
+  const resolvedType = type || (baseName.includes(".") ? "file" : "directory");
   const icon = resolvedType === "directory" ? "📁" : "📄";
 
   // Determine staleness: explicit prop wins, otherwise check against known paths
@@ -39,10 +48,18 @@ function MentionBadge({ path, name, type, stale, knownPaths, onFileOpen }) {
     ? (e) => { e.stopPropagation(); onFileOpen(path); }
     : undefined;
 
+  // Build tooltip text with optional line range
+  let tooltipPath = path;
+  if (lineStart != null) {
+    tooltipPath += lineEnd != null && lineEnd !== lineStart
+      ? `:${lineStart}-${lineEnd}`
+      : `:${lineStart}`;
+  }
+
   return (
     <span
       className={className}
-      data-mention-path={path}
+      data-mention-path={tooltipPath}
       data-mention-type={resolvedType}
       onClick={handleClick}
       role={isClickable ? "button" : undefined}
