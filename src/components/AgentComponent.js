@@ -19,6 +19,7 @@ import WorkersPanel from "./WorkersPanelComponent.js";
 import ParametersPanelComponent from "./ParametersPanelComponent.js";
 import SessionRequestsListComponent from "./SessionRequestsListComponent.js";
 import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent.js";
+import FileViewerPanelComponent from "./FileViewerPanelComponent.js";
 import MessageList, { prepareDisplayMessages } from "./MessageListComponent.js";
 import ImagePreviewComponent from "./ImagePreviewComponent.js";
 
@@ -34,7 +35,7 @@ import {
 
 import useSessionStats from "../hooks/useSessionStats.js";
 import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, generateUUID } from "../utils/utilities.js";
-import { PROJECT_AGENT, SETTINGS_DEFAULTS, SK_MODEL_MEMORY_AGENT, SK_MODEL_MEMORY_AGENT_PREFIX, SK_TOOL_MEMORY_AGENT, SK_TOOL_MEMORY_AGENT_PREFIX, MAX_TOOL_ITERATIONS } from "../constants.js";
+import { PROJECT_AGENT, SETTINGS_DEFAULTS, SK_MODEL_MEMORY_AGENT, SK_MODEL_MEMORY_AGENT_PREFIX, SK_TOOL_MEMORY_AGENT, SK_TOOL_MEMORY_AGENT_PREFIX, MAX_TOOL_ITERATIONS, LS_FILE_VIEWER_WIDTH } from "../constants.js";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent.js";
 import { ButtonComponent, EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
@@ -161,6 +162,15 @@ export default function AgentComponent({
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
   const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
+
+  // -- File viewer pane state (VS Code-style read-only viewer) --
+  const [viewerOpenFiles, setViewerOpenFiles] = useState([]); // [{ id, path }]
+  const [viewerActiveFileId, setViewerActiveFileId] = useState(null);
+  const [viewerWidth, setViewerWidth] = useState(() => {
+    if (typeof window === "undefined") return 500;
+    const stored = localStorage.getItem(LS_FILE_VIEWER_WIDTH);
+    return stored ? Math.max(300, Math.min(Number(stored), 1200)) : 500;
+  });
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
   const [workerToolActivity, setWorkerToolActivity] = useState({});
@@ -2678,6 +2688,22 @@ export default function AgentComponent({
         <WorkspaceTreePanelComponent
           workspaceTreeRefreshKey={workspaceTreeRefreshKey}
           onMentionFile={handleMentionFile}
+          onOpenFile={(relativePath) => {
+            // Build absolute path from workspace root + relative path
+            const absPath = currentWorkspace?.path
+              ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
+              : relativePath;
+            const existingTab = viewerOpenFiles.find((f) => f.path === absPath);
+            if (existingTab) {
+              // Already open — just switch to it
+              setViewerActiveFileId(existingTab.id);
+            } else {
+              // Open new tab
+              const id = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+              setViewerOpenFiles((prev) => [...prev, { id, path: absPath }]);
+              setViewerActiveFileId(id);
+            }
+          }}
         />
       )}
 
@@ -3085,6 +3111,31 @@ export default function AgentComponent({
       }
       leftPanel={leftPanel}
       leftTitle={null}
+      fileViewerPanel={currentWorkspace && (
+        <FileViewerPanelComponent
+          openFiles={viewerOpenFiles}
+          activeFileId={viewerActiveFileId}
+          onSelectFile={setViewerActiveFileId}
+          onCloseFile={(id) => {
+            setViewerOpenFiles((prev) => {
+              const next = prev.filter((f) => f.id !== id);
+              // If the closed tab was active, switch to the nearest tab
+              if (id === viewerActiveFileId) {
+                const closedIdx = prev.findIndex((f) => f.id === id);
+                const newActive = next[Math.min(closedIdx, next.length - 1)];
+                setViewerActiveFileId(newActive?.id || null);
+              }
+              return next;
+            });
+          }}
+          isOpen={viewerOpenFiles.length > 0}
+          width={viewerWidth}
+          onWidthChange={(w) => {
+            setViewerWidth(w);
+            localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(w));
+          }}
+        />
+      )}
       rightPanel={
         <HistoryPanel
           sessions={sessions}

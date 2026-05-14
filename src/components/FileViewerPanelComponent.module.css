@@ -1,0 +1,314 @@
+/* ── FileViewerPanel — VS Code-style read-only file pane ──── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  overflow: hidden;
+  /* GPU-accelerated width transitions for open/close */
+  transition:
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width, min-width, opacity;
+  opacity: 1;
+}
+
+.containerCollapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  opacity: 0;
+  border-width: 0 !important;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ── Tab bar ─────────────────────────────────────────────── */
+
+.tabBar {
+  display: flex;
+  align-items: stretch;
+  height: 34px;
+  min-height: 34px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  flex-shrink: 0;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  height: 100%;
+  border: none;
+  border-right: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  max-width: 180px;
+  min-width: 0;
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent-color) 5%, transparent);
+    color: var(--text-primary);
+  }
+
+  &:hover .tabClose {
+    opacity: 1;
+  }
+}
+
+.tabActive {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--accent-color);
+  font-weight: 500;
+}
+
+.tabIcon {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.tabActive .tabIcon {
+  opacity: 0.8;
+  color: var(--accent-color);
+}
+
+.tabName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tabClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  padding: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  }
+}
+
+.tabActive .tabClose {
+  opacity: 0.6;
+}
+
+/* ── File content area ───────────────────────────────────── */
+
+.contentArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Breadcrumb path bar ─────────────────────────────────── */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  font-size: 10px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 24px;
+  background: color-mix(in srgb, var(--bg-surface) 40%, transparent);
+}
+
+.breadcrumbSep {
+  opacity: 0.4;
+}
+
+/* ── Code viewer (read-only) ─────────────────────────────── */
+
+.codeScroll {
+  flex: 1;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.codeTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  tab-size: 4;
+}
+
+.lineNumber {
+  width: 52px;
+  min-width: 52px;
+  padding: 0 12px 0 0;
+  text-align: right;
+  color: var(--text-secondary);
+  opacity: 0.35;
+  user-select: none;
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  position: sticky;
+  left: 0;
+  background: var(--bg-primary);
+}
+
+.lineContent {
+  padding: 0 16px 0 8px;
+  color: var(--text-primary);
+  white-space: pre;
+  vertical-align: top;
+}
+
+.codeTable tr:hover .lineNumber {
+  opacity: 0.7;
+}
+
+.codeTable tr:hover .lineContent {
+  background: color-mix(in srgb, var(--accent-color) 3%, transparent);
+}
+
+/* ── Loading & empty states ──────────────────────────────── */
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  gap: 8px;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid color-mix(in srgb, var(--accent-color) 20%, transparent);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: spinFileViewer 0.6s linear infinite;
+}
+
+@keyframes spinFileViewer {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  padding: 24px;
+  text-align: center;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 8px;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  font-size: 11px;
+}
+
+/* ── File meta badge (line count, language) ───────────────── */
+
+.metaBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  background: color-mix(in srgb, var(--bg-surface) 40%, transparent);
+  min-height: 22px;
+}
+
+.metaDot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  opacity: 0.4;
+}
+
+/* ── Resize handle ───────────────────────────────────────── */
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+  background: transparent;
+  transition: background 0.15s;
+
+  &:hover,
+  &:active {
+    background: var(--accent-color);
+    opacity: 0.5;
+  }
+}
+
+/* ── Mobile ──────────────────────────────────────────────── */
+
+@media (max-width: 1200px) {
+  .container {
+    display: none;
+  }
+}

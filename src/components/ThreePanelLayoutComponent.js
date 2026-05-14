@@ -36,6 +36,7 @@ export default function ThreePanelLayout({
   headerMeta = null,
   headerControls = null,
   headerCenter = null,
+  fileViewerPanel = null,
   children,
 }) {
   const resolvedRightTitle = rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
@@ -220,7 +221,8 @@ export default function ThreePanelLayout({
             {leftPanel}
           </aside>
 
-
+          {/* File Viewer Pane (VS Code-style, between sidebar and chat) */}
+          {fileViewerPanel}
 
           {/* Main Center */}
           <section

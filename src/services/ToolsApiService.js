@@ -108,4 +108,20 @@ export default class ToolsApiService {
   static async deleteAgenticTask(project, taskId) {
     return ToolsApiService._post("/agentic/task/delete", { project, taskId });
   }
+
+  // ---------------------------------------------------------------------------
+  // File Reading (read-only viewer)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Read a file's contents via the agentic file service.
+   * @param {string} path - Absolute file path
+   * @param {object} [options]
+   * @param {number} [options.startLine] - 1-indexed start line
+   * @param {number} [options.endLine] - 1-indexed end line
+   * @returns {Promise<{ path, content, totalLines, language?, truncated? }>}
+   */
+  static async readFile(path, { startLine, endLine } = {}) {
+    return ToolsApiService._post("/agentic/file/read", { path, startLine, endLine });
+  }
 }

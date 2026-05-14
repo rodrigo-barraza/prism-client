@@ -202,6 +202,10 @@
   font-weight: 500;
 }
 
+.treeRowFile {
+  cursor: pointer;
+}
+
 .treeChevron {
   flex-shrink: 0;
   color: var(--text-secondary);
@@ -225,6 +229,83 @@
   color: var(--text-secondary);
   opacity: 0.5;
 }
+
+/* ── File-type icon colors ─────────────────────────── */
+/* JavaScript family — warm yellow */
+.iconJs       { color: hsl(50, 85%, 55%);  opacity: 0.85; }
+.iconJsx      { color: hsl(195, 90%, 55%); opacity: 0.85; }
+/* TypeScript family — blue */
+.iconTs       { color: hsl(211, 80%, 55%); opacity: 0.85; }
+.iconTsx      { color: hsl(211, 80%, 55%); opacity: 0.85; }
+.iconDts      { color: hsl(211, 50%, 60%); opacity: 0.7; }
+/* Web */
+.iconHtml     { color: hsl(14, 85%, 55%);  opacity: 0.85; }
+.iconCss      { color: hsl(228, 80%, 60%); opacity: 0.85; }
+.iconScss     { color: hsl(330, 65%, 58%); opacity: 0.85; }
+.iconSvg      { color: hsl(36, 95%, 55%);  opacity: 0.85; }
+/* Data / Config */
+.iconJson     { color: hsl(50, 70%, 50%);  opacity: 0.8; }
+.iconYaml     { color: hsl(0, 60%, 55%);   opacity: 0.75; }
+.iconToml     { color: hsl(200, 40%, 55%); opacity: 0.75; }
+.iconXml      { color: hsl(30, 70%, 55%);  opacity: 0.75; }
+.iconCsv      { color: hsl(140, 55%, 50%); opacity: 0.8; }
+.iconConfig   { color: var(--text-secondary); opacity: 0.65; }
+/* Python — green/blue */
+.iconPython   { color: hsl(210, 65%, 55%); opacity: 0.85; }
+.iconNotebook { color: hsl(28, 85%, 55%);  opacity: 0.85; }
+/* Ruby — red gem */
+.iconRuby     { color: hsl(0, 72%, 52%);   opacity: 0.85; }
+/* Rust — burnt orange */
+.iconRust     { color: hsl(25, 80%, 50%);  opacity: 0.85; }
+/* Go — cyan */
+.iconGo       { color: hsl(190, 80%, 50%); opacity: 0.85; }
+/* C family */
+.iconC        { color: hsl(210, 55%, 55%); opacity: 0.8; }
+.iconCpp      { color: hsl(210, 70%, 50%); opacity: 0.85; }
+.iconCsharp   { color: hsl(265, 55%, 55%); opacity: 0.85; }
+/* Java — orange/red */
+.iconJava     { color: hsl(16, 85%, 50%);  opacity: 0.85; }
+/* Kotlin — purple/orange */
+.iconKotlin   { color: hsl(270, 60%, 58%); opacity: 0.85; }
+/* Swift — orange */
+.iconSwift    { color: hsl(20, 90%, 55%);  opacity: 0.85; }
+/* PHP — indigo */
+.iconPhp      { color: hsl(240, 45%, 58%); opacity: 0.85; }
+/* Shell — terminal green */
+.iconShell    { color: hsl(140, 60%, 48%); opacity: 0.85; }
+/* Markdown / Docs */
+.iconMarkdown { color: hsl(210, 15%, 60%); opacity: 0.8; }
+.iconText     { color: var(--text-secondary); opacity: 0.6; }
+.iconLog      { color: var(--text-secondary); opacity: 0.5; }
+.iconLicense  { color: hsl(45, 65%, 50%);  opacity: 0.75; }
+/* Images — purple/magenta */
+.iconImage    { color: hsl(280, 60%, 58%); opacity: 0.85; }
+/* Video — warm magenta */
+.iconVideo    { color: hsl(330, 70%, 55%); opacity: 0.85; }
+/* Audio — teal */
+.iconAudio    { color: hsl(170, 60%, 45%); opacity: 0.85; }
+/* Archives — brown/khaki */
+.iconArchive  { color: hsl(35, 45%, 50%);  opacity: 0.75; }
+/* Fonts */
+.iconFont     { color: hsl(0, 0%, 55%);    opacity: 0.7; }
+/* Database — warm amber */
+.iconDatabase { color: hsl(35, 75%, 50%);  opacity: 0.85; }
+/* Env / Secrets — muted yellow */
+.iconEnv      { color: hsl(50, 60%, 48%);  opacity: 0.8; }
+/* Certificates */
+.iconCert     { color: hsl(140, 50%, 45%); opacity: 0.8; }
+/* Docker — docker blue */
+.iconDocker   { color: hsl(205, 80%, 55%); opacity: 0.85; }
+/* Git */
+.iconGit      { color: hsl(10, 75%, 52%);  opacity: 0.8; }
+/* Test files — green vial */
+.iconTest     { color: hsl(145, 60%, 48%); opacity: 0.85; }
+/* Lock files */
+.iconLock     { color: var(--text-secondary); opacity: 0.5; }
+/* Source maps */
+.iconMap      { color: var(--text-secondary); opacity: 0.45; }
+/* Default fallback */
+.iconDefault  { color: var(--text-secondary); opacity: 0.5; }
 
 .treeName {
   flex: 1;

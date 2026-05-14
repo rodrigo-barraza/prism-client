@@ -2,18 +2,203 @@
 import { useState, useEffect, useCallback, useRef, memo } from "react";
 import {
   FolderOpen,
-  File,
   ChevronRight,
   ChevronDown,
   AtSign,
   Check,
+  File,
+  FileCode2,
+  FileJson2,
+  FileText,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  FileArchive,
+  FileSpreadsheet,
+  FileType,
+  FileKey,
+  FileCog,
+  FileTerminal,
+  Braces,
+  Database,
+  Globe,
+  Palette,
+  Hash,
+  Gem,
+  Hexagon,
+  Box,
+  ScrollText,
+  ShieldCheck,
+  TestTubeDiagonal,
+  BookOpen,
 } from "lucide-react";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
 import styles from "./WorkspaceTreePanelComponent.module.css";
 
+// ─── File Extension → Icon + Color Class Mapping ────────────
+const EXTENSION_ICON_MAP = {
+  // JavaScript / TypeScript
+  js:       { icon: FileCode2,       cls: "iconJs" },
+  jsx:      { icon: FileCode2,       cls: "iconJsx" },
+  ts:       { icon: FileCode2,       cls: "iconTs" },
+  tsx:      { icon: FileCode2,       cls: "iconTsx" },
+  mjs:      { icon: FileCode2,       cls: "iconJs" },
+  cjs:      { icon: FileCode2,       cls: "iconJs" },
+  // Web
+  html:     { icon: Globe,           cls: "iconHtml" },
+  htm:      { icon: Globe,           cls: "iconHtml" },
+  css:      { icon: Palette,         cls: "iconCss" },
+  scss:     { icon: Palette,         cls: "iconScss" },
+  sass:     { icon: Palette,         cls: "iconScss" },
+  less:     { icon: Palette,         cls: "iconCss" },
+  svg:      { icon: FileImage,       cls: "iconSvg" },
+  // Data / Config
+  json:     { icon: FileJson2,       cls: "iconJson" },
+  jsonc:    { icon: FileJson2,       cls: "iconJson" },
+  yaml:     { icon: FileCog,         cls: "iconYaml" },
+  yml:      { icon: FileCog,         cls: "iconYaml" },
+  toml:     { icon: FileCog,         cls: "iconToml" },
+  ini:      { icon: FileCog,         cls: "iconConfig" },
+  xml:      { icon: FileCode2,       cls: "iconXml" },
+  csv:      { icon: FileSpreadsheet, cls: "iconCsv" },
+  // Python
+  py:       { icon: FileCode2,       cls: "iconPython" },
+  pyw:      { icon: FileCode2,       cls: "iconPython" },
+  ipynb:    { icon: BookOpen,        cls: "iconNotebook" },
+  // Ruby
+  rb:       { icon: Gem,             cls: "iconRuby" },
+  // Rust
+  rs:       { icon: Hexagon,         cls: "iconRust" },
+  // Go
+  go:       { icon: FileCode2,       cls: "iconGo" },
+  // C / C++ / C#
+  c:        { icon: Hash,            cls: "iconC" },
+  h:        { icon: Hash,            cls: "iconC" },
+  cpp:      { icon: Hash,            cls: "iconCpp" },
+  hpp:      { icon: Hash,            cls: "iconCpp" },
+  cs:       { icon: Hash,            cls: "iconCsharp" },
+  // Java / Kotlin
+  java:     { icon: FileCode2,       cls: "iconJava" },
+  kt:       { icon: FileCode2,       cls: "iconKotlin" },
+  kts:      { icon: FileCode2,       cls: "iconKotlin" },
+  // Swift
+  swift:    { icon: FileCode2,       cls: "iconSwift" },
+  // PHP
+  php:      { icon: FileCode2,       cls: "iconPhp" },
+  // Shell
+  sh:       { icon: FileTerminal,    cls: "iconShell" },
+  bash:     { icon: FileTerminal,    cls: "iconShell" },
+  zsh:      { icon: FileTerminal,    cls: "iconShell" },
+  fish:     { icon: FileTerminal,    cls: "iconShell" },
+  bat:      { icon: FileTerminal,    cls: "iconShell" },
+  cmd:      { icon: FileTerminal,    cls: "iconShell" },
+  ps1:      { icon: FileTerminal,    cls: "iconShell" },
+  // Markdown / Docs
+  md:       { icon: BookOpen,        cls: "iconMarkdown" },
+  mdx:      { icon: BookOpen,        cls: "iconMarkdown" },
+  txt:      { icon: FileText,        cls: "iconText" },
+  rst:      { icon: FileText,        cls: "iconText" },
+  log:      { icon: ScrollText,      cls: "iconLog" },
+  // Images
+  png:      { icon: FileImage,       cls: "iconImage" },
+  jpg:      { icon: FileImage,       cls: "iconImage" },
+  jpeg:     { icon: FileImage,       cls: "iconImage" },
+  gif:      { icon: FileImage,       cls: "iconImage" },
+  webp:     { icon: FileImage,       cls: "iconImage" },
+  ico:      { icon: FileImage,       cls: "iconImage" },
+  bmp:      { icon: FileImage,       cls: "iconImage" },
+  // Video
+  mp4:      { icon: FileVideo,       cls: "iconVideo" },
+  webm:     { icon: FileVideo,       cls: "iconVideo" },
+  mkv:      { icon: FileVideo,       cls: "iconVideo" },
+  avi:      { icon: FileVideo,       cls: "iconVideo" },
+  mov:      { icon: FileVideo,       cls: "iconVideo" },
+  // Audio
+  mp3:      { icon: FileAudio,       cls: "iconAudio" },
+  wav:      { icon: FileAudio,       cls: "iconAudio" },
+  flac:     { icon: FileAudio,       cls: "iconAudio" },
+  ogg:      { icon: FileAudio,       cls: "iconAudio" },
+  aac:      { icon: FileAudio,       cls: "iconAudio" },
+  // Archives
+  zip:      { icon: FileArchive,     cls: "iconArchive" },
+  tar:      { icon: FileArchive,     cls: "iconArchive" },
+  gz:       { icon: FileArchive,     cls: "iconArchive" },
+  bz2:      { icon: FileArchive,     cls: "iconArchive" },
+  "7z":     { icon: FileArchive,     cls: "iconArchive" },
+  rar:      { icon: FileArchive,     cls: "iconArchive" },
+  // Fonts
+  woff:     { icon: FileType,        cls: "iconFont" },
+  woff2:    { icon: FileType,        cls: "iconFont" },
+  ttf:      { icon: FileType,        cls: "iconFont" },
+  otf:      { icon: FileType,        cls: "iconFont" },
+  eot:      { icon: FileType,        cls: "iconFont" },
+  // Database
+  sql:      { icon: Database,        cls: "iconDatabase" },
+  sqlite:   { icon: Database,        cls: "iconDatabase" },
+  db:       { icon: Database,        cls: "iconDatabase" },
+  // Security / Env
+  env:      { icon: FileKey,         cls: "iconEnv" },
+  pem:      { icon: ShieldCheck,     cls: "iconCert" },
+  crt:      { icon: ShieldCheck,     cls: "iconCert" },
+  key:      { icon: FileKey,         cls: "iconEnv" },
+  // Docker
+  dockerfile: { icon: Box,           cls: "iconDocker" },
+  // Test files (matched by name pattern, not extension)
+  test:     { icon: TestTubeDiagonal, cls: "iconTest" },
+  spec:     { icon: TestTubeDiagonal, cls: "iconTest" },
+  // Package / Lock
+  lock:     { icon: FileKey,         cls: "iconLock" },
+  // TypeScript declaration
+  "d.ts":   { icon: Braces,          cls: "iconDts" },
+  // Map files
+  map:      { icon: Braces,          cls: "iconMap" },
+};
+
+// Special filename matches (case-insensitive)
+const FILENAME_ICON_MAP = {
+  dockerfile:       { icon: Box,           cls: "iconDocker" },
+  "docker-compose.yml":  { icon: Box,      cls: "iconDocker" },
+  "docker-compose.yaml": { icon: Box,      cls: "iconDocker" },
+  ".gitignore":     { icon: FileCog,       cls: "iconGit" },
+  ".gitattributes": { icon: FileCog,       cls: "iconGit" },
+  ".prettierrc":    { icon: FileCog,       cls: "iconConfig" },
+  ".eslintrc":      { icon: FileCog,       cls: "iconConfig" },
+  ".editorconfig":  { icon: FileCog,       cls: "iconConfig" },
+  "makefile":       { icon: FileTerminal,  cls: "iconShell" },
+  "license":        { icon: ScrollText,    cls: "iconLicense" },
+  "readme.md":      { icon: BookOpen,      cls: "iconMarkdown" },
+};
+
+const DEFAULT_FILE_ICON = { icon: File, cls: "iconDefault" };
+
+function getFileIcon(filename) {
+  const lower = filename.toLowerCase();
+
+  // 1. Exact filename match
+  if (FILENAME_ICON_MAP[lower]) return FILENAME_ICON_MAP[lower];
+
+  // 2. Check for compound extensions (e.g., ".d.ts", ".test.js")
+  const parts = lower.split(".");
+  if (parts.length >= 3) {
+    const compoundExt = parts.slice(-2).join(".");
+    if (EXTENSION_ICON_MAP[compoundExt]) return EXTENSION_ICON_MAP[compoundExt];
+    // Test/spec detection
+    const secondLast = parts[parts.length - 2];
+    if (secondLast === "test" || secondLast === "spec") {
+      return EXTENSION_ICON_MAP.test;
+    }
+  }
+
+  // 3. Simple extension match
+  const ext = parts.length > 1 ? parts.pop() : "";
+  if (ext && EXTENSION_ICON_MAP[ext]) return EXTENSION_ICON_MAP[ext];
+
+  return DEFAULT_FILE_ICON;
+}
+
 // ─── Recursive Directory Tree Node ──────────────────────────
-const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMentionFile }) {
+const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMentionFile, onOpenFile }) {
   const [expanded, setExpanded] = useState(depth < 1);
   const isDir = node.type === "directory";
   const hasChildren = isDir && node.children?.length > 0;
@@ -34,9 +219,15 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
   return (
     <div className={styles.treeNode}>
       <div
-        className={`${styles.treeRow} ${isDir ? styles.treeRowDir : ""}`}
+        className={`${styles.treeRow} ${isDir ? styles.treeRowDir : styles.treeRowFile}`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
-        onClick={() => isDir && setExpanded((v) => !v)}
+        onClick={() => {
+          if (isDir) {
+            setExpanded((v) => !v);
+          } else {
+            onOpenFile?.(nodePath);
+          }
+        }}
         role="button"
         tabIndex={0}
       >
@@ -52,7 +243,10 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
         ) : (
           <>
             <span className={styles.treeChevronSpacer} />
-            <File size={10} className={styles.treeFileIcon} />
+            {(() => {
+              const { icon: Icon, cls } = getFileIcon(node.name);
+              return <Icon size={10} className={`${styles.treeFileIcon} ${styles[cls] || ""}`} />;
+            })()}
           </>
         )}
         <span className={styles.treeName}>{node.name}</span>
@@ -76,7 +270,7 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
       {isDir && expanded && hasChildren && (
         <div className={styles.treeChildren}>
           {node.children.map((child) => (
-            <TreeNode key={child.name} node={child} depth={depth + 1} parentPath={nodePath} onMentionFile={onMentionFile} />
+            <TreeNode key={child.name} node={child} depth={depth + 1} parentPath={nodePath} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
           ))}
         </div>
       )}
@@ -94,6 +288,7 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
 export default function WorkspaceTreePanelComponent({
   workspaceTreeRefreshKey = 0,
   onMentionFile,
+  onOpenFile,
 }) {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
   const [treeData, setTreeData] = useState(null);
@@ -212,7 +407,7 @@ export default function WorkspaceTreePanelComponent({
         {!treeLoading && treeData?.tree && treeData.tree.length > 0 && (
           <div className={styles.treeRoot}>
             {treeData.tree.map((node) => (
-              <TreeNode key={node.name} node={node} onMentionFile={onMentionFile} />
+              <TreeNode key={node.name} node={node} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
             ))}
           </div>
         )}
