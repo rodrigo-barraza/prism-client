@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  background: var(--bg-primary);
+  background: #000000;
   border-right: 1px solid var(--border-color);
   overflow: hidden;
   /* GPU-accelerated width transitions for open/close */
@@ -33,8 +33,8 @@
   align-items: stretch;
   height: 34px;
   min-height: 34px;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-color);
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -52,9 +52,9 @@
   padding: 0 10px;
   height: 100%;
   border: none;
-  border-right: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  border-right: 1px solid #222222;
   background: transparent;
-  color: var(--text-secondary);
+  color: #808080;
   font-size: 11px;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   white-space: nowrap;
@@ -66,8 +66,8 @@
   min-width: 0;
 
   &:hover {
-    background: color-mix(in srgb, var(--accent-color) 5%, transparent);
-    color: var(--text-primary);
+    background: #1e1e1e;
+    color: #cccccc;
   }
 
   &:hover .tabClose {
@@ -76,8 +76,8 @@
 }
 
 .tabActive {
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: #000000;
+  color: #e0e0e0;
   border-bottom: 2px solid var(--accent-color);
   font-weight: 500;
 }
@@ -107,15 +107,15 @@
   border: none;
   border-radius: 3px;
   background: none;
-  color: var(--text-secondary);
+  color: #808080;
   cursor: pointer;
   opacity: 0;
   padding: 0;
   transition: opacity 0.15s, color 0.15s, background 0.15s;
 
   &:hover {
-    color: var(--text-primary);
-    background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
   }
 }
 
@@ -132,6 +132,7 @@
   min-height: 0;
   overflow: hidden;
   position: relative;
+  background: #000000;
 }
 
 /* ── Breadcrumb path bar ─────────────────────────────────── */
@@ -143,68 +144,34 @@
   padding: 4px 12px;
   font-size: 10px;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  color: var(--text-secondary);
-  opacity: 0.7;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  color: #666666;
+  border-bottom: 1px solid #1a1a1a;
   flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: 24px;
-  background: color-mix(in srgb, var(--bg-surface) 40%, transparent);
+  background: #0a0a0a;
 }
 
 .breadcrumbSep {
   opacity: 0.4;
 }
 
-/* ── Code viewer (read-only) ─────────────────────────────── */
+/* ── Code scroll container ───────────────────────────────── */
 
 .codeScroll {
   flex: 1;
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
+  scrollbar-color: #333333 transparent;
+  background: #000000;
 }
 
-.codeTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  font-size: 12px;
-  line-height: 1.55;
-  tab-size: 4;
-}
-
-.lineNumber {
-  width: 52px;
-  min-width: 52px;
-  padding: 0 12px 0 0;
-  text-align: right;
-  color: var(--text-secondary);
-  opacity: 0.35;
-  user-select: none;
-  vertical-align: top;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  position: sticky;
-  left: 0;
-  background: var(--bg-primary);
-}
-
-.lineContent {
-  padding: 0 16px 0 8px;
-  color: var(--text-primary);
-  white-space: pre;
-  vertical-align: top;
-}
-
-.codeTable tr:hover .lineNumber {
-  opacity: 0.7;
-}
-
-.codeTable tr:hover .lineContent {
-  background: color-mix(in srgb, var(--accent-color) 3%, transparent);
+/* Override react-syntax-highlighter's internal pre/code styles */
+.codeScroll pre {
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 /* ── Loading & empty states ──────────────────────────────── */
@@ -215,15 +182,14 @@
   justify-content: center;
   flex: 1;
   font-size: 11px;
-  color: var(--text-secondary);
-  opacity: 0.6;
+  color: #666666;
   gap: 8px;
 }
 
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid color-mix(in srgb, var(--accent-color) 20%, transparent);
+  border: 2px solid rgba(255, 255, 255, 0.08);
   border-top-color: var(--accent-color);
   border-radius: 50%;
   animation: spinFileViewer 0.6s linear infinite;
@@ -241,8 +207,7 @@
   justify-content: center;
   flex: 1;
   font-size: 11px;
-  color: var(--text-secondary);
-  opacity: 0.6;
+  color: #999999;
   padding: 24px;
   text-align: center;
 }
@@ -254,8 +219,7 @@
   justify-content: center;
   flex: 1;
   gap: 8px;
-  color: var(--text-secondary);
-  opacity: 0.4;
+  color: #555555;
   font-size: 11px;
 }
 
@@ -266,14 +230,13 @@
   align-items: center;
   gap: 8px;
   padding: 3px 12px;
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  border-top: 1px solid #1a1a1a;
   font-size: 10px;
-  color: var(--text-secondary);
-  opacity: 0.5;
+  color: #555555;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  background: color-mix(in srgb, var(--bg-surface) 40%, transparent);
+  background: #0a0a0a;
   min-height: 22px;
 }
 
@@ -281,8 +244,7 @@
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--text-secondary);
-  opacity: 0.4;
+  background: #444444;
 }
 
 /* ── Resize handle ───────────────────────────────────────── */

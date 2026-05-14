@@ -204,12 +204,7 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
   const hasChildren = isDir && node.children?.length > 0;
   const nodePath = parentPath ? `${parentPath}/${node.name}` : node.name;
 
-  const formatSize = (bytes) => {
-    if (!bytes) return "";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
+
 
   const handleMention = (e) => {
     e.stopPropagation();
@@ -259,9 +254,6 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
           >
             <AtSign size={10} />
           </button>
-        )}
-        {!isDir && node.sizeBytes != null && (
-          <span className={styles.treeSize}>{formatSize(node.sizeBytes)}</span>
         )}
         {isDir && hasChildren && (
           <span className={styles.treeCount}>{node.children.length}</span>

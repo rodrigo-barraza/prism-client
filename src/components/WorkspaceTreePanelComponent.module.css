@@ -313,16 +313,6 @@
   text-overflow: ellipsis;
 }
 
-.treeSize {
-  font-size: 9px;
-  color: var(--text-secondary);
-  opacity: 0.5;
-  font-variant-numeric: tabular-nums;
-  margin-left: auto;
-  padding-left: 8px;
-  flex-shrink: 0;
-}
-
 .treeCount {
   font-size: 9px;
   color: var(--text-secondary);

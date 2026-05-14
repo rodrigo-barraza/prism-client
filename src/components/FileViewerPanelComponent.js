@@ -1,13 +1,37 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, memo } from "react";
+import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
 import { File, X, FileCode, ChevronRight } from "lucide-react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ToolsApiService from "../services/ToolsApiService.js";
 import styles from "./FileViewerPanelComponent.module.css";
 
-// ─── Language detection from file extension ─────────────────
-const EXT_LANGUAGE_MAP = {
-  js: "JavaScript", jsx: "JavaScript (JSX)", ts: "TypeScript", tsx: "TypeScript (TSX)",
+// ─── Extension → Prism language key mapping ─────────────────
+// Keys must match Prism language identifiers for syntax highlighting
+const EXT_TO_PRISM = {
+  js: "javascript", jsx: "jsx", mjs: "javascript", cjs: "javascript",
+  ts: "typescript", tsx: "tsx",
+  py: "python", rb: "ruby", rs: "rust", go: "go", java: "java", kt: "kotlin",
+  c: "c", h: "c", cpp: "cpp", hpp: "cpp", cs: "csharp",
+  swift: "swift", m: "objectivec", php: "php", pl: "perl",
+  sh: "bash", bash: "bash", zsh: "bash", fish: "bash",
+  html: "html", htm: "html", css: "css", scss: "scss", less: "less",
+  json: "json", yaml: "yaml", yml: "yaml", toml: "toml", xml: "xml",
+  md: "markdown", mdx: "markdown", txt: "text", csv: "text",
+  sql: "sql", graphql: "graphql", gql: "graphql",
+  dockerfile: "docker",
+  env: "text", gitignore: "text",
+  lua: "lua", r: "r", dart: "dart", scala: "scala", ex: "elixir",
+  vue: "markup", svelte: "markup",
+  proto: "protobuf", prisma: "text",
+  tf: "hcl", hcl: "hcl",
+};
+
+// Extension → display label (for the meta bar)
+const EXT_TO_LABEL = {
+  js: "JavaScript", jsx: "JSX", mjs: "ES Module", cjs: "CommonJS",
+  ts: "TypeScript", tsx: "TSX",
   py: "Python", rb: "Ruby", rs: "Rust", go: "Go", java: "Java", kt: "Kotlin",
   c: "C", h: "C Header", cpp: "C++", hpp: "C++ Header", cs: "C#",
   swift: "Swift", m: "Objective-C", php: "PHP", pl: "Perl",
@@ -16,27 +40,31 @@ const EXT_LANGUAGE_MAP = {
   json: "JSON", yaml: "YAML", yml: "YAML", toml: "TOML", xml: "XML",
   md: "Markdown", mdx: "MDX", txt: "Plain Text", csv: "CSV",
   sql: "SQL", graphql: "GraphQL", gql: "GraphQL",
-  dockerfile: "Dockerfile", Dockerfile: "Dockerfile",
+  dockerfile: "Dockerfile",
   env: "Environment", gitignore: "Git Ignore",
   lua: "Lua", r: "R", dart: "Dart", scala: "Scala", ex: "Elixir",
   vue: "Vue", svelte: "Svelte",
   proto: "Protocol Buffers", prisma: "Prisma",
   tf: "Terraform", hcl: "HCL",
-  cjs: "CommonJS", mjs: "ES Module",
 };
 
-function detectLanguage(filename) {
-  if (!filename) return null;
-  const basename = filename.split("/").pop();
-  // Handle dotfiles
-  if (basename.startsWith(".")) {
-    const name = basename.slice(1).toLowerCase();
-    return EXT_LANGUAGE_MAP[name] || null;
-  }
-  // Dockerfile special case
-  if (basename === "Dockerfile" || basename.startsWith("Dockerfile.")) return "Dockerfile";
+function getFileExt(filepath) {
+  if (!filepath) return null;
+  const basename = filepath.split("/").pop();
+  if (basename === "Dockerfile" || basename.startsWith("Dockerfile.")) return "dockerfile";
+  if (basename.startsWith(".")) return basename.slice(1).toLowerCase();
   const ext = basename.split(".").pop()?.toLowerCase();
-  return ext ? (EXT_LANGUAGE_MAP[ext] || null) : null;
+  return ext || null;
+}
+
+function getPrismLanguage(filepath) {
+  const ext = getFileExt(filepath);
+  return ext ? (EXT_TO_PRISM[ext] || "text") : "text";
+}
+
+function getLanguageLabel(filepath) {
+  const ext = getFileExt(filepath);
+  return ext ? (EXT_TO_LABEL[ext] || null) : null;
 }
 
 function getBasename(filepath) {
@@ -47,6 +75,41 @@ function getPathSegments(filepath) {
   if (!filepath) return [];
   return filepath.split("/").filter(Boolean);
 }
+
+/**
+ * Strip line-number prefixes added by the agentic file service.
+ * The API returns content in the format: "1: line content\n2: line content\n..."
+ * We strip the "N: " prefix from each line to get clean source code.
+ */
+function stripLineNumberPrefixes(content) {
+  if (!content) return content;
+  const lines = content.split("\n");
+  // Verify the first line matches the pattern — if not, return as-is
+  if (!/^\d+: /.test(lines[0]) && !/^\d+:$/.test(lines[0])) return content;
+  return lines.map((line) => line.replace(/^\d+: ?/, "")).join("\n");
+}
+
+// ─── VS Code Dark+ with true black background ──────────────
+const codeTheme = {
+  ...vscDarkPlus,
+  'pre[class*="language-"]': {
+    ...vscDarkPlus['pre[class*="language-"]'],
+    background: "#000000",
+    margin: 0,
+    padding: "8px 0",
+    borderRadius: 0,
+    fontSize: "12px",
+    lineHeight: "1.55",
+    fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
+  },
+  'code[class*="language-"]': {
+    ...vscDarkPlus['code[class*="language-"]'],
+    background: "transparent",
+    fontSize: "12px",
+    lineHeight: "1.55",
+    fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
+  },
+};
 
 // ─── Single file tab ────────────────────────────────────────
 const FileTab = memo(function FileTab({ file, isActive, onSelect, onClose }) {
@@ -76,7 +139,7 @@ const FileTab = memo(function FileTab({ file, isActive, onSelect, onClose }) {
  * FileViewerPanelComponent — VS Code-style read-only file viewer.
  *
  * Opens between the left sidebar and the main content area.
- * Supports multiple files as tabs, read-only viewing with line numbers.
+ * Supports multiple files as tabs, read-only viewing with syntax highlighting.
  *
  * Props:
  *   openFiles    — Array of { id, path } objects
@@ -96,7 +159,7 @@ export default function FileViewerPanelComponent({
   width = 500,
   onWidthChange,
 }) {
-  const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, error, loading } }
+  const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, languageLabel, error, loading } }
   const codeScrollRef = useRef(null);
   const resizeRef = useRef(null);
 
@@ -111,22 +174,26 @@ export default function FileViewerPanelComponent({
     if (inflightRef.current.has(id)) return;
     inflightRef.current.add(id);
 
-    // Set loading state immediately (sync — before the async gap)
+    // Set loading state immediately
     setFileContents((prev) => ({
       ...prev,
-      [id]: { loading: true, content: null, totalLines: 0, language: null, error: null },
+      [id]: { loading: true, content: null, totalLines: 0, language: null, languageLabel: null, error: null },
     }));
 
     ToolsApiService.readFile(path)
       .then((result) => {
-        const language = detectLanguage(path) || result.language || null;
+        const language = getPrismLanguage(path);
+        const languageLabel = getLanguageLabel(path) || result.language || null;
+        // Strip the "N: " line-number prefixes from the API response
+        const cleanContent = stripLineNumberPrefixes(result.content ?? "");
         setFileContents((prev) => ({
           ...prev,
           [id]: {
             loading: false,
-            content: result.content ?? "",
+            content: cleanContent,
             totalLines: result.totalLines || 0,
             language,
+            languageLabel,
             error: result.error || null,
           },
         }));
@@ -134,7 +201,7 @@ export default function FileViewerPanelComponent({
       .catch((err) => {
         setFileContents((prev) => ({
           ...prev,
-          [id]: { loading: false, content: null, totalLines: 0, language: null, error: err.message },
+          [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: err.message },
         }));
       })
       .finally(() => {
@@ -201,36 +268,12 @@ export default function FileViewerPanelComponent({
 
   const isCollapsed = !isOpen || openFiles.length === 0;
 
-  // ── Render lines ────────────────────────────────────────────
-  const renderLines = () => {
-    if (!cached?.content) return null;
-    const lines = cached.content.split("\n");
-    // For very large files, we might want to virtualize —
-    // but for now, slice to a sensible limit
-    const MAX_LINES = 10000;
-    const displayLines = lines.length > MAX_LINES ? lines.slice(0, MAX_LINES) : lines;
-
-    return (
-      <table className={styles.codeTable}>
-        <tbody>
-          {displayLines.map((line, i) => (
-            <tr key={i}>
-              <td className={styles.lineNumber}>{i + 1}</td>
-              <td className={styles.lineContent}>{line || "\u00A0"}</td>
-            </tr>
-          ))}
-          {lines.length > MAX_LINES && (
-            <tr>
-              <td className={styles.lineNumber}>…</td>
-              <td className={styles.lineContent} style={{ opacity: 0.5, fontStyle: "italic" }}>
-                {`${lines.length - MAX_LINES} more lines not shown`}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    );
-  };
+  // Memoize the start line offset from the API response
+  const startLineNumber = useMemo(() => {
+    if (!cached) return 1;
+    // The API can return startLine if partial reads were used
+    return 1;
+  }, [cached]);
 
   return (
     <div
@@ -279,10 +322,40 @@ export default function FileViewerPanelComponent({
           <div className={styles.error}>{cached.error}</div>
         )}
 
-        {/* Content */}
+        {/* Syntax-highlighted content */}
         {cached?.content != null && !cached.loading && (
           <div className={styles.codeScroll} ref={codeScrollRef}>
-            {renderLines()}
+            <SyntaxHighlighter
+              style={codeTheme}
+              language={cached.language || "text"}
+              showLineNumbers
+              startingLineNumber={startLineNumber}
+              wrapLongLines
+              lineNumberStyle={{
+                minWidth: "3em",
+                paddingRight: "12px",
+                color: "rgba(255,255,255,0.2)",
+                userSelect: "none",
+                textAlign: "right",
+                fontVariantNumeric: "tabular-nums",
+              }}
+              customStyle={{
+                margin: 0,
+                padding: "8px 0",
+                background: "#000000",
+                borderRadius: 0,
+                overflow: "visible",
+              }}
+              codeTagProps={{
+                style: {
+                  fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
+                  fontSize: "12px",
+                  lineHeight: "1.55",
+                },
+              }}
+            >
+              {cached.content}
+            </SyntaxHighlighter>
           </div>
         )}
 
@@ -306,10 +379,10 @@ export default function FileViewerPanelComponent({
       {activeFile && cached?.content != null && !cached.loading && (
         <div className={styles.metaBar}>
           <span>{cached.totalLines || cached.content.split("\n").length} lines</span>
-          {cached.language && (
+          {cached.languageLabel && (
             <>
               <span className={styles.metaDot} />
-              <span>{cached.language}</span>
+              <span>{cached.languageLabel}</span>
             </>
           )}
         </div>
