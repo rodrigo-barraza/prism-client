@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
-import { File, X, FileCode, ChevronRight } from "lucide-react";
+import { File, X, FileCode, ChevronRight, AtSign } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ToolsApiService from "../services/ToolsApiService.js";
@@ -149,6 +149,7 @@ const FileTab = memo(function FileTab({ file, isActive, onSelect, onClose }) {
  *   isOpen       — Whether the panel is expanded
  *   width        — Panel width in px (default 500)
  *   onWidthChange — (newWidth) => void — resize callback
+ *   onMentionLines — (path, startLine, endLine) => void — reference lines in chat input
  */
 export default function FileViewerPanelComponent({
   openFiles = [],
@@ -160,6 +161,7 @@ export default function FileViewerPanelComponent({
   width = 500,
   onWidthChange,
   refreshKey = 0,
+  onMentionLines,
 }) {
   const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, languageLabel, error, loading } }
   const codeScrollRef = useRef(null);
@@ -320,6 +322,90 @@ export default function FileViewerPanelComponent({
     return 1;
   }, [cached]);
 
+  // ── Line selection state ──────────────────────────────────────
+  const [selectedLines, setSelectedLines] = useState(new Set());  // set of 1-based line numbers
+  const [lineHover, setLineHover] = useState(null);               // line number under cursor
+  const lastClickedLineRef = useRef(null);                        // for shift+click ranges
+
+  // Reset selection when switching tabs
+  useEffect(() => {
+    setSelectedLines(new Set());
+    lastClickedLineRef.current = null;
+  }, [activeFileId]);
+
+  // Derived range from selection
+  const selectionRange = useMemo(() => {
+    if (selectedLines.size === 0) return null;
+    const sorted = [...selectedLines].sort((a, b) => a - b);
+    return { start: sorted[0], end: sorted[sorted.length - 1] };
+  }, [selectedLines]);
+
+  // Handle line gutter click (single line @ mention)
+  const handleGutterMentionClick = useCallback((lineNum, e) => {
+    e.stopPropagation();
+    if (!activeFile || !onMentionLines) return;
+    onMentionLines(activeFile.path, lineNum, lineNum);
+  }, [activeFile, onMentionLines]);
+
+  // Handle line number click for selection
+  const handleLineNumberClick = useCallback((lineNum, e) => {
+    if (e.shiftKey && lastClickedLineRef.current != null) {
+      // Shift+click: select range
+      const from = Math.min(lastClickedLineRef.current, lineNum);
+      const to = Math.max(lastClickedLineRef.current, lineNum);
+      const newSet = new Set();
+      for (let i = from; i <= to; i++) newSet.add(i);
+      setSelectedLines(newSet);
+    } else {
+      // Regular click: toggle single line
+      setSelectedLines((prev) => {
+        const next = new Set(prev);
+        if (next.has(lineNum)) next.delete(lineNum);
+        else next.add(lineNum);
+        return next;
+      });
+      lastClickedLineRef.current = lineNum;
+    }
+  }, []);
+
+  // Handle floating bar "Reference" click
+  const handleMentionSelection = useCallback(() => {
+    if (!selectionRange || !activeFile || !onMentionLines) return;
+    onMentionLines(activeFile.path, selectionRange.start, selectionRange.end);
+    setSelectedLines(new Set());
+    lastClickedLineRef.current = null;
+  }, [selectionRange, activeFile, onMentionLines]);
+
+  // Clear selection on click outside line numbers
+  const handleCodeAreaClick = useCallback((e) => {
+    // Only clear if clicking the code area background, not a line number or gutter button
+    if (!e.target.closest(`.${styles.lineGutterBtn}`) && !e.target.closest(`.${styles.lineNumberClickable}`)) {
+      setSelectedLines(new Set());
+      lastClickedLineRef.current = null;
+    }
+  }, []);
+
+  // Build lineProps function for SyntaxHighlighter
+  const linePropsBuilder = useCallback((lineNumber) => {
+    const isSelected = selectedLines.has(lineNumber);
+    const isHovered = lineHover === lineNumber;
+    return {
+      style: {
+        display: "block",
+        backgroundColor: isSelected
+          ? "rgba(var(--accent-color-rgb, 99,102,241), 0.12)"
+          : isHovered
+            ? "rgba(255,255,255,0.03)"
+            : undefined,
+        borderLeft: isSelected ? "2px solid var(--accent-color)" : "2px solid transparent",
+        paddingLeft: isSelected ? "0px" : undefined,
+        position: "relative",
+      },
+      onMouseEnter: () => setLineHover(lineNumber),
+      onMouseLeave: () => setLineHover(null),
+    };
+  }, [selectedLines, lineHover]);
+
   return (
     <div
       className={`${styles.container} ${isCollapsed ? styles.containerCollapsed : ""}`}
@@ -369,21 +455,11 @@ export default function FileViewerPanelComponent({
 
         {/* Syntax-highlighted content — stay visible during refresh (stale-while-revalidate) */}
         {cached?.content != null && (
-          <div className={styles.codeScroll} ref={codeScrollRef}>
+          <div className={styles.codeScroll} ref={codeScrollRef} onClick={handleCodeAreaClick}>
             <SyntaxHighlighter
               style={codeTheme}
               language={cached.language || "text"}
-              showLineNumbers
-              startingLineNumber={startLineNumber}
               wrapLongLines
-              lineNumberStyle={{
-                minWidth: "3em",
-                paddingRight: "12px",
-                color: "rgba(255,255,255,0.2)",
-                userSelect: "none",
-                textAlign: "right",
-                fontVariantNumeric: "tabular-nums",
-              }}
               customStyle={{
                 margin: 0,
                 padding: "8px 0",
@@ -398,9 +474,112 @@ export default function FileViewerPanelComponent({
                   lineHeight: "1.55",
                 },
               }}
+              renderer={({ rows, stylesheet: _stylesheet, useInlineStyles }) => {
+                return rows.map((row, i) => {
+                  const lineNumber = startLineNumber + i;
+                  const isHovered = lineHover === lineNumber;
+                  const isSelected = selectedLines.has(lineNumber);
+                  // Get line props
+                  const lProps = linePropsBuilder(lineNumber);
+
+                  return (
+                    <div
+                      key={i}
+                      style={lProps.style}
+                      onMouseEnter={lProps.onMouseEnter}
+                      onMouseLeave={lProps.onMouseLeave}
+                      className={styles.codeLine}
+                    >
+                      {/* Line number + gutter @ button */}
+                      <span
+                        className={styles.lineNumberClickable}
+                        style={{
+                          minWidth: "3em",
+                          paddingRight: "4px",
+                          color: isSelected
+                            ? "var(--accent-color)"
+                            : isHovered
+                              ? "rgba(255,255,255,0.5)"
+                              : "rgba(255,255,255,0.2)",
+                          userSelect: "none",
+                          textAlign: "right",
+                          fontVariantNumeric: "tabular-nums",
+                          cursor: "pointer",
+                          display: "inline-block",
+                          transition: "color 0.1s",
+                        }}
+                        onClick={(e) => handleLineNumberClick(lineNumber, e)}
+                      >
+                        {lineNumber}
+                      </span>
+                      {/* Gutter @ button — visible on hover */}
+                      {onMentionLines && (
+                        <span
+                          className={`${styles.lineGutterBtn} ${isHovered ? styles.lineGutterBtnVisible : ""}`}
+                          onClick={(e) => handleGutterMentionClick(lineNumber, e)}
+                          title={`Reference line ${lineNumber}`}
+                        >
+                          <AtSign size={10} />
+                        </span>
+                      )}
+                      {/* Code content */}
+                      <span style={{ paddingLeft: "4px" }}>
+                        {row.children?.map((token, j) => {
+                          const tokenProps = useInlineStyles
+                            ? {
+                                style: token.properties?.style || {},
+                                className: token.properties?.className?.join(" ") || "",
+                              }
+                            : {
+                                className: token.properties?.className?.join(" ") || "",
+                              };
+                          return (
+                            <span key={j} {...tokenProps}>
+                              {token.children?.map((child, k) =>
+                                child.type === "text" ? child.value : (
+                                  <span key={k} style={child.properties?.style}>
+                                    {child.children?.map((c) => c.value).join("") || child.value}
+                                  </span>
+                                )
+                              )}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    </div>
+                  );
+                });
+              }}
             >
               {cached.content}
             </SyntaxHighlighter>
+
+            {/* Floating mention bar — appears when lines are selected */}
+            {selectionRange && onMentionLines && (
+              <div className={styles.floatingMentionBar}>
+                <span className={styles.floatingMentionLabel}>
+                  {selectionRange.start === selectionRange.end
+                    ? `Line ${selectionRange.start}`
+                    : `Lines ${selectionRange.start}–${selectionRange.end}`
+                  }
+                </span>
+                <button
+                  className={styles.floatingMentionBtn}
+                  onClick={handleMentionSelection}
+                  title="Insert @file:line reference into chat"
+                >
+                  <AtSign size={12} />
+                  Reference
+                </button>
+                <button
+                  className={styles.floatingMentionDismiss}
+                  onClick={() => { setSelectedLines(new Set()); lastClickedLineRef.current = null; }}
+                  title="Clear selection"
+                >
+                  <X size={11} />
+                </button>
+              </div>
+            )}
           </div>
         )}
 

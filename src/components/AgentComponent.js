@@ -834,6 +834,12 @@ export default function AgentComponent({
     [customTools, builtInTools, disabledBuiltIns],
   );
 
+  // Derive whether the active agent has File Operations capability
+  const hasFileOps = useMemo(
+    () => builtInTools.some((t) => t.domain === "Agentic: File Operations"),
+    [builtInTools],
+  );
+
   // -- Memoize filtered messages for MessageList to prevent ref churn --
   const filteredMessages = useMemo(
     () => messages.filter((m) => m.role === "user" || m.role === "assistant"),
@@ -899,6 +905,41 @@ export default function AgentComponent({
     const name = filePath.split("/").pop();
     const isDir = !name.includes(".");
     const badge = createMentionBadge(filePath, name, isDir ? "directory" : "file");
+    const space = document.createTextNode(" ");
+    const sel = window.getSelection();
+    const range = sel.rangeCount && el.contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
+    if (range) {
+      const container = range.startContainer;
+      if (container.nodeType === Node.TEXT_NODE) {
+        const ch = container.textContent[range.startOffset - 1];
+        if (ch && ch !== " " && ch !== "\n") {
+          range.insertNode(document.createTextNode(" "));
+          range.collapse(false);
+        }
+      }
+      range.insertNode(space);
+      range.insertNode(badge);
+    } else {
+      if (el.textContent.length > 0) el.appendChild(document.createTextNode(" "));
+      el.appendChild(badge);
+      el.appendChild(space);
+    }
+    placeCaretAfter(space);
+    inputValueRef.current = serializeEditable(el);
+    setHasInput(true);
+    el.focus();
+  }, [createMentionBadge]);
+
+  // -- File-line mention handler (@ gutter in FileViewerPanel) --
+  // Inserts a file-line badge (e.g. 📄 file.js:42 or 📄 file.js:10-25)
+  const handleMentionLines = useCallback((filePath, startLine, endLine) => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const name = filePath.split("/").pop();
+    const badge = createMentionBadge(filePath, name, "file", {
+      lineStart: startLine,
+      lineEnd: endLine,
+    });
     const space = document.createTextNode(" ");
     const sel = window.getSelection();
     const range = sel.rangeCount && el.contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
@@ -2439,7 +2480,7 @@ export default function AgentComponent({
       <TabBarComponent
         tabs={[
           { key: "settings", icon: <Settings size={14} />, tooltip: "Settings" },
-          ...(currentWorkspace ? [
+          ...(currentWorkspace && hasFileOps ? [
             {
               key: "workspace",
               icon: <FolderTree size={14} />,
@@ -3167,7 +3208,7 @@ export default function AgentComponent({
       }
       leftPanel={leftPanel}
       leftTitle={null}
-      fileViewerPanel={currentWorkspace && (
+      fileViewerPanel={currentWorkspace && hasFileOps && (
         <FileViewerPanelComponent
           openFiles={viewerOpenFiles}
           activeFileId={viewerActiveFileId}
@@ -3204,6 +3245,7 @@ export default function AgentComponent({
             localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(w));
           }}
           refreshKey={viewerRefreshKey}
+          onMentionLines={handleMentionLines}
         />
       )}
       rightPanel={

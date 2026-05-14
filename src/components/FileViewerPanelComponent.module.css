@@ -267,6 +267,143 @@
   }
 }
 
+/* ── Code line with gutter ───────────────────────────────── */
+
+.codeLine {
+  display: flex;
+  align-items: baseline;
+  min-height: 18.6px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  padding-left: 4px;
+}
+
+.lineNumberClickable {
+  flex-shrink: 0;
+}
+
+/* ── Gutter @ button (per-line) ──────────────────────────── */
+
+.lineGutterBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.15);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.12s, transform 0.12s, color 0.12s, background 0.12s;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+
+.lineGutterBtnVisible {
+  opacity: 1;
+  transform: scale(1);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.lineGutterBtn:hover {
+  opacity: 1;
+  transform: scale(1);
+  color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+}
+
+.lineGutterBtn:active {
+  transform: scale(0.9);
+}
+
+/* ── Floating mention bar ────────────────────────────────── */
+
+.floatingMentionBar {
+  position: sticky;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 8px auto;
+  padding: 6px 12px;
+  background: var(--bg-secondary, #1a1a1a);
+  border: 1px solid var(--border-color, #333);
+  border-radius: var(--border-radius-md, 8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  z-index: 10;
+  font-size: 11px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  animation: floatingBarIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  backdrop-filter: blur(8px);
+}
+
+@keyframes floatingBarIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.floatingMentionLabel {
+  color: var(--text-muted, #888);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.floatingMentionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border: none;
+  border-radius: var(--border-radius-sm, 6px);
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+
+.floatingMentionBtn:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 30%, transparent);
+}
+
+.floatingMentionBtn:active {
+  transform: scale(0.97);
+}
+
+.floatingMentionDismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.12s, background 0.12s;
+}
+
+.floatingMentionDismiss:hover {
+  color: var(--text-primary, #e0e0e0);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 /* ── Mobile ──────────────────────────────────────────────── */
 
 @media (max-width: 1200px) {
@@ -274,3 +411,4 @@
     display: none;
   }
 }
+
