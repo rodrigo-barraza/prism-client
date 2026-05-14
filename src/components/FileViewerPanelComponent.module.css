@@ -31,14 +31,23 @@
 .titleBar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   height: 30px;
   min-height: 30px;
-  padding: 0 6px;
+  padding: 0 6px 0 10px;
   background: var(--accent-color);
   flex-shrink: 0;
   user-select: none;
   -webkit-app-region: drag;
+}
+
+.titleBarLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .titleBarActions {

@@ -55,43 +55,61 @@
   flex-shrink: 0;
 }
 
+/* Override ButtonComponent sizing to fit the compact chat header */
 .chatHeaderNewBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 10px;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
-  white-space: nowrap;
+  box-shadow: 0 2px 8px var(--accent-glow);
+  transition: filter 0.4s ease-out;
 }
 
-.chatHeaderNewBtn:hover:not(:disabled) {
-  color: var(--text-primary);
-  border-color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-secondary));
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent-color) 15%, transparent);
+/* Transient rainbow — applied on click, removed after ~1s */
+.chatHeaderNewBtnRainbow {
+  filter: hue-rotate(0deg);
+  animation: chatNewBtnHue 1s linear forwards;
+  will-change: filter;
 }
 
-.chatHeaderNewBtn:active:not(:disabled) {
-  transform: translateY(0);
+/* Glitch text scramble — chaotic distortion during rainbow flash */
+.chatHeaderNewBtnGlitch {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: hsl(300, 100%, 85%) !important;
+  background: hsl(280, 80%, 20%) !important;
+  border-color: hsl(300, 100%, 50%) !important;
+  animation:
+    chatGlitchHue 0.15s linear infinite,
+    chatGlitchJitter 0.05s steps(2) infinite;
+  will-change: filter, transform, text-shadow;
+  text-shadow:
+    1px 0 0 hsl(0, 100%, 60%),
+    -1px 0 0 hsl(180, 100%, 60%);
+  overflow: hidden;
 }
 
-.chatHeaderNewBtn:disabled {
-  opacity: 0.35;
-  cursor: default;
-  pointer-events: none;
+@keyframes chatNewBtnHue {
+  to {
+    filter: hue-rotate(360deg);
+  }
 }
 
-.chatHeaderNewBtn svg {
-  flex-shrink: 0;
+@keyframes chatGlitchHue {
+  0%   { filter: hue-rotate(0deg) brightness(1.2); }
+  25%  { filter: hue-rotate(90deg) brightness(1.6); }
+  50%  { filter: hue-rotate(180deg) brightness(0.8); }
+  75%  { filter: hue-rotate(270deg) brightness(1.4); }
+  100% { filter: hue-rotate(360deg) brightness(1.2); }
+}
+
+@keyframes chatGlitchJitter {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(-1px, 1px) scale(1.03); }
+  50%  { transform: translate(1px, -1px) scale(0.97); }
+  75%  { transform: translate(1px, 0) scale(1.01); }
+  100% { transform: translate(-1px, 0) scale(0.99); }
 }
 
 .messagesList {

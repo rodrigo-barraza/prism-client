@@ -86,6 +86,33 @@ const DEFAULT_EMPTY_STATE = {
   placeholder: "Send a message...",
 };
 
+// -- Glitch text generator (same as HistoryPanel) ----------------
+const SYMBOLS = "!@#$%^&*†‡§¶∆∇≈≠±×÷√∫∑∏⊗⊕⊘⊙◊♠♣♥♦★☆◈⬡⬢⟁⟐⧫⬟";
+const ZALGO = [
+  "\u0300","\u0301","\u0302","\u0303","\u0304","\u0305","\u0306",
+  "\u0307","\u0308","\u0309","\u030A","\u030B","\u030C","\u030D",
+  "\u030E","\u030F","\u0310","\u0311","\u0312","\u0313","\u0314",
+  "\u0315","\u0316","\u0317","\u0318","\u0319","\u031A","\u031B",
+  "\u0320","\u0321","\u0322","\u0323","\u0324","\u0325","\u0326",
+  "\u0327","\u0328","\u0329","\u032A","\u032B","\u032C","\u032D",
+  "\u0330","\u0331","\u0332","\u0333","\u0334","\u0335","\u0336",
+  "\u0340","\u0341","\u0342","\u0343","\u0344","\u0345","\u0346",
+  "\u0350","\u0351","\u0352","\u0353","\u0354","\u0355","\u0356",
+];
+const GLITCH_POOL = SYMBOLS + "ΣΩΨΞΘΔΛΠΦψξθδλπφ¿¡«»░▒▓█▄▀■□▪▫▬▲▼◆●○◎◇";
+
+function glitchText(len = 6) {
+  let result = "";
+  for (let i = 0; i < len; i++) {
+    result += GLITCH_POOL[Math.floor(Math.random() * GLITCH_POOL.length)];
+    const marks = 1 + Math.floor(Math.random() * 2);
+    for (let j = 0; j < marks; j++) {
+      result += ZALGO[Math.floor(Math.random() * ZALGO.length)];
+    }
+  }
+  return result;
+}
+
 // Tools that are always on and non-toggleable in the agent view
 const AGENT_LOCKED_TOOLS = new Set(["Tool Calling"]);
 
@@ -2307,6 +2334,36 @@ export default function AgentComponent({
     resetSessionState();
   }, [isGenerating, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, planProposal, agenticProgress, settings, backendSessionStats, activeId, resetSessionState]);
 
+  /* ── Chat header "New Session" glitch effect ────────────────── */
+  const chatNewBtnRef = useRef(null);
+  const chatRainbowTimer = useRef(null);
+  const chatGlitchInterval = useRef(null);
+  const [chatGlitchLabel, setChatGlitchLabel] = useState(null);
+
+  const handleNewChatGlitch = useCallback(() => {
+    const el = chatNewBtnRef.current;
+    if (el) {
+      el.classList.remove(chatStyles.chatHeaderNewBtnRainbow);
+      void el.offsetWidth;
+      el.classList.add(chatStyles.chatHeaderNewBtnRainbow);
+
+      setChatGlitchLabel(glitchText());
+      clearInterval(chatGlitchInterval.current);
+      chatGlitchInterval.current = setInterval(() => {
+        setChatGlitchLabel(glitchText());
+      }, 30);
+
+      clearTimeout(chatRainbowTimer.current);
+      chatRainbowTimer.current = setTimeout(() => {
+        el.classList.remove(chatStyles.chatHeaderNewBtnRainbow);
+        clearInterval(chatGlitchInterval.current);
+        chatGlitchInterval.current = null;
+        setChatGlitchLabel(null);
+      }, 1000);
+    }
+    handleNewChat();
+  }, [handleNewChat]);
+
   /** Apply fetched/snapshot session data to component state immediately. */
   const applySessionData = useCallback((full) => {
     if (!full) return;
@@ -2888,16 +2945,18 @@ export default function AgentComponent({
           </span>
         </div>
         <div className={chatStyles.chatHeaderActions}>
-          <button
-            type="button"
-            className={chatStyles.chatHeaderNewBtn}
-            onClick={handleNewChat}
+          <ButtonComponent
+            ref={chatNewBtnRef}
+            variant="primary"
+            size="small"
+            icon={chatGlitchLabel ? undefined : Plus}
+            onClick={handleNewChatGlitch}
             disabled={messages.length === 0 && !activeId}
+            className={`${chatStyles.chatHeaderNewBtn} ${chatGlitchLabel ? chatStyles.chatHeaderNewBtnGlitch : ""}`}
             title="Start a new session"
           >
-            <Plus size={13} />
-            New Session
-          </button>
+            {chatGlitchLabel || "New Session"}
+          </ButtonComponent>
         </div>
       </div>
       <PixelTransitionComponent

@@ -454,6 +454,7 @@ export default function FileViewerPanelComponent({
     >
       {/* Title bar — VSCode-style header */}
       <div className={styles.titleBar}>
+        <span className={styles.titleBarLabel}>File Viewer</span>
         <div className={styles.titleBarActions}>
           <button
             type="button"
