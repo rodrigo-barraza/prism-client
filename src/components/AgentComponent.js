@@ -773,7 +773,8 @@ export default function AgentComponent({
         providers: resolvedProviders,
         _liveModelNames: resolvedModels,
         _liveModalities: resolvedModalities,
-        updatedAt: new Date().toISOString(),
+        // Preserve the original server-side updatedAt — overwriting it with
+        // Date.now() causes the DateTimeBadge to flash "just now" on click.
       };
       return updated;
     });

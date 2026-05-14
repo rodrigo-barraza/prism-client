@@ -127,10 +127,15 @@ export default function HistoryPanel({
       }
 
       // Use live-patched model names if available (from active generation),
+      // then backend-enriched modelNames (from request-log aggregation),
       // otherwise derive from messages
       let modelNames;
       if (conv._liveModelNames?.length > 0) {
         modelNames = conv._liveModelNames;
+      } else if (conv.modelNames?.length > 0) {
+        // Backend enrichment: the list endpoint aggregates unique models
+        // from request logs — available without fetching the full session.
+        modelNames = conv.modelNames;
       } else {
         // Extract unique model names and providers used in this conversation
         const msgs = conv.messages || [];

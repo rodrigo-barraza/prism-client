@@ -3,14 +3,16 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 10px 12px 10px 9px;
   cursor: pointer;
   border-bottom: 1px solid var(--border-color);
-  transition: background 0.2s;
+  border-left: 3px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.2s, border-color 0.2s;
   position: relative;
 
   &:hover {
     background: var(--accent-glow);
+    border-left-color: rgba(255, 255, 255, 0.15);
   }
 
   &:hover .actions {
@@ -20,7 +22,7 @@
 
 .active {
   background: rgba(99, 102, 241, 0.1);
-  border-left: 3px solid var(--accent-color);
+  border-left-color: var(--accent-color);
 }
 
 .active .icon {
