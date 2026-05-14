@@ -8,6 +8,13 @@
   overflow: hidden;
 }
 
+/* ── Header wrapper (holds header + dropdown) ── */
+
+.headerWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
 /* ── Header row ── */
 
 .header {
@@ -22,6 +29,17 @@
   letter-spacing: 0.4px;
   color: var(--text-secondary);
   flex-shrink: 0;
+  user-select: none;
+}
+
+.headerClickable {
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent-color) 6%, transparent);
+    color: var(--text-primary);
+  }
 }
 
 .headerIcon {
@@ -37,6 +55,17 @@
   white-space: nowrap;
 }
 
+.headerChevron {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  transition: transform 0.2s ease;
+}
+
+.headerChevronOpen {
+  transform: rotate(180deg);
+}
+
 .headerCount {
   font-size: 9px;
   font-weight: 500;
@@ -44,6 +73,82 @@
   opacity: 0.5;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
+}
+
+/* ── Workspace switcher dropdown ── */
+
+.switcherDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+  animation: switcherSlideIn 0.15s ease-out;
+}
+
+@keyframes switcherSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.switcherItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 16px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background 0.1s;
+
+  &:hover {
+    background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+  }
+}
+
+.switcherItemActive {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.switcherItemIcon {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.switcherItemActive .switcherItemIcon {
+  opacity: 1;
+  color: var(--accent-color);
+}
+
+.switcherItemName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.switcherItemCheck {
+  flex-shrink: 0;
+  color: var(--accent-color);
+  opacity: 0.8;
 }
 
 /* ── Scrollable tree area — fills all remaining vertical space ── */

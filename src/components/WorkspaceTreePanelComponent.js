@@ -6,6 +6,7 @@ import {
   ChevronRight,
   ChevronDown,
   AtSign,
+  Check,
 } from "lucide-react";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
@@ -86,14 +87,33 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
 /**
  * Full-panel workspace directory tree — used as a standalone tab
  * in the left sidebar of ThreePanelLayout.
+ *
+ * When multiple workspaces exist, the header becomes a clickable switcher
+ * that stays in sync with WorkspaceContext (same state as "New conversation in").
  */
 export default function WorkspaceTreePanelComponent({
   workspaceTreeRefreshKey = 0,
   onMentionFile,
 }) {
-  const { currentWorkspace } = useWorkspace();
+  const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
   const [treeData, setTreeData] = useState(null);
   const [treeLoading, setTreeLoading] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const switcherRef = useRef(null);
+
+  const hasMultiple = workspaces.length > 1;
+
+  // Close switcher on outside click
+  useEffect(() => {
+    if (!switcherOpen) return;
+    const handleClickOutside = (e) => {
+      if (switcherRef.current && !switcherRef.current.contains(e.target)) {
+        setSwitcherOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [switcherOpen]);
 
   const fetchTree = useCallback(async () => {
     if (!currentWorkspace?.path) return;
@@ -138,15 +158,53 @@ export default function WorkspaceTreePanelComponent({
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <FolderOpen size={11} className={styles.headerIcon} />
-        <span className={styles.headerLabel}>{currentWorkspace.name}</span>
-        {treeData?.totalEntries > 0 && (
-          <span className={styles.headerCount}>
-            {treeData.totalEntries}{treeData.truncated ? "+" : ""}
-          </span>
+      {/* ── Header — static label or workspace switcher ── */}
+      <div className={styles.headerWrapper} ref={switcherRef}>
+        <div
+          className={`${styles.header} ${hasMultiple ? styles.headerClickable : ""}`}
+          onClick={hasMultiple ? () => setSwitcherOpen((v) => !v) : undefined}
+          role={hasMultiple ? "button" : undefined}
+          tabIndex={hasMultiple ? 0 : undefined}
+          title={hasMultiple ? `Switch workspace — ${currentWorkspace.path}` : currentWorkspace.path}
+        >
+          <FolderOpen size={11} className={styles.headerIcon} />
+          <span className={styles.headerLabel}>{currentWorkspace.name}</span>
+          {hasMultiple && (
+            <ChevronDown size={10} className={`${styles.headerChevron} ${switcherOpen ? styles.headerChevronOpen : ""}`} />
+          )}
+          {treeData?.totalEntries > 0 && (
+            <span className={styles.headerCount}>
+              {treeData.totalEntries}{treeData.truncated ? "+" : ""}
+            </span>
+          )}
+        </div>
+
+        {/* ── Workspace switcher dropdown ── */}
+        {switcherOpen && (
+          <div className={styles.switcherDropdown}>
+            {workspaces.map((w) => {
+              const isActive = currentWorkspace?.path === w.path;
+              return (
+                <button
+                  key={w.id}
+                  type="button"
+                  className={`${styles.switcherItem} ${isActive ? styles.switcherItemActive : ""}`}
+                  onClick={() => {
+                    setCurrentWorkspace(w);
+                    setSwitcherOpen(false);
+                  }}
+                  title={w.path}
+                >
+                  <FolderOpen size={10} className={styles.switcherItemIcon} />
+                  <span className={styles.switcherItemName}>{w.name}</span>
+                  {isActive && <Check size={10} className={styles.switcherItemCheck} />}
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
+
       <div className={styles.treeScroll}>
         {treeLoading && (
           <div className={styles.treeLoading}>Loading…</div>
