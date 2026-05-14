@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { BotMessageSquare, Paperclip, X, ClipboardList, Zap, Settings, Wrench, Brain, Plug, GitBranch, Repeat, ListChecks, BookOpen, Info, Activity, CornerDownLeft, Send, Square, SlidersHorizontal, File, FolderOpen, FolderTree } from "lucide-react";
+import { BotMessageSquare, Paperclip, X, ClipboardList, Zap, Settings, Wrench, Brain, Plug, GitBranch, Repeat, ListChecks, BookOpen, Info, Activity, CornerDownLeft, Send, Square, SlidersHorizontal, File, FolderOpen, FolderTree, Plus } from "lucide-react";
 import PrismService from "../services/PrismService.js";
 import ToolsApiService from "../services/ToolsApiService.js";
 import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent.js";
@@ -2880,6 +2880,26 @@ export default function AgentComponent({
   // -- Center: chat area ---------------------------------------
   const chatContent = (
     <div className={chatStyles.container}>
+      {/* -- Chat header bar (always visible "New Session") -- */}
+      <div className={chatStyles.chatHeader}>
+        <div className={chatStyles.chatHeaderTitle}>
+          <span className={chatStyles.chatHeaderTitleText}>
+            {title || ""}
+          </span>
+        </div>
+        <div className={chatStyles.chatHeaderActions}>
+          <button
+            type="button"
+            className={chatStyles.chatHeaderNewBtn}
+            onClick={handleNewChat}
+            disabled={messages.length === 0 && !activeId}
+            title="Start a new session"
+          >
+            <Plus size={13} />
+            New Session
+          </button>
+        </div>
+      </div>
       <PixelTransitionComponent
         phase={pixelTransition}
         duration={pixelTransition === "in" ? PIXEL_IN_DURATION : pixelOutDuration}
@@ -2911,7 +2931,12 @@ export default function AgentComponent({
           streamingOutputs={streamingOutputs}
           workerToolActivity={workerToolActivity}
           knownPaths={knownPaths}
-          onMentionFileOpen={handleOpenFileInViewer}
+          onMentionFileOpen={(relativePath) => {
+            const absPath = currentWorkspace?.path
+              ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
+              : relativePath;
+            handleOpenFileInViewer(absPath);
+          }}
           planProposal={planProposal}
           onPlanApprove={() => {
             setPlanProposal((p) => p ? { ...p, status: "approved" } : null);
