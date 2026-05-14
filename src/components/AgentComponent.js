@@ -25,6 +25,7 @@ import ImagePreviewComponent from "./ImagePreviewComponent.js";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent.js";
 import ApprovalCardComponent from "./ApprovalCardComponent.js";
+import UserQuestionCardComponent from "./UserQuestionCardComponent.js";
 
 import StatusBarComponent from "./StatusBarComponent.js";
 import PixelTransitionComponent from "./PixelTransitionComponent.js";
@@ -294,6 +295,7 @@ export default function AgentComponent({
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
   const [pendingApprovals, setPendingApprovals] = useState([]);
+  const [pendingUserQuestion, setPendingUserQuestion] = useState(null); // { question, choices, context }
   const [planProposal, setPlanProposal] = useState(null); // { plan, steps, status }
   const [agenticProgress, setAgenticProgress] = useState(null); // { iteration, maxIterations }
   const [_contextTruncated, setContextTruncated] = useState(null); // { strategy, estimatedTokens }
@@ -1641,6 +1643,28 @@ export default function AgentComponent({
               return updated;
             });
           },
+          onUserQuestion: (data) => {
+            if (isStale()) return;
+            setPendingUserQuestion({
+              question: data.question,
+              choices: data.choices || [],
+              context: data.context || null,
+            });
+            // Clear processing metadata — user deliberation time should
+            // not inflate TTFT (same pattern as approval gates).
+            setMessages((prev) => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last?.role === "assistant" && (last.statusPhase || last._processingStartTime)) {
+                updated[updated.length - 1] = {
+                  ...last,
+                  statusPhase: undefined,
+                  _processingStartTime: undefined,
+                };
+              }
+              return updated;
+            });
+          },
           onPlanProposal: (data) => {
             if (isStale()) return;
             console.log("[AgentComponent] plan_proposal received:", data.plan?.length, "chars, autoApproved:", data.autoApproved);
@@ -2016,6 +2040,7 @@ export default function AgentComponent({
                 return updated;
               });
               setCurrentTurnStart(null);
+              setPendingUserQuestion(null);
               fetchSessionStats(agentSessionId);
             }
             // SessionSummarizer runs async after SSE stream closes —
@@ -2122,6 +2147,7 @@ export default function AgentComponent({
       setWorkerToolActivity({});
       setStreamingOutputs(new Map());
       setPendingApprovals([]);
+      setPendingUserQuestion(null);
       setPlanProposal(null);
       setAgenticProgress(null);
       setInjectedSkills([]);
@@ -2320,7 +2346,7 @@ export default function AgentComponent({
       const currentId = agentSessionIdRef.current;
       backgroundSessionsRef.current.set(currentId, {
         messages, title, toolActivity, workerToolActivity,
-        streamingOutputs, pendingApprovals, planProposal, agenticProgress,
+        streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress,
         settings: { ...settings }, backendSessionStats,
       });
       setIsGenerating(false);
@@ -2332,7 +2358,7 @@ export default function AgentComponent({
     }
     // New session — instant reset, no pixelation transition needed
     resetSessionState();
-  }, [isGenerating, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, planProposal, agenticProgress, settings, backendSessionStats, activeId, resetSessionState]);
+  }, [isGenerating, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress, settings, backendSessionStats, activeId, resetSessionState]);
 
   /* ── Chat header "New Session" glitch effect ────────────────── */
   const chatNewBtnRef = useRef(null);
@@ -2382,6 +2408,7 @@ export default function AgentComponent({
       setWorkerToolActivity(snap.workerToolActivity || {});
       setStreamingOutputs(snap.streamingOutputs || new Map());
       setPendingApprovals(snap.pendingApprovals || []);
+      setPendingUserQuestion(snap.pendingUserQuestion || null);
       setPlanProposal(snap.planProposal || null);
       setAgenticProgress(snap.agenticProgress || null);
       setSettings((prev) => ({ ...prev, ...snap.settings }));
@@ -2437,7 +2464,7 @@ export default function AgentComponent({
         const currentId = agentSessionIdRef.current;
         backgroundSessionsRef.current.set(currentId, {
           messages, title, toolActivity, workerToolActivity,
-          streamingOutputs, pendingApprovals, planProposal, agenticProgress,
+          streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress,
           settings: { ...settings }, backendSessionStats,
         });
         setIsGenerating(false);
@@ -2489,7 +2516,7 @@ export default function AgentComponent({
         setPixelTransition(null);
       }
     },
-    [isGenerating, activeId, agentProject, isNoAgent, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, planProposal, agenticProgress, settings, backendSessionStats, generatingSessionIds, applySessionData, recordPixelLoadTime],
+    [isGenerating, activeId, agentProject, isNoAgent, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress, settings, backendSessionStats, generatingSessionIds, applySessionData, recordPixelLoadTime],
   );
 
   const handleDeleteSession = useCallback(
@@ -3036,6 +3063,19 @@ export default function AgentComponent({
           />
         ))}
 
+        {/* Pending user question card */}
+        {pendingUserQuestion && (
+          <UserQuestionCardComponent
+            question={pendingUserQuestion.question}
+            choices={pendingUserQuestion.choices}
+            context={pendingUserQuestion.context}
+            onAnswer={(answer) => {
+              setPendingUserQuestion(null);
+              PrismService.sendUserQuestionAnswer(agentSessionId, answer).catch(console.error);
+            }}
+          />
+        )}
+
         <div ref={endRef} style={{ minHeight: 24 }} />
       </div>
 
@@ -3046,7 +3086,8 @@ export default function AgentComponent({
         const hasActiveTools = toolActivity.some((t) => t.status === "calling");
         // Detect awaiting-approval state (plan proposal or tool approval pending)
         const isAwaitingApproval = (planProposal?.status === "pending") ||
-          pendingApprovals.some((a) => a.status === "pending");
+          pendingApprovals.some((a) => a.status === "pending") ||
+          pendingUserQuestion !== null;
 
         // -- Derive phase from live worker activity --------------
         // When coordinator tools (team_create) are executing, the
