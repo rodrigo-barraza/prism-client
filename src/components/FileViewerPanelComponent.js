@@ -155,12 +155,15 @@ export default function FileViewerPanelComponent({
   activeFileId = null,
   onSelectFile,
   onCloseFile,
+  onFileNotFound,
   isOpen = false,
   width = 500,
   onWidthChange,
+  refreshKey = 0,
 }) {
   const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, languageLabel, error, loading } }
   const codeScrollRef = useRef(null);
+  const tabBarRef = useRef(null);
   const resizeRef = useRef(null);
 
   const activeFile = openFiles.find((f) => f.id === activeFileId) || null;
@@ -177,11 +180,23 @@ export default function FileViewerPanelComponent({
     // Set loading state immediately
     setFileContents((prev) => ({
       ...prev,
-      [id]: { loading: true, content: null, totalLines: 0, language: null, languageLabel: null, error: null },
+      [id]: { loading: true, content: prev[id]?.content ?? null, totalLines: prev[id]?.totalLines ?? 0, language: prev[id]?.language ?? null, languageLabel: prev[id]?.languageLabel ?? null, error: null },
     }));
 
     ToolsApiService.readFile(path)
       .then((result) => {
+        // File not found / deleted — notify parent so it can close the tab
+        if (result.error) {
+          const isNotFound = /not found|no such file|ENOENT|does not exist/i.test(result.error);
+          if (isNotFound) {
+            onFileNotFound?.(id, path);
+          }
+          setFileContents((prev) => ({
+            ...prev,
+            [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: result.error },
+          }));
+          return;
+        }
         const language = getPrismLanguage(path);
         const languageLabel = getLanguageLabel(path) || result.language || null;
         // Strip the "N: " line-number prefixes from the API response
@@ -194,11 +209,15 @@ export default function FileViewerPanelComponent({
             totalLines: result.totalLines || 0,
             language,
             languageLabel,
-            error: result.error || null,
+            error: null,
           },
         }));
       })
       .catch((err) => {
+        const isNotFound = /not found|no such file|ENOENT|does not exist/i.test(err.message);
+        if (isNotFound) {
+          onFileNotFound?.(id, path);
+        }
         setFileContents((prev) => ({
           ...prev,
           [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: err.message },
@@ -207,7 +226,7 @@ export default function FileViewerPanelComponent({
       .finally(() => {
         inflightRef.current.delete(id);
       });
-  }, []);
+  }, [onFileNotFound]);
 
   useEffect(() => {
     if (!activeFile) return;
@@ -215,6 +234,19 @@ export default function FileViewerPanelComponent({
     if (fileContents[id]?.content != null || fileContents[id]?.loading) return;
     fetchFileContent(id, path);
   }, [activeFile, fileContents, fetchFileContent]);
+
+  // ── Live refresh: re-fetch all open files when refreshKey changes ─
+  const prevRefreshKeyRef = useRef(refreshKey);
+  useEffect(() => {
+    if (refreshKey === prevRefreshKeyRef.current) return;
+    prevRefreshKeyRef.current = refreshKey;
+    // Clear all inflight tracking so re-fetches are not blocked
+    inflightRef.current.clear();
+    // Re-fetch every open file
+    for (const file of openFiles) {
+      fetchFileContent(file.id, file.path);
+    }
+  }, [refreshKey, openFiles, fetchFileContent]);
 
   // Clean up cache for closed files — use a ref to diff against previous openFiles
   const prevOpenIdsRef = useRef(new Set());
@@ -266,6 +298,19 @@ export default function FileViewerPanelComponent({
     document.addEventListener("mouseup", onUp);
   }, [width, onWidthChange]);
 
+  // ── Wheel-to-horizontal-scroll on tab bar ───────────────────
+  useEffect(() => {
+    const el = tabBarRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) < 1) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
   const isCollapsed = !isOpen || openFiles.length === 0;
 
   // Memoize the start line offset from the API response
@@ -281,7 +326,7 @@ export default function FileViewerPanelComponent({
       style={isCollapsed ? undefined : { width: `${width}px`, minWidth: `${width}px` }}
     >
       {/* Tab bar */}
-      <div className={styles.tabBar}>
+      <div className={styles.tabBar} ref={tabBarRef}>
         {openFiles.map((file) => (
           <FileTab
             key={file.id}
@@ -309,8 +354,8 @@ export default function FileViewerPanelComponent({
           </div>
         )}
 
-        {/* Loading state */}
-        {cached?.loading && (
+        {/* Loading state — only show full spinner for initial loads (no cached content) */}
+        {cached?.loading && cached?.content == null && (
           <div className={styles.loading}>
             <span className={styles.spinner} />
             Loading…
@@ -318,12 +363,12 @@ export default function FileViewerPanelComponent({
         )}
 
         {/* Error state */}
-        {cached?.error && (
+        {cached?.error && !cached?.content && (
           <div className={styles.error}>{cached.error}</div>
         )}
 
-        {/* Syntax-highlighted content */}
-        {cached?.content != null && !cached.loading && (
+        {/* Syntax-highlighted content — stay visible during refresh (stale-while-revalidate) */}
+        {cached?.content != null && (
           <div className={styles.codeScroll} ref={codeScrollRef}>
             <SyntaxHighlighter
               style={codeTheme}
@@ -376,8 +421,14 @@ export default function FileViewerPanelComponent({
       </div>
 
       {/* Meta bar */}
-      {activeFile && cached?.content != null && !cached.loading && (
+      {activeFile && cached?.content != null && (
         <div className={styles.metaBar}>
+          {cached.loading && (
+            <>
+              <span className={styles.spinner} style={{ width: 10, height: 10, borderWidth: 1.5 }} />
+              <span className={styles.metaDot} />
+            </>
+          )}
           <span>{cached.totalLines || cached.content.split("\n").length} lines</span>
           {cached.languageLabel && (
             <>

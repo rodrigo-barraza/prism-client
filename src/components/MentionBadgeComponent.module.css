@@ -64,6 +64,22 @@
   display: none;
 }
 
+/* ── Clickable state (file badges that open in viewer) ──────── */
+
+.mentionBadgeClickable {
+  cursor: pointer;
+}
+
+.mentionBadgeClickable:hover {
+  background: color-mix(in srgb, var(--accent-color) 22%, var(--bg-tertiary));
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.mentionBadgeClickable:active {
+  transform: scale(0.97);
+}
+
 /* ── Stale state (file/directory no longer exists) ───────────── */
 
 .mentionBadgeStale {

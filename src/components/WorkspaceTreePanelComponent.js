@@ -198,13 +198,11 @@ function getFileIcon(filename) {
 }
 
 // ─── Recursive Directory Tree Node ──────────────────────────
-const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMentionFile, onOpenFile }) {
-  const [expanded, setExpanded] = useState(depth < 1);
+const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", expandedPaths, onToggleExpand, onMentionFile, onOpenFile }) {
   const isDir = node.type === "directory";
   const hasChildren = isDir && node.children?.length > 0;
   const nodePath = parentPath ? `${parentPath}/${node.name}` : node.name;
-
-
+  const expanded = expandedPaths.has(nodePath);
 
   const handleMention = (e) => {
     e.stopPropagation();
@@ -218,7 +216,7 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
         style={{ paddingLeft: `${8 + depth * 14}px` }}
         onClick={() => {
           if (isDir) {
-            setExpanded((v) => !v);
+            onToggleExpand(nodePath);
           } else {
             onOpenFile?.(nodePath);
           }
@@ -262,7 +260,7 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", onMe
       {isDir && expanded && hasChildren && (
         <div className={styles.treeChildren}>
           {node.children.map((child) => (
-            <TreeNode key={child.name} node={child} depth={depth + 1} parentPath={nodePath} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
+            <TreeNode key={child.name} node={child} depth={depth + 1} parentPath={nodePath} expandedPaths={expandedPaths} onToggleExpand={onToggleExpand} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
           ))}
         </div>
       )}
@@ -288,6 +286,21 @@ export default function WorkspaceTreePanelComponent({
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const switcherRef = useRef(null);
 
+  // ── Lifted expanded-state: persists across data refreshes ──
+  const expandedPathsRef = useRef(new Set());
+  // Counter to force re-render when the Set mutates (avoids converting to state)
+  const [, setExpandedTick] = useState(0);
+
+  const onToggleExpand = useCallback((path) => {
+    const set = expandedPathsRef.current;
+    if (set.has(path)) {
+      set.delete(path);
+    } else {
+      set.add(path);
+    }
+    setExpandedTick((t) => t + 1);
+  }, []);
+
   const hasMultiple = workspaces.length > 1;
 
   // Close switcher on outside click
@@ -302,16 +315,43 @@ export default function WorkspaceTreePanelComponent({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [switcherOpen]);
 
+  // ── Auto-expand root-level directories on initial load ──
+  const autoExpandedRef = useRef(false);
+  const autoExpandRoots = useCallback((tree) => {
+    if (autoExpandedRef.current || !tree?.length) return;
+    autoExpandedRef.current = true;
+    const set = expandedPathsRef.current;
+    for (const node of tree) {
+      if (node.type === "directory") {
+        set.add(node.name);
+      }
+    }
+    setExpandedTick((t) => t + 1);
+  }, []);
+
+  // ── Initial fetch (shows loading indicator) ──
   const fetchTree = useCallback(async () => {
     if (!currentWorkspace?.path) return;
     setTreeLoading(true);
     try {
       const data = await WorkspaceService.tree(currentWorkspace.path);
       setTreeData(data);
+      autoExpandRoots(data?.tree);
     } catch {
       setTreeData(null);
     } finally {
       setTreeLoading(false);
+    }
+  }, [currentWorkspace?.path, autoExpandRoots]);
+
+  // ── Silent background refresh (no loading indicator, tree stays mounted) ──
+  const silentRefresh = useCallback(async () => {
+    if (!currentWorkspace?.path) return;
+    try {
+      const data = await WorkspaceService.tree(currentWorkspace.path);
+      setTreeData(data);
+    } catch {
+      // Keep existing tree on transient failure
     }
   }, [currentWorkspace?.path]);
 
@@ -322,26 +362,31 @@ export default function WorkspaceTreePanelComponent({
     }
   }, [treeData, treeLoading, fetchTree]);
 
-  // Reset tree when workspace changes
+  // Reset tree + expanded state when workspace changes
   useEffect(() => {
     setTreeData(null);
+    expandedPathsRef.current = new Set();
+    autoExpandedRef.current = false;
   }, [currentWorkspace?.path]);
 
-  // Live-refresh: debounced re-fetch when workspaceTreeRefreshKey changes
+  // Live-refresh: debounced silent re-fetch when workspaceTreeRefreshKey changes
   const treeRefreshTimerRef = useRef(null);
   useEffect(() => {
     if (workspaceTreeRefreshKey === 0) return;
     if (treeRefreshTimerRef.current) clearTimeout(treeRefreshTimerRef.current);
     treeRefreshTimerRef.current = setTimeout(() => {
       treeRefreshTimerRef.current = null;
-      fetchTree();
+      silentRefresh();
     }, 1500);
     return () => {
       if (treeRefreshTimerRef.current) clearTimeout(treeRefreshTimerRef.current);
     };
-  }, [workspaceTreeRefreshKey, fetchTree]);
+  }, [workspaceTreeRefreshKey, silentRefresh]);
 
   if (!currentWorkspace) return null;
+
+  // Snapshot the Set into a stable reference for this render
+  const expandedPaths = expandedPathsRef.current;
 
   return (
     <div className={styles.container}>
@@ -399,7 +444,7 @@ export default function WorkspaceTreePanelComponent({
         {!treeLoading && treeData?.tree && treeData.tree.length > 0 && (
           <div className={styles.treeRoot}>
             {treeData.tree.map((node) => (
-              <TreeNode key={node.name} node={node} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
+              <TreeNode key={node.name} node={node} expandedPaths={expandedPaths} onToggleExpand={onToggleExpand} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
             ))}
           </div>
         )}

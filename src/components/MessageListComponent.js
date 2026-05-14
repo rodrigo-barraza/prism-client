@@ -73,7 +73,7 @@ function parseTaskNotification(content) {
  * strings. This function parses them back into styled badges
  * for display in the message list.                             */
 
-function renderContentWithMentions(text, knownPaths) {
+function renderContentWithMentions(text, knownPaths, onMentionFileOpen) {
   const segments = parseMentionTokens(text);
   // Fast path: no mentions found, return plain string
   if (segments.length === 1 && segments[0].type === "text") return text;
@@ -85,6 +85,7 @@ function renderContentWithMentions(text, knownPaths) {
         key={i}
         path={seg.value}
         knownPaths={knownPaths}
+        onFileOpen={onMentionFileOpen}
       />
     );
   });
@@ -427,6 +428,7 @@ function EditableMessage({
   editing,
   onCancelEdit,
   knownPaths,
+  onMentionFileOpen,
 }) {
   const [editValue, setEditValue] = useState(content);
   const textareaRef = useRef(null);
@@ -554,7 +556,7 @@ function EditableMessage({
 
   // Non-editing: user messages show plain text, assistant uses caller's rendering
   if (!isAssistant) {
-    return <div className={styles.text}>{renderContentWithMentions(content, knownPaths)}</div>;
+    return <div className={styles.text}>{renderContentWithMentions(content, knownPaths, onMentionFileOpen)}</div>;
   }
   return null; // Assistant non-editing rendering is handled by the caller
 }
@@ -576,6 +578,7 @@ function EditableMessage({
  * @param {Map}      [props.streamingOutputs] - toolCallId → accumulated output string
  * @param {object}   [props.workerToolActivity] - workerId → { currentTool, toolCount, iteration, maxIterations }
  * @param {Set}      [props.knownPaths] - Set of workspace paths that currently exist (for mention staleness)
+ * @param {Function} [props.onMentionFileOpen] - (absolutePath) => void - open a mentioned file in file viewer
  */
 export default function MessageList({
   messages = [],
@@ -597,6 +600,7 @@ export default function MessageList({
   onRerun,
   onImageClick,
   onDocClick,
+  onMentionFileOpen,
 }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [expandedDeletedSet, setExpandedDeletedSet] = useState(new Set());
@@ -822,6 +826,7 @@ export default function MessageList({
                       ? stickyUserMsg.content.slice(0, 200) + "…"
                       : stickyUserMsg.content,
                     knownPaths,
+                    onMentionFileOpen,
                   )
                 : "(no text)"}
             </span>
@@ -1252,6 +1257,7 @@ export default function MessageList({
                             editing={true}
                             onCancelEdit={() => setEditingIndex(null)}
                             knownPaths={knownPaths}
+                            onMentionFileOpen={onMentionFileOpen}
                           />
                         </>
                       );
@@ -1340,6 +1346,7 @@ export default function MessageList({
                         editing={editingIndex === i}
                         onCancelEdit={() => setEditingIndex(null)}
                         knownPaths={knownPaths}
+                        onMentionFileOpen={onMentionFileOpen}
                       />
                     ) : msg.role === "assistant" && !readOnly && editingIndex === i ? (
                       <EditableMessage
@@ -1350,6 +1357,7 @@ export default function MessageList({
                         editing={true}
                         onCancelEdit={() => setEditingIndex(null)}
                         knownPaths={knownPaths}
+                        onMentionFileOpen={onMentionFileOpen}
                       />
                     ) : msg.content ? (
                       <MarkdownContent

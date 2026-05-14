@@ -166,6 +166,9 @@ export default function AgentComponent({
   // -- File viewer pane state (VS Code-style read-only viewer) --
   const [viewerOpenFiles, setViewerOpenFiles] = useState([]); // [{ id, path }]
   const [viewerActiveFileId, setViewerActiveFileId] = useState(null);
+  const [viewerRefreshKey, setViewerRefreshKey] = useState(0);
+  const viewerOpenFilesRef = useRef(viewerOpenFiles);
+  viewerOpenFilesRef.current = viewerOpenFiles;
   const [viewerWidth, setViewerWidth] = useState(() => {
     if (typeof window === "undefined") return 500;
     const stored = localStorage.getItem(LS_FILE_VIEWER_WIDTH);
@@ -1403,6 +1406,31 @@ export default function AgentComponent({
             // Auto-refresh workspace tree when filesystem-mutating tools complete
             if (data.status !== "calling" && WORKSPACE_FS_TOOLS.has(tc.name)) {
               setWorkspaceTreeRefreshKey((k) => k + 1);
+
+              // Live-update file viewer: refresh open tabs whose path was touched
+              const mutatedPath = tc.args?.path || tc.args?.source || null;
+              const openFiles = viewerOpenFilesRef.current;
+              if (mutatedPath && openFiles.length > 0) {
+                // delete_file and move_file both remove the source path
+                if (tc.name === "delete_file" || tc.name === "move_file") {
+                  const deleted = openFiles.find((f) => f.path === mutatedPath);
+                  if (deleted) {
+                    setViewerOpenFiles((prev) => {
+                      const next = prev.filter((f) => f.path !== mutatedPath);
+                      setViewerActiveFileId((activeId) => {
+                        if (activeId !== deleted.id) return activeId;
+                        const closedIdx = prev.findIndex((f) => f.id === deleted.id);
+                        const newActive = next[Math.min(closedIdx, next.length - 1)];
+                        return newActive?.id || null;
+                      });
+                      return next;
+                    });
+                  }
+                } else if (openFiles.some((f) => f.path === mutatedPath)) {
+                  // Bump refresh key to re-fetch modified file content
+                  setViewerRefreshKey((k) => k + 1);
+                }
+              }
             }
           },
           // LM Studio native MCP tool calls (toolCall events)
@@ -1479,6 +1507,30 @@ export default function AgentComponent({
             // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
             if (tc.status !== "calling" && WORKSPACE_FS_TOOLS.has(tc.name)) {
               setWorkspaceTreeRefreshKey((k) => k + 1);
+
+              // Live-update file viewer (MCP path)
+              const mutatedPath = tc.args?.path || tc.args?.source || null;
+              const openFiles = viewerOpenFilesRef.current;
+              if (mutatedPath && openFiles.length > 0) {
+                // delete_file and move_file both remove the source path
+                if (tc.name === "delete_file" || tc.name === "move_file") {
+                  const deleted = openFiles.find((f) => f.path === mutatedPath);
+                  if (deleted) {
+                    setViewerOpenFiles((prev) => {
+                      const next = prev.filter((f) => f.path !== mutatedPath);
+                      setViewerActiveFileId((activeId) => {
+                        if (activeId !== deleted.id) return activeId;
+                        const closedIdx = prev.findIndex((f) => f.id === deleted.id);
+                        const newActive = next[Math.min(closedIdx, next.length - 1)];
+                        return newActive?.id || null;
+                      });
+                      return next;
+                    });
+                  }
+                } else if (openFiles.some((f) => f.path === mutatedPath)) {
+                  setViewerRefreshKey((k) => k + 1);
+                }
+              }
             }
           },
           onToolOutput: (data) => {
@@ -2362,6 +2414,18 @@ export default function AgentComponent({
     [activeId, handleNewChat, agentProject, isNoAgent],
   );
 
+  // -- Open file in the FileViewerPanel (shared by workspace tree & mention badges) --
+  const handleOpenFileInViewer = useCallback((absPath) => {
+    const existingTab = viewerOpenFiles.find((f) => f.path === absPath);
+    if (existingTab) {
+      setViewerActiveFileId(existingTab.id);
+    } else {
+      const id = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      setViewerOpenFiles((prev) => [...prev, { id, path: absPath }]);
+      setViewerActiveFileId(id);
+    }
+  }, [viewerOpenFiles]);
+
   // -- Left sidebar: tab bar + content --------------------------
   // Badge helper — 0 = greyed-out, >0 = lit, "new" if tab has unseen data
   const badgeProps = (count, tabKey) => ({
@@ -2693,16 +2757,7 @@ export default function AgentComponent({
             const absPath = currentWorkspace?.path
               ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
-            const existingTab = viewerOpenFiles.find((f) => f.path === absPath);
-            if (existingTab) {
-              // Already open — just switch to it
-              setViewerActiveFileId(existingTab.id);
-            } else {
-              // Open new tab
-              const id = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-              setViewerOpenFiles((prev) => [...prev, { id, path: absPath }]);
-              setViewerActiveFileId(id);
-            }
+            handleOpenFileInViewer(absPath);
           }}
         />
       )}
@@ -2815,6 +2870,7 @@ export default function AgentComponent({
           streamingOutputs={streamingOutputs}
           workerToolActivity={workerToolActivity}
           knownPaths={knownPaths}
+          onMentionFileOpen={handleOpenFileInViewer}
           planProposal={planProposal}
           onPlanApprove={() => {
             setPlanProposal((p) => p ? { ...p, status: "approved" } : null);
@@ -3128,12 +3184,26 @@ export default function AgentComponent({
               return next;
             });
           }}
+          onFileNotFound={(id) => {
+            // Auto-close tabs for files that no longer exist
+            setViewerOpenFiles((prev) => {
+              const next = prev.filter((f) => f.id !== id);
+              setViewerActiveFileId((activeId) => {
+                if (activeId !== id) return activeId;
+                const closedIdx = prev.findIndex((f) => f.id === id);
+                const newActive = next[Math.min(closedIdx, next.length - 1)];
+                return newActive?.id || null;
+              });
+              return next;
+            });
+          }}
           isOpen={viewerOpenFiles.length > 0}
           width={viewerWidth}
           onWidthChange={(w) => {
             setViewerWidth(w);
             localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(w));
           }}
+          refreshKey={viewerRefreshKey}
         />
       )}
       rightPanel={

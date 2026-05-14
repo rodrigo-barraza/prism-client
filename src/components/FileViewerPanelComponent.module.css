@@ -37,25 +37,11 @@
   border-bottom: 1px solid #2a2a2a;
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: #333333 transparent;
+  scrollbar-width: none;
   flex-shrink: 0;
 
   &::-webkit-scrollbar {
-    height: 3px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #333333;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: #555555;
+    display: none;
   }
 }
 
