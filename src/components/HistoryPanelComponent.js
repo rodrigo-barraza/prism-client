@@ -96,8 +96,11 @@ export default function HistoryPanel({
   // Normalize sessions into HistoryList items
   const items = useMemo(() => {
     return sessions.map((conv) => {
+      // Prefer session-level totalCost (authoritative, from request logs
+      // for agent sessions). Fall back to message-sum only for Direct Chat
+      // sessions that carry messages inline with no precomputed total.
       const totalCost =
-        conv.totalCost ||
+        conv.totalCost ??
         (conv.messages || []).reduce(
           (sum, m) => sum + (m.estimatedCost || 0),
           0,
