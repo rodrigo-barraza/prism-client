@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { BotMessageSquare, Paperclip, X, ClipboardList, Zap, Settings, Wrench, Brain, Plug, GitBranch, Repeat, ListChecks, BookOpen, Info, Activity, CornerDownLeft, Send, Square, SlidersHorizontal, File, FolderOpen } from "lucide-react";
+import { BotMessageSquare, Paperclip, X, ClipboardList, Zap, Settings, Wrench, Brain, Plug, GitBranch, Repeat, ListChecks, BookOpen, Info, Activity, CornerDownLeft, Send, Square, SlidersHorizontal, File, FolderOpen, FolderTree } from "lucide-react";
 import PrismService from "../services/PrismService.js";
 import ToolsApiService from "../services/ToolsApiService.js";
 import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent.js";
@@ -18,6 +18,7 @@ import CoordinatorPanel from "./CoordinatorPanelComponent.js";
 import WorkersPanel from "./WorkersPanelComponent.js";
 import ParametersPanelComponent from "./ParametersPanelComponent.js";
 import SessionRequestsListComponent from "./SessionRequestsListComponent.js";
+import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent.js";
 import MessageList, { prepareDisplayMessages } from "./MessageListComponent.js";
 import ImagePreviewComponent from "./ImagePreviewComponent.js";
 
@@ -2364,6 +2365,13 @@ export default function AgentComponent({
       <TabBarComponent
         tabs={[
           { key: "settings", icon: <Settings size={14} />, tooltip: "Settings" },
+          ...(currentWorkspace ? [
+            {
+              key: "workspace",
+              icon: <FolderTree size={14} />,
+              tooltip: "Workspace",
+            },
+          ] : []),
           {
             key: "info",
             icon: <Info size={14} />,
@@ -2450,7 +2458,6 @@ export default function AgentComponent({
 
       {leftTab === "settings" && (
         <SettingsPanel
-          workspaceTreeRefreshKey={workspaceTreeRefreshKey}
           config={filteredConfig}
           settings={settings}
           onChange={isNoAgent
@@ -2664,6 +2671,13 @@ export default function AgentComponent({
                   })()
               : null
           }
+          onMentionFile={handleMentionFile}
+        />
+      )}
+
+      {leftTab === "workspace" && (
+        <WorkspaceTreePanelComponent
+          workspaceTreeRefreshKey={workspaceTreeRefreshKey}
           onMentionFile={handleMentionFile}
         />
       )}
