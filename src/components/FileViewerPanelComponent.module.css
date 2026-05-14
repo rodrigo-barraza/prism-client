@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  background: var(--text-inverse);
+  background: #0e0e0e;
   border-right: 1px solid var(--border-color);
   overflow: hidden;
   /* GPU-accelerated width transitions for open/close */
@@ -142,7 +142,7 @@
 }
 
 .tabActive {
-  background: var(--text-inverse);
+  background: #0e0e0e;
   color: #e0e0e0;
   border-bottom: 2px solid var(--accent-color);
   font-weight: 500;
@@ -198,7 +198,7 @@
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: var(--text-inverse);
+  background: #0e0e0e;
 }
 
 /* ── Breadcrumb path bar ─────────────────────────────────── */
@@ -231,7 +231,7 @@
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: #333333 transparent;
-  background: var(--text-inverse);
+  background: #0e0e0e;
 }
 
 /* Override react-syntax-highlighter's internal pre/code styles */
