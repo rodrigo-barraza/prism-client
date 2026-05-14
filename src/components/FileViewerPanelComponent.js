@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
-import { File, X, FileCode, ChevronRight } from "lucide-react";
+import { File, X, FileCode, ChevronRight, WrapText, XCircle } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ToolsApiService from "../services/ToolsApiService.js";
@@ -164,6 +164,7 @@ export default function FileViewerPanelComponent({
   onMentionLines,
 }) {
   const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, languageLabel, error, loading } }
+  const [wordWrap, setWordWrap] = useState(true);
   const codeScrollRef = useRef(null);
   const tabBarRef = useRef(null);
   const resizeRef = useRef(null);
@@ -315,6 +316,13 @@ export default function FileViewerPanelComponent({
 
   const isCollapsed = !isOpen || openFiles.length === 0;
 
+  // Close all open tabs
+  const handleCloseAll = useCallback(() => {
+    for (const file of openFiles) {
+      onCloseFile?.(file.id);
+    }
+  }, [openFiles, onCloseFile]);
+
   // Memoize the start line offset from the API response
   const startLineNumber = useMemo(() => {
     if (!cached) return 1;
@@ -444,6 +452,28 @@ export default function FileViewerPanelComponent({
       className={`${styles.container} ${isCollapsed ? styles.containerCollapsed : ""}`}
       style={isCollapsed ? undefined : { width: `${width}px`, minWidth: `${width}px` }}
     >
+      {/* Title bar — VSCode-style header */}
+      <div className={styles.titleBar}>
+        <div className={styles.titleBarActions}>
+          <button
+            type="button"
+            className={`${styles.titleBarBtn} ${wordWrap ? styles.titleBarBtnActive : ""}`}
+            onClick={() => setWordWrap((v) => !v)}
+            title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
+          >
+            <WrapText size={14} />
+          </button>
+          <button
+            type="button"
+            className={styles.titleBarBtn}
+            onClick={handleCloseAll}
+            title="Close all tabs"
+          >
+            <XCircle size={14} />
+          </button>
+        </div>
+      </div>
+
       {/* Tab bar */}
       <div className={styles.tabBar} ref={tabBarRef}>
         {openFiles.map((file) => (
@@ -488,14 +518,14 @@ export default function FileViewerPanelComponent({
 
         {/* Syntax-highlighted content — stay visible during refresh (stale-while-revalidate) */}
         {cached?.content != null && (
-          <div className={styles.codeScroll} ref={codeScrollRef} onClick={handleCodeAreaClick}>
+          <div className={`${styles.codeScroll} ${!wordWrap ? styles.codeScrollNoWrap : ""}`} ref={codeScrollRef} onClick={handleCodeAreaClick}>
             <SyntaxHighlighter
               style={codeTheme}
               language={cached.language || "text"}
               showLineNumbers
               startingLineNumber={startLineNumber}
               wrapLines
-              wrapLongLines
+              wrapLongLines={wordWrap}
               lineProps={linePropsBuilder}
               lineNumberStyle={{
                 minWidth: "3em",

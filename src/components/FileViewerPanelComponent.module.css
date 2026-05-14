@@ -26,6 +26,63 @@
   overflow: hidden;
 }
 
+/* ── Title bar — VSCode-style header (accent background) ── */
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 6px;
+  background: var(--accent-color);
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+.titleBarActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.titleBarBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.titleBarBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.titleBarBtn:active {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.titleBarBtnActive {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.titleBarBtnActive:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
 /* ── Tab bar ─────────────────────────────────────────────── */
 
 .tabBar {
@@ -172,6 +229,13 @@
 .codeScroll pre {
   word-wrap: break-word;
   white-space: pre-wrap;
+}
+
+/* No-wrap mode: horizontal scrolling instead of line wrapping */
+.codeScrollNoWrap pre {
+  word-wrap: normal;
+  white-space: pre;
+  overflow-x: auto;
 }
 
 /* ── Loading & empty states ──────────────────────────────── */
