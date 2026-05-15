@@ -198,7 +198,7 @@ function getFileIcon(filename) {
 }
 
 // ─── Recursive Directory Tree Node ──────────────────────────
-const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", expandedPaths, onToggleExpand, onMentionFile, onOpenFile }) {
+const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", expandedPaths, expandedTick, onToggleExpand, onMentionFile, onOpenFile }) {
   const isDir = node.type === "directory";
   const hasChildren = isDir && node.children?.length > 0;
   const nodePath = parentPath ? `${parentPath}/${node.name}` : node.name;
@@ -260,7 +260,7 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", expa
       {isDir && expanded && hasChildren && (
         <div className={styles.treeChildren}>
           {node.children.map((child) => (
-            <TreeNode key={child.name} node={child} depth={depth + 1} parentPath={nodePath} expandedPaths={expandedPaths} onToggleExpand={onToggleExpand} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
+            <TreeNode key={child.name} node={child} depth={depth + 1} parentPath={nodePath} expandedPaths={expandedPaths} expandedTick={expandedTick} onToggleExpand={onToggleExpand} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
           ))}
         </div>
       )}
@@ -288,8 +288,9 @@ export default function WorkspaceTreePanelComponent({
 
   // ── Lifted expanded-state: persists across data refreshes ──
   const expandedPathsRef = useRef(new Set());
-  // Counter to force re-render when the Set mutates (avoids converting to state)
-  const [, setExpandedTick] = useState(0);
+  // Counter to force re-render when the Set mutates — also passed to TreeNode
+  // so React.memo detects changes (the Set ref itself never changes)
+  const [expandedTick, setExpandedTick] = useState(0);
 
   const onToggleExpand = useCallback((path) => {
     const set = expandedPathsRef.current;
@@ -444,7 +445,7 @@ export default function WorkspaceTreePanelComponent({
         {!treeLoading && treeData?.tree && treeData.tree.length > 0 && (
           <div className={styles.treeRoot}>
             {treeData.tree.map((node) => (
-              <TreeNode key={node.name} node={node} expandedPaths={expandedPaths} onToggleExpand={onToggleExpand} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
+              <TreeNode key={node.name} node={node} expandedPaths={expandedPaths} expandedTick={expandedTick} onToggleExpand={onToggleExpand} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
             ))}
           </div>
         )}

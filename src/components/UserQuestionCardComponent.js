@@ -1,102 +1,294 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { MessageCircleQuestion, Send, CornerDownLeft } from "lucide-react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { MessageCircleQuestion, Send, CornerDownLeft, Check, ChevronRight, StickyNote } from "lucide-react";
 import styles from "./UserQuestionCardComponent.module.css";
 
 /**
- * Inline card for agent-initiated user questions.
- * Renders the question, optional context, optional multiple-choice buttons,
- * and a free-text input. Mirrors ApprovalCardComponent's visual language.
+ * Individual question sub-card — handles single or multi-select options,
+ * optional preview pane, free-text input, and annotations.
  */
-export default function UserQuestionCardComponent({
+function QuestionBlock({
+  _index,
   question,
-  choices = [],
-  context = null,
+  header,
+  options = [],
+  multiSelect = false,
+  isPending,
   onAnswer,
-  isPending = true,
   answeredWith = null,
 }) {
+  const [selected, setSelected] = useState(multiSelect ? [] : null);
   const [freeText, setFreeText] = useState("");
+  const [annotations, setAnnotations] = useState("");
+  const [showAnnotations, setShowAnnotations] = useState(false);
+  const [previewIdx, setPreviewIdx] = useState(null);
   const inputRef = useRef(null);
 
-  // Auto-focus the input when the card mounts
+  // Auto-focus input when there are no options or after mount
   useEffect(() => {
-    if (isPending && inputRef.current) {
+    if (isPending && options.length === 0 && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isPending]);
+  }, [isPending, options.length]);
 
-  const handleSubmitFreeText = () => {
-    const text = freeText.trim();
-    if (!text || !onAnswer) return;
-    onAnswer(text);
+  const handleOptionClick = (label) => {
+    if (multiSelect) {
+      setSelected((prev) =>
+        prev.includes(label)
+          ? prev.filter((l) => l !== label)
+          : [...prev, label],
+      );
+    } else {
+      setSelected(label);
+      // In single-select with no annotation needed, auto-submit on click
+      if (!showAnnotations) {
+        onAnswer?.({ answer: label, annotations: annotations || undefined });
+      }
+    }
+  };
+
+  const handleSubmit = () => {
+    let answer;
+    if (multiSelect && selected.length > 0) {
+      answer = selected;
+    } else if (!multiSelect && selected) {
+      answer = selected;
+    } else if (freeText.trim()) {
+      answer = freeText.trim();
+    } else {
+      return; // Nothing to submit
+    }
+    onAnswer?.({ answer, annotations: annotations || undefined });
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmitFreeText();
+      handleSubmit();
     }
   };
 
+  // The preview currently focused
+  const activePreview = previewIdx !== null ? options[previewIdx]?.preview : null;
+
   return (
-    <div className={`${styles.card} ${!isPending ? styles.resolved : ""}`}>
-      <div className={styles.header}>
-        <MessageCircleQuestion
-          size={16}
-          className={styles.icon}
-        />
-        <span className={styles.label}>Agent Question</span>
-      </div>
+    <div className={styles.questionBlock}>
+      {/* Header chip */}
+      {header && (
+        <span className={styles.headerChip}>{header}</span>
+      )}
 
-      <div className={styles.question}>{question}</div>
+      {/* Question text */}
+      <div className={styles.questionText}>{question}</div>
 
-      {context && (
-        <div className={styles.context}>
-          <pre className={styles.contextPre}>{context}</pre>
+      {/* Options + Preview side-by-side layout */}
+      {isPending && options.length > 0 && (
+        <div className={`${styles.optionsRow} ${activePreview ? styles.withPreview : ""}`}>
+          <div className={styles.optionsList}>
+            {options.map((opt, i) => {
+              const isSelected = multiSelect
+                ? selected.includes(opt.label)
+                : selected === opt.label;
+              const isFocused = previewIdx === i;
+
+              return (
+                <button
+                  key={i}
+                  className={`${styles.optionBtn} ${isSelected ? styles.optionSelected : ""} ${isFocused ? styles.optionFocused : ""}`}
+                  onClick={() => handleOptionClick(opt.label)}
+                  onMouseEnter={() => opt.preview ? setPreviewIdx(i) : null}
+                  onMouseLeave={() => setPreviewIdx(null)}
+                >
+                  {multiSelect && (
+                    <span className={`${styles.checkbox} ${isSelected ? styles.checkboxChecked : ""}`}>
+                      {isSelected && <Check size={10} />}
+                    </span>
+                  )}
+                  <span className={styles.optionLabel}>{opt.label}</span>
+                  {opt.preview && (
+                    <ChevronRight size={12} className={styles.previewHint} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Preview pane — shown when hovering an option with preview content */}
+          {activePreview && (
+            <div className={styles.previewPane}>
+              <pre className={styles.previewContent}>{activePreview}</pre>
+            </div>
+          )}
         </div>
       )}
 
-      {isPending && choices.length > 0 && (
-        <div className={styles.choices}>
-          {choices.map((choice, i) => (
-            <button
-              key={i}
-              className={styles.choiceBtn}
-              onClick={() => onAnswer?.(choice)}
-            >
-              {choice}
-            </button>
-          ))}
-        </div>
-      )}
-
+      {/* Free-text input (always available) */}
       {isPending && (
         <div className={styles.inputRow}>
           <input
             ref={inputRef}
             type="text"
             className={styles.input}
-            placeholder={choices.length > 0 ? "Or type a custom answer…" : "Type your answer…"}
+            placeholder={options.length > 0 ? "Or type a custom answer…" : "Type your answer…"}
             value={freeText}
             onChange={(e) => setFreeText(e.target.value)}
             onKeyDown={handleKeyDown}
           />
+          {/* Annotation toggle */}
+          <button
+            className={`${styles.annotateBtn} ${showAnnotations ? styles.annotateBtnActive : ""}`}
+            onClick={() => setShowAnnotations((v) => !v)}
+            title="Add notes"
+          >
+            <StickyNote size={14} />
+          </button>
           <button
             className={styles.sendBtn}
-            onClick={handleSubmitFreeText}
-            disabled={!freeText.trim()}
+            onClick={handleSubmit}
+            disabled={!freeText.trim() && !selected && !(multiSelect && selected.length > 0)}
           >
             <Send size={14} />
           </button>
         </div>
       )}
 
+      {/* Annotations textarea */}
+      {isPending && showAnnotations && (
+        <div className={styles.annotationsRow}>
+          <textarea
+            className={styles.annotationsInput}
+            placeholder="Add notes or context for this answer…"
+            value={annotations}
+            onChange={(e) => setAnnotations(e.target.value)}
+            rows={2}
+          />
+        </div>
+      )}
+
+      {/* Resolved state */}
       {!isPending && answeredWith && (
         <div className={styles.answeredRow}>
           <CornerDownLeft size={12} className={styles.answeredIcon} />
-          <span className={styles.answeredText}>{answeredWith}</span>
+          <span className={styles.answeredText}>
+            {Array.isArray(answeredWith) ? answeredWith.join(", ") : answeredWith}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Inline card for agent-initiated user questions.
+ * Supports multi-question batching, header chips, multi-select,
+ * preview panes, and annotations — CC-level feature parity.
+ */
+export default function UserQuestionCardComponent({
+  questions = [],
+  context = null,
+  onAnswer,
+  isPending = true,
+  answeredWith = null,
+  // ── Backward compat (single question) ─────
+  question,
+  choices = [],
+}) {
+  // Normalize: single question props → questions array
+  const normalizedQuestions = useMemo(() => {
+    if (questions.length > 0) return questions;
+    if (question) {
+      return [{
+        question,
+        header: null,
+        options: choices.map((c) => ({ label: c, preview: null })),
+        multiSelect: false,
+      }];
+    }
+    return [];
+  }, [questions, question, choices]);
+
+  // Track answers per question index
+  const [collectedAnswers, setCollectedAnswers] = useState({});
+  const isMultiQuestion = normalizedQuestions.length > 1;
+  const allAnswered = isMultiQuestion
+    ? Object.keys(collectedAnswers).length === normalizedQuestions.length
+    : false;
+
+  const handleQuestionAnswer = useCallback((idx, answerData) => {
+    if (isMultiQuestion) {
+      // Collect answers for batch submission
+      setCollectedAnswers((prev) => ({ ...prev, [idx]: answerData }));
+    } else {
+      // Single question — submit immediately
+      onAnswer?.([answerData]);
+    }
+  }, [isMultiQuestion, onAnswer]);
+
+  const handleSubmitAll = useCallback(() => {
+    if (!allAnswered) return;
+    const orderedAnswers = normalizedQuestions.map((_, i) => collectedAnswers[i]);
+    onAnswer?.(orderedAnswers);
+  }, [allAnswered, normalizedQuestions, collectedAnswers, onAnswer]);
+
+  if (normalizedQuestions.length === 0) return null;
+
+  return (
+    <div className={`${styles.card} ${!isPending ? styles.resolved : ""}`}>
+      <div className={styles.header}>
+        <MessageCircleQuestion size={16} className={styles.icon} />
+        <span className={styles.label}>
+          Agent Question{normalizedQuestions.length > 1 ? "s" : ""}
+        </span>
+        {normalizedQuestions.length > 1 && (
+          <span className={styles.countBadge}>
+            {Object.keys(collectedAnswers).length}/{normalizedQuestions.length}
+          </span>
+        )}
+      </div>
+
+      {/* Context block */}
+      {context && (
+        <div className={styles.context}>
+          <pre className={styles.contextPre}>{context}</pre>
+        </div>
+      )}
+
+      {/* Questions */}
+      {normalizedQuestions.map((q, i) => (
+        <QuestionBlock
+          key={i}
+          index={i}
+          question={q.question}
+          header={q.header}
+          options={q.options || []}
+          multiSelect={q.multiSelect || false}
+          isPending={isPending && !collectedAnswers[i]}
+          onAnswer={(answerData) => handleQuestionAnswer(i, answerData)}
+          answeredWith={
+            !isPending
+              ? (answeredWith?.[i]?.answer || answeredWith?.[i])
+              : (collectedAnswers[i]?.answer || null)
+          }
+        />
+      ))}
+
+      {/* Multi-question batch submit */}
+      {isPending && isMultiQuestion && (
+        <div className={styles.batchSubmit}>
+          <button
+            className={`${styles.submitAllBtn} ${allAnswered ? styles.submitAllReady : ""}`}
+            onClick={handleSubmitAll}
+            disabled={!allAnswered}
+          >
+            <Send size={14} />
+            Submit All Answers
+            {!allAnswered && (
+              <span className={styles.remaining}>
+                ({normalizedQuestions.length - Object.keys(collectedAnswers).length} remaining)
+              </span>
+            )}
+          </button>
         </div>
       )}
     </div>

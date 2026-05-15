@@ -1,8 +1,10 @@
+/* ─── Card container ──────────────────────────────────── */
+
 .card {
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--color-info) 30%, transparent);
   background: color-mix(in srgb, var(--color-info) 5%, var(--bg-secondary));
-  padding: 12px 14px;
+  padding: 14px 16px;
   margin: 8px 0;
   animation: slideIn 0.25s ease-out;
 
@@ -13,11 +15,13 @@
   }
 }
 
+/* ─── Card header ─────────────────────────────────────── */
+
 .header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .icon {
@@ -33,16 +37,19 @@
   letter-spacing: 0.5px;
 }
 
-.question {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--text-primary);
-  margin-bottom: 10px;
-  white-space: pre-wrap;
+.countBadge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-info) 15%, transparent);
+  color: var(--color-info);
 }
 
+/* ─── Context block ───────────────────────────────────── */
+
 .context {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   padding: 8px 10px;
   background: var(--bg-tertiary);
   border-radius: 6px;
@@ -59,36 +66,158 @@
   word-break: break-word;
 }
 
-.choices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
+/* ─── Question block ──────────────────────────────────── */
+
+.questionBlock {
+  padding: 10px 0;
+  border-top: 1px solid var(--border-subtle);
+
+  &:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
 }
 
-.choiceBtn {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--color-info) 30%, transparent);
-  background: color-mix(in srgb, var(--color-info) 10%, transparent);
+.headerChip {
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
   color: var(--color-info);
+  border: 1px solid color-mix(in srgb, var(--color-info) 25%, transparent);
+  background: color-mix(in srgb, var(--color-info) 8%, transparent);
+}
+
+.questionText {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+
+/* ─── Options + Preview layout ────────────────────────── */
+
+.optionsRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+
+  &.withPreview {
+    /* Side-by-side when preview is visible */
+    align-items: flex-start;
+  }
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.optionBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--color-info) 20%, transparent);
+  background: color-mix(in srgb, var(--color-info) 5%, transparent);
+  color: var(--text-primary);
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
+  text-align: left;
   transition: all 0.15s ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--color-info) 22%, transparent);
-    border-color: color-mix(in srgb, var(--color-info) 45%, transparent);
-    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--color-info) 14%, transparent);
+    border-color: color-mix(in srgb, var(--color-info) 35%, transparent);
+    transform: translateX(2px);
   }
 
-  &:active {
-    transform: translateY(0);
+  &.optionSelected {
+    background: color-mix(in srgb, var(--color-info) 18%, transparent);
+    border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+    color: var(--color-info);
+    font-weight: 500;
+  }
+
+  &.optionFocused {
+    border-color: color-mix(in srgb, var(--color-info) 60%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-info) 15%, transparent);
   }
 }
+
+/* ─── Checkbox (multi-select) ─────────────────────────── */
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1.5px solid var(--text-muted);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+
+  &.checkboxChecked {
+    background: var(--color-info);
+    border-color: var(--color-info);
+    color: var(--bg-primary);
+  }
+}
+
+.optionLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.previewHint {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+
+  .optionFocused & {
+    opacity: 1;
+    color: var(--color-info);
+  }
+}
+
+/* ─── Preview pane ────────────────────────────────────── */
+
+.previewPane {
+  flex: 1;
+  min-width: 200px;
+  max-width: 50%;
+  max-height: 240px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--color-info) 20%, transparent);
+  background: var(--bg-tertiary);
+  animation: fadeIn 0.15s ease-out;
+}
+
+.previewContent {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ─── Free-text input ─────────────────────────────────── */
 
 .inputRow {
   display: flex;
@@ -139,6 +268,62 @@
   }
 }
 
+/* ─── Annotations toggle + textarea ───────────────────── */
+
+.annotateBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+  }
+
+  &.annotateBtnActive {
+    color: var(--color-info);
+    border-color: color-mix(in srgb, var(--color-info) 30%, transparent);
+    background: color-mix(in srgb, var(--color-info) 8%, transparent);
+  }
+}
+
+.annotationsRow {
+  margin-top: 6px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.annotationsInput {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  min-height: 48px;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+
+  &:focus {
+    border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+  }
+}
+
+/* ─── Answered (resolved) state ───────────────────────── */
+
 .answeredRow {
   display: flex;
   align-items: center;
@@ -157,6 +342,51 @@
   font-style: italic;
 }
 
+/* ─── Batch submit (multi-question) ───────────────────── */
+
+.batchSubmit {
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 4px;
+}
+
+.submitAllBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: not-allowed;
+  transition: all 0.2s ease;
+  justify-content: center;
+
+  &.submitAllReady {
+    cursor: pointer;
+    background: color-mix(in srgb, var(--color-info) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-info) 35%, transparent);
+    color: var(--color-info);
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-info) 25%, transparent);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.remaining {
+  font-weight: 400;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
+/* ─── Animations ──────────────────────────────────────── */
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -165,5 +395,14 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

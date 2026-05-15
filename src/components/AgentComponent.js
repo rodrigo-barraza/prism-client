@@ -1646,6 +1646,9 @@ export default function AgentComponent({
           onUserQuestion: (data) => {
             if (isStale()) return;
             setPendingUserQuestion({
+              // Multi-question payload (new)
+              questions: data.questions || [],
+              // Backward-compat single-question fields
               question: data.question,
               choices: data.choices || [],
               context: data.context || null,
@@ -3066,12 +3069,13 @@ export default function AgentComponent({
         {/* Pending user question card */}
         {pendingUserQuestion && (
           <UserQuestionCardComponent
+            questions={pendingUserQuestion.questions}
             question={pendingUserQuestion.question}
             choices={pendingUserQuestion.choices}
             context={pendingUserQuestion.context}
-            onAnswer={(answer) => {
+            onAnswer={(answers) => {
               setPendingUserQuestion(null);
-              PrismService.sendUserQuestionAnswer(agentSessionId, answer).catch(console.error);
+              PrismService.sendUserQuestionAnswer(agentSessionId, answers).catch(console.error);
             }}
           />
         )}

@@ -698,15 +698,21 @@ export default class PrismService {
   }
 
   /**
-   * Submit an answer to a pending ask_user_question tool call.
+   * Submit answer(s) to a pending ask_user_question tool call.
    * @param {string} agentSessionId - The agent session awaiting a user answer
-   * @param {string} answer - The user's answer text
+   * @param {string|Array<{ answer: string|string[], annotations?: string }>} answerOrAnswers
+   *   Simple string for single-question backward compat, or structured answers array.
    * @returns {Promise<{ ok: boolean }>}
    */
-  static async sendUserQuestionAnswer(agentSessionId, answer) {
-    return PrismService._request("/agent/answer", {
-      body: { agentSessionId, answer },
-    });
+  static async sendUserQuestionAnswer(agentSessionId, answerOrAnswers) {
+    // Normalize: structured array vs simple string
+    const body = { agentSessionId };
+    if (Array.isArray(answerOrAnswers)) {
+      body.answers = answerOrAnswers;
+    } else {
+      body.answer = String(answerOrAnswers);
+    }
+    return PrismService._request("/agent/answer", { body });
   }
 
   /**
