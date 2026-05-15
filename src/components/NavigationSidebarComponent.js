@@ -27,6 +27,7 @@ import {
   Wrench,
   BarChart3,
   AlertCircle,
+  Eye,
 } from "lucide-react";
 import { useTheme, ThemePickerComponent } from "@rodrigo-barraza/components-library";
 import SpinningCatComponent from "./SpinningCatComponent";
@@ -64,6 +65,7 @@ const USER_NAV_SECTIONS = [
     items: [
       { href: "/media", label: "Media", icon: ImageIcon },
       { href: "/text", label: "Text", icon: Type },
+      { href: "/vision", label: "Vision", icon: Eye },
     ],
   },
   {
