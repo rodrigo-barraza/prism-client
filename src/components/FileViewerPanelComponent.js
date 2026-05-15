@@ -378,7 +378,18 @@ export default function FileViewerPanelComponent({
     const mentionBtn = e.target.closest(`.${styles.lineMentionBtn}`);
     if (mentionBtn) {
       e.stopPropagation();
-      handleMentionSelection();
+      const lineEl = mentionBtn.closest("[data-line-number]");
+      if (lineEl && activeFile && onMentionLines) {
+        const lineNum = parseInt(lineEl.dataset.lineNumber, 10);
+        if (!isNaN(lineNum)) {
+          // If lines are selected, mention the full range; otherwise mention the hovered line
+          if (selectedLines.size > 0) {
+            handleMentionSelection();
+          } else {
+            onMentionLines(activeFile.path, lineNum, lineNum);
+          }
+        }
+      }
       return;
     }
 
@@ -417,26 +428,25 @@ export default function FileViewerPanelComponent({
     // Click on code content — clear selection
     setSelectedLines(new Set());
     lastClickedLineRef.current = null;
-  }, [activeFile, onMentionLines, handleMentionSelection]);
+  }, [activeFile, selectedLines, onMentionLines, handleMentionSelection]);
 
-  // ── Inject inline @ buttons into selected lines (DOM-level) ────
+  // ── Inject inline @ buttons into every code line (DOM-level) ───
+  // Buttons are hidden by default and revealed on .codeLine:hover via CSS.
   // Uses direct DOM manipulation post-render to avoid re-rendering
-  // the entire SyntaxHighlighter tree. Buttons use the lineMentionBtn
-  // class which is caught by event delegation in handleCodeAreaClick.
+  // the entire SyntaxHighlighter tree.
   useEffect(() => {
     const container = codeScrollRef.current;
-    if (!container || selectedLines.size === 0 || !onMentionLines) return;
+    if (!container || !onMentionLines) return;
 
+    const lineEls = container.querySelectorAll("[data-line-number]");
     const injected = [];
-    for (const lineNum of selectedLines) {
-      const el = container.querySelector(`[data-line-number="${lineNum}"]`);
-      if (!el) continue;
+    for (const el of lineEls) {
       // Skip if already injected
       if (el.querySelector(`.${styles.lineMentionBtn}`)) continue;
       const btn = document.createElement("button");
       btn.className = styles.lineMentionBtn;
       btn.type = "button";
-      btn.title = "Reference this selection in chat";
+      btn.title = "Reference this line in chat";
       btn.textContent = "@";
       el.appendChild(btn);
       injected.push(btn);
@@ -445,7 +455,7 @@ export default function FileViewerPanelComponent({
     return () => {
       for (const btn of injected) btn.remove();
     };
-  }, [selectedLines, onMentionLines]);
+  }, [cached?.content, onMentionLines]);
 
   return (
     <div
