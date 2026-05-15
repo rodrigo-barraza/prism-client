@@ -173,12 +173,19 @@ export default function VisionPageComponent() {
   }, [stopSource, attachStream]);
 
   const startScreenCapture = useCallback(async () => {
-    stopSource();
     try {
+      // Acquire the stream FIRST — the user picks a source during this prompt.
+      // We intentionally delay stopSource() until we have a valid stream so
+      // the video element is never hidden (isStreaming=false) when play() fires.
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: { cursor: "always" },
         audio: false,
       });
+
+      // Now tear down the previous source
+      stopSource();
+
+      // Attach the new stream (this calls play() and sets isStreaming=true)
       attachStream(stream);
 
       // Listen for user clicking "Stop sharing" in the browser UI
