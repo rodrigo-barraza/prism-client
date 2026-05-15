@@ -160,7 +160,7 @@ export default function AgentComponent({
     subtitle: activeAgentData?.description || rawEmptyState.subtitle,
   };
 
-  const { currentWorkspace } = useWorkspace();
+  const { currentWorkspace, setCurrentWorkspace, workspaces } = useWorkspace();
 
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState([]);
@@ -2351,6 +2351,7 @@ export default function AgentComponent({
         messages, title, toolActivity, workerToolActivity,
         streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress,
         settings: { ...settings }, backendSessionStats,
+        workspaceRoot: currentWorkspace?.path || null,
       });
       setIsGenerating(false);
     }
@@ -2361,7 +2362,7 @@ export default function AgentComponent({
     }
     // New session — instant reset, no pixelation transition needed
     resetSessionState();
-  }, [isGenerating, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress, settings, backendSessionStats, activeId, resetSessionState]);
+  }, [isGenerating, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress, settings, backendSessionStats, activeId, resetSessionState, currentWorkspace?.path]);
 
   /* ── Chat header "New Session" glitch effect ────────────────── */
   const chatNewBtnRef = useRef(null);
@@ -2396,6 +2397,16 @@ export default function AgentComponent({
   /** Apply fetched/snapshot session data to component state immediately. */
   const applySessionData = useCallback((full) => {
     if (!full) return;
+
+    // ── Restore workspace selection from the session document ──
+    // Agent sessions record which workspace they were started with;
+    // switch to it so the workspace tree and tool routing match.
+    if (full.workspaceRoot) {
+      const match = workspaces.find((w) => w.path === full.workspaceRoot);
+      if (match && match.path !== currentWorkspace?.path) {
+        setCurrentWorkspace(match);
+      }
+    }
 
     if (full._fromSnapshot && full._snapshot) {
       // Restoring a background generating session from snapshot
@@ -2458,7 +2469,7 @@ export default function AgentComponent({
       setBackendSessionStats(full.stats || null);
       tokenHwmRef.current = { input: 0, output: 0, total: 0 };
     }
-  }, []);
+  }, [workspaces, currentWorkspace?.path, setCurrentWorkspace]);
 
   const handleSelectSession = useCallback(
     async (conv) => {
@@ -2469,6 +2480,7 @@ export default function AgentComponent({
           messages, title, toolActivity, workerToolActivity,
           streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress,
           settings: { ...settings }, backendSessionStats,
+          workspaceRoot: currentWorkspace?.path || null,
         });
         setIsGenerating(false);
       }
@@ -2494,6 +2506,7 @@ export default function AgentComponent({
           title: snapshot.title,
           messages: snapshot.messages,
           stats: snapshot.backendSessionStats,
+          workspaceRoot: snapshot.workspaceRoot,
           _fromSnapshot: true,
           _snapshot: snapshot,
         });
@@ -2519,7 +2532,7 @@ export default function AgentComponent({
         setPixelTransition(null);
       }
     },
-    [isGenerating, activeId, agentProject, isNoAgent, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress, settings, backendSessionStats, generatingSessionIds, applySessionData, recordPixelLoadTime],
+    [isGenerating, activeId, agentProject, isNoAgent, messages, title, toolActivity, workerToolActivity, streamingOutputs, pendingApprovals, pendingUserQuestion, planProposal, agenticProgress, settings, backendSessionStats, generatingSessionIds, applySessionData, recordPixelLoadTime, currentWorkspace?.path],
   );
 
   const handleDeleteSession = useCallback(
