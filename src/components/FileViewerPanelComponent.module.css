@@ -236,6 +236,7 @@
 
 /* Override react-syntax-highlighter's internal pre/code styles */
 .codeScroll pre {
+  background: #0e0e0e !important;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
