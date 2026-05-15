@@ -190,6 +190,9 @@ export default function AgentComponent({
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
   const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
+  // When a loaded session references a workspace that isn't currently connected,
+  // store the path so the UI can show "workspace not available" instead of looping errors.
+  const [unavailableWorkspace, setUnavailableWorkspace] = useState(null);
 
   // -- File viewer pane state (VS Code-style read-only viewer) --
   const [viewerOpenFiles, setViewerOpenFiles] = useState([]); // [{ id, path }]
@@ -2336,6 +2339,7 @@ export default function AgentComponent({
     setActiveId(null);
     setTitle(isNoAgent ? "Direct Chat" : "Agent");
     setBackendSessionStats(null);
+    setUnavailableWorkspace(null);
     tokenHwmRef.current = { input: 0, output: 0, total: 0 };
     isUserNearBottomRef.current = true;
     textareaRef.current?.focus();
@@ -2403,9 +2407,18 @@ export default function AgentComponent({
     // switch to it so the workspace tree and tool routing match.
     if (full.workspaceRoot) {
       const match = workspaces.find((w) => w.path === full.workspaceRoot);
-      if (match && match.path !== currentWorkspace?.path) {
-        setCurrentWorkspace(match);
+      if (match) {
+        if (match.path !== currentWorkspace?.path) {
+          setCurrentWorkspace(match);
+        }
+        setUnavailableWorkspace(null);
+      } else {
+        // Workspace not currently connected — surface in the UI
+        // instead of silently failing and looping errors.
+        setUnavailableWorkspace(full.workspaceRoot);
       }
+    } else {
+      setUnavailableWorkspace(null);
     }
 
     if (full._fromSnapshot && full._snapshot) {
@@ -2580,13 +2593,11 @@ export default function AgentComponent({
       <TabBarComponent
         tabs={[
           { key: "settings", icon: <Settings size={14} />, tooltip: "Settings" },
-          ...(currentWorkspace && hasFileOps ? [
-            {
+          ...((currentWorkspace && hasFileOps) || unavailableWorkspace ? [{
               key: "workspace",
               icon: <FolderTree size={14} />,
               tooltip: "Workspace",
-            },
-          ] : []),
+            }] : []),
           {
             key: "info",
             icon: <Info size={14} />,
@@ -2894,6 +2905,7 @@ export default function AgentComponent({
           workspaceTreeRefreshKey={workspaceTreeRefreshKey}
           onMentionFile={handleMentionFile}
           locked={messages.length > 0}
+          unavailableWorkspace={unavailableWorkspace}
           onOpenFile={(relativePath) => {
             // Build absolute path from workspace root + relative path
             const absPath = currentWorkspace?.path
@@ -3181,7 +3193,7 @@ export default function AgentComponent({
           </div>
         ) : (
           <div className={chatStyles.workspaceRowLocked}>
-            <WorkspaceSelectorComponent locked />
+            <WorkspaceSelectorComponent locked unavailableWorkspace={unavailableWorkspace} />
           </div>
         )}
         <form

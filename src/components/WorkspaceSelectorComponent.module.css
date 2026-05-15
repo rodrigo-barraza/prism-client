@@ -47,6 +47,19 @@
   border-color: transparent;
 }
 
+.button[data-unavailable] .buttonIcon {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.unavailableLabel {
+  color: var(--text-muted);
+  opacity: 0.65;
+  font-style: italic;
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--text-muted) 40%, transparent);
+}
+
 .buttonIcon {
   width: 14px;
   height: 14px;

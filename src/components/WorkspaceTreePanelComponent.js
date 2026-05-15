@@ -7,6 +7,7 @@ import {
   AtSign,
   Check,
   Lock,
+  WifiOff,
 } from "lucide-react";
 import FileTypeIconComponent from "./FileTypeIconComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
@@ -93,6 +94,7 @@ export default function WorkspaceTreePanelComponent({
   onMentionFile,
   onOpenFile,
   locked = false,
+  unavailableWorkspace = null,
 }) {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
   const [treeData, setTreeData] = useState(null);
@@ -198,7 +200,33 @@ export default function WorkspaceTreePanelComponent({
     };
   }, [workspaceTreeRefreshKey, silentRefresh]);
 
-  if (!currentWorkspace) return null;
+  if (!currentWorkspace && !unavailableWorkspace) return null;
+
+  // ── Session workspace not currently connected ──
+  if (unavailableWorkspace) {
+    // Extract the last path segment for a friendlier label
+    const label = unavailableWorkspace.split("/").filter(Boolean).pop() || unavailableWorkspace;
+    return (
+      <div className={styles.container}>
+        <div className={styles.headerWrapper}>
+          <div className={styles.header}>
+            <FolderOpen size={11} className={styles.headerIcon} />
+            <span className={styles.headerLabel}>{label}</span>
+          </div>
+        </div>
+        <div className={styles.treeScroll}>
+          <div className={styles.unavailableState}>
+            <WifiOff size={20} className={styles.unavailableIcon} />
+            <span className={styles.unavailableTitle}>Workspace Unavailable</span>
+            <span className={styles.unavailablePath}>{unavailableWorkspace}</span>
+            <span className={styles.unavailableHint}>
+              This session&apos;s workspace is not currently connected. Connect the workspace or switch to an available one to browse files.
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Snapshot the Set into a stable reference for this render
   const expandedPaths = expandedPathsRef.current;

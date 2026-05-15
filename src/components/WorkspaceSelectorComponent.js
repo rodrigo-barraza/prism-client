@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Monitor, Lock, FolderOpen } from "lucide-react";
+import { ChevronDown, Monitor, Lock, FolderOpen, WifiOff } from "lucide-react";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import styles from "./WorkspaceSelectorComponent.module.css";
 
@@ -16,7 +16,7 @@ import styles from "./WorkspaceSelectorComponent.module.css";
  *   locked  — if true, renders a non-interactive locked state (e.g. mid-conversation)
  *   className — optional wrapper className for layout integration
  */
-export default function WorkspaceSelectorComponent({ locked = false, className }) {
+export default function WorkspaceSelectorComponent({ locked = false, className, unavailableWorkspace = null }) {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
 
   const [open, setOpen] = useState(false);
@@ -36,6 +36,18 @@ export default function WorkspaceSelectorComponent({ locked = false, className }
 
   // -- Locked state (mid-conversation) ------------------------
   if (locked) {
+    // When the session's workspace is not currently connected
+    if (unavailableWorkspace) {
+      const label = unavailableWorkspace.split("/").filter(Boolean).pop() || unavailableWorkspace;
+      return (
+        <div className={`${styles.wrapper} ${className || ""}`}>
+          <div className={styles.button} data-locked data-unavailable title={`Workspace not available: ${unavailableWorkspace}`}>
+            <WifiOff className={styles.buttonIcon} />
+            <span className={styles.unavailableLabel}>{label}</span>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className={`${styles.wrapper} ${className || ""}`}>
         <div className={styles.button} data-locked>
