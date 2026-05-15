@@ -625,3 +625,317 @@
   background: var(--border-subtle);
   margin: 4px 24px 0;
 }
+
+/* ── Workspace Setup Guide ───────────────────────────────────────── */
+
+.setupGuide {
+  margin: 16px 24px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.setupGuideHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.setupGuideTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.2px;
+}
+
+.setupGuideSubtitle {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+/* ── Guide toggle buttons ────────────────────────────────────────── */
+
+.guideToggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  transition: background var(--transition-fast);
+}
+
+.guideToggle:first-of-type {
+  border-top: none;
+}
+
+.guideToggle:hover {
+  background: color-mix(in srgb, var(--accent-color) 3%, transparent);
+}
+
+.guideToggle.guideExpanded {
+  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+}
+
+.guideToggleIcon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.guideExpanded .guideToggleIcon {
+  color: var(--accent-color);
+}
+
+.guideToggleLabel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.guideToggleTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.guideToggleHint {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.guideChevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  will-change: transform;
+}
+
+.guideExpanded .guideChevron {
+  transform: rotate(90deg);
+}
+
+/* ── Guide content panel ─────────────────────────────────────────── */
+
+.guideContent {
+  padding: 6px 16px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--accent-color) 1.5%, transparent);
+  animation: guideSlideIn 0.2s ease-out;
+}
+
+@keyframes guideSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Numbered steps ──────────────────────────────────────────────── */
+
+.guideStep {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0 0;
+}
+
+.guideStep + .guideStep {
+  border-top: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+  margin-top: 12px;
+}
+
+.stepNumber {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  color: var(--accent-color);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.stepBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.stepTitle {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.stepHint {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+/* ── Code blocks ─────────────────────────────────────────────────── */
+
+.codeBlock {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.codeBlock code {
+  flex: 1;
+  display: block;
+  padding: 8px 10px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 4px 4px 0 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.copyBtn:hover {
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  color: var(--accent-color);
+}
+
+.inlineCode {
+  display: inline-block;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9em;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent-color) 6%, transparent);
+  color: color-mix(in srgb, var(--accent-color) 80%, var(--text-primary));
+}
+
+/* ── Environment variable table ──────────────────────────────────── */
+
+.guideEnvTable {
+  margin-top: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.envTableTitle {
+  display: block;
+  padding: 8px 10px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--accent-color) 3%, transparent);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.envRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 10px;
+  font-size: var(--font-size-xs);
+}
+
+.envRow + .envRow {
+  border-top: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+}
+
+.envKey {
+  flex-shrink: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--accent-color);
+  min-width: 190px;
+}
+
+.envDesc {
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+/* ── Comparison table (Docker vs Local) ──────────────────────────── */
+
+.guideCompareTable {
+  margin-top: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.compareRow {
+  display: grid;
+  grid-template-columns: 100px 1fr 1fr;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: var(--font-size-xs);
+}
+
+.compareRow + .compareRow {
+  border-top: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+}
+
+.compareLabel {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.compareDocker {
+  color: var(--text-tertiary);
+}
+
+.compareLocal {
+  color: var(--text-tertiary);
+}
+
+/* ── Guide footnote ──────────────────────────────────────────────── */
+
+.guideFootnote {
+  padding: 8px 16px 10px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}

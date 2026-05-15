@@ -56,7 +56,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={inter.variable}>
-        <ThemeProvider storageKey="prism:theme" defaultTheme="light" themes={["dark", "light", "tropical", "oceanic", "punk"]}>
+        <ThemeProvider storageKey="prism:theme" defaultTheme="light">
           <ComponentsProvider sound>
             <WorkspaceProvider>{children}</WorkspaceProvider>
           </ComponentsProvider>

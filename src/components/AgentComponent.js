@@ -2880,6 +2880,7 @@ export default function AgentComponent({
         <WorkspaceTreePanelComponent
           workspaceTreeRefreshKey={workspaceTreeRefreshKey}
           onMentionFile={handleMentionFile}
+          locked={messages.length > 0}
           onOpenFile={(relativePath) => {
             // Build absolute path from workspace root + relative path
             const absPath = currentWorkspace?.path

@@ -1,11 +1,29 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
-import { File, X, FileCode, ChevronRight, WrapText, XCircle } from "lucide-react";
+import { X, FileCode, ChevronRight, WrapText, XCircle, Music } from "lucide-react";
+import FileTypeIconComponent from "./FileTypeIconComponent";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import ToolsApiService from "../services/ToolsApiService.js";
 import styles from "./FileViewerPanelComponent.module.css";
+
+// ─── Binary file type detection ─────────────────────────────
+const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp", "bmp", "ico", "svg", "avif", "tiff", "tif"]);
+const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "flac", "aac", "m4a", "wma", "webm", "opus"]);
+const VIDEO_EXTENSIONS = new Set(["mp4", "avi", "mov", "mkv", "wmv", "flv"]);
+const PDF_EXTENSIONS = new Set(["pdf"]);
+
+/** Determine the media type from a file extension. */
+function getMediaType(ext) {
+  if (!ext) return null;
+  if (IMAGE_EXTENSIONS.has(ext)) return "image";
+  if (AUDIO_EXTENSIONS.has(ext)) return "audio";
+  if (VIDEO_EXTENSIONS.has(ext)) return "video";
+  if (PDF_EXTENSIONS.has(ext)) return "pdf";
+  return null;
+}
 
 // ─── Extension → Prism language key mapping ─────────────────
 // Keys must match Prism language identifiers for syntax highlighting
@@ -121,7 +139,7 @@ const FileTab = memo(function FileTab({ file, isActive, onSelect, onClose }) {
       onClick={() => onSelect(file.id)}
       title={file.path}
     >
-      <File size={11} className={styles.tabIcon} />
+      <FileTypeIconComponent filename={basename} size={11} className={styles.tabIcon} />
       <span className={styles.tabName}>{basename}</span>
       <span
         className={styles.tabClose}
@@ -163,7 +181,7 @@ export default function FileViewerPanelComponent({
   refreshKey = 0,
   onMentionLines,
 }) {
-  const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, languageLabel, error, loading } }
+  const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, languageLabel, error, loading, isBinary?, mediaType?, rawUrl? } }
   const [wordWrap, setWordWrap] = useState(true);
   const codeScrollRef = useRef(null);
   const tabBarRef = useRef(null);
@@ -183,7 +201,7 @@ export default function FileViewerPanelComponent({
     // Set loading state immediately
     setFileContents((prev) => ({
       ...prev,
-      [id]: { loading: true, content: prev[id]?.content ?? null, totalLines: prev[id]?.totalLines ?? 0, language: prev[id]?.language ?? null, languageLabel: prev[id]?.languageLabel ?? null, error: null },
+      [id]: { loading: true, content: prev[id]?.content ?? null, totalLines: prev[id]?.totalLines ?? 0, language: prev[id]?.language ?? null, languageLabel: prev[id]?.languageLabel ?? null, error: null, isBinary: prev[id]?.isBinary ?? false },
     }));
 
     ToolsApiService.readFile(path)
@@ -196,10 +214,34 @@ export default function FileViewerPanelComponent({
           }
           setFileContents((prev) => ({
             ...prev,
-            [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: result.error },
+            [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: result.error, isBinary: false },
           }));
           return;
         }
+
+        // Binary file — render via raw URL instead of text content
+        if (result.isBinary) {
+          const ext = result.extension?.replace(".", "") || getFileExt(path);
+          const mediaType = getMediaType(ext);
+          const rawUrl = ToolsApiService.getFileRawUrl(path);
+          setFileContents((prev) => ({
+            ...prev,
+            [id]: {
+              loading: false,
+              content: null,
+              totalLines: 0,
+              language: null,
+              languageLabel: ext?.toUpperCase() || null,
+              error: null,
+              isBinary: true,
+              mediaType,
+              rawUrl,
+              sizeBytes: result.sizeBytes || 0,
+            },
+          }));
+          return;
+        }
+
         const language = getPrismLanguage(path);
         const languageLabel = getLanguageLabel(path) || result.language || null;
         // Strip the "N: " line-number prefixes from the API response
@@ -213,6 +255,7 @@ export default function FileViewerPanelComponent({
             language,
             languageLabel,
             error: null,
+            isBinary: false,
           },
         }));
       })
@@ -234,7 +277,7 @@ export default function FileViewerPanelComponent({
   useEffect(() => {
     if (!activeFile) return;
     const { id, path } = activeFile;
-    if (fileContents[id]?.content != null || fileContents[id]?.loading) return;
+    if (fileContents[id]?.content != null || fileContents[id]?.isBinary || fileContents[id]?.loading) return;
     fetchFileContent(id, path);
   }, [activeFile, fileContents, fetchFileContent]);
 
@@ -515,7 +558,7 @@ export default function FileViewerPanelComponent({
         )}
 
         {/* Loading state — only show full spinner for initial loads (no cached content) */}
-        {cached?.loading && cached?.content == null && (
+        {cached?.loading && cached?.content == null && !cached?.isBinary && (
           <div className={styles.loading}>
             <span className={styles.spinner} />
             Loading…
@@ -523,12 +566,58 @@ export default function FileViewerPanelComponent({
         )}
 
         {/* Error state */}
-        {cached?.error && !cached?.content && (
+        {cached?.error && !cached?.content && !cached?.isBinary && (
           <div className={styles.error}>{cached.error}</div>
         )}
 
+        {/* Binary media viewer — image / audio / video / PDF */}
+        {cached?.isBinary && cached?.rawUrl && (
+          <div className={styles.mediaViewer}>
+            {cached.mediaType === "image" && (
+              <div className={styles.mediaImageWrap}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={cached.rawUrl}
+                  alt={getBasename(activeFile?.path)}
+                  className={styles.mediaImage}
+                  draggable={false}
+                />
+              </div>
+            )}
+            {cached.mediaType === "audio" && (
+              <div className={styles.mediaAudioWrap}>
+                <Music size={48} className={styles.mediaAudioIcon} />
+                <AudioPlayerRecorderComponent src={cached.rawUrl} />
+              </div>
+            )}
+            {cached.mediaType === "video" && (
+              <div className={styles.mediaVideoWrap}>
+                <video
+                  src={cached.rawUrl}
+                  controls
+                  className={styles.mediaVideo}
+                  preload="metadata"
+                />
+              </div>
+            )}
+            {cached.mediaType === "pdf" && (
+              <iframe
+                src={cached.rawUrl}
+                className={styles.mediaPdf}
+                title={getBasename(activeFile?.path)}
+              />
+            )}
+            {!cached.mediaType && (
+              <div className={styles.emptyState}>
+                <FileCode size={24} />
+                <span>Binary file — preview not available</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Syntax-highlighted content — stay visible during refresh (stale-while-revalidate) */}
-        {cached?.content != null && (
+        {cached?.content != null && !cached?.isBinary && (
           <div className={`${styles.codeScroll} ${!wordWrap ? styles.codeScrollNoWrap : ""}`} ref={codeScrollRef} onClick={handleCodeAreaClick}>
             <SyntaxHighlighter
               style={codeTheme}
@@ -586,7 +675,7 @@ export default function FileViewerPanelComponent({
       </div>
 
       {/* Meta bar */}
-      {activeFile && cached?.content != null && (
+      {activeFile && (cached?.content != null || cached?.isBinary) && (
         <div className={styles.metaBar}>
           {cached.loading && (
             <>
@@ -594,11 +683,25 @@ export default function FileViewerPanelComponent({
               <span className={styles.metaDot} />
             </>
           )}
-          <span>{cached.totalLines || cached.content.split("\n").length} lines</span>
-          {cached.languageLabel && (
+          {cached.isBinary ? (
             <>
-              <span className={styles.metaDot} />
-              <span>{cached.languageLabel}</span>
+              <span>{cached.mediaType || "Binary"}</span>
+              {cached.sizeBytes > 0 && (
+                <>
+                  <span className={styles.metaDot} />
+                  <span>{cached.sizeBytes >= 1048576 ? `${(cached.sizeBytes / 1048576).toFixed(1)} MB` : `${(cached.sizeBytes / 1024).toFixed(1)} KB`}</span>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <span>{cached.totalLines || cached.content.split("\n").length} lines</span>
+              {cached.languageLabel && (
+                <>
+                  <span className={styles.metaDot} />
+                  <span>{cached.languageLabel}</span>
+                </>
+              )}
             </>
           )}
         </div>

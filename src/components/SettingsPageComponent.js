@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Brain, Network, Bot, RotateCcw, Loader2, Check, FolderOpen, Lock, X, Plus, ArrowRight, CheckCircle2, XCircle, Server, Wifi, WifiOff, FolderTree, Settings2, Cpu } from "lucide-react";
+import { Brain, Network, Bot, RotateCcw, Loader2, Check, FolderOpen, Lock, X, Plus, ArrowRight, CheckCircle2, XCircle, Server, Wifi, WifiOff, FolderTree, Settings2, Cpu, Container, Terminal, ChevronRight, Copy, CheckCheck } from "lucide-react";
 import PrismService from "../services/PrismService";
 import WorkspaceService from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContextComponent";
@@ -30,6 +30,8 @@ export default function SettingsPageComponent() {
   const [customAgents, setCustomAgents] = useState([]);
   const [availableTools, setAvailableTools] = useState([]);
   const [harnesses, setHarnesses] = useState([]);
+  const [expandedGuide, setExpandedGuide] = useState(null); // 'docker' | 'local' | null
+  const [copiedBlock, setCopiedBlock] = useState(null);
 
   // -- Workspace state ------------------------------------------------
   const { refreshWorkspaces } = useWorkspace();
@@ -508,6 +510,276 @@ export default function SettingsPageComponent() {
               <span className={styles.wslTranslation}>{windowsToWslPreview(wsAddPath.trim())}</span>
             </div>
           )}
+
+          {/* ── Workspace Setup Guide ─────────────────────────────── */}
+          <div className={styles.setupGuide}>
+            <div className={styles.setupGuideHeader}>
+              <span className={styles.setupGuideTitle}>Workspace Setup Guide</span>
+              <span className={styles.setupGuideSubtitle}>
+                Connect a workspace agent to give Prism file, git, and shell access
+              </span>
+            </div>
+
+            {/* Docker setup */}
+            <button
+              className={`${styles.guideToggle} ${expandedGuide === "docker" ? styles.guideExpanded : ""}`}
+              onClick={() => setExpandedGuide(expandedGuide === "docker" ? null : "docker")}
+            >
+              <Container size={16} className={styles.guideToggleIcon} />
+              <div className={styles.guideToggleLabel}>
+                <span className={styles.guideToggleTitle}>Docker</span>
+                <span className={styles.guideToggleHint}>Headless servers, NAS, always-on deployments</span>
+              </div>
+              <ChevronRight size={14} className={styles.guideChevron} />
+            </button>
+
+            {expandedGuide === "docker" && (
+              <div className={styles.guideContent}>
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>1</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>Clone the repository</span>
+                    <div className={styles.codeBlock}>
+                      <code>git clone https://github.com/rodrigo-barraza/workspace-service.git{"\n"}cd workspace-service</code>
+                      <button
+                        className={styles.copyBtn}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText("git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service");
+                          setCopiedBlock("docker-1");
+                          setTimeout(() => setCopiedBlock(null), 2000);
+                        }}
+                      >
+                        {copiedBlock === "docker-1" ? <CheckCheck size={12} /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>2</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>Create your <code className={styles.inlineCode}>.env</code> file</span>
+                    <div className={styles.codeBlock}>
+                      <code>cp .env.example .env</code>
+                      <button
+                        className={styles.copyBtn}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText("cp .env.example .env");
+                          setCopiedBlock("docker-2");
+                          setTimeout(() => setCopiedBlock(null), 2000);
+                        }}
+                      >
+                        {copiedBlock === "docker-2" ? <CheckCheck size={12} /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                    <span className={styles.stepHint}>Edit <code className={styles.inlineCode}>.env</code> and set your <code className={styles.inlineCode}>WORKSPACE_SERVICE_SECRET</code> to match your tools-service agent secret.</span>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>3</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>Build and start the container</span>
+                    <div className={styles.codeBlock}>
+                      <code>docker compose up -d</code>
+                      <button
+                        className={styles.copyBtn}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText("docker compose up -d");
+                          setCopiedBlock("docker-3");
+                          setTimeout(() => setCopiedBlock(null), 2000);
+                        }}
+                      >
+                        {copiedBlock === "docker-3" ? <CheckCheck size={12} /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                    <span className={styles.stepHint}>
+                      The container exposes <code className={styles.inlineCode}>/workspace</code> as the root.
+                      Mount your project directories via <code className={styles.inlineCode}>volumes</code> in <code className={styles.inlineCode}>docker-compose.yml</code>.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>4</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>Verify connection</span>
+                    <div className={styles.codeBlock}>
+                      <code>docker logs workspace-service</code>
+                      <button
+                        className={styles.copyBtn}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText("docker logs workspace-service");
+                          setCopiedBlock("docker-4");
+                          setTimeout(() => setCopiedBlock(null), 2000);
+                        }}
+                      >
+                        {copiedBlock === "docker-4" ? <CheckCheck size={12} /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                    <span className={styles.stepHint}>Look for <code className={styles.inlineCode}>Connected to ws://…</code> and <code className={styles.inlineCode}>Server confirmed registration</code>.</span>
+                  </div>
+                </div>
+
+                <div className={styles.guideEnvTable}>
+                  <span className={styles.envTableTitle}>Environment Variables</span>
+                  <div className={styles.envRow}>
+                    <code className={styles.envKey}>WORKSPACE_BACKEND</code>
+                    <span className={styles.envDesc}>WebSocket URL of tools-service (e.g. <code className={styles.inlineCode}>ws://192.168.86.2:5590</code>)</span>
+                  </div>
+                  <div className={styles.envRow}>
+                    <code className={styles.envKey}>WORKSPACE_ROOTS</code>
+                    <span className={styles.envDesc}>Comma-separated root directories (default: <code className={styles.inlineCode}>/workspace</code>)</span>
+                  </div>
+                  <div className={styles.envRow}>
+                    <code className={styles.envKey}>WORKSPACE_SERVICE_SECRET</code>
+                    <span className={styles.envDesc}>Must match your tools-service agent secret</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Local (Node) setup */}
+            <button
+              className={`${styles.guideToggle} ${expandedGuide === "local" ? styles.guideExpanded : ""}`}
+              onClick={() => setExpandedGuide(expandedGuide === "local" ? null : "local")}
+            >
+              <Terminal size={16} className={styles.guideToggleIcon} />
+              <div className={styles.guideToggleLabel}>
+                <span className={styles.guideToggleTitle}>Local (Node.js)</span>
+                <span className={styles.guideToggleHint}>WSL2, Linux, macOS — native filesystem performance</span>
+              </div>
+              <ChevronRight size={14} className={styles.guideChevron} />
+            </button>
+
+            {expandedGuide === "local" && (
+              <div className={styles.guideContent}>
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>1</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>Clone and install dependencies</span>
+                    <div className={styles.codeBlock}>
+                      <code>git clone https://github.com/rodrigo-barraza/workspace-service.git{"\n"}cd workspace-service{"\n"}npm install</code>
+                      <button
+                        className={styles.copyBtn}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText("git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service\nnpm install");
+                          setCopiedBlock("local-1");
+                          setTimeout(() => setCopiedBlock(null), 2000);
+                        }}
+                      >
+                        {copiedBlock === "local-1" ? <CheckCheck size={12} /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>2</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>Create your <code className={styles.inlineCode}>.env</code> file</span>
+                    <div className={styles.codeBlock}>
+                      <code>cp .env.example .env</code>
+                      <button
+                        className={styles.copyBtn}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText("cp .env.example .env");
+                          setCopiedBlock("local-2");
+                          setTimeout(() => setCopiedBlock(null), 2000);
+                        }}
+                      >
+                        {copiedBlock === "local-2" ? <CheckCheck size={12} /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                    <span className={styles.stepHint}>Fill in your values:</span>
+                    <div className={styles.codeBlock}>
+                      <code>WORKSPACE_BACKEND=ws://192.168.86.2:5590{"\n"}WORKSPACE_ROOTS=/home/you/development{"\n"}WORKSPACE_SERVICE_SECRET=your-agent-secret</code>
+                      <button
+                        className={styles.copyBtn}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText("WORKSPACE_BACKEND=ws://192.168.86.2:5590\nWORKSPACE_ROOTS=/home/you/development\nWORKSPACE_SERVICE_SECRET=your-agent-secret");
+                          setCopiedBlock("local-2b");
+                          setTimeout(() => setCopiedBlock(null), 2000);
+                        }}
+                      >
+                        {copiedBlock === "local-2b" ? <CheckCheck size={12} /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>3</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>Start the service</span>
+                    <div className={styles.codeBlock}>
+                      <code>npm run dev:local</code>
+                      <button
+                        className={styles.copyBtn}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText("npm run dev:local");
+                          setCopiedBlock("local-3");
+                          setTimeout(() => setCopiedBlock(null), 2000);
+                        }}
+                      >
+                        {copiedBlock === "local-3" ? <CheckCheck size={12} /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                    <span className={styles.stepHint}>
+                      This loads <code className={styles.inlineCode}>.env</code> automatically and starts with file-watch reload.
+                      You can also pass env vars inline or use CLI flags — see the README for details.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>4</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>Verify connection</span>
+                    <span className={styles.stepHint}>
+                      Look for <code className={styles.inlineCode}>Connected to ws://…</code> and <code className={styles.inlineCode}>Server confirmed registration</code> in the output. The agent will appear in this settings panel under Remote Agents.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.guideCompareTable}>
+                  <span className={styles.envTableTitle}>Docker vs. Local</span>
+                  <div className={styles.compareRow}>
+                    <span className={styles.compareLabel}>Filesystem</span>
+                    <span className={styles.compareDocker}>Volume-mounted</span>
+                    <span className={styles.compareLocal}>Native — no mount overhead</span>
+                  </div>
+                  <div className={styles.compareRow}>
+                    <span className={styles.compareLabel}>Performance</span>
+                    <span className={styles.compareDocker}>Container + I/O</span>
+                    <span className={styles.compareLocal}>Faster grep, glob, git</span>
+                  </div>
+                  <div className={styles.compareRow}>
+                    <span className={styles.compareLabel}>Git / Shell</span>
+                    <span className={styles.compareDocker}>Inside container</span>
+                    <span className={styles.compareLocal}>Host environment</span>
+                  </div>
+                  <div className={styles.compareRow}>
+                    <span className={styles.compareLabel}>Use case</span>
+                    <span className={styles.compareDocker}>Servers, NAS</span>
+                    <span className={styles.compareLocal}>Dev machines, WSL2</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className={styles.guideFootnote}>
+              <span>Multiple agents can run simultaneously — each registers with a unique ID and routes automatically.</span>
+            </div>
+          </div>
         </CardComponent.Body>
       </CardComponent>
 

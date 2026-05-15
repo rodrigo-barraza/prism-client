@@ -154,8 +154,7 @@
 }
 
 .tabActive .tabIcon {
-  opacity: 0.8;
-  color: var(--accent-color);
+  opacity: 1;
 }
 
 .tabName {
@@ -421,6 +420,96 @@
 }
 
 /* ── Mobile ──────────────────────────────────────────────── */
+
+/* ── Media viewer (binary files: images, audio, video, PDF) ─ */
+
+.mediaViewer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: auto;
+  background: #0a0a0a;
+  scrollbar-width: thin;
+  scrollbar-color: #333333 transparent;
+}
+
+/* ── Image preview ──────────────────────────────────────── */
+
+.mediaImageWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.mediaImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  user-select: none;
+  image-rendering: auto;
+  /* Checkerboard background for transparent images */
+  background-image:
+    linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+    linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+    linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-color: #111111;
+}
+
+/* ── Audio player ───────────────────────────────────────── */
+
+.mediaAudioWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.mediaAudioIcon {
+  color: #555555;
+  opacity: 0.6;
+}
+
+/* ── Video player ───────────────────────────────────────── */
+
+.mediaVideoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+}
+
+.mediaVideo {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 4px;
+  outline: none;
+  background: #000000;
+}
+
+/* ── PDF viewer ─────────────────────────────────────────── */
+
+.mediaPdf {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #0a0a0a;
+}
 
 @media (max-width: 1200px) {
   .container {

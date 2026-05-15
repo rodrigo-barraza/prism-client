@@ -124,4 +124,14 @@ export default class ToolsApiService {
   static async readFile(path, { startLine, endLine } = {}) {
     return ToolsApiService._post("/agentic/file/read", { path, startLine, endLine });
   }
+
+  /**
+   * Build a direct URL for streaming a binary file (image, audio, video).
+   * Returns a URL string suitable for <img src>, <audio src>, <video src>.
+   * @param {string} path - Absolute file path
+   * @returns {string}
+   */
+  static getFileRawUrl(path) {
+    return `${TOOLS_SERVICE_URL}/agentic/file/raw?path=${encodeURIComponent(path)}`;
+  }
 }
