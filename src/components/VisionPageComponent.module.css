@@ -170,6 +170,14 @@
   background: #000;
 }
 
+.videoContainerHidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .videoElement {
   max-width: 100%;
   max-height: 100%;

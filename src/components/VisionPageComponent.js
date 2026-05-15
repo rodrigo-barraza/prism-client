@@ -130,11 +130,33 @@ export default function VisionPageComponent() {
       streamRef.current = null;
     }
     if (videoRef.current) {
+      videoRef.current.pause();
       videoRef.current.srcObject = null;
-      videoRef.current.src = "";
+      videoRef.current.removeAttribute("src");
+      videoRef.current.load();
     }
     setIsStreaming(false);
     setResolution(null);
+  }, []);
+
+  const attachStream = useCallback((stream) => {
+    streamRef.current = stream;
+    const video = videoRef.current;
+    if (video) {
+      video.srcObject = stream;
+      // play() returns a promise — only set streaming on success
+      video.play().then(() => {
+        setIsStreaming(true);
+      }).catch((err) => {
+        console.warn("Video play() interrupted:", err.message);
+      });
+    }
+
+    const track = stream.getVideoTracks()[0];
+    const trackSettings = track.getSettings();
+    if (trackSettings.width && trackSettings.height) {
+      setResolution(`${trackSettings.width}×${trackSettings.height}`);
+    }
   }, []);
 
   const startWebcam = useCallback(async () => {
@@ -144,23 +166,11 @@ export default function VisionPageComponent() {
         video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false,
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
-      setIsStreaming(true);
-
-      // Resolve resolution once metadata loads
-      const track = stream.getVideoTracks()[0];
-      const trackSettings = track.getSettings();
-      if (trackSettings.width && trackSettings.height) {
-        setResolution(`${trackSettings.width}×${trackSettings.height}`);
-      }
+      attachStream(stream);
     } catch (err) {
       console.error("Webcam error:", err);
     }
-  }, [stopSource]);
+  }, [stopSource, attachStream]);
 
   const startScreenCapture = useCallback(async () => {
     stopSource();
@@ -169,28 +179,17 @@ export default function VisionPageComponent() {
         video: { cursor: "always" },
         audio: false,
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
-      setIsStreaming(true);
+      attachStream(stream);
 
       // Listen for user clicking "Stop sharing" in the browser UI
       stream.getVideoTracks()[0].addEventListener("ended", () => {
         stopSource();
         setSourceType(null);
       });
-
-      const track = stream.getVideoTracks()[0];
-      const trackSettings = track.getSettings();
-      if (trackSettings.width && trackSettings.height) {
-        setResolution(`${trackSettings.width}×${trackSettings.height}`);
-      }
     } catch (err) {
       console.error("Screen capture error:", err);
     }
-  }, [stopSource]);
+  }, [stopSource, attachStream]);
 
   const startIpCamera = useCallback(
     (url) => {
@@ -480,93 +479,91 @@ export default function VisionPageComponent() {
               </div>
             )}
 
-            {/* Video preview */}
-            {isStreaming ? (
-              <div className={styles.videoContainer}>
-                <video
-                  ref={videoRef}
-                  className={styles.videoElement}
-                  autoPlay
-                  playsInline
-                  muted
-                  onLoadedMetadata={handleVideoMetadata}
-                />
-                <canvas ref={canvasRef} className={styles.canvasHidden} />
+            {/* Video preview — single persistent element to avoid ref-swapping race conditions */}
+            <div className={`${styles.videoContainer} ${!isStreaming ? styles.videoContainerHidden : ""}`}>
+              <video
+                ref={videoRef}
+                className={styles.videoElement}
+                autoPlay
+                playsInline
+                muted
+                onLoadedMetadata={handleVideoMetadata}
+              />
+              <canvas ref={canvasRef} className={styles.canvasHidden} />
 
-                {/* Live indicator */}
+              {/* Live indicator */}
+              {isStreaming && (
                 <div className={styles.liveIndicator}>
                   <span className={styles.liveDot} />
                   LIVE
                 </div>
+              )}
 
-                {/* Resolution badge */}
-                {resolution && (
-                  <div className={styles.resolutionBadge}>{resolution}</div>
-                )}
+              {/* Resolution badge */}
+              {resolution && (
+                <div className={styles.resolutionBadge}>{resolution}</div>
+              )}
 
-                {/* Screenshot flash */}
-                {showFlash && <div className={styles.screenshotFlash} />}
+              {/* Screenshot flash */}
+              {showFlash && <div className={styles.screenshotFlash} />}
 
-                {/* Analyzing overlay */}
-                {isCapturing && (
-                  <div className={styles.analyzingOverlay}>
-                    <div className={styles.analyzingBadge}>
-                      <Loader2 size={14} className={styles.spinIcon} />
-                      Analyzing…
-                    </div>
+              {/* Analyzing overlay */}
+              {isCapturing && (
+                <div className={styles.analyzingOverlay}>
+                  <div className={styles.analyzingBadge}>
+                    <Loader2 size={14} className={styles.spinIcon} />
+                    Analyzing…
                   </div>
-                )}
-
-                {/* Snapshot counter */}
-                {snapshotCount > 0 && (
-                  <div className={styles.snapshotCounter}>
-                    #{snapshotCount}
-                  </div>
-                )}
-
-                {/* Progress ring */}
-                {isAnalyzing && (
-                  <div className={styles.captureProgress}>
-                    <svg
-                      className={styles.captureProgressRing}
-                      viewBox="0 0 32 32"
-                    >
-                      <circle
-                        className={styles.captureProgressTrack}
-                        cx="16"
-                        cy="16"
-                        r="14"
-                      />
-                      <circle
-                        className={styles.captureProgressFill}
-                        cx="16"
-                        cy="16"
-                        r="14"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={
-                          circumference - captureProgress * circumference
-                        }
-                      />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                {/* Hidden video/canvas for when source is not yet started */}
-                <video ref={videoRef} style={{ display: "none" }} />
-                <canvas ref={canvasRef} className={styles.canvasHidden} />
-                <div className={styles.emptySource}>
-                  <div className={styles.emptyIcon}>
-                    <Scan size={36} />
-                  </div>
-                  <span className={styles.emptyLabel}>
-                    Select a video source above to begin.
-                    <br />
-                    Webcam, screen capture, or IP camera.
-                  </span>
                 </div>
-              </>
+              )}
+
+              {/* Snapshot counter */}
+              {snapshotCount > 0 && (
+                <div className={styles.snapshotCounter}>
+                  #{snapshotCount}
+                </div>
+              )}
+
+              {/* Progress ring */}
+              {isAnalyzing && (
+                <div className={styles.captureProgress}>
+                  <svg
+                    className={styles.captureProgressRing}
+                    viewBox="0 0 32 32"
+                  >
+                    <circle
+                      className={styles.captureProgressTrack}
+                      cx="16"
+                      cy="16"
+                      r="14"
+                    />
+                    <circle
+                      className={styles.captureProgressFill}
+                      cx="16"
+                      cy="16"
+                      r="14"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={
+                        circumference - captureProgress * circumference
+                      }
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
+
+            {/* Empty state — no source selected */}
+            {!isStreaming && (
+              <div className={styles.emptySource}>
+                <div className={styles.emptyIcon}>
+                  <Scan size={36} />
+                </div>
+                <span className={styles.emptyLabel}>
+                  Select a video source above to begin.
+                  <br />
+                  Webcam, screen capture, or IP camera.
+                </span>
+              </div>
             )}
           </div>
         </div>
