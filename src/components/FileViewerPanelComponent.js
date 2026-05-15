@@ -26,6 +26,13 @@ function getMediaType(ext) {
   return null;
 }
 
+/** Map extension → MIME type for building data URIs from base64 content. */
+const EXT_TO_MIME = {
+  png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
+  gif: "image/gif", webp: "image/webp", bmp: "image/bmp",
+  ico: "image/x-icon", avif: "image/avif", tiff: "image/tiff", tif: "image/tiff",
+};
+
 // ─── Extension → Prism language key mapping ─────────────────
 // Keys must match Prism language identifiers for syntax highlighting
 const EXT_TO_PRISM = {
@@ -221,11 +228,15 @@ export default function FileViewerPanelComponent({
           return;
         }
 
-        // Binary file — render via raw URL instead of text content
+        // Binary file — render via data URI (base64) or raw URL
         if (result.isBinary) {
           const ext = result.extension?.replace(".", "") || getFileExt(path);
           const mediaType = getMediaType(ext);
           const rawUrl = ToolsApiService.getFileRawUrl(path);
+          // Prefer inline base64 data URI when the backend provides it (works for remote workspaces)
+          const dataUri = result.contentBase64 && EXT_TO_MIME[ext]
+            ? `data:${EXT_TO_MIME[ext]};base64,${result.contentBase64}`
+            : null;
           setFileContents((prev) => ({
             ...prev,
             [id]: {
@@ -237,7 +248,7 @@ export default function FileViewerPanelComponent({
               error: null,
               isBinary: true,
               mediaType,
-              rawUrl,
+              rawUrl: dataUri || rawUrl,
               sizeBytes: result.sizeBytes || 0,
             },
           }));
