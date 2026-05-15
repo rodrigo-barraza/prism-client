@@ -511,6 +511,26 @@
   background: #0a0a0a;
 }
 
+/* ── SVG preview ───────────────────────────────────────── */
+
+.mediaSvg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  user-select: none;
+  /* Checkerboard background for transparent SVGs */
+  background-image:
+    linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+    linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+    linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-color: #111111;
+  padding: 24px;
+}
+
 @media (max-width: 1200px) {
   .container {
     display: none;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
-import { X, FileCode, ChevronRight, WrapText, XCircle, Music } from "lucide-react";
+import { X, FileCode, ChevronRight, WrapText, XCircle, Music, Eye, Code2 } from "lucide-react";
 import FileTypeIconComponent from "./FileTypeIconComponent";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -10,10 +10,11 @@ import ToolsApiService from "../services/ToolsApiService.js";
 import styles from "./FileViewerPanelComponent.module.css";
 
 // ─── Binary file type detection ─────────────────────────────
-const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp", "bmp", "ico", "svg", "avif", "tiff", "tif"]);
+const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp", "bmp", "ico", "avif", "tiff", "tif"]);
 const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "flac", "aac", "m4a", "wma", "webm", "opus"]);
 const VIDEO_EXTENSIONS = new Set(["mp4", "avi", "mov", "mkv", "wmv", "flv"]);
 const PDF_EXTENSIONS = new Set(["pdf"]);
+const SVG_EXTENSION = "svg";
 
 /** Determine the media type from a file extension. */
 function getMediaType(ext) {
@@ -35,7 +36,7 @@ const EXT_TO_PRISM = {
   swift: "swift", m: "objectivec", php: "php", pl: "perl",
   sh: "bash", bash: "bash", zsh: "bash", fish: "bash",
   html: "html", htm: "html", css: "css", scss: "scss", less: "less",
-  json: "json", yaml: "yaml", yml: "yaml", toml: "toml", xml: "xml",
+  json: "json", yaml: "yaml", yml: "yaml", toml: "toml", xml: "xml", svg: "xml",
   md: "markdown", mdx: "markdown", txt: "text", csv: "text",
   sql: "sql", graphql: "graphql", gql: "graphql",
   dockerfile: "docker",
@@ -55,7 +56,7 @@ const EXT_TO_LABEL = {
   swift: "Swift", m: "Objective-C", php: "PHP", pl: "Perl",
   sh: "Shell", bash: "Bash", zsh: "Zsh", fish: "Fish",
   html: "HTML", htm: "HTML", css: "CSS", scss: "SCSS", less: "LESS",
-  json: "JSON", yaml: "YAML", yml: "YAML", toml: "TOML", xml: "XML",
+  json: "JSON", yaml: "YAML", yml: "YAML", toml: "TOML", xml: "XML", svg: "SVG",
   md: "Markdown", mdx: "MDX", txt: "Plain Text", csv: "CSV",
   sql: "SQL", graphql: "GraphQL", gql: "GraphQL",
   dockerfile: "Dockerfile",
@@ -181,7 +182,8 @@ export default function FileViewerPanelComponent({
   refreshKey = 0,
   onMentionLines,
 }) {
-  const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, languageLabel, error, loading, isBinary?, mediaType?, rawUrl? } }
+  const [fileContents, setFileContents] = useState({}); // { [id]: { content, totalLines, language, languageLabel, error, loading, isBinary?, mediaType?, rawUrl?, isSvg? } }
+  const [svgViewMode, setSvgViewMode] = useState({}); // { [id]: "preview" | "source" }
   const [wordWrap, setWordWrap] = useState(true);
   const codeScrollRef = useRef(null);
   const tabBarRef = useRef(null);
@@ -246,6 +248,12 @@ export default function FileViewerPanelComponent({
         const languageLabel = getLanguageLabel(path) || result.language || null;
         // Strip the "N: " line-number prefixes from the API response
         const cleanContent = stripLineNumberPrefixes(result.content ?? "");
+
+        // SVG files are text but also renderable — flag them for dual-view
+        const ext = getFileExt(path);
+        const isSvg = ext === SVG_EXTENSION;
+        const rawUrl = isSvg ? ToolsApiService.getFileRawUrl(path) : undefined;
+
         setFileContents((prev) => ({
           ...prev,
           [id]: {
@@ -256,8 +264,15 @@ export default function FileViewerPanelComponent({
             languageLabel,
             error: null,
             isBinary: false,
+            isSvg,
+            rawUrl,
           },
         }));
+
+        // Default SVG view mode to preview
+        if (isSvg) {
+          setSvgViewMode((prev) => prev[id] ? prev : { ...prev, [id]: "preview" });
+        }
       })
       .catch((err) => {
         const isNotFound = /not found|no such file|ENOENT|does not exist/i.test(err.message);
@@ -509,6 +524,22 @@ export default function FileViewerPanelComponent({
       <div className={styles.titleBar}>
         <span className={styles.titleBarLabel}>File Viewer</span>
         <div className={styles.titleBarActions}>
+          {/* SVG preview / source toggle */}
+          {cached?.isSvg && (
+            <button
+              type="button"
+              className={`${styles.titleBarBtn} ${styles.titleBarBtnActive}`}
+              onClick={() => {
+                setSvgViewMode((prev) => ({
+                  ...prev,
+                  [activeFileId]: prev[activeFileId] === "preview" ? "source" : "preview",
+                }));
+              }}
+              title={svgViewMode[activeFileId] === "preview" ? "Show SVG source" : "Show SVG preview"}
+            >
+              {svgViewMode[activeFileId] === "preview" ? <Code2 size={14} /> : <Eye size={14} />}
+            </button>
+          )}
           <button
             type="button"
             className={`${styles.titleBarBtn} ${wordWrap ? styles.titleBarBtnActive : ""}`}
@@ -616,8 +647,23 @@ export default function FileViewerPanelComponent({
           </div>
         )}
 
+        {/* SVG preview mode — rendered image from raw URL */}
+        {cached?.isSvg && cached?.rawUrl && svgViewMode[activeFileId] === "preview" && (
+          <div className={styles.mediaViewer}>
+            <div className={styles.mediaImageWrap}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cached.rawUrl}
+                alt={getBasename(activeFile?.path)}
+                className={styles.mediaSvg}
+                draggable={false}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Syntax-highlighted content — stay visible during refresh (stale-while-revalidate) */}
-        {cached?.content != null && !cached?.isBinary && (
+        {cached?.content != null && !cached?.isBinary && !(cached?.isSvg && svgViewMode[activeFileId] === "preview") && (
           <div className={`${styles.codeScroll} ${!wordWrap ? styles.codeScrollNoWrap : ""}`} ref={codeScrollRef} onClick={handleCodeAreaClick}>
             <SyntaxHighlighter
               style={codeTheme}
