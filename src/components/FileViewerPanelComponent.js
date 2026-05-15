@@ -252,7 +252,6 @@ export default function FileViewerPanelComponent({
         // SVG files are text but also renderable — flag them for dual-view
         const ext = getFileExt(path);
         const isSvg = ext === SVG_EXTENSION;
-        const rawUrl = isSvg ? ToolsApiService.getFileRawUrl(path) : undefined;
 
         setFileContents((prev) => ({
           ...prev,
@@ -265,7 +264,6 @@ export default function FileViewerPanelComponent({
             error: null,
             isBinary: false,
             isSvg,
-            rawUrl,
           },
         }));
 
@@ -647,13 +645,13 @@ export default function FileViewerPanelComponent({
           </div>
         )}
 
-        {/* SVG preview mode — rendered image from raw URL */}
-        {cached?.isSvg && cached?.rawUrl && svgViewMode[activeFileId] === "preview" && (
+        {/* SVG preview mode — rendered from content via data URI */}
+        {cached?.isSvg && cached?.content && svgViewMode[activeFileId] === "preview" && (
           <div className={styles.mediaViewer}>
             <div className={styles.mediaImageWrap}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={cached.rawUrl}
+                src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(cached.content)}`}
                 alt={getBasename(activeFile?.path)}
                 className={styles.mediaSvg}
                 draggable={false}
