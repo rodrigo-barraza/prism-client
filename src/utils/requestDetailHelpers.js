@@ -134,6 +134,16 @@ export function buildRequestDetailSections(req) {
             </BadgeComponent>
           ),
         },
+        ...(req.agent
+          ? [{
+              label: "Agent",
+              value: (
+                <BadgeComponent variant="accent">
+                  {req.agent}
+                </BadgeComponent>
+              ),
+            }]
+          : []),
         {
           label: "Provider",
           value: req.provider ? (
