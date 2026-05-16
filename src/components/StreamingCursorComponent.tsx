@@ -19,16 +19,11 @@ const SCRAMBLE_CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/~`¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×÷ΔΩπΣφψλαβγ∞∑∏√∂∫≈≠≤≥∈∉∩∪⊂⊃∀∃∇☰☷☶☵☴☳";
 const SCRAMBLE_INTERVAL_MS = 35;
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function StreamingCursorComponent({ active: any, standalone: any }) {
-  const [char, setChar] = useState<any>("_");
+export default function StreamingCursorComponent({ active, standalone }: any) {
+  const [char, setChar] = useState("_");
   const intervalRef = useRef<any>(null);
 
   useEffect(() => {
-    // @ts-ignore
     if (!active) {
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
@@ -41,10 +36,8 @@ export default function StreamingCursorComponent({ active: any, standalone: any 
     }, SCRAMBLE_INTERVAL_MS);
 
     return () => clearInterval(intervalRef.current);
-  // @ts-ignore
   }, [active]);
 
-  // @ts-ignore
   if (!active) return null;
 
   const cursor = (
@@ -54,7 +47,6 @@ export default function StreamingCursorComponent({ active: any, standalone: any 
     </span>
   );
 
-  // @ts-ignore
   if (standalone) {
     return <div className={styles.standaloneCursor}>{cursor}</div>;
   }

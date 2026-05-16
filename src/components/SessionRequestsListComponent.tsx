@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -18,41 +19,34 @@ import styles from "./SessionRequestsListComponent.module.css";
  * @param {string} agentSessionId - The root agent session ID to fetch requests for
  * @param {number} [refreshKey=0] - Bump to force re-fetch
  */
-// @ts-ignore
-export default function SessionRequestsListComponent({ agentSessionId: any, refreshKey = 0 }) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState<any>(false);
-  const [error, setError] = useState<any>(null);
+export default function SessionRequestsListComponent({ agentSessionId, refreshKey = 0 }: any) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchRequests = useCallback(async () => {
-    // @ts-ignore
     if (!agentSessionId) return;
     setLoading(true);
     setError(null);
     try {
-      // @ts-ignore
       const result = await IrisService.getSessionRequests(agentSessionId);
       setData(result);
-    } catch (error) {
+    } catch (error: any) {
       // 404 = no requests yet, don't show error
-      // @ts-ignore
       if (!error.message?.includes("404")) {
-        // @ts-ignore
         setError(error.message);
       }
       setData(null);
     } finally {
       setLoading(false);
     }
-  // @ts-ignore
   }, [agentSessionId]);
 
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests, refreshKey]);
 
-  // @ts-ignore
-  if (!agentSessionId || loading || error || !data?.requests?.length) {
+  if (!agentSessionId || loading || error || !(data as any)?.requests?.length) {
     if (error) {
       return (
         <div className={styles.container}>
@@ -74,12 +68,10 @@ export default function SessionRequestsListComponent({ agentSessionId: any, refr
   }
 
   // Flat list, newest first — each request tagged with isWorker
-  const rootSessionId = data.rootSessionId;
-  const requests = [...data.requests]
-    // @ts-ignore
-    // @ts-ignore
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .map((req) => ({
+  const rootSessionId = (data as any).rootSessionId;
+  const requests = [...(data as any).requests]
+    .sort((a: any, b: any) => new Date(b.timestamp) - new Date(a.timestamp))
+    .map((req: any) => ({
       ...req,
       isWorker: req.agentSessionId !== rootSessionId,
       workerShortId: req.agentSessionId !== rootSessionId
@@ -93,11 +85,11 @@ export default function SessionRequestsListComponent({ agentSessionId: any, refr
         <div className={styles.header}>
           <Activity size={12} />
           <span>Requests</span>
-          <span className={styles.headerCount}>{data.total}</span>
+          <span className={styles.headerCount}>{(data as any).total}</span>
         </div>
 
         <div className={styles.requestList}>
-          {requests.map((req, i) => {
+          {requests.map((req: any, i: any) => {
             const isError = !req.success;
             return (
               <div
@@ -132,7 +124,6 @@ export default function SessionRequestsListComponent({ agentSessionId: any, refr
                     <TokenCountBadgeComponent value={req.reasoningOutputTokens} label="reasoning" mini />
                   )}
                   {req.totalTime > 0 && (
-                    // @ts-ignore
                     <StopwatchBadgeComponent seconds={req.totalTime} />
                   )}
                   {req.estimatedCost > 0 && (

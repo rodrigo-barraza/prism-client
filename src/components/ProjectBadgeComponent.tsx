@@ -8,16 +8,12 @@ import styles from "./ProjectBadgeComponent.module.css";
  * @param {string} project — project name to display
  * @param {string} [className]
  */
-// @ts-ignore
-export default function ProjectBadgeComponent({ project: any, className = "" }) {
-  // @ts-ignore
+export default function ProjectBadgeComponent({ project, className = "" }: any) {
   if (!project) return null;
   return (
-    // @ts-ignore
     <TooltipComponent label={`Project: ${project}`} position="top">
       <span className={`${styles.badge} ${className}`}>
         <FolderKanban size={10} />
-        {/* @ts-ignore */}
         {project}
       </span>
     </TooltipComponent>

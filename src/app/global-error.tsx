@@ -6,15 +6,9 @@ import { useEffect } from "react";
  * Root-level error boundary — catches errors in the root layout itself.
  * Must include its own <html> and <body> since the root layout has failed.
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function GlobalError({ error: any, reset: any }) {
+export default function GlobalError({ error, reset }: any) {
   useEffect(() => {
-    // @ts-ignore
     console.error("[Prism] Root layout error:", error);
-  // @ts-ignore
   }, [error]);
 
   return (
@@ -58,11 +52,9 @@ export default function GlobalError({ error: any, reset: any }) {
               maxWidth: "400px",
             }}
           >
-            {/* @ts-ignore */}
             {error?.message || "An unexpected error occurred."}
           </p>
           <button
-            // @ts-ignore
             onClick={reset}
             style={{
               marginTop: "8px",

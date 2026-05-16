@@ -29,22 +29,15 @@ function resolveUrl(url: any) {
   return url;
 }
 
-// @ts-ignore
-function MediaTypeIcon({ type: any, size = 32 }) {
-  // @ts-ignore
-  // @ts-ignore
-  const color = MODALITY_COLORS[type] || MODALITY_COLORS.image;
-  // @ts-ignore
+function MediaTypeIcon({ type, size = 32 }: any) {
+  const color = (MODALITY_COLORS as any)[type] || MODALITY_COLORS.image;
   if (type === "audio") return <Music size={size} style={{ color }} />;
-  // @ts-ignore
   if (type === "video") return <Film size={size} style={{ color }} />;
-  // @ts-ignore
   if (type === "pdf") return <FileText size={size} style={{ color }} />;
   return <ImageIcon size={size} style={{ color }} />;
 }
 
-// @ts-ignore
-function OriginBadge({ origin: any }) {
+function OriginBadge({ origin }: any) {
   return (
     <span
       className={`${styles.originBadge} ${origin === "ai" ? styles.originAi : styles.originUser}`}
@@ -76,25 +69,17 @@ function OriginBadge({ origin: any }) {
  * @param {Function} [onImageClick]  — callback when an image is clicked (for lightbox)
  */
 export default function MediaCardComponent({
-  // @ts-ignore
-  // @ts-ignore
-  media: any,
+  media,
   convBasePath = "/admin/conversations",
   compact = false,
   showInfo = true,
   showOrigin = true,
   showFavorite = false,
   isFavorite = false,
-  // @ts-ignore
-  // @ts-ignore
-  onFavorite: any,
-  // @ts-ignore
-  // @ts-ignore
-  onImageClick: any,
-}) {
-  // @ts-ignore
+  onFavorite,
+  onImageClick,
+}: any) {
   const resolvedUrl = resolveUrl(media.url);
-  // @ts-ignore
   const m = media;
 
   const cardClasses = [
@@ -110,9 +95,8 @@ export default function MediaCardComponent({
       {showFavorite && (
         <button
           className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ""}`}
-          onClick={(e) => {
+          onClick={(e: any) => {
             e.stopPropagation();
-            // @ts-ignore
             onFavorite?.();
           }}
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
@@ -129,18 +113,14 @@ export default function MediaCardComponent({
             alt=""
             className={styles.previewImage}
             loading="lazy"
-            // @ts-ignore
             onClick={() => onImageClick?.(resolvedUrl)}
-            onError={(e) => {
-              // @ts-ignore
+            onError={(e: any) => {
               e.target.style.display = "none";
-              // @ts-ignore
               e.target.parentElement.classList.add(styles.placeholder);
               const icon = document.createElement("span");
               icon.textContent = "🖼";
               icon.style.fontSize = "32px";
               icon.style.opacity = "0.3";
-              // @ts-ignore
               e.target.parentElement.appendChild(icon);
             }}
           />
@@ -150,21 +130,17 @@ export default function MediaCardComponent({
             className={styles.previewVideo}
             muted
             preload="metadata"
-            // @ts-ignore
-            onMouseEnter={(e) => e.target.play().catch(() => {})}
-            onMouseLeave={(e) => {
-              // @ts-ignore
+            onMouseEnter={(e: any) => e.target.play().catch(() => {})}
+            onMouseLeave={(e: any) => {
               e.target.pause();
-              // @ts-ignore
               e.target.currentTime = 0;
             }}
           />
         ) : m.mediaType === "audio" && resolvedUrl ? (
           <div
             className={styles.previewAudio}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: any) => e.stopPropagation()}
           >
-            {/* @ts-ignore */}
             <AudioPlayerRecorderComponent src={resolvedUrl} square />
           </div>
         ) : m.mediaType === "pdf" && resolvedUrl ? (
@@ -197,7 +173,6 @@ export default function MediaCardComponent({
           )}
           <div className={styles.meta}>
             {m.model && (
-              // @ts-ignore
               <ModelBadgeComponent models={[m.model.split("/").pop()]} provider={m.provider} mini />
             )}
             {m.timestamp && (

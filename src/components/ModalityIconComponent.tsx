@@ -41,21 +41,14 @@ const OUTPUT_MODALITIES = [
  *   className   — extra root class name
  */
 export default function ModalityIconComponent({
-  // @ts-ignore
-  // @ts-ignore
-  modalities: any,
+  modalities,
   size = 11,
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-}) {
-  // @ts-ignore
+  className,
+}: any) {
   if (!modalities) return null;
 
-  // @ts-ignore
-  const activeInputs = INPUT_MODALITIES.filter((m) => modalities[m.key]);
-  // @ts-ignore
-  const activeOutputs = OUTPUT_MODALITIES.filter((m) => modalities[m.key]);
+  const activeInputs = INPUT_MODALITIES.filter((m: any) => modalities[m.key]);
+  const activeOutputs = OUTPUT_MODALITIES.filter((m: any) => modalities[m.key]);
   const hasInputs = activeInputs.length > 0;
   const hasOutputs = activeOutputs.length > 0;
 
@@ -70,7 +63,6 @@ export default function ModalityIconComponent({
   );
 
   return (
-    // @ts-ignore
     <div className={`${styles.modalitiesRow} ${className || ""}`}>
       <span className={styles.modalityBadge}>
         {activeInputs.map(renderIcon)}

@@ -19,10 +19,9 @@ export default function BenchmarkBarComponent({
   passed = 0,
   total = 0,
   mini = false,
-  // @ts-ignore
-  label: any,
+  label,
   className = "",
-}) {
+}: any) {
   const passRate = total > 0 ? (passed / total) * 100 : 0;
   const hasRuns = total > 0;
 
@@ -41,9 +40,7 @@ export default function BenchmarkBarComponent({
             style={{ width: `${passRate}%` }}
           />
         </div>
-        {/* @ts-ignore */}
         {label && !mini && (
-          // @ts-ignore
           <span className={styles.label}>{label}</span>
         )}
       </div>

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, useCallback, Suspense, lazy } from "react";
@@ -67,17 +68,10 @@ const EXT_LANG = {
 
 // --- Status Badge -----------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function StatusBadge({ success: any, label: any }) {
+function StatusBadge({ success, label }: any) {
   return (
-    // @ts-ignore
     <span className={`${styles.statusBadge} ${success ? styles.statusSuccess : styles.statusError}`}>
-      {/* @ts-ignore */}
       {success ? <Check size={10} /> : <XCircle size={10} />}
-      {/* @ts-ignore */}
       {label}
     </span>
   );
@@ -85,17 +79,11 @@ function StatusBadge({ success: any, label: any }) {
 
 // --- File Path Pill ---------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function PathPill({ path: any, icon: any }) {
-  // @ts-ignore
+function PathPill({ path, icon }: any) {
   const Icon = icon || FileText;
   return (
     <span className={styles.pathPill}>
       <Icon size={11} />
-      {/* @ts-ignore */}
       <span className={styles.pathFull}>{path}</span>
     </span>
   );
@@ -103,21 +91,15 @@ function PathPill({ path: any, icon: any }) {
 
 // --- Collapsible Raw Result -------------------------------------------
 
-// @ts-ignore
-function RawResultToggle({ result: any }) {
-  const [show, setShow] = useState<any>(false);
-  // @ts-ignore
+function RawResultToggle({ result }: any) {
+  const [show, setShow] = useState(false);
   if (!result) return null;
 
-  // @ts-ignore
   const formatted = typeof result === "string"
     ? (() => {
-        // @ts-ignore
         try { return "```json\n" + JSON.stringify(JSON.parse(result), null, 2) + "\n```"; }
-        // @ts-ignore
         catch { return "```\n" + result + "\n```"; }
       })()
-    // @ts-ignore
     : "```json\n" + JSON.stringify(result, null, 2) + "\n```";
 
   return (
@@ -128,7 +110,6 @@ function RawResultToggle({ result: any }) {
       </button>
       {show && (
         <div className={styles.rawContent}>
-          {/* @ts-ignore */}
           <MarkdownContent content={formatted} />
         </div>
       )}
@@ -141,17 +122,12 @@ function RawResultToggle({ result: any }) {
  * Collapsible panel that shows all input arguments passed to a tool call.
  * Renders key-value pairs in a clean, readable format.
  */
-// @ts-ignore
-function InputArgsToggle({ args: any }) {
-  const [show, setShow] = useState<any>(false);
+function InputArgsToggle({ args }: any) {
+  const [show, setShow] = useState(false);
 
-  const entries = useMemo<any>(() => {
-    // @ts-ignore
-    // @ts-ignore
+  const entries = useMemo(() => {
     if (!args || typeof args !== "object") return [];
-    // @ts-ignore
-    return Object.entries(args).filter(([, v]) => v !== undefined && v !== null);
-  // @ts-ignore
+    return Object.entries(args).filter(([, v]: any) => v !== undefined && v !== null);
   }, [args]);
 
   if (entries.length === 0) return null;
@@ -192,36 +168,23 @@ function InputArgsToggle({ args: any }) {
  * Collapsible panel that shows the raw result returned to the model.
  * Helps users understand exactly what the agent receives back.
  */
-// @ts-ignore
-function OutputResultToggle({ result: any }) {
-  const [show, setShow] = useState<any>(false);
+function OutputResultToggle({ result }: any) {
+  const [show, setShow] = useState(false);
 
-  const display = useMemo<any>(() => {
-    // @ts-ignore
-    // @ts-ignore
+  const display = useMemo(() => {
     if (result === undefined || result === null) return null;
-    // @ts-ignore
     if (typeof result === "string") {
       try {
-        // @ts-ignore
         const parsed = JSON.parse(result);
         return { type: "object", data: parsed, raw: JSON.stringify(parsed, null, 2) };
       } catch {
-        // @ts-ignore
-        // @ts-ignore
         return { type: "string", data: result, raw: result };
       }
     }
-    // @ts-ignore
     if (typeof result === "object") {
-      // @ts-ignore
-      // @ts-ignore
       return { type: "object", data: result, raw: JSON.stringify(result, null, 2) };
     }
-    // @ts-ignore
-    // @ts-ignore
     return { type: "string", data: result, raw: String(result) };
-  // @ts-ignore
   }, [result]);
 
   if (!display) return null;
@@ -244,8 +207,8 @@ function OutputResultToggle({ result: any }) {
         <div className={styles.outputResultContent}>
           {display.type === "object" && !Array.isArray(display.data) ? (
             Object.entries(display.data)
-              .filter(([, v]) => v !== undefined && v !== null)
-              .map(([key, val]) => {
+              .filter(([, v]: any) => v !== undefined && v !== null)
+              .map(([key, val]: any) => {
                 const isComplex = typeof val === "object";
                 const valStr = isComplex
                   ? JSON.stringify(val, null, 2)
@@ -276,21 +239,13 @@ function OutputResultToggle({ result: any }) {
 
 // -- 1. File Read ------------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function FileReadRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function FileReadRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
-  // @ts-ignore
   const filePath = parsed.path || args?.path || "";
   const content = parsed.content || "";
-  // @ts-ignore
-  const _lang = EXT_LANG[extensionOf(filePath)] || "";
+  const _lang = (EXT_LANG as any)[extensionOf(filePath)] || "";
 
 
   return (
@@ -310,17 +265,10 @@ function FileReadRenderer({ result: any, args: any }) {
 
 // -- 2. File Write -----------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function FileWriteRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function FileWriteRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
-  // @ts-ignore
   const filePath = parsed.path || args?.path || "";
   const success = !parsed.error;
 
@@ -340,17 +288,10 @@ function FileWriteRenderer({ result: any, args: any }) {
 
 // -- 3. String Replace -------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function StrReplaceRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function StrReplaceRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
-  // @ts-ignore
   const filePath = parsed.path || args?.path || "";
   const success = !parsed.error;
   const replacements = parsed.replacements || parsed.count || 1;
@@ -361,19 +302,11 @@ function StrReplaceRenderer({ result: any, args: any }) {
         <PathPill path={filePath} icon={FileText} />
         <StatusBadge success={success} label={`${replacements} replacement${replacements !== 1 ? "s" : ""}`} />
       </div>
-      // @ts-ignore
-      {/* @ts-ignore */}
       {args?.oldStr && args?.newStr && (
         <pre className={styles.diffBlock}>
           <code>
-            // @ts-ignore
-            // @ts-ignore
-            {/* @ts-ignore */}
             <span className={styles.diffRemoved}>- {args.oldStr.length > 200 ? args.oldStr.slice(0, 200) + "…" : args.oldStr}</span>
             {"\n"}
-            // @ts-ignore
-            // @ts-ignore
-            {/* @ts-ignore */}
             <span className={styles.diffAdded}>+ {args.newStr.length > 200 ? args.newStr.slice(0, 200) + "…" : args.newStr}</span>
           </code>
         </pre>
@@ -385,30 +318,20 @@ function StrReplaceRenderer({ result: any, args: any }) {
 
 // -- 4. Grep Search ----------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function GrepSearchRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function GrepSearchRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
   const matches = parsed.matches || parsed.results || [];
   const totalMatches = parsed.totalMatches ?? parsed.count ?? matches.length;
-  // @ts-ignore
   const pattern = args?.pattern || "";
 
   // Group by file
   const grouped = {};
   for (const m of matches.slice(0, 30)) {
     const file = m.file || m.path || "unknown";
-    // @ts-ignore
-    // @ts-ignore
-    if (!grouped[file]) grouped[file] = [];
-    // @ts-ignore
-    grouped[file].push(m);
+    if (!(grouped as any)[file]) (grouped as any)[file] = [];
+    (grouped as any)[file].push(m);
   }
 
   return (
@@ -420,10 +343,9 @@ function GrepSearchRenderer({ result: any, args: any }) {
         </span>
       </div>
       <div className={styles.grepList}>
-        {Object.entries(grouped).map(([file, fileMatches]) => (
+        {Object.entries(grouped).map(([file, fileMatches]: any) => (
           <div key={file} className={styles.grepFile}>
             <span className={styles.grepFilePath}>{file}</span>
-            {/* @ts-ignore */}
             {fileMatches.map((m: any, i: any) => (
               <div key={i} className={styles.grepLine}>
                 {m.line != null && <span className={styles.grepLineNum}>{m.line}</span>}
@@ -440,19 +362,12 @@ function GrepSearchRenderer({ result: any, args: any }) {
 
 // -- 5. Directory List -------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function DirectoryListRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function DirectoryListRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
   const rawEntries = parsed.entries || parsed.items || parsed.files || [];
   const entries = Array.isArray(rawEntries) ? rawEntries : Object.values(rawEntries);
-  // @ts-ignore
   const dirPath = parsed.path || args?.path || "";
 
   return (
@@ -463,7 +378,7 @@ function DirectoryListRenderer({ result: any, args: any }) {
 
       </div>
       <div className={styles.dirList}>
-        {entries.slice(0, 40).map((entry, i) => {
+        {entries.slice(0, 40).map((entry: any, i: any) => {
           const name = typeof entry === "string" ? entry : (entry.name || entry.path || "");
           const isDir = typeof entry === "object" && (entry.type === "directory" || entry.isDirectory);
           return (
@@ -481,18 +396,11 @@ function DirectoryListRenderer({ result: any, args: any }) {
 
 // -- 6. Glob Files -----------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function GlobFilesRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function GlobFilesRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
   const files = parsed.files || parsed.matches || [];
-  // @ts-ignore
   const pattern = args?.pattern || "";
 
   return (
@@ -521,18 +429,11 @@ function GlobFilesRenderer({ result: any, args: any }) {
 
 // -- 7. Web Search -----------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function WebSearchRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function WebSearchRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
   const results = parsed.results || parsed.items || [];
-  // @ts-ignore
   const query = args?.query || "";
 
   return (
@@ -559,17 +460,10 @@ function WebSearchRenderer({ result: any, args: any }) {
 
 // -- 8. Fetch URL ------------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function FetchUrlRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function FetchUrlRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
-  // @ts-ignore
   const url = parsed.url || args?.url || "";
   const title = parsed.title || "";
   const content = parsed.content || parsed.text || parsed.markdown || "";
@@ -601,13 +495,10 @@ const DEFAULT_CWD = { bash: "/tmp", python: "python3", javascript: "node" };
 
 function formatInputPrompt(input: any, language: any, cwd: any) {
   if (!input) return "";
-  // @ts-ignore
-  const prompt = PROMPT_PREFIXES[language] || "$ ";
-  // @ts-ignore
-  const contPrompt = CONTINUATION_PREFIXES[language] || "  ";
+  const prompt = (PROMPT_PREFIXES as any)[language] || "$ ";
+  const contPrompt = (CONTINUATION_PREFIXES as any)[language] || "  ";
   const lines = input.split("\n");
-  // @ts-ignore
-  const resolvedCwd = cwd || DEFAULT_CWD[language] || "";
+  const resolvedCwd = cwd || (DEFAULT_CWD as any)[language] || "";
   const pathPrefix = resolvedCwd ? `${resolvedCwd} ` : "";
   return lines.map((line: any, i: any) => `${i === 0 ? pathPrefix + prompt : contPrompt}${line}`).join("\n");
 }
@@ -668,18 +559,12 @@ function parseAnsi(text: any) {
       const chunk = text.slice(lastIndex, match.index);
       if (color || bgColor || bold || dim || italic || underline) {
         const style = {};
-        // @ts-ignore
-        if (color) style.color = color;
-        // @ts-ignore
-        if (bgColor) style.backgroundColor = bgColor;
-        // @ts-ignore
-        if (bold) style.fontWeight = 700;
-        // @ts-ignore
-        if (dim) style.opacity = 0.6;
-        // @ts-ignore
-        if (italic) style.fontStyle = "italic";
-        // @ts-ignore
-        if (underline) style.textDecoration = "underline";
+        if (color) (style as any).color = color;
+        if (bgColor) (style as any).backgroundColor = bgColor;
+        if (bold) (style as any).fontWeight = 700;
+        if (dim) (style as any).opacity = 0.6;
+        if (italic) (style as any).fontStyle = "italic";
+        if (underline) (style as any).textDecoration = "underline";
         parts.push(<span key={key++} style={style}>{chunk}</span>);
       } else {
         parts.push(chunk);
@@ -711,18 +596,12 @@ function parseAnsi(text: any) {
     const chunk = text.slice(lastIndex);
     if (color || bgColor || bold || dim || italic || underline) {
       const style = {};
-      // @ts-ignore
-      if (color) style.color = color;
-      // @ts-ignore
-      if (bgColor) style.backgroundColor = bgColor;
-      // @ts-ignore
-      if (bold) style.fontWeight = 700;
-      // @ts-ignore
-      if (dim) style.opacity = 0.6;
-      // @ts-ignore
-      if (italic) style.fontStyle = "italic";
-      // @ts-ignore
-      if (underline) style.textDecoration = "underline";
+      if (color) (style as any).color = color;
+      if (bgColor) (style as any).backgroundColor = bgColor;
+      if (bold) (style as any).fontWeight = 700;
+      if (dim) (style as any).opacity = 0.6;
+      if (italic) (style as any).fontStyle = "italic";
+      if (underline) (style as any).textDecoration = "underline";
       parts.push(<span key={key++} style={style}>{chunk}</span>);
     } else {
       parts.push(chunk);
@@ -755,29 +634,15 @@ const TERM_CONTENT_LEVEL_CLASS = {
   debug: styles.termContentDebug,
 };
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function TerminalRenderer({ result: any, args: any, streamingOutput: any, language: any }) {
+function TerminalRenderer({ result, args, streamingOutput, language }: any) {
   const bodyRef = useRef<any>(null);
-  const [autoScroll, setAutoScroll] = useState<any>(true);
-  // @ts-ignore
-  // @ts-ignore
+  const [autoScroll, setAutoScroll] = useState(true);
   const input = args?.command || args?.code || null;
-  // @ts-ignore
   const cwd = args?.cwd || null;
-  // @ts-ignore
   const isStreaming = !result;
-  // @ts-ignore
   const output = streamingOutput || "";
 
   // Parse final result for exit code
-  // @ts-ignore
   const parsed = tryParse(result);
   const exitCode = parsed?.exitCode ?? parsed?.exit_code;
   const success = parsed?.success;
@@ -788,16 +653,15 @@ function TerminalRenderer({ result: any, args: any, streamingOutput: any, langua
     ? output
     : (stdout || stderr || parsedError || output);
 
-  // @ts-ignore
   const formattedInput = formatInputPrompt(input, language, cwd);
 
   // Split output into lines for per-line rendering
-  const outputLines = useMemo<any>(() => {
+  const outputLines = useMemo(() => {
     if (!displayOutput) return [];
     return displayOutput.split("\n");
   }, [displayOutput]);
 
-  const inputLines = useMemo<any>(() => {
+  const inputLines = useMemo(() => {
     if (!formattedInput) return [];
     return formattedInput.split("\n");
   }, [formattedInput]);
@@ -807,7 +671,7 @@ function TerminalRenderer({ result: any, args: any, streamingOutput: any, langua
   // Auto-scroll to bottom on new output
   useEffect(() => {
     if (autoScroll && bodyRef.current) {
-      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+      (bodyRef.current as any).scrollTop = (bodyRef.current as any).scrollHeight;
     }
   }, [displayOutput, autoScroll]);
 
@@ -819,14 +683,12 @@ function TerminalRenderer({ result: any, args: any, streamingOutput: any, langua
     setAutoScroll(isAtBottom);
   }, []);
 
-  // @ts-ignore
   if (!displayOutput && !formattedInput) return <RawResultToggle result={result} />;
 
   return (
     <div className={styles.terminalBlock}>
       <div className={styles.terminalHeader}>
         <Terminal size={11} />
-        {/* @ts-ignore */}
         <span>{language || "terminal"}</span>
         {isStreaming && <span className={styles.terminalLive}>● live</span>}
         {exitCode != null && (
@@ -854,7 +716,6 @@ function TerminalRenderer({ result: any, args: any, streamingOutput: any, langua
           const level = detectTerminalLevel(line);
           const lineNum = inputLines.length + i + 1;
           return (
-            // @ts-ignore
             <div key={`out-${i}`} className={`${styles.termLine} ${TERM_LEVEL_CLASS[level] || ""}`}>
               <span className={styles.termLineNum}>{lineNum}</span>
               <span className={`${styles.termLineContent} ${level ? TERM_CONTENT_LEVEL_CLASS[level] || "" : ""}`}>
@@ -878,11 +739,8 @@ function TerminalRenderer({ result: any, args: any, streamingOutput: any, langua
 
 // -- 10. Git Operations ------------------------------------------------
 
-// @ts-ignore
-function GitStatusRenderer({ result: any }) {
-  // @ts-ignore
+function GitStatusRenderer({ result }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
   const files = parsed.files || parsed.status || [];
@@ -914,15 +772,10 @@ function GitStatusRenderer({ result: any }) {
   );
 }
 
-// @ts-ignore
-function GitDiffRenderer({ result: any }) {
-  // @ts-ignore
+function GitDiffRenderer({ result }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
-  // @ts-ignore
-  // @ts-ignore
   const diff = parsed.diff || parsed.output || (typeof result === "string" ? result : "");
 
   return (
@@ -948,11 +801,8 @@ function GitDiffRenderer({ result: any }) {
   );
 }
 
-// @ts-ignore
-function GitLogRenderer({ result: any }) {
-  // @ts-ignore
+function GitLogRenderer({ result }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
   const commits = parsed.commits || parsed.log || [];
@@ -978,16 +828,9 @@ function GitLogRenderer({ result: any }) {
 
 // -- 11. File Delete / Move --------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function FileDeleteRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function FileDeleteRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
-  // @ts-ignore
   const filePath = parsed.path || args?.path || "";
   const success = !parsed.error;
 
@@ -995,7 +838,6 @@ function FileDeleteRenderer({ result: any, args: any }) {
     <div className={styles.rendererBlock}>
       <div className={styles.rendererHeader}>
         <Trash2 size={13} />
-        {/* @ts-ignore */}
         <PathPill path={filePath} />
         <StatusBadge success={success} label={success ? "Deleted" : "Failed"} />
       </div>
@@ -1004,18 +846,10 @@ function FileDeleteRenderer({ result: any, args: any }) {
   );
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function FileMoveRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function FileMoveRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
-  // @ts-ignore
   const source = parsed.source || args?.source || "";
-  // @ts-ignore
   const destination = parsed.destination || args?.destination || "";
   const success = !parsed.error;
 
@@ -1023,10 +857,8 @@ function FileMoveRenderer({ result: any, args: any }) {
     <div className={styles.rendererBlock}>
       <div className={styles.rendererHeader}>
         <ArrowRight size={13} />
-        {/* @ts-ignore */}
         <PathPill path={source} />
         <ArrowRight size={10} className={styles.moveArrow} />
-        {/* @ts-ignore */}
         <PathPill path={destination} />
         <StatusBadge success={success} label={success ? "Moved" : "Failed"} />
       </div>
@@ -1050,20 +882,12 @@ const BROWSER_ACTION_LABELS = {
   close: "Close",
 };
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function BrowserActionRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function BrowserActionRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
-  // @ts-ignore
   const action = parsed.action || args?.action || "";
-  // @ts-ignore
-  const label = BROWSER_ACTION_LABELS[action] || action;
+  const label = (BROWSER_ACTION_LABELS as any)[action] || action;
   const hasError = !!parsed.error;
 
   // Resolve screenshot ref (minio:// or base64 fallback)
@@ -1136,18 +960,11 @@ function BrowserActionRenderer({ result: any, args: any }) {
 
 // -- 13. Turtle Graphics -----------------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function TurtleDrawRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function TurtleDrawRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
   const hasError = !!parsed.error;
-  // @ts-ignore
   const commandCount = parsed.commandCount || args?.commands?.length || 0;
   const canvasSize = parsed.canvasSize || "800x600";
 
@@ -1171,11 +988,8 @@ function TurtleDrawRenderer({ result: any, args: any }) {
  * Mini status bar for an individual spawned worker agent.
  * Uses the shared StatusBarComponent.
  */
-// @ts-ignore
-function WorkerStatusBar({ activity: any }) {
-  // @ts-ignore
+function WorkerStatusBar({ activity }: any) {
   if (!activity) return null;
-  // @ts-ignore
   const { currentTool, toolCount = 0, iteration = 0, maxIterations, phase } = activity;
   const isTerminal = phase === "complete" || phase === "failed";
   const isToolActive = !!currentTool;
@@ -1191,13 +1005,11 @@ function WorkerStatusBar({ activity: any }) {
   // - Otherwise → actual model phase (generating, thinking, processing, etc.)
   const effectivePhase = isToolActive ? "processing" : (isTerminal ? null : phase);
   // Show tool name when executing tools, phase progress label for processing/loading
-  // @ts-ignore
   const label = isToolActive ? toolLabel : (activity.phaseLabel || undefined);
   // Tool calls show a wrench emoji, phase uses default icons
   const icon = isToolActive ? "🔧" : undefined;
   // Progress (0-1) from LM Studio prompt processing / model loading
   const progress = (effectivePhase === "processing" || effectivePhase === "loading")
-    // @ts-ignore
     ? (activity.phaseProgress ?? null)
     : null;
 
@@ -1211,7 +1023,6 @@ function WorkerStatusBar({ activity: any }) {
   // CoordinatorService which tracks per-worker burst counters independently.
   let tokPerSec = null;
   if (!isToolActive && (phase === "generating" || phase === "thinking")) {
-    // @ts-ignore
     tokPerSec = activity.tokPerSec ?? null;
   }
 
@@ -1232,42 +1043,28 @@ function WorkerStatusBar({ activity: any }) {
   );
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function TeamCreateRenderer({ result: any, args: any, workerToolActivity: any }) {
-  const [expandedMembers, setExpandedMembers] = useState<any>(new Set());
-  // @ts-ignore
+function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
+  const [expandedMembers, setExpandedMembers] = useState(new Set());
   const parsed = tryParse(result);
 
   // Extract members from args (calling state) or result (done state)
-  // @ts-ignore
   const rawArgMembers = args?.members;
   const argMembers = Array.isArray(rawArgMembers) ? rawArgMembers : [];
   const rawResultMembers = parsed?.members;
   const resultMembers = Array.isArray(rawResultMembers) ? rawResultMembers : [];
-  // @ts-ignore
   const teamName = args?.name || parsed?.team || "";
 
   // -- Live tok/s ticker ----------------------------------------
   // Tick every 500ms while any worker is actively generating so
   // the per-worker speed badge stays current.
-  const hasActiveWorkers = useMemo<any>(() => {
-    // @ts-ignore
+  const hasActiveWorkers = useMemo(() => {
     if (!workerToolActivity) return false;
-    // @ts-ignore
     return Object.values(workerToolActivity).some(
-      // @ts-ignore
-      // @ts-ignore
-      (a) => a.phase === "generating" || a.phase === "thinking",
+      (a: any) => a.phase === "generating" || a.phase === "thinking",
     );
-  // @ts-ignore
   }, [workerToolActivity]);
 
-  const [, setTick] = useState<any>(0);
+  const [, setTick] = useState(0);
   useEffect(() => {
     if (!hasActiveWorkers) return;
     const id = setInterval(() => setTick((t: any) => t + 1), 500);
@@ -1285,12 +1082,9 @@ function TeamCreateRenderer({ result: any, args: any, workerToolActivity: any })
   // Build an ordered list of workerIds from workerToolActivity.
   // Keys arrive in insertion order (Map-like semantics of plain objects in V8),
   // which matches the spawn order from the coordinator.
-  const orderedWorkerIds = useMemo<any>(() => {
-    // @ts-ignore
+  const orderedWorkerIds = useMemo(() => {
     if (!workerToolActivity) return [];
-    // @ts-ignore
     return Object.keys(workerToolActivity);
-  // @ts-ignore
   }, [workerToolActivity]);
 
   // Resolve live worker activity for a member — by agentId, positional
@@ -1299,23 +1093,17 @@ function TeamCreateRenderer({ result: any, args: any, workerToolActivity: any })
   // agent_id is available), because workers with identical descriptions
   // would all resolve to the first match via description.includes().
   const getActivity = (member: any, memberIndex: any) => {
-    // @ts-ignore
     if (!workerToolActivity) return null;
     // 1. Exact match by agent_id (available in result/done state)
-    // @ts-ignore
     if (member.agent_id) return workerToolActivity[member.agent_id] || null;
     // 2. Positional match by spawn order (calling state — most reliable)
     if (memberIndex != null && orderedWorkerIds[memberIndex]) {
-      // @ts-ignore
       return workerToolActivity[orderedWorkerIds[memberIndex]] || null;
     }
     // 3. Fallback: description match (only reliable when descriptions are unique)
     if (member.description) {
-      // @ts-ignore
       return Object.values(workerToolActivity).find(
-        // @ts-ignore
-        // @ts-ignore
-        (v) => v.description && v.description.includes(member.description),
+        (v: any) => v.description && v.description.includes(member.description),
       ) || null;
     }
     return null;
@@ -1341,7 +1129,7 @@ function TeamCreateRenderer({ result: any, args: any, workerToolActivity: any })
           </span>
           <StatusBadge success={true} label="running" />
         </div>
-        {argMembers.map((member, i) => {
+        {argMembers.map((member: any, i: any) => {
           const activity = getActivity(member, i);
           const tokPerSec = getWorkerTokPerSec(activity);
           return (
@@ -1372,9 +1160,9 @@ function TeamCreateRenderer({ result: any, args: any, workerToolActivity: any })
 
   // -- Done state: result available --
   const hasError = !!parsed.error;
-  const succeeded = parsed.succeeded ?? resultMembers.filter((m) => m.status === "completed").length;
-  const failed = parsed.failed ?? resultMembers.filter((m) => m.status === "failed").length;
-  const allDone = resultMembers.every((m) =>
+  const succeeded = parsed.succeeded ?? resultMembers.filter((m: any) => m.status === "completed").length;
+  const failed = parsed.failed ?? resultMembers.filter((m: any) => m.status === "failed").length;
+  const allDone = resultMembers.every((m: any) =>
     m.status === "completed" || m.status === "failed" || m.status === "stopped",
   );
   const teamSuccess = failed === 0 && !hasError;
@@ -1394,7 +1182,7 @@ function TeamCreateRenderer({ result: any, args: any, workerToolActivity: any })
 
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
 
-      {resultMembers.map((member, i) => {
+      {resultMembers.map((member: any, i: any) => {
         const activity = getActivity(member, i);
         const isTerminal = member.status === "completed" || member.status === "failed" || member.status === "stopped";
         const isCompleted = member.status === "completed";
@@ -1460,14 +1248,12 @@ function TeamCreateRenderer({ result: any, args: any, workerToolActivity: any })
                   <div className={styles.workerResultBody}>
                     {member.messages?.length > 0 ? (
                       <Suspense fallback={null}>
-                        {/* @ts-ignore */}
                         <LazyMessageList
                           messages={prepareDisplayMessages(member.messages)}
                           readOnly
                         />
                       </Suspense>
                     ) : member.result ? (
-                      // @ts-ignore
                       <MarkdownContent content={member.result} />
                     ) : null}
                   </div>
@@ -1481,17 +1267,10 @@ function TeamCreateRenderer({ result: any, args: any, workerToolActivity: any })
   );
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function SendMessageRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function SendMessageRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
-  // @ts-ignore
   const agentId = args?.to || parsed.agent_id || "";
   const status = parsed.status || "unknown";
   const hasError = !!parsed.error;
@@ -1511,17 +1290,10 @@ function SendMessageRenderer({ result: any, args: any }) {
   );
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function StopAgentRenderer({ result: any, args: any }) {
-  // @ts-ignore
+function StopAgentRenderer({ result, args }: any) {
   const parsed = tryParse(result);
-  // @ts-ignore
   if (!parsed) return <RawResultToggle result={result} />;
 
-  // @ts-ignore
   const agentId = args?.agent_id || parsed.agent_id || "";
   const hasError = !!parsed.error;
 
@@ -1541,9 +1313,7 @@ function StopAgentRenderer({ result: any, args: any }) {
 
 // -- 14. Generic Fallback ----------------------------------------------------
 
-// @ts-ignore
-function GenericRenderer({ result: any }) {
-  // @ts-ignore
+function GenericRenderer({ result }: any) {
   return <RawResultToggle result={result} />;
 }
 
@@ -1605,8 +1375,7 @@ const TOOL_RESULT_REGISTRY = {
  * @returns {{ Renderer: React.Component, language?: string }}
  */
 export function resolveToolResultRenderer(toolName: any) {
-  // @ts-ignore
-  return TOOL_RESULT_REGISTRY[toolName] || { Renderer: GenericRenderer };
+  return (TOOL_RESULT_REGISTRY as any)[toolName] || { Renderer: GenericRenderer };
 }
 
 /**
@@ -1617,32 +1386,19 @@ export function resolveToolResultRenderer(toolName: any) {
  * @param {string} [props.streamingOutput] - Live streaming output for compute tools
  * @param {object} [props.workerToolActivity] - Live worker activity map for team_create
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export function ToolResultView({ toolCall: any, streamingOutput: any, workerToolActivity: any }) {
-  // @ts-ignore
+export function ToolResultView({ toolCall, streamingOutput, workerToolActivity }: any) {
   const { Renderer, language } = resolveToolResultRenderer(toolCall.name);
 
   return (
     <>
-      {/* @ts-ignore */}
       <InputArgsToggle args={toolCall.args} />
       <Renderer
-        // @ts-ignore
         result={toolCall.result}
-        // @ts-ignore
         args={toolCall.args}
-        // @ts-ignore
         streamingOutput={streamingOutput}
         language={language}
-        // @ts-ignore
         workerToolActivity={workerToolActivity}
       />
-      {/* @ts-ignore */}
       <OutputResultToggle result={toolCall.result} />
     </>
   );

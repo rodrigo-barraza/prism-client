@@ -50,51 +50,29 @@ function getStoredWidth() {
  * Right-side inspector panel that shows details about the selected workflow node.
  */
 export default function WorkflowInspector({
-  // @ts-ignore
-  // @ts-ignore
-  node: any,
-  // @ts-ignore
-  // @ts-ignore
-  connections: any,
-  // @ts-ignore
-  // @ts-ignore
-  nodes: any,
+  node,
+  connections,
+  nodes,
   allModels = [],
-  // @ts-ignore
-  // @ts-ignore
-  nodeResults: any,
-  // @ts-ignore
-  // @ts-ignore
-  nodeStatuses: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateNodeConfig: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateNodeContent: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateFileInput: any,
-  // @ts-ignore
-  // @ts-ignore
-  onChangeModel: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSelectNode: any,
-  // @ts-ignore
-  // @ts-ignore
-  onClose: any,
+  nodeResults,
+  nodeStatuses,
+  onUpdateNodeConfig,
+  onUpdateNodeContent,
+  onUpdateFileInput,
+  onChangeModel,
+  onSelectNode,
+  onClose,
   readOnly = false,
-}) {
+}: any) {
   // Model change state (hooks must be called before any early return)
-  const [modelSearch, setModelSearch] = useState<any>("");
-  const [modelDropdownOpen, setModelDropdownOpen] = useState<any>(false);
-  const [conversationView, setConversationView] = useState<any>("json");
-  const [toolBuiltInOpen, setToolBuiltInOpen] = useState<any>(true);
-  const [toolCustomOpen, setToolCustomOpen] = useState<any>(true);
+  const [modelSearch, setModelSearch] = useState("");
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [conversationView, setConversationView] = useState("json");
+  const [toolBuiltInOpen, setToolBuiltInOpen] = useState(true);
+  const [toolCustomOpen, setToolCustomOpen] = useState(true);
 
   // -- Resize logic --
-  const [inspectorWidth, setInspectorWidth] = useState<any>(getStoredWidth);
+  const [inspectorWidth, setInspectorWidth] = useState(getStoredWidth);
   const isDragging = useRef<any>(false);
 
   const handleResizeStart = useCallback((e: any) => {
@@ -133,43 +111,27 @@ export default function WorkflowInspector({
     }
   }, [inspectorWidth]);
 
-  // @ts-ignore
-  // @ts-ignore
   const isModel = node ? !node.nodeType : false;
-  // @ts-ignore
-  // @ts-ignore
   const isTools = node ? node.nodeType === "tools" : false;
 
   // Find incoming / outgoing connections
-  const incoming = useMemo<any>(
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
+  const incoming = useMemo(
     () => (connections || []).filter((c: any) => node && c.targetNodeId === node.id),
-    // @ts-ignore
-    // @ts-ignore
     [connections, node],
   );
-  const outgoing = useMemo<any>(
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
+  const outgoing = useMemo(
     () => (connections || []).filter((c: any) => node && c.sourceNodeId === node.id),
-    // @ts-ignore
-    // @ts-ignore
     [connections, node],
   );
 
   // Compute compatible models based on connections
-  const compatibleModels = useMemo<any>(() => {
+  const compatibleModels = useMemo(() => {
     if (!isModel) return [];
     const requiredInputs = incoming.map((c: any) => c.targetModality);
     const requiredOutputs = outgoing.map((c: any) => c.sourceModality);
 
-    return allModels.filter((m) => {
-      // @ts-ignore
+    return allModels.filter((m: any) => {
       const mInputs = m.inputTypes || [];
-      // @ts-ignore
       const mOutputs = m.outputTypes || [];
       // Check input compatibility: conversation-type models accept "conversation" edges
       // Tools connections are always compatible with FC-capable models
@@ -178,7 +140,6 @@ export default function WorkflowInspector({
           (mod: any) =>
             mod === "tools" ||
             mInputs.includes(mod) ||
-            // @ts-ignore
             (mod === "conversation" && m.modelType === "conversation"),
         );
         if (!inputsOk) return false;
@@ -193,7 +154,7 @@ export default function WorkflowInspector({
   }, [isModel, incoming, outgoing, allModels]);
 
   // Filtered by search
-  const filteredModels = useMemo<any>(() => {
+  const filteredModels = useMemo(() => {
     if (!modelSearch.trim()) return compatibleModels;
     const q = modelSearch.trim().toLowerCase();
     return compatibleModels.filter((m: any) => {
@@ -205,22 +166,14 @@ export default function WorkflowInspector({
     });
   }, [compatibleModels, modelSearch]);
 
-  // @ts-ignore
   if (!node) return null;
 
-  // @ts-ignore
-  // @ts-ignore
   const status = nodeStatuses?.[node.id];
-  // @ts-ignore
-  // @ts-ignore
   const results = nodeResults?.[node.id];
-  // @ts-ignore
   const isInput = node.nodeType === "input";
-  // @ts-ignore
   const isViewer = node.nodeType === "viewer";
 
   const getNodeLabel = (id: any) => {
-    // @ts-ignore
     const n = (nodes || []).find((nd: any) => nd.id === id);
     if (!n) return id;
     if (n.nodeType === "input") {
@@ -232,8 +185,7 @@ export default function WorkflowInspector({
         pdf: "PDF",
         conversation: "Chat History",
       };
-      // @ts-ignore
-      return n.customName || labels[n.modality] || "Media";
+      return n.customName || (labels as any)[n.modality] || "Media";
     }
     if (n.nodeType === "viewer") return n.customName || "Output";
     if (n.nodeType === "tools") return n.customName || "Tools";
@@ -250,14 +202,11 @@ export default function WorkflowInspector({
   };
 
   const nodeSubtitle = isModel
-    // @ts-ignore
     ? node.provider
     : isTools
       ? "Tool Calling"
       : isInput
-        // @ts-ignore
-        // @ts-ignore
-        ? NODE_TYPE_LABELS[node.modality] || "Media Node"
+        ? (NODE_TYPE_LABELS as any)[node.modality] || "Media Node"
         : "Output Node";
 
   return (
@@ -271,30 +220,21 @@ export default function WorkflowInspector({
         <div className={styles.headerLeft}>
           {isModel && (
             <div className={styles.providerIcon}>
-              {/* @ts-ignore */}
               <ProviderLogo provider={node.provider} size={18} />
             </div>
           )}
           {isInput && (
             <div
               className={styles.typeIcon}
-              // @ts-ignore
-              // @ts-ignore
-              style={{ color: MODALITY_ICONS[node.modality]?.color }}
+              style={{ color: (MODALITY_ICONS as any)[node.modality]?.color }}
             >
-              {/* @ts-ignore */}
               {node.modality === "text" ? (
                 <Type size={16} />
-              // @ts-ignore
               ) : node.modality === "audio" ? (
                 <Volume2 size={16} />
-              // @ts-ignore
-              // @ts-ignore
-              ) : MODALITY_ICONS[node.modality]?.icon ? (
+              ) : (MODALITY_ICONS as any)[node.modality]?.icon ? (
                 (() => {
-                  // @ts-ignore
-                  // @ts-ignore
-                  const Icon = MODALITY_ICONS[node.modality].icon;
+                  const Icon = (MODALITY_ICONS as any)[node.modality].icon;
                   return <Icon size={16} />;
                 })()
               ) : (
@@ -315,27 +255,20 @@ export default function WorkflowInspector({
           <div className={styles.headerInfo}>
             <span className={styles.headerTitle}>
               {isModel
-                // @ts-ignore
-                // @ts-ignore
                 ? node.displayName || node.modelName
                 : isTools
-                  // @ts-ignore
                   ? node.customName || "Tools"
                   : isInput
-                    // @ts-ignore
                     ? node.customName ||
-                      // @ts-ignore
-                      {
-                        text: "Text",
-                        image: "Image",
-                        audio: "Audio",
-                        video: "Video",
-                        pdf: "PDF",
-                        conversation: "Chat History",
-                      // @ts-ignore
-                      }[node.modality] ||
+                      ({
+                                              text: "Text",
+                                              image: "Image",
+                                              audio: "Audio",
+                                              video: "Video",
+                                              pdf: "PDF",
+                                              conversation: "Chat History",
+                                            } as any)[node.modality] ||
                       "Media"
-                    // @ts-ignore
                     : node.customName || "Output"}
             </span>
             <span className={styles.headerSubtitle}>
@@ -350,7 +283,6 @@ export default function WorkflowInspector({
             </span>
           </div>
         </div>
-        {/* @ts-ignore */}
         <button className={styles.closeBtn} onClick={onClose}>
           <X size={14} />
         </button>
@@ -368,11 +300,8 @@ export default function WorkflowInspector({
                 onClick={() => setModelDropdownOpen((prev: any) => !prev)}
               >
                 <span className={styles.modelSelectorContent}>
-                  {/* @ts-ignore */}
                   <ProviderLogo provider={node.provider} size={14} />
                   <span className={styles.modelSelectorLabel}>
-                    // @ts-ignore
-                    {/* @ts-ignore */}
                     {node.displayName || node.modelName}
                   </span>
                 </span>
@@ -394,7 +323,7 @@ export default function WorkflowInspector({
                       className={styles.modelDropdownSearchInput}
                       placeholder="Search models…"
                       value={modelSearch}
-                      onChange={(e) => setModelSearch(e.target.value)}
+                      onChange={(e: any) => setModelSearch(e.target.value)}
                       autoFocus
                     />
                     {modelSearch && (
@@ -415,17 +344,13 @@ export default function WorkflowInspector({
                       filteredModels.map((m: any) => {
                         const key = `${m.provider}:${m.name}`;
                         const isCurrent =
-                          // @ts-ignore
                           m.name === node.modelName &&
-                          // @ts-ignore
                           m.provider === node.provider;
                         return (
                           <button
                             key={key}
                             className={`${styles.modelDropdownItem} ${isCurrent ? styles.modelDropdownItemActive : ""}`}
                             onClick={() => {
-                              // @ts-ignore
-                              // @ts-ignore
                               onChangeModel?.(node.id, m);
                               setModelDropdownOpen(false);
                               setModelSearch("");
@@ -440,8 +365,7 @@ export default function WorkflowInspector({
                             >
                               {(m.rawInputTypes || m.inputTypes || []).map(
                                 (t: any) => {
-                                  // @ts-ignore
-                                  const mod = MODALITY_ICONS[t];
+                                  const mod = (MODALITY_ICONS as any)[t];
                                   if (!mod) return null;
                                   const Icon = mod.icon;
                                   return (
@@ -457,8 +381,7 @@ export default function WorkflowInspector({
                                 →
                               </span>
                               {(m.outputTypes || []).map((t: any) => {
-                                // @ts-ignore
-                                const mod = MODALITY_ICONS[t];
+                                const mod = (MODALITY_ICONS as any)[t];
                                 if (!mod) return null;
                                 const Icon = mod.icon;
                                 return (
@@ -490,11 +413,8 @@ export default function WorkflowInspector({
               style={{ cursor: "default" }}
             >
               <span className={styles.modelSelectorContent}>
-                {/* @ts-ignore */}
                 <ProviderLogo provider={node.provider} size={14} />
                 <span className={styles.modelSelectorLabel}>
-                  // @ts-ignore
-                  {/* @ts-ignore */}
                   {node.displayName || node.modelName}
                 </span>
               </span>
@@ -513,11 +433,9 @@ export default function WorkflowInspector({
                   className={`${styles.connectionItem} ${styles.connectionItemClickable}`}
                   role="button"
                   tabIndex={0}
-                  // @ts-ignore
                   onClick={() => onSelectNode?.(c.sourceNodeId)}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: any) => {
                     if (e.key === "Enter" || e.key === " ")
-                      // @ts-ignore
                       onSelectNode?.(c.sourceNodeId);
                   }}
                 >
@@ -525,8 +443,7 @@ export default function WorkflowInspector({
                     className={styles.connectionDot}
                     style={{
                       background:
-                        // @ts-ignore
-                        MODALITY_ICONS[c.targetModality]?.color || "#888",
+                        (MODALITY_ICONS as any)[c.targetModality]?.color || "#888",
                     }}
                   />
                   <span className={styles.connectionFrom}>
@@ -553,11 +470,9 @@ export default function WorkflowInspector({
                   className={`${styles.connectionItem} ${styles.connectionItemClickable}`}
                   role="button"
                   tabIndex={0}
-                  // @ts-ignore
                   onClick={() => onSelectNode?.(c.targetNodeId)}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: any) => {
                     if (e.key === "Enter" || e.key === " ")
-                      // @ts-ignore
                       onSelectNode?.(c.targetNodeId);
                   }}
                 >
@@ -572,8 +487,7 @@ export default function WorkflowInspector({
                     className={styles.connectionDot}
                     style={{
                       background:
-                        // @ts-ignore
-                        MODALITY_ICONS[c.sourceModality]?.color || "#888",
+                        (MODALITY_ICONS as any)[c.sourceModality]?.color || "#888",
                     }}
                   />
                 </div>
@@ -583,19 +497,14 @@ export default function WorkflowInspector({
         )}
 
         {/* Content — text input assets */}
-        {/* @ts-ignore */}
         {isInput && node.modality === "text" && (
           <section className={`${styles.section} ${styles.scrollableSection}`}>
-            {/* @ts-ignore */}
             <TextContentComponent
               label="Text Content"
-              // @ts-ignore
               value={node.content || ""}
               onChange={
                 readOnly
                   ? undefined
-                  // @ts-ignore
-                  // @ts-ignore
                   : (val: any) => onUpdateNodeContent?.(node.id, val)
               }
               readOnly={readOnly}
@@ -606,46 +515,34 @@ export default function WorkflowInspector({
 
         {/* Content — file input assets (image, audio, or empty) */}
         {isInput &&
-          // @ts-ignore
           node.modality !== "text" &&
-          // @ts-ignore
           node.modality !== "conversation" && (
             <section
               className={`${styles.section} ${styles.scrollableSection}`}
             >
               <label className={styles.sectionLabel}>Media Content</label>
-              {/* @ts-ignore */}
               {node.content ? (
                 <div className={styles.previewContainer}>
-                  {/* @ts-ignore */}
                   {node.modality === "image" ? (
                     <img /* eslint-disable-line @next/next/no-img-element */
-                      // @ts-ignore
                       src={PrismService.getFileUrl(node.content)}
                       alt="Input asset"
                       className={styles.previewImage}
                     />
-                  // @ts-ignore
                   ) : node.modality === "audio" ? (
-                    // @ts-ignore
                     <AudioPlayerRecorderComponent
-                      // @ts-ignore
                       src={PrismService.getFileUrl(node.content)}
                       compact
                     />
-                  // @ts-ignore
                   ) : node.modality === "video" ? (
                     <video
                       controls
-                      // @ts-ignore
                       src={PrismService.getFileUrl(node.content)}
                       className={styles.previewVideo}
                     />
-                  // @ts-ignore
                   ) : node.modality === "pdf" ? (
                     <div className={styles.previewPdfWrap}>
                       <iframe
-                        // @ts-ignore
                         src={PrismService.getFileUrl(node.content)}
                         className={styles.previewPdf}
                         title="PDF preview"
@@ -659,8 +556,6 @@ export default function WorkflowInspector({
                   )}
                   <button
                     className={styles.clearBtn}
-                    // @ts-ignore
-                    // @ts-ignore
                     onClick={() => onUpdateFileInput?.(node.id, null, null)}
                   >
                     Remove
@@ -669,8 +564,6 @@ export default function WorkflowInspector({
               ) : (
                 <AssetInputOptions
                   onFile={(dataUrl: any, mimeType: any) =>
-                    // @ts-ignore
-                    // @ts-ignore
                     onUpdateFileInput?.(node.id, dataUrl, mimeType)
                   }
                 />
@@ -680,13 +573,10 @@ export default function WorkflowInspector({
 
         {/* Conversation messages — conversation input nodes */}
         {isInput &&
-          // @ts-ignore
           node.modality === "conversation" &&
-          // @ts-ignore
           (node.messages || []).length > 0 &&
           (() => {
             // Build resolved messages by merging static template with connected input content
-            // @ts-ignore
             const resolved = structuredClone(node.messages || []);
             for (const conn of incoming) {
               const dotIdx = conn.targetModality.indexOf(".");
@@ -694,7 +584,6 @@ export default function WorkflowInspector({
               const msgIdx = parseInt(conn.targetModality.substring(0, dotIdx));
               const modality = conn.targetModality.substring(dotIdx + 1);
               if (msgIdx < 0 || msgIdx >= resolved.length) continue;
-              // @ts-ignore
               const sourceNode = (nodes || []).find(
                 (n: any) => n.id === conn.sourceNodeId,
               );
@@ -724,36 +613,14 @@ export default function WorkflowInspector({
               return ref;
             };
             const messagesJson = JSON.stringify(
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              // @ts-ignore
-              resolved.map(({ role: any, content: any, images: any, audio: any, video: any, pdf: any }) => ({
-                // @ts-ignore
+              resolved.map(({ role, content, images, audio, video, pdf }: any) => ({
                 role,
-                // @ts-ignore
                 content: content || "",
-                // @ts-ignore
                 ...(images?.length > 0
-                  // @ts-ignore
                   ? { images: images.map(resolveRef) }
                   : {}),
-                // @ts-ignore
-                // @ts-ignore
                 ...(audio?.length > 0 ? { audio: audio.map(resolveRef) } : {}),
-                // @ts-ignore
-                // @ts-ignore
                 ...(video?.length > 0 ? { video: video.map(resolveRef) } : {}),
-                // @ts-ignore
-                // @ts-ignore
                 ...(pdf?.length > 0 ? { pdf: pdf.map(resolveRef) } : {}),
               })),
               null,
@@ -788,11 +655,9 @@ export default function WorkflowInspector({
                 </div>
                 {conversationView === "preview" ? (
                   <div className={styles.conversationPreview}>
-                    {/* @ts-ignore */}
                     <MessageList messages={resolved} readOnly />
                   </div>
                 ) : (
-                  // @ts-ignore
                   <MarkdownContent
                     content={`\`\`\`json\n${messagesJson}\n\`\`\``}
                   />
@@ -804,11 +669,8 @@ export default function WorkflowInspector({
         {/* Tool node — built-in + custom tool toggles */}
         {isTools &&
           (() => {
-            // @ts-ignore
             const builtIn = node.builtInTools || [];
-            // @ts-ignore
             const custom = node.customTools || [];
-            // @ts-ignore
             const disabled = new Set(node.disabledTools || []);
             const enabledCount =
               builtIn.filter((t: any) => !disabled.has(t.name)).length +
@@ -819,8 +681,6 @@ export default function WorkflowInspector({
               const next = new Set(disabled);
               if (next.has(toolName)) next.delete(toolName);
               else next.add(toolName);
-              // @ts-ignore
-              // @ts-ignore
               onUpdateNodeConfig?.(node.id, "disabledTools", [...next]);
             };
 
@@ -952,7 +812,6 @@ export default function WorkflowInspector({
 
             {results.text && (
               <div className={styles.resultBlock}>
-                {/* @ts-ignore */}
                 <TextContentComponent
                   label="Text"
                   value={results.text}
@@ -964,7 +823,6 @@ export default function WorkflowInspector({
             {results.audio && (
               <div className={styles.resultBlock}>
                 <span className={styles.resultType}>Audio</span>
-                {/* @ts-ignore */}
                 <AudioPlayerRecorderComponent
                   src={PrismService.getFileUrl(results.audio)}
                   compact
@@ -1009,26 +867,21 @@ export default function WorkflowInspector({
 
         {/* Viewer received content — show all types */}
         {isViewer &&
-          // @ts-ignore
           node.receivedOutputs &&
-          // @ts-ignore
           Object.keys(node.receivedOutputs).length > 0 && (
             <section
               className={`${styles.section} ${styles.scrollableSection}`}
             >
-              {/* @ts-ignore */}
               {node.receivedOutputs.image && (
                 <div className={styles.resultBlock}>
                   <span className={styles.resultType}>Image Content</span>
                   <div className={styles.resultImageContainer}>
                     <img /* eslint-disable-line @next/next/no-img-element */
-                      // @ts-ignore
                       src={PrismService.getFileUrl(node.receivedOutputs.image)}
                       alt="Received image"
                       className={styles.resultImage}
                     />
                     <a
-                      // @ts-ignore
                       href={PrismService.getFileUrl(node.receivedOutputs.image)}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -1041,37 +894,29 @@ export default function WorkflowInspector({
                 </div>
               )}
 
-              {/* @ts-ignore */}
               {node.receivedOutputs.text && (
                 <div className={styles.resultBlock}>
-                  {/* @ts-ignore */}
                   <TextContentComponent
                     label="Text Content"
-                    // @ts-ignore
                     value={node.receivedOutputs.text}
                     readOnly
                   />
                 </div>
               )}
 
-              {/* @ts-ignore */}
               {node.receivedOutputs.audio && (
                 <div className={styles.resultBlock}>
                   <span className={styles.resultType}>Audio Content</span>
-                  {/* @ts-ignore */}
                   <AudioPlayerRecorderComponent
-                    // @ts-ignore
                     src={PrismService.getFileUrl(node.receivedOutputs.audio)}
                     compact
                   />
                 </div>
               )}
 
-              {/* @ts-ignore */}
               {node.receivedOutputs.embedding && (
                 <div className={styles.resultBlock}>
                   <span className={styles.resultType}>
-                    {/* @ts-ignore */}
                     Embedding Content [{node.receivedOutputs.embedding.length}{" "}
                     dims]
                   </span>
@@ -1085,12 +930,10 @@ export default function WorkflowInspector({
                     }}
                   >
                     [
-                    {/* @ts-ignore */}
                     {node.receivedOutputs.embedding
                       .slice(0, 8)
                       .map((v: any) => v.toFixed(6))
                       .join(", ")}
-                    {/* @ts-ignore */}
                     {node.receivedOutputs.embedding.length > 8 ? ", …" : ""}]
                   </div>
                   <button
@@ -1098,7 +941,6 @@ export default function WorkflowInspector({
                     style={{ marginTop: "4px" }}
                     onClick={() =>
                       copyToClipboard(
-                        // @ts-ignore
                         JSON.stringify(node.receivedOutputs.embedding),
                       )
                     }

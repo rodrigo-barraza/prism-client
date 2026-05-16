@@ -14,30 +14,18 @@ import styles from "./TableComponentsComponent.module.css";
  * @param {string}    className — CSS class for the link (override)
  */
 export default function CountLinkComponent({
-  // @ts-ignore
-  // @ts-ignore
-  count: any,
-  // @ts-ignore
-  // @ts-ignore
-  href: any,
-  // @ts-ignore
+  count,
+  href,
   icon: Icon,
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-}) {
-  // @ts-ignore
-  // @ts-ignore
+  className,
+}: any) {
   if (!count || count <= 0) {
     return <span className={styles.countLinkZero}>0</span>;
   }
 
   return (
-    // @ts-ignore
-    // @ts-ignore
     <Link href={href} className={className || styles.countLink}>
       <Icon size={12} />
-      {/* @ts-ignore */}
       {count}
     </Link>
   );

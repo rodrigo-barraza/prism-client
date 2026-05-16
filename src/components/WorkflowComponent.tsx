@@ -41,91 +41,43 @@ export default function WorkflowComponent({
 
   nodes = [],
   connections = [],
-  // @ts-ignore
-  // @ts-ignore
-  selectedNodeId: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSelectNode: any,
+  selectedNodeId,
+  onSelectNode,
   nodeStatuses = {},
   nodeResults = {},
 
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateNodePosition: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDeleteNode: any,
-  // @ts-ignore
-  // @ts-ignore
-  onAddConnection: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDeleteConnection: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateNodeContent: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateNodeConfig: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateFileInput: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDuplicateNode: any,
+  onUpdateNodePosition,
+  onDeleteNode,
+  onAddConnection,
+  onDeleteConnection,
+  onUpdateNodeContent,
+  onUpdateNodeConfig,
+  onUpdateFileInput,
+  onDuplicateNode,
 
   workflows = [],
-  // @ts-ignore
-  // @ts-ignore
-  activeWorkflowId: any,
-  // @ts-ignore
-  // @ts-ignore
-  onLoadWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDeleteWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDownloadWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onCopyWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onAddAsset: any,
-  // @ts-ignore
-  // @ts-ignore
-  onNewWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSaveWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  workflowName: any,
-  // @ts-ignore
-  // @ts-ignore
-  onWorkflowNameChange: any,
+  activeWorkflowId,
+  onLoadWorkflow,
+  onDeleteWorkflow,
+  onDownloadWorkflow,
+  onCopyWorkflow,
+  onAddAsset,
+  onNewWorkflow,
+  onSaveWorkflow,
+  workflowName,
+  onWorkflowNameChange,
   loading = false,
   isLoadingWorkflow = false,
   favorites = [],
-  // @ts-ignore
-  // @ts-ignore
-  onToggleFavorite: any,
-  // @ts-ignore
-  // @ts-ignore
-  initialProviders: any,
+  onToggleFavorite,
+  initialProviders,
   initialSearch = "",
 
-  // @ts-ignore
-  // @ts-ignore
-  allModels: any,
-  // @ts-ignore
-  // @ts-ignore
-  onChangeModel: any,
-}) {
-  const [sidebarVisible, setSidebarVisible] = useState<any>(true);
-  const [isMobile, setIsMobile] = useState<any>(false);
+  allModels,
+  onChangeModel,
+}: any) {
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -135,19 +87,13 @@ export default function WorkflowComponent({
   }, []);
 
   const safePosition = readOnly
-    // @ts-ignore
     ? onUpdateNodePosition || noop
-    // @ts-ignore
     : onUpdateNodePosition || noop;
 
-  // @ts-ignore
-  // @ts-ignore
-  const selectedNode = nodes.find((n) => n.id === selectedNodeId) || null;
+  const selectedNode = nodes.find((n: any) => n.id === selectedNodeId) || null;
 
   const handleClose = useCallback(() => {
-    // @ts-ignore
     onSelectNode?.(null);
-  // @ts-ignore
   }, [onSelectNode]);
 
   const handleToggleSidebar = useCallback(() => {
@@ -155,25 +101,20 @@ export default function WorkflowComponent({
       const next = !v;
       // On mobile, close inspector when opening sidebar
       if (next && window.innerWidth < 768) {
-        // @ts-ignore
         onSelectNode?.(null);
       }
       return next;
     });
-  // @ts-ignore
   }, [onSelectNode]);
 
   // When loading a workflow on mobile, auto-hide sidebar
   const handleLoadWorkflowWithHide = useCallback(
-    // @ts-ignore
-    (...args) => {
+    (...args: any) => {
       if (window.innerWidth < 768) {
         setSidebarVisible(false);
       }
-      // @ts-ignore
       onLoadWorkflow?.(...args);
     },
-    // @ts-ignore
     [onLoadWorkflow],
   );
 
@@ -183,10 +124,8 @@ export default function WorkflowComponent({
       if (nodeId && window.innerWidth < 768) {
         setSidebarVisible(false);
       }
-      // @ts-ignore
       onSelectNode?.(nodeId);
     },
-    // @ts-ignore
     [onSelectNode],
   );
 
@@ -198,30 +137,19 @@ export default function WorkflowComponent({
         <WorkflowSidebar
           admin={admin}
           workflows={workflows}
-          // @ts-ignore
           activeWorkflowId={activeWorkflowId}
           onLoadWorkflow={handleLoadWorkflowWithHide}
-          // @ts-ignore
           onDeleteWorkflow={admin ? noop : onDeleteWorkflow || noop}
-          // @ts-ignore
           onDownloadWorkflow={onDownloadWorkflow}
-          // @ts-ignore
           onCopyWorkflow={onCopyWorkflow}
-          // @ts-ignore
           onAddAsset={admin ? undefined : onAddAsset}
-          // @ts-ignore
           onNewWorkflow={admin ? undefined : onNewWorkflow}
-          // @ts-ignore
           onSaveWorkflow={admin ? undefined : onSaveWorkflow}
-          // @ts-ignore
           workflowName={workflowName}
-          // @ts-ignore
           onWorkflowNameChange={onWorkflowNameChange}
           loading={loading}
           favorites={favorites}
-          // @ts-ignore
           onToggleFavorite={onToggleFavorite}
-          // @ts-ignore
           initialProviders={initialProviders}
           initialSearch={initialSearch}
         />
@@ -234,26 +162,17 @@ export default function WorkflowComponent({
         nodes={nodes}
         connections={connections}
         onUpdateNodePosition={safePosition}
-        // @ts-ignore
         onDeleteNode={readOnly ? noop : onDeleteNode || noop}
-        // @ts-ignore
         onAddConnection={readOnly ? noop : onAddConnection || noop}
-        // @ts-ignore
         onDeleteConnection={readOnly ? noop : onDeleteConnection || noop}
-        // @ts-ignore
         onUpdateNodeContent={readOnly ? noop : onUpdateNodeContent || noop}
-        // @ts-ignore
         onUpdateNodeConfig={readOnly ? noop : onUpdateNodeConfig || noop}
-        // @ts-ignore
         onUpdateFileInput={readOnly ? noop : onUpdateFileInput || noop}
-        // @ts-ignore
         onDuplicateNode={readOnly ? noop : onDuplicateNode || noop}
         nodeStatuses={nodeStatuses}
         nodeResults={nodeResults}
-        // @ts-ignore
         selectedNodeId={selectedNodeId}
         onSelectNode={handleSelectNode}
-        // @ts-ignore
         activeWorkflowId={activeWorkflowId}
         readOnly={readOnly}
         isLoadingWorkflow={isLoadingWorkflow}
@@ -271,19 +190,14 @@ export default function WorkflowComponent({
               node={selectedNode}
               connections={connections}
               nodes={nodes}
-              // @ts-ignore
               allModels={readOnly ? [] : allModels || []}
               nodeResults={nodeResults}
               nodeStatuses={nodeStatuses}
-              // @ts-ignore
               onUpdateNodeConfig={readOnly ? noop : onUpdateNodeConfig || noop}
               onUpdateNodeContent={
-                // @ts-ignore
                 readOnly ? noop : onUpdateNodeContent || noop
               }
-              // @ts-ignore
               onUpdateFileInput={readOnly ? noop : onUpdateFileInput || noop}
-              // @ts-ignore
               onChangeModel={readOnly ? noop : onChangeModel || noop}
               onSelectNode={handleSelectNode}
               onClose={handleClose}

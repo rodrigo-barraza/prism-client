@@ -70,33 +70,23 @@ function glitchText() {
  *  title       : optional tooltip string
  */
 export default function CycleButton({
-  // @ts-ignore
-  // @ts-ignore
-  value: any,
+  value,
   isActive = false,
-  // @ts-ignore
-  // @ts-ignore
-  onClick: any,
-  // @ts-ignore
-  // @ts-ignore
-  title: any,
-}) {
-  // @ts-ignore
+  onClick,
+  title,
+}: any) {
   const prevValueRef = useRef<any>(value);
   const rafRef = useRef<any>(null);
   const glitchIntervalRef = useRef<any>(null);
-  const [displayNum, setDisplayNum] = useState<any>(() =>
-    // @ts-ignore
-    // @ts-ignore
+  const [displayNum, setDisplayNum] = useState(() =>
     Number.isFinite(value) ? value : 999,
   );
-  const [showInfinity, setShowInfinity] = useState<any>(
-    // @ts-ignore
+  const [showInfinity, setShowInfinity] = useState(
     () => !Number.isFinite(value),
   );
-  const [tweening, setTweening] = useState<any>(false);
-  const [glitching, setGlitching] = useState<any>(false);
-  const [glitchLabel, setGlitchLabel] = useState<any>("");
+  const [tweening, setTweening] = useState(false);
+  const [glitching, setGlitching] = useState(false);
+  const [glitchLabel, setGlitchLabel] = useState("");
 
   /** Cleanup helper for glitch interval */
   function clearGlitch() {
@@ -110,18 +100,15 @@ export default function CycleButton({
 
   useEffect(() => {
     const from = prevValueRef.current;
-    // @ts-ignore
     prevValueRef.current = value;
 
     // Same value — no animation
-    // @ts-ignore
     if (from === value) return;
 
     // Cancel any in-flight animation
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     clearGlitch();
 
-    // @ts-ignore
     const isToInfinity = !Number.isFinite(value);
     const isFromInfinity = !Number.isFinite(from);
 
@@ -202,13 +189,11 @@ export default function CycleButton({
           const progress = Math.min(elapsed / countDuration, 1);
           const eased = easeOutCubic(progress);
           // -999 → value (e.g. 10), passing through 0
-          // @ts-ignore
           setDisplayNum(Math.round(-999 + (value - -999) * eased));
 
           if (progress < 1) {
             rafRef.current = requestAnimationFrame(tick);
           } else {
-            // @ts-ignore
             setDisplayNum(value);
             setTweening(false);
           }
@@ -228,7 +213,6 @@ export default function CycleButton({
     setShowInfinity(false);
     setTweening(true);
     const start = performance.now();
-    // @ts-ignore
     const delta = value - from;
 
     function tick(now: any) {
@@ -240,7 +224,6 @@ export default function CycleButton({
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
-        // @ts-ignore
         setDisplayNum(value);
         setTweening(false);
       }
@@ -251,7 +234,6 @@ export default function CycleButton({
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       setTweening(false);
     };
-  // @ts-ignore
   }, [value]);
 
   // Determine the label to render
@@ -268,10 +250,8 @@ export default function CycleButton({
     <button
       type="button"
       className={`${styles.cycleButton} ${isActive ? styles.cycleButtonActive : ""} ${tweening ? styles.tweening : ""} ${showInfinity ? styles.infinity : ""} ${glitching ? styles.glitching : ""}`}
-      // @ts-ignore
-      onClick={(e) => { SoundService.playClickButton({ event: e }); onClick?.(); }}
-      onMouseEnter={(e) => SoundService.playHoverButton({ event: e })}
-      // @ts-ignore
+      onClick={(e: any) => { SoundService.playClickButton({ event: e }); onClick?.(); }}
+      onMouseEnter={(e: any) => SoundService.playHoverButton({ event: e })}
       title={title}
     >
       {label}

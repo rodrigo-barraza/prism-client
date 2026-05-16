@@ -4,8 +4,6 @@ export const metadata = {
     "Browse all available tools from the Tools API — organized by domain, with live parameter schemas and search.",
 };
 
-// @ts-ignore
-export default function ToolsLayout({ children: any }) {
-  // @ts-ignore
+export default function ToolsLayout({ children }: any) {
   return children;
 }

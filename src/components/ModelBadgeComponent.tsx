@@ -13,11 +13,7 @@ import styles from "./ModelBadgeComponent.module.css";
  * @param {string} [className]
  * @param {boolean} [mini]
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function ModelBadgeComponent({ models = [], provider: any, providers: any, className = "", mini = false }) {
+export default function ModelBadgeComponent({ models = [], provider, providers, className = "", mini = false }: any) {
   if (!models || models.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
@@ -26,9 +22,6 @@ export default function ModelBadgeComponent({ models = [], provider: any, provid
   const cls = `${styles.badge} ${mini ? styles.mini : ""} ${className}`;
 
   /* Resolve a single provider key from explicit prop or providers array */
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   const resolvedProvider = provider || (providers?.length === 1 ? providers[0] : null);
   const providerIcon = resolvedProvider
     ? <ProviderLogo provider={resolvedProvider} size={iconSize} />

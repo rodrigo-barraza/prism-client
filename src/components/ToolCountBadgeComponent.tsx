@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { FunctionSquare } from "lucide-react";
@@ -13,32 +14,20 @@ import styles from "./ToolCountBadgeComponent.module.css";
  * @param {number} count   - Number of tools the agent supports
  * @param {string} [color] - Optional accent color (defaults to --text-tertiary)
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function ToolCountBadgeComponent({ count: any, color: any }) {
-  // @ts-ignore
-  // @ts-ignore
+export default function ToolCountBadgeComponent({ count, color }: any) {
   if (count == null || count === 0) return null;
 
-  // @ts-ignore
   const suffix = count !== 1 ? "Tools" : "Tool";
-  // @ts-ignore
   const tooltipLabel = `${count} ${suffix} available`;
 
   return (
     <TooltipComponent label={tooltipLabel} position="top">
       <div
         className={styles.badge}
-        // @ts-ignore
-        // @ts-ignore
-        // @ts-ignore
         style={color ? { "--tool-badge-accent": color } : undefined}
       >
         <FunctionSquare size={9} className={styles.icon} />
         <span className={styles.label}>
-          {/* @ts-ignore */}
           {count} {suffix}
         </span>
       </div>

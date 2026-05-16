@@ -25,45 +25,27 @@ export default function RequestsTableComponent({
   emptyText = "No requests yet",
   compact = false,
   mini = false,
-  // @ts-ignore
-  // @ts-ignore
-  title: any,
+  title,
   maxHeight = 420,
-  // @ts-ignore
-  // @ts-ignore
-  sortKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  sortDir: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSort: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRowClick: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRowMouseEnter: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRowMouseLeave: any,
-  // @ts-ignore
-  // @ts-ignore
-  getRowClassName: any,
-}) {
-  const totalCost = useMemo<any>(
-    // @ts-ignore
-    () => requests.reduce((sum, r) => sum + (r.estimatedCost || 0), 0) || 1,
+  sortKey,
+  sortDir,
+  onSort,
+  onRowClick,
+  onRowMouseEnter,
+  onRowMouseLeave,
+  getRowClassName,
+}: any) {
+  const totalCost = useMemo(
+    () => requests.reduce((sum: any, r: any) => sum + (r.estimatedCost || 0), 0) || 1,
     [requests],
   );
 
-  const totalDuration = useMemo<any>(
-    // @ts-ignore
-    () => requests.reduce((sum, r) => sum + (r.totalTime || 0), 0) || 1,
+  const totalDuration = useMemo(
+    () => requests.reduce((sum: any, r: any) => sum + (r.totalTime || 0), 0) || 1,
     [requests],
   );
 
-  const allColumns = useMemo<any>(
+  const allColumns = useMemo(
     () => getRequestsColumns({ totalCost, totalDuration, mini }),
     [totalCost, totalDuration, mini],
   );
@@ -83,24 +65,16 @@ export default function RequestsTableComponent({
 
   return (
     <TableComponent
-      // @ts-ignore
       title={title}
       maxHeight={maxHeight}
       columns={columns}
       data={requests}
-      // @ts-ignore
       sortKey={sortKey}
-      // @ts-ignore
       sortDir={sortDir}
-      // @ts-ignore
       onSort={onSort}
-      // @ts-ignore
       onRowClick={onRowClick}
-      // @ts-ignore
       onRowMouseEnter={onRowMouseEnter}
-      // @ts-ignore
       onRowMouseLeave={onRowMouseLeave}
-      // @ts-ignore
       getRowClassName={getRowClassName}
       getRowKey={(r: any, i: any) => `${r.requestId || r._id || "req"}-${i}`}
       emptyText={emptyText}

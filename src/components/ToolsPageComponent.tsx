@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -66,8 +67,7 @@ const AGENT_COLORS = {
 };
 
 function getAgentColor(agentId: any) {
-  // @ts-ignore
-  return AGENT_COLORS[agentId] || "var(--accent-color)";
+  return (AGENT_COLORS as any)[agentId] || "var(--accent-color)";
 }
 
 /**
@@ -79,11 +79,8 @@ function buildToolAgentMap(agents: any) {
   for (const agent of agents) {
     if (!agent.enabledToolNames) continue;
     for (const toolName of agent.enabledToolNames) {
-      // @ts-ignore
-      // @ts-ignore
-      if (!map[toolName]) map[toolName] = [];
-      // @ts-ignore
-      map[toolName].push({ id: agent.id, name: agent.name });
+      if (!(map as any)[toolName]) (map as any)[toolName] = [];
+      (map as any)[toolName].push({ id: agent.id, name: agent.name });
     }
   }
   return map;
@@ -131,8 +128,7 @@ const DOMAIN_ICONS = {
 };
 
 function getDomainIcon(domain: any) {
-  // @ts-ignore
-  return DOMAIN_ICONS[domain] || Wrench;
+  return (DOMAIN_ICONS as any)[domain] || Wrench;
 }
 
 /** Count parameters from a tool schema */
@@ -167,11 +163,8 @@ function groupByDomain(tools: any) {
   const groups = {};
   for (const tool of tools) {
     const domain = tool.domain || "Uncategorized";
-    // @ts-ignore
-    // @ts-ignore
-    if (!groups[domain]) groups[domain] = [];
-    // @ts-ignore
-    groups[domain].push(tool);
+    if (!(groups as any)[domain]) (groups as any)[domain] = [];
+    (groups as any)[domain].push(tool);
   }
   const sortKey = (d: any) => {
     if (d.startsWith("Agentic:")) return `2_${d}`;
@@ -180,7 +173,7 @@ function groupByDomain(tools: any) {
     return `0_${d}`;
   };
   return Object.fromEntries(
-    Object.entries(groups).sort((a, b) => sortKey(a[0]).localeCompare(sortKey(b[0]))),
+    Object.entries(groups).sort((a: any, b: any) => sortKey(a[0]).localeCompare(sortKey(b[0]))),
   );
 }
 
@@ -198,40 +191,23 @@ function extractOutputFields(tool: any) {
 /** Get input parameters (excluding the `fields` meta-param) */
 function getInputParams(tool: any) {
   const props = tool.parameters?.properties || {};
-  return Object.entries(props).filter(([name]) => name !== "fields");
+  return Object.entries(props).filter(([name]: any) => name !== "fields");
 }
 
 
 // -- Tool Detail Modal --------------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, allTools: any }) {
+function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
   const router = useRouter();
-  // @ts-ignore
   const required = new Set(tool.parameters?.required || []);
-  // @ts-ignore
   const inputParams = getInputParams(tool);
-  // @ts-ignore
   const outputFields = extractOutputFields(tool);
-  // @ts-ignore
   const cleanName = humanizeToolName(tool.name);
-  const [showRaw, setShowRaw] = useState<any>(false);
+  const [showRaw, setShowRaw] = useState(false);
 
   const handleTryTool = () => {
-    // @ts-ignore
     if (!allTools) return;
-    // @ts-ignore
     const allToolNames = allTools.map((t: any) => t.name);
-    // @ts-ignore
     const disabledBuiltIns = allToolNames.filter((n: any) => n !== tool.name);
     StorageService.set("toolMemory:agent:NONE", { disabledBuiltIns });
     router.push("/chat?agent=NONE&fc=true&thinking=true");
@@ -240,70 +216,50 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
   // Close on Escape
   useEffect(() => {
     const handler = (e: any) => {
-      // @ts-ignore
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  // @ts-ignore
   }, [onClose]);
 
-  // @ts-ignore
   const successRate = stats
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     ? ((stats.successCount / (stats.successCount + stats.failureCount)) * 100) || 0
     : 0;
 
   return (
-    // @ts-ignore
     <div className={styles.detailOverlay} onClick={onClose}>
-      <div className={styles.detailPanel} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.detailPanel} onClick={(e: any) => e.stopPropagation()}>
         {/* Header */}
         <div className={styles.detailHeader}>
           <div className={styles.detailTitleBlock}>
             <div className={styles.detailCleanName}>{cleanName}</div>
-            {/* @ts-ignore */}
             <div className={styles.detailTitle}>{tool.name}</div>
             <div className={styles.detailDomainRow}>
-              {/* @ts-ignore */}
               {tool.domain && (
-                // @ts-ignore
                 <span className={styles.toolDomain}>{tool.domain}</span>
               )}
-              {/* @ts-ignore */}
               {tool.dataSource && (
                 <span className={styles.dataSourceBadge}>
-                  {/* @ts-ignore */}
                   <span className={styles.dataSourceType}>{tool.dataSource.type}</span>
-                  {/* @ts-ignore */}
                   {tool.dataSource.provider && (
                     <span className={styles.dataSourceProvider}>
-                      {/* @ts-ignore */}
                       {tool.dataSource.provider}
                     </span>
                   )}
-                  {/* @ts-ignore */}
                   {tool.dataSource.intervalSeconds && (
                     <span className={styles.dataSourceInterval}>
-                      {/* @ts-ignore */}
                       ~{tool.dataSource.intervalSeconds}s
                     </span>
                   )}
                 </span>
               )}
-              {/* @ts-ignore */}
               {tool.labels?.map((l: any) => (
                 <span key={l} className={styles.toolLabel}>{l}</span>
               ))}
-              // @ts-ignore
-              {/* @ts-ignore */}
               {agents?.length > 0 && agents.map((a: any) => (
                 <span
                   key={a.id}
                   className={styles.agentBadge}
-                  // @ts-ignore
                   style={{ "--agent-color": getAgentColor(a.id) }}
                 >
                   <Bot size={10} />
@@ -312,7 +268,6 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
               ))}
             </div>
           </div>
-          {/* @ts-ignore */}
           <button className={styles.detailClose} onClick={onClose} title="Close">
             <X />
           </button>
@@ -325,7 +280,6 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
           </button>
 
           {/* Description */}
-          {/* @ts-ignore */}
           <div className={styles.detailDescription}>{tool.description}</div>
 
           {/* Lifetime Stats */}
@@ -333,38 +287,31 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
             <div className={styles.detailSectionTitle}>
               <BarChart3 size={12} /> Lifetime Usage Stats
             </div>
-            {/* @ts-ignore */}
             {stats ? (
               <>
                 <div className={styles.statsGrid}>
                   <div className={styles.statCell}>
                     <Hash size={14} className={styles.statCellIcon} />
-                    {/* @ts-ignore */}
                     <div className={styles.statCellValue}>{formatCompact(stats.totalCalls)}</div>
                     <div className={styles.statCellLabel}>Total Calls</div>
                   </div>
                   <div className={styles.statCell}>
                     <Activity size={14} className={styles.statCellIcon} />
-                    {/* @ts-ignore */}
                     <div className={styles.statCellValue}>{formatCompact(stats.totalRequests)}</div>
                     <div className={styles.statCellLabel}>Requests</div>
                   </div>
                   <div className={styles.statCell}>
                     <DollarSign size={14} className={styles.statCellIcon} />
-                    {/* @ts-ignore */}
                     <div className={styles.statCellValue}>{formatCostAdaptive(stats.totalCost)}</div>
                     <div className={styles.statCellLabel}>Total Cost</div>
                   </div>
                   <div className={styles.statCell}>
                     <TrendingUp size={14} className={styles.statCellIcon} />
-                    {/* @ts-ignore */}
                     <div className={styles.statCellValue}>{formatLatencyMs(stats.avgLatency)}</div>
                     <div className={styles.statCellLabel}>Avg Latency</div>
                   </div>
                   <div className={styles.statCell}>
                     <Zap size={14} className={styles.statCellIcon} />
-                    // @ts-ignore
-                    {/* @ts-ignore */}
                     <div className={styles.statCellValue}>{formatCompact(stats.totalInputTokens + stats.totalOutputTokens)}</div>
                     <div className={styles.statCellLabel}>Total Tokens</div>
                   </div>
@@ -380,36 +327,28 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
                   <div className={styles.statsTimeItem}>
                     <Calendar size={12} />
                     <span className={styles.statsTimeLabel}>First used</span>
-                    {/* @ts-ignore */}
                     <span className={styles.statsTimeValue}>{formatTimeAgo(stats.firstUsed)}</span>
                   </div>
                   <div className={styles.statsTimeItem}>
                     <Clock size={12} />
                     <span className={styles.statsTimeLabel}>Last used</span>
-                    {/* @ts-ignore */}
                     <span className={styles.statsTimeValue}>{formatTimeAgo(stats.lastUsed)}</span>
                   </div>
-                  {/* @ts-ignore */}
                   {stats.failureCount > 0 && (
                     <div className={styles.statsTimeItem}>
                       <XCircle size={12} />
                       <span className={styles.statsTimeLabel}>Failures</span>
-                      {/* @ts-ignore */}
                       <span className={styles.statsTimeValueDanger}>{stats.failureCount}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Top Models / Agents */}
-                // @ts-ignore
-                {/* @ts-ignore */}
                 {(stats.topModels?.length > 0 || stats.topAgents?.length > 0) && (
                   <div className={styles.statsBreakdown}>
-                    {/* @ts-ignore */}
                     {stats.topModels?.length > 0 && (
                       <div className={styles.statsBreakdownCol}>
                         <div className={styles.statsBreakdownTitle}>Top Models</div>
-                        {/* @ts-ignore */}
                         {stats.topModels.map((m: any) => (
                           <div key={m.model} className={styles.statsBreakdownRow}>
                             <span className={styles.statsBreakdownName}>{m.model}</span>
@@ -418,11 +357,9 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
                         ))}
                       </div>
                     )}
-                    {/* @ts-ignore */}
                     {stats.topAgents?.length > 0 && (
                       <div className={styles.statsBreakdownCol}>
                         <div className={styles.statsBreakdownTitle}>Top Agents</div>
-                        {/* @ts-ignore */}
                         {stats.topAgents.map((a: any) => (
                           <div key={a.agent} className={styles.statsBreakdownRow}>
                             <span className={styles.statsBreakdownName}>{a.agent}</span>
@@ -457,7 +394,7 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
                   </tr>
                 </thead>
                 <tbody>
-                  {inputParams.map(([name, schema]) => (
+                  {inputParams.map(([name, schema]: any) => (
                     <tr key={name}>
                       <td>
                         <span className={styles.paramName}>{name}</span>
@@ -467,20 +404,16 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
                       </td>
                       <td>
                         <span className={styles.paramType}>
-                          {/* @ts-ignore */}
                           {schema.type || "any"}
                         </span>
-                        {/* @ts-ignore */}
                         {schema.enum && (
                           <div className={styles.paramEnum}>
-                            {/* @ts-ignore */}
                             {schema.enum.map((v: any) => (
                               <span key={v} className={styles.enumValue}>{String(v)}</span>
                             ))}
                           </div>
                         )}
                       </td>
-                      {/* @ts-ignore */}
                       <td>{schema.description || "—"}</td>
                     </tr>
                   ))}
@@ -514,7 +447,6 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
             </button>
             {showRaw && (
               <pre className={styles.jsonBlock}>
-                {/* @ts-ignore */}
                 {JSON.stringify(tool, null, 2)}
               </pre>
             )}
@@ -527,39 +459,24 @@ function ToolDetailModal({ tool: any, onClose: any, agents: any, stats: any, all
 
 // -- Tool Card (Grid view) ----------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function ToolCard({ tool: any, onClick: any, agents: any }) {
-  // @ts-ignore
+function ToolCard({ tool, onClick, agents }: any) {
   const paramCount = countParams(tool);
   return (
-    // @ts-ignore
     <div className={styles.toolCard} onClick={onClick}>
       <div className={styles.toolCardHeader}>
-        {/* @ts-ignore */}
         <span className={styles.toolName}>{tool.name}</span>
-        {/* @ts-ignore */}
         {tool.domain && (
-          // @ts-ignore
           <span className={styles.toolDomain}>{tool.domain}</span>
         )}
       </div>
-      {/* @ts-ignore */}
       <div className={styles.toolDescription}>{tool.description}</div>
       <div className={styles.toolMeta}>
-        {/* @ts-ignore */}
         {agents?.length > 0 && (
           <div className={styles.agentBadges}>
-            {/* @ts-ignore */}
             {agents.map((a: any) => (
               <span
                 key={a.id}
                 className={styles.agentBadge}
-                // @ts-ignore
                 style={{ "--agent-color": getAgentColor(a.id) }}
                 title={`Used by ${a.name}`}
               >
@@ -569,7 +486,6 @@ function ToolCard({ tool: any, onClick: any, agents: any }) {
             ))}
           </div>
         )}
-        {/* @ts-ignore */}
         {tool.labels?.slice(0, 4).map((l: any) => (
           <span key={l} className={styles.toolLabel}>{l}</span>
         ))}
@@ -585,30 +501,17 @@ function ToolCard({ tool: any, onClick: any, agents: any }) {
 
 // -- Tool Row (List view) -----------------------------------------
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function ToolRow({ tool: any, onClick: any, agents: any }) {
-  // @ts-ignore
+function ToolRow({ tool, onClick, agents }: any) {
   const paramCount = countParams(tool);
   return (
-    // @ts-ignore
     <div className={styles.toolRow} onClick={onClick}>
-      {/* @ts-ignore */}
       <span className={styles.toolRowName}>{tool.name}</span>
-      {/* @ts-ignore */}
       <span className={styles.toolRowDesc}>{tool.description}</span>
       <div className={styles.toolRowMeta}>
-        // @ts-ignore
-        {/* @ts-ignore */}
         {agents?.length > 0 && agents.map((a: any) => (
           <span
             key={a.id}
             className={styles.agentBadge}
-            // @ts-ignore
             style={{ "--agent-color": getAgentColor(a.id) }}
             title={`Used by ${a.name}`}
           >
@@ -616,9 +519,7 @@ function ToolRow({ tool: any, onClick: any, agents: any }) {
             {a.name}
           </span>
         ))}
-        {/* @ts-ignore */}
         {tool.domain && (
-          // @ts-ignore
           <span className={styles.toolDomain}>{tool.domain}</span>
         )}
         {paramCount > 0 && (
@@ -634,22 +535,22 @@ function ToolRow({ tool: any, onClick: any, agents: any }) {
 // -- Main Component -----------------------------------------------
 
 export default function ToolsPageComponent() {
-  const [tools, setTools] = useState<any>([]);
-  const [agents, setAgents] = useState<any>([]);
+  const [tools, setTools] = useState<any[]>([]);
+  const [agents, setAgents] = useState<any[]>([]);
   const [toolStats, setToolStats] = useState<any>({});
-  const [loading, setLoading] = useState<any>(true);
-  const [error, setError] = useState<any>(null);
-  const [refreshing, setRefreshing] = useState<any>(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Filters
-  const [search, setSearch] = useState<any>("");
-  const [domainFilter, setDomainFilter] = useState<any>("");
-  const [labelFilter, setLabelFilter] = useState<any>("");
-  const [agentFilter, setAgentFilter] = useState<any>("");
-  const [view, setView] = useState<any>("grid"); // "grid" | "list"
+  const [search, setSearch] = useState("");
+  const [domainFilter, setDomainFilter] = useState("");
+  const [labelFilter, setLabelFilter] = useState("");
+  const [agentFilter, setAgentFilter] = useState("");
+  const [view, setView] = useState("grid"); // "grid" | "list"
 
   // Detail modal
-  const [selectedTool, setSelectedTool] = useState<any>(null);
+  const [selectedTool, setSelectedTool] = useState(null);
 
   // -- Fetch tools ----------------------------------------------
   const fetchTools = useCallback(async () => {
@@ -657,14 +558,12 @@ export default function ToolsPageComponent() {
       setLoading(true);
       setError(null);
       const [schemas, agentList] = await Promise.all([
-        // @ts-ignore
         PrismService.getBuiltInToolSchemas(),
         PrismService.getAgentPersonas().catch(() => []),
       ]);
       setTools(schemas || []);
       setAgents(agentList || []);
-    } catch (error) {
-      // @ts-ignore
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setLoading(false);
@@ -677,8 +576,7 @@ export default function ToolsPageComponent() {
       const stats = await PrismService.getToolStats();
       const map = {};
       for (const s of stats || []) {
-        // @ts-ignore
-        map[s.tool] = s;
+        (map as any)[s.tool] = s;
       }
       setToolStats(map);
     } catch {
@@ -697,8 +595,7 @@ export default function ToolsPageComponent() {
       setRefreshing(true);
       await PrismService.refreshBuiltInToolSchemas();
       await fetchTools();
-    } catch (error) {
-      // @ts-ignore
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setRefreshing(false);
@@ -706,22 +603,22 @@ export default function ToolsPageComponent() {
   }, [fetchTools]);
 
   // -- Derived data ---------------------------------------------
-  const allDomains = useMemo<any>(() => extractDomains(tools), [tools]);
-  const allLabels = useMemo<any>(() => extractLabels(tools), [tools]);
-  const toolAgentMap = useMemo<any>(() => buildToolAgentMap(agents), [agents]);
+  const allDomains = useMemo(() => extractDomains(tools), [tools]);
+  const allLabels = useMemo(() => extractLabels(tools), [tools]);
+  const toolAgentMap = useMemo(() => buildToolAgentMap(agents), [agents]);
 
-  const filtered = useMemo<any>(() => {
+  const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     // Pre-compute agent filter set if active
     const agentToolSet = agentFilter
-      ? new Set((agents.find((a: any) => a.id === agentFilter)?.enabledToolNames) || [])
+      ? new Set(((agents.find((a: any) => a.id === agentFilter) as any)?.enabledToolNames) || [])
       : null;
     return tools.filter((t: any) => {
       if (domainFilter && t.domain !== domainFilter) return false;
       if (labelFilter && !t.labels?.includes(labelFilter)) return false;
       if (agentToolSet && !agentToolSet.has(t.name)) return false;
       if (q) {
-        const agentNames = (toolAgentMap[t.name] || []).map((a: any) => a.name).join(" ");
+        const agentNames = ((toolAgentMap as any)[t.name] || []).map((a: any) => a.name).join(" ");
         const haystack = `${t.name} ${t.description} ${t.domain || ""} ${(t.labels || []).join(" ")} ${agentNames}`.toLowerCase();
         return haystack.includes(q);
       }
@@ -729,7 +626,7 @@ export default function ToolsPageComponent() {
     });
   }, [tools, search, domainFilter, labelFilter, agentFilter, agents, toolAgentMap]);
 
-  const grouped = useMemo<any>(() => groupByDomain(filtered), [filtered]);
+  const grouped = useMemo(() => groupByDomain(filtered), [filtered]);
 
   // -- Render ---------------------------------------------------
 
@@ -800,14 +697,14 @@ export default function ToolsPageComponent() {
             type="text"
             placeholder="Search tools by name, description, or label…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e: any) => setSearch(e.target.value)}
           />
         </div>
 
         <select
           className={styles.domainFilter}
           value={domainFilter}
-          onChange={(e) => setDomainFilter(e.target.value)}
+          onChange={(e: any) => setDomainFilter(e.target.value)}
         >
           <option value="">All Domains</option>
           {allDomains.map((d: any) => (
@@ -818,7 +715,7 @@ export default function ToolsPageComponent() {
         <select
           className={styles.labelFilter}
           value={labelFilter}
-          onChange={(e) => setLabelFilter(e.target.value)}
+          onChange={(e: any) => setLabelFilter(e.target.value)}
         >
           <option value="">All Labels</option>
           {allLabels.map((l: any) => (
@@ -829,7 +726,7 @@ export default function ToolsPageComponent() {
         <select
           className={styles.agentFilterSelect}
           value={agentFilter}
-          onChange={(e) => setAgentFilter(e.target.value)}
+          onChange={(e: any) => setAgentFilter(e.target.value)}
         >
           <option value="">All Agents</option>
           {agents.map((a: any) => (
@@ -862,37 +759,34 @@ export default function ToolsPageComponent() {
           <p>No tools match your filters.</p>
         </div>
       ) : (
-        Object.entries(grouped).map(([domain, domainTools]) => {
+        Object.entries(grouped).map(([domain, domainTools]: any) => {
           const DomainIcon = getDomainIcon(domain);
           return (
             <div key={domain} className={styles.domainSection}>
               <div className={styles.domainHeader}>
                 <DomainIcon className={styles.domainIcon} />
                 <h2>{domain}</h2>
-                {/* @ts-ignore */}
                 <span className={styles.domainCount}>{domainTools.length}</span>
               </div>
 
               {view === "grid" ? (
                 <div className={styles.toolGrid}>
-                  {/* @ts-ignore */}
                   {domainTools.map((tool: any) => (
                     <ToolCard
                       key={tool.name}
                       tool={tool}
-                      agents={toolAgentMap[tool.name]}
+                      agents={(toolAgentMap as any)[tool.name]}
                       onClick={() => setSelectedTool(tool)}
                     />
                   ))}
                 </div>
               ) : (
                 <div className={styles.toolList}>
-                  {/* @ts-ignore */}
                   {domainTools.map((tool: any) => (
                     <ToolRow
                       key={tool.name}
                       tool={tool}
-                      agents={toolAgentMap[tool.name]}
+                      agents={(toolAgentMap as any)[tool.name]}
                       onClick={() => setSelectedTool(tool)}
                     />
                   ))}
@@ -907,8 +801,8 @@ export default function ToolsPageComponent() {
       {selectedTool && (
         <ToolDetailModal
           tool={selectedTool}
-          agents={toolAgentMap[selectedTool.name]}
-          stats={toolStats[selectedTool.name]}
+          agents={(toolAgentMap as any)[(selectedTool as any).name]}
+          stats={(toolStats as any)[(selectedTool as any).name]}
           allTools={tools}
           onClose={() => setSelectedTool(null)}
         />

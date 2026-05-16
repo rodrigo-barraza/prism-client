@@ -56,9 +56,7 @@ const TOOL_CALL_DISPLAY_NAMES = {
  * Resolve a raw tool function name to a human-readable display label.
  */
 function resolveDisplayName(name: any) {
-  // @ts-ignore
-  // @ts-ignore
-  if (TOOL_CALL_DISPLAY_NAMES[name]) return TOOL_CALL_DISPLAY_NAMES[name];
+  if ((TOOL_CALL_DISPLAY_NAMES as any)[name]) return (TOOL_CALL_DISPLAY_NAMES as any)[name];
   // Fallback: title-case via shared utility
   return renderToolName(name);
 }
@@ -82,28 +80,18 @@ function resolveDisplayName(name: any) {
  *   tooltip — optional tooltip override (defaults to raw name)
  */
 export default function ToolCallBadgeComponent({
-  // @ts-ignore
-  // @ts-ignore
-  name: any,
-  // @ts-ignore
-  // @ts-ignore
-  count: any,
-  // @ts-ignore
-  // @ts-ignore
-  active: any,
+  name,
+  count,
+  active,
   size = 11,
-  // @ts-ignore
-  // @ts-ignore
-  tooltip: any,
-}) {
+  tooltip,
+}: any) {
   const displayName = resolveDisplayName(name);
   const { Icon, color } = resolveToolVisuals(name);
-  // @ts-ignore
   const tooltipLabel = tooltip || name;
 
   const badge = (
     <span
-      // @ts-ignore
       className={`${styles.badge}${active ? ` ${styles.badgeActive}` : ""}`}
       style={{
         color,
@@ -113,10 +101,7 @@ export default function ToolCallBadgeComponent({
     >
       <Icon size={size} />
       <span className={styles.label}>{displayName}</span>
-      // @ts-ignore
-      {/* @ts-ignore */}
       {count != null && count > 1 && (
-        // @ts-ignore
         <span className={styles.count}>×{count}</span>
       )}
     </span>
@@ -138,25 +123,14 @@ export default function ToolCallBadgeComponent({
  * ToolCallBadgeRow — renders a row of individual tool call badges
  * from a { toolName: count } map.
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export function ToolCallBadgeRow({ tools: any, activeTool: any }) {
-  // @ts-ignore
-  // @ts-ignore
+export function ToolCallBadgeRow({ tools, activeTool }: any) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
     <div className={styles.badgeRow}>
-      {/* @ts-ignore */}
       {Object.entries(tools)
-        // @ts-ignore
-        // @ts-ignore
-        .sort(([, a], [, b]) => b - a)
-        .map(([name, count]) => (
-          // @ts-ignore
-          // @ts-ignore
+        .sort(([, a]: any, [, b]: any) => b - a)
+        .map(([name, count]: any) => (
           <ToolCallBadgeComponent key={name} name={name} count={count} active={name === activeTool} />
         ))}
     </div>

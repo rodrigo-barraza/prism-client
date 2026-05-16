@@ -9,26 +9,15 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import styles from "./MarkdownContentComponent.module.css";
 import { CopyButtonComponent } from "@rodrigo-barraza/components-library";
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function FencedCodeBlock({ language: any, children: any }) {
-  // @ts-ignore
+function FencedCodeBlock({ language, children }: any) {
   const codeString = String(children).replace(/\n$/, "");
 
-  // @ts-ignore
   let displayLabel = language;
-  // @ts-ignore
   let syntaxLang = language;
-  // @ts-ignore
   if (language.startsWith("exec-")) {
-    // @ts-ignore
     syntaxLang = language.replace("exec-", "");
     displayLabel = `${syntaxLang.toUpperCase()} — EXECUTABLE CODE`;
-  // @ts-ignore
   } else if (language.startsWith("execresult-")) {
-    // @ts-ignore
     syntaxLang = language.replace("execresult-", "") || "text";
     displayLabel = `${(syntaxLang || "PYTHON").toUpperCase()} — CODE EXECUTION RESULT`;
   }
@@ -60,23 +49,15 @@ function FencedCodeBlock({ language: any, children: any }) {
   );
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function CodeBlock({ children: any, className: any, ...rest }) {
-  // @ts-ignore
+function CodeBlock({ children, className, ...rest }: any) {
   const match = /language-(\w+)/.exec(className || "");
   if (!match) {
     return (
-      // @ts-ignore
       <code className={`${styles.inlineCode} ${className || ""}`} {...rest}>
-        {/* @ts-ignore */}
         {children}
       </code>
     );
   }
-  // @ts-ignore
   return <FencedCodeBlock language={match[1]}>{children}</FencedCodeBlock>;
 }
 
@@ -85,24 +66,15 @@ function CodeBlock({ children: any, className: any, ...rest }) {
  * Listens for postMessage `embed-resize` events from the embed page
  * and dynamically adjusts iframe height to fit content.
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function AutoResizeEmbed({ src: any, title: any, fallbackHeight: any, className: any }) {
+function AutoResizeEmbed({ src, title, fallbackHeight, className }: any) {
   const iframeRef = useRef<any>(null);
-  // @ts-ignore
-  const [height, setHeight] = useState<any>(fallbackHeight);
+  const [height, setHeight] = useState(fallbackHeight);
 
   const handleMessage = useCallback((event: any) => {
     if (
       event.data?.type === "embed-resize" &&
       iframeRef.current &&
-      event.source === iframeRef.current.contentWindow
+      event.source === (iframeRef.current as any).contentWindow
     ) {
       setHeight(event.data.height);
     }
@@ -117,11 +89,8 @@ function AutoResizeEmbed({ src: any, title: any, fallbackHeight: any, className:
     <span className={styles.embedWrapper}>
       <iframe
         ref={iframeRef}
-        // @ts-ignore
         src={src}
-        // @ts-ignore
         className={className}
-        // @ts-ignore
         title={title}
         style={{ height: `${height}px` }}
         loading="lazy"
@@ -131,62 +100,42 @@ function AutoResizeEmbed({ src: any, title: any, fallbackHeight: any, className:
   );
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function ImageOrEmbed({ src: any, alt: any, ...rest }) {
+function ImageOrEmbed({ src, alt, ...rest }: any) {
   // Detect embed URLs that return HTML pages and render as auto-resizing iframes
-  // @ts-ignore
-  // @ts-ignore
   if (src && src.includes("/utility/map/embed")) {
     return (
       <AutoResizeEmbed
-        // @ts-ignore
         src={src}
-        // @ts-ignore
         title={alt || "Map"}
         fallbackHeight={360}
         className={styles.mapEmbed}
       />
     );
   }
-  // @ts-ignore
-  // @ts-ignore
   if (src && src.includes("/compute/latex/embed")) {
     return (
       <AutoResizeEmbed
-        // @ts-ignore
         src={src}
-        // @ts-ignore
         title={alt || "LaTeX"}
         fallbackHeight={160}
         className={styles.embedFrame}
       />
     );
   }
-  // @ts-ignore
-  // @ts-ignore
   if (src && src.includes("/compute/diagram/embed")) {
     return (
       <AutoResizeEmbed
-        // @ts-ignore
         src={src}
-        // @ts-ignore
         title={alt || "Diagram"}
         fallbackHeight={420}
         className={styles.embedFrame}
       />
     );
   }
-  // @ts-ignore
-  // @ts-ignore
   if (src && src.includes("/compute/turtle/embed")) {
     return (
       <AutoResizeEmbed
-        // @ts-ignore
         src={src}
-        // @ts-ignore
         title={alt || "Turtle Drawing"}
         fallbackHeight={660}
         className={styles.embedFrame}
@@ -194,33 +143,19 @@ function ImageOrEmbed({ src: any, alt: any, ...rest }) {
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  // @ts-ignore
-  // @ts-ignore
   return <img src={src} alt={alt} {...rest} />;
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function MarkdownContent({ content: any, className: any, children: any }) {
-  // @ts-ignore
+export default function MarkdownContent({ content, className, children }: any) {
   if (!content) return null;
   return (
-    // @ts-ignore
     <div className={`${styles.text} ${className || ""}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        // @ts-ignore
-        // @ts-ignore
         components={{ code: CodeBlock, img: ImageOrEmbed }}
       >
-        {/* @ts-ignore */}
         {content}
       </ReactMarkdown>
-      {/* @ts-ignore */}
       {children}
     </div>
   );

@@ -17,31 +17,19 @@ import styles from "./ToggleButtonComponent.module.css";
  *   onClick  — callback
  */
 export default function ToggleButtonComponent({
-  // @ts-ignore
-  // @ts-ignore
-  icon: any,
-  // @ts-ignore
-  // @ts-ignore
-  label: any,
+  icon,
+  label,
   active = false,
-  // @ts-ignore
-  // @ts-ignore
-  title: any,
-  // @ts-ignore
-  // @ts-ignore
-  onClick: any,
-}) {
+  title,
+  onClick,
+}: any) {
   return (
     <button
       className={`${styles.toggle} ${active ? styles.active : ""}`}
-      // @ts-ignore
       onClick={onClick}
-      // @ts-ignore
       title={title}
     >
-      {/* @ts-ignore */}
       {icon}
-      {/* @ts-ignore */}
       <span>{label}</span>
     </button>
   );

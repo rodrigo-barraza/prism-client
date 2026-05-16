@@ -38,39 +38,28 @@ import {
 export default function ConversationsTableComponent({
   conversations = [],
   emptyText = "No conversations",
-  // @ts-ignore
-  // @ts-ignore
-  sortKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  sortDir: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSort: any,
+  sortKey,
+  sortDir,
+  onSort,
   compact = false,
   mini = false,
-  // @ts-ignore
-  // @ts-ignore
-  maxHeight: any,
-  // @ts-ignore
-  // @ts-ignore
-  title: any,
+  maxHeight,
+  title,
   traceId = null,
-}) {
+}: any) {
   const router = useRouter();
 
-  const totalCost = useMemo<any>(
-    // @ts-ignore
-    () => conversations.reduce((sum, c) => sum + (c.totalCost || 0), 0) || 1,
+  const totalCost = useMemo(
+    () => conversations.reduce((sum: any, c: any) => sum + (c.totalCost || 0), 0) || 1,
     [conversations],
   );
 
-  const totalDuration = useMemo<any>(
-    () => conversations.reduce((sum, c) => sum + getDurationMs(c), 0) || 1,
+  const totalDuration = useMemo(
+    () => conversations.reduce((sum: any, c: any) => sum + getDurationMs(c), 0) || 1,
     [conversations],
   );
 
-  const columns = useMemo<any>(() => [
+  const columns = useMemo(() => [
     conversationTitleColumn({ mini }),
     projectBadgeColumn({ mini }),
     userBadgeColumn({ mini }),
@@ -91,11 +80,8 @@ export default function ConversationsTableComponent({
     <TableComponent
       columns={columns}
       data={conversations}
-      // @ts-ignore
       sortKey={sortKey}
-      // @ts-ignore
       sortDir={sortDir}
-      // @ts-ignore
       onSort={onSort}
       getRowKey={(c: any, i: any) => c.id || c._id || `conv-${i}`}
       onRowClick={(c: any) => {
@@ -103,10 +89,8 @@ export default function ConversationsTableComponent({
         router.push(`/admin/conversations/${c.id}${traceQs}`);
       }}
       emptyText={emptyText}
-      // @ts-ignore
       maxHeight={maxHeight || (compact ? "300px" : undefined)}
       mini={mini}
-      // @ts-ignore
       title={title}
       storageKey="conversations"
     />

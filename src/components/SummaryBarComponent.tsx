@@ -23,19 +23,12 @@ import BenchmarkBarComponent from "./BenchmarkBarComponent";
  * @property {number}        [barPassed] — Actual passed count for the tooltip
  * @property {number}        [barTotal]  — Actual total count for the tooltip
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function SummaryBarComponent({ items: any, live = false, className: any }) {
-  // @ts-ignore
-  // @ts-ignore
+export default function SummaryBarComponent({ items, live = false, className }: any) {
   if (!items || items.length === 0) return null;
 
   const wrapperClass = [
     styles.bar,
     live ? styles.live : "",
-    // @ts-ignore
     className || "",
   ]
     .filter(Boolean)
@@ -43,14 +36,12 @@ export default function SummaryBarComponent({ items: any, live = false, classNam
 
   return (
     <div className={wrapperClass}>
-      {/* @ts-ignore */}
       {items.map((item: any, i: any) => (
         <div key={i} className={styles.entry}>
           {i > 0 && <div className={styles.divider} />}
           <div className={styles.item}>
             {item.bar != null ? (
               <>
-                {/* @ts-ignore */}
                 <BenchmarkBarComponent
                   passed={item.barPassed ?? Math.round((Math.min(item.bar, 100) / 100) * 100)}
                   total={item.barTotal ?? 100}

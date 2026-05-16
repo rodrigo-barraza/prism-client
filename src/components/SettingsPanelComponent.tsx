@@ -34,52 +34,30 @@ import useTtft from "../hooks/useTtft";
 
 
 export default function SettingsPanel({
-  // @ts-ignore
-  // @ts-ignore
-  config: any,
-  // @ts-ignore
-  // @ts-ignore
-  settings: any,
-  // @ts-ignore
-  // @ts-ignore
-  onChange: any,
-  // @ts-ignore
-  // @ts-ignore
-  _hasAssistantImages: any,
-  // @ts-ignore
-  // @ts-ignore
-  _inferenceMode: any,
+  config,
+  settings,
+  onChange,
+  _hasAssistantImages,
+  _inferenceMode,
   readOnly = false,
   hideProviderModel = false,
   hideSystemPrompt = false,
-  // @ts-ignore
-  // @ts-ignore
-  onSystemPromptClick: any,
+  onSystemPromptClick,
   showSystemPromptModal = false,
-  // @ts-ignore
-  // @ts-ignore
-  onCloseSystemPromptModal: any,
+  onCloseSystemPromptModal,
   workflows = [],
   sessionStats = null,
-  // @ts-ignore
-  // @ts-ignore
-  lockedTools: any,
+  lockedTools,
   sessionType = "conversation",
   canSpawnWorkers = false,
-  // @ts-ignore
-  // @ts-ignore
-  agentToggles: any,
-}) {
+  agentToggles,
+}: any) {
   const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
 
-  // @ts-ignore
   const { _providers = {}, textToText = {} } = config || {};
   const textModelsMap = textToText.models || {};
-  // @ts-ignore
   const audioToTextModelsMap = config?.audioToText?.models || {};
-  // @ts-ignore
   const ttsModelsMap = config?.textToSpeech?.models || {};
-  // @ts-ignore
   const imageModelsMap = config?.textToImage?.models || {};
 
   // Build a merged models map: textToText + textToImage + audioToText + textToSpeech
@@ -116,19 +94,14 @@ export default function SettingsPanel({
         merged.push(m);
       }
     }
-    // @ts-ignore
-    modelsMap[p] = merged;
+    (modelsMap as any)[p] = merged;
   }
 
   const _handleSystemPromptChange = (e: any) =>
-    // @ts-ignore
     onChange({ systemPrompt: e.target.value });
 
-  // @ts-ignore
-  // @ts-ignore
-  const currentProviderModels = modelsMap[settings.provider] || [];
+  const currentProviderModels = (modelsMap as any)[settings.provider] || [];
   const selectedModelDef = currentProviderModels.find(
-    // @ts-ignore
     (m: any) => m.name === settings.model,
   );
 
@@ -151,21 +124,17 @@ export default function SettingsPanel({
   const { liveTtft, isLiveTtft } = useTtft(sessionStats, perfNow, needsTicker);
 
   // -- Stats tab (All / Orchestrator / Workers) --------------
-  const [statsTab, setStatsTab] = useState<any>("all");
+  const [statsTab, setStatsTab] = useState("all");
 
 
   const showStatsTabBar =
-    // @ts-ignore
-    // @ts-ignore
     canSpawnWorkers && !!(sessionStats?.orchestrator || sessionStats?.workers);
 
   // Resolve which stats object to render based on active tab
   const activeStats = sessionStats
     ? statsTab === "orchestrator"
-      // @ts-ignore
       ? sessionStats.orchestrator
       : statsTab === "workers"
-        // @ts-ignore
         ? sessionStats.workers
         : sessionStats
     : null;
@@ -184,7 +153,6 @@ export default function SettingsPanel({
       />
       <RequestCountBadgeComponent count={stats.requestCount} />
       {stats.uniqueModels?.length > 0 && (
-        // @ts-ignore
         <ModelBadgeComponent
           models={stats.uniqueModels}
           providers={stats.uniqueProviders}
@@ -238,13 +206,11 @@ export default function SettingsPanel({
           ⏱ {liveTtft.toFixed(isLiveTtft ? 1 : 2)}s TTFT
         </span>
       ) : (
-        // @ts-ignore
         (stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration) !=
           null && (
           <span className={`${styles.statBadge} ${styles.ttftBadge}`}>
             ⏱{" "}
             {(
-              // @ts-ignore
               stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration
             ).toFixed(2)}
             s TTFT
@@ -259,14 +225,12 @@ export default function SettingsPanel({
           </span>
         )}
       {showFull && activeElapsedTime > 0 && (
-        // @ts-ignore
         <StopwatchBadgeComponent
           seconds={activeElapsedTime}
           live={!!stats.currentTurnStart}
         />
       )}
       {!showFull && stats.completedElapsedTime > 0 && (
-        // @ts-ignore
         <StopwatchBadgeComponent
           seconds={stats.completedElapsedTime}
           live={false}
@@ -277,9 +241,7 @@ export default function SettingsPanel({
         const displayTools = (() => {
           if (
             statsTab !== "all" ||
-            // @ts-ignore
             !sessionStats?.workers ||
-            // @ts-ignore
             !sessionStats?.orchestrator
           ) {
             return stats.usedTools || [];
@@ -289,9 +251,7 @@ export default function SettingsPanel({
           const toolMap = new Map();
 
           // Add orchestrator tools
-          // @ts-ignore
           if (sessionStats.orchestrator?.usedTools) {
-            // @ts-ignore
             for (const tool of sessionStats.orchestrator.usedTools) {
               toolMap.set(
                 tool.name,
@@ -301,9 +261,7 @@ export default function SettingsPanel({
           }
 
           // Add worker tools
-          // @ts-ignore
           if (sessionStats.workers?.usedTools) {
-            // @ts-ignore
             for (const tool of sessionStats.workers.usedTools) {
               toolMap.set(
                 tool.name,
@@ -314,8 +272,8 @@ export default function SettingsPanel({
 
           // Convert back to array and sort by count
           return Array.from(toolMap.entries())
-            .map(([name, count]) => ({ name, count }))
-            .sort((a, b) => b.count - a.count);
+            .map(([name, count]: any) => ({ name, count }))
+            .sort((a: any, b: any) => b.count - a.count);
         })();
 
         if (!displayTools?.length) return null;
@@ -329,7 +287,6 @@ export default function SettingsPanel({
         return (
           <>
             {capabilities.map((tool: any) => (
-              // @ts-ignore
               <ToolBadgeComponent
                 key={tool.name}
                 name={tool.name}
@@ -337,7 +294,6 @@ export default function SettingsPanel({
               />
             ))}
             {toolCalls.map((tool: any) => (
-              // @ts-ignore
               <ToolCallBadgeComponent
                 key={tool.name}
                 name={tool.name}
@@ -348,7 +304,6 @@ export default function SettingsPanel({
         );
       })()}
       {stats.modalities && Object.values(stats.modalities).some(Boolean) && (
-        // @ts-ignore
         <ModalityIconComponent modalities={stats.modalities} />
       )}
     </div>
@@ -383,11 +338,9 @@ export default function SettingsPanel({
             <div className={styles.sectionHeader}>
               <GitBranch size={12} style={{ marginRight: 4 }} /> Workflow
             </div>
-            {workflows.map((wf) => (
+            {workflows.map((wf: any) => (
               <a
-                // @ts-ignore
                 key={wf._id}
-                // @ts-ignore
                 href={`/workflows/${wf._id}`}
                 className={styles.workflowLink}
               >
@@ -395,7 +348,6 @@ export default function SettingsPanel({
                   <GitBranch size={12} />
                 </span>
                 <span className={styles.modalityName}>
-                  {/* @ts-ignore */}
                   {wf.workflowName || "Untitled Workflow"}
                 </span>
                 <span className={styles.modalityStatus}>
@@ -416,15 +368,12 @@ export default function SettingsPanel({
           <div className={styles.formGroup}>
             <label>Provider</label>
             <div className={styles.readOnlyValue}>
-              {/* @ts-ignore */}
               <ProviderLogo provider={settings.provider} size={16} />
-              {/* @ts-ignore */}
               {resolveProviderLabel(settings.provider) || "-"}
             </div>
           </div>
         )}
 
-        {/* @ts-ignore */}
         {readOnly && !hideProviderModel && settings.provider && (
           <div className={styles.formGroup}>
             <label>Model</label>
@@ -439,10 +388,8 @@ export default function SettingsPanel({
                 gap: 2,
               }}
             >
-              {/* @ts-ignore */}
               <span>{selectedModelDef?.label || settings.model || "-"}</span>
               {selectedModelDef?.label &&
-                // @ts-ignore
                 selectedModelDef.label !== settings.model && (
                   <span
                     style={{
@@ -451,7 +398,6 @@ export default function SettingsPanel({
                       fontWeight: 400,
                     }}
                   >
-                    {/* @ts-ignore */}
                     {settings.model}
                   </span>
                 )}
@@ -462,14 +408,9 @@ export default function SettingsPanel({
         {isTTS &&
           (() => {
             const providerVoices =
-              // @ts-ignore
-              // @ts-ignore
               config?.textToSpeech?.voices?.[settings.provider] || [];
             const defaultVoice =
-              // @ts-ignore
-              // @ts-ignore
               config?.textToSpeech?.defaultVoices?.[settings.provider] || "";
-            // @ts-ignore
             const currentVoice = settings.voice || defaultVoice;
             if (readOnly) {
               return currentVoice ? (
@@ -492,7 +433,6 @@ export default function SettingsPanel({
                 <SelectComponent
                   value={currentVoice}
                   options={voiceOptions}
-                  // @ts-ignore
                   onChange={(val: any) => onChange({ voice: val })}
                   placeholder="Select Voice"
                   icon={<Mic size={18} />}
@@ -503,7 +443,6 @@ export default function SettingsPanel({
 
         {/* Google models (non-live): Thinking Level dropdown — always visible */}
         {!selectedModelDef?.liveAPI &&
-          // @ts-ignore
           settings.provider === "google" &&
           selectedModelDef?.thinkingLevels &&
           !readOnly &&
@@ -518,10 +457,8 @@ export default function SettingsPanel({
               })),
             ];
             const currentValue =
-              // @ts-ignore
               settings.thinkingEnabled === false && canDisable
                 ? "none"
-                // @ts-ignore
                 : settings.thinkingLevel || "high";
             return (
               <div className={styles.formGroup}>
@@ -530,7 +467,6 @@ export default function SettingsPanel({
                   value={currentValue}
                   options={options}
                   onChange={(val: any) =>
-                    // @ts-ignore
                     onChange({
                       thinkingLevel: val === "none" ? undefined : val,
                       thinkingEnabled: val !== "none",
@@ -546,9 +482,7 @@ export default function SettingsPanel({
         {selectedModelDef?.liveAPI &&
           !readOnly &&
           (() => {
-            // @ts-ignore
             const googleVoices = config?.textToSpeech?.voices?.google || [];
-            // @ts-ignore
             const currentLiveVoice = settings.liveVoice || "Puck";
             const voiceOptions = googleVoices.map((v: any) => ({
               value: v.name,
@@ -561,7 +495,6 @@ export default function SettingsPanel({
                 <SelectComponent
                   value={currentLiveVoice}
                   options={voiceOptions}
-                  // @ts-ignore
                   onChange={(val: any) => onChange({ liveVoice: val })}
                   placeholder="Select Voice"
                   icon={<AudioLines size={18} />}
@@ -588,13 +521,11 @@ export default function SettingsPanel({
                 <label>Thinking Level</label>
                 <SelectComponent
                   value={
-                    // @ts-ignore
                     settings.liveThinkingLevel ||
                     (canDisable ? "none" : selectedModelDef.thinkingLevels[0])
                   }
                   options={options}
                   onChange={(val: any) =>
-                    // @ts-ignore
                     onChange({
                       liveThinkingLevel: val,
                       thinkingEnabled: val !== "none",
@@ -607,12 +538,10 @@ export default function SettingsPanel({
           })()}
 
         {/* readOnly: show live voice if saved */}
-        {/* @ts-ignore */}
         {readOnly && selectedModelDef?.liveAPI && settings.liveVoice && (
           <div className={styles.formGroup}>
             <label>Voice</label>
             <div className={styles.readOnlyValue}>
-              {/* @ts-ignore */}
               <AudioLines size={14} /> {settings.liveVoice}
             </div>
           </div>
@@ -620,28 +549,23 @@ export default function SettingsPanel({
 
         {readOnly &&
           selectedModelDef?.liveAPI &&
-          // @ts-ignore
           settings.liveThinkingLevel && (
             <div className={styles.formGroup}>
               <label>Thinking Level</label>
               <div className={styles.readOnlyValue}>
                 <Brain size={14} />{" "}
-                {/* @ts-ignore */}
                 {settings.liveThinkingLevel === "none"
                   ? "No Thinking"
-                  // @ts-ignore
                   : settings.liveThinkingLevel}
               </div>
             </div>
           )}
 
         {/* readOnly: show voice if saved even without TTS model context */}
-        {/* @ts-ignore */}
         {readOnly && !isTTS && !selectedModelDef?.liveAPI && settings.voice && (
           <div className={styles.formGroup}>
             <label>Voice</label>
             <div className={styles.readOnlyValue}>
-              {/* @ts-ignore */}
               <Mic size={14} /> {settings.voice}
             </div>
           </div>
@@ -649,9 +573,7 @@ export default function SettingsPanel({
 
         {!isSpecialModel && !readOnly && !hideSystemPrompt && (
           <button
-            // @ts-ignore
             className={`${styles.systemPromptBtn} ${settings.systemPrompt ? styles.systemPromptActive : ""}`}
-            // @ts-ignore
             onClick={() => onSystemPromptClick?.()}
           >
             <Edit3 size={16} />
@@ -659,25 +581,21 @@ export default function SettingsPanel({
           </button>
         )}
 
-        {/* @ts-ignore */}
         {readOnly && !hideSystemPrompt && settings.systemPrompt && (
           <div className={styles.formGroup}>
             <label>
               <Edit3 size={12} /> System Prompt
             </label>
             <div className={styles.readOnlySystemPrompt}>
-              {/* @ts-ignore */}
               {settings.systemPrompt}
             </div>
           </div>
         )}
 
         {/* -- Agent Toggles (Plan, Auto, Iterations) ---------------- */}
-        {/* @ts-ignore */}
         {agentToggles?.length > 0 && (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Agent</div>
-            {/* @ts-ignore */}
             {agentToggles.map((toggle: any) => (
               <div
                 key={toggle.key}
@@ -714,24 +632,19 @@ export default function SettingsPanel({
                 ? { "Web Search": "Web Fetch" }
                 : {},
             };
-            // @ts-ignore
-            // @ts-ignore
-            const providerToolLabels = TOOL_LABELS[settings.provider] || {};
+            const providerToolLabels = (TOOL_LABELS as any)[settings.provider] || {};
             const getToolLabel = (tool: any) => providerToolLabels[tool] || tool;
 
             const getToolToggle = (tool: any) => {
               switch (tool) {
                 case "Thinking": {
-                  // @ts-ignore
                   const isLmStudio = settings.provider === "lm-studio";
                   const isLive = selectedModelDef?.liveAPI;
                   const canDisable =
                     !selectedModelDef?.thinkingLevels ||
                     selectedModelDef.thinkingLevels.includes("minimal");
                   const alwaysOn =
-                    // @ts-ignore
                     !canDisable && settings.provider === "google";
-                  // @ts-ignore
                   const modelName = (settings.model || "").toLowerCase();
                   const nameBasedThinking = [
                     "qwen3",
@@ -739,29 +652,24 @@ export default function SettingsPanel({
                     "deepseek-v3",
                     "gpt-oss",
                     "gemma-4",
-                  ].some((p) => modelName.includes(p));
+                  ].some((p: any) => modelName.includes(p));
                   const lmCanToggle =
                     isLmStudio &&
                     (selectedModelDef?.thinking || nameBasedThinking);
                   const lmLocked = isLmStudio && !lmCanToggle;
                   return {
                     checked: isLive
-                      // @ts-ignore
                       ? (settings.liveThinkingLevel || "none") !== "none"
                       : lmLocked || alwaysOn
                         ? true
                         : isLmStudio
-                          // @ts-ignore
                           ? settings.thinkingEnabled !== false
-                          // @ts-ignore
                           : settings.thinkingEnabled || false,
                     onChange: isLive
                       ? (val: any) =>
-                          // @ts-ignore
                           onChange({ liveThinkingLevel: val ? "low" : "none" })
                       : lmLocked || alwaysOn
                         ? () => {}
-                        // @ts-ignore
                         : (val: any) => onChange({ thinkingEnabled: val }),
                     disabled: lmLocked || alwaysOn,
                   };
@@ -770,60 +678,43 @@ export default function SettingsPanel({
                 case "Google Search":
                 case "Web Fetch":
                   return {
-                    // @ts-ignore
                     checked: settings.webSearchEnabled || false,
-                    // @ts-ignore
                     onChange: (val: any) => onChange({ webSearchEnabled: val }),
-                    // @ts-ignore
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Code Execution":
                   return {
-                    // @ts-ignore
                     checked: settings.codeExecutionEnabled || false,
                     onChange: (val: any) => {
                       const updates = { codeExecutionEnabled: val };
                       if (val) {
-                        // @ts-ignore
-                        updates.webSearchEnabled = false;
-                        // @ts-ignore
-                        updates.urlContextEnabled = false;
+                        (updates as any).webSearchEnabled = false;
+                        (updates as any).urlContextEnabled = false;
                       }
-                      // @ts-ignore
                       onChange(updates);
                     },
                     disabled: false,
                   };
                 case "URL Context":
                   return {
-                    // @ts-ignore
                     checked: settings.urlContextEnabled || false,
-                    // @ts-ignore
                     onChange: (val: any) => onChange({ urlContextEnabled: val }),
-                    // @ts-ignore
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Tool Calling":
                   return {
                     checked:
-                      // @ts-ignore
                       lockedTools?.has("Tool Calling") ||
-                      // @ts-ignore
                       settings.functionCallingEnabled ||
                       false,
-                    // @ts-ignore
                     onChange: lockedTools?.has("Tool Calling")
                       ? () => {}
-                      // @ts-ignore
                       : (val: any) => onChange({ functionCallingEnabled: val }),
-                    // @ts-ignore
                     disabled: !!lockedTools?.has("Tool Calling"),
                   };
                 case "Image Generation":
                   return {
-                    // @ts-ignore
                     checked: settings.forceImageGeneration || false,
-                    // @ts-ignore
                     onChange: (val: any) => onChange({ forceImageGeneration: val }),
                     disabled: false,
                   };
@@ -844,7 +735,6 @@ export default function SettingsPanel({
                       key={tool}
                       className={`${styles.modalityRow} ${toggle ? styles.toolToggleRow : ""}`}
                     >
-                      {/* @ts-ignore */}
                       <ToolBadgeComponent
                         name={getToolLabel(tool)}
                         tooltip={tool}
@@ -894,11 +784,8 @@ export default function SettingsPanel({
 
       {!readOnly && showSystemPromptModal && (
         <SystemPromptModal
-          // @ts-ignore
           activePrompt={settings.systemPrompt}
-          // @ts-ignore
           onApply={(text: any) => onChange({ systemPrompt: text })}
-          // @ts-ignore
           onClose={() => onCloseSystemPromptModal?.()}
         />
       )}

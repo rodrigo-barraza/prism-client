@@ -16,8 +16,7 @@ export function getBaseHeaders() {
   if (typeof window !== "undefined") {
     const workspaceRoot = localStorage.getItem("prism:workspace");
     if (workspaceRoot) {
-      // @ts-ignore
-      headers["x-workspace-root"] = workspaceRoot;
+      (headers as any)["x-workspace-root"] = workspaceRoot;
     }
   }
 

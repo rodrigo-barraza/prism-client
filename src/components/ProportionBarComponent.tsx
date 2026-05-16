@@ -11,8 +11,7 @@ import styles from "./ProportionBarComponent.module.css";
  *   total    — the total to compute percentage against
  *   color    — fill color (defaults to accent)
  */
-// @ts-ignore
-export default function ProportionBarComponent({ value = 0, total = 1, color: any, mini = false }) {
+export default function ProportionBarComponent({ value = 0, total = 1, color, mini = false }: any) {
   const pct = total > 0 ? (value / total) * 100 : 0;
 
   return (
@@ -22,8 +21,6 @@ export default function ProportionBarComponent({ value = 0, total = 1, color: an
           className={styles.fill}
           style={{
             width: `${pct}%`,
-            // @ts-ignore
-            // @ts-ignore
             ...(color ? { background: color } : {}),
           }}
         />

@@ -18,41 +18,27 @@ import styles from "./ThroughputBadgeComponent.module.css";
  * @param {boolean} turnActive — true when a turn is in progress (even during tool calls)
  */
 export default function ThroughputBadgeComponent({
-  // @ts-ignore
-  // @ts-ignore
-  liveTokPerSec: any,
-  // @ts-ignore
-  // @ts-ignore
-  avgTokPerSec: any,
-  // @ts-ignore
-  // @ts-ignore
-  isActivelyGenerating: any,
-  // @ts-ignore
-  // @ts-ignore
-  turnActive: any,
-}) {
+  liveTokPerSec,
+  avgTokPerSec,
+  isActivelyGenerating,
+  turnActive,
+}: any) {
   // Live tok/s takes priority over static average
-  // @ts-ignore
   if (liveTokPerSec !== null) {
-    // @ts-ignore
-    // @ts-ignore
     const variant = (isActivelyGenerating || turnActive)
       ? styles.live
       : styles.stale;
     return (
       <span className={`${styles.badge} ${variant}`}>
-        {/* @ts-ignore */}
         ⚡ {liveTokPerSec.toFixed(1)} tok/s
       </span>
     );
   }
 
   // Fall back to historical average from backend session stats
-  // @ts-ignore
   if (avgTokPerSec != null) {
     return (
       <span className={`${styles.badge} ${styles.average}`}>
-        {/* @ts-ignore */}
         ⚡ {avgTokPerSec.toFixed(1)} tok/s
       </span>
     );

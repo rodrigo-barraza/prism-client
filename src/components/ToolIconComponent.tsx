@@ -17,49 +17,34 @@ import styles from "./ToolIconComponent.module.css";
  *   className      — extra root class name
  */
 export default function ToolIconComponent({
-  // @ts-ignore
-  // @ts-ignore
-  toolDisplayNames: any,
-  // @ts-ignore
-  // @ts-ignore
-  toolApiNames: any,
+  toolDisplayNames,
+  toolApiNames,
   size = 12,
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-}) {
-  // @ts-ignore
-  // @ts-ignore
+  className,
+}: any) {
   if (!toolDisplayNames || toolDisplayNames.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
 
   // Collect raw names that don't map to known canonical icons → shown in FC tooltip
   const functionCallRawNames = [];
-  // @ts-ignore
   for (const raw of toolDisplayNames) {
-    // @ts-ignore
-    if (!TOOL_ICON_MAP[raw]) {
+    if (!(TOOL_ICON_MAP as any)[raw]) {
       functionCallRawNames.push(raw);
     }
   }
 
   // If toolApiNames provided, use those for the Tool Calling tooltip
   // (they're the actual function names like get_web_content, generate_image)
-  // @ts-ignore
   const fcRawDisplay = toolApiNames?.length
-    // @ts-ignore
     ? toolApiNames
     : functionCallRawNames;
 
   // De-duplicate and resolve unknown tools → "Tool Calling"
   const resolved = new Map();
-  // @ts-ignore
   for (const raw of toolDisplayNames) {
-    // @ts-ignore
-    if (TOOL_ICON_MAP[raw]) {
-      // @ts-ignore
-      if (!resolved.has(raw)) resolved.set(raw, TOOL_ICON_MAP[raw]);
+    if ((TOOL_ICON_MAP as any)[raw]) {
+      if (!resolved.has(raw)) resolved.set(raw, (TOOL_ICON_MAP as any)[raw]);
     } else {
       const fallbackIcon = TOOL_ICON_MAP["Tool Calling"] || Wrench;
       if (!resolved.has("Tool Calling")) {
@@ -69,9 +54,8 @@ export default function ToolIconComponent({
   }
 
   return (
-    // @ts-ignore
     <span className={`${styles.toolPills} ${className || ""}`}>
-      {[...resolved.entries()].map(([label, Icon]) => {
+      {[...resolved.entries()].map(([label, Icon]: any) => {
         // Build rich tooltip for "Tool Calling" showing actual tool names
         const tooltipLabel =
           label === "Tool Calling" && fcRawDisplay.length > 0
@@ -83,8 +67,7 @@ export default function ToolIconComponent({
             <span className={styles.toolPill}>
               <Icon
                 size={size}
-                // @ts-ignore
-                style={{ color: TOOL_COLORS[label] || "#f97316" }}
+                style={{ color: (TOOL_COLORS as any)[label] || "#f97316" }}
               />
             </span>
           </TooltipComponent>

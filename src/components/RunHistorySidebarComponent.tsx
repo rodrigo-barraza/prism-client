@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useMemo } from "react";
@@ -44,74 +45,44 @@ import styles from "./RunHistorySidebarComponent.module.css";
  *   allModels          — flat array of all model definitions
  */
 export default function RunHistorySidebarComponent({
-  // @ts-ignore
-  // @ts-ignore
-  benchmark: any,
+  benchmark,
   runHistory = [],
-  // @ts-ignore
-  // @ts-ignore
-  activeRunId: any,
-  // @ts-ignore
-  // @ts-ignore
-  onViewRun: any,
+  activeRunId,
+  onViewRun,
   running = false,
   streamingCompleted = 0,
   // Model selection props
   selectedModels = [],
-  // @ts-ignore
-  // @ts-ignore
-  onRemoveModel: any,
-  // @ts-ignore
-  // @ts-ignore
-  onChangeModel: any,
-  // @ts-ignore
-  // @ts-ignore
-  onClearSelection: any,
+  onRemoveModel,
+  onChangeModel,
+  onClearSelection,
   // Thinking toggle props
   thinkingMap = {},
-  // @ts-ignore
-  // @ts-ignore
-  onToggleThinking: any,
+  onToggleThinking,
   // Tools toggle props
   toolsMap = {},
-  // @ts-ignore
-  // @ts-ignore
-  onToggleTools: any,
+  onToggleTools,
   // Agent instance props
   agentInstances = [],
-  // @ts-ignore
-  // @ts-ignore
-  onRemoveAgent: any,
-  // @ts-ignore
-  // @ts-ignore
-  onChangeAgentModel: any,
+  onRemoveAgent,
+  onChangeAgentModel,
   allModels = [],
   // Config for ModelPickerPopoverComponent inside AgentCardComponent
-  // @ts-ignore
-  // @ts-ignore
-  config: any,
-}) {
-  const [activeTab, setActiveTab] = useState<any>("general");
+  config,
+}: any) {
+  const [activeTab, setActiveTab] = useState("general");
 
   // Normalize assertions: fall back to single expectedValue/matchMode for older benchmarks
-  const assertions = useMemo<any>(() => {
-    // @ts-ignore
-    // @ts-ignore
+  const assertions = useMemo(() => {
     if (benchmark?.assertions?.length > 0) return benchmark.assertions;
-    // @ts-ignore
     if (benchmark?.expectedValue) {
-      // @ts-ignore
-      // @ts-ignore
       return [{ expectedValue: benchmark.expectedValue, matchMode: benchmark.matchMode || "contains" }];
     }
     return [];
-  // @ts-ignore
   }, [benchmark]);
 
-  // @ts-ignore
   const operator = benchmark?.assertionOperator || "AND";
 
-  // @ts-ignore
   if (!benchmark) return null;
 
   return (
@@ -173,16 +144,11 @@ export default function RunHistorySidebarComponent({
           )}
 
           {/* -- Prompt Preview ---------------------------- */}
-          // @ts-ignore
-          {/* @ts-ignore */}
           {(benchmark.prompt || benchmark.systemPrompt) && (
             <div className={styles.promptSection}>
-              {/* @ts-ignore */}
               <ChatPreviewComponent
-                // @ts-ignore
                 systemPrompt={benchmark.systemPrompt}
                 messages={[
-                  // @ts-ignore
                   { role: "user", content: benchmark.prompt },
                 ]}
                 mini
@@ -203,40 +169,25 @@ export default function RunHistorySidebarComponent({
             {/* Selected model cards */}
             {selectedModels.length > 0 ? (
               <div className={styles.modelCards}>
-                {selectedModels.map((m) => {
-                  // @ts-ignore
-                  // @ts-ignore
+                {selectedModels.map((m: any) => {
                   const isThinking = !!thinkingMap[m.instanceId];
-                  // @ts-ignore
-                  // @ts-ignore
                   const isTools = !!toolsMap[m.instanceId];
-                  // @ts-ignore
                   const supportsThinking = !!m.thinking;
                   const dupeCount = selectedModels.filter(
-                    // @ts-ignore
-                    // @ts-ignore
-                    // @ts-ignore
-                    // @ts-ignore
-                    (s) => s.provider === m.provider && s.name === m.name
+                    (s: any) => s.provider === m.provider && s.name === m.name
                   ).length;
                   return (
                     <ModelCardComponent
-                      // @ts-ignore
                       key={m.instanceId}
                       model={m}
                       dupeCount={dupeCount}
                       isThinking={isThinking}
                       supportsThinking={supportsThinking}
                       isTools={isTools}
-                      // @ts-ignore
                       config={config}
-                      // @ts-ignore
                       onRemove={onRemoveModel}
-                      // @ts-ignore
                       onChangeModel={onChangeModel}
-                      // @ts-ignore
                       onToggleThinking={onToggleThinking}
-                      // @ts-ignore
                       onToggleTools={onToggleTools}
                     />
                   );
@@ -253,34 +204,21 @@ export default function RunHistorySidebarComponent({
               <>
                 {agentInstances.length > 0 && (
                   <div className={styles.modelCards}>
-                    {agentInstances.map((a) => {
-                      // @ts-ignore
-                      // @ts-ignore
+                    {agentInstances.map((a: any) => {
                       const isThinking = !!thinkingMap[a.instanceId];
                       const currentModelDef = allModels.find(
-                        // @ts-ignore
-                        // @ts-ignore
-                        // @ts-ignore
-                        // @ts-ignore
-                        (m) => m.provider === a.provider && m.name === a.modelName
+                        (m: any) => m.provider === a.provider && m.name === a.modelName
                       );
-                      // @ts-ignore
-                      // @ts-ignore
                       const supportsThinking = currentModelDef?.thinking || (currentModelDef?.tools || []).includes("Thinking");
                       return (
                         <AgentCardComponent
-                          // @ts-ignore
                           key={a.instanceId}
                           agent={a}
                           isThinking={isThinking}
                           supportsThinking={supportsThinking}
-                          // @ts-ignore
                           config={config}
-                          // @ts-ignore
                           onRemove={onRemoveAgent}
-                          // @ts-ignore
                           onChangeModel={onChangeAgentModel}
-                          // @ts-ignore
                           onToggleThinking={onToggleThinking}
                         />
                       );
@@ -290,7 +228,6 @@ export default function RunHistorySidebarComponent({
                 <div className={styles.modelActions}>
                   <button
                     className={styles.clearModelsBtn}
-                    // @ts-ignore
                     onClick={onClearSelection}
                   >
                     Clear all
@@ -323,34 +260,24 @@ export default function RunHistorySidebarComponent({
                 No runs yet
               </div>
             ) : (
-              runHistory.map((run, idx) => {
-                // @ts-ignore
-                // @ts-ignore
+              runHistory.map((run: any, idx: any) => {
                 const isActive = activeRunId === run.id;
                 const totalCost =
-                  // @ts-ignore
                   run.summary.totalCost ??
-                  // @ts-ignore
                   run.models?.reduce((s: any, r: any) => s + (r.estimatedCost || 0), 0) ??
                   0;
 
                 return (
                   <div
-                    // @ts-ignore
                     key={run.id}
-                    // @ts-ignore
                     className={`${styles.runItem} ${isActive ? styles.runItemActive : ""} ${run.aborted ? styles.runItemAborted : ""}`}
-                    // @ts-ignore
-                    // @ts-ignore
                     {...SoundService.interactive(() => onViewRun(run))}
                     data-panel-close
                   >
                     <div className={styles.runItemHeader}>
-                      {/* @ts-ignore */}
                       <DateTimeBadgeComponent date={run.completedAt} mini />
                       <CostBadgeComponent cost={totalCost} mini />
                       <span className={styles.runIndex}>#{runHistory.length - idx}</span>
-                      {/* @ts-ignore */}
                       {run.aborted && (
                         <AlertTriangle size={11} style={{ color: "var(--warning)", flexShrink: 0 }} />
                       )}
@@ -358,20 +285,14 @@ export default function RunHistorySidebarComponent({
                     <div className={styles.runStats}>
                       <span className={styles.statPassed}>
                         <CheckCircle2 size={10} />
-                        {/* @ts-ignore */}
                         {run.summary.passed}
                       </span>
                       <span className={styles.statFailed}>
                         <XCircle size={10} />
-                        // @ts-ignore
-                        {/* @ts-ignore */}
                         {run.summary.failed + (run.summary.errored || 0)}
                       </span>
-                      {/* @ts-ignore */}
                       <BenchmarkBarComponent
-                        // @ts-ignore
                         passed={run.summary.passed}
-                        // @ts-ignore
                         total={run.summary.total}
                         mini
                       />

@@ -188,16 +188,10 @@ const LOGOS = {
   ),
 };
 
-// @ts-ignore
-export default function ProviderLogo({ provider: any, size = 16, className = "" }) {
+export default function ProviderLogo({ provider, size = 16, className = "" }: any) {
   // Resolve multi-instance IDs (e.g. "lm-studio-2") to base type logo
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  const key = LOGOS[provider] ? provider : _resolveBaseTypeFromLogos(provider);
-  // @ts-ignore
-  const render = LOGOS[key];
+  const key = (LOGOS as any)[provider] ? provider : _resolveBaseTypeFromLogos(provider);
+  const render = (LOGOS as any)[key];
   if (!render) return null;
   return (
     <span
@@ -215,8 +209,7 @@ export default function ProviderLogo({ provider: any, size = 16, className = "" 
  */
 function _resolveBaseTypeFromLogos(id: any) {
   const match = id.match(/^(.+)-(\d+)$/);
-  // @ts-ignore
-  if (match && LOGOS[match[1]]) return match[1];
+  if (match && (LOGOS as any)[match[1]]) return match[1];
   return id;
 }
 
@@ -263,8 +256,7 @@ export function setLocalProviderMeta(providers: any) {
  * e.g. "lm-studio-2" → "lm-studio", "ollama" → "ollama"
  */
 function _resolveBaseType(id: any) {
-  // @ts-ignore
-  if (PROVIDER_LABELS[id]) return id;
+  if ((PROVIDER_LABELS as any)[id]) return id;
   // Check meta first (authoritative)
   const meta = _localMeta.get(id);
   if (meta) {
@@ -275,8 +267,7 @@ function _resolveBaseType(id: any) {
   }
   // Fallback: strip trailing "-N" suffix
   const match = id.match(/^(.+)-(\d+)$/);
-  // @ts-ignore
-  if (match && PROVIDER_LABELS[match[1]]) return match[1];
+  if (match && (PROVIDER_LABELS as any)[match[1]]) return match[1];
   return id;
 }
 
@@ -294,18 +285,14 @@ function _resolveBaseType(id: any) {
  */
 export function resolveProviderLabel(id: any) {
   // Direct match (base type or cloud)
-  // @ts-ignore
-  if (PROVIDER_LABELS[id]) {
+  if ((PROVIDER_LABELS as any)[id]) {
     const meta = _localMeta.get(id);
-    // @ts-ignore
-    if (meta?.nickname) return `${PROVIDER_LABELS[id]} (${meta.nickname})`;
-    // @ts-ignore
-    return PROVIDER_LABELS[id];
+    if (meta?.nickname) return `${(PROVIDER_LABELS as any)[id]} (${meta.nickname})`;
+    return (PROVIDER_LABELS as any)[id];
   }
 
   const baseType = _resolveBaseType(id);
-  // @ts-ignore
-  const baseName = PROVIDER_LABELS[baseType] || id;
+  const baseName = (PROVIDER_LABELS as any)[baseType] || id;
   const meta = _localMeta.get(id);
 
   if (meta?.nickname) return `${baseName} (${meta.nickname})`;
@@ -313,10 +300,8 @@ export function resolveProviderLabel(id: any) {
 
   // Fallback: parse the suffix number
   const match = id.match(/^(.+)-(\d+)$/);
-  // @ts-ignore
-  if (match && PROVIDER_LABELS[match[1]]) {
-    // @ts-ignore
-    return `${PROVIDER_LABELS[match[1]]} #${match[2]}`;
+  if (match && (PROVIDER_LABELS as any)[match[1]]) {
+    return `${(PROVIDER_LABELS as any)[match[1]]} #${match[2]}`;
   }
 
   return baseName;
@@ -329,7 +314,6 @@ export function resolveProviderLabel(id: any) {
  * @returns {string} Logo key for the LOGOS map
  */
 export function resolveProviderLogoKey(id: any) {
-  // @ts-ignore
-  if (LOGOS[id]) return id;
+  if ((LOGOS as any)[id]) return id;
   return _resolveBaseType(id);
 }

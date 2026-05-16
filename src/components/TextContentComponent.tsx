@@ -17,29 +17,20 @@ import styles from "./TextContentComponent.module.css";
  * @param {string}   [className] – Extra wrapper class
  */
 export default function TextContentComponent({
-  // @ts-ignore
-  // @ts-ignore
-  label: any,
+  label,
   value = "",
-  // @ts-ignore
-  // @ts-ignore
-  onChange: any,
+  onChange,
   readOnly = false,
   placeholder = "Enter text...",
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-}) {
-  const [preview, setPreview] = useState<any>(false);
+  className,
+}: any) {
+  const [preview, setPreview] = useState(false);
 
-  // @ts-ignore
   const isEditable = !!onChange && !readOnly;
 
   return (
-    // @ts-ignore
     <div className={`${styles.wrapper} ${className || ""}`}>
       <div className={styles.headerRow}>
-        {/* @ts-ignore */}
         <label className={styles.label}>{label}</label>
         <div className={styles.tabs}>
           <button
@@ -62,7 +53,6 @@ export default function TextContentComponent({
       {preview ? (
         <div className={styles.markdownPreview}>
           {value ? (
-            // @ts-ignore
             <MarkdownContent content={value} />
           ) : (
             <span className={styles.previewEmpty}>Nothing to preview</span>
@@ -74,7 +64,6 @@ export default function TextContentComponent({
           value={value}
           onChange={
             isEditable
-              // @ts-ignore
               ? (e: any) => onChange(e.target.value)
               : undefined
           }

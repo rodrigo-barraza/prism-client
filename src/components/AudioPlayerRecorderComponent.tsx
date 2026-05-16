@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -51,7 +52,6 @@ async function decodePeaks(src: any, numPeaks = 200) {
   try {
     const resp = await fetch(src);
     const buffer = await resp.arrayBuffer();
-    // @ts-ignore
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const decoded = await audioCtx.decodeAudioData(buffer);
     audioCtx.close();
@@ -68,7 +68,7 @@ async function decodePeaks(src: any, numPeaks = 200) {
       peaks.push(sum / blockSize);
     }
     const max = Math.max(...peaks, 0.01);
-    return { peaks: peaks.map((p) => p / max), duration: trueDuration };
+    return { peaks: peaks.map((p: any) => p / max), duration: trueDuration };
   } catch {
     return { peaks: new Array(numPeaks).fill(0.15), duration: null };
   }
@@ -80,22 +80,16 @@ async function decodePeaks(src: any, numPeaks = 200) {
  * - Recorder: pass `onRecordingComplete` → mic button / recording UI
  */
 export default function AudioPlayerRecorderComponent({
-  // @ts-ignore
-  // @ts-ignore
-  src: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRecordingComplete: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRemove: any,
+  src,
+  onRecordingComplete,
+  onRemove,
   compact = false,
   square = false,
   streaming = false,
-}) {
+}: any) {
   // --- Recorder state ---
-  const [isRecording, setIsRecording] = useState<any>(false);
-  const [recSeconds, setRecSeconds] = useState<any>(0);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recSeconds, setRecSeconds] = useState(0);
   const mediaRecorderRef = useRef<any>(null);
   const audioChunksRef = useRef<any>([]);
   const recTimerRef = useRef<any>(null);
@@ -108,21 +102,18 @@ export default function AudioPlayerRecorderComponent({
   // --- Player state ---
   const audioRef = useRef<any>(null);
   const playerCanvasRef = useRef<any>(null);
-  const [isPlaying, setIsPlaying] = useState<any>(false);
-  const [currentTime, setCurrentTime] = useState<any>(0);
-  const [duration, setDuration] = useState<any>(0);
-  const [volume, setVolume] = useState<any>(1);
-  const [muted, setMuted] = useState<any>(false);
-  const [peaks, setPeaks] = useState<any>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [muted, setMuted] = useState(false);
+  const [peaks, setPeaks] = useState(null);
   const playAnimRef = useRef<any>(null);
-  // @ts-ignore
   const prevSrcRef = useRef<any>(src);
 
   // -- Reset player state when src changes (prevents stale audio across conversations) --
   useEffect(() => {
-    // @ts-ignore
     if (prevSrcRef.current !== src) {
-      // @ts-ignore
       prevSrcRef.current = src;
       // Fully reset player state
       setIsPlaying(false);
@@ -132,13 +123,12 @@ export default function AudioPlayerRecorderComponent({
       // Reset the HTMLAudioElement to prevent zombie paused state
       const audio = audioRef.current;
       if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
+        (audio as any).pause();
+        (audio as any).currentTime = 0;
         // Force reload when src changes to clear internal media state
-        audio.load();
+        (audio as any).load();
       }
     }
-  // @ts-ignore
   }, [src]);
 
   // -- Cleanup on unmount — stop any playing audio --
@@ -147,8 +137,8 @@ export default function AudioPlayerRecorderComponent({
     const animRef = playAnimRef;
     return () => {
       if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
+        (audio as any).pause();
+        (audio as any).currentTime = 0;
       }
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
@@ -156,11 +146,9 @@ export default function AudioPlayerRecorderComponent({
 
   // -- Decode audio for playback waveform + true duration --
   useEffect(() => {
-    // @ts-ignore
     if (!src) return;
     let cancelled = false;
-    // @ts-ignore
-    decodePeaks(src).then(({ peaks: p, duration: d }) => {
+    decodePeaks(src).then(({ peaks: p, duration: d }: any) => {
       if (cancelled) return;
       setPeaks(p);
       // Use decoded duration as source of truth (WebM metadata often reports Infinity)
@@ -169,7 +157,6 @@ export default function AudioPlayerRecorderComponent({
     return () => {
       cancelled = true;
     };
-  // @ts-ignore
   }, [src]);
 
   // -- Draw / redraw player waveform --
@@ -191,7 +178,7 @@ export default function AudioPlayerRecorderComponent({
       return;
     }
     const tick = () => {
-      if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
+      if (audioRef.current) setCurrentTime((audioRef.current as any).currentTime);
       playAnimRef.current = requestAnimationFrame(tick);
     };
     tick();
@@ -207,7 +194,7 @@ export default function AudioPlayerRecorderComponent({
       animFrameRef.current = null;
     }
     if (audioCtxRef.current) {
-      audioCtxRef.current.close().catch(() => {});
+      (audioCtxRef.current as any).close().catch(() => {});
       audioCtxRef.current = null;
     }
     analyserRef.current = null;
@@ -218,14 +205,14 @@ export default function AudioPlayerRecorderComponent({
     const analyser = analyserRef.current;
     if (!canvas || !analyser) return;
 
-    const bufferLength = analyser.frequencyBinCount;
+    const bufferLength = (analyser as any).frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    const maxBars = Math.floor(canvas.width / (BAR_WIDTH + BAR_GAP));
+    const maxBars = Math.floor((canvas as any).width / (BAR_WIDTH + BAR_GAP));
     let frameCount = 0;
 
     const draw = () => {
       animFrameRef.current = requestAnimationFrame(draw);
-      analyser.getByteTimeDomainData(dataArray);
+      (analyser as any).getByteTimeDomainData(dataArray);
 
       // Only sample a new peak every ~4 frames (~15 peaks/sec at 60fps)
       frameCount++;
@@ -246,9 +233,9 @@ export default function AudioPlayerRecorderComponent({
       }
 
       // Redraw every frame for smoothness
-      const ctx = canvas.getContext("2d");
-      const w = canvas.width;
-      const h = canvas.height;
+      const ctx = (canvas as any).getContext("2d");
+      const w = (canvas as any).width;
+      const h = (canvas as any).height;
       ctx.clearRect(0, 0, w, h);
 
       const curPeaks = recPeaksRef.current;
@@ -293,7 +280,6 @@ export default function AudioPlayerRecorderComponent({
       recPeaksRef.current = [];
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // @ts-ignore
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const source = audioCtx.createMediaStreamSource(stream);
       const analyser = audioCtx.createAnalyser();
@@ -304,19 +290,17 @@ export default function AudioPlayerRecorderComponent({
 
       const recorder = new MediaRecorder(stream);
       audioChunksRef.current = [];
-      recorder.ondataavailable = (e) => {
+      recorder.ondataavailable = (e: any) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const reader = new FileReader();
-        reader.onload = (ev) => {
-          // @ts-ignore
-          // @ts-ignore
+        reader.onload = (ev: any) => {
           onRecordingComplete?.(ev.target.result);
         };
         reader.readAsDataURL(blob);
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((t: any) => t.stop());
       };
       mediaRecorderRef.current = recorder;
       recorder.start();
@@ -327,7 +311,7 @@ export default function AudioPlayerRecorderComponent({
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
+    (mediaRecorderRef.current as any)?.stop();
     setIsRecording(false);
     stopWaveform();
   };
@@ -336,34 +320,32 @@ export default function AudioPlayerRecorderComponent({
   const togglePlayback = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying) audio.pause();
-    else audio.play();
+    if (isPlaying) (audio as any).pause();
+    else (audio as any).play();
   };
 
   const handleCanvasSeek = (e: any) => {
     const canvas = playerCanvasRef.current;
     const audio = audioRef.current;
     if (!canvas || !audio || !duration) return;
-    const rect = canvas.getBoundingClientRect();
+    const rect = (canvas as any).getBoundingClientRect();
     const ratio = Math.max(
       0,
       Math.min(1, (e.clientX - rect.left) / rect.width),
     );
-    audio.currentTime = ratio * duration;
+    (audio as any).currentTime = ratio * duration;
     setCurrentTime(ratio * duration);
   };
 
   const toggleMute = () => {
     const next = !muted;
     setMuted(next);
-    if (audioRef.current) audioRef.current.muted = next;
+    if (audioRef.current) (audioRef.current as any).muted = next;
   };
 
   const handleDownload = () => {
-    // @ts-ignore
     if (!src) return;
     const a = document.createElement("a");
-    // @ts-ignore
     a.href = src;
     a.download = "audio.webm";
     document.body.appendChild(a);
@@ -374,14 +356,12 @@ export default function AudioPlayerRecorderComponent({
   // -------------------------------------------
   // MODE: Streaming (live audio indicator)
   // -------------------------------------------
-  // @ts-ignore
   if (streaming && !src) {
     return (
       <div
         className={`${styles.audioThumb} ${styles.audioStreaming} ${compact ? styles.audioCompact : ""}`}
       >
         <div className={styles.streamingCanvasWrap}>
-          {/* @ts-ignore */}
           <RainbowCanvasComponent turbo className={styles.streamingCanvas} />
         </div>
         <div className={styles.streamingOverlay}>
@@ -389,7 +369,7 @@ export default function AudioPlayerRecorderComponent({
             <Radio size={14} />
           </div>
           <div className={styles.streamingBars}>
-            {Array.from({ length: 24 }).map((_, i) => (
+            {Array.from({ length: 24 }).map((_: any, i: any) => (
               <span
                 key={i}
                 className={styles.streamingBar}
@@ -406,33 +386,26 @@ export default function AudioPlayerRecorderComponent({
   // -------------------------------------------
   // MODE: Playback
   // -------------------------------------------
-  // @ts-ignore
   if (src) {
     if (square) {
       return (
         <div
           className={styles.audioSquare}
-          onMouseDown={(e) => e.stopPropagation()}
+          onMouseDown={(e: any) => e.stopPropagation()}
         >
           <audio
             ref={audioRef}
-            // @ts-ignore
             src={src}
             preload="metadata"
-            onLoadedMetadata={(e) => {
-              // @ts-ignore
+            onLoadedMetadata={(e: any) => {
               if (Number.isFinite(e.target.duration))
-                // @ts-ignore
                 setDuration(e.target.duration);
             }}
-            onDurationChange={(e) => {
-              // @ts-ignore
+            onDurationChange={(e: any) => {
               if (Number.isFinite(e.target.duration))
-                // @ts-ignore
                 setDuration(e.target.duration);
             }}
-            // @ts-ignore
-            onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+            onTimeUpdate={(e: any) => setCurrentTime(e.target.currentTime)}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onEnded={() => setIsPlaying(false)}
@@ -478,23 +451,17 @@ export default function AudioPlayerRecorderComponent({
       >
         <audio
           ref={audioRef}
-          // @ts-ignore
           src={src}
           preload="metadata"
-          onLoadedMetadata={(e) => {
-            // @ts-ignore
+          onLoadedMetadata={(e: any) => {
             if (Number.isFinite(e.target.duration))
-              // @ts-ignore
               setDuration(e.target.duration);
           }}
-          onDurationChange={(e) => {
-            // @ts-ignore
+          onDurationChange={(e: any) => {
             if (Number.isFinite(e.target.duration))
-              // @ts-ignore
               setDuration(e.target.duration);
           }}
-          // @ts-ignore
-          onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+          onTimeUpdate={(e: any) => setCurrentTime(e.target.currentTime)}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
@@ -542,8 +509,8 @@ export default function AudioPlayerRecorderComponent({
               setVolume(val);
               setMuted(val === 0);
               if (audioRef.current) {
-                audioRef.current.volume = val;
-                audioRef.current.muted = val === 0;
+                (audioRef.current as any).volume = val;
+                (audioRef.current as any).muted = val === 0;
               }
             }}
             compact
@@ -559,12 +526,10 @@ export default function AudioPlayerRecorderComponent({
           <Download size={14} />
         </button>
 
-        {/* @ts-ignore */}
         {onRemove && (
           <button
             type="button"
             className={styles.iconBtn}
-            // @ts-ignore
             onClick={onRemove}
             title="Remove"
           >

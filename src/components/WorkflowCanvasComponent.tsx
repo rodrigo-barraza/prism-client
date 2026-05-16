@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -20,61 +21,33 @@ import { LS_WORKFLOW_EXPANDED_NODES, LS_WORKFLOW_VIEWS } from "../constants";
 const COLLISION_PADDING = 20; // min gap between nodes
 
 export default function WorkflowCanvas({
-  // @ts-ignore
-  // @ts-ignore
-  nodes: any,
-  // @ts-ignore
-  // @ts-ignore
-  connections: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateNodePosition: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDeleteNode: any,
-  // @ts-ignore
-  // @ts-ignore
-  onAddConnection: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDeleteConnection: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateNodeContent: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateNodeConfig: any,
-  // @ts-ignore
-  // @ts-ignore
-  onUpdateFileInput: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDuplicateNode: any,
+  nodes,
+  connections,
+  onUpdateNodePosition,
+  onDeleteNode,
+  onAddConnection,
+  onDeleteConnection,
+  onUpdateNodeContent,
+  onUpdateNodeConfig,
+  onUpdateFileInput,
+  onDuplicateNode,
   nodeStatuses = {},
   nodeResults = {},
-  // @ts-ignore
-  // @ts-ignore
-  selectedNodeId: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSelectNode: any,
-  // @ts-ignore
-  // @ts-ignore
-  activeWorkflowId: any,
+  selectedNodeId,
+  onSelectNode,
+  activeWorkflowId,
   readOnly = false,
   isLoadingWorkflow = false,
   sidebarVisible = true,
-  // @ts-ignore
-  // @ts-ignore
-  onToggleSidebar: any,
-}) {
+  onToggleSidebar,
+}: any) {
   const svgRef = useRef<any>(null);
   const containerRef = useRef<any>(null);
   const clipboardRef = useRef<any>(null);
-  const [dragging, setDragging] = useState<any>(null);
-  const [connecting, setConnecting] = useState<any>(null);
-  const [connectingMouse, setConnectingMouse] = useState<any>(null);
-  const [expandedInputs, setExpandedInputs] = useState<any>(() => {
+  const [dragging, setDragging] = useState(null);
+  const [connecting, setConnecting] = useState(null);
+  const [connectingMouse, setConnectingMouse] = useState(null);
+  const [expandedInputs, setExpandedInputs] = useState(() => {
     if (typeof window === "undefined") return new Set();
     try {
       const stored = localStorage.getItem(LS_WORKFLOW_EXPANDED_NODES);
@@ -92,55 +65,43 @@ export default function WorkflowCanvas({
     }
   };
 
-  const [pan, setPan] = useState<any>(() => {
-    // @ts-ignore
+  const [pan, setPan] = useState(() => {
     if (!activeWorkflowId || typeof window === "undefined")
       return { x: 0, y: 0 };
-    // @ts-ignore
     const saved = getStoredViews()[activeWorkflowId];
     return saved ? { x: saved.x, y: saved.y } : { x: 0, y: 0 };
   });
-  const [zoom, setZoom] = useState<any>(() => {
-    // @ts-ignore
+  const [zoom, setZoom] = useState(() => {
     if (!activeWorkflowId || typeof window === "undefined") return 1;
-    // @ts-ignore
     const saved = getStoredViews()[activeWorkflowId];
     return saved ? saved.zoom : 1;
   });
-  const [isPanning, setIsPanning] = useState<any>(false);
+  const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef<any>({ x: 0, y: 0, panX: 0, panY: 0 });
-  const [hoveredPort, setHoveredPort] = useState<any>(null);
-  // @ts-ignore
+  const [hoveredPort, setHoveredPort] = useState(null);
   const prevWorkflowIdRef = useRef<any>(activeWorkflowId);
 
   // Save current view whenever pan/zoom changes
   useEffect(() => {
-    // @ts-ignore
     if (!activeWorkflowId) return;
     const views = getStoredViews();
-    // @ts-ignore
     views[activeWorkflowId] = { x: pan.x, y: pan.y, zoom };
     try {
       localStorage.setItem(LS_WORKFLOW_VIEWS, JSON.stringify(views));
     } catch {
       /* ignore */
     }
-  // @ts-ignore
   }, [pan, zoom, activeWorkflowId]);
 
   // Restore view when switching workflows
 
   useEffect(() => {
-    // @ts-ignore
     if (activeWorkflowId !== prevWorkflowIdRef.current) {
-      // @ts-ignore
       const saved = getStoredViews()[activeWorkflowId];
       setPan(saved ? { x: saved.x, y: saved.y } : { x: 0, y: 0 }); // sync from localStorage
       setZoom(saved ? saved.zoom : 1); // sync from localStorage
-      // @ts-ignore
       prevWorkflowIdRef.current = activeWorkflowId;
     }
-  // @ts-ignore
   }, [activeWorkflowId]);
 
   const MIN_ZOOM = 0.2;
@@ -149,7 +110,7 @@ export default function WorkflowCanvas({
   // Convert screen coordinates to SVG coordinates
   const screenToSvg = useCallback(
     (clientX: any, clientY: any) => {
-      const rect = containerRef.current?.getBoundingClientRect();
+      const rect = (containerRef.current as any)?.getBoundingClientRect();
       if (!rect) return { x: clientX, y: clientY };
       return {
         x: (clientX - rect.left - pan.x) / zoom,
@@ -164,9 +125,7 @@ export default function WorkflowCanvas({
     (e: any, nodeId: any) => {
       if (e.button !== 0) return;
       e.stopPropagation();
-      // @ts-ignore
       onSelectNode?.(nodeId);
-      // @ts-ignore
       const node = nodes.find((n: any) => n.id === nodeId);
       if (!node) return;
       const svgPos = screenToSvg(e.clientX, e.clientY);
@@ -176,8 +135,6 @@ export default function WorkflowCanvas({
         offsetY: svgPos.y - node.position.y,
       });
     },
-    // @ts-ignore
-    // @ts-ignore
     [nodes, screenToSvg, onSelectNode],
   );
 
@@ -201,9 +158,7 @@ export default function WorkflowCanvas({
       if (e.touches.length !== 1) return;
       e.stopPropagation();
       e.preventDefault();
-      // @ts-ignore
       onSelectNode?.(nodeId);
-      // @ts-ignore
       const node = nodes.find((n: any) => n.id === nodeId);
       if (!node) return;
       const touch = e.touches[0];
@@ -215,8 +170,6 @@ export default function WorkflowCanvas({
         offsetY: svgPos.y - node.position.y,
       });
     },
-    // @ts-ignore
-    // @ts-ignore
     [nodes, screenToSvg, onSelectNode],
   );
 
@@ -235,7 +188,7 @@ export default function WorkflowCanvas({
       if (
         isContainerOrSvg ||
         isGridBg ||
-        (!isInsideInteractive && containerRef.current?.contains(el))
+        (!isInsideInteractive && (containerRef.current as any)?.contains(el))
       ) {
         setIsPanning(true);
         panStart.current = {
@@ -253,10 +206,9 @@ export default function WorkflowCanvas({
     (e: any) => {
       if (dragging) {
         const svgPos = screenToSvg(e.clientX, e.clientY);
-        // @ts-ignore
-        onUpdateNodePosition(dragging.nodeId, {
-          x: svgPos.x - dragging.offsetX,
-          y: svgPos.y - dragging.offsetY,
+        onUpdateNodePosition((dragging as any).nodeId, {
+          x: svgPos.x - (dragging as any).offsetX,
+          y: svgPos.y - (dragging as any).offsetY,
         });
       }
       if (connecting) {
@@ -270,15 +222,12 @@ export default function WorkflowCanvas({
         });
       }
     },
-    // @ts-ignore
     [dragging, connecting, isPanning, screenToSvg, onUpdateNodePosition],
   );
 
   // -- Collision repulsion via requestAnimationFrame (only while dragging) --
   // Keep refs to the latest values so the RAF loop always sees fresh state.
-  // @ts-ignore
   const nodesRef = useRef<any>(nodes);
-  // @ts-ignore
   const onUpdatePosRef = useRef<any>(onUpdateNodePosition);
   const draggingRef = useRef<any>(dragging);
   const expandedInputsRef = useRef<any>(expandedInputs);
@@ -287,14 +236,10 @@ export default function WorkflowCanvas({
   const collisionTickRef = useRef<any>(null);
 
   useEffect(() => {
-    // @ts-ignore
     nodesRef.current = nodes;
-  // @ts-ignore
   }, [nodes]);
   useEffect(() => {
-    // @ts-ignore
     onUpdatePosRef.current = onUpdateNodePosition;
-  // @ts-ignore
   }, [onUpdateNodePosition]);
   useEffect(() => {
     draggingRef.current = dragging;
@@ -323,7 +268,7 @@ export default function WorkflowCanvas({
 
     collisionTickRef.current = () => {
       const currentNodes = nodesRef.current;
-      const dragId = draggingRef.current?.nodeId || null;
+      const dragId = (draggingRef.current as any)?.nodeId || null;
       const updates = {};
 
       for (let a = 0; a < currentNodes.length; a++) {
@@ -351,57 +296,33 @@ export default function WorkflowCanvas({
               const push = overlapX * PUSH_FACTOR;
               const dir = bCx >= aCx ? 1 : -1;
               if (aIsDragged) {
-                // @ts-ignore
-                // @ts-ignore
-                if (!updates[nB.id]) updates[nB.id] = { ...nB.position };
-                // @ts-ignore
-                updates[nB.id].x += dir * push;
+                if (!(updates as any)[nB.id]) (updates as any)[nB.id] = { ...nB.position };
+                (updates as any)[nB.id].x += dir * push;
               } else if (bIsDragged) {
-                // @ts-ignore
-                // @ts-ignore
-                if (!updates[nA.id]) updates[nA.id] = { ...nA.position };
-                // @ts-ignore
-                updates[nA.id].x -= dir * push;
+                if (!(updates as any)[nA.id]) (updates as any)[nA.id] = { ...nA.position };
+                (updates as any)[nA.id].x -= dir * push;
               } else {
                 const half = push / 2;
-                // @ts-ignore
-                // @ts-ignore
-                if (!updates[nA.id]) updates[nA.id] = { ...nA.position };
-                // @ts-ignore
-                // @ts-ignore
-                if (!updates[nB.id]) updates[nB.id] = { ...nB.position };
-                // @ts-ignore
-                updates[nA.id].x -= dir * half;
-                // @ts-ignore
-                updates[nB.id].x += dir * half;
+                if (!(updates as any)[nA.id]) (updates as any)[nA.id] = { ...nA.position };
+                if (!(updates as any)[nB.id]) (updates as any)[nB.id] = { ...nB.position };
+                (updates as any)[nA.id].x -= dir * half;
+                (updates as any)[nB.id].x += dir * half;
               }
             } else {
               const push = overlapY * PUSH_FACTOR;
               const dir = bCy >= aCy ? 1 : -1;
               if (aIsDragged) {
-                // @ts-ignore
-                // @ts-ignore
-                if (!updates[nB.id]) updates[nB.id] = { ...nB.position };
-                // @ts-ignore
-                updates[nB.id].y += dir * push;
+                if (!(updates as any)[nB.id]) (updates as any)[nB.id] = { ...nB.position };
+                (updates as any)[nB.id].y += dir * push;
               } else if (bIsDragged) {
-                // @ts-ignore
-                // @ts-ignore
-                if (!updates[nA.id]) updates[nA.id] = { ...nA.position };
-                // @ts-ignore
-                updates[nA.id].y -= dir * push;
+                if (!(updates as any)[nA.id]) (updates as any)[nA.id] = { ...nA.position };
+                (updates as any)[nA.id].y -= dir * push;
               } else {
                 const half = push / 2;
-                // @ts-ignore
-                // @ts-ignore
-                if (!updates[nA.id]) updates[nA.id] = { ...nA.position };
-                // @ts-ignore
-                // @ts-ignore
-                if (!updates[nB.id]) updates[nB.id] = { ...nB.position };
-                // @ts-ignore
-                updates[nA.id].y -= dir * half;
-                // @ts-ignore
-                updates[nB.id].y += dir * half;
+                if (!(updates as any)[nA.id]) (updates as any)[nA.id] = { ...nA.position };
+                if (!(updates as any)[nB.id]) (updates as any)[nB.id] = { ...nB.position };
+                (updates as any)[nA.id].y -= dir * half;
+                (updates as any)[nB.id].y += dir * half;
               }
             }
           }
@@ -450,14 +371,10 @@ export default function WorkflowCanvas({
 
   // Resolve overlaps when a different workflow is loaded
   useEffect(() => {
-    // @ts-ignore
-    // @ts-ignore
     if (nodes.length > 0 && activeWorkflowId) {
       // Wait one frame for positions to settle, then run collision resolution
       setTimeout(() => startCollisionLoop(60), 80);
     }
-  // @ts-ignore
-  // @ts-ignore
   }, [activeWorkflowId, nodes.length, startCollisionLoop]);
 
   const handleMouseUp = useCallback(() => {
@@ -475,7 +392,7 @@ export default function WorkflowCanvas({
 
   const handleWheel = useCallback((e: any) => {
     e.preventDefault();
-    const rect = containerRef.current?.getBoundingClientRect();
+    const rect = (containerRef.current as any)?.getBoundingClientRect();
     if (!rect) return;
 
     const mouseX = e.clientX - rect.left;
@@ -500,11 +417,11 @@ export default function WorkflowCanvas({
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
     const container = containerRef.current;
-    container?.addEventListener("wheel", handleWheel, { passive: false });
+    (container as any)?.addEventListener("wheel", handleWheel, { passive: false });
 
     // -- Touch handlers --
     const handleTouchStart = (e: any) => {
-      if (!container?.contains(e.target)) return;
+      if (!(container as any)?.contains(e.target)) return;
 
       if (e.touches.length === 2) {
         // Pinch-zoom start
@@ -541,7 +458,7 @@ export default function WorkflowCanvas({
 
       if (t.type === "pinch" && e.touches.length === 2) {
         e.preventDefault();
-        const rect = container?.getBoundingClientRect();
+        const rect = (container as any)?.getBoundingClientRect();
         if (!rect) return;
         const newDist = getTouchDist(e.touches);
         const center = getTouchCenter(e.touches, rect);
@@ -568,10 +485,9 @@ export default function WorkflowCanvas({
       if (t.type === "drag" && dragging) {
         e.preventDefault();
         const svgPos = screenToSvg(touch.clientX, touch.clientY);
-        // @ts-ignore
-        onUpdateNodePosition(dragging.nodeId, {
-          x: svgPos.x - dragging.offsetX,
-          y: svgPos.y - dragging.offsetY,
+        onUpdateNodePosition((dragging as any).nodeId, {
+          x: svgPos.x - (dragging as any).offsetX,
+          y: svgPos.y - (dragging as any).offsetY,
         });
         return;
       }
@@ -604,7 +520,7 @@ export default function WorkflowCanvas({
       }
     };
 
-    container?.addEventListener("touchstart", handleTouchStart, {
+    (container as any)?.addEventListener("touchstart", handleTouchStart, {
       passive: false,
     });
     window.addEventListener("touchmove", handleTouchMove, { passive: false });
@@ -613,8 +529,8 @@ export default function WorkflowCanvas({
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
-      container?.removeEventListener("wheel", handleWheel);
-      container?.removeEventListener("touchstart", handleTouchStart);
+      (container as any)?.removeEventListener("wheel", handleWheel);
+      (container as any)?.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
     };
@@ -626,7 +542,6 @@ export default function WorkflowCanvas({
     dragging,
     isPanning,
     screenToSvg,
-    // @ts-ignore
     onUpdateNodePosition,
   ]);
 
@@ -639,10 +554,7 @@ export default function WorkflowCanvas({
         return;
 
       if ((e.ctrlKey || e.metaKey) && e.key === "c") {
-        // @ts-ignore
         if (!selectedNodeId) return;
-        // @ts-ignore
-        // @ts-ignore
         const node = nodes.find((n: any) => n.id === selectedNodeId);
         if (!node) return;
         clipboardRef.current = structuredClone(node);
@@ -651,16 +563,12 @@ export default function WorkflowCanvas({
       if ((e.ctrlKey || e.metaKey) && e.key === "v") {
         if (readOnly || !clipboardRef.current) return;
         e.preventDefault();
-        // @ts-ignore
         onDuplicateNode?.(clipboardRef.current);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   }, [selectedNodeId, nodes, onDuplicateNode, readOnly]);
 
   // Output port click — start edge (blocked in readOnly)
@@ -692,21 +600,19 @@ export default function WorkflowCanvas({
       if (!connecting) return;
 
       if (
-        getBaseModality(connecting.sourceModality) !== getBaseModality(modality)
+        getBaseModality((connecting as any).sourceModality) !== getBaseModality(modality)
       )
         return;
-      if (connecting.sourceNodeId === nodeId) return;
+      if ((connecting as any).sourceNodeId === nodeId) return;
 
-      // @ts-ignore
       const existingConn = connections.find(
         (c: any) => c.targetNodeId === nodeId && c.targetModality === modality,
       );
       if (existingConn) return;
 
-      // @ts-ignore
       onAddConnection({
-        sourceNodeId: connecting.sourceNodeId,
-        sourceModality: connecting.sourceModality,
+        sourceNodeId: (connecting as any).sourceNodeId,
+        sourceModality: (connecting as any).sourceModality,
         targetNodeId: nodeId,
         targetModality: modality,
       });
@@ -714,8 +620,6 @@ export default function WorkflowCanvas({
       setConnecting(null);
       setConnectingMouse(null);
     },
-    // @ts-ignore
-    // @ts-ignore
     [connecting, connections, onAddConnection, readOnly],
   );
 
@@ -752,25 +656,21 @@ export default function WorkflowCanvas({
   const handleToggleAllExpand = useCallback(() => {
     setExpandedInputs((prev: any) => {
       // Count how many nodes are currently expanded
-      // @ts-ignore
       const expandedCount = nodes.filter((n: any) => {
         if (n.nodeType === "viewer") return !prev.has(n.id);
         return prev.has(n.id);
       }).length;
-      // @ts-ignore
       const mostExpanded = expandedCount > nodes.length / 2;
 
       // If most are expanded → collapse all; otherwise expand all
       const next = new Set();
       if (!mostExpanded) {
         // Expand all: add non-viewers, remove viewers (inverted logic)
-        // @ts-ignore
         for (const n of nodes) {
           if (n.nodeType !== "viewer") next.add(n.id);
         }
       } else {
         // Collapse all: add viewers (inverted), remove non-viewers
-        // @ts-ignore
         for (const n of nodes) {
           if (n.nodeType === "viewer") next.add(n.id);
         }
@@ -787,14 +687,10 @@ export default function WorkflowCanvas({
     });
     // Resolve overlaps after React renders the new node sizes
     setTimeout(() => startCollisionLoop(60), 50);
-  // @ts-ignore
   }, [nodes, startCollisionLoop]);
 
   const allExpanded =
-    // @ts-ignore
     nodes.length > 0 &&
-    // @ts-ignore
-    // @ts-ignore
     nodes.filter((n: any) => isNodeExpanded(n)).length > nodes.length / 2;
 
   // Compute the vertical offset for a node's ports (used by edge routing)
@@ -814,9 +710,7 @@ export default function WorkflowCanvas({
 
   // Render edges
   const renderConnection = (conn: any) => {
-    // @ts-ignore
     const sourceNode = nodes.find((n: any) => n.id === conn.sourceNodeId);
-    // @ts-ignore
     const targetNode = nodes.find((n: any) => n.id === conn.targetNodeId);
     if (!sourceNode || !targetNode) return null;
 
@@ -843,21 +737,17 @@ export default function WorkflowCanvas({
       targetIndex,
       targetOffset,
     );
-    // @ts-ignore
-    const color = MODALITY_COLORS[conn.sourceModality] || "#888";
+    const color = (MODALITY_COLORS as any)[conn.sourceModality] || "#888";
 
-    // @ts-ignore
     const sourceStatus = nodeStatuses[conn.sourceNodeId];
     const isRunning = sourceStatus === "running";
     const isDone = sourceStatus === "done";
     const isActive = isRunning || isDone;
     const workflowIsRunning = Object.values(nodeStatuses).some(
-      (s) => s === "running",
+      (s: any) => s === "running",
     );
     const isEdgeSelected =
-      // @ts-ignore
       conn.sourceNodeId === selectedNodeId ||
-      // @ts-ignore
       conn.targetNodeId === selectedNodeId;
     const isEdgeFlowing = workflowIsRunning ? isRunning : isEdgeSelected;
 
@@ -873,7 +763,6 @@ export default function WorkflowCanvas({
           strokeWidth={12}
           fill="none"
           className={styles.connectionHitArea}
-          // @ts-ignore
           onClick={() => onSelectNode(conn.sourceNodeId)}
         />
         <path
@@ -900,9 +789,8 @@ export default function WorkflowCanvas({
           >
             <button
               className={styles.connectionDeleteBtn}
-              onClick={(e) => {
+              onClick={(e: any) => {
                 e.stopPropagation();
-                // @ts-ignore
                 onDeleteConnection(conn.id);
               }}
               title="Delete edge"
@@ -918,12 +806,11 @@ export default function WorkflowCanvas({
   // Render the "in-progress" edge line
   const renderConnectingLine = () => {
     if (!connecting || !connectingMouse) return null;
-    // @ts-ignore
-    const sourceNode = nodes.find((n: any) => n.id === connecting.sourceNodeId);
+    const sourceNode = nodes.find((n: any) => n.id === (connecting as any).sourceNodeId);
     if (!sourceNode) return null;
 
     const sourceIndex = (sourceNode.outputTypes || []).indexOf(
-      connecting.sourceModality,
+      (connecting as any).sourceModality,
     );
     if (sourceIndex === -1) return null;
 
@@ -934,16 +821,15 @@ export default function WorkflowCanvas({
       sourceIndex,
       srcOffset,
     );
-    // @ts-ignore
-    const color = MODALITY_COLORS[connecting.sourceModality] || "#888";
+    const color = (MODALITY_COLORS as any)[(connecting as any).sourceModality] || "#888";
 
     return (
       <path
         d={edgePath(
           sourcePos.x,
           sourcePos.y,
-          connectingMouse.x,
-          connectingMouse.y,
+          (connectingMouse as any).x,
+          (connectingMouse as any).y,
         )}
         stroke={color}
         strokeWidth={2}
@@ -961,14 +847,12 @@ export default function WorkflowCanvas({
       className={`${styles.canvas}${isPanning ? ` ${styles.panning}` : ""}`}
       onMouseDown={handleCanvasMouseDown}
     >
-      {/* @ts-ignore */}
       <StarfieldComponent
         className={styles.starfield}
         panX={pan.x}
         panY={pan.y}
       />
 
-      {/* @ts-ignore */}
       {nodes.length === 0 && !isLoadingWorkflow && (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>⟡</div>
@@ -1028,24 +912,18 @@ export default function WorkflowCanvas({
           </linearGradient>
         </defs>
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-          {/* @ts-ignore */}
           {connections.map(renderConnection)}
           {renderConnectingLine()}
-          {/* @ts-ignore */}
           {nodes.map((node: any) => (
             <WorkflowNode
               key={node.id}
               node={node}
-              // @ts-ignore
               status={nodeStatuses[node.id]}
-              // @ts-ignore
               results={nodeResults[node.id]}
-              // @ts-ignore
               isSelected={selectedNodeId === node.id}
               isExpanded={isNodeExpanded(node)}
               connecting={connecting}
               hoveredPort={hoveredPort}
-              // @ts-ignore
               connections={connections}
               nodeStatuses={nodeStatuses}
               onMouseDown={handleNodeMouseDown}
@@ -1054,16 +932,11 @@ export default function WorkflowCanvas({
               onOutputPortClick={handleOutputPortClick}
               onPortHover={setHoveredPort}
               onPortLeave={() => setHoveredPort(null)}
-              // @ts-ignore
               onDelete={readOnly ? undefined : onDeleteNode}
-              // @ts-ignore
               onUpdateContent={onUpdateNodeContent}
-              // @ts-ignore
               onUpdateConfig={onUpdateNodeConfig}
-              // @ts-ignore
               onUpdateFileInput={onUpdateFileInput}
               onToggleExpand={handleToggleExpand}
-              // @ts-ignore
               onSelectNode={onSelectNode}
               readOnly={readOnly}
             />
@@ -1071,14 +944,11 @@ export default function WorkflowCanvas({
         </g>
       </svg>
 
-      {/* @ts-ignore */}
       {nodes.length > 0 && (
         <div className={styles.canvasToolbar}>
-          {/* @ts-ignore */}
           {onToggleSidebar && (
             <button
               className={`${styles.toolbarBtn} ${sidebarVisible ? styles.toolbarBtnActive : ""}`}
-              // @ts-ignore
               onClick={onToggleSidebar}
               title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
             >
@@ -1101,7 +971,6 @@ export default function WorkflowCanvas({
         </div>
       )}
 
-      {/* @ts-ignore */}
       {nodes.length > 0 && !readOnly && (
         <div className={styles.instructions}>
           Click an <strong>output port</strong> then an{" "}

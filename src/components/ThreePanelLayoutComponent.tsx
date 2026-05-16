@@ -27,34 +27,25 @@ import { LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
  */
 export default function ThreePanelLayout({
   navSidebar = null,
-  // @ts-ignore
-  // @ts-ignore
-  leftPanel: any,
+  leftPanel,
   leftTitle = "Settings",
-  // @ts-ignore
-  // @ts-ignore
-  rightPanel: any,
-  // @ts-ignore
-  // @ts-ignore
-  rightTitle: any,
+  rightPanel,
+  rightTitle,
   sessionType = "conversation",
   headerTitle = "",
   headerMeta = null,
   headerControls = null,
   headerCenter = null,
   fileViewerPanel = null,
-  // @ts-ignore
-  // @ts-ignore
-  children: any,
-}) {
-  // @ts-ignore
+  children,
+}: any) {
   const resolvedRightTitle = rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
   // Start with panels hidden to prevent FOUC on mobile; mount effect opens them on desktop
-  const [showLeft, setShowLeft] = useState<any>(false);
-  const [showRight, setShowRight] = useState<any>(false);
-  const [hydrated, setHydrated] = useState<any>(false);
-  const [isMobile, setIsMobile] = useState<any>(false);
-  const [isNarrow, setIsNarrow] = useState<any>(false);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
 
   useEffect(() => {
     const mobile = window.innerWidth <= 1200;
@@ -193,7 +184,6 @@ export default function ThreePanelLayout({
             </div>
           )}
           {headerControls}
-          {/* @ts-ignore */}
           {rightPanel && (
             <button
               className={`${styles.headerToggle} ${!showRight ? styles.panelHidden : ""}`}
@@ -228,7 +218,6 @@ export default function ThreePanelLayout({
             {leftTitle && (
               <div className={styles.sidebarHeader}>{leftTitle}</div>
             )}
-            {/* @ts-ignore */}
             {leftPanel}
           </aside>
 
@@ -241,21 +230,18 @@ export default function ThreePanelLayout({
             data-chat-area
             onClick={handleMainClick}
           >
-            {/* @ts-ignore */}
             {children}
           </section>
 
 
 
           {/* Right Sidebar */}
-          {/* @ts-ignore */}
           {rightPanel && (
             <aside
               className={`${styles.rightSidebar} ${!showRight ? styles.sidebarHidden : ""}`}
               style={transitionStyle}
               onClick={handleSidebarClick(toggleRight)}
             >
-              {/* @ts-ignore */}
               {rightPanel}
             </aside>
           )}

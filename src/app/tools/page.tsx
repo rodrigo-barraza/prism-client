@@ -7,7 +7,6 @@ import styles from "./page.module.css";
 export default function ToolsPage() {
   return (
     <div className="page-wrapper">
-      {/* @ts-ignore */}
       <NavigationSidebarComponent mode="user" />
       <div className={styles.page}>
         <ToolsPageComponent />

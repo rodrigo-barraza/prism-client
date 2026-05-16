@@ -21,8 +21,7 @@ import styles from "./ModelToolsComponent.module.css";
  */
 const TOOL_DEFS = [
   { key: "thinking", label: "Thinking", icon: Brain, color: MODALITY_COLORS.thinking },
-  // @ts-ignore
-  { key: "functionCalling", label: "Function Calling", icon: Parentheses, color: TOOL_COLORS["Function Calling"] },
+  { key: "functionCalling", label: "Function Calling", icon: Parentheses, color: (TOOL_COLORS as any)["Function Calling"] },
   { key: "webSearch", label: "Web Search", icon: Globe, color: MODALITY_COLORS.webSearch },
   { key: "codeExecution", label: "Code Execution", icon: Terminal, color: MODALITY_COLORS.codeExecution },
   { key: "computerUse", label: "Computer Use", icon: Monitor, color: TOOL_COLORS["Computer Use"] },
@@ -44,26 +43,18 @@ const TOOL_DEFS = [
  *   className   — extra root class name
  */
 export default function ModelToolsComponent({
-  // @ts-ignore
-  // @ts-ignore
-  tools: any,
+  tools,
   size = 11,
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-}) {
-  // @ts-ignore
+  className,
+}: any) {
   if (!tools) return null;
 
-  // @ts-ignore
-  const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);
+  const activeTools = TOOL_DEFS.filter((t: any) => tools[t.key]);
   if (activeTools.length === 0) return null;
 
   return (
-    // @ts-ignore
     <div className={`${styles.toolsRow} ${className || ""}`}>
-      {activeTools.map((def) => {
-        // @ts-ignore
+      {activeTools.map((def: any) => {
         const raw = tools[def.key];
         const count = typeof raw === "number" ? raw : 0;
         const tooltipLabel = count > 1 ? `${def.label} — ×${count}` : def.label;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import {
@@ -40,81 +41,47 @@ import { IconButtonComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/co
  *   children      — optional extra content appended inside the row
  */
 export default function HistoryItemComponent({
-  // @ts-ignore
-  // @ts-ignore
-  item: any,
+  item,
   isActive = false,
-  // @ts-ignore
-  // @ts-ignore
-  onClick: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDelete: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDownload: any,
-  // @ts-ignore
-  // @ts-ignore
-  onCopy: any,
+  onClick,
+  onDelete,
+  onDownload,
+  onCopy,
 
   readOnly = false,
   admin = false,
   isNew = false,
   isFavorite = false,
-  // @ts-ignore
-  // @ts-ignore
-  onToggleFavorite: any,
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
+  onToggleFavorite,
+  className,
   dataPanelClose = false,
-  // @ts-ignore
-  // @ts-ignore
-  onOpenInNewTab: any,
+  onOpenInNewTab,
   isGenerating = false,
-  // @ts-ignore
-  // @ts-ignore
-  children: any,
-}) {
-  // @ts-ignore
-  // @ts-ignore
+  children,
+}: any) {
   const itemDate = item.updatedAt || item.createdAt;
-  // @ts-ignore
   const mod = item.modalities || {};
   const hasModalities = mod && Object.keys(mod).length > 0;
-  // @ts-ignore
-  // @ts-ignore
   const hasModel = item.modelNames?.length > 0 || item.modelName;
 
   return (
     <div
-      // @ts-ignore
       className={`${styles.item} ${isActive ? styles.active : ""} ${className || ""}`}
-      // @ts-ignore
-      // @ts-ignore
-      // @ts-ignore
       {...SoundService.interactive(() => onClick?.(item))}
       {...(dataPanelClose ? { "data-panel-close": true } : {})}
-      // @ts-ignore
-      onContextMenu={onOpenInNewTab ? (e) => {
+      onContextMenu={onOpenInNewTab ? (e: any) => {
         // Only show custom context on right-click of the main item area
         // (not on action buttons which have their own handlers)
-        // @ts-ignore
         if (e.target.closest(`.${styles.actions}`)) return;
         e.preventDefault();
-        // @ts-ignore
-        // @ts-ignore
         onOpenInNewTab(item);
       } : undefined}
     >
-      {/* @ts-ignore */}
       {onToggleFavorite && (
         <button
           className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ""}`}
-          onClick={(e) => {
+          onClick={(e: any) => {
             e.stopPropagation();
-            // @ts-ignore
-            // @ts-ignore
             onToggleFavorite(item.id);
           }}
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
@@ -127,40 +94,29 @@ export default function HistoryItemComponent({
         <div className={styles.topRow}>
           <div className={styles.topLeft}>
             <DateTimeBadgeComponent date={itemDate} />
-            // @ts-ignore
-            {/* @ts-ignore */}
             {admin && item.username && item.username !== "unknown" && (
-              // @ts-ignore
               <span className={styles.usernameTag}>{item.username}</span>
             )}
-            {/* @ts-ignore */}
             {item.tags?.map((tag: any) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>
                 {tag.label}
               </span>
             ))}
           </div>
-          {/* @ts-ignore */}
           <CostBadgeComponent cost={item.totalCost} showIcon={false} />
         </div>
 
         {/* Row 2: title */}
         <div className={styles.title}>
           {isGenerating && <span className={styles.generatingDot} />}
-          {/* @ts-ignore */}
           {item.title || "Untitled"}
           {isNew && <span className={styles.newBadge}>NEW</span>}
         </div>
 
         {/* Row 3: model badge */}
         {hasModel && (
-          // @ts-ignore
           <ModelBadgeComponent
-            // @ts-ignore
-            // @ts-ignore
-            // @ts-ignore
             models={item.modelNames?.length > 0 ? item.modelNames : [item.modelName]}
-            // @ts-ignore
             providers={item.providers}
             className={styles.modelBadge}
           />
@@ -169,54 +125,42 @@ export default function HistoryItemComponent({
         {/* Row 4: modalities (left) · tools (right) */}
         {hasModalities && (
           <div className={styles.bottomRow}>
-            {/* @ts-ignore */}
             <ModalityIconComponent modalities={mod} />
-            {/* @ts-ignore */}
             <ModelToolsRow tools={mod} variant="condensed" />
           </div>
         )}
 
-        {/* @ts-ignore */}
         {children}
       </div>
       {/* Actions */}
       <div className={styles.actions}>
-        {/* @ts-ignore */}
         {onDownload && (
           <IconButtonComponent
             icon={<Download size={12} />}
             onClick={(e: any) => {
               e.stopPropagation();
-              // @ts-ignore
-              // @ts-ignore
               onDownload(item.id);
             }}
             tooltip="Download"
             hoverReveal
           />
         )}
-        {/* @ts-ignore */}
         {onCopy && (
           <IconButtonComponent
             icon={<Copy size={12} />}
             onClick={(e: any) => {
               e.stopPropagation();
-              // @ts-ignore
-              // @ts-ignore
               onCopy(item.id);
             }}
             tooltip="Copy"
             hoverReveal
           />
         )}
-        {/* @ts-ignore */}
         {!readOnly && !admin && onDelete && (
           <IconButtonComponent
             icon={<Trash2 size={12} />}
             onClick={(e: any) => {
               e.stopPropagation();
-              // @ts-ignore
-              // @ts-ignore
               onDelete(item.id);
             }}
             tooltip="Delete"
@@ -224,14 +168,11 @@ export default function HistoryItemComponent({
             hoverReveal
           />
         )}
-        {/* @ts-ignore */}
         {onOpenInNewTab && (
           <IconButtonComponent
             icon={<ExternalLink size={12} />}
             onClick={(e: any) => {
               e.stopPropagation();
-              // @ts-ignore
-              // @ts-ignore
               onOpenInNewTab(item);
             }}
             tooltip="Open in New Tab"

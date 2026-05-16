@@ -4,8 +4,6 @@ export const metadata = {
     "Browse, compare, and filter AI models across all connected providers. View capabilities, modalities, and context windows.",
 };
 
-// @ts-ignore
-export default function ModelsLayout({ children: any }) {
-  // @ts-ignore
+export default function ModelsLayout({ children }: any) {
   return children;
 }

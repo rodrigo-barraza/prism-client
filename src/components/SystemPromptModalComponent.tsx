@@ -19,28 +19,19 @@ function saveInstructions(list: any) {
   localStorage.setItem(LS_SYSTEM_INSTRUCTIONS, JSON.stringify(list));
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function SystemPromptModal({ activePrompt: any, onApply: any, onClose: any }) {
-  const [instructions, setInstructions] = useState<any>(() => loadInstructions());
-  const [selectedId, setSelectedId] = useState<any>(() => {
+export default function SystemPromptModal({ activePrompt, onApply, onClose }: any) {
+  const [instructions, setInstructions] = useState(() => loadInstructions());
+  const [selectedId, setSelectedId] = useState(() => {
     const list = loadInstructions();
-    // @ts-ignore
     const match = list.find((i: any) => i.body === activePrompt);
     return match ? match.id : null;
   });
-  const [title, setTitle] = useState<any>(() => {
+  const [title, setTitle] = useState(() => {
     const list = loadInstructions();
-    // @ts-ignore
     const match = list.find((i: any) => i.body === activePrompt);
     return match ? match.title : "";
   });
-  // @ts-ignore
-  const [body, setBody] = useState<any>(activePrompt || "");
+  const [body, setBody] = useState(activePrompt || "");
   const saveTimerRef = useRef<any>(null);
 
   // Debounced auto-save
@@ -55,11 +46,9 @@ export default function SystemPromptModal({ activePrompt: any, onApply: any, onC
           saveInstructions(updated);
           return updated;
         });
-        // @ts-ignore
         onApply(newBody);
       }, 400);
     },
-    // @ts-ignore
     [onApply],
   );
 
@@ -76,7 +65,6 @@ export default function SystemPromptModal({ activePrompt: any, onApply: any, onC
       setSelectedId(newId);
       setTitle("");
       setBody("");
-      // @ts-ignore
       onApply("");
       return;
     }
@@ -85,7 +73,6 @@ export default function SystemPromptModal({ activePrompt: any, onApply: any, onC
       setSelectedId(found.id);
       setTitle(found.title);
       setBody(found.body);
-      // @ts-ignore
       onApply(found.body);
     }
   };
@@ -123,7 +110,6 @@ export default function SystemPromptModal({ activePrompt: any, onApply: any, onC
         return updated;
       });
       setSelectedId(newId);
-      // @ts-ignore
       onApply(val);
     }
   };
@@ -138,7 +124,6 @@ export default function SystemPromptModal({ activePrompt: any, onApply: any, onC
     setSelectedId(null);
     setTitle("");
     setBody("");
-    // @ts-ignore
     onApply("");
   };
 
@@ -156,7 +141,6 @@ export default function SystemPromptModal({ activePrompt: any, onApply: any, onC
   ];
 
   return (
-    // @ts-ignore
     <ModalComponent title="System Instructions" onClose={onClose} size="md" className={styles.modal}>
       <div className={styles.body}>
         <div className={styles.field}>

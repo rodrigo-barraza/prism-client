@@ -49,12 +49,8 @@ const TOOL_SHORT_NAMES = {
  * @param {"default"|"compact"|"condensed"} variant
  */
 function resolveDisplayName(name: any, variant = "default") {
-  // @ts-ignore
-  // @ts-ignore
-  if (variant === "condensed" && TOOL_SHORT_NAMES[name]) return TOOL_SHORT_NAMES[name];
-  // @ts-ignore
-  // @ts-ignore
-  if (TOOL_DISPLAY_NAMES[name]) return TOOL_DISPLAY_NAMES[name];
+  if (variant === "condensed" && (TOOL_SHORT_NAMES as any)[name]) return (TOOL_SHORT_NAMES as any)[name];
+  if ((TOOL_DISPLAY_NAMES as any)[name]) return (TOOL_DISPLAY_NAMES as any)[name];
   // Fallback: title-case via shared utility
   return renderToolName(name);
 }
@@ -74,29 +70,19 @@ function resolveDisplayName(name: any, variant = "default") {
  *   tooltip — optional tooltip override (defaults to raw name)
  */
 export default function ToolBadgeComponent({
-  // @ts-ignore
-  // @ts-ignore
-  name: any,
-  // @ts-ignore
-  // @ts-ignore
-  count: any,
-  // @ts-ignore
-  // @ts-ignore
-  active: any,
+  name,
+  count,
+  active,
   variant = "default",
-  // @ts-ignore
-  // @ts-ignore
-  tooltip: any,
-}) {
+  tooltip,
+}: any) {
   const isCompact = variant === "compact";
   const displayName = resolveDisplayName(name, variant);
   const { Icon, color } = resolveToolVisuals(name);
-  // @ts-ignore
   const tooltipLabel = tooltip || name;
 
   const badge = (
     <span
-      // @ts-ignore
       className={`${styles.badge}${active ? ` ${styles.badgeActive}` : ""}`}
       style={{
         color,
@@ -105,10 +91,7 @@ export default function ToolBadgeComponent({
     >
       <Icon size={10} />
       {!isCompact && <span className={styles.label}>{displayName}</span>}
-      // @ts-ignore
-      {/* @ts-ignore */}
       {count != null && count > 1 && (
-        // @ts-ignore
         <span className={styles.count}>×{count}</span>
       )}
     </span>
@@ -130,28 +113,14 @@ export default function ToolBadgeComponent({
  * ToolBadgeRow — renders a row of tool badges from a { toolName: count } map.
  * Used in MessageList for worker tool activity.
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export function ToolBadgeRow({ tools: any, activeTool: any, variant: any }) {
-  // @ts-ignore
-  // @ts-ignore
+export function ToolBadgeRow({ tools, activeTool, variant }: any) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
     <div className={styles.badgeRow}>
-      {/* @ts-ignore */}
       {Object.entries(tools)
-        // @ts-ignore
-        // @ts-ignore
-        .sort(([, a], [, b]) => b - a)
-        .map(([name, count]) => (
-          // @ts-ignore
-          // @ts-ignore
-          // @ts-ignore
+        .sort(([, a]: any, [, b]: any) => b - a)
+        .map(([name, count]: any) => (
           <ToolBadgeComponent key={name} name={name} count={count} active={name === activeTool} variant={variant} />
         ))}
     </div>
@@ -189,38 +158,26 @@ const TOOL_DEFS = [
  *   className — extra root class name
  */
 export function ModelToolsRow({
-  // @ts-ignore
-  // @ts-ignore
-  tools: any,
-  // @ts-ignore
-  // @ts-ignore
-  variant: any,
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-}) {
-  // @ts-ignore
+  tools,
+  variant,
+  className,
+}: any) {
   if (!tools) return null;
 
-  // @ts-ignore
-  const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);
+  const activeTools = TOOL_DEFS.filter((t: any) => tools[t.key]);
   if (activeTools.length === 0) return null;
 
   return (
-    // @ts-ignore
     <div className={`${styles.badgeRow} ${className || ""}`}>
-      {activeTools.map((def) => {
-        // @ts-ignore
+      {activeTools.map((def: any) => {
         const raw = tools[def.key];
         const count = typeof raw === "number" ? raw : 0;
 
         return (
-          // @ts-ignore
           <ToolBadgeComponent
             key={def.key}
             name={def.name}
             count={count}
-            // @ts-ignore
             variant={variant}
           />
         );

@@ -24,28 +24,23 @@ function easeOutCubic(t: any) {
  * @param {boolean} [mini]
  */
 export default function TokenCountBadgeComponent({
-  // @ts-ignore
-  value: any,
+  value,
   label = "tokens",
   showIcon = true,
   className = "",
   mini = false,
-}) {
+}: any) {
   const prevRef = useRef<any>(null);
   const rafRef = useRef<any>(null);
-  // @ts-ignore
-  const [displayValue, setDisplayValue] = useState<any>(value);
+  const [displayValue, setDisplayValue] = useState(value);
 
   useEffect(() => {
     const from = prevRef.current;
-    // @ts-ignore
     prevRef.current = value;
 
     // First mount or same value — nothing to animate
-    // @ts-ignore
     if (from === null || from === value) return;
 
-    // @ts-ignore
     const delta = value - from;
     const start = performance.now();
 
@@ -65,17 +60,12 @@ export default function TokenCountBadgeComponent({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  // @ts-ignore
   }, [value]);
 
-  // @ts-ignore
-  // @ts-ignore
   if (!value || value <= 0) return null;
 
   // Derive tweening state — avoids synchronous setState in effect
-  // @ts-ignore
   const tweening = displayValue !== value;
-  // @ts-ignore
   const tooltipLabel = `${value.toLocaleString()} tokens ${label}`;
 
   return (

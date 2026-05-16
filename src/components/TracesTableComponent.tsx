@@ -40,25 +40,13 @@ export default function TracesTableComponent({
   emptyText = "No traces",
   compact = false,
   mini = false,
-  // @ts-ignore
-  // @ts-ignore
-  title: any,
-  // @ts-ignore
-  // @ts-ignore
-  maxHeight: any,
-  // @ts-ignore
-  // @ts-ignore
-  sortKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  sortDir: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSort: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRequestRowClick: any,
-}) {
+  title,
+  maxHeight,
+  sortKey,
+  sortDir,
+  onSort,
+  onRequestRowClick,
+}: any) {
   const SESSION_COLUMNS = [
     traceIdColumn(),
     projectColumn(),
@@ -78,14 +66,14 @@ export default function TracesTableComponent({
   ];
 
   // Remove costShare for traces — not useful without a global total
-  const allColumns = SESSION_COLUMNS.filter((c) => c.key !== "costShare");
+  const allColumns = SESSION_COLUMNS.filter((c: any) => c.key !== "costShare");
 
   const COMPACT_KEYS = [
     "id", "project", "username",
     "requestCount", "totalCost", "createdAt", "duration",
   ];
   const columns = compact
-    ? allColumns.filter((c) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (
@@ -93,28 +81,21 @@ export default function TracesTableComponent({
       columns={columns}
       data={traces}
       getRowKey={(s: any, i: any) => s.id || `trace-${i}`}
-      // @ts-ignore
       sortKey={sortKey}
-      // @ts-ignore
       sortDir={sortDir}
-      // @ts-ignore
       onSort={onSort}
       renderExpandedContent={(trace: any) => (
         <div className={styles.expandedPanels}>
-          {/* @ts-ignore */}
           <RequestsTableComponent
             requests={trace.requests || []}
             emptyText="No requests"
             title="Requests"
-            // @ts-ignore
             onRowClick={onRequestRowClick}
           />
         </div>
       )}
       emptyText={emptyText}
-      // @ts-ignore
       title={title}
-      // @ts-ignore
       maxHeight={maxHeight}
       mini={mini}
       storageKey="traces"

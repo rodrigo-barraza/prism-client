@@ -15,27 +15,19 @@ import { DrawerComponent } from "@rodrigo-barraza/components-library";
  * @param {React.ReactNode} [children] — additional content rendered after sections
  */
 export default function RequestDetailsComponent({
-  // @ts-ignore
-  // @ts-ignore
-  open: any,
-  // @ts-ignore
-  // @ts-ignore
-  onClose: any,
+  open,
+  onClose,
   title = "Detail",
   sections = [],
-  // @ts-ignore
-  // @ts-ignore
-  children: any,
-}) {
+  children,
+}: any) {
   return (
     <DrawerComponent
       open={open}
-      // @ts-ignore
       onClose={onClose}
       title={title}
       sections={sections}
     >
-      {/* @ts-ignore */}
       {children}
     </DrawerComponent>
   );

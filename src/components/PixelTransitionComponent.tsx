@@ -29,24 +29,16 @@ export default function PixelTransitionComponent({
   phase = null,
   duration = 3000,
   maxBlockSize = 24,
-  // @ts-ignore
-  // @ts-ignore
-  onComplete: any,
-  // @ts-ignore
-  // @ts-ignore
-  targetRef: any,
-}) {
+  onComplete,
+  targetRef,
+}: any) {
   const rafRef = useRef<any>(null);
   const startTimeRef = useRef<any>(null);
   const lastBlockRef = useRef<any>(0);
   const filterCacheRef = useRef<any>(new Map());
 
   // Latest props always available inside the rAF closure
-  // @ts-ignore
-  // @ts-ignore
   const propsRef = useRef<any>({ phase, duration, maxBlockSize, onComplete, targetRef });
-  // @ts-ignore
-  // @ts-ignore
   propsRef.current = { phase, duration, maxBlockSize, onComplete, targetRef };
 
   /** Ease-out cubic — fast initial ramp, decelerates toward end */
@@ -145,7 +137,6 @@ export default function PixelTransitionComponent({
   useEffect(() => {
     if (!phase) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      // @ts-ignore
       const el = targetRef?.current;
       if (el) {
         el.style.filter = "";
@@ -157,7 +148,6 @@ export default function PixelTransitionComponent({
     }
 
     // Promote to compositor layer before the first frame
-    // @ts-ignore
     const el = targetRef?.current;
     if (el) {
       el.style.willChange = "filter";

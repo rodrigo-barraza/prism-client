@@ -7,9 +7,7 @@ import BenchmarkSidebarComponent from "../../components/BenchmarkSidebarComponen
 export default function BenchmarksPage() {
   return (
     <BenchmarkDashboardComponent
-      // @ts-ignore
       navSidebar={<NavigationSidebarComponent mode="user" />}
-      // @ts-ignore
       rightSidebar={<BenchmarkSidebarComponent />}
     />
   );

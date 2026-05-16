@@ -4,8 +4,6 @@ export const metadata = {
     "GPU memory profiling for locally-served models — measured vs. estimated VRAM consumption.",
 };
 
-// @ts-ignore
-export default function VramBenchmarkLayout({ children: any }) {
-  // @ts-ignore
+export default function VramBenchmarkLayout({ children }: any) {
   return children;
 }

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -37,9 +38,7 @@ function generateFrames() {
         const t = (x / cols + y / rows) * 0.5 + offset;
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(RAINBOW, t + dither);
-        // @ts-ignore
         ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
-        // @ts-ignore
         ctx.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
       }
     }
@@ -55,20 +54,17 @@ function changeFavicon(src: any) {
   if (!link) {
     link = document.createElement("link");
     link.id = "dynamic-favicon";
-    // @ts-ignore
-    link.rel = "icon";
-    // @ts-ignore
-    link.type = "image/png";
+    (link as any).rel = "icon";
+    (link as any).type = "image/png";
     document.head.appendChild(link);
   }
-  // @ts-ignore
-  link.href = src;
+  (link as any).href = src;
 
   // Remove any static favicon <link> so browsers don't show a stale .ico
   const oldLinks = document.querySelectorAll(
     'link[rel="icon"]:not(#dynamic-favicon), link[rel="shortcut icon"]:not(#dynamic-favicon)',
   );
-  oldLinks.forEach((el) => el.remove());
+  oldLinks.forEach((el: any) => el.remove());
 }
 
 export default function AnimatedFaviconComponent() {

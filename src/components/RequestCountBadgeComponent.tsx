@@ -23,27 +23,22 @@ function easeOutCubic(t: any) {
  * @param {boolean} [mini]
  */
 export default function RequestCountBadgeComponent({
-  // @ts-ignore
-  count: any,
+  count,
   showIcon = true,
   className = "",
   mini = false,
-}) {
+}: any) {
   const prevRef = useRef<any>(null);
   const rafRef = useRef<any>(null);
-  // @ts-ignore
-  const [displayCount, setDisplayCount] = useState<any>(count);
+  const [displayCount, setDisplayCount] = useState(count);
 
   useEffect(() => {
     const from = prevRef.current;
-    // @ts-ignore
     prevRef.current = count;
 
     // First mount or same value — nothing to animate
-    // @ts-ignore
     if (from === null || from === count) return;
 
-    // @ts-ignore
     const delta = count - from;
     const start = performance.now();
 
@@ -63,18 +58,13 @@ export default function RequestCountBadgeComponent({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  // @ts-ignore
   }, [count]);
 
-  // @ts-ignore
-  // @ts-ignore
   if (!count || count <= 0) return null;
 
   // Derive tweening state — avoids synchronous setState in effect
-  // @ts-ignore
   const tweening = displayCount !== count;
   const suffix = displayCount !== 1 ? "requests" : "request";
-  // @ts-ignore
   const tooltipLabel = `${count.toLocaleString()} API ${suffix}`;
 
   return (

@@ -23,29 +23,23 @@ export const BENCHMARK_MODES = [
  * @param {string}   value    — Current mode ("model" | "agent" | "combined")
  * @param {Function} onChange — (mode) => void
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function BenchmarkModeSelector({ value: any, onChange: any }) {
+export default function BenchmarkModeSelector({ value, onChange }: any) {
   const containerRef = useRef<any>(null);
   const [pillStyle, setPillStyle] = useState<any>({});
 
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;
-    // @ts-ignore
-    const idx = BENCHMARK_MODES.findIndex((m) => m.value === value);
-    const buttons = containerRef.current.querySelectorAll(`.${styles.option}`);
+    const idx = BENCHMARK_MODES.findIndex((m: any) => m.value === value);
+    const buttons = (containerRef.current as any).querySelectorAll(`.${styles.option}`);
     if (!buttons[idx]) return;
 
-    const containerRect = containerRef.current.getBoundingClientRect();
+    const containerRect = (containerRef.current as any).getBoundingClientRect();
     const btnRect = buttons[idx].getBoundingClientRect();
 
     setPillStyle({
       transform: `translateX(${btnRect.left - containerRect.left}px)`,
       width: `${btnRect.width}px`,
     });
-  // @ts-ignore
   }, [value]);
 
   useEffect(() => {
@@ -54,23 +48,20 @@ export default function BenchmarkModeSelector({ value: any, onChange: any }) {
     return () => window.removeEventListener("resize", updatePill);
   }, [updatePill]);
 
-  // @ts-ignore
-  const activeMode = BENCHMARK_MODES.find((m) => m.value === value);
+  const activeMode = BENCHMARK_MODES.find((m: any) => m.value === value);
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.container} ref={containerRef}>
         <div className={styles.pill} style={pillStyle} />
-        {BENCHMARK_MODES.map((mode) => {
+        {BENCHMARK_MODES.map((mode: any) => {
           const Icon = mode.icon;
-          // @ts-ignore
           const isActive = mode.value === value;
           return (
             <button
               key={mode.value}
               type="button"
               className={`${styles.option} ${isActive ? styles.active : ""}`}
-              // @ts-ignore
               onClick={() => onChange(mode.value)}
               title={mode.description}
             >

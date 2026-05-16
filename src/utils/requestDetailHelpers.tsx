@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * requestDetailHelpers.js — Shared helpers for the request detail drawer
  * used by both /admin/requests and /admin/traces pages.
@@ -33,7 +34,6 @@ import { prepareDisplayMessages } from "../components/MessageListComponent";
  */
 export function extractMediaAssets(obj: any) {
   const seen = new Set();
-  // @ts-ignore
   const assets = [];
   const search = (node: any, origin: any) => {
     if (!node) return;
@@ -51,7 +51,6 @@ export function extractMediaAssets(obj: any) {
       } else if (node.startsWith("http://") || node.startsWith("https://")) {
         const ext = node.split("?")[0].split(".").pop()?.toLowerCase();
         if (
-          // @ts-ignore
           ["png", "jpg", "jpeg", "gif", "webp", "mp3", "wav", "ogg", "webm", "mp4", "mov", "avi", "pdf"].includes(ext)
         ) {
           seen.add(node);
@@ -59,14 +58,13 @@ export function extractMediaAssets(obj: any) {
         }
       }
     } else if (Array.isArray(node)) {
-      node.forEach((n) => search(n, origin));
+      node.forEach((n: any) => search(n, origin));
     } else if (typeof node === "object") {
-      Object.values(node).forEach((n) => search(n, origin));
+      Object.values(node).forEach((n: any) => search(n, origin));
     }
   };
   search(obj?.requestPayload, "user");
   search(obj?.responsePayload, "ai");
-  // @ts-ignore
   return assets;
 }
 
@@ -150,16 +148,13 @@ export function buildRequestDetailSections(req: any) {
         {
           label: "Provider",
           value: req.provider ? (
-            // @ts-ignore
             <ProvidersBadgeComponent providers={[req.provider]} />
           ) : "-",
         },
-        // @ts-ignore
         { label: "Model", value: req.model ? <ModelBadgeComponent models={[req.model]} provider={req.provider} /> : "-" },
         {
           label: "Modalities",
           value: req.modalities ? (
-            // @ts-ignore
             <ModalityIconComponent modalities={req.modalities} size={14} />
           ) : "-",
         },
@@ -176,7 +171,6 @@ export function buildRequestDetailSections(req: any) {
         {
           label: "Tools",
           value: req.toolDisplayNames?.length ? (
-            // @ts-ignore
             <ToolIconComponent
               toolDisplayNames={req.toolDisplayNames}
               toolApiNames={req.toolApiNames}
@@ -278,21 +272,18 @@ export function buildRequestDetailSections(req: any) {
         {
           label: "Time to Generation",
           value: req.timeToGeneration > 0
-            // @ts-ignore
             ? <StopwatchBadgeComponent seconds={req.timeToGeneration} />
             : formatLatency(req.timeToGeneration),
         },
         {
           label: "Generation Time",
           value: req.generationTime > 0
-            // @ts-ignore
             ? <StopwatchBadgeComponent seconds={req.generationTime} />
             : formatLatency(req.generationTime),
         },
         {
           label: "Total Time",
           value: req.totalTime > 0
-            // @ts-ignore
             ? <StopwatchBadgeComponent seconds={req.totalTime} />
             : formatLatency(req.totalTime),
         },
@@ -373,8 +364,7 @@ export function reconstructChatMessages(selectedRequest: any) {
       resPayload.choices?.[0]?.message?.tool_calls ||
       resPayload.toolCalls;
     if (toolCalls?.length) {
-      // @ts-ignore
-      assistantMsg.toolCalls = toolCalls.map((tc: any) => ({
+      (assistantMsg as any).toolCalls = toolCalls.map((tc: any) => ({
         id: tc.id,
         name: tc.function?.name || tc.name,
         args:
@@ -386,25 +376,21 @@ export function reconstructChatMessages(selectedRequest: any) {
 
     // Extract generated images
     if (resPayload.images?.length) {
-      // @ts-ignore
-      assistantMsg.images = resPayload.images;
+      (assistantMsg as any).images = resPayload.images;
     }
 
     // Extract thinking content
     if (resPayload.thinking) {
-      // @ts-ignore
-      assistantMsg.thinking = resPayload.thinking;
+      (assistantMsg as any).thinking = resPayload.thinking;
     }
 
-    // @ts-ignore
-    // @ts-ignore
-    if (assistantMsg.content || assistantMsg.toolCalls?.length || assistantMsg.images?.length) {
+    if (assistantMsg.content || (assistantMsg as any).toolCalls?.length || (assistantMsg as any).images?.length) {
       chatMessages.push(assistantMsg);
     }
   }
 
   const messages = prepareDisplayMessages(chatMessages);
-  const systemPrompt = chatMessages.find((m) => m.role === "system")?.content;
+  const systemPrompt = chatMessages.find((m: any) => m.role === "system")?.content;
   if (!messages.length) return null;
 
   return { messages, systemPrompt };

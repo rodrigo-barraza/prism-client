@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useEffect } from "react";
@@ -13,7 +14,6 @@ export default function AdminMediaPage() {
 
   useEffect(() => {
     setControls(
-      // @ts-ignore
       <SelectComponent
         value={projectFilter || ""}
         options={projectOptions}
@@ -25,9 +25,7 @@ export default function AdminMediaPage() {
 
   useEffect(() => {
     return () => {
-      // @ts-ignore
       setControls(null);
-      // @ts-ignore
       setTitleBadge(null);
     };
   }, [setControls, setTitleBadge]);

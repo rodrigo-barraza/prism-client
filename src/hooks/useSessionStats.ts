@@ -20,16 +20,16 @@ import {
  * @returns {{ uniqueModels, totalCost, totalTokens, requestCount, usedTools, modalities, elapsedTime }}
  */
 export default function useSessionStats(messages: any) {
-  const uniqueModels = useMemo<any>(() => getUniqueModels(messages), [messages]);
-  const uniqueProviders = useMemo<any>(() => getUniqueProviders(messages), [messages]);
-  const totalCost = useMemo<any>(() => getSessionCost(messages), [messages]);
-  const { totalTokens, requestCount, liveStreamingTokens, liveStreamingStartTime, liveStreamingLastChunkTime, liveStreamingBurstTokens, liveStreamingBurstElapsed, workerGenerationProgress, lastTimeToGeneration, liveProcessingStartTime, liveProcessingPhase, liveTtftSamples, liveGenProgress } = useMemo<any>(
+  const uniqueModels = useMemo(() => getUniqueModels(messages), [messages]);
+  const uniqueProviders = useMemo(() => getUniqueProviders(messages), [messages]);
+  const totalCost = useMemo(() => getSessionCost(messages), [messages]);
+  const { totalTokens, requestCount, liveStreamingTokens, liveStreamingStartTime, liveStreamingLastChunkTime, liveStreamingBurstTokens, liveStreamingBurstElapsed, workerGenerationProgress, lastTimeToGeneration, liveProcessingStartTime, liveProcessingPhase, liveTtftSamples, liveGenProgress } = useMemo(
     () => getSessionTokenStats(messages),
     [messages],
   );
-  const usedTools = useMemo<any>(() => getUsedTools(messages), [messages]);
-  const modalities = useMemo<any>(() => getModalities(messages), [messages]);
-  const elapsedTime = useMemo<any>(
+  const usedTools = useMemo(() => getUsedTools(messages), [messages]);
+  const modalities = useMemo(() => getModalities(messages), [messages]);
+  const elapsedTime = useMemo(
     () => getSessionElapsedTime(messages),
     [messages],
   );

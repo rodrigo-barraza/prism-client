@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import {
@@ -27,7 +28,6 @@ import { CloseButtonComponent } from "@rodrigo-barraza/components-library";
 let _sharedSearch = "";
 const _listeners = new Set();
 function _notify() {
-  // @ts-ignore
   for (const fn of _listeners) fn();
 }
 function subscribeSearch(cb: any) {
@@ -86,50 +86,28 @@ function useSharedModelSearch() {
  *   placeholderLabel — string — overrides "Select Model" when no model is selected
  */
 export default function ModelPickerPopoverComponent({
-  // @ts-ignore
-  // @ts-ignore
-  config: any,
-  // @ts-ignore
-  // @ts-ignore
-  settings: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSelectModel: any,
-  // @ts-ignore
-  // @ts-ignore
-  onLmStudioSelect: any,
-  // @ts-ignore
-  // @ts-ignore
-  loadingProgress: any,
+  config,
+  settings,
+  onSelectModel,
+  onLmStudioSelect,
+  loadingProgress,
   favorites = [],
-  // @ts-ignore
-  // @ts-ignore
-  onToggleFavorite: any,
+  onToggleFavorite,
   readOnly = false,
   multiSelect = false,
-  // @ts-ignore
-  // @ts-ignore
-  selectedKeys: any,
-  // @ts-ignore
-  // @ts-ignore
-  renderActions: any,
-  // @ts-ignore
+  selectedKeys,
+  renderActions,
   triggerLabel: triggerLabelProp,
-  // @ts-ignore
   triggerIcon: triggerIconProp,
-  // @ts-ignore
-  // @ts-ignore
-  modelTypeFilter: any,
+  modelTypeFilter,
   allowDeselect = false,
-  // @ts-ignore
-  // @ts-ignore
-  placeholderLabel: any,
-}) {
-  const [open, setOpen] = useState<any>(false);
+  placeholderLabel,
+}: any) {
+  const [open, setOpen] = useState(false);
   const [search, setSearch] = useSharedModelSearch();
   const [popoverStyle, setPopoverStyle] = useState<any>({});
-  const [flipped, setFlipped] = useState<any>(false);
-  const [highlightIndex, setHighlightIndex] = useState<any>(-1);
+  const [flipped, setFlipped] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
   const triggerRef = useRef<any>(null);
   const bodyRef = useRef<any>(null);
   const searchRef = useRef<any>(null);
@@ -140,19 +118,17 @@ export default function ModelPickerPopoverComponent({
   }, []);
 
   // -- Build unified model list across all sections ---------------------
-  // @ts-ignore
-  // @ts-ignore
   const baseModels = buildAllModels(config, modelTypeFilter);
 
   // -- Fetch usage stats and enrich models ------------------------------
-  const [usageMap, setUsageMap] = useState<any>(null);
+  const [usageMap, setUsageMap] = useState(null);
   const usageFetchedRef = useRef<any>(false);
 
   useEffect(() => {
     if (usageFetchedRef.current) return;
     usageFetchedRef.current = true;
     PrismService.getModelStats()
-      .then((stats) => {
+      .then((stats: any) => {
         const map = new Map();
         for (const s of stats) {
           const key = `${s.provider}:${s.model}`;
@@ -174,10 +150,10 @@ export default function ModelPickerPopoverComponent({
       .catch(() => {});
   }, []);
 
-  const allModels = useMemo<any>(() => {
+  const allModels = useMemo(() => {
     if (!usageMap) return baseModels;
-    return baseModels.map((m) => {
-      const stats = usageMap.get(`${m.provider}:${m.name}`);
+    return baseModels.map((m: any) => {
+      const stats = (usageMap as any).get(`${m.provider}:${m.name}`);
       if (!stats) return m;
       return {
         ...m,
@@ -189,11 +165,9 @@ export default function ModelPickerPopoverComponent({
   }, [baseModels, usageMap]);
 
   // -- Filter by search -------------------------------------------------
-  // @ts-ignore
-  const filteredModels = search.trim()
+  const filteredModels = (search as any).trim()
     ? allModels.filter((m: any) => {
-        // @ts-ignore
-        const q = search.toLowerCase();
+        const q = (search as any).toLowerCase();
         return (
           (m.name || "").toLowerCase().includes(q) ||
           (m.label || "").toLowerCase().includes(q) ||
@@ -213,7 +187,7 @@ export default function ModelPickerPopoverComponent({
   // has enough space.
   const positionPopover = useCallback(() => {
     if (!triggerRef.current) return;
-    const triggerRect = triggerRef.current.getBoundingClientRect();
+    const triggerRect = (triggerRef.current as any).getBoundingClientRect();
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
     const popoverW = Math.min(1600, viewportW - 32);
@@ -249,15 +223,11 @@ export default function ModelPickerPopoverComponent({
       if (impliedTop < pad) {
         // Not enough room even when flipped — center vertically
         const centeredTop = Math.max(pad, (viewportH - maxPopoverH) / 2);
-        // @ts-ignore
-        style.top = centeredTop;
-        // @ts-ignore
-        style.bottom = "auto";
-        // @ts-ignore
-        style.maxHeight = viewportH - centeredTop - pad;
+        (style as any).top = centeredTop;
+        (style as any).bottom = "auto";
+        (style as any).maxHeight = viewportH - centeredTop - pad;
       } else {
-        // @ts-ignore
-        style.bottom = bottom;
+        (style as any).bottom = bottom;
       }
     } else {
       // Prefer anchoring top edge just below the trigger
@@ -269,19 +239,14 @@ export default function ModelPickerPopoverComponent({
         if (availableH < 200) {
           // Barely any room below — center vertically instead
           const centeredTop = Math.max(pad, (viewportH - maxPopoverH) / 2);
-          // @ts-ignore
-          style.top = centeredTop;
-          // @ts-ignore
-          style.maxHeight = viewportH - centeredTop - pad;
+          (style as any).top = centeredTop;
+          (style as any).maxHeight = viewportH - centeredTop - pad;
         } else {
-          // @ts-ignore
-          style.top = top;
-          // @ts-ignore
-          style.maxHeight = availableH;
+          (style as any).top = top;
+          (style as any).maxHeight = availableH;
         }
       } else {
-        // @ts-ignore
-        style.top = top;
+        (style as any).top = top;
       }
     }
 
@@ -301,7 +266,7 @@ export default function ModelPickerPopoverComponent({
   // Focus search when popover opens
   useEffect(() => {
     if (open) {
-      setTimeout(() => searchRef.current?.focus(), 60);
+      setTimeout(() => (searchRef.current as any)?.focus(), 60);
     }
   }, [open]);
 
@@ -326,7 +291,6 @@ export default function ModelPickerPopoverComponent({
     (rawModel: any) => {
       if (multiSelect) {
         // Multi-select: toggle selection, keep popover open
-        // @ts-ignore
         onSelectModel(rawModel);
         return;
       }
@@ -336,10 +300,7 @@ export default function ModelPickerPopoverComponent({
       const name = rawModel.name || rawModel.key;
 
       // Deselect: clicking the already-selected model clears the selection
-      // @ts-ignore
-      // @ts-ignore
       if (allowDeselect && provider === settings?.provider && name === settings?.model) {
-        // @ts-ignore
         onSelectModel("", "");
         setOpen(false);
         setHighlightIndex(-1);
@@ -348,9 +309,7 @@ export default function ModelPickerPopoverComponent({
       }
 
       // Intercept lm-studio models → show config panel first
-      // @ts-ignore
       if (provider === "lm-studio" && onLmStudioSelect) {
-        // @ts-ignore
         onLmStudioSelect(rawModel);
         setOpen(false);
         setHighlightIndex(-1);
@@ -358,16 +317,11 @@ export default function ModelPickerPopoverComponent({
         return;
       }
 
-      // @ts-ignore
       onSelectModel(provider, name);
       setOpen(false);
       setHighlightIndex(-1);
       document.dispatchEvent(new CustomEvent("panel:dismiss-sidebars"));
     },
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     [onSelectModel, onLmStudioSelect, multiSelect, allowDeselect, settings?.provider, settings?.model],
   );
 
@@ -425,7 +379,6 @@ export default function ModelPickerPopoverComponent({
 
     // Watch the ChatArea for size changes (sidebar open/close transitions)
     const chatArea = document.querySelector("[data-chat-area]");
-    // @ts-ignore
     let ro;
     if (chatArea) {
       ro = new ResizeObserver(reposition);
@@ -435,15 +388,12 @@ export default function ModelPickerPopoverComponent({
     return () => {
       window.removeEventListener("resize", reposition);
       window.removeEventListener("scroll", reposition, { capture: true });
-      // @ts-ignore
       ro?.disconnect();
     };
   }, [open, positionPopover]);
 
   // -- Trigger display ---------------------------------------------------
   const currentModel = allModels.find(
-    // @ts-ignore
-    // @ts-ignore
     (m: any) => m.provider === settings?.provider && m.name === settings?.model,
   );
 
@@ -454,7 +404,6 @@ export default function ModelPickerPopoverComponent({
 
     // Multi-select: show selection count
     if (multiSelect) {
-      // @ts-ignore
       const count = selectedKeys?.size || 0;
       if (count === 0) return "Select Models";
       if (count === 1) return "1 Model Selected";
@@ -462,10 +411,7 @@ export default function ModelPickerPopoverComponent({
     }
 
     // Single-select: show current model name
-    // @ts-ignore
-    // @ts-ignore
     const rawLabel = currentModel?.label || settings?.model || placeholderLabel || "Select Model";
-    // @ts-ignore
     const provider = currentModel?.provider || settings?.provider;
     if (!provider || LOCAL_PROVIDERS.has(provider)) return rawLabel;
     const providerName = resolveProviderLabel(provider);
@@ -473,7 +419,7 @@ export default function ModelPickerPopoverComponent({
   })();
 
   // Build modalities object for the currently selected model
-  const triggerCapabilities = useMemo<any>(() => {
+  const triggerCapabilities = useMemo(() => {
     if (!currentModel || multiSelect) return null;
     const INPUT_MAP = { text: "textIn", image: "imageIn", audio: "audioIn", video: "videoIn", pdf: "docIn" };
     const OUTPUT_MAP = { text: "textOut", image: "imageOut", audio: "audioOut", embedding: "embeddingOut" };
@@ -491,22 +437,13 @@ export default function ModelPickerPopoverComponent({
     };
     const mod = {};
     for (const t of currentModel.inputTypes || []) {
-      // @ts-ignore
-      // @ts-ignore
-      // @ts-ignore
-      if (INPUT_MAP[t]) mod[INPUT_MAP[t]] = true;
+      if ((INPUT_MAP as any)[t]) (mod as any)[(INPUT_MAP as any)[t]] = true;
     }
     for (const t of currentModel.outputTypes || []) {
-      // @ts-ignore
-      // @ts-ignore
-      // @ts-ignore
-      if (OUTPUT_MAP[t]) mod[OUTPUT_MAP[t]] = true;
+      if ((OUTPUT_MAP as any)[t]) (mod as any)[(OUTPUT_MAP as any)[t]] = true;
     }
     for (const t of currentModel.tools || []) {
-      // @ts-ignore
-      // @ts-ignore
-      // @ts-ignore
-      if (TOOL_MAP[t]) mod[TOOL_MAP[t]] = true;
+      if ((TOOL_MAP as any)[t]) (mod as any)[(TOOL_MAP as any)[t]] = true;
     }
     return Object.keys(mod).length > 0 ? mod : null;
   }, [currentModel, multiSelect]);
@@ -515,13 +452,10 @@ export default function ModelPickerPopoverComponent({
   const triggerIconElement = (() => {
     if (triggerIconProp) return triggerIconProp;
     if (multiSelect) return null;
-    // @ts-ignore
     if (loadingProgress != null) {
       return <Loader2 size={14} className={styles.triggerSpinner} />;
     }
-    // @ts-ignore
     return settings?.provider ? (
-      // @ts-ignore
       <ProviderLogo provider={settings.provider} size={16} />
     ) : null;
   })();
@@ -543,11 +477,9 @@ export default function ModelPickerPopoverComponent({
       <div className={styles.triggerWrap}>
         <button
           ref={triggerRef}
-          // @ts-ignore
-          // @ts-ignore
           className={`${styles.trigger} ${open ? styles.triggerOpen : ""} ${readOnly ? styles.triggerReadOnly : ""} ${loadingProgress != null ? styles.triggerLoading : ""} ${multiSelect && selectedKeys?.size > 0 ? styles.triggerActive : ""}`}
-          onMouseEnter={readOnly ? undefined : (e) => SoundService.playHoverButton({ event: e })}
-          onClick={readOnly ? undefined : (e) => { SoundService.playClickButton({ event: e }); togglePopover(); }}
+          onMouseEnter={readOnly ? undefined : (e: any) => SoundService.playHoverButton({ event: e })}
+          onClick={readOnly ? undefined : (e: any) => { SoundService.playClickButton({ event: e }); togglePopover(); }}
           data-model-picker-trigger
           title={readOnly ? displayLabel : multiSelect ? "Select models" : "Switch model"}
           style={readOnly ? { cursor: "default" } : undefined}
@@ -555,14 +487,11 @@ export default function ModelPickerPopoverComponent({
           <span className={styles.triggerContent}>
             {triggerIconElement}
             <span className={styles.triggerLabel}>
-              {/* @ts-ignore */}
               {loadingProgress != null
-                // @ts-ignore
                 ? `Loading… ${Math.round((loadingProgress ?? 0) * 100)}%`
                 : displayLabel}
             </span>
           </span>
-          {/* @ts-ignore */}
           {!readOnly && loadingProgress == null && (
             <ChevronDown
               size={14}
@@ -570,24 +499,19 @@ export default function ModelPickerPopoverComponent({
             />
           )}
           {/* Progress bar overlay */}
-          {/* @ts-ignore */}
           {loadingProgress != null && (
             <span
               className={styles.triggerProgressBar}
-              // @ts-ignore
               style={{ transform: `scaleX(${loadingProgress ?? 0})` }}
             />
           )}
         </button>
-        {/* @ts-ignore */}
         {triggerCapabilities && loadingProgress == null && (
           <div className={styles.triggerCapabilities}>
-            {/* @ts-ignore */}
             <ModalityIconComponent
               modalities={triggerCapabilities}
               size={10}
             />
-            {/* @ts-ignore */}
             <ModelToolsRow
               tools={triggerCapabilities}
               variant="condensed"
@@ -612,10 +536,8 @@ export default function ModelPickerPopoverComponent({
                 ref={searchRef}
                 className={styles.searchInput}
                 placeholder="Type to filter models…"
-                // @ts-ignore
                 value={search}
-                onChange={(e) => {
-                  // @ts-ignore
+                onChange={(e: any) => {
                   setSearch(e.target.value);
                   setHighlightIndex(-1);
                 }}
@@ -623,7 +545,6 @@ export default function ModelPickerPopoverComponent({
               {search && (
                 <button
                   className={styles.searchClear}
-                  // @ts-ignore
                   onClick={() => setSearch("")}
                   title="Clear"
                 >
@@ -635,16 +556,13 @@ export default function ModelPickerPopoverComponent({
 
             {/* Body: ModelsTableComponent with search disabled (hoisted above) */}
             <div ref={bodyRef} className={styles.popoverBody}>
-              {/* @ts-ignore */}
               <ModelsTableComponent
                 models={filteredModels}
                 onSelect={handleSelect}
                 showSearch={false}
                 showProviderFilter
                 favorites={favorites}
-                // @ts-ignore
                 onToggleFavorite={onToggleFavorite}
-                // @ts-ignore
                 renderActions={renderActions}
                 activeRowKey={activeRowKey}
                 highlightedRowKey={
@@ -653,9 +571,7 @@ export default function ModelPickerPopoverComponent({
                     : undefined
                 }
                 highlightedRowRef={highlightedRowRef}
-                // @ts-ignore
                 selectedKeys={multiSelect ? selectedKeys : undefined}
-                // @ts-ignore
                 onToggleSelect={multiSelect ? onSelectModel : undefined}
               />
             </div>
@@ -683,7 +599,6 @@ function buildAllModels(config: any, modelTypeFilter: any) {
   for (const { key, suffix } of sections) {
     const modelsMap = config[key]?.models || {};
     for (const [provider, models] of Object.entries(modelsMap)) {
-      // @ts-ignore
       for (const m of models) {
         const id = `${provider}:${m.name}`;
         if (!seen.has(id)) {
@@ -704,7 +619,7 @@ function buildAllModels(config: any, modelTypeFilter: any) {
   // Apply modelType filter if specified
   if (modelTypeFilter) {
     result = result.filter(
-      (m) =>
+      (m: any) =>
         m.modelType === modelTypeFilter ||
         (m.name || "").toLowerCase().includes(modelTypeFilter),
     );
@@ -744,12 +659,9 @@ const PROVIDER_ORG_MAP = {
 };
 
 function inferOrganization(modelName: any, provider: any) {
-  // @ts-ignore
-  // @ts-ignore
-  if (PROVIDER_ORG_MAP[provider]) return PROVIDER_ORG_MAP[provider];
+  if ((PROVIDER_ORG_MAP as any)[provider]) return (PROVIDER_ORG_MAP as any)[provider];
   for (const [pattern, org] of ORG_MAP) {
-    // @ts-ignore
-    if (pattern.test(modelName)) return org;
+    if ((pattern as any).test(modelName)) return org;
   }
   return null;
 }

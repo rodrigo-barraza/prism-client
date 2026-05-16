@@ -109,47 +109,25 @@ const SYNTHETIC_TICK_MS = 200;
 export default function StatusBarComponent({
   active = false,
   variant = "orchestrator",
-  // @ts-ignore
-  // @ts-ignore
-  phase: any,
-  // @ts-ignore
-  // @ts-ignore
-  label: any,
-  // @ts-ignore
-  // @ts-ignore
-  icon: any,
-  // @ts-ignore
-  // @ts-ignore
-  progress: any,
-  // @ts-ignore
-  // @ts-ignore
-  tokPerSec: any,
-  // @ts-ignore
-  // @ts-ignore
-  iteration: any,
-  // @ts-ignore
-  // @ts-ignore
-  maxIterations: any,
-  // @ts-ignore
-  // @ts-ignore
-  idleIcon: any,
-  // @ts-ignore
-  // @ts-ignore
-  idleLabel: any,
-}) {
+  phase,
+  label,
+  icon,
+  progress,
+  tokPerSec,
+  iteration,
+  maxIterations,
+  idleIcon,
+  idleLabel,
+}: any) {
   const isWorker = variant === "worker";
   // -- Synthetic progress when backend reports 0 --------------
   // The OpenAI-compat path (agentic mode) doesn't receive
   // prompt_processing.progress events from LM Studio, so progress
   // stays at 0. We fill in an asymptotic estimate client-side.
-  const [syntheticProgress, setSyntheticProgress] = useState<any>(0);
+  const [syntheticProgress, setSyntheticProgress] = useState(0);
   const syntheticStartRef = useRef<any>(null);
 
-  // @ts-ignore
-  // @ts-ignore
   const isProgressPhase = phase === "processing" || phase === "loading";
-  // @ts-ignore
-  // @ts-ignore
   const backendStuck = isProgressPhase && progress != null && progress === 0;
 
   useEffect(() => {
@@ -175,53 +153,35 @@ export default function StatusBarComponent({
   }, [active, backendStuck]);
 
   // Use real backend progress when available, synthetic when stuck at 0
-  // @ts-ignore
   const effectiveProgress = (isProgressPhase && progress != null)
-    // @ts-ignore
-    // @ts-ignore
     ? (progress > 0 ? progress : syntheticProgress)
     : null;
 
   // Strip trailing " 45%" / " done" from label when structured progress is shown via chip
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  const rawLabel = label || PHASE_LABELS[phase] || "Starting...";
+  const rawLabel = label || (PHASE_LABELS as any)[phase] || "Starting...";
   const hasEffectiveProgress = effectiveProgress != null && effectiveProgress >= 0;
   const resolvedLabel = hasEffectiveProgress
     ? rawLabel.replace(/[\u2026.]+\s*\d+%$/, "\u2026").replace(/[\u2026.]+\s*done$/i, "\u2026")
     : rawLabel;
-  // @ts-ignore
   const resolvedIcon = icon !== undefined
-    // @ts-ignore
     ? icon
-    // @ts-ignore
-    // @ts-ignore
-    : (PHASE_ICONS[phase] || null);
+    : ((PHASE_ICONS as any)[phase] || null);
 
   // Rainbow visuals: colour when the model is actively producing tokens (text or reasoning)
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   const isColorPhase = phase === "generating" || phase === "thinking" || phase === "delegating";
   // Awaiting phase: greyscale + frozen canvas (no animation)
-  // @ts-ignore
   const isAwaitingPhase = phase === "awaiting";
   // Delegating phase: orchestrator waiting on workers — animated color but subdued glow
-  // @ts-ignore
   const isDelegatingPhase = phase === "delegating";
 
   // Resolve per-phase canvas palette (null = default rainbow)
-  // @ts-ignore
-  // @ts-ignore
-  const activePalette = (active && isColorPhase) ? (PHASE_PALETTES[phase] || null) : null;
+  const activePalette = (active && isColorPhase) ? ((PHASE_PALETTES as any)[phase] || null) : null;
 
   // Progress percentage
   const progressPct = hasEffectiveProgress ? Math.round(effectiveProgress * 100) : null;
 
   return (
     <div className={`${styles.statusBar}${isWorker ? ` ${styles.statusBarWorker}` : ""}${active ? ` ${styles.statusBarActive}` : ""}${isAwaitingPhase ? ` ${styles.statusBarAwaiting}` : ""}${isDelegatingPhase ? ` ${styles.statusBarDelegating}` : ""}`}>
-      {/* @ts-ignore */}
       <RainbowCanvasComponent
         turbo={active && !isAwaitingPhase}
         animate={!active || isAwaitingPhase ? false : true}
@@ -236,8 +196,6 @@ export default function StatusBarComponent({
           style={{ width: `${progressPct}%` }}
         />
       )}
-      // @ts-ignore
-      {/* @ts-ignore */}
       <div className={`${styles.statusBarOverlay}${phase ? ` ${styles[`phase_${phase}`] || ""}` : ""}`}>
         {active ? (
           <>
@@ -251,20 +209,13 @@ export default function StatusBarComponent({
                   {progressPct}%
                 </span>
               )}
-              // @ts-ignore
-              {/* @ts-ignore */}
               {tokPerSec != null && tokPerSec > 0 && (
                 <span className={styles.statusBarSpeed}>
-                  {/* @ts-ignore */}
                   ⚡ {tokPerSec.toFixed(1)} tok/s
                 </span>
               )}
-              {/* @ts-ignore */}
               {iteration > 0 && (
                 <span className={styles.statusBarIter}>
-                  // @ts-ignore
-                  // @ts-ignore
-                  {/* @ts-ignore */}
                   Iteration {iteration}{maxIterations ? `/${maxIterations}` : ""}
                 </span>
               )}
@@ -273,22 +224,14 @@ export default function StatusBarComponent({
           </>
         ) : (
           <>
-            {/* @ts-ignore */}
             {idleIcon && (
-              // @ts-ignore
               <span className={styles.statusBarIcon}>{idleIcon}</span>
             )}
-            {/* @ts-ignore */}
             {idleLabel && (
               <span className={styles.statusBarMessage}>
-                {/* @ts-ignore */}
                 {idleLabel}
-                {/* @ts-ignore */}
                 {iteration > 0 && (
                   <span className={styles.statusBarIter}>
-                    // @ts-ignore
-                    // @ts-ignore
-                    {/* @ts-ignore */}
                     Iteration {iteration}{maxIterations ? `/${maxIterations}` : ""}
                   </span>
                 )}

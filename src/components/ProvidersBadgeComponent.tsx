@@ -11,7 +11,7 @@ import styles from "./ProvidersBadgeComponent.module.css";
  * @param {string}   [className]
  * @param {boolean}  [mini]
  */
-export default function ProvidersBadgeComponent({ providers = [], className = "", mini = false }) {
+export default function ProvidersBadgeComponent({ providers = [], className = "", mini = false }: any) {
   if (!providers || providers.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }

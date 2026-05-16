@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
@@ -78,18 +79,15 @@ function renderContentWithMentions(text: any, knownPaths: any, onMentionFileOpen
   // Fast path: no mentions found, return plain string
   if (segments.length === 1 && segments[0].type === "text") return text;
 
-  return segments.map((seg, i) => {
+  return segments.map((seg: any, i: any) => {
     if (seg.type === "text") return seg.value;
     // Strip the #Lstart-Lend suffix from the value to get a clean path
     const cleanPath = seg.value.replace(/#L\d+(-L\d+)?$/, "");
     return (
-      // @ts-ignore
       <MentionBadge
         key={i}
         path={cleanPath}
-        // @ts-ignore
         lineStart={seg.lineStart}
-        // @ts-ignore
         lineEnd={seg.lineEnd}
         knownPaths={knownPaths}
         onFileOpen={onMentionFileOpen}
@@ -115,12 +113,9 @@ function getMimeCategory(ref: any) {
     try {
       const pathname = new URL(ref).pathname;
       const ext = pathname.split(".").pop()?.toLowerCase();
-      // @ts-ignore
       if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
         return "image";
-      // @ts-ignore
       if (["wav", "mp3", "webm", "ogg"].includes(ext)) return "audio";
-      // @ts-ignore
       if (["mp4", "mov", "avi"].includes(ext)) return "video";
       if (ext === "pdf") return "pdf";
       if (ext === "txt") return "text";
@@ -139,40 +134,29 @@ function getMimeCategory(ref: any) {
 
 /* -- Sub-components -------------------------------------------- */
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function ThinkingBlock({ thinking: any, isStreaming: any, children: any }) {
+function ThinkingBlock({ thinking, isStreaming, children }: any) {
   // User can manually toggle after streaming has finished
-  const [manualOpen, setManualOpen] = useState<any>(false);
+  const [manualOpen, setManualOpen] = useState(false);
   // User can temporarily close during streaming
-  const [streamClosed, setStreamClosed] = useState<any>(false);
+  const [streamClosed, setStreamClosed] = useState(false);
   const contentRef = useRef<any>(null);
 
   // Derive collapsed state:
   // - Streaming: expanded unless user explicitly closed it
   // - Not streaming: collapsed unless user explicitly opened it
-  // @ts-ignore
   const collapsed = isStreaming ? streamClosed : !manualOpen;
 
   // Auto-scroll to bottom of thinking content while streaming (smooth)
   useEffect(() => {
-    // @ts-ignore
     if (isStreaming && !streamClosed && contentRef.current) {
       const el = contentRef.current;
       requestAnimationFrame(() => {
-        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+        (el as any).scrollTo({ top: (el as any).scrollHeight, behavior: "smooth" });
       });
     }
-  // @ts-ignore
-  // @ts-ignore
   }, [thinking, isStreaming, streamClosed]);
 
   const handleToggle = () => {
-    // @ts-ignore
     if (isStreaming) {
       setStreamClosed((v: any) => !v);
     } else {
@@ -180,13 +164,10 @@ function ThinkingBlock({ thinking: any, isStreaming: any, children: any }) {
     }
   };
 
-  // @ts-ignore
-  // @ts-ignore
   if (!thinking && !children) return null;
 
   return (
     <div
-      // @ts-ignore
       className={`${styles.thinkingBlock}${isStreaming ? ` ${styles.thinkingStreaming}` : ""}`}
     >
       <button className={styles.thinkingToggle} onClick={handleToggle}>
@@ -196,11 +177,7 @@ function ThinkingBlock({ thinking: any, isStreaming: any, children: any }) {
       </button>
       {!collapsed && (
         <div className={styles.thinkingContent} ref={contentRef}>
-          // @ts-ignore
-          // @ts-ignore
-          {/* @ts-ignore */}
           {thinking && <MarkdownContent content={thinking} />}
-          {/* @ts-ignore */}
           {children}
         </div>
       )}
@@ -208,40 +185,24 @@ function ThinkingBlock({ thinking: any, isStreaming: any, children: any }) {
   );
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function ToolCallsBlock({ toolCalls: any, streamingOutputs: any, workerToolActivity: any }) {
-  const [headerCollapsed, setHeaderCollapsed] = useState<any>(false);
-  // @ts-ignore
-  // @ts-ignore
+function ToolCallsBlock({ toolCalls, streamingOutputs, workerToolActivity }: any) {
+  const [headerCollapsed, setHeaderCollapsed] = useState(false);
   if (!toolCalls || toolCalls.length === 0) return null;
 
-  // @ts-ignore
   const hasActiveCalls = toolCalls.some((tc: any) => tc.status === "calling");
-  // @ts-ignore
   const doneCount = toolCalls.filter((tc: any) => tc.status === "done" || tc.status === "error").length;
 
   // Build header text with active tense awareness
   const headerText = (() => {
-    // @ts-ignore
     if (toolCalls.length === 1) {
-      // @ts-ignore
-      // @ts-ignore
       const name = toolCalls[0].name === "googleSearch" ? "Google Search" : renderToolName(toolCalls[0].name);
       if (hasActiveCalls) return `Calling ${name}…`;
       return `Used tool: ${name}`;
     }
     if (hasActiveCalls) {
-      // @ts-ignore
       const progress = doneCount > 0 ? ` (${doneCount}/${toolCalls.length} done)` : "";
-      // @ts-ignore
       return `Running ${toolCalls.length} tools${progress}…`;
     }
-    // @ts-ignore
     return `Used ${toolCalls.length} tools`;
   })();
 
@@ -260,7 +221,6 @@ function ToolCallsBlock({ toolCalls: any, streamingOutputs: any, workerToolActiv
       {/* -- Always-visible tool cards -- */}
       {!headerCollapsed && (
         <div className={styles.toolCallsContent}>
-          {/* @ts-ignore */}
           {toolCalls.map((tc: any, j: any) => {
             const name = tc.name === "googleSearch" ? "Google Search" : renderToolName(tc.name);
             const { Icon, color } = resolveToolVisuals(tc.name);
@@ -292,48 +252,32 @@ function ToolCallsBlock({ toolCalls: any, streamingOutputs: any, workerToolActiv
                   const allToolNames = {};
                   let activeTool = null;
                   for (const member of members) {
-                    // @ts-ignore
-                    // @ts-ignore
                     const activity = member.agent_id && workerToolActivity ? workerToolActivity[member.agent_id] : null;
                     if (activity?.toolNames) {
                       for (const [name, count] of Object.entries(activity.toolNames)) {
-                        // @ts-ignore
-                        // @ts-ignore
-                        allToolNames[name] = (allToolNames[name] || 0) + count;
+                        (allToolNames as any)[name] = ((allToolNames as any)[name] || 0) + count;
                       }
                       if (activity.currentTool) activeTool = activity.currentTool;
                     }
                   }
                   // Fallback: match by description during calling state (before result arrives)
                   // createTeam prefixes descriptions as "[teamName] description"
-                  // @ts-ignore
                   if (Object.keys(allToolNames).length === 0 && workerToolActivity && Array.isArray(tc.args?.members)) {
                     for (const argMember of tc.args.members) {
-                      // @ts-ignore
-                      const match = Object.values(workerToolActivity).find((v) =>
-                        // @ts-ignore
-                        // @ts-ignore
+                      const match = Object.values(workerToolActivity).find((v: any) =>
                         v.description && v.description.includes(argMember.description),
                       );
-                      // @ts-ignore
-                      if (match?.toolNames) {
-                        // @ts-ignore
-                        for (const [name, count] of Object.entries(match.toolNames)) {
-                          // @ts-ignore
-                          // @ts-ignore
-                          allToolNames[name] = (allToolNames[name] || 0) + count;
+                      if ((match as any)?.toolNames) {
+                        for (const [name, count] of Object.entries((match as any).toolNames)) {
+                          (allToolNames as any)[name] = ((allToolNames as any)[name] || 0) + count;
                         }
-                        // @ts-ignore
-                        // @ts-ignore
-                        if (match.currentTool) activeTool = match.currentTool;
+                        if ((match as any).currentTool) activeTool = (match as any).currentTool;
                       }
                     }
                   }
-                  // @ts-ignore
                   if (Object.keys(allToolNames).length > 0) return <ToolBadgeRow tools={allToolNames} activeTool={activeTool} />;
                   // Static badge from completed result
                   const totalToolUses = members.reduce((sum: any, m: any) => sum + (m.toolUses || 0), 0);
-                  // @ts-ignore
                   if (totalToolUses > 0) return <ToolBadgeRow tools={{ "Tool Calling": totalToolUses }} />;
                   return null;
                 })()}
@@ -341,9 +285,7 @@ function ToolCallsBlock({ toolCalls: any, streamingOutputs: any, workerToolActiv
                 {/* Tool-specific result renderer (registry pattern) */}
                 <ToolResultView
                   toolCall={tc}
-                  // @ts-ignore
                   streamingOutput={streamingOutputs?.get(tc.id)}
-                  // @ts-ignore
                   workerToolActivity={workerToolActivity}
                 />
               </div>
@@ -371,8 +313,7 @@ export function prepareDisplayMessages(rawMessages: any) {
   for (const m of rawMessages) {
     if (m.role === "tool") {
       const id = m.tool_call_id || m.toolCallId;
-      // @ts-ignore
-      if (id) toolResults[id] = m.content;
+      if (id) (toolResults as any)[id] = m.content;
     }
   }
 
@@ -398,10 +339,8 @@ export function prepareDisplayMessages(rawMessages: any) {
           ...tc,
           result:
             tc.result ||
-            // @ts-ignore
-            toolResults[tc.id] ||
-            // @ts-ignore
-            toolResults[tc.tool_call_id] ||
+            (toolResults as any)[tc.id] ||
+            (toolResults as any)[tc.tool_call_id] ||
             null,
         }));
         return { ...m, toolCalls: enrichedCalls };
@@ -429,7 +368,6 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: any) {
   if (cat === "audio") {
     return (
       <div className={styles.audioCard}>
-        {/* @ts-ignore */}
         <AudioPlayerRecorderComponent src={src} compact />
       </div>
     );
@@ -488,60 +426,34 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: any) {
 /* -- Inline edit for messages ---------------------------------- */
 
 function EditableMessage({
-  // @ts-ignore
-  // @ts-ignore
-  content: any,
-  // @ts-ignore
-  // @ts-ignore
-  index: any,
-  // @ts-ignore
-  // @ts-ignore
-  role: any,
-  // @ts-ignore
-  // @ts-ignore
-  onEdit: any,
-  // @ts-ignore
-  // @ts-ignore
-  editing: any,
-  // @ts-ignore
-  // @ts-ignore
-  onCancelEdit: any,
-  // @ts-ignore
-  // @ts-ignore
-  knownPaths: any,
-  // @ts-ignore
-  // @ts-ignore
-  onMentionFileOpen: any,
-}) {
-  // @ts-ignore
-  const [editValue, setEditValue] = useState<any>(content);
+  content,
+  index,
+  role,
+  onEdit,
+  editing,
+  onCancelEdit,
+  knownPaths,
+  onMentionFileOpen,
+}: any) {
+  const [editValue, setEditValue] = useState(content);
   const textareaRef = useRef<any>(null);
-  // @ts-ignore
   const isAssistant = role === "assistant";
 
   // Auto-resize textarea to fit content on open
   useEffect(() => {
-    // @ts-ignore
     if (editing && textareaRef.current) {
       const el = textareaRef.current;
-      el.style.height = "auto";
-      el.style.height = Math.min(el.scrollHeight, 600) + "px";
+      (el as any).style.height = "auto";
+      (el as any).style.height = Math.min((el as any).scrollHeight, 600) + "px";
     }
-  // @ts-ignore
   }, [editing]);
 
   const cancel = () => {
-    // @ts-ignore
     onCancelEdit();
-    // @ts-ignore
     setEditValue(content);
   };
   const save = () => {
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     if (editValue.trim() && editValue !== content) onEdit(index, editValue);
-    // @ts-ignore
     onCancelEdit();
   };
   const handleKey = (e: any) => {
@@ -554,7 +466,6 @@ function EditableMessage({
     }
   };
 
-  // @ts-ignore
   if (editing) {
     return (
       <div
@@ -569,7 +480,7 @@ function EditableMessage({
           ref={textareaRef}
           autoFocus
           value={editValue}
-          onChange={(e) => {
+          onChange={(e: any) => {
             setEditValue(e.target.value);
             // Auto-resize as content changes
             const el = e.target;
@@ -650,9 +561,6 @@ function EditableMessage({
 
   // Non-editing: user messages show plain text, assistant uses caller's rendering
   if (!isAssistant) {
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     return <div className={styles.text}>{renderContentWithMentions(content, knownPaths, onMentionFileOpen)}</div>;
   }
   return null; // Assistant non-editing rendering is handled by the caller
@@ -681,74 +589,37 @@ export default function MessageList({
   messages = [],
   readOnly = false,
   isGenerating = false,
-  // @ts-ignore
-  // @ts-ignore
-  streamingOutputs: any,
-  // @ts-ignore
-  // @ts-ignore
-  workerToolActivity: any,
-  // @ts-ignore
-  // @ts-ignore
-  headerContent: any,
-  // @ts-ignore
-  // @ts-ignore
-  systemPrompt: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSystemPromptEdit: any,
-  // @ts-ignore
-  // @ts-ignore
-  planProposal: any,
-  // @ts-ignore
-  // @ts-ignore
-  onPlanApprove: any,
-  // @ts-ignore
-  // @ts-ignore
-  onPlanReject: any,
-  // @ts-ignore
-  // @ts-ignore
-  knownPaths: any,
+  streamingOutputs,
+  workerToolActivity,
+  headerContent,
+  systemPrompt,
+  onSystemPromptEdit,
+  planProposal,
+  onPlanApprove,
+  onPlanReject,
+  knownPaths,
 
-  // @ts-ignore
-  // @ts-ignore
-  onDelete: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRestore: any,
-  // @ts-ignore
-  // @ts-ignore
-  onEdit: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRerun: any,
-  // @ts-ignore
-  // @ts-ignore
-  onImageClick: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDocClick: any,
-  // @ts-ignore
-  // @ts-ignore
-  onMentionFileOpen: any,
-}) {
-  const [editingIndex, setEditingIndex] = useState<any>(null);
-  const [expandedDeletedSet, setExpandedDeletedSet] = useState<any>(new Set());
-  // @ts-ignore
-  // @ts-ignore
+  onDelete,
+  onRestore,
+  onEdit,
+  onRerun,
+  onImageClick,
+  onDocClick,
+  onMentionFileOpen,
+}: any) {
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [expandedDeletedSet, setExpandedDeletedSet] = useState(new Set());
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
   // -- Sticky last user message (pinned header) -------------
-  const [isUserMsgScrolledPast, setIsUserMsgScrolledPast] = useState<any>(false);
+  const [isUserMsgScrolledPast, setIsUserMsgScrolledPast] = useState(false);
   const lastUserMsgRef = useRef<any>(null);
   const lastUserMsgIndexRef = useRef<any>(-1);
   const scrollingToUserMsgRef = useRef<any>(false);
 
   // Find the last user message
-  const lastUserMsgIndex = useMemo<any>(() => {
+  const lastUserMsgIndex = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
-      // @ts-ignore
-      // @ts-ignore
-      // @ts-ignore
       if (messages[i].role === "user" && !messages[i].deleted && !parseTaskNotification(messages[i].content)) return i;
     }
     return -1;
@@ -763,7 +634,7 @@ export default function MessageList({
     }
 
     // Find the scroll container — walk up to the nearest overflow-y ancestor
-    let scrollParent = node.parentElement;
+    let scrollParent = (node as any).parentElement;
     while (scrollParent) {
       const overflow = getComputedStyle(scrollParent).overflowY;
       if (overflow === "auto" || overflow === "scroll") break;
@@ -772,13 +643,12 @@ export default function MessageList({
     if (!scrollParent) return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
+      ([entry]: any) => {
         // Suppress during programmatic scroll-to to prevent stutter
         if (scrollingToUserMsgRef.current) return;
         // Show sticky when user message is NOT intersecting
         // AND the element is above the viewport (scrolled past)
         const scrolledPast = !entry.isIntersecting &&
-          // @ts-ignore
           entry.boundingClientRect.bottom < entry.rootBounds.top + 20;
         setIsUserMsgScrolledPast(scrolledPast);
       },
@@ -797,14 +667,12 @@ export default function MessageList({
   }, [lastUserMsgIndex]);
 
   // Derive sticky message data from the boolean flag
-  const stickyUserMsg = useMemo<any>(() => {
+  const stickyUserMsg = useMemo(() => {
     if (!isUserMsgScrolledPast || lastUserMsgIndex < 0) return null;
     const msg = messages[lastUserMsgIndex];
     if (!msg) return null;
     return {
-      // @ts-ignore
       content: msg.content,
-      // @ts-ignore
       images: msg.images,
       index: lastUserMsgIndex,
     };
@@ -814,7 +682,7 @@ export default function MessageList({
     const node = lastUserMsgRef.current;
     if (!node) return;
     // Walk up to the nearest scrollable ancestor
-    let scrollParent = node.parentElement;
+    let scrollParent = (node as any).parentElement;
     while (scrollParent) {
       const overflow = getComputedStyle(scrollParent).overflowY;
       if (overflow === "auto" || overflow === "scroll") break;
@@ -825,7 +693,7 @@ export default function MessageList({
     // Suppress observer during scroll to prevent stutter from layout shifts
     scrollingToUserMsgRef.current = true;
 
-    const nodeRect = node.getBoundingClientRect();
+    const nodeRect = (node as any).getBoundingClientRect();
     const parentRect = scrollParent.getBoundingClientRect();
     const offset = nodeRect.top - parentRect.top + scrollParent.scrollTop - 50;
     scrollParent.scrollTo({ top: offset, behavior: "smooth" });
@@ -835,7 +703,7 @@ export default function MessageList({
     setTimeout(() => {
       scrollingToUserMsgRef.current = false;
       // Manually check if element is now visible and dismiss sticky
-      const rect = node.getBoundingClientRect();
+      const rect = (node as any).getBoundingClientRect();
       const pRect = scrollParent.getBoundingClientRect();
       if (rect.top >= pRect.top) {
         setIsUserMsgScrolledPast(false);
@@ -852,29 +720,24 @@ export default function MessageList({
     });
   };
 
-  const swapBefore = useMemo<any>(() => {
+  const swapBefore = useMemo(() => {
     const arr = new Array(messages.length).fill(false);
     let lastModel = null;
     let prospectiveSwapIndex = null;
 
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i];
-      // @ts-ignore
       if (msg.role === "user") {
         if (prospectiveSwapIndex === null) {
           prospectiveSwapIndex = i; // The start of the user's turn
         }
-      // @ts-ignore
-      // @ts-ignore
       } else if (msg.role === "assistant" && msg.model) {
-        // @ts-ignore
         if (lastModel && lastModel !== msg.model) {
           // Model changed! Show swap before the user's turn that led to this,
           // or before this assistant message if no user message preceded it.
           const swapIdx = prospectiveSwapIndex !== null ? prospectiveSwapIndex : i;
           arr[swapIdx] = true;
         }
-        // @ts-ignore
         lastModel = msg.model;
         prospectiveSwapIndex = null;
       }
@@ -886,15 +749,13 @@ export default function MessageList({
   // Each group is keyed by the index of the first deleted message
   // in the run (the "leader"). Non-leader deleted messages are
   // skipped during rendering.
-  const deletedGroups = useMemo<any>(() => {
+  const deletedGroups = useMemo(() => {
     const map = new Map(); // index → { isLeader, groupIndices }
     let i = 0;
     while (i < messages.length) {
-      // @ts-ignore
       if (messages[i].deleted) {
         const start = i;
         const indices = [];
-        // @ts-ignore
         while (i < messages.length && messages[i].deleted) {
           indices.push(i);
           i++;
@@ -917,25 +778,19 @@ export default function MessageList({
   // "isContinuation" means this assistant msg continues the
   // previous assistant msg's visual container.
   // "isLastInGroup" means metadata (tokens, cost) should render.
-  const coalesceMeta = useMemo<any>(() => {
+  const coalesceMeta = useMemo(() => {
     const meta = new Array(messages.length).fill(null);
     for (let i = 0; i < messages.length; i++) {
-      // @ts-ignore
       if (messages[i].role !== "assistant") continue;
       // Deleted messages always break the coalesce chain —
       // they render as their own standalone block.
-      // @ts-ignore
       if (messages[i].deleted) {
         meta[i] = { isContinuation: false, isLastInGroup: true };
         continue;
       }
       const prevIsAssistant =
-        // @ts-ignore
-        // @ts-ignore
         i > 0 && messages[i - 1].role === "assistant" && !messages[i - 1].deleted;
       const nextIsAssistant =
-        // @ts-ignore
-        // @ts-ignore
         i < messages.length - 1 && messages[i + 1].role === "assistant" && !messages[i + 1].deleted;
       meta[i] = {
         isContinuation: prevIsAssistant && !swapBefore[i],
@@ -950,8 +805,8 @@ export default function MessageList({
       {/* -- Sticky pinned user message -- */}
       <div
         className={styles.stickyUserMsg}
-        onMouseEnter={(e) => stickyUserMsg && SoundService.playHoverButton({ event: e })}
-        onClick={(e) => { if (stickyUserMsg) { SoundService.playClickButton({ event: e }); handleStickyClick(); } }}
+        onMouseEnter={(e: any) => stickyUserMsg && SoundService.playHoverButton({ event: e })}
+        onClick={(e: any) => { if (stickyUserMsg) { SoundService.playClickButton({ event: e }); handleStickyClick(); } }}
         style={{
           visibility: stickyUserMsg ? "visible" : "hidden",
           opacity: stickyUserMsg ? 1 : 0,
@@ -975,9 +830,7 @@ export default function MessageList({
                     stickyUserMsg.content.length > 200
                       ? stickyUserMsg.content.slice(0, 200) + "…"
                       : stickyUserMsg.content,
-                    // @ts-ignore
                     knownPaths,
-                    // @ts-ignore
                     onMentionFileOpen,
                   )
                 : "(no text)"}
@@ -994,12 +847,10 @@ export default function MessageList({
           <div className={styles.content}>
             <div className={styles.messageHeader}>
               <div className={styles.roleLabel}>System Prompt</div>
-              {/* @ts-ignore */}
               {!readOnly && onSystemPromptEdit && (
                 <div className={styles.messageActions}>
                   <IconButtonComponent
                     icon={<Pencil size={14} />}
-                    // @ts-ignore
                     onClick={onSystemPromptEdit}
                     tooltip="Edit system prompt"
                     className={styles.actionBtn}
@@ -1007,44 +858,32 @@ export default function MessageList({
                 </div>
               )}
             </div>
-            // @ts-ignore
-            {/* @ts-ignore */}
             <MarkdownContent content={systemPrompt} />
           </div>
         </div>
       )}
-      {/* @ts-ignore */}
       {headerContent}
-      {messages.map((msg, i) => {
+      {messages.map((msg: any, i: any) => {
         const roleClass =
-          // @ts-ignore
           msg.role === "user"
             ? styles.userNode
-            // @ts-ignore
             : msg.role === "system"
               ? styles.systemNode
               : styles.aiNode;
         const isStreaming =
           (isGenerating &&
-            // @ts-ignore
             msg.role === "assistant" &&
             i === messages.length - 1) ||
-          // @ts-ignore
-          // @ts-ignore
           (msg.role === "assistant" && msg._liveStreaming === true);
         const coalesce = coalesceMeta[i];
 
         const showModelChange = swapBefore[i];
-        // @ts-ignore
-        // @ts-ignore
         const isFadedSwap = showModelChange && i > 0 && messages[i - 1].deleted && messages[i].deleted;
         const swapDividerClass = `${styles.modelChangeDivider} ${isFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
 
         // If message is a non-leader deleted message, skip rendering the whole 
         // top-level block so we don't leak the model swap outside the group
-        // @ts-ignore
         const deletedGroupInfo = msg.deleted ? deletedGroups.get(i) : null;
-        // @ts-ignore
         if (msg.deleted && !deletedGroupInfo?.isLeader) {
           return null;
         }
@@ -1062,7 +901,6 @@ export default function MessageList({
               </div>
             )}
             {/* -- Deleted message group: coalesced into a single row -- */}
-            {/* @ts-ignore */}
             {msg.deleted && (() => {
               const groupInfo = deletedGroups.get(i);
               // Non-leader deleted messages are rendered inside the leader block
@@ -1086,28 +924,18 @@ export default function MessageList({
                       {groupCount === 1 && (
                         <>
                           <BadgeComponent variant="info" mini tooltip="Message role">
-                            {/* @ts-ignore */}
                             {msg.role === "user" ? "User" : "Model"}
                           </BadgeComponent>
-                          {/* @ts-ignore */}
                           {msg.model && (
-                            // @ts-ignore
-                            // @ts-ignore
                             <ModelBadgeComponent models={[msg.model]} mini />
                           )}
-                          {/* @ts-ignore */}
                           {msg.timestamp && (
-                            // @ts-ignore
                             <DateTimeBadgeComponent date={msg.timestamp} mini />
                           )}
-                          {/* @ts-ignore */}
                           {msg.content && (
                             <span className={styles.deletedPreview}>
-                              {/* @ts-ignore */}
                               {msg.content.length > 80
-                                // @ts-ignore
                                 ? msg.content.slice(0, 80) + "…"
-                                // @ts-ignore
                                 : msg.content}
                             </span>
                           )}
@@ -1115,20 +943,16 @@ export default function MessageList({
                       )}
                       {groupCount > 1 && (
                         <>
-                          {/* @ts-ignore */}
                           <DateTimeBadgeComponent date={messages[groupIndices[0]].timestamp} mini />
                           <span style={{ opacity: 0.5 }}>—</span>
-                          {/* @ts-ignore */}
                           <DateTimeBadgeComponent date={messages[groupIndices[groupCount - 1]].timestamp} mini />
                         </>
                       )}
                     </button>
-                    {/* @ts-ignore */}
                     {groupCount === 1 && !readOnly && onRestore && (
                       <div className={styles.deletedActions}>
                         <IconButtonComponent
                           icon={<Undo2 size={14} />}
-                          // @ts-ignore
                           onClick={() => onRestore?.(i)}
                           tooltip="Restore message"
                           className={styles.actionBtn}
@@ -1156,17 +980,13 @@ export default function MessageList({
                   {groupIndices.map((gi: any) => {
                     const gMsg = messages[gi];
                     const gRoleClass =
-                      // @ts-ignore
                       gMsg.role === "user"
                         ? styles.userNode
-                        // @ts-ignore
                         : gMsg.role === "system"
                           ? styles.systemNode
                           : styles.aiNode;
 
                     const gShowModelChange = swapBefore[gi];
-                    // @ts-ignore
-                    // @ts-ignore
                     const gIsFadedSwap = gShowModelChange && gi > 0 && messages[gi - 1].deleted && messages[gi].deleted;
                     const gSwapDividerClass = `${styles.modelChangeDivider} ${gIsFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
                     const shouldRenderInnerSwap = gShowModelChange && gi !== groupIndices[0];
@@ -1186,35 +1006,25 @@ export default function MessageList({
                         <div className={styles.deletedGroupItem}>
                           <div className={styles.deletedGroupItemHeader}>
                             <BadgeComponent variant="info" mini tooltip="Message role">
-                              {/* @ts-ignore */}
                               {gMsg.role === "user" ? "User" : "Model"}
                             </BadgeComponent>
-                          {/* @ts-ignore */}
                           {gMsg.model && (
-                            // @ts-ignore
-                            // @ts-ignore
                             <ModelBadgeComponent models={[gMsg.model]} mini />
                           )}
-                          {/* @ts-ignore */}
                           {gMsg.timestamp && (
-                            // @ts-ignore
                             <DateTimeBadgeComponent date={gMsg.timestamp} mini />
                           )}
                           <div className={styles.deletedActions} style={{ opacity: 1 }}>
-                            {/* @ts-ignore */}
                             {!readOnly && onRestore && (
                               <IconButtonComponent
                                 icon={<Undo2 size={14} />}
-                                // @ts-ignore
                                 onClick={() => onRestore?.(gi)}
                                 tooltip="Restore message"
                                 className={styles.actionBtn}
                               />
                             )}
-                            {/* @ts-ignore */}
                             {gMsg.content && (
                               <CopyButtonComponent
-                                // @ts-ignore
                                 text={gMsg.content}
                                 tooltip="Copy raw text"
                                 className={styles.actionBtn}
@@ -1225,56 +1035,31 @@ export default function MessageList({
                         <div className={styles.deletedMessageBody}>
                           <div className={`${styles.message} ${gRoleClass}`}>
                             <div className={`${styles.avatar} ${styles.deletedAvatar}`}>
-                              // @ts-ignore
-                              {/* @ts-ignore */}
                               {gMsg.role === "user" ? <User size={16} /> : gMsg.role === "system" ? "S" : <Bot size={16} />}
                             </div>
                             <div className={styles.content}>
-                              {/* @ts-ignore */}
                               {gMsg.thinking && (
-                                // @ts-ignore
-                                // @ts-ignore
                                 <ThinkingBlock thinking={gMsg.thinking} isStreaming={false} />
                               )}
-                              // @ts-ignore
-                              {/* @ts-ignore */}
                               {gMsg.toolCalls && gMsg.toolCalls.length > 0 && (
-                                // @ts-ignore
-                                // @ts-ignore
-                                // @ts-ignore
                                 <ToolCallsBlock toolCalls={gMsg.toolCalls} workerToolActivity={workerToolActivity} />
                               )}
-                              // @ts-ignore
-                              {/* @ts-ignore */}
                               {gMsg.images && gMsg.images.length > 0 && (
                                 <div className={styles.imagePreviewRow}>
-                                  {/* @ts-ignore */}
                                   {gMsg.images.map((rawUrl: any, j: any) => (
                                     <MediaPreview key={j} dataUrl={rawUrl} />
                                   ))}
                                 </div>
                               )}
-                              {/* @ts-ignore */}
                               {gMsg.content ? (
-                                // @ts-ignore
-                                // @ts-ignore
                                 <MarkdownContent content={gMsg.content} />
                               ) : null}
-                              // @ts-ignore
-                              // @ts-ignore
-                              {/* @ts-ignore */}
                               {gMsg.role === "assistant" && (gMsg.usage || gMsg.provider) && (
                                 <div className={styles.metaBadges}>
-                                  {/* @ts-ignore */}
                                   {gMsg.provider && (
-                                    // @ts-ignore
-                                    // @ts-ignore
                                     <ProvidersBadgeComponent providers={[gMsg.provider]} mini />
                                   )}
-                                  {/* @ts-ignore */}
                                   {gMsg.model && (
-                                    // @ts-ignore
-                                    // @ts-ignore
                                     <ModelBadgeComponent models={[gMsg.model]} mini />
                                   )}
                                 </div>
@@ -1290,22 +1075,17 @@ export default function MessageList({
             );
           })()}
             {/* -- Normal (non-deleted) message -- */}
-            {/* @ts-ignore */}
             {!msg.deleted && (() => {
               // -- Task notification card (replaces user bubble for worker results) --
               // Only renders for non-absorbed notifications (i.e. edge cases where
               // the matching team_create tool call isn't in the visible window).
-              // @ts-ignore
-              // @ts-ignore
               const taskNotif = msg.role === "user" ? parseTaskNotification(msg.content) : null;
               if (taskNotif) {
                 return (
                   <WorkerNotificationComponent
                     taskNotif={taskNotif}
-                    // @ts-ignore
                     timestamp={msg.timestamp}
                     readOnly={readOnly}
-                    // @ts-ignore
                     onDelete={() => onDelete?.(i)}
                   />
                 );
@@ -1313,18 +1093,14 @@ export default function MessageList({
               // -- Normal message rendering --
               return (
             <div
-              // @ts-ignore
               ref={i === lastUserMsgIndex && msg.role === "user" ? lastUserMsgRef : undefined}
               className={`${styles.message} ${roleClass}${coalesce?.isContinuation ? ` ${styles.continuationMessage}` : ""}`}
             >
               {/* Avatar: hidden for continuation messages */}
               {!coalesce?.isContinuation && (
                 <div
-                  // @ts-ignore
                   className={`${styles.avatar}${msg.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles.prismAvatar}` : ""}`}
                 >
-                  // @ts-ignore
-                  {/* @ts-ignore */}
                   {msg.role === "user" ? <User size={16} /> : msg.role === "system" ? "S" : <Bot size={16} />}
                 </div>
               )}
@@ -1333,22 +1109,17 @@ export default function MessageList({
                 {!coalesce?.isContinuation && (
                 <div className={styles.messageHeader}>
                   <div className={styles.roleLabel}>
-                    {/* @ts-ignore */}
                     {msg.role === "user"
                       ? "User"
-                      // @ts-ignore
                       : msg.role === "system"
                         ? "System"
                         : "Model"}
-                    {/* @ts-ignore */}
                     {msg.timestamp && (
-                      // @ts-ignore
                       <DateTimeBadgeComponent date={msg.timestamp} mini />
                     )}
                   </div>
                   {!readOnly && (
                     <div className={styles.messageActions}>
-                      {/* @ts-ignore */}
                       {msg.role === "user" && (
                         <>
                           <IconButtonComponent
@@ -1362,7 +1133,6 @@ export default function MessageList({
                           />
                           <IconButtonComponent
                             icon={<RotateCcw size={14} />}
-                            // @ts-ignore
                             onClick={() => onRerun?.(i)}
                             disabled={isGenerating}
                             tooltip="Rerun this turn"
@@ -1370,8 +1140,6 @@ export default function MessageList({
                           />
                         </>
                       )}
-                      // @ts-ignore
-                      {/* @ts-ignore */}
                       {msg.role === "assistant" && msg.content && (
                         <IconButtonComponent
                           icon={<Pencil size={14} />}
@@ -1383,10 +1151,8 @@ export default function MessageList({
                           className={styles.actionBtn}
                         />
                       )}
-                      {/* @ts-ignore */}
                       {msg.content && (
                         <CopyButtonComponent
-                          // @ts-ignore
                           text={msg.content}
                           tooltip="Copy raw text"
                           className={styles.actionBtn}
@@ -1394,7 +1160,6 @@ export default function MessageList({
                       )}
                       <IconButtonComponent
                         icon={<Trash2 size={14} />}
-                        // @ts-ignore
                         onClick={() => onDelete?.(i)}
                         tooltip="Delete message"
                         variant="destructive"
@@ -1402,11 +1167,9 @@ export default function MessageList({
                       />
                     </div>
                   )}
-                  {/* @ts-ignore */}
                   {readOnly && msg.content && (
                     <div className={styles.messageActions}>
                       <CopyButtonComponent
-                        // @ts-ignore
                         text={msg.content}
                         tooltip="Copy raw text"
                         className={styles.actionBtn}
@@ -1417,11 +1180,8 @@ export default function MessageList({
                 )}
 
                 {/* -- Interleaved content: thinking + tool calls + text -- */}
-                // @ts-ignore
-                {/* @ts-ignore */}
                 {msg.contentSegments && msg.contentSegments.length > 0 ? (
                   (() => {
-                    // @ts-ignore
                     const segs = msg.contentSegments;
                     const hasThinking = segs.some((s: any) => s.type === "thinking");
                     // Dedup guard: track tool IDs already rendered to prevent
@@ -1431,16 +1191,12 @@ export default function MessageList({
                     // Helper: render a segment by type
                     const renderSeg = (seg: any, si: any, opts = {}) => {
                       if (seg.type === "thinking") {
-                        // @ts-ignore
                         const fragment = msg.thinkingFragments?.[seg.fragmentIndex]?.trim();
                         if (!fragment) return null;
-                        // @ts-ignore
                         return <MarkdownContent key={`seg-k-${si}`} content={fragment} />;
                       }
-                      // @ts-ignore
                       if (seg.type === "tools" && msg.toolCalls?.length > 0) {
                         const toolIdSet = new Set(seg.toolIds || []);
-                        // @ts-ignore
                         const segmentTools = msg.toolCalls.filter((tc: any) => {
                           if (!toolIdSet.has(tc.id)) return false;
                           if (renderedToolIds.has(tc.id)) return false;
@@ -1448,18 +1204,12 @@ export default function MessageList({
                           return true;
                         });
                         if (segmentTools.length === 0) return null;
-                        // @ts-ignore
-                        // @ts-ignore
                         return <ToolCallsBlock key={`seg-t-${si}`} toolCalls={segmentTools} streamingOutputs={streamingOutputs} workerToolActivity={workerToolActivity} />;
                       }
                       if (seg.type === "text") {
-                        // @ts-ignore
                         const fragmentText = msg.textFragments?.[seg.fragmentIndex]?.trim();
-                        // @ts-ignore
-                        const isLastTextSeg = !!opts.isLastText;
-                        // @ts-ignore
-                        // @ts-ignore
-                        const showCursor = !opts.insideThinking && !opts.suppressCursor;
+                        const isLastTextSeg = !!(opts as any).isLastText;
+                        const showCursor = !(opts as any).insideThinking && !(opts as any).suppressCursor;
                         if (fragmentText) {
                           return (
                             <MarkdownContent
@@ -1467,7 +1217,6 @@ export default function MessageList({
                               content={fragmentText}
                               className={isStreaming && isLastTextSeg && showCursor ? styles.streamingText : ""}
                             >
-                              {/* @ts-ignore */}
                               {isLastTextSeg && showCursor && <StreamingCursorComponent active={isStreaming} />}
                             </MarkdownContent>
                           );
@@ -1477,20 +1226,14 @@ export default function MessageList({
                         }
                         return null;
                       }
-                      // @ts-ignore
                       if (seg.type === "plan" && planProposal) {
                         return (
                           <PlanCardComponent
                             key={`seg-p-${si}`}
-                            // @ts-ignore
                             planText={planProposal.plan}
-                            // @ts-ignore
                             steps={planProposal.steps}
-                            // @ts-ignore
                             status={planProposal.status}
-                            // @ts-ignore
                             onApprove={onPlanApprove}
-                            // @ts-ignore
                             onReject={onPlanReject}
                           />
                         );
@@ -1499,14 +1242,12 @@ export default function MessageList({
                     };
 
                     // Edit mode: show reasoning then editable text
-                    // @ts-ignore
                     if (msg.role === "assistant" && !readOnly && editingIndex === i) {
                       const thinkingOnly = segs.filter((s: any) => s.type === "thinking");
                       const nonThinking = segs.filter((s: any) => s.type !== "thinking");
                       return (
                         <>
                           {hasThinking && thinkingOnly.length > 0 && (
-                            // @ts-ignore
                             <ThinkingBlock isStreaming={false}>
                               {thinkingOnly.map((seg: any, si: any) => renderSeg(seg, si, { insideThinking: true }))}
                             </ThinkingBlock>
@@ -1514,17 +1255,13 @@ export default function MessageList({
                           {nonThinking.map((seg: any, si: any) => renderSeg(seg, si))}
                           <EditableMessage
                             key="seg-edit"
-                            // @ts-ignore
                             content={msg.content}
                             index={i}
                             role="assistant"
-                            // @ts-ignore
                             onEdit={onEdit}
                             editing={true}
                             onCancelEdit={() => setEditingIndex(null)}
-                            // @ts-ignore
                             knownPaths={knownPaths}
-                            // @ts-ignore
                             onMentionFileOpen={onMentionFileOpen}
                           />
                         </>
@@ -1539,9 +1276,7 @@ export default function MessageList({
                       const thinkingOnly = segs.filter((s: any) => s.type === "thinking");
                       const visibleSegs = segs
                         .map((s: any, idx: any) => ({ seg: s, origIdx: idx }))
-                        // @ts-ignore
-                        // @ts-ignore
-                        .filter(({ seg: any }) => seg.type !== "thinking");
+                        .filter(({ seg }: any) => seg.type !== "thinking");
                       // ThinkingBlock is streaming when thinking is the current
                       // activity (last segment is thinking)
                       const lastSeg = segs[segs.length - 1];
@@ -1558,7 +1293,6 @@ export default function MessageList({
                       return (
                         <>
                           {thinkingOnly.length > 0 && (
-                            // @ts-ignore
                             <ThinkingBlock isStreaming={thinkingIsStreaming}>
                               {thinkingOnly.map((seg: any, si: any) =>
                                 renderSeg(seg, si, { insideThinking: true })
@@ -1566,16 +1300,10 @@ export default function MessageList({
                             </ThinkingBlock>
                           )}
                           {/* Tools and text segments render outside in original order */}
-                          // @ts-ignore
-                          // @ts-ignore
-                          // @ts-ignore
-                          {/* @ts-ignore */}
-                          {visibleSegs.map(({ seg: any, origIdx: any }, vi: any) => {
+                          {visibleSegs.map(({ seg, origIdx }: any, vi: any) => {
                             const isLastText = vi === lastVisibleTextIdx;
                             return (
                               <React.Fragment key={`vis-${vi}`}>
-                                // @ts-ignore
-                                {/* @ts-ignore */}
                                 {renderSeg(seg, origIdx, { isLastText })}
                               </React.Fragment>
                             );
@@ -1601,69 +1329,46 @@ export default function MessageList({
                 ) : (
                   <>
                     {/* Thinking block (persisted conversations without segments) */}
-                    {/* @ts-ignore */}
                     {msg.thinking && (
-                      // @ts-ignore
                       <ThinkingBlock
-                        // @ts-ignore
                         thinking={msg.thinking}
-                        // @ts-ignore
-                        // @ts-ignore
                         isStreaming={isStreaming && !!msg.thinking && !msg.content}
                       />
                     )}
 
                     {/* Tool calls (persisted conversations without segments) */}
-                    // @ts-ignore
-                    {/* @ts-ignore */}
                     {msg.toolCalls && msg.toolCalls.length > 0 && (
-                      // @ts-ignore
-                      // @ts-ignore
-                      // @ts-ignore
                       <ToolCallsBlock toolCalls={msg.toolCalls} streamingOutputs={streamingOutputs} workerToolActivity={workerToolActivity} />
                     )}
 
                     {/* Text content */}
-                    {/* @ts-ignore */}
                     {msg.role === "user" && !readOnly ? (
                       <EditableMessage
-                        // @ts-ignore
                         content={msg.content}
                         index={i}
                         role="user"
-                        // @ts-ignore
                         onEdit={onEdit}
                         editing={editingIndex === i}
                         onCancelEdit={() => setEditingIndex(null)}
-                        // @ts-ignore
                         knownPaths={knownPaths}
-                        // @ts-ignore
                         onMentionFileOpen={onMentionFileOpen}
                       />
-                    // @ts-ignore
                     ) : msg.role === "assistant" && !readOnly && editingIndex === i ? (
                       <EditableMessage
-                        // @ts-ignore
                         content={msg.content}
                         index={i}
                         role="assistant"
-                        // @ts-ignore
                         onEdit={onEdit}
                         editing={true}
                         onCancelEdit={() => setEditingIndex(null)}
-                        // @ts-ignore
                         knownPaths={knownPaths}
-                        // @ts-ignore
                         onMentionFileOpen={onMentionFileOpen}
                       />
-                    // @ts-ignore
                     ) : msg.content ? (
                       <MarkdownContent
-                        // @ts-ignore
                         content={msg.content}
                         className={isStreaming ? styles.streamingText : ""}
                       >
-                        {/* @ts-ignore */}
                         <StreamingCursorComponent active={isStreaming} />
                       </MarkdownContent>
                     ) : isStreaming ? (
@@ -1673,20 +1378,15 @@ export default function MessageList({
                 )}
 
                 {/* Images / media */}
-                // @ts-ignore
-                {/* @ts-ignore */}
                 {msg.images && msg.images.length > 0 && (
                   <div className={styles.imagePreviewRow}>
-                    {/* @ts-ignore */}
                     {msg.images.map((rawUrl: any, j: any) => {
                       const resolvedUrl = PrismService.getFileUrl(rawUrl);
                       const cat = getMimeCategory(rawUrl);
                       let clickHandler;
                       if (cat === "image")
-                        // @ts-ignore
                         clickHandler = () => onImageClick?.(resolvedUrl);
                       else if (cat === "pdf" || cat === "text")
-                        // @ts-ignore
                         clickHandler = () => onDocClick?.(resolvedUrl);
                       return (
                         <MediaPreview
@@ -1701,25 +1401,17 @@ export default function MessageList({
 
                 {/* Streaming audio (live session in progress) */}
                 {!readOnly &&
-                  // @ts-ignore
                   msg.role === "assistant" &&
-                  // @ts-ignore
                   msg._liveStreaming &&
-                  // @ts-ignore
                   !msg.audio && (
                     <div className={styles.audioCard}>
-                      {/* @ts-ignore */}
                       <AudioPlayerRecorderComponent streaming compact />
                     </div>
                   )}
 
                 {/* Audio */}
-                {/* @ts-ignore */}
                 {msg.audio && (
                   <div className={styles.imagePreviewRow}>
-                    // @ts-ignore
-                    // @ts-ignore
-                    {/* @ts-ignore */}
                     {(Array.isArray(msg.audio) ? msg.audio : [msg.audio]).map(
                       (rawUrl: any, j: any) => (
                         <MediaPreview key={`aud-${j}`} dataUrl={rawUrl} />
@@ -1729,17 +1421,10 @@ export default function MessageList({
                 )}
 
                 {/* Video */}
-                {/* @ts-ignore */}
                 {msg.video &&
-                  // @ts-ignore
-                  // @ts-ignore
-                  // @ts-ignore
                   (Array.isArray(msg.video) ? msg.video : [msg.video]).length >
                     0 && (
                     <div className={styles.imagePreviewRow}>
-                      // @ts-ignore
-                      // @ts-ignore
-                      {/* @ts-ignore */}
                       {(Array.isArray(msg.video) ? msg.video : [msg.video]).map(
                         (rawUrl: any, j: any) => (
                           <MediaPreview key={`vid-${j}`} dataUrl={rawUrl} />
@@ -1749,16 +1434,9 @@ export default function MessageList({
                   )}
 
                 {/* PDF */}
-                {/* @ts-ignore */}
                 {msg.pdf &&
-                  // @ts-ignore
-                  // @ts-ignore
-                  // @ts-ignore
                   (Array.isArray(msg.pdf) ? msg.pdf : [msg.pdf]).length > 0 && (
                     <div className={styles.imagePreviewRow}>
-                      // @ts-ignore
-                      // @ts-ignore
-                      {/* @ts-ignore */}
                       {(Array.isArray(msg.pdf) ? msg.pdf : [msg.pdf]).map(
                         (rawUrl: any, j: any) => {
                           const resolvedUrl = PrismService.getFileUrl(rawUrl);
@@ -1766,7 +1444,6 @@ export default function MessageList({
                             <MediaPreview
                               key={`pdf-${j}`}
                               dataUrl={rawUrl}
-                              // @ts-ignore
                               onClick={() => onDocClick?.(resolvedUrl)}
                             />
                           );
@@ -1776,74 +1453,48 @@ export default function MessageList({
                   )}
 
                 {/* Error block */}
-                {/* @ts-ignore */}
                 {msg.error && (
                   <div className={styles.errorBlock}>
                     <AlertTriangle size={14} className={styles.errorIcon} />
-                    {/* @ts-ignore */}
                     <span>{msg.error}</span>
                   </div>
                 )}
 
                 {/* User metadata */}
-                // @ts-ignore
-                {/* @ts-ignore */}
                 {msg.role === "user" && msg.content && (
                   <div className={styles.metaBadges}>
-                    {/* @ts-ignore */}
                     <WordBadgeComponent count={msg.content.trim().split(/\s+/).filter(Boolean).length} mini />
                   </div>
                 )}
 
                 {/* Assistant metadata — only on the last message in a coalesced group */}
-                {/* @ts-ignore */}
                 {msg.role === "assistant" &&
                   (coalesce?.isLastInGroup !== false) &&
-                  // @ts-ignore
-                  // @ts-ignore
-                  // @ts-ignore
                   (msg.usage || msg.audio || msg.provider) && (
                     <div className={styles.metaBadges}>
-                      {/* @ts-ignore */}
                       {msg.provider && (
-                        // @ts-ignore
-                        // @ts-ignore
                         <ProvidersBadgeComponent providers={[msg.provider]} mini />
                       )}
-                      {/* @ts-ignore */}
                       {msg.model && (
-                        // @ts-ignore
-                        // @ts-ignore
                         <ModelBadgeComponent models={[msg.model]} mini />
                       )}
-                      {/* @ts-ignore */}
                       {msg.voice && (
-                        // @ts-ignore
-                        // @ts-ignore
                         <BadgeComponent variant="info" mini tooltip={`Voice: ${msg.voice}`}>🔊 {msg.voice}</BadgeComponent>
                       )}
                       {(() => {
-                        // @ts-ignore
-                        // @ts-ignore
                         if (msg.usage?.inputTokens != null && msg.usage?.outputTokens != null) {
-                          // @ts-ignore
                           const cacheRead = msg.usage.cacheReadInputTokens || 0;
-                          // @ts-ignore
                           const cacheWrite = msg.usage.cacheCreationInputTokens || 0;
                           const cached = cacheRead + cacheWrite;
-                          // @ts-ignore
                           const totalIn = getTotalInputTokens(msg.usage);
                           let inLabel = "in";
                           if (cached) {
                             const parts = [];
-                            // @ts-ignore
-                            // @ts-ignore
                             if (msg.usage.inputTokens) parts.push(`${msg.usage.inputTokens.toLocaleString()} new`);
                             if (cacheRead) parts.push(`${cacheRead.toLocaleString()} read`);
                             if (cacheWrite) parts.push(`${cacheWrite.toLocaleString()} write`);
                             inLabel = `in (${parts.join(" · ")})`;
                           }
-                          // @ts-ignore
                           const reasoning = msg.usage.reasoningOutputTokens || 0;
                           let outLabel = "out";
                           if (reasoning > 0) {
@@ -1852,69 +1503,44 @@ export default function MessageList({
                           return (
                             <>
                               <TokenCountBadgeComponent value={totalIn} label={inLabel} mini />
-                              {/* @ts-ignore */}
                               <TokenCountBadgeComponent value={msg.usage.outputTokens} label={outLabel} mini />
                             </>
                           );
                         }
-                        // @ts-ignore
                         if (msg.usage?.outputTokens != null) {
-                          // @ts-ignore
                           return <TokenCountBadgeComponent value={msg.usage.outputTokens} label="tokens" mini />;
                         }
                         return null;
                       })()}
-                      {/* @ts-ignore */}
                       {msg.content && (
-                        // @ts-ignore
                         <WordBadgeComponent count={msg.content.trim().split(/\s+/).filter(Boolean).length} mini />
                       )}
-                      {/* @ts-ignore */}
                       {msg.totalTime != null && (
-                        // @ts-ignore
-                        // @ts-ignore
                         <StopwatchBadgeComponent seconds={msg.totalTime} className={styles.metaMini} />
                       )}
-                      {/* @ts-ignore */}
                       {msg.tokensPerSec && (
-                        // @ts-ignore
-                        // @ts-ignore
                         <BadgeComponent variant="info" mini tooltip={`${msg.tokensPerSec} tokens per second`}>{msg.tokensPerSec} tok/s</BadgeComponent>
                       )}
-                      // @ts-ignore
-                      {/* @ts-ignore */}
                       {(msg.provider === "lm-studio" || msg.provider === "vllm")
                         ? <BadgeComponent variant="success" mini tooltip="Free (local model)">$0</BadgeComponent>
-                        // @ts-ignore
                         : msg.estimatedCost
-                          // @ts-ignore
                           ? <CostBadgeComponent cost={msg.estimatedCost} mini />
                           : null
                       }
-                      {/* @ts-ignore */}
                       {msg.timestamp && (
-                        // @ts-ignore
                         <DateTimeBadgeComponent date={msg.timestamp} mini />
                       )}
                     </div>
                   )}
 
                 {/* Plan proposal card — fallback for non-segmented messages */}
-                // @ts-ignore
-                {/* @ts-ignore */}
                 {planProposal && msg.role === "assistant" && i === messages.length - 1 &&
-                  // @ts-ignore
                   !(msg.contentSegments?.some((s: any) => s.type === "plan")) && (
                   <PlanCardComponent
-                    // @ts-ignore
                     planText={planProposal.plan}
-                    // @ts-ignore
                     steps={planProposal.steps}
-                    // @ts-ignore
                     status={planProposal.status}
-                    // @ts-ignore
                     onApprove={onPlanApprove}
-                    // @ts-ignore
                     onReject={onPlanReject}
                   />
                 )}

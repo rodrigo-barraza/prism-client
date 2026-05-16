@@ -7,19 +7,13 @@ import styles from "./WorkflowHeaderStatsComponent.module.css";
 export default function WorkflowHeaderStatsComponent({
   nodes = [],
   edgeCount = 0,
-}) {
-  const workflowStats = useMemo<any>(() => {
-    // @ts-ignore
-    const modelNodes = nodes.filter((n) => !n.nodeType);
+}: any) {
+  const workflowStats = useMemo(() => {
+    const modelNodes = nodes.filter((n: any) => !n.nodeType);
     const models = [
       ...new Map(
-        modelNodes.map((n) => [
-          // @ts-ignore
-          // @ts-ignore
+        modelNodes.map((n: any) => [
           `${n.provider}:${n.modelName}`,
-          // @ts-ignore
-          // @ts-ignore
-          // @ts-ignore
           { provider: n.provider, name: n.displayName || n.modelName },
         ]),
       ).values(),
@@ -27,14 +21,10 @@ export default function WorkflowHeaderStatsComponent({
     const modalities = new Set();
     for (const n of nodes) {
       // Only boundary nodes: input assets define workflow inputs, viewers define outputs
-      // @ts-ignore
       if (n.nodeType === "input") {
-        // @ts-ignore
         for (const t of n.outputTypes || [])
           if (t !== "conversation") modalities.add(t);
-      // @ts-ignore
       } else if (n.nodeType === "viewer") {
-        // @ts-ignore
         for (const t of n.inputTypes || [])
           if (t !== "conversation") modalities.add(t);
       }
@@ -51,8 +41,7 @@ export default function WorkflowHeaderStatsComponent({
       {workflowStats.modalities.length > 0 && (
         <span className={styles.headerBadge}>
           {workflowStats.modalities.map((mod: any) => {
-            // @ts-ignore
-            const info = MODALITY_ICONS[mod];
+            const info = (MODALITY_ICONS as any)[mod];
             if (!info) return null;
             const Icon = info.icon;
             return (

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -207,17 +208,17 @@ function getSlowestColumns() {
 
 export default function ToolCallsPage() {
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState<any>(true);
-  const [error, setError] = useState<any>(null);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Sort state for tools table
-  const [toolSort, setToolSort] = useState<any>("count");
-  const [toolOrder, setToolOrder] = useState<any>("desc");
+  const [toolSort, setToolSort] = useState("count");
+  const [toolOrder, setToolOrder] = useState("desc");
 
   // Sort state for domain table
-  const [domainSort, setDomainSort] = useState<any>("count");
-  const [domainOrder, setDomainOrder] = useState<any>("desc");
+  const [domainSort, setDomainSort] = useState("count");
+  const [domainOrder, setDomainOrder] = useState("desc");
 
   const loadStats = useCallback(async () => {
     try {
@@ -225,14 +226,10 @@ export default function ToolCallsPage() {
       setError(null);
       const params = {};
       const dateParams = buildDateRangeParams(dateRange);
-      // @ts-ignore
-      // @ts-ignore
-      // @ts-ignore
-      if (dateParams.since) params.since = dateParams.since;
+      if ((dateParams as any).since) (params as any).since = (dateParams as any).since;
       const data = await ToolsApiService.getToolCallStats(params);
       setStats(data);
-    } catch (error) {
-      // @ts-ignore
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setLoading(false);
@@ -246,7 +243,6 @@ export default function ToolCallsPage() {
   // -- Header controls ----------------------------------------
   useEffect(() => {
     setControls(
-      // @ts-ignore
       <>
         <ErrorMessage message={error} />
       </>,
@@ -255,28 +251,25 @@ export default function ToolCallsPage() {
 
   useEffect(() => {
     return () => {
-      // @ts-ignore
       setControls(null);
-      // @ts-ignore
       setTitleBadge(null);
     };
   }, [setControls, setTitleBadge]);
 
   useEffect(() => {
-    // @ts-ignore
-    if (stats) setTitleBadge(formatNumber(stats.totalCalls));
+    if (stats) setTitleBadge(formatNumber((stats as any).totalCalls));
   }, [setTitleBadge, stats]);
 
   // -- Column definitions (stable) ----------------------------
-  const toolColumns = useMemo<any>(() => getToolColumns(), []);
-  const domainColumns = useMemo<any>(() => getDomainColumns(), []);
-  const slowestColumns = useMemo<any>(() => getSlowestColumns(), []);
+  const toolColumns = useMemo(() => getToolColumns(), []);
+  const domainColumns = useMemo(() => getDomainColumns(), []);
+  const slowestColumns = useMemo(() => getSlowestColumns(), []);
 
   // -- Sorted data --------------------------------------------
-  const sortedTools = useMemo<any>(() => {
-    if (!stats?.byTool) return [];
-    const arr = [...stats.byTool];
-    arr.sort((a, b) => {
+  const sortedTools = useMemo(() => {
+    if (!(stats as any)?.byTool) return [];
+    const arr = [...(stats as any).byTool];
+    arr.sort((a: any, b: any) => {
       const mult = toolOrder === "desc" ? -1 : 1;
       if (toolSort === "toolName") return mult * a.toolName.localeCompare(b.toolName);
       return mult * ((a[toolSort] || 0) - (b[toolSort] || 0));
@@ -284,10 +277,10 @@ export default function ToolCallsPage() {
     return arr;
   }, [stats, toolSort, toolOrder]);
 
-  const sortedDomains = useMemo<any>(() => {
-    if (!stats?.byDomain) return [];
-    const arr = [...stats.byDomain];
-    arr.sort((a, b) => {
+  const sortedDomains = useMemo(() => {
+    if (!(stats as any)?.byDomain) return [];
+    const arr = [...(stats as any).byDomain];
+    arr.sort((a: any, b: any) => {
       const mult = domainOrder === "desc" ? -1 : 1;
       if (domainSort === "domain") return mult * (a.domain || "").localeCompare(b.domain || "");
       return mult * ((a[domainSort] || 0) - (b[domainSort] || 0));
@@ -296,15 +289,15 @@ export default function ToolCallsPage() {
   }, [stats, domainSort, domainOrder]);
 
   // -- Derived computed stats ---------------------------------
-  const avgLatencyAll = useMemo<any>(() => {
-    if (!stats?.byTool?.length) return 0;
-    const totalMs = stats.byTool.reduce((sum: any, t: any) => sum + t.avgMs * t.count, 0);
-    return totalMs / stats.totalCalls;
+  const avgLatencyAll = useMemo(() => {
+    if (!(stats as any)?.byTool?.length) return 0;
+    const totalMs = (stats as any).byTool.reduce((sum: any, t: any) => sum + t.avgMs * t.count, 0);
+    return totalMs / (stats as any).totalCalls;
   }, [stats]);
 
-  const topDomain = useMemo<any>(() => {
-    if (!stats?.byDomain?.length) return "—";
-    return stats.byDomain[0].domain;
+  const topDomain = useMemo(() => {
+    if (!(stats as any)?.byDomain?.length) return "—";
+    return (stats as any).byDomain[0].domain;
   }, [stats]);
 
   if (loading && !stats) {
@@ -327,7 +320,7 @@ export default function ToolCallsPage() {
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>
-              {formatNumber(stats?.totalCalls || 0)}
+              {formatNumber((stats as any)?.totalCalls || 0)}
             </span>
             <span className={styles.statLabel}>Total Calls</span>
           </div>
@@ -339,7 +332,7 @@ export default function ToolCallsPage() {
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>
-              {stats?.successRate ?? 0}%
+              {(stats as any)?.successRate ?? 0}%
             </span>
             <span className={styles.statLabel}>Success Rate</span>
           </div>
@@ -411,7 +404,7 @@ export default function ToolCallsPage() {
       </section>
 
       {/* -- Slowest Calls -- */}
-      {stats?.slowest?.length > 0 && (
+      {(stats as any)?.slowest?.length > 0 && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
             <Clock size={16} /> Top 10 Slowest Calls
@@ -428,7 +421,7 @@ export default function ToolCallsPage() {
       )}
 
       {/* -- Error Breakdown -- */}
-      {stats?.errorsByTool?.length > 0 && (
+      {(stats as any)?.errorsByTool?.length > 0 && (
         <section className={styles.section}>
           <h2 className={`${styles.sectionTitle} ${styles.errorTitle}`}>
             <AlertTriangle size={16} /> Errors by Tool

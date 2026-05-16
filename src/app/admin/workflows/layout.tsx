@@ -4,8 +4,6 @@ export const metadata = {
     "Review, manage, and inspect saved AI workflows and their execution history from the admin dashboard.",
 };
 
-// @ts-ignore
-export default function AdminWorkflowsLayout({ children: any }) {
-  // @ts-ignore
+export default function AdminWorkflowsLayout({ children }: any) {
   return children;
 }

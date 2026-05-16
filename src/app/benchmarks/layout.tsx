@@ -4,8 +4,6 @@ export const metadata = {
     "Create custom LLM accuracy tests and benchmark models with pass/fail evaluation.",
 };
 
-// @ts-ignore
-export default function BenchmarksLayout({ children: any }) {
-  // @ts-ignore
+export default function BenchmarksLayout({ children }: any) {
   return children;
 }

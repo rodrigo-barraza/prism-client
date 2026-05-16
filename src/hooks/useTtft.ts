@@ -12,47 +12,26 @@ import { useReducer, useMemo } from "react";
  * For the client-side fallback (LM Studio native path), it live-counts
  * during the "processing" phase and latches on phase transition.
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function ttftReducer(prev: any, { phase: any, startTime: any, perfNow: any, active: any, samples: any }) {
+function ttftReducer(prev: any, { phase, startTime, perfNow, active, samples }: any) {
   // Turn ended → clear
-  // @ts-ignore
   if (!active) {
     if (prev.value === null && !prev.live && prev.seenCount === 0) return prev;
     return { value: null, live: false, prevPhase: null, seenCount: 0 };
   }
 
   // New server-computed TTFT sample(s) arrived — fold into running average
-  // @ts-ignore
-  // @ts-ignore
   if (samples && samples.length > prev.seenCount) {
-    // @ts-ignore
     const newSamples = samples.slice(prev.seenCount);
     // Compute new running average incorporating all new samples
     const prevTotal = (prev.value || 0) * prev.seenCount;
     const newTotal = newSamples.reduce((a: any, b: any) => a + b, 0);
-    // @ts-ignore
     const avg = (prevTotal + newTotal) / samples.length;
-    // @ts-ignore
-    // @ts-ignore
     return { value: avg, live: false, prevPhase: phase, seenCount: samples.length };
   }
 
   // Active processing → live counting (client-side fallback for LM Studio native)
-  // @ts-ignore
-  // @ts-ignore
   if (phase === "processing" && startTime) {
     return {
-      // @ts-ignore
-      // @ts-ignore
       value: (perfNow - startTime) / 1000,
       live: true,
       prevPhase: "processing",
@@ -61,12 +40,10 @@ function ttftReducer(prev: any, { phase: any, startTime: any, perfNow: any, acti
   }
 
   // Phase just transitioned away from processing → latch final value
-  // @ts-ignore
   if (prev.prevPhase === "processing" && phase !== "processing" && prev.live) {
     return {
       value: prev.value,
       live: false,
-      // @ts-ignore
       prevPhase: phase,
       seenCount: prev.seenCount,
     };
@@ -74,16 +51,12 @@ function ttftReducer(prev: any, { phase: any, startTime: any, perfNow: any, acti
 
   // Still latched mid-turn — preserve
   if (prev.value !== null && !prev.live) {
-    // @ts-ignore
-    // @ts-ignore
     if (prev.prevPhase !== phase) return { ...prev, prevPhase: phase };
     return prev;
   }
 
   // No data yet
-  // @ts-ignore
   if (prev.prevPhase !== phase) {
-    // @ts-ignore
     return { ...prev, prevPhase: phase };
   }
   return prev;
@@ -118,7 +91,7 @@ export default function useTtft(sessionStats: any, perfNow: any, needsTicker: an
   const [state, dispatch] = useReducer(ttftReducer, TTFT_INITIAL);
 
   // Dispatch on every tick to keep in sync (same pattern as tok/s reducer)
-  useMemo<any>(() => {
+  useMemo(() => {
     dispatch({ phase, startTime, perfNow, active: needsTicker, samples });
   }, [phase, startTime, perfNow, needsTicker, samples]);
 

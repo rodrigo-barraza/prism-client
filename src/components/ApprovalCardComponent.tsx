@@ -13,24 +13,15 @@ const TIER_CONFIG = {
  * Inline approval card for tool calls that need user permission.
  */
 export default function ApprovalCardComponent({
-  // @ts-ignore
-  // @ts-ignore
-  toolName: any,
+  toolName,
   toolArgs = {},
   tier = 2,
-  // @ts-ignore
-  // @ts-ignore
-  onApprove: any,
-  // @ts-ignore
-  // @ts-ignore
-  onReject: any,
-  // @ts-ignore
-  // @ts-ignore
-  onApproveAll: any,
+  onApprove,
+  onReject,
+  onApproveAll,
   isPending = true,
-}) {
-  // @ts-ignore
-  const tierInfo = TIER_CONFIG[tier] || TIER_CONFIG[2];
+}: any) {
+  const tierInfo = (TIER_CONFIG as any)[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
 
   // Format args for preview (truncate long values)
@@ -45,7 +36,6 @@ export default function ApprovalCardComponent({
             className={styles.tierIcon}
             style={{ color: tierInfo.color }}
           />
-          {/* @ts-ignore */}
           <span className={styles.toolName}>{toolName}</span>
           <span
             className={styles.tierBadge}
@@ -61,7 +51,7 @@ export default function ApprovalCardComponent({
 
       {argEntries.length > 0 && (
         <div className={styles.args}>
-          {argEntries.map(([key, value]) => {
+          {argEntries.map(([key, value]: any) => {
             const strVal = typeof value === "string" ? value : JSON.stringify(value);
             const truncated = strVal.length > 120 ? strVal.slice(0, 117) + "..." : strVal;
             return (
@@ -76,17 +66,14 @@ export default function ApprovalCardComponent({
 
       {isPending && (
         <div className={styles.actions}>
-          {/* @ts-ignore */}
           <button className={styles.approveBtn} onClick={onApprove}>
             <Check size={14} />
             Approve
           </button>
-          {/* @ts-ignore */}
           <button className={styles.approveAllBtn} onClick={onApproveAll}>
             <Zap size={14} />
             Approve All
           </button>
-          {/* @ts-ignore */}
           <button className={styles.rejectBtn} onClick={onReject}>
             <X size={14} />
             Reject

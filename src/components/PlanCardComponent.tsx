@@ -11,22 +11,16 @@ import styles from "./PlanCardComponent.module.css";
  * approve/reject actions and step progress tracking.
  */
 export default function PlanCardComponent({
-  // @ts-ignore
-  // @ts-ignore
-  planText: any,
+  planText,
   steps = [],
   completedSteps = [],
-  // @ts-ignore
-  // @ts-ignore
-  onApprove: any,
-  // @ts-ignore
-  // @ts-ignore
-  onReject: any,
+  onApprove,
+  onReject,
   status = "pending", // "pending" | "approved" | "rejected" | "executing"
-}) {
-  const [expanded, setExpanded] = useState<any>(true);
+}: any) {
+  const [expanded, setExpanded] = useState(true);
 
-  const statusLabel = useMemo<any>(() => {
+  const statusLabel = useMemo(() => {
     switch (status) {
       case "approved": return "Approved";
       case "rejected": return "Rejected";
@@ -35,7 +29,7 @@ export default function PlanCardComponent({
     }
   }, [status, completedSteps.length, steps.length]);
 
-  const statusColor = useMemo<any>(() => {
+  const statusColor = useMemo(() => {
     switch (status) {
       case "approved":
       case "executing":
@@ -78,7 +72,6 @@ export default function PlanCardComponent({
                 variant="primary"
                 icon={Check}
                 className={styles.approveBtn}
-                // @ts-ignore
                 onClick={onApprove}
               >
                 Execute Plan
@@ -87,7 +80,6 @@ export default function PlanCardComponent({
                 variant="destructive"
                 icon={X}
                 className={styles.rejectBtn}
-                // @ts-ignore
                 onClick={onReject}
               >
                 Cancel
@@ -96,15 +88,12 @@ export default function PlanCardComponent({
           )}
 
           <div className={styles.planContent}>
-            // @ts-ignore
-            {/* @ts-ignore */}
             <MarkdownContent content={planText} />
           </div>
 
           {steps.length > 0 && status === "executing" && (
             <div className={styles.stepsProgress}>
-              {steps.map((step, i) => {
-                // @ts-ignore
+              {steps.map((step: any, i: any) => {
                 const isDone = completedSteps.includes(i);
                 return (
                   <div

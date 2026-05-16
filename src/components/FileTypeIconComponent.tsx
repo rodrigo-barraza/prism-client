@@ -452,17 +452,13 @@ export function getFileIconData(filename: any) {
   const lower = filename.toLowerCase();
 
   // 1. Exact filename match
-  // @ts-ignore
-  // @ts-ignore
-  if (FILENAME_ICON_MAP[lower]) return FILENAME_ICON_MAP[lower];
+  if ((FILENAME_ICON_MAP as any)[lower]) return (FILENAME_ICON_MAP as any)[lower];
 
   // 2. Check for compound extensions (e.g., ".d.ts", ".test.js")
   const parts = lower.split(".");
   if (parts.length >= 3) {
     const compoundExt = parts.slice(-2).join(".");
-    // @ts-ignore
-    // @ts-ignore
-    if (EXTENSION_ICON_MAP[compoundExt]) return EXTENSION_ICON_MAP[compoundExt];
+    if ((EXTENSION_ICON_MAP as any)[compoundExt]) return (EXTENSION_ICON_MAP as any)[compoundExt];
     // Test/spec/stories detection
     const secondLast = parts[parts.length - 2];
     if (secondLast === "test" || secondLast === "spec") {
@@ -475,9 +471,7 @@ export function getFileIconData(filename: any) {
 
   // 3. Simple extension match
   const ext = parts.length > 1 ? parts.pop() : "";
-  // @ts-ignore
-  // @ts-ignore
-  if (ext && EXTENSION_ICON_MAP[ext]) return EXTENSION_ICON_MAP[ext];
+  if (ext && (EXTENSION_ICON_MAP as any)[ext]) return (EXTENSION_ICON_MAP as any)[ext];
 
   return DEFAULT_FILE_ICON;
 }
@@ -491,13 +485,10 @@ export function getFileIconData(filename: any) {
  * @param {string} [className] — additional CSS class(es) to merge
  */
 const FileTypeIconComponent = memo(function FileTypeIconComponent({
-  // @ts-ignore
   filename,
-  // @ts-ignore
   size = 11,
-  // @ts-ignore
   className = "",
-}) {
+}: any) {
   const { icon: Icon, cls } = getFileIconData(filename || "");
   return (
     <Icon

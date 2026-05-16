@@ -47,79 +47,56 @@ function savePersistedConfig(modelKey: any, config: any) {
  * @param {Function} onClose — Close the modal
  * @param {boolean} [loading] — Whether a load is in progress
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function ModelLoadConfigPanel({ model: any, onLoad: any, onClose: any, service: any, loading = false }) {
-  // @ts-ignore
-  // @ts-ignore
+export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, loading = false }: any) {
   const modelKey = model.key || model.name;
-  // @ts-ignore
-  // @ts-ignore
   const maxContext = model.max_context_length || model.contextLength || 131072;
-  // @ts-ignore
   const sizeBytes = model.size_bytes || 0;
-  // @ts-ignore
   const architecture = model.architecture || null;
-  // @ts-ignore
-  // @ts-ignore
   const params = model.params_string || model.params || null;
   const quantization =
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     (typeof model.quantization === "object" ? model.quantization?.name : model.quantization) || null;
 
   // Architecture params come from the Prism backend (gguf-arch.js)
-  // @ts-ignore
   const archParams = model.archParams || DEFAULT_ARCH_PARAMS;
   const totalLayers = archParams.layers;
 
   // Load persisted or default values
-  const persisted = useMemo<any>(() => loadPersistedConfig(modelKey), [modelKey]);
+  const persisted = useMemo(() => loadPersistedConfig(modelKey), [modelKey]);
 
-  const [contextLength, setContextLength] = useState<any>(
+  const [contextLength, setContextLength] = useState(
     () => persisted?.contextLength || Math.min(4096, maxContext),
   );
-  const [gpuLayers, setGpuLayers] = useState<any>(
+  const [gpuLayers, setGpuLayers] = useState(
     () => persisted?.gpuLayers ?? totalLayers,
   );
-  const [flashAttention, setFlashAttention] = useState<any>(
+  const [flashAttention, setFlashAttention] = useState(
     () => persisted?.flashAttention ?? true,
   );
-  const [offloadKvCache, setOffloadKvCache] = useState<any>(
+  const [offloadKvCache, setOffloadKvCache] = useState(
     () => persisted?.offloadKvCache ?? true,
   );
-  const [rememberSettings, setRememberSettings] = useState<any>(
+  const [rememberSettings, setRememberSettings] = useState(
     () => !!persisted,
   );
 
   // -- Memory Estimation (from backend) --------------------
-  const [memory, setMemory] = useState<any>({ gpuGiB: 0, totalGiB: 0 });
-  const [maxMemory, setMaxMemory] = useState<any>({ gpuGiB: 0, totalGiB: 0 });
+  const [memory, setMemory] = useState({ gpuGiB: 0, totalGiB: 0 });
+  const [maxMemory, setMaxMemory] = useState({ gpuGiB: 0, totalGiB: 0 });
   const debounceRef = useRef<any>(null);
 
   useEffect(() => {
-    // @ts-ignore
     if (!service?.estimateLmStudioMemory) return;
 
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
         const [current, max] = await Promise.all([
-          // @ts-ignore
           service.estimateLmStudioMemory(modelKey, {
             contextLength,
             gpuLayers,
             flashAttention,
             offloadKvCache,
           }),
-          // @ts-ignore
           service.estimateLmStudioMemory(modelKey, {
             contextLength: maxContext,
             gpuLayers: totalLayers,
@@ -135,7 +112,6 @@ export default function ModelLoadConfigPanel({ model: any, onLoad: any, onClose:
     }, 100);
 
     return () => clearTimeout(debounceRef.current);
-  // @ts-ignore
   }, [service, modelKey, contextLength, gpuLayers, flashAttention, offloadKvCache, maxContext, totalLayers]);
 
   const barMax = Math.max(maxMemory.totalGiB, memory.totalGiB, 1);
@@ -159,13 +135,11 @@ export default function ModelLoadConfigPanel({ model: any, onLoad: any, onClose:
       }
     }
 
-    // @ts-ignore
     onLoad(modelKey, {
       contextLength,
       flashAttention,
       offloadKvCache,
     });
-  // @ts-ignore
   }, [modelKey, contextLength, gpuLayers, flashAttention, offloadKvCache, rememberSettings, onLoad]);
 
   // Keyboard shortcut: Ctrl+Enter to load
@@ -205,19 +179,16 @@ export default function ModelLoadConfigPanel({ model: any, onLoad: any, onClose:
       title={
         <>
           <ProviderLogo provider="lm-studio" size={20} />
-          {/* @ts-ignore */}
           {model.display_name || modelKey}
           {architecture && (
             <span className={styles.archBadge}>{architecture}</span>
           )}
         </>
       }
-      // @ts-ignore
       onClose={onClose}
       size="md"
       footer={
         <>
-          {/* @ts-ignore */}
           <button className={styles.cancelBtn} onClick={onClose} disabled={loading}>
             Cancel
           </button>
@@ -394,7 +365,7 @@ export default function ModelLoadConfigPanel({ model: any, onLoad: any, onClose:
           type="checkbox"
           className={styles.rememberCheckbox}
           checked={rememberSettings}
-          onChange={(e) => setRememberSettings(e.target.checked)}
+          onChange={(e: any) => setRememberSettings(e.target.checked)}
         />
         <span className={styles.rememberLabel}>
           Remember settings for <strong>{modelKey}</strong>

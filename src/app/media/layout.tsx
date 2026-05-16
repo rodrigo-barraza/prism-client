@@ -4,8 +4,6 @@ export const metadata = {
     "Generate, browse, and manage AI-generated images, audio, and other media assets across providers.",
 };
 
-// @ts-ignore
-export default function MediaLayout({ children: any }) {
-  // @ts-ignore
+export default function MediaLayout({ children }: any) {
   return children;
 }

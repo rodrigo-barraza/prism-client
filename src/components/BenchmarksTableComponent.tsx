@@ -49,37 +49,21 @@ import styles from "./BenchmarksTableComponent.module.css";
  */
 export default function BenchmarksTableComponent({
   results = [],
-  // @ts-ignore
-  // @ts-ignore
-  expectedValue: any,
+  expectedValue,
   modelConfigMap = {},
   emptyText = "No results",
   mini = false,
-  // @ts-ignore
-  // @ts-ignore
-  title: any,
-  // @ts-ignore
-  // @ts-ignore
-  maxHeight: any,
-  // @ts-ignore
-  // @ts-ignore
-  sortKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  sortDir: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSort: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRowClick: any,
-  // @ts-ignore
-  // @ts-ignore
-  activeRowKey: any,
+  title,
+  maxHeight,
+  sortKey,
+  sortDir,
+  onSort,
+  onRowClick,
+  activeRowKey,
   activeModels = new Map(),
   pendingTargets = [],
-}) {
-  const columns = useMemo<any>(
+}: any) {
+  const columns = useMemo(
     () => [
       benchmarkStatusColumn(),
       benchmarkModelColumn(),
@@ -87,7 +71,6 @@ export default function BenchmarksTableComponent({
       benchmarkThinkingColumn(),
       benchmarkSizeColumn({ modelConfigMap }),
       benchmarkMatchModeColumn(),
-      // @ts-ignore
       benchmarkResponseColumn({ expectedValue }),
       benchmarkDurationColumn(),
       benchmarkLatencyColumn(),
@@ -97,17 +80,16 @@ export default function BenchmarksTableComponent({
       benchmarkCostColumn(),
       benchmarkDateColumn(),
     ],
-    // @ts-ignore
     [expectedValue, modelConfigMap],
   );
 
   // Build display data: completed results + active running rows + queued pending rows
-  const displayData = useMemo<any>(() => {
+  const displayData = useMemo(() => {
     // No pending targets — fall back to simple results-only mode
     if (!pendingTargets.length) {
       if (activeModels.size === 0) return results;
       // Append synthetic running rows for all active models
-      const runningRows = [...activeModels.values()].map((entry) => ({
+      const runningRows = [...activeModels.values()].map((entry: any) => ({
         _running: true,
         _progress: entry.progress,
         _phase: entry.phase,
@@ -132,8 +114,6 @@ export default function BenchmarksTableComponent({
     // First pass: count how many times each target key appears
     for (let i = 0; i < pendingTargets.length; i++) {
       const t = pendingTargets[i];
-      // @ts-ignore
-      // @ts-ignore
       const tKey = `${t.provider}:${t.model}`;
       if (!targetCounters.has(tKey)) targetCounters.set(tKey, []);
       targetCounters.get(tKey).push(i);
@@ -141,8 +121,6 @@ export default function BenchmarksTableComponent({
 
     // Map each result to its target index
     for (const r of results) {
-      // @ts-ignore
-      // @ts-ignore
       const rKey = `${r.provider}:${r.model}`;
       const count = resultCounters.get(rKey) || 0;
       const indices = targetCounters.get(rKey);
@@ -162,8 +140,6 @@ export default function BenchmarksTableComponent({
       }
 
       // Check if this target matches any concurrently-running model
-      // @ts-ignore
-      // @ts-ignore
       const modelKey = `${target.provider}:${target.model}`;
       const activeEntry = activeModels.get(modelKey);
 
@@ -190,12 +166,8 @@ export default function BenchmarksTableComponent({
       // Pending/queued
       rows.push({
         _pending: true,
-        // @ts-ignore
         provider: target.provider,
-        // @ts-ignore
         model: target.model,
-        // @ts-ignore
-        // @ts-ignore
         label: target.display_name || target.model,
       });
     }
@@ -218,21 +190,14 @@ export default function BenchmarksTableComponent({
 
   return (
     <TableComponent
-      // @ts-ignore
       title={title}
-      // @ts-ignore
       maxHeight={maxHeight}
       columns={columns}
       data={displayData}
-      // @ts-ignore
       sortKey={sortKey}
-      // @ts-ignore
       sortDir={sortDir}
-      // @ts-ignore
       onSort={onSort}
-      // @ts-ignore
       onRowClick={onRowClick}
-      // @ts-ignore
       activeRowKey={activeRowKey}
       getRowKey={(r: any, i: any) => `${r.provider}:${r.label}:${i}`}
       getRowClassName={getRowClassName}

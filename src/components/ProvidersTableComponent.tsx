@@ -26,23 +26,19 @@ import {
  */
 export default function ProvidersTableComponent({
   providers = [],
-  // @ts-ignore
   totalRequests: totalRequestsProp,
-  // @ts-ignore
   totalCost: totalCostProp,
   emptyText = "No data yet",
   compact = false,
   title = "Providers",
   maxHeight = 420,
-}) {
+}: any) {
   const totalRequests =
     (totalRequestsProp ??
-    // @ts-ignore
-    providers.reduce((s, p) => s + p.totalRequests, 0)) || 1;
+    providers.reduce((s: any, p: any) => s + p.totalRequests, 0)) || 1;
   const totalCost =
     (totalCostProp ??
-    // @ts-ignore
-    providers.reduce((s, p) => s + (p.totalCost || 0), 0)) || 1;
+    providers.reduce((s: any, p: any) => s + (p.totalCost || 0), 0)) || 1;
 
   const allColumns = [
     providerColumn(),
@@ -74,7 +70,7 @@ export default function ProvidersTableComponent({
     "avgLatency",
   ];
   const columns = compact
-    ? allColumns.filter((c) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (

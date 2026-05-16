@@ -68,7 +68,7 @@ export const AGENT_ASSERTION_TYPES = [
 ];
 
 const ASSERTION_TYPE_MAP = Object.fromEntries(
-  AGENT_ASSERTION_TYPES.map((t) => [t.value, t])
+  AGENT_ASSERTION_TYPES.map((t: any) => [t.value, t])
 );
 
 /**
@@ -83,67 +83,48 @@ const ASSERTION_TYPE_MAP = Object.fromEntries(
  * @param {Function} onOperatorChange     — (nextOperator) => void
  */
 export default function AgentAssertionsComponent({
-  // @ts-ignore
-  // @ts-ignore
-  assertions: any,
-  // @ts-ignore
-  // @ts-ignore
-  assertionOperator: any,
-  // @ts-ignore
-  // @ts-ignore
-  onAssertionsChange: any,
-  // @ts-ignore
-  // @ts-ignore
-  onOperatorChange: any,
-}) {
-  // @ts-ignore
+  assertions,
+  assertionOperator,
+  onAssertionsChange,
+  onOperatorChange,
+}: any) {
   const operator = assertionOperator || "AND";
 
   // Which assertion types are already used (for the "Add" dropdown)
-  // @ts-ignore
   const usedTypes = new Set(assertions.map((a: any) => a.type));
 
   const addAssertion = (type: any) => {
     const typeDef = ASSERTION_TYPE_MAP[type];
     const newAssertion = {
       type,
-      // @ts-ignore
       ...(typeDef?.hasOperand && { operator: typeDef.operators[0].value, operand: "" }),
     };
-    // @ts-ignore
-    // @ts-ignore
     onAssertionsChange([...assertions, newAssertion]);
   };
 
   const removeAssertion = (idx: any) => {
-    // @ts-ignore
     const next = assertions.filter((_: any, i: any) => i !== idx);
-    // @ts-ignore
     onAssertionsChange(next.length > 0 ? next : []);
   };
 
   const updateAssertion = (idx: any, field: any, value: any) => {
-    // @ts-ignore
     const next = assertions.map((a: any, i: any) =>
       i === idx ? { ...a, [field]: value } : a
     );
-    // @ts-ignore
     onAssertionsChange(next);
   };
 
   const toggleOperator = () => {
-    // @ts-ignore
     onOperatorChange(operator === "OR" ? "AND" : "OR");
   };
 
   // Available types that haven't been added yet
-  const availableTypes = AGENT_ASSERTION_TYPES.filter((t) => !usedTypes.has(t.value));
+  const availableTypes = AGENT_ASSERTION_TYPES.filter((t: any) => !usedTypes.has(t.value));
 
   return (
     <div className={styles.section}>
       <div className={styles.header}>
         <span className={styles.label}>Agent Assertions</span>
-        {/* @ts-ignore */}
         {assertions.length > 1 && (
           <button
             type="button"
@@ -167,12 +148,11 @@ export default function AgentAssertionsComponent({
         )}
       </div>
 
-      {/* @ts-ignore */}
       {assertions.length === 0 && (
         <div className={styles.emptyState}>
           <p>No assertions configured. Add at least one to evaluate agent behavior.</p>
           <div className={styles.quickAdd}>
-            {AGENT_ASSERTION_TYPES.map((t) => {
+            {AGENT_ASSERTION_TYPES.map((t: any) => {
               const Icon = t.icon;
               return (
                 <button
@@ -191,10 +171,8 @@ export default function AgentAssertionsComponent({
         </div>
       )}
 
-      {/* @ts-ignore */}
       {assertions.length > 0 && (
         <div className={styles.list}>
-          {/* @ts-ignore */}
           {assertions.map((a: any, i: any) => {
             const typeDef = ASSERTION_TYPE_MAP[a.type];
             if (!typeDef) return null;
@@ -220,12 +198,10 @@ export default function AgentAssertionsComponent({
                     <div className={styles.operandGroup}>
                       <FormGroupComponent label="Condition">
                         <select
-                          // @ts-ignore
                           value={a.operator || typeDef.operators[0].value}
-                          onChange={(e) => updateAssertion(i, "operator", e.target.value)}
+                          onChange={(e: any) => updateAssertion(i, "operator", e.target.value)}
                         >
-                          {/* @ts-ignore */}
-                          {typeDef.operators.map((op) => (
+                          {typeDef.operators.map((op: any) => (
                             <option key={op.value} value={op.value}>
                               {op.label}
                             </option>
@@ -237,7 +213,7 @@ export default function AgentAssertionsComponent({
                           type="number"
                           min="0"
                           value={a.operand ?? ""}
-                          onChange={(e) => updateAssertion(i, "operand", e.target.value)}
+                          onChange={(e: any) => updateAssertion(i, "operand", e.target.value)}
                           placeholder={typeDef.placeholder}
                         />
                       </FormGroupComponent>

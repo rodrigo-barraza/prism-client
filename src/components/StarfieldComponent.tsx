@@ -561,15 +561,11 @@ function renderNebulaLayer(w: any, h: any, rng: any) {
 // -- Component --
 
 export default function StarfieldComponent({
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-  // @ts-ignore
-  // @ts-ignore
-  style: any,
+  className,
+  style,
   panX = 0,
   panY = 0,
-}) {
+}: any) {
   const canvasRef = useRef<any>(null);
   const starsRef = useRef<any>(null);
   const constellationStarsRef = useRef<any>(null);
@@ -605,9 +601,9 @@ export default function StarfieldComponent({
     nebulaCanvasRef.current = renderNebulaLayer(w, h, nebulaRng);
 
     // Map constellation data to pixel coordinates
-    constellationStarsRef.current = CONSTELLATIONS.map((c) => ({
+    constellationStarsRef.current = CONSTELLATIONS.map((c: any) => ({
       name: c.name,
-      stars: c.stars.map((s) => ({
+      stars: c.stars.map((s: any) => ({
         x: s.x * w,
         y: s.y * h,
         radius: 0.55 + Math.random() * 0.3, // slightly brighter than dust, but still sharp
@@ -626,16 +622,16 @@ export default function StarfieldComponent({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = (canvas as any).getContext("2d");
     if (!ctx) return;
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
+      const rect = (canvas as any).getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
+      (canvas as any).width = w * dpr;
+      (canvas as any).height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ensureStars(w, h);
     };
@@ -762,7 +758,6 @@ export default function StarfieldComponent({
   return (
     <canvas
       ref={canvasRef}
-      // @ts-ignore
       className={className}
       style={{
         position: "absolute",
@@ -771,7 +766,6 @@ export default function StarfieldComponent({
         height: "100%",
         pointerEvents: "none",
         willChange: "transform",
-        // @ts-ignore
         ...style,
       }}
     />

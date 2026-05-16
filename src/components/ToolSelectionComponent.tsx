@@ -213,25 +213,13 @@ const LABEL_ORDER = [
 ];
 
 // -- Tri-state checkbox: global select-all -----------------------
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function MasterCheckbox({ enabledCount: any, totalCount: any, onToggle: any, label: any }) {
+function MasterCheckbox({ enabledCount, totalCount, onToggle, label }: any) {
   const ref = useRef<any>(null);
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   const allChecked = totalCount > 0 && enabledCount === totalCount;
-  // @ts-ignore
   const partial = enabledCount > 0 && !allChecked;
 
   useEffect(() => {
-    if (ref.current) ref.current.indeterminate = partial;
+    if (ref.current) (ref.current as any).indeterminate = partial;
   }, [partial]);
 
   return (
@@ -241,33 +229,21 @@ function MasterCheckbox({ enabledCount: any, totalCount: any, onToggle: any, lab
         type="checkbox"
         className={styles.toolCheckbox}
         checked={allChecked}
-        // @ts-ignore
         onChange={onToggle}
       />
-      {/* @ts-ignore */}
       <span className={styles.bulkCheckboxLabel}>{label}</span>
     </label>
   );
 }
 
 // -- Tri-state checkbox: per-domain select-all -------------------
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function DomainCheckbox({ domainEnabled: any, totalCount: any, onToggle: any }) {
+function DomainCheckbox({ domainEnabled, totalCount, onToggle }: any) {
   const ref = useRef<any>(null);
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   const allChecked = totalCount > 0 && domainEnabled === totalCount;
-  // @ts-ignore
   const partial = domainEnabled > 0 && !allChecked;
 
   useEffect(() => {
-    if (ref.current) ref.current.indeterminate = partial;
+    if (ref.current) (ref.current as any).indeterminate = partial;
   }, [partial]);
 
   return (
@@ -276,12 +252,11 @@ function DomainCheckbox({ domainEnabled: any, totalCount: any, onToggle: any }) 
       type="checkbox"
       className={styles.domainCheckbox}
       checked={allChecked}
-      onChange={(e) => {
+      onChange={(e: any) => {
         e.stopPropagation();
-        // @ts-ignore
         onToggle();
       }}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e: any) => e.stopPropagation()}
     />
   );
 }
@@ -302,12 +277,11 @@ function DomainCheckbox({ domainEnabled: any, totalCount: any, onToggle: any }) 
 export default function ToolSelectionComponent({
   availableTools = [],
   enabledTools = [],
-  // @ts-ignore
-  onEnabledToolsChange: any,
-}) {
-  const [toolSearch, setToolSearch] = useState<any>("");
-  const [collapsedDomains, setCollapsedDomains] = useState<any>(new Set());
-  const [groupMode, setGroupMode] = useState<any>("domain");
+  onEnabledToolsChange,
+}: any) {
+  const [toolSearch, setToolSearch] = useState("");
+  const [collapsedDomains, setCollapsedDomains] = useState(new Set());
+  const [groupMode, setGroupMode] = useState("domain");
 
   // -- Resolve enabledTools → flat Set of tool names ------------
   const resolveEnabledTools = useCallback(
@@ -317,15 +291,11 @@ export default function ToolSelectionComponent({
         if (entry.startsWith("label:")) {
           const label = entry.slice(6);
           for (const t of availableTools) {
-            // @ts-ignore
-            // @ts-ignore
             if (t.labels?.includes(label)) resolved.add(t.name);
           }
         } else if (entry.startsWith("domain:")) {
           const domain = entry.slice(7);
           for (const t of availableTools) {
-            // @ts-ignore
-            // @ts-ignore
             if (t.domain === domain) resolved.add(t.name);
           }
         } else {
@@ -337,7 +307,7 @@ export default function ToolSelectionComponent({
     [availableTools],
   );
 
-  const resolvedEnabledSet = useMemo<any>(
+  const resolvedEnabledSet = useMemo(
     () => resolveEnabledTools(enabledTools),
     [resolveEnabledTools, enabledTools],
   );
@@ -349,55 +319,42 @@ export default function ToolSelectionComponent({
       const tools = enabledTools || [];
       const resolved = new Set();
       for (const entry of tools) {
-        // @ts-ignore
-        // @ts-ignore
         if (!entry.startsWith("label:") && !entry.startsWith("domain:")) {
           resolved.add(entry);
         }
       }
       if (resolved.has(toolName)) {
-        // @ts-ignore
-        onEnabledToolsChange(tools.filter((t) => t !== toolName));
+        onEnabledToolsChange(tools.filter((t: any) => t !== toolName));
       } else {
-        // @ts-ignore
         onEnabledToolsChange([...tools, toolName]);
       }
     },
-    // @ts-ignore
     [enabledTools, onEnabledToolsChange],
   );
 
   const selectAllTools = useCallback(() => {
-    // @ts-ignore
-    // @ts-ignore
-    onEnabledToolsChange(availableTools.map((t) => t.name));
-  // @ts-ignore
+    onEnabledToolsChange(availableTools.map((t: any) => t.name));
   }, [availableTools, onEnabledToolsChange]);
 
   const deselectAllTools = useCallback(() => {
-    // @ts-ignore
     onEnabledToolsChange([]);
-  // @ts-ignore
   }, [onEnabledToolsChange]);
 
   // -- Filtering ------------------------------------------------
   const query = toolSearch.toLowerCase().trim();
 
-  const filteredTools = useMemo<any>(() => {
+  const filteredTools = useMemo(() => {
     if (!query) return availableTools;
     return availableTools.filter(
-      (t) =>
-        // @ts-ignore
+      (t: any) =>
         t.name?.toLowerCase().includes(query) ||
-        // @ts-ignore
         renderToolName(t.name)?.toLowerCase().includes(query) ||
-        // @ts-ignore
         t.description?.toLowerCase().includes(query),
     );
   }, [availableTools, query]);
 
   // -- Group by domain ------------------------------------------
-  const groupedTools = useMemo<any>(() => {
+  const groupedTools = useMemo(() => {
     const groups = new Map();
     for (const tool of filteredTools) {
       const domain = tool.domain || "Other";
@@ -415,7 +372,7 @@ export default function ToolSelectionComponent({
   }, [filteredTools]);
 
   // -- Group by label (tools appear under every label they carry)
-  const groupedByLabel = useMemo<any>(() => {
+  const groupedByLabel = useMemo(() => {
     const groups = new Map();
     for (const tool of filteredTools) {
       const labels = tool.labels && tool.labels.length > 0 ? tool.labels : ["other"];
@@ -451,24 +408,20 @@ export default function ToolSelectionComponent({
       const isDomain = groupMode === "domain";
       const prefix = isDomain ? `domain:${groupKey}` : `label:${groupKey}`;
 
-      // @ts-ignore
       const hasGroupRef = currentTools.includes(prefix);
       const resolved = resolveEnabledTools(currentTools);
       const groupNames = groupTools.map((t: any) => t.name);
       const allEnabled = groupNames.every((n: any) => resolved.has(n));
 
       if (hasGroupRef || allEnabled) {
-        // @ts-ignore
         onEnabledToolsChange(
-          currentTools.filter((t) => t !== prefix && !groupNames.includes(t)),
+          currentTools.filter((t: any) => t !== prefix && !groupNames.includes(t)),
         );
       } else {
-        const cleaned = currentTools.filter((t) => !groupNames.includes(t));
-        // @ts-ignore
+        const cleaned = currentTools.filter((t: any) => !groupNames.includes(t));
         onEnabledToolsChange([...cleaned, prefix]);
       }
     },
-    // @ts-ignore
     [enabledTools, groupMode, resolveEnabledTools, onEnabledToolsChange],
   );
 
@@ -514,7 +467,7 @@ export default function ToolSelectionComponent({
             className={styles.toolsSearchInput}
             placeholder="Search tools..."
             value={toolSearch}
-            onChange={(e) => setToolSearch(e.target.value)}
+            onChange={(e: any) => setToolSearch(e.target.value)}
           />
         </div>
 
@@ -537,15 +490,11 @@ export default function ToolSelectionComponent({
           ([groupKey, tools]: any) => {
             const isDomain = groupMode === "domain";
             const GroupIcon = isDomain
-              // @ts-ignore
-              ? DOMAIN_ICONS[groupKey] || Layers
-              // @ts-ignore
-              : LABEL_ICONS[groupKey] || Tag;
+              ? (DOMAIN_ICONS as any)[groupKey] || Layers
+              : (LABEL_ICONS as any)[groupKey] || Tag;
             const label = isDomain
-              // @ts-ignore
-              ? DOMAIN_LABELS[groupKey] || groupKey
-              // @ts-ignore
-              : LABEL_DISPLAY[groupKey] || groupKey;
+              ? (DOMAIN_LABELS as any)[groupKey] || groupKey
+              : (LABEL_DISPLAY as any)[groupKey] || groupKey;
             const collapsed = collapsedDomains.has(groupKey);
             const groupEnabled = tools.filter((t: any) =>
               resolvedEnabledSet.has(t.name),

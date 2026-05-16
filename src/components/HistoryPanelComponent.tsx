@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useMemo, useRef, useCallback, useState } from "react";
@@ -36,74 +37,44 @@ function glitchText(len = 6) {
 
 export default function HistoryPanel({
   sessions = [],
-  // @ts-ignore
-  // @ts-ignore
-  activeId: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSelect: any,
-  // @ts-ignore
-  // @ts-ignore
-  onNew: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDelete: any,
+  activeId,
+  onSelect,
+  onNew,
+  onDelete,
   readOnly = false,
   showProject = false,
   showUsername = false,
-  // @ts-ignore
-  // @ts-ignore
-  newIds: any,
+  newIds,
   favorites = [],
-  // @ts-ignore
-  // @ts-ignore
-  onToggleFavorite: any,
-  // @ts-ignore
-  // @ts-ignore
-  initialProviders: any,
+  onToggleFavorite,
+  initialProviders,
   initialSearch = "",
-  // @ts-ignore
-  // @ts-ignore
-  disableNew: any,
+  disableNew,
   // Customisable labels — defaults match conversation-session context
   newLabel = "New Conversation",
   emptyText = "No recent chats",
   searchText = "Search conversations...",
-  // @ts-ignore
-  // @ts-ignore
-  itemIcon: any,
-  // @ts-ignore
-  // @ts-ignore
-  countLabel: any,
-  // @ts-ignore
-  // @ts-ignore
-  onOpenInNewTab: any,
-  // @ts-ignore
-  // @ts-ignore
-  generatingSessionIds: any,
+  itemIcon,
+  countLabel,
+  onOpenInNewTab,
+  generatingSessionIds,
   // Pagination
-  // @ts-ignore
-  // @ts-ignore
-  hasMore: any,
-  // @ts-ignore
-  // @ts-ignore
-  loadingMore: any,
-  // @ts-ignore
-  // @ts-ignore
-  onLoadMore: any,
-}) {
+  hasMore,
+  loadingMore,
+  onLoadMore,
+}: any) {
   const newBtnRef = useRef<any>(null);
   const rainbowTimer = useRef<any>(null);
   const glitchInterval = useRef<any>(null);
-  const [glitchLabel, setGlitchLabel] = useState<any>(null);
+  const [glitchLabel, setGlitchLabel] = useState(null);
 
   const handleNew = useCallback(() => {
     const el = newBtnRef.current;
     if (el) {
       // Rainbow hue-rotate
-      el.classList.remove(styles.newBtnRainbow);
-      void el.offsetWidth;
-      el.classList.add(styles.newBtnRainbow);
+      (el as any).classList.remove(styles.newBtnRainbow);
+      void (el as any).offsetWidth;
+      (el as any).classList.add(styles.newBtnRainbow);
 
       // Glitch text scramble — 30ms swaps for chaotic feel
       setGlitchLabel(glitchText());
@@ -114,37 +85,31 @@ export default function HistoryPanel({
 
       clearTimeout(rainbowTimer.current);
       rainbowTimer.current = setTimeout(() => {
-        el.classList.remove(styles.newBtnRainbow);
+        (el as any).classList.remove(styles.newBtnRainbow);
         clearInterval(glitchInterval.current);
         glitchInterval.current = null;
         setGlitchLabel(null);
       }, 1000);
     }
-    // @ts-ignore
     onNew?.();
-  // @ts-ignore
   }, [onNew]);
 
   // Normalize sessions into HistoryList items
-  const items = useMemo<any>(() => {
-    return sessions.map((conv) => {
+  const items = useMemo(() => {
+    return sessions.map((conv: any) => {
       // Prefer session-level totalCost (authoritative, from request logs
       // for agent sessions). Fall back to message-sum only for Direct Chat
       // sessions that carry messages inline with no precomputed total.
       const totalCost =
-        // @ts-ignore
         conv.totalCost ??
-        // @ts-ignore
         (conv.messages || []).reduce(
           (sum: any, m: any) => sum + (m.estimatedCost || 0),
           0,
         );
 
       const tags = [];
-      // @ts-ignore
       if (showProject && conv.project) {
         tags.push({
-          // @ts-ignore
           label: conv.project,
           style: {
             background: "var(--accent-subtle)",
@@ -152,7 +117,6 @@ export default function HistoryPanel({
           },
         });
       }
-      // @ts-ignore
       if (conv.synthetic) {
         tags.push({
           label: "SYNTHETIC",
@@ -167,19 +131,14 @@ export default function HistoryPanel({
       // then backend-enriched modelNames (from request-log aggregation),
       // otherwise derive from messages
       let modelNames;
-      // @ts-ignore
       if (conv._liveModelNames?.length > 0) {
-        // @ts-ignore
         modelNames = conv._liveModelNames;
-      // @ts-ignore
       } else if (conv.modelNames?.length > 0) {
         // Backend enrichment: the list endpoint aggregates unique models
         // from request logs — available without fetching the full session.
-        // @ts-ignore
         modelNames = conv.modelNames;
       } else {
         // Extract unique model names and providers used in this conversation
-        // @ts-ignore
         const msgs = conv.messages || [];
         const modelNamesSet = new Set();
 
@@ -191,9 +150,7 @@ export default function HistoryPanel({
         }
 
         // If no models found in messages, fall back to conv.model
-        // @ts-ignore
         if (modelNamesSet.size === 0 && conv.model) {
-          // @ts-ignore
           modelNamesSet.add(conv.model);
         }
         modelNames = Array.from(modelNamesSet);
@@ -201,12 +158,9 @@ export default function HistoryPanel({
 
       // Providers: prefer top-level (from backend or live patch), else derive from messages
       let derivedProviders;
-      // @ts-ignore
       if (conv.providers?.length > 0) {
-        // @ts-ignore
         derivedProviders = conv.providers;
       } else {
-        // @ts-ignore
         const msgs = conv.messages || [];
         const providersSet = new Set();
         for (let i = msgs.length - 1; i >= 0; i--) {
@@ -218,42 +172,28 @@ export default function HistoryPanel({
       }
 
       // Merge request-log toolCounts into modalities for accurate badge counts
-      // @ts-ignore
-      // @ts-ignore
       const baseModalities = conv.modalities || getModalities(conv.messages);
-      // @ts-ignore
       const modalities = conv.toolCounts
         ? {
             ...baseModalities,
-            // @ts-ignore
-            // @ts-ignore
-            // @ts-ignore
-            functionCalling: Object.values(conv.toolCounts).reduce((s, c) => s + c, 0),
+            functionCalling: Object.values(conv.toolCounts).reduce((s: any, c: any) => s + c, 0),
           }
         : baseModalities;
 
       return {
-        // @ts-ignore
         id: conv.id,
-        // @ts-ignore
         title: conv.title || "Untitled Chat",
-        // @ts-ignore
         updatedAt: conv.updatedAt,
-        // @ts-ignore
         createdAt: conv.createdAt,
         totalCost,
         modalities,
         providers: derivedProviders,
         tags,
-        // @ts-ignore
         username: conv.username,
         modelNames,
         searchText: [
-          // @ts-ignore
           conv.project || "",
-          // @ts-ignore
           conv.username || "",
-          // @ts-ignore
           ...(conv.messages || []).map((m: any) => m.content || ""),
         ].join(" "),
       };
@@ -262,16 +202,12 @@ export default function HistoryPanel({
 
   return (
     <div className={styles.container}>
-      {/* @ts-ignore */}
       {!readOnly && onNew && (
         <ButtonComponent
           ref={newBtnRef}
           variant="primary"
           icon={glitchLabel ? undefined : Plus}
           onClick={handleNew}
-          // @ts-ignore
-          // @ts-ignore
-          // @ts-ignore
           disabled={disableNew !== undefined ? disableNew : !activeId}
           className={`${styles.newBtn} ${glitchLabel ? styles.newBtnGlitch : ""}`}
           data-panel-close
@@ -279,45 +215,29 @@ export default function HistoryPanel({
           {glitchLabel || newLabel}
         </ButtonComponent>
       )}
-      {/* @ts-ignore */}
       <HistoryList
         items={items}
-        // @ts-ignore
         activeId={activeId}
         onSelect={(item: any) => {
-          // @ts-ignore
-          const conv = sessions.find((c) => c.id === item.id);
-          // @ts-ignore
+          const conv = sessions.find((c: any) => c.id === item.id);
           if (conv) onSelect(conv);
         }}
-        // @ts-ignore
-        // @ts-ignore
         onDelete={!readOnly && onDelete ? onDelete : undefined}
-        // @ts-ignore
         icon={itemIcon || MessageSquare}
         readOnly={readOnly}
         emptyLabel={emptyText}
         searchPlaceholder={searchText}
         admin={showUsername}
-        // @ts-ignore
         newIds={newIds}
         favorites={favorites}
-        // @ts-ignore
         onToggleFavorite={onToggleFavorite}
-        // @ts-ignore
         initialProviders={initialProviders}
         initialSearch={initialSearch}
-        // @ts-ignore
         countLabel={countLabel}
-        // @ts-ignore
         onOpenInNewTab={onOpenInNewTab}
-        // @ts-ignore
         generatingSessionIds={generatingSessionIds}
-        // @ts-ignore
         hasMore={hasMore}
-        // @ts-ignore
         loadingMore={loadingMore}
-        // @ts-ignore
         onLoadMore={onLoadMore}
       />
     </div>

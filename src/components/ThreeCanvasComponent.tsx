@@ -38,12 +38,8 @@ import styles from "./ThreeCanvasComponent.module.css";
  * TickState:  { scene, camera, renderer, clock, dt, elapsed, width, height }
  */
 export default function ThreeCanvasComponent({
-  // @ts-ignore
-  // @ts-ignore
-  onSetup: any,
-  // @ts-ignore
-  // @ts-ignore
-  onTick: any,
+  onSetup,
+  onTick,
   cameraFov = 60,
   cameraNear = 0.1,
   cameraFar = 1000,
@@ -55,22 +51,17 @@ export default function ThreeCanvasComponent({
   shadowMap = false,
   paused = false,
   className = "",
-  // @ts-ignore
-  // @ts-ignore
-  style: any,
-}) {
+  style,
+}: any) {
   const containerRef = useRef<any>(null);
   const canvasRef = useRef<any>(null);
   const instanceIdRef = useRef<any>(null);
-  // @ts-ignore
   const onTickRef = useRef<any>(onTick);
   const setupCleanupRef = useRef<any>(null);
 
   // Keep onTick ref current without re-creating the instance
   useEffect(() => {
-    // @ts-ignore
     onTickRef.current = onTick;
-  // @ts-ignore
   }, [onTick]);
 
   // Pause/resume reactively
@@ -114,9 +105,7 @@ export default function ThreeCanvasComponent({
 
     // Fire the setup callback — pass THREE so consumers don't import it
     const inst = ThreeService.getInstance(id);
-    // @ts-ignore
     if (inst && onSetup) {
-      // @ts-ignore
       const cleanup = onSetup({
         ...inst,
         THREE: ThreeService.THREE,
@@ -143,7 +132,6 @@ export default function ThreeCanvasComponent({
     <div
       ref={containerRef}
       className={`${styles.container} ${className}`}
-      // @ts-ignore
       style={style}
     >
       <canvas ref={canvasRef} className={styles.canvas} />

@@ -16,43 +16,28 @@ import styles from "./JsonViewerComponent.module.css";
  *   className — extra root class
  */
 export default function JsonViewerComponent({
-  // @ts-ignore
-  // @ts-ignore
-  data: any,
-  // @ts-ignore
-  // @ts-ignore
-  label: any,
+  data,
+  label,
   collapsed = Infinity,
-  // @ts-ignore
-  // @ts-ignore
-  maxHeight: any,
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-}) {
-  const [copied, setCopied] = useState<any>(false);
+  maxHeight,
+  className,
+}: any) {
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
-    // @ts-ignore
     const ok = await copyToClipboard(JSON.stringify(data, null, 2));
     if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     }
-  // @ts-ignore
   }, [data]);
 
   return (
     <div
-      // @ts-ignore
       className={`${styles.viewer} ${className || ""}`}
-      // @ts-ignore
-      // @ts-ignore
       style={maxHeight ? { maxHeight, overflowY: "auto" } : undefined}
     >
       <div className={styles.toolbar}>
-        // @ts-ignore
-        {/* @ts-ignore */}
         {label && <span className={styles.label}>{label}</span>}
         <button
           className={styles.copyBtn}
@@ -64,36 +49,21 @@ export default function JsonViewerComponent({
         </button>
       </div>
       <div className={styles.tree}>
-        // @ts-ignore
-        {/* @ts-ignore */}
         <JsonNode value={data} depth={0} defaultCollapsed={collapsed} />
       </div>
     </div>
   );
 }
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function JsonNode({ keyName: any, value: any, depth: any, defaultCollapsed: any, isLast = true }) {
-  // @ts-ignore
+function JsonNode({ keyName, value, depth, defaultCollapsed, isLast = true }: any) {
   const type = getType(value);
   const isExpandable = type === "object" || type === "array";
-  // @ts-ignore
-  // @ts-ignore
-  const [expanded, setExpanded] = useState<any>(depth < defaultCollapsed);
+  const [expanded, setExpanded] = useState(depth < defaultCollapsed);
 
   if (isExpandable) {
     const entries =
       type === "array"
-        // @ts-ignore
         ? value.map((v: any, i: any) => [i, v])
-        // @ts-ignore
         : Object.entries(value);
     const bracket = type === "array" ? ["[", "]"] : ["{", "}"];
     const isEmpty = entries.length === 0;
@@ -112,9 +82,7 @@ function JsonNode({ keyName: any, value: any, depth: any, defaultCollapsed: any,
               <ChevronRight size={12} />
             </span>
           )}
-          {/* @ts-ignore */}
           {keyName !== undefined && (
-            // @ts-ignore
             <span className={styles.key}>{JSON.stringify(String(keyName))}: </span>
           )}
           {isEmpty ? (
@@ -142,9 +110,7 @@ function JsonNode({ keyName: any, value: any, depth: any, defaultCollapsed: any,
                   key={k}
                   keyName={type === "array" ? undefined : k}
                   value={v}
-                  // @ts-ignore
                   depth={depth + 1}
-                  // @ts-ignore
                   defaultCollapsed={defaultCollapsed}
                   isLast={i === entries.length - 1}
                 />
@@ -164,13 +130,10 @@ function JsonNode({ keyName: any, value: any, depth: any, defaultCollapsed: any,
   return (
     <div className={styles.node}>
       <div className={styles.row}>
-        {/* @ts-ignore */}
         {keyName !== undefined && (
-          // @ts-ignore
           <span className={styles.key}>{JSON.stringify(String(keyName))}: </span>
         )}
         <span className={styles[`val_${type}`] || styles.val_null}>
-          {/* @ts-ignore */}
           {formatValue(value, type)}
         </span>
         {!isLast && <span className={styles.comma}>,</span>}

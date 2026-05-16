@@ -24,32 +24,23 @@ import styles from "./BenchmarkFormComponent.module.css";
  * @param {Function} onChange   — (updater) => void — receives a state updater fn
  * @param {Array}    matchModes — Array of { value, label } for match mode dropdown
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function BenchmarkFormComponent({ form: any, onChange: any, matchModes: any }) {
+export default function BenchmarkFormComponent({ form, onChange, matchModes }: any) {
   const update = (field: any) => (e: any) =>
-    // @ts-ignore
     onChange((f: any) => ({ ...f, [field]: e.target.value }));
 
   const updateTextArea = (field: any) => (e: any) =>
-    // @ts-ignore
     onChange((f: any) => ({ ...f, [field]: e.target.value }));
 
   const handlePresetChange = (e: any) => {
     const idx = parseInt(e.target.value, 10);
     if (!isNaN(idx) && benchmarkPresets[idx]) {
       const preset = benchmarkPresets[idx];
-      // @ts-ignore
       onChange((f: any) => ({
         ...f,
         name: preset.name,
         systemPrompt: preset.systemPrompt,
         prompt: preset.prompt,
-        assertions: preset.assertions.map(a => ({ ...a })), // deep copy
+        assertions: preset.assertions.map((a: any) => ({ ...a })), // deep copy
         assertionOperator: preset.assertionOperator || "AND",
         // Presets are model benchmarks by default
         benchmarkMode: "model",
@@ -60,23 +51,17 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
   };
 
   const handleModeChange = (mode: any) => {
-    // @ts-ignore
     onChange((f: any) => ({ ...f, benchmarkMode: mode }));
   };
 
-  // @ts-ignore
   const mode = form.benchmarkMode || "model";
 
   // -- Model Assertion helpers ---------------------------------
-  // @ts-ignore
   const assertions = form.assertions || [
-    // @ts-ignore
-    // @ts-ignore
     { expectedValue: form.expectedValue || "", matchMode: form.matchMode || "contains" },
   ];
 
   const addAssertion = () => {
-    // @ts-ignore
     onChange((f: any) => ({
       ...f,
       assertions: [...(f.assertions || [{ expectedValue: f.expectedValue || "", matchMode: f.matchMode || "contains" }]), { expectedValue: "", matchMode: "contains" }],
@@ -84,7 +69,6 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
   };
 
   const removeAssertion = (idx: any) => {
-    // @ts-ignore
     onChange((f: any) => {
       const next = [...(f.assertions || [])];
       next.splice(idx, 1);
@@ -93,7 +77,6 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
   };
 
   const updateAssertion = (idx: any, field: any) => (e: any) => {
-    // @ts-ignore
     onChange((f: any) => {
       const next = [...(f.assertions || [{ expectedValue: f.expectedValue || "", matchMode: f.matchMode || "contains" }])];
       next[idx] = { ...next[idx], [field]: e.target.value };
@@ -102,27 +85,22 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
   };
 
   const toggleOperator = () => {
-    // @ts-ignore
     onChange((f: any) => ({
       ...f,
       assertionOperator: f.assertionOperator === "OR" ? "AND" : "OR",
     }));
   };
 
-  // @ts-ignore
   const operator = form.assertionOperator || "AND";
 
   // -- Agent Assertion helpers ---------------------------------
-  // @ts-ignore
   const agentAssertions = form.agentAssertions || [];
 
   const handleAgentAssertionsChange = (next: any) => {
-    // @ts-ignore
     onChange((f: any) => ({ ...f, agentAssertions: next }));
   };
 
   const handleAgentOperatorChange = (next: any) => {
-    // @ts-ignore
     onChange((f: any) => ({ ...f, agentAssertionOperator: next }));
   };
 
@@ -143,7 +121,7 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
         <FormGroupComponent label="Load Preset (Optional)">
           <select onChange={handlePresetChange} defaultValue="">
             <option value="" disabled>-- Select an industry standard benchmark --</option>
-            {benchmarkPresets.map((p, idx) => (
+            {benchmarkPresets.map((p: any, idx: any) => (
               <option key={idx} value={idx}>
                 {p.name}
               </option>
@@ -155,7 +133,6 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
       <FormGroupComponent label="Name">
         <input
           type="text"
-          // @ts-ignore
           value={form.name}
           onChange={update("name")}
           placeholder="e.g. Capital of France"
@@ -165,7 +142,6 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
       {mode !== "agent" && (
         <FormGroupComponent label="System Prompt (optional)">
           <TextAreaComponent
-            // @ts-ignore
             value={form.systemPrompt}
             onChange={updateTextArea("systemPrompt")}
             placeholder="You are a geography expert. Answer concisely."
@@ -177,7 +153,6 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
 
       <FormGroupComponent label="User Prompt">
         <TextAreaComponent
-          // @ts-ignore
           value={form.prompt}
           onChange={updateTextArea("prompt")}
           placeholder="What is the capital of France? Reply with just the city name."
@@ -237,7 +212,6 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
 
                   <FormGroupComponent label="Match Mode">
                     <select value={a.matchMode} onChange={updateAssertion(i, "matchMode")}>
-                      {/* @ts-ignore */}
                       {matchModes.map((m: any) => (
                         <option key={m.value} value={m.value}>
                           {m.label}
@@ -267,7 +241,6 @@ export default function BenchmarkFormComponent({ form: any, onChange: any, match
       {showAgentAssertions && (
         <AgentAssertionsComponent
           assertions={agentAssertions}
-          // @ts-ignore
           assertionOperator={form.agentAssertionOperator || "AND"}
           onAssertionsChange={handleAgentAssertionsChange}
           onOperatorChange={handleAgentOperatorChange}

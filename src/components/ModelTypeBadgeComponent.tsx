@@ -23,25 +23,19 @@ const MODEL_TYPE_META = {
  * @param {boolean} [mini]
  */
 export default function ModelTypeBadgeComponent({
-  // @ts-ignore
-  modelType: any,
+  modelType,
   className = "",
   mini = false,
-}) {
-  // @ts-ignore
+}: any) {
   if (!modelType) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
 
-  // @ts-ignore
-  // @ts-ignore
-  const meta = MODEL_TYPE_META[modelType] || {
+  const meta = (MODEL_TYPE_META as any)[modelType] || {
     icon: MessageSquare,
-    // @ts-ignore
     label: modelType,
   };
   const Icon = meta.icon;
-  // @ts-ignore
   const cls = `${styles.badge} ${styles[modelType] || ""} ${mini ? styles.mini : ""} ${className}`;
 
   return (

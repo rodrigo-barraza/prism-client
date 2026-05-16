@@ -19,48 +19,26 @@ import styles from "./PromptSectionComponent.module.css";
  * @param {string}          [className] — Additional class on the wrapper
  */
 export default function PromptSectionComponent({
-  // @ts-ignore
-  // @ts-ignore
-  icon: any,
-  // @ts-ignore
-  // @ts-ignore
-  label: any,
-  // @ts-ignore
-  // @ts-ignore
-  badge: any,
-  // @ts-ignore
-  // @ts-ignore
-  value: any,
-  // @ts-ignore
-  // @ts-ignore
-  onChange: any,
-  // @ts-ignore
-  // @ts-ignore
-  placeholder: any,
+  icon,
+  label,
+  badge,
+  value,
+  onChange,
+  placeholder,
   rows = 2,
-  // @ts-ignore
-  // @ts-ignore
-  className: any,
-}) {
+  className,
+}: any) {
   return (
-    // @ts-ignore
     <div className={`${styles.section} ${className || ""}`}>
       <div className={styles.header}>
-        {/* @ts-ignore */}
         {icon}
-        {/* @ts-ignore */}
         <span>{label}</span>
-        // @ts-ignore
-        {/* @ts-ignore */}
         {badge && <span className={styles.badge}>{badge}</span>}
       </div>
       <TextAreaComponent
         className={styles.textarea}
-        // @ts-ignore
         value={value}
-        // @ts-ignore
         onChange={(e: any) => onChange(e.target.value)}
-        // @ts-ignore
         placeholder={placeholder}
         minRows={rows}
         maxRows={8}

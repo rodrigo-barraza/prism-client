@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -29,8 +30,7 @@ export function renderAgentIcon(agent: any, size = 15) {
     return <Resolved size={size} />;
   }
   // Built-in agents use the hardcoded map
-  // @ts-ignore
-  const BuiltIn = AGENT_ICONS[agent?.id] || Bot;
+  const BuiltIn = (AGENT_ICONS as any)[agent?.id] || Bot;
   return <BuiltIn size={size} />;
 }
 
@@ -53,47 +53,33 @@ export function renderAgentIcon(agent: any, size = 15) {
  */
 export default function AgentPickerComponent({
   agents = [],
-  // @ts-ignore
-  // @ts-ignore
-  activeAgentId: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSelect: any,
+  activeAgentId,
+  onSelect,
   disabled = false,
   addMode = false,
   addCount = 0,
-  // @ts-ignore
-  // @ts-ignore
-  onAddAgent: any,
-}) {
-  const [open, setOpen] = useState<any>(false);
+  onAddAgent,
+}: any) {
+  const [open, setOpen] = useState(false);
   const triggerRef = useRef<any>(null);
 
-  // @ts-ignore
-  // @ts-ignore
-  const activeAgent = addMode ? null : (agents.find((a) => a.id === activeAgentId) || agents[0]);
+  const activeAgent = addMode ? null : (agents.find((a: any) => a.id === activeAgentId) || agents[0]);
 
   const handleSelect = useCallback(
     (agentId: any) => {
-      // @ts-ignore
       if (agentId !== activeAgentId) {
-        // @ts-ignore
         onSelect?.(agentId);
       }
       setOpen(false);
       document.dispatchEvent(new CustomEvent("panel:dismiss-sidebars"));
     },
-    // @ts-ignore
-    // @ts-ignore
     [activeAgentId, onSelect],
   );
 
   const handleAdd = useCallback(
     (agent: any) => {
-      // @ts-ignore
       onAddAgent?.(agent);
     },
-    // @ts-ignore
     [onAddAgent],
   );
 
@@ -146,16 +132,12 @@ export default function AgentPickerComponent({
               ref={triggerRef}
               className={styles.trigger}
               onClick={() => !disabled && setOpen((v: any) => !v)}
-              // @ts-ignore
-              // @ts-ignore
               title={`Active agent: ${activeAgent?.name || activeAgentId}`}
               disabled={disabled}
               type="button"
             >
               <AgentBadgeComponent agent={activeAgent} />
               <span className={styles.triggerLabel}>
-                // @ts-ignore
-                {/* @ts-ignore */}
                 {activeAgent?.name || activeAgentId}
               </span>
               <ChevronDown
@@ -164,15 +146,11 @@ export default function AgentPickerComponent({
                 data-open={open}
               />
             </button>
-            {/* @ts-ignore */}
             {activeAgent?.id !== "NONE" && (
-              // @ts-ignore
               <ToolBadgeComponent
                 name="Tool Calling"
-                // @ts-ignore
                 count={activeAgent?.toolCount}
                 variant="condensed"
-                // @ts-ignore
                 tooltip={`${activeAgent?.toolCount || 0} Tools available`}
               />
             )}
@@ -184,44 +162,29 @@ export default function AgentPickerComponent({
         <>
           <div className={styles.backdrop} onClick={() => setOpen(false)} />
           <div className={styles.popover}>
-            {agents.map((agent) => {
-              // @ts-ignore
-              // @ts-ignore
+            {agents.map((agent: any) => {
               const isActive = !addMode && agent.id === activeAgentId;
 
               return (
                 <button
-                  // @ts-ignore
                   key={agent.id}
                   className={styles.agentItem}
                   data-active={isActive}
-                  // @ts-ignore
                   onClick={() => addMode ? handleAdd(agent) : handleSelect(agent.id)}
                   type="button"
-                  // @ts-ignore
-                  // @ts-ignore
-                  // @ts-ignore
                   style={agent.color ? { "--agent-accent": agent.color } : undefined}
                 >
                   <AgentBadgeComponent agent={agent} />
                   <div className={styles.agentInfo}>
-                    {/* @ts-ignore */}
                     <div className={styles.agentName}>{agent.name}</div>
                     <div className={styles.agentMeta}>
-                      {/* @ts-ignore */}
                       {agent.id !== "NONE" && (
                         <span className={styles.toolBadge}>
                           <Wrench size={9} />
-                          // @ts-ignore
-                          {/* @ts-ignore */}
                           {agent.toolCount === -1 ? "All tools" : `${agent.toolCount} tools`}
                         </span>
                       )}
-                      // @ts-ignore
-                      {/* @ts-ignore */}
                       {addMode && agent.description && <span>{agent.description}</span>}
-                      // @ts-ignore
-                      {/* @ts-ignore */}
                       {agent.project && <span>{agent.project}</span>}
                     </div>
                   </div>
@@ -231,8 +194,6 @@ export default function AgentPickerComponent({
                       Add
                     </span>
                   ) : isActive ? (
-                    // @ts-ignore
-                    // @ts-ignore
                     <Check size={14} className={styles.activeCheck} style={agent.color ? { color: agent.color } : undefined} />
                   ) : null}
                 </button>

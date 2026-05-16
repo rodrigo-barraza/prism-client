@@ -19,79 +19,42 @@ import styles from "./WorkflowSidebarComponent.module.css";
 export default function WorkflowSidebar({
   admin = false,
   workflows = [],
-  // @ts-ignore
-  // @ts-ignore
-  activeWorkflowId: any,
-  // @ts-ignore
-  // @ts-ignore
-  onLoadWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDeleteWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDownloadWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onCopyWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onAddAsset: any,
-  // @ts-ignore
-  // @ts-ignore
-  onNewWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSaveWorkflow: any,
-  // @ts-ignore
-  // @ts-ignore
-  workflowName: any,
-  // @ts-ignore
-  // @ts-ignore
-  onWorkflowNameChange: any,
+  activeWorkflowId,
+  onLoadWorkflow,
+  onDeleteWorkflow,
+  onDownloadWorkflow,
+  onCopyWorkflow,
+  onAddAsset,
+  onNewWorkflow,
+  onSaveWorkflow,
+  workflowName,
+  onWorkflowNameChange,
   loading = false,
   favorites = [],
-  // @ts-ignore
-  // @ts-ignore
-  onToggleFavorite: any,
-  // @ts-ignore
-  // @ts-ignore
-  initialProviders: any,
+  onToggleFavorite,
+  initialProviders,
   initialSearch = "",
-}) {
+}: any) {
   // Normalize workflows into HistoryList items
-  const items = useMemo<any>(() => {
-    return workflows.map((wf) => {
-      // @ts-ignore
-      // @ts-ignore
+  const items = useMemo(() => {
+    return workflows.map((wf: any) => {
       const id = wf._id || wf.id;
       const name =
-        // @ts-ignore
         wf.name ||
-        // @ts-ignore
         (wf.userContent
-          // @ts-ignore
           ? wf.userContent.substring(0, 80) +
-            // @ts-ignore
             (wf.userContent.length > 80 ? "…" : "")
           : "Untitled Workflow");
 
       return {
         id,
         title: name,
-        // @ts-ignore
         updatedAt: wf.updatedAt,
-        // @ts-ignore
         createdAt: wf.createdAt,
-        // @ts-ignore
         totalCost: wf.totalCost || 0,
-        // @ts-ignore
         modalities: wf.modalities || {},
-        // @ts-ignore
         providers: wf.providers || [],
-        // @ts-ignore
         username: wf.userName,
-        // @ts-ignore
         searchText: wf.userName || "",
       };
     });
@@ -107,7 +70,6 @@ export default function WorkflowSidebar({
           <div className={styles.sidebarHeaderActions}>
             <button
               className={styles.headerBtn}
-              // @ts-ignore
               onClick={onNewWorkflow}
               title="New Workflow"
             >
@@ -115,7 +77,6 @@ export default function WorkflowSidebar({
             </button>
             <button
               className={styles.headerBtn}
-              // @ts-ignore
               onClick={onSaveWorkflow}
               title="Save Workflow"
             >
@@ -132,16 +93,13 @@ export default function WorkflowSidebar({
             type="text"
             className={styles.nameInput}
             placeholder="Untitled Workflow"
-            // @ts-ignore
             value={workflowName || ""}
-            // @ts-ignore
-            onChange={(e) => onWorkflowNameChange?.(e.target.value)}
+            onChange={(e: any) => onWorkflowNameChange?.(e.target.value)}
           />
         </div>
       )}
 
       {/* Asset buttons — user mode only */}
-      {/* @ts-ignore */}
       {!admin && onAddAsset && (
         <div className={styles.assetSection}>
           <div className={styles.assetSectionLabel}>
@@ -151,7 +109,6 @@ export default function WorkflowSidebar({
           <div className={styles.assetButtons}>
             <button
               className={styles.assetBtn}
-              // @ts-ignore
               onClick={() => onAddAsset("model")}
               title="Add AI Model"
             >
@@ -160,7 +117,6 @@ export default function WorkflowSidebar({
             </button>
             <button
               className={styles.assetBtn}
-              // @ts-ignore
               onClick={() => onAddAsset("conversation", "input")}
               title="Add Chat History"
             >
@@ -169,7 +125,6 @@ export default function WorkflowSidebar({
             </button>
             <button
               className={styles.assetBtn}
-              // @ts-ignore
               onClick={() => onAddAsset("text", "input")}
               title="Add Text"
             >
@@ -178,7 +133,6 @@ export default function WorkflowSidebar({
             </button>
             <button
               className={styles.assetBtn}
-              // @ts-ignore
               onClick={() => onAddAsset("file", "input")}
               title="Add Media"
             >
@@ -187,7 +141,6 @@ export default function WorkflowSidebar({
             </button>
             <button
               className={styles.assetBtn}
-              // @ts-ignore
               onClick={() => onAddAsset("text", "viewer")}
               title="Add Output"
             >
@@ -196,7 +149,6 @@ export default function WorkflowSidebar({
             </button>
             <button
               className={styles.assetBtn}
-              // @ts-ignore
               onClick={() => onAddAsset("tools", "tools")}
               title="Add Function Calling Tools"
             >
@@ -208,18 +160,12 @@ export default function WorkflowSidebar({
       )}
 
       {/* Workflow list — uses shared HistoryList */}
-      {/* @ts-ignore */}
       <HistoryList
         items={items}
-        // @ts-ignore
         activeId={activeWorkflowId}
-        // @ts-ignore
         onSelect={(item: any) => onLoadWorkflow?.(item.id)}
-        // @ts-ignore
         onDelete={!admin ? onDeleteWorkflow : undefined}
-        // @ts-ignore
         onDownload={onDownloadWorkflow}
-        // @ts-ignore
         onCopy={onCopyWorkflow}
         icon={Workflow}
         readOnly={false}
@@ -227,9 +173,7 @@ export default function WorkflowSidebar({
         searchPlaceholder="Search workflows…"
         admin={admin}
         favorites={favorites}
-        // @ts-ignore
         onToggleFavorite={onToggleFavorite}
-        // @ts-ignore
         initialProviders={initialProviders}
         initialSearch={initialSearch}
       />

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect, useReducer, useMemo } from "react";
 
 /**
@@ -21,21 +22,13 @@ const CHUNK_STALE_MS = 2000;
  * burst's final rate so the badge doesn't flicker to zero during
  * tool calls. Clears when the turn fully ends.
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function tokPerSecReducer(prev: any, { computed: any, active: any }) {
+function tokPerSecReducer(prev: any, { computed, active }: any) {
   // Turn ended → clear everything
-  // @ts-ignore
   if (!active) {
     return { current: null, lastComputed: null };
   }
   // Actively generating → show live rate, track for hold
-  // @ts-ignore
   if (computed !== null) {
-    // @ts-ignore
-    // @ts-ignore
     return { current: computed, lastComputed: computed };
   }
   // Paused mid-turn: hold the last burst's rate
@@ -70,10 +63,7 @@ function sumWorkerThroughput(workerGenerationProgress: any) {
   let count = 0;
   if (!workerGenerationProgress) return { sum: 0, count: 0 };
   for (const wp of Object.values(workerGenerationProgress)) {
-    // @ts-ignore
-    // @ts-ignore
     if (wp.tokPerSec != null && wp.tokPerSec > 0) {
-      // @ts-ignore
       sum += wp.tokPerSec;
       count++;
     }
@@ -119,8 +109,8 @@ export default function useTokenRate(sessionStats: any) {
   // -- Live ticker -----------------------------------------------
   // Stores current wall-clock and performance timestamps so render
   // stays pure (no Date.now() calls in the render body).
-  const [nowMs, setNowMs] = useState<any>(() => Date.now());
-  const [perfNow, setPerfNow] = useState<any>(() => performance.now());
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const [perfNow, setPerfNow] = useState(() => performance.now());
 
   const isStreaming = !!(sessionStats?.liveStreamingStartTime);
   const turnActive = !!(sessionStats?.currentTurnStart);
@@ -205,7 +195,7 @@ export default function useTokenRate(sessionStats: any) {
   const liveTokensPerSec = tokPerSecState.current;
 
   // Dispatch every tick to keep the reducer in sync
-  useMemo<any>(() => {
+  useMemo(() => {
     dispatchTokPerSec({ computed: computedTokPerSec, active: needsTicker });
   }, [computedTokPerSec, needsTicker]);
 

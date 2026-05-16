@@ -101,20 +101,14 @@ const PRICING_LABELS = {
  * @param {Object}   props.model    — Raw model object from the table
  * @param {Function} props.onClose  — Called when the panel should close
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function ModelDetailPanelComponent({ model: any, onClose: any }) {
+export default function ModelDetailPanelComponent({ model, onClose }: any) {
   const router = useRouter();
 
   // Close on Escape key
   const handleKeyDown = useCallback(
     (e: any) => {
-      // @ts-ignore
       if (e.key === "Escape") onClose();
     },
-    // @ts-ignore
     [onClose],
   );
 
@@ -124,129 +118,67 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
   }, [handleKeyDown]);
 
   // Normalize model fields
-  const m = useMemo<any>(() => {
-    // @ts-ignore
+  const m = useMemo(() => {
     if (!model) return null;
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     const name = model.display_name || model.label || model.key || model.name;
-    // @ts-ignore
     const provider = model.provider || "lm-studio";
     const quantization =
-      // @ts-ignore
       (typeof model.quantization === "object"
-        // @ts-ignore
         ? model.quantization?.name
-        // @ts-ignore
         : model.quantization) || null;
 
     return {
       name,
-      // @ts-ignore
-      // @ts-ignore
       key: model.key || model.name,
       provider,
       providerLabel: resolveProviderLabel(provider),
-      // @ts-ignore
       modelType: model.modelType || null,
-      // @ts-ignore
       year: model.year || null,
-      // @ts-ignore
-      // @ts-ignore
       contextLength: model.contextLength || model.max_context_length || null,
-      // @ts-ignore
       maxOutputTokens: model.maxOutputTokens || null,
-      // @ts-ignore
       inputTypes: model.inputTypes || [],
-      // @ts-ignore
       outputTypes: model.outputTypes || [],
-      // @ts-ignore
       tools: model.tools || [],
-      // @ts-ignore
       pricing: model.pricing || null,
-      // @ts-ignore
       arena: model.arena || null,
-      // @ts-ignore
-      // @ts-ignore
-      // @ts-ignore
       size: model.size || (model.size_bytes ? formatFileSize(model.size_bytes) : null),
-      // @ts-ignore
-      // @ts-ignore
       params: model.params || model.params_string || null,
       quantization,
-      // @ts-ignore
-      // @ts-ignore
       bitsPerWeight: model.bitsPerWeight ?? model.quantization?.bits_per_weight ?? null,
-      // @ts-ignore
       architecture: model.architecture || null,
-      // @ts-ignore
       publisher: model.publisher || null,
-      // @ts-ignore
-      // @ts-ignore
       isLoaded: model.loaded || model.loaded_instances?.length > 0 || false,
-      // @ts-ignore
       streaming: model.streaming ?? null,
-      // @ts-ignore
       thinking: model.thinking ?? null,
-      // @ts-ignore
       vision: model.vision ?? null,
-      // @ts-ignore
       webSearch: model.webSearch ?? null,
-      // @ts-ignore
       codeExecution: model.codeExecution ?? null,
-      // @ts-ignore
       webFetch: model.webFetch ?? null,
-      // @ts-ignore
       urlContext: model.urlContext ?? null,
-      // @ts-ignore
       jsonMode: model.jsonMode ?? null,
-      // @ts-ignore
       liveAPI: model.liveAPI ?? null,
-      // @ts-ignore
       responsesAPI: model.responsesAPI ?? null,
-      // @ts-ignore
       imageAPI: model.imageAPI ?? null,
-      // @ts-ignore
       verbosity: model.verbosity ?? null,
-      // @ts-ignore
       reasoningSummary: model.reasoningSummary ?? null,
-      // @ts-ignore
       thinkingLevels: model.thinkingLevels || null,
-      // @ts-ignore
       mediaLimits: model.mediaLimits || null,
-      // @ts-ignore
       assistantImages: model.assistantImages,
-      // @ts-ignore
       supportsSystemPrompt: model.supportsSystemPrompt,
-      // @ts-ignore
       defaultTemperature: model.defaultTemperature,
       // Usage stats
-      // @ts-ignore
       usageCount: model.usageCount || 0,
-      // @ts-ignore
       totalInputTokens: model.totalInputTokens || 0,
-      // @ts-ignore
       totalOutputTokens: model.totalOutputTokens || 0,
-      // @ts-ignore
       totalTokens: model.totalTokens || 0,
-      // @ts-ignore
       totalCost: model.totalCost || 0,
-      // @ts-ignore
       avgLatency: model.avgLatency || 0,
-      // @ts-ignore
       avgTokensPerSec: model.avgTokensPerSec || 0,
-      // @ts-ignore
       firstUsed: model.firstUsed || null,
-      // @ts-ignore
       lastUsed: model.lastUsed || null,
-      // @ts-ignore
       successCount: model.successCount || 0,
-      // @ts-ignore
       errorCount: model.errorCount || 0,
     };
-  // @ts-ignore
   }, [model]);
 
   if (!m) return null;
@@ -260,15 +192,13 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
   // Collect pricing entries
   const pricingEntries = m.pricing
     ? Object.entries(m.pricing).filter(
-        // @ts-ignore
-        ([, val]) => val != null && val > 0,
+        ([, val]: any) => val != null && val > 0,
       )
     : [];
 
   // Collect arena entries
   const arenaEntries = m.arena
-    // @ts-ignore
-    ? Object.entries(m.arena).filter(([, val]) => val != null && val > 0)
+    ? Object.entries(m.arena).filter(([, val]: any) => val != null && val > 0)
     : [];
 
   // Capability flags
@@ -288,7 +218,6 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
 
   return (
     <div className={styles.overlay}>
-      {/* @ts-ignore */}
       <div className={styles.backdrop} onClick={onClose} />
       <div className={styles.panel}>
         {/* -- Header ---------------------------------------- */}
@@ -304,7 +233,6 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
               )}
             </div>
           </div>
-          {/* @ts-ignore */}
           <button className={styles.closeBtn} onClick={onClose} title="Close">
             <X size={16} />
           </button>
@@ -343,7 +271,6 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
 
               <span className={styles.kvLabel}>Provider</span>
               <span className={styles.kvValue}>
-                {/* @ts-ignore */}
                 <ProvidersBadgeComponent providers={[m.provider]} />
               </span>
 
@@ -472,16 +399,14 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
                 </div>
                 <div className={styles.modalitiesRow}>
                   {m.inputTypes.map((t: any) => {
-                    // @ts-ignore
-                    const meta = MODALITY_ICONS[t];
+                    const meta = (MODALITY_ICONS as any)[t];
                     if (!meta) return null;
                     const Icon = meta.icon;
                     return (
                       <span
                         key={`in-${t}`}
                         className={styles.modalityChip}
-                        // @ts-ignore
-                        style={{ color: MODALITY_COLORS[t] }}
+                        style={{ color: (MODALITY_COLORS as any)[t] }}
                       >
                         <Icon size={12} />
                         {meta.label}
@@ -492,16 +417,14 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
                     <ArrowRight size={14} className={styles.modalityArrow} />
                   )}
                   {m.outputTypes.map((t: any) => {
-                    // @ts-ignore
-                    const meta = MODALITY_ICONS[t];
+                    const meta = (MODALITY_ICONS as any)[t];
                     if (!meta) return null;
                     const Icon = meta.icon;
                     return (
                       <span
                         key={`out-${t}`}
                         className={styles.modalityChip}
-                        // @ts-ignore
-                        style={{ color: MODALITY_COLORS[t] }}
+                        style={{ color: (MODALITY_COLORS as any)[t] }}
                       >
                         <Icon size={12} />
                         {meta.label}
@@ -523,20 +446,16 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
                   Media Limits
                 </div>
                 <div className={styles.mediaLimitsGrid}>
-                  {Object.entries(m.mediaLimits).map(([type, limits]) => (
+                  {Object.entries(m.mediaLimits).map(([type, limits]: any) => (
                     <div key={type} className={styles.mediaLimitCard}>
                       <span className={styles.mediaLimitType}>{type}</span>
-                      {/* @ts-ignore */}
                       {limits.maxCount && (
                         <span className={styles.mediaLimitValue}>
-                          {/* @ts-ignore */}
                           {formatNumber(limits.maxCount)} files
                         </span>
                       )}
-                      {/* @ts-ignore */}
                       {limits.maxSizeMB && (
                         <span className={styles.mediaLimitValue}>
-                          {/* @ts-ignore */}
                           {limits.maxSizeMB} MB max
                         </span>
                       )}
@@ -558,10 +477,8 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
                 </div>
                 <div className={styles.toolsGrid}>
                   {m.tools.map((tool: any) => {
-                    // @ts-ignore
-                    const Icon = TOOL_ICONS[tool];
-                    // @ts-ignore
-                    const color = TOOL_COLORS[tool];
+                    const Icon = (TOOL_ICONS as any)[tool];
+                    const color = (TOOL_COLORS as any)[tool];
                     return (
                       <span
                         key={tool}
@@ -598,7 +515,7 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
                   API Features
                 </div>
                 <div className={styles.toolsGrid}>
-                  {capabilities.map((cap) => (
+                  {capabilities.map((cap: any) => (
                     <span key={cap} className={styles.toolChip}>
                       {cap}
                     </span>
@@ -618,15 +535,12 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
                   Pricing
                 </div>
                 <div className={styles.pricingGrid}>
-                  {pricingEntries.map(([key, val]) => (
+                  {pricingEntries.map(([key, val]: any) => (
                     <div key={key} className={styles.pricingRow}>
                       <span className={styles.pricingLabel}>
-                        {/* @ts-ignore */}
-                        {PRICING_LABELS[key] || key}
+                        {(PRICING_LABELS as any)[key] || key}
                       </span>
                       <span className={styles.pricingValue}>
-                        {/* @ts-ignore */}
-                        {/* @ts-ignore */}
                         ${typeof val === "number" ? val.toFixed(val < 0.01 ? 4 : 2) : val}
                       </span>
                     </div>
@@ -646,13 +560,11 @@ export default function ModelDetailPanelComponent({ model: any, onClose: any }) 
                   LMArena ELO Scores
                 </div>
                 <div className={styles.arenaGrid}>
-                  {arenaEntries.map(([key, val]) => (
+                  {arenaEntries.map(([key, val]: any) => (
                     <div key={key} className={styles.arenaCard}>
-                      {/* @ts-ignore */}
                       <span className={styles.arenaScore}>{val}</span>
                       <span className={styles.arenaLabel}>
-                        {/* @ts-ignore */}
-                        {ARENA_LABELS[key] || key}
+                        {(ARENA_LABELS as any)[key] || key}
                       </span>
                     </div>
                   ))}

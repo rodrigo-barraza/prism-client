@@ -16,7 +16,7 @@ import { AGENT_ASSERTION_TYPES } from "./AgentAssertionsComponent";
 import styles from "./BenchmarkPreviewSidebarComponent.module.css";
 
 const ASSERTION_TYPE_MAP = Object.fromEntries(
-  AGENT_ASSERTION_TYPES.map((t) => [t.value, t])
+  AGENT_ASSERTION_TYPES.map((t: any) => [t.value, t])
 );
 
 const MODE_ICONS = {
@@ -39,21 +39,13 @@ const MODE_LABELS = {
  * Props:
  *   form — { name, systemPrompt, prompt, benchmarkMode, assertions, assertionOperator, agentAssertions, agentAssertionOperator }
  */
-// @ts-ignore
-export default function BenchmarkPreviewSidebarComponent({ form: any }) {
-  // @ts-ignore
+export default function BenchmarkPreviewSidebarComponent({ form }: any) {
   const assertions = form.assertions || [];
-  // @ts-ignore
   const agentAssertions = form.agentAssertions || [];
-  // @ts-ignore
   const operator = form.assertionOperator || "AND";
-  // @ts-ignore
   const agentOperator = form.agentAssertionOperator || "AND";
-  // @ts-ignore
   const mode = form.benchmarkMode || "model";
-  // @ts-ignore
   const hasName = !!form.name?.trim();
-  // @ts-ignore
   const hasPrompt = !!form.prompt?.trim();
   const hasModelAssertion = assertions.some((a: any) => a.expectedValue?.trim());
   const hasAgentAssertion = agentAssertions.length > 0;
@@ -68,22 +60,19 @@ export default function BenchmarkPreviewSidebarComponent({ form: any }) {
     return hasModelAssertion || hasAgentAssertion;
   })();
 
-  // @ts-ignore
-  const ModeIcon = MODE_ICONS[mode] || Cpu;
+  const ModeIcon = (MODE_ICONS as any)[mode] || Cpu;
 
   return (
     <div className={styles.container}>
       {/* -- Mode Badge ------------------------------------------ */}
       <div className={styles.modeSection}>
         <ModeIcon size={12} />
-        {/* @ts-ignore */}
-        <span>{MODE_LABELS[mode] || "Benchmark"}</span>
+        <span>{(MODE_LABELS as any)[mode] || "Benchmark"}</span>
       </div>
 
       {/* -- Name Preview --------------------------------------- */}
       <div className={styles.nameSection}>
         <div className={styles.nameLabel}>
-          {/* @ts-ignore */}
           {hasName ? form.name : "Untitled Benchmark"}
         </div>
       </div>
@@ -173,7 +162,7 @@ export default function BenchmarkPreviewSidebarComponent({ form: any }) {
                   </BadgeComponent>
                   {typeDef.hasOperand && a.operand && (
                     <span className={styles.assertionValue}>
-                      {typeDef.operators?.find((op) => op.value === a.operator)?.label || "≥"} {a.operand}
+                      {typeDef.operators?.find((op: any) => op.value === a.operator)?.label || "≥"} {a.operand}
                     </span>
                   )}
                 </div>
@@ -184,18 +173,14 @@ export default function BenchmarkPreviewSidebarComponent({ form: any }) {
       )}
 
       {/* -- Prompt Preview -------------------------------------- */}
-      {/* @ts-ignore */}
       {(hasPrompt || form.systemPrompt?.trim()) && (
         <div className={styles.promptSection}>
           <div className={styles.sectionLabel}>
             <MessageSquare size={12} />
             Preview
           </div>
-          {/* @ts-ignore */}
           <ChatPreviewComponent
-            // @ts-ignore
             systemPrompt={form.systemPrompt}
-            // @ts-ignore
             messages={hasPrompt ? [{ role: "user", content: form.prompt }] : []}
             mini
           />

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useEffect } from "react";
@@ -13,7 +14,6 @@ export default function AdminModelsPage() {
 
   useEffect(() => {
     setControls(
-      // @ts-ignore
       <SelectComponent
         value={projectFilter || ""}
         options={projectOptions}
@@ -25,13 +25,10 @@ export default function AdminModelsPage() {
 
   useEffect(() => {
     return () => {
-      // @ts-ignore
       setControls(null);
-      // @ts-ignore
       setTitleBadge(null);
     };
   }, [setControls, setTitleBadge]);
 
-  // @ts-ignore
   return <ModelsPageComponent mode="admin" project={projectFilter} onCountChange={setTitleBadge} />;
 }

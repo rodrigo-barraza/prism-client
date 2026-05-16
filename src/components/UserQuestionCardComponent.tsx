@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
@@ -9,39 +10,27 @@ import styles from "./UserQuestionCardComponent.module.css";
  * optional preview pane, free-text input, and annotations.
  */
 function QuestionBlock({
-  // @ts-ignore
-  // @ts-ignore
-  _index: any,
-  // @ts-ignore
-  // @ts-ignore
-  question: any,
-  // @ts-ignore
-  // @ts-ignore
-  header: any,
+  _index,
+  question,
+  header,
   options = [],
   multiSelect = false,
-  // @ts-ignore
-  // @ts-ignore
-  isPending: any,
-  // @ts-ignore
-  // @ts-ignore
-  onAnswer: any,
+  isPending,
+  onAnswer,
   answeredWith = null,
-}) {
-  const [selected, setSelected] = useState<any>(multiSelect ? [] : null);
-  const [freeText, setFreeText] = useState<any>("");
-  const [annotations, setAnnotations] = useState<any>("");
-  const [showAnnotations, setShowAnnotations] = useState<any>(false);
-  const [previewIdx, setPreviewIdx] = useState<any>(null);
+}: any) {
+  const [selected, setSelected] = useState(multiSelect ? [] : null);
+  const [freeText, setFreeText] = useState("");
+  const [annotations, setAnnotations] = useState("");
+  const [showAnnotations, setShowAnnotations] = useState(false);
+  const [previewIdx, setPreviewIdx] = useState(null);
   const inputRef = useRef<any>(null);
 
   // Auto-focus input when there are no options or after mount
   useEffect(() => {
-    // @ts-ignore
     if (isPending && options.length === 0 && inputRef.current) {
-      inputRef.current.focus();
+      (inputRef.current as any).focus();
     }
-  // @ts-ignore
   }, [isPending, options.length]);
 
   const handleOptionClick = (label: any) => {
@@ -55,7 +44,6 @@ function QuestionBlock({
       setSelected(label);
       // In single-select with no annotation needed, auto-submit on click
       if (!showAnnotations) {
-        // @ts-ignore
         onAnswer?.({ answer: label, annotations: annotations || undefined });
       }
     }
@@ -72,7 +60,6 @@ function QuestionBlock({
     } else {
       return; // Nothing to submit
     }
-    // @ts-ignore
     onAnswer?.({ answer, annotations: annotations || undefined });
   };
 
@@ -84,32 +71,25 @@ function QuestionBlock({
   };
 
   // The preview currently focused
-  // @ts-ignore
   const activePreview = previewIdx !== null ? options[previewIdx]?.preview : null;
 
   return (
     <div className={styles.questionBlock}>
       {/* Header chip */}
-      {/* @ts-ignore */}
       {header && (
-        // @ts-ignore
         <span className={styles.headerChip}>{header}</span>
       )}
 
       {/* Question text */}
-      {/* @ts-ignore */}
       <div className={styles.questionText}>{question}</div>
 
       {/* Options + Preview side-by-side layout */}
-      {/* @ts-ignore */}
       {isPending && options.length > 0 && (
         <div className={`${styles.optionsRow} ${activePreview ? styles.withPreview : ""}`}>
           <div className={styles.optionsList}>
-            {options.map((opt, i) => {
+            {options.map((opt: any, i: any) => {
               const isSelected = multiSelect
-                // @ts-ignore
                 ? selected.includes(opt.label)
-                // @ts-ignore
                 : selected === opt.label;
               const isFocused = previewIdx === i;
 
@@ -117,9 +97,7 @@ function QuestionBlock({
                 <button
                   key={i}
                   className={`${styles.optionBtn} ${isSelected ? styles.optionSelected : ""} ${isFocused ? styles.optionFocused : ""}`}
-                  // @ts-ignore
                   onClick={() => handleOptionClick(opt.label)}
-                  // @ts-ignore
                   onMouseEnter={() => opt.preview ? setPreviewIdx(i) : null}
                   onMouseLeave={() => setPreviewIdx(null)}
                 >
@@ -128,9 +106,7 @@ function QuestionBlock({
                       {isSelected && <Check size={10} />}
                     </span>
                   )}
-                  {/* @ts-ignore */}
                   <span className={styles.optionLabel}>{opt.label}</span>
-                  {/* @ts-ignore */}
                   {opt.preview && (
                     <ChevronRight size={12} className={styles.previewHint} />
                   )}
@@ -149,7 +125,6 @@ function QuestionBlock({
       )}
 
       {/* Free-text input (always available) */}
-      {/* @ts-ignore */}
       {isPending && (
         <div className={styles.inputRow}>
           <input
@@ -158,7 +133,7 @@ function QuestionBlock({
             className={styles.input}
             placeholder={options.length > 0 ? "Or type a custom answer…" : "Type your answer…"}
             value={freeText}
-            onChange={(e) => setFreeText(e.target.value)}
+            onChange={(e: any) => setFreeText(e.target.value)}
             onKeyDown={handleKeyDown}
           />
           {/* Annotation toggle */}
@@ -180,26 +155,23 @@ function QuestionBlock({
       )}
 
       {/* Annotations textarea */}
-      {/* @ts-ignore */}
       {isPending && showAnnotations && (
         <div className={styles.annotationsRow}>
           <textarea
             className={styles.annotationsInput}
             placeholder="Add notes or context for this answer…"
             value={annotations}
-            onChange={(e) => setAnnotations(e.target.value)}
+            onChange={(e: any) => setAnnotations(e.target.value)}
             rows={2}
           />
         </div>
       )}
 
       {/* Resolved state */}
-      {/* @ts-ignore */}
       {!isPending && answeredWith && (
         <div className={styles.answeredRow}>
           <CornerDownLeft size={12} className={styles.answeredIcon} />
           <span className={styles.answeredText}>
-            {/* @ts-ignore */}
             {Array.isArray(answeredWith) ? answeredWith.join(", ") : answeredWith}
           </span>
         </div>
@@ -216,32 +188,25 @@ function QuestionBlock({
 export default function UserQuestionCardComponent({
   questions = [],
   context = null,
-  // @ts-ignore
-  // @ts-ignore
-  onAnswer: any,
+  onAnswer,
   isPending = true,
   answeredWith = null,
   // ── Backward compat (single question) ─────
-  // @ts-ignore
-  // @ts-ignore
-  question: any,
+  question,
   choices = [],
-}) {
+}: any) {
   // Normalize: single question props → questions array
-  const normalizedQuestions = useMemo<any>(() => {
+  const normalizedQuestions = useMemo(() => {
     if (questions.length > 0) return questions;
-    // @ts-ignore
     if (question) {
       return [{
-        // @ts-ignore
         question,
         header: null,
-        options: choices.map((c) => ({ label: c, preview: null })),
+        options: choices.map((c: any) => ({ label: c, preview: null })),
         multiSelect: false,
       }];
     }
     return [];
-  // @ts-ignore
   }, [questions, question, choices]);
 
   // Track answers per question index
@@ -257,18 +222,14 @@ export default function UserQuestionCardComponent({
       setCollectedAnswers((prev: any) => ({ ...prev, [idx]: answerData }));
     } else {
       // Single question — submit immediately
-      // @ts-ignore
       onAnswer?.([answerData]);
     }
-  // @ts-ignore
   }, [isMultiQuestion, onAnswer]);
 
   const handleSubmitAll = useCallback(() => {
     if (!allAnswered) return;
-    const orderedAnswers = normalizedQuestions.map((_: any, i: any) => collectedAnswers[i]);
-    // @ts-ignore
+    const orderedAnswers = normalizedQuestions.map((_: any, i: any) => (collectedAnswers as any)[i]);
     onAnswer?.(orderedAnswers);
-  // @ts-ignore
   }, [allAnswered, normalizedQuestions, collectedAnswers, onAnswer]);
 
   if (normalizedQuestions.length === 0) return null;
@@ -298,19 +259,17 @@ export default function UserQuestionCardComponent({
       {normalizedQuestions.map((q: any, i: any) => (
         <QuestionBlock
           key={i}
-          // @ts-ignore
           index={i}
           question={q.question}
           header={q.header}
           options={q.options || []}
           multiSelect={q.multiSelect || false}
-          isPending={isPending && !collectedAnswers[i]}
+          isPending={isPending && !(collectedAnswers as any)[i]}
           onAnswer={(answerData: any) => handleQuestionAnswer(i, answerData)}
           answeredWith={
             !isPending
-              // @ts-ignore
               ? (answeredWith?.[i]?.answer || answeredWith?.[i])
-              : (collectedAnswers[i]?.answer || null)
+              : ((collectedAnswers as any)[i]?.answer || null)
           }
         />
       ))}

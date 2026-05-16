@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // LiveSessionService — Manages persistent Live API sessions
 // ============================================================
@@ -22,23 +23,14 @@ const LIVE_WS_URL = `${PRISM_WS_URL}/ws/live?project=${PROJECT_NAME}`;
  */
 export default class LiveSessionService {
   constructor() {
-    // @ts-ignore
-    this.ws = null;
-    // @ts-ignore
-    this.audioContext = null; // Capture context (16kHz)
-    // @ts-ignore
-    this.playbackContext = null; // Playback context (24kHz)
-    // @ts-ignore
-    this.playbackWorkletNode = null; // Persistent playback worklet
-    // @ts-ignore
-    this.mediaStream = null;
-    // @ts-ignore
-    this.audioWorkletNode = null;
-    // @ts-ignore
-    this.isRecording = false;
-    // @ts-ignore
-    this.callbacks = {};
-    // @ts-ignore
+    (this as any).ws = null;
+    (this as any).audioContext = null; // Capture context (16kHz)
+    (this as any).playbackContext = null; // Playback context (24kHz)
+    (this as any).playbackWorkletNode = null; // Persistent playback worklet
+    (this as any).mediaStream = null;
+    (this as any).audioWorkletNode = null;
+    (this as any).isRecording = false;
+    (this as any).callbacks = {};
     this.connected = false;
   }
 
@@ -51,57 +43,42 @@ export default class LiveSessionService {
    * @param {object} [params.config] - Live API config (responseModalities, systemInstruction, etc.)
    * @param {object} params.callbacks - { onSetupComplete, onAudio, onText, onThinking, onToolCall, onInputTranscription, onOutputTranscription, onTurnComplete, onInterrupted, onError, onClose }
    */
-  // @ts-ignore
-  connect({ model: any, config = {}, callbacks = {} }) {
-    // @ts-ignore
-    this.callbacks = callbacks;
+  connect({ model, config = {}, callbacks = {} }: any) {
+    (this as any).callbacks = callbacks;
 
-    // @ts-ignore
-    if (this.ws) {
+    if ((this as any).ws) {
       this.disconnect();
     }
 
-    // @ts-ignore
-    this.ws = new WebSocket(LIVE_WS_URL);
+    (this as any).ws = new WebSocket(LIVE_WS_URL);
 
-    // @ts-ignore
-    this.ws.onopen = () => {
+    (this as any).ws.onopen = () => {
       // Send setup message to initialize the Live API session
-      // @ts-ignore
-      this.ws.send(
+      (this as any).ws.send(
         JSON.stringify({
           type: "setup",
-          // @ts-ignore
           model,
           config,
         }),
       );
     };
 
-    // @ts-ignore
-    this.ws.onmessage = (event: any) => {
+    (this as any).ws.onmessage = (event: any) => {
       const data = JSON.parse(event.data);
       this._handleMessage(data);
     };
 
-    // @ts-ignore
-    this.ws.onerror = (event: any) => {
+    (this as any).ws.onerror = (event: any) => {
       console.error("[LiveSession] WebSocket error:", event);
-      // @ts-ignore
-      if (this.callbacks.onError) {
-        // @ts-ignore
-        this.callbacks.onError("WebSocket connection error");
+      if ((this as any).callbacks.onError) {
+        (this as any).callbacks.onError("WebSocket connection error");
       }
     };
 
-    // @ts-ignore
-    this.ws.onclose = () => {
-      // @ts-ignore
+    (this as any).ws.onclose = () => {
       this.connected = false;
-      // @ts-ignore
-      if (this.callbacks.onClose) {
-        // @ts-ignore
-        this.callbacks.onClose();
+      if ((this as any).callbacks.onClose) {
+        (this as any).callbacks.onClose();
       }
     };
   }
@@ -109,113 +86,81 @@ export default class LiveSessionService {
   _handleMessage(data: any) {
     switch (data.type) {
       case "setupComplete":
-        // @ts-ignore
         this.connected = true;
-        // @ts-ignore
-        // @ts-ignore
-        if (this.callbacks.onSetupComplete) this.callbacks.onSetupComplete();
+        if ((this as any).callbacks.onSetupComplete) (this as any).callbacks.onSetupComplete();
         break;
 
       case "audio":
-        // @ts-ignore
-        if (this.callbacks.onAudio) {
-          // @ts-ignore
-          this.callbacks.onAudio(data.data, data.mimeType);
+        if ((this as any).callbacks.onAudio) {
+          (this as any).callbacks.onAudio(data.data, data.mimeType);
         }
         // Auto-play audio if audio context exists
         this._playAudioChunk(data.data);
         break;
 
       case "text":
-        // @ts-ignore
-        // @ts-ignore
-        if (this.callbacks.onText) this.callbacks.onText(data.text);
+        if ((this as any).callbacks.onText) (this as any).callbacks.onText(data.text);
         break;
 
       case "thinking":
-        // @ts-ignore
-        // @ts-ignore
-        if (this.callbacks.onThinking) this.callbacks.onThinking(data.content);
+        if ((this as any).callbacks.onThinking) (this as any).callbacks.onThinking(data.content);
         break;
 
       case "toolCall":
-        // @ts-ignore
-        if (this.callbacks.onToolCall)
-          // @ts-ignore
-          this.callbacks.onToolCall(data.functionCalls);
+        if ((this as any).callbacks.onToolCall)
+          (this as any).callbacks.onToolCall(data.functionCalls);
         break;
 
       case "tool_execution":
-        // @ts-ignore
-        if (this.callbacks.onToolExecution) {
-          // @ts-ignore
-          this.callbacks.onToolExecution(data);
+        if ((this as any).callbacks.onToolExecution) {
+          (this as any).callbacks.onToolExecution(data);
         }
         break;
 
       case "tool_output":
-        // @ts-ignore
-        if (this.callbacks.onToolOutput) {
-          // @ts-ignore
-          this.callbacks.onToolOutput(data);
+        if ((this as any).callbacks.onToolOutput) {
+          (this as any).callbacks.onToolOutput(data);
         }
         break;
 
       case "inputTranscription":
-        // @ts-ignore
-        if (this.callbacks.onInputTranscription) {
-          // @ts-ignore
-          this.callbacks.onInputTranscription(data.text);
+        if ((this as any).callbacks.onInputTranscription) {
+          (this as any).callbacks.onInputTranscription(data.text);
         }
         break;
 
       case "outputTranscription":
-        // @ts-ignore
-        if (this.callbacks.onOutputTranscription) {
-          // @ts-ignore
-          this.callbacks.onOutputTranscription(data.text);
+        if ((this as any).callbacks.onOutputTranscription) {
+          (this as any).callbacks.onOutputTranscription(data.text);
         }
         break;
 
       case "userAudioReady":
-        // @ts-ignore
-        if (this.callbacks.onUserAudioReady) {
-          // @ts-ignore
-          this.callbacks.onUserAudioReady(data.userAudioRef);
+        if ((this as any).callbacks.onUserAudioReady) {
+          (this as any).callbacks.onUserAudioReady(data.userAudioRef);
         }
         break;
 
       case "turnComplete":
-        // @ts-ignore
-        // @ts-ignore
-        if (this.callbacks.onTurnComplete) this.callbacks.onTurnComplete(data);
+        if ((this as any).callbacks.onTurnComplete) (this as any).callbacks.onTurnComplete(data);
         break;
 
       case "interrupted":
         this.stopAudioPlayback();
-        // @ts-ignore
-        // @ts-ignore
-        if (this.callbacks.onInterrupted) this.callbacks.onInterrupted(data);
+        if ((this as any).callbacks.onInterrupted) (this as any).callbacks.onInterrupted(data);
         break;
 
       case "usage":
-        // @ts-ignore
-        // @ts-ignore
-        if (this.callbacks.onUsage) this.callbacks.onUsage(data.usage);
+        if ((this as any).callbacks.onUsage) (this as any).callbacks.onUsage(data.usage);
         break;
 
       case "error":
-        // @ts-ignore
-        // @ts-ignore
-        if (this.callbacks.onError) this.callbacks.onError(data.message);
+        if ((this as any).callbacks.onError) (this as any).callbacks.onError(data.message);
         break;
 
       case "sessionClosed":
-        // @ts-ignore
         this.connected = false;
-        // @ts-ignore
-        // @ts-ignore
-        if (this.callbacks.onClose) this.callbacks.onClose();
+        if ((this as any).callbacks.onClose) (this as any).callbacks.onClose();
         break;
     }
   }
@@ -223,99 +168,70 @@ export default class LiveSessionService {
   disconnect() {
     this.stopMicrophone();
     this.stopAudioPlayback();
-    // @ts-ignore
-    if (this.ws) {
-      // @ts-ignore
-      if (this.ws.readyState === WebSocket.OPEN) {
-        // @ts-ignore
-        this.ws.send(JSON.stringify({ type: "close" }));
+    if ((this as any).ws) {
+      if ((this as any).ws.readyState === WebSocket.OPEN) {
+        (this as any).ws.send(JSON.stringify({ type: "close" }));
       }
-      // @ts-ignore
-      this.ws.close();
-      // @ts-ignore
-      this.ws = null;
+      (this as any).ws.close();
+      (this as any).ws = null;
     }
-    // @ts-ignore
-    if (this.audioContext) {
-      // @ts-ignore
-      this.audioContext.close();
-      // @ts-ignore
-      this.audioContext = null;
+    if ((this as any).audioContext) {
+      (this as any).audioContext.close();
+      (this as any).audioContext = null;
     }
-    // @ts-ignore
-    if (this.playbackWorkletNode) {
-      // @ts-ignore
-      this.playbackWorkletNode.disconnect();
-      // @ts-ignore
-      this.playbackWorkletNode.port.close();
-      // @ts-ignore
-      this.playbackWorkletNode = null;
+    if ((this as any).playbackWorkletNode) {
+      (this as any).playbackWorkletNode.disconnect();
+      (this as any).playbackWorkletNode.port.close();
+      (this as any).playbackWorkletNode = null;
     }
-    // @ts-ignore
-    if (this.playbackContext) {
-      // @ts-ignore
-      this.playbackContext.close();
-      // @ts-ignore
-      this.playbackContext = null;
+    if ((this as any).playbackContext) {
+      (this as any).playbackContext.close();
+      (this as any).playbackContext = null;
     }
-    // @ts-ignore
-    this._playbackInitPromise = null;
-    // @ts-ignore
+    (this as any)._playbackInitPromise = null;
     this.connected = false;
   }
 
   // -- Input --------------------------------------------------
 
   sendText(text: any) {
-    // @ts-ignore
-    if (this.ws?.readyState === WebSocket.OPEN) {
+    if ((this as any).ws?.readyState === WebSocket.OPEN) {
       this.stopAudioPlayback();
-      // @ts-ignore
-      this.ws.send(JSON.stringify({ type: "text", text }));
+      (this as any).ws.send(JSON.stringify({ type: "text", text }));
     }
   }
 
   sendToolResponse(responses: any) {
-    // @ts-ignore
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      // @ts-ignore
-      this.ws.send(JSON.stringify({ type: "toolResponse", responses }));
+    if ((this as any).ws?.readyState === WebSocket.OPEN) {
+      (this as any).ws.send(JSON.stringify({ type: "toolResponse", responses }));
     }
   }
 
   // -- Microphone ---------------------------------------------
 
   async startMicrophone() {
-    // @ts-ignore
-    if (this.isRecording) return;
+    if ((this as any).isRecording) return;
 
     try {
       // Initialize AudioContext at 16kHz — Gemini's native input rate.
       // The browser handles hardware resampling from the mic's native
       // rate (typically 48kHz) down to 16kHz using a high-quality
       // polyphase resampler, eliminating manual downsampling.
-      // @ts-ignore
-      if (!this.audioContext) {
-        // @ts-ignore
-        this.audioContext = new (
-          // @ts-ignore
+      if (!(this as any).audioContext) {
+        (this as any).audioContext = new (
           window.AudioContext || window.webkitAudioContext
         )({
           sampleRate: 16000,
         });
-        // @ts-ignore
-        await this.audioContext.audioWorklet.addModule("/pcm-processor.js");
+        await (this as any).audioContext.audioWorklet.addModule("/pcm-processor.js");
       }
 
-      // @ts-ignore
-      if (this.audioContext.state === "suspended") {
-        // @ts-ignore
-        await this.audioContext.resume();
+      if ((this as any).audioContext.state === "suspended") {
+        await (this as any).audioContext.resume();
       }
 
       // Get microphone stream with WebRTC audio processing
-      // @ts-ignore
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({
+      (this as any).mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: 16000,
           echoCancellation: true,
@@ -324,32 +240,24 @@ export default class LiveSessionService {
         },
       });
 
-      // @ts-ignore
-      const source = this.audioContext.createMediaStreamSource(
-        // @ts-ignore
-        this.mediaStream,
+      const source = (this as any).audioContext.createMediaStreamSource(
+        (this as any).mediaStream,
       );
-      // @ts-ignore
-      this.audioWorkletNode = new AudioWorkletNode(
-        // @ts-ignore
-        this.audioContext,
+      (this as any).audioWorkletNode = new AudioWorkletNode(
+        (this as any).audioContext,
         "pcm-processor",
       );
 
-      // @ts-ignore
-      this.audioWorkletNode.port.onmessage = (event: any) => {
-        // @ts-ignore
-        if (!this.isRecording) return;
+      (this as any).audioWorkletNode.port.onmessage = (event: any) => {
+        if (!(this as any).isRecording) return;
 
         // Already at 16kHz from the AudioContext — convert Float32 → Int16 PCM
         const pcm16 = this._convertFloat32ToInt16(event.data);
 
         // Send as base64 to Prism
         const base64 = this._arrayBufferToBase64(pcm16);
-        // @ts-ignore
-        if (this.ws?.readyState === WebSocket.OPEN) {
-          // @ts-ignore
-          this.ws.send(
+        if ((this as any).ws?.readyState === WebSocket.OPEN) {
+          (this as any).ws.send(
             JSON.stringify({
               type: "audio",
               data: base64,
@@ -360,45 +268,31 @@ export default class LiveSessionService {
       };
 
       // Connect mic → worklet (no output connection — prevents echo)
-      // @ts-ignore
-      source.connect(this.audioWorkletNode);
+      source.connect((this as any).audioWorkletNode);
 
-      // @ts-ignore
-      this.isRecording = true;
-    } catch (error) {
-      // @ts-ignore
+      (this as any).isRecording = true;
+    } catch (error: any) {
       console.error("[LiveSession] Microphone error:", err);
       throw error;
     }
   }
 
   stopMicrophone() {
-    // @ts-ignore
-    this.isRecording = false;
-    // @ts-ignore
-    if (this.mediaStream) {
-      // @ts-ignore
-      this.mediaStream.getTracks().forEach((t: any) => t.stop());
-      // @ts-ignore
-      this.mediaStream = null;
+    (this as any).isRecording = false;
+    if ((this as any).mediaStream) {
+      (this as any).mediaStream.getTracks().forEach((t: any) => t.stop());
+      (this as any).mediaStream = null;
     }
-    // @ts-ignore
-    if (this.audioWorkletNode) {
+    if ((this as any).audioWorkletNode) {
       // Flush any remaining samples in the worklet's 512-sample buffer
-      // @ts-ignore
-      this.audioWorkletNode.port.postMessage("flush");
-      // @ts-ignore
-      this.audioWorkletNode.disconnect();
-      // @ts-ignore
-      this.audioWorkletNode.port.close();
-      // @ts-ignore
-      this.audioWorkletNode = null;
+      (this as any).audioWorkletNode.port.postMessage("flush");
+      (this as any).audioWorkletNode.disconnect();
+      (this as any).audioWorkletNode.port.close();
+      (this as any).audioWorkletNode = null;
     }
     // Signal the Live API to flush any server-side cached audio
-    // @ts-ignore
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      // @ts-ignore
-      this.ws.send(JSON.stringify({ type: "audioStreamEnd" }));
+    if ((this as any).ws?.readyState === WebSocket.OPEN) {
+      (this as any).ws.send(JSON.stringify({ type: "audioStreamEnd" }));
     }
   }
 
@@ -409,43 +303,31 @@ export default class LiveSessionService {
   // thread — zero GC pressure, instant interrupt via single message.
   // Uses a memoized promise to prevent race conditions during init.
   _ensurePlaybackContext() {
-    // @ts-ignore
-    if (!this._playbackInitPromise) {
-      // @ts-ignore
-      this._playbackInitPromise = (async () => {
-        // @ts-ignore
-        this.playbackContext = new (
-          // @ts-ignore
+    if (!(this as any)._playbackInitPromise) {
+      (this as any)._playbackInitPromise = (async () => {
+        (this as any).playbackContext = new (
           window.AudioContext || window.webkitAudioContext
         )({
           sampleRate: 24000,
         });
-        // @ts-ignore
-        await this.playbackContext.audioWorklet.addModule(
+        await (this as any).playbackContext.audioWorklet.addModule(
           "/playback-processor.js",
         );
-        // @ts-ignore
-        this.playbackWorkletNode = new AudioWorkletNode(
-          // @ts-ignore
-          this.playbackContext,
+        (this as any).playbackWorkletNode = new AudioWorkletNode(
+          (this as any).playbackContext,
           "playback-processor",
         );
-        // @ts-ignore
-        // @ts-ignore
-        this.playbackWorkletNode.connect(this.playbackContext.destination);
+        (this as any).playbackWorkletNode.connect((this as any).playbackContext.destination);
       })();
     }
-    // @ts-ignore
-    return this._playbackInitPromise;
+    return (this as any)._playbackInitPromise;
   }
 
   async _playAudioChunk(base64Data: any) {
     await this._ensurePlaybackContext();
 
-    // @ts-ignore
-    if (this.playbackContext.state === "suspended") {
-      // @ts-ignore
-      await this.playbackContext.resume();
+    if ((this as any).playbackContext.state === "suspended") {
+      await (this as any).playbackContext.resume();
     }
 
     try {
@@ -463,19 +345,15 @@ export default class LiveSessionService {
       }
 
       // Post directly to the worklet's ring buffer queue
-      // @ts-ignore
-      this.playbackWorkletNode.port.postMessage(float32);
-    } catch (error) {
-      // @ts-ignore
+      (this as any).playbackWorkletNode.port.postMessage(float32);
+    } catch (error: any) {
       console.error("[LiveSession] Audio playback error:", err);
     }
   }
 
   stopAudioPlayback() {
-    // @ts-ignore
-    if (this.playbackWorkletNode) {
-      // @ts-ignore
-      this.playbackWorkletNode.port.postMessage("interrupt");
+    if ((this as any).playbackWorkletNode) {
+      (this as any).playbackWorkletNode.port.postMessage("interrupt");
     }
   }
 

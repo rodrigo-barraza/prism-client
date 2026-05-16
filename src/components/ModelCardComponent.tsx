@@ -25,55 +25,34 @@ import styles from "./ModelCardComponent.module.css";
  *   onToggleTools    — callback(instanceId)
  */
 export default function ModelCardComponent({
-  // @ts-ignore
-  // @ts-ignore
-  model: any,
+  model,
   dupeCount = 1,
   isThinking = false,
   supportsThinking = false,
   isTools = false,
-  // @ts-ignore
-  // @ts-ignore
-  config: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRemove: any,
-  // @ts-ignore
-  // @ts-ignore
-  onChangeModel: any,
-  // @ts-ignore
-  // @ts-ignore
-  onToggleThinking: any,
-  // @ts-ignore
-  // @ts-ignore
-  onToggleTools: any,
-}) {
+  config,
+  onRemove,
+  onChangeModel,
+  onToggleThinking,
+  onToggleTools,
+}: any) {
 
 
   // Build settings-like object for the picker trigger display
-  const pickerSettings = useMemo<any>(() => ({
-    // @ts-ignore
+  const pickerSettings = useMemo(() => ({
     provider: model.provider || "",
-    // @ts-ignore
     model: model.name || "",
-  // @ts-ignore
-  // @ts-ignore
   }), [model.provider, model.name]);
 
   const handlePickerSelect = (provider: any, name: any) => {
-    // @ts-ignore
-    // @ts-ignore
     onChangeModel?.(model.instanceId, provider, name);
   };
 
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        {/* @ts-ignore */}
         <ProviderLogo provider={model.provider} size={14} />
-        {/* @ts-ignore */}
         <span className={styles.name} title={`Model: ${model.key}`}>
-          {/* @ts-ignore */}
           Model: {model.key}
         </span>
         {dupeCount > 1 && (
@@ -84,10 +63,8 @@ export default function ModelCardComponent({
         )}
         <button
           className={styles.removeBtn}
-          onClick={(e) => {
+          onClick={(e: any) => {
             e.stopPropagation();
-            // @ts-ignore
-            // @ts-ignore
             onRemove?.(model.instanceId);
           }}
           title="Remove"
@@ -97,9 +74,7 @@ export default function ModelCardComponent({
       </div>
 
       {/* Model switcher — uses ModelPickerPopoverComponent trigger */}
-      {/* @ts-ignore */}
       <ModelPickerPopoverComponent
-        // @ts-ignore
         config={config}
         settings={pickerSettings}
         onSelectModel={handlePickerSelect}
@@ -114,8 +89,6 @@ export default function ModelCardComponent({
             title={isTools ? "Disable tools" : "Enable tools"}
             onClick={(e: any) => {
               e.stopPropagation();
-              // @ts-ignore
-              // @ts-ignore
               onToggleTools?.(model.instanceId);
             }}
           />
@@ -127,8 +100,6 @@ export default function ModelCardComponent({
               title={isThinking ? "Disable thinking" : "Enable thinking"}
               onClick={(e: any) => {
                 e.stopPropagation();
-                // @ts-ignore
-                // @ts-ignore
                 onToggleThinking?.(model.instanceId);
               }}
             />

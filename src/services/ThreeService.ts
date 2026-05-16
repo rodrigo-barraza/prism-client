@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ThreeService — Three.js lifecycle manager for Prism.
  *
@@ -18,7 +19,6 @@
  *   ThreeService.destroy(id);
  */
 
-// @ts-ignore
 import * as THREE from "three";
 
 // --- Instance Registry ---------------------------------------------
@@ -27,7 +27,6 @@ import * as THREE from "three";
 const instances = new Map();
 
 let nextId = 0;
-// @ts-ignore
 let rafId = null;
 
 /**
@@ -72,16 +71,13 @@ function loop(timestamp: any) {
 }
 
 function ensureLoop() {
-  // @ts-ignore
   if (rafId === null && instances.size > 0) {
     rafId = requestAnimationFrame(loop);
   }
 }
 
 function stopLoopIfEmpty() {
-  // @ts-ignore
   if (instances.size === 0 && rafId !== null) {
-    // @ts-ignore
     cancelAnimationFrame(rafId);
     rafId = null;
   }
@@ -179,23 +175,14 @@ const ThreeService = {
    */
   create(canvas: any, options = {}) {
     const {
-      // @ts-ignore
       cameraFov = 60,
-      // @ts-ignore
       cameraNear = 0.1,
-      // @ts-ignore
       cameraFar = 1000,
-      // @ts-ignore
       cameraPosition = [0, 0, 5],
-      // @ts-ignore
       antialias = true,
-      // @ts-ignore
       alpha = true,
-      // @ts-ignore
       toneMapping = "ACESFilmic",
-      // @ts-ignore
       toneMappingExposure = 1,
-      // @ts-ignore
       shadowMap = false,
     } = options;
 
@@ -219,8 +206,7 @@ const ThreeService = {
       Neutral: THREE.NeutralToneMapping,
     };
 
-    // @ts-ignore
-    renderer.toneMapping = toneMappingMap[toneMapping] ?? THREE.ACESFilmicToneMapping;
+    renderer.toneMapping = (toneMappingMap as any)[toneMapping] ?? THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = toneMappingExposure;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -268,9 +254,7 @@ const ThreeService = {
     // Observe container resizes
     const parent = canvas.parentElement;
     if (parent && typeof ResizeObserver !== "undefined") {
-      // @ts-ignore
       inst.resizeObserver = new ResizeObserver(() => handleResize(inst));
-      // @ts-ignore
       inst.resizeObserver.observe(parent);
     }
 
@@ -346,21 +330,13 @@ const ThreeService = {
    */
   addLightingRig(scene: any, options = {}) {
     const {
-      // @ts-ignore
       ambientIntensity = 0.4,
-      // @ts-ignore
       keyIntensity = 1.0,
-      // @ts-ignore
       fillIntensity = 0.5,
-      // @ts-ignore
       rimIntensity = 0.3,
-      // @ts-ignore
       ambientColor = "#404060",
-      // @ts-ignore
       keyColor = "#ffffff",
-      // @ts-ignore
       fillColor = "#8888ff",
-      // @ts-ignore
       rimColor = "#ff8844",
     } = options;
 

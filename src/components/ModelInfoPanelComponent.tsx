@@ -23,21 +23,13 @@ import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
  * @param {object} settings  — Current settings (provider, model)
  */
 export default function ModelInfoPanel({
-  // @ts-ignore
-  // @ts-ignore
-  config: any,
-  // @ts-ignore
-  // @ts-ignore
-  settings: any,
-}) {
-  // @ts-ignore
+  config,
+  settings,
+}: any) {
   const { textToText = {} } = config || {};
   const textModelsMap = textToText.models || {};
-  // @ts-ignore
   const audioToTextModelsMap = config?.audioToText?.models || {};
-  // @ts-ignore
   const ttsModelsMap = config?.textToSpeech?.models || {};
-  // @ts-ignore
   const imageModelsMap = config?.textToImage?.models || {};
 
   // Build a merged models map identical to SettingsPanel
@@ -73,15 +65,11 @@ export default function ModelInfoPanel({
         merged.push(m);
       }
     }
-    // @ts-ignore
-    modelsMap[p] = merged;
+    (modelsMap as any)[p] = merged;
   }
 
-  // @ts-ignore
-  // @ts-ignore
-  const currentProviderModels = modelsMap[settings.provider] || [];
+  const currentProviderModels = (modelsMap as any)[settings.provider] || [];
   const selectedModelDef = currentProviderModels.find(
-    // @ts-ignore
     (m: any) => m.name === settings.model,
   );
 
@@ -121,7 +109,7 @@ export default function ModelInfoPanel({
           pdf: <FileText size={12} />,
         };
         const mods = allTypes
-          .map((t) => {
+          .map((t: any) => {
             const isIn = inputs.includes(t);
             const isOut = outputs.includes(t);
             let status = null;
@@ -130,20 +118,18 @@ export default function ModelInfoPanel({
             else if (isOut) status = "Output only";
             return { type: t, status, supported: isIn || isOut };
           })
-          .filter((m) => m.supported);
+          .filter((m: any) => m.supported);
         if (mods.length === 0) return null;
         return (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Modalities</div>
-            {mods.map((m) => (
+            {mods.map((m: any) => (
               <div key={m.type} className={styles.modalityRow}>
                 <span
                   className={styles.modalityIcon}
-                  // @ts-ignore
-                  style={{ color: MODALITY_COLORS[m.type] }}
+                  style={{ color: (MODALITY_COLORS as any)[m.type] }}
                 >
-                  {/* @ts-ignore */}
-                  {iconMap[m.type]}
+                  {(iconMap as any)[m.type]}
                 </span>
                 <span className={styles.modalityName}>{m.type}</span>
                 <span
@@ -200,14 +186,12 @@ export default function ModelInfoPanel({
         };
         if (!selectedModelDef.pricing) return null;
         const entries = Object.entries(selectedModelDef.pricing)
-          // @ts-ignore
-          .filter(([key]) => PRICING_LABELS[key])
-          // @ts-ignore
-          .map(([key, value]) => ({ ...PRICING_LABELS[key], value }));
+          .filter(([key]: any) => (PRICING_LABELS as any)[key])
+          .map(([key, value]: any) => ({ ...(PRICING_LABELS as any)[key], value }));
         return entries.length > 0 ? (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Pricing</div>
-            {entries.map((e) => (
+            {entries.map((e: any) => (
               <div key={e.label} className={styles.modalityRow}>
                 <span className={styles.modalityIcon}>
                   <DollarSign size={12} />
@@ -235,22 +219,20 @@ export default function ModelInfoPanel({
           imageEdit: "Image Edit",
           search: "Search",
         };
-        const entries = Object.entries(arena).filter(([, v]) => v != null);
+        const entries = Object.entries(arena).filter(([, v]: any) => v != null);
         if (entries.length === 0) return null;
         return (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Arena Scores</div>
-            {entries.map(([key, value]) => (
+            {entries.map(([key, value]: any) => (
               <div key={key} className={styles.modalityRow}>
                 <span className={styles.modalityIcon}>
                   <Brain size={12} />
                 </span>
                 <span className={styles.modalityName}>
-                  {/* @ts-ignore */}
-                  {arenaLabels[key] || key}
+                  {(arenaLabels as any)[key] || key}
                 </span>
                 <span className={`${styles.modalityStatus} ${styles.arenaValue}`}>
-                  {/* @ts-ignore */}
                   {value}
                 </span>
               </div>

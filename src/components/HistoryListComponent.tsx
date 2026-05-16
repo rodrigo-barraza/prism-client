@@ -31,22 +31,11 @@ import { LS_DATE_RANGE } from "../constants";
  */
 export default function HistoryList({
   items = [],
-  // @ts-ignore
-  // @ts-ignore
-  activeId: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSelect: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDelete: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDownload: any,
-  // @ts-ignore
-  // @ts-ignore
-  onCopy: any,
-  // @ts-ignore
+  activeId,
+  onSelect,
+  onDelete,
+  onDownload,
+  onCopy,
   icon: ItemIcon,
   readOnly = false,
   emptyLabel = "No items",
@@ -54,130 +43,99 @@ export default function HistoryList({
   showProviderFilters = true,
   showModalityFilters = true,
   admin = false,
-  // @ts-ignore
-  // @ts-ignore
-  newIds: any,
+  newIds,
   favorites = [],
-  // @ts-ignore
-  // @ts-ignore
-  onToggleFavorite: any,
-  // @ts-ignore
-  // @ts-ignore
-  initialProviders: any,
+  onToggleFavorite,
+  initialProviders,
   initialSearch = "",
-  // @ts-ignore
-  // @ts-ignore
-  countLabel: any,
-  // @ts-ignore
-  // @ts-ignore
-  onOpenInNewTab: any,
-  // @ts-ignore
-  // @ts-ignore
-  generatingSessionIds: any,
+  countLabel,
+  onOpenInNewTab,
+  generatingSessionIds,
   // Pagination
   hasMore = false,
   loadingMore = false,
-  // @ts-ignore
-  // @ts-ignore
-  onLoadMore: any,
-}) {
-  const [searchQuery, setSearchQuery] = useState<any>(initialSearch);
-  const [activeModalities, setActiveModalities] = useState<any>(new Set());
-  const [activeTools, setActiveTools] = useState<any>(new Set());
-  const [activeProviders, setActiveProviders] = useState<any>(
-    // @ts-ignore
+  onLoadMore,
+}: any) {
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [activeModalities, setActiveModalities] = useState(new Set());
+  const [activeTools, setActiveTools] = useState(new Set());
+  const [activeProviders, setActiveProviders] = useState(
     () => new Set(initialProviders || []),
   );
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState<any>(false);
-  const [dateRange, setDateRange] = useState<any>({ from: "", to: "" });
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
 
   // Discover modalities across all items
-  const allModalities = useMemo<any>(() => {
+  const allModalities = useMemo(() => {
     const set = new Set();
     for (const item of items) {
-      // @ts-ignore
       const mod = item.modalities || {};
       for (const { key } of MODALITY_FILTERS) {
         if (mod[`${key}In`] || mod[`${key}Out`]) set.add(key);
       }
     }
-    return MODALITY_FILTERS.filter(({ key }) => set.has(key));
+    return MODALITY_FILTERS.filter(({ key }: any) => set.has(key));
   }, [items]);
 
   // Discover tools across all items
-  const allTools = useMemo<any>(() => {
+  const allTools = useMemo(() => {
     const set = new Set();
     for (const item of items) {
-      // @ts-ignore
       const mod = item.modalities || {};
       for (const { key } of TOOL_FILTERS) {
         if (mod[key]) set.add(key);
       }
     }
-    return TOOL_FILTERS.filter(({ key }) => set.has(key));
+    return TOOL_FILTERS.filter(({ key }: any) => set.has(key));
   }, [items]);
 
   // Discover providers
-  const allProviders = useMemo<any>(() => {
+  const allProviders = useMemo(() => {
     const set = new Set();
     for (const item of items) {
-      // @ts-ignore
       for (const p of item.providers || []) set.add(p);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
-    return [...set].sort((a, b) => {
-      // @ts-ignore
+    return [...set].sort((a: any, b: any) => {
       const ai = labelOrder.indexOf(a);
-      // @ts-ignore
       const bi = labelOrder.indexOf(b);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
     });
   }, [items]);
 
-  const filtered = useMemo<any>(() => {
-    return items.filter((item) => {
-      // @ts-ignore
+  const filtered = useMemo(() => {
+    return items.filter((item: any) => {
       if (showFavoritesOnly && onToggleFavorite) {
-        // @ts-ignore
-        // @ts-ignore
         if (!(favorites || []).includes(item.id)) return false;
       }
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
         const matchesSearch =
-          // @ts-ignore
           (item.title || "").toLowerCase().includes(q) ||
-          // @ts-ignore
           (item.subtitle || "").toLowerCase().includes(q) ||
-          // @ts-ignore
           (item.searchText || "").toLowerCase().includes(q);
         if (!matchesSearch) return false;
       }
       if (activeModalities.size > 0) {
-        // @ts-ignore
         const mod = item.modalities || {};
         const matches = [...activeModalities].some(
-          (key) => mod[`${key}In`] || mod[`${key}Out`],
+          (key: any) => mod[`${key}In`] || mod[`${key}Out`],
         );
         if (!matches) return false;
       }
       if (activeTools.size > 0) {
-        // @ts-ignore
         const mod = item.modalities || {};
-        const matches = [...activeTools].some((key) => mod[key]);
+        const matches = [...activeTools].some((key: any) => mod[key]);
         if (!matches) return false;
       }
       if (activeProviders.size > 0) {
-        // @ts-ignore
         const itemProviders = item.providers || [];
-        const matches = [...activeProviders].some((p) =>
+        const matches = [...activeProviders].some((p: any) =>
           itemProviders.includes(p),
         );
         if (!matches) return false;
       }
       if (dateRange.from || dateRange.to) {
-        // @ts-ignore
-        // @ts-ignore
         const itemDate = new Date(item.updatedAt || item.createdAt);
         if (dateRange.from && itemDate < new Date(dateRange.from)) return false;
         if (dateRange.to && itemDate > new Date(dateRange.to + "T23:59:59"))
@@ -193,7 +151,6 @@ export default function HistoryList({
     activeProviders,
     showFavoritesOnly,
     favorites,
-    // @ts-ignore
     onToggleFavorite,
     dateRange,
   ]);
@@ -203,14 +160,12 @@ export default function HistoryList({
   const listRef = useRef<any>(null);
 
   useEffect(() => {
-    // @ts-ignore
     if (!hasMore || !onLoadMore || loadingMore) return;
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
     const observer = new IntersectionObserver(
-      ([entry]) => {
+      ([entry]: any) => {
         if (entry.isIntersecting) {
-          // @ts-ignore
           onLoadMore();
         }
       },
@@ -218,7 +173,6 @@ export default function HistoryList({
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  // @ts-ignore
   }, [hasMore, onLoadMore, loadingMore]);
 
 
@@ -233,9 +187,7 @@ export default function HistoryList({
 
       <FilterDropdownComponent
         fullWidth
-        // @ts-ignore
         groups={[
-          // @ts-ignore
           ...(onToggleFavorite
             ? [
                 {
@@ -305,14 +257,11 @@ export default function HistoryList({
         dateStorageKey={LS_DATE_RANGE}
       />
 
-      {/* @ts-ignore */}
       {countLabel && (
         <div className={styles.countRow}>
           <span className={styles.countLabel}>
             {filtered.length === items.length
-              // @ts-ignore
               ? `${items.length}${hasMore ? "+" : ""} ${countLabel}`
-              // @ts-ignore
               : `${filtered.length} of ${items.length}${hasMore ? "+" : ""} ${countLabel}`}
           </span>
         </div>
@@ -323,31 +272,19 @@ export default function HistoryList({
           <HistoryItemComponent
             key={item.id}
             item={item}
-            // @ts-ignore
             isActive={item.id === activeId}
-            // @ts-ignore
             onClick={onSelect}
-            // @ts-ignore
             onDelete={onDelete}
-            // @ts-ignore
             onDownload={onDownload}
-            // @ts-ignore
             onCopy={onCopy}
-            // @ts-ignore
             icon={ItemIcon}
             readOnly={readOnly}
             admin={admin}
-            // @ts-ignore
             isNew={newIds?.has?.(item.id)}
-            // @ts-ignore
             isFavorite={(favorites || []).includes(item.id)}
-            // @ts-ignore
             onToggleFavorite={onToggleFavorite}
             dataPanelClose
-            // @ts-ignore
-            // @ts-ignore
             onOpenInNewTab={onOpenInNewTab ? (item: any) => onOpenInNewTab(item) : undefined}
-            // @ts-ignore
             isGenerating={generatingSessionIds?.has?.(item.id)}
           />
         ))}

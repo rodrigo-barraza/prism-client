@@ -24,28 +24,23 @@ function easeOutCubic(t: any) {
  * @param {boolean} [mini]
  */
 export default function MessageCountBadgeComponent({
-  // @ts-ignore
-  count: any,
+  count,
   deletedCount = 0,
   showIcon = true,
   className = "",
   mini = false,
-}) {
+}: any) {
   const prevRef = useRef<any>(null);
   const rafRef = useRef<any>(null);
-  // @ts-ignore
-  const [displayCount, setDisplayCount] = useState<any>(count);
+  const [displayCount, setDisplayCount] = useState(count);
 
   useEffect(() => {
     const from = prevRef.current;
-    // @ts-ignore
     prevRef.current = count;
 
     // First mount or same value — nothing to animate
-    // @ts-ignore
     if (from === null || from === count) return;
 
-    // @ts-ignore
     const delta = count - from;
     const start = performance.now();
 
@@ -65,21 +60,15 @@ export default function MessageCountBadgeComponent({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  // @ts-ignore
   }, [count]);
 
-  // @ts-ignore
-  // @ts-ignore
   if (count === undefined || count === null) return null;
 
   // Derive tweening state — avoids synchronous setState in effect
-  // @ts-ignore
   const tweening = displayCount !== count;
   const suffix = displayCount !== 1 ? "messages" : "message";
   const tooltipLabel = deletedCount > 0
-    // @ts-ignore
     ? `${count.toLocaleString()} ${suffix} (${deletedCount} deleted)`
-    // @ts-ignore
     : `${count.toLocaleString()} ${suffix}`;
 
   return (

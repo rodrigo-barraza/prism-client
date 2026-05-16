@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // Prism Client — Utilities
 // ============================================================
@@ -41,22 +42,10 @@ export {
  */
 export function buildLmStudioLoadBody(model: any, options = {}) {
   const body = { model };
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  if (options.contextLength != null) body.context_length = options.contextLength;
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  if (options.flashAttention != null) body.flash_attention = options.flashAttention;
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  if (options.offloadKvCache != null) body.offload_kv_cache_to_gpu = options.offloadKvCache;
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
-  if (options.evalBatchSize != null) body.eval_batch_size = options.evalBatchSize;
+  if ((options as any).contextLength != null) (body as any).context_length = (options as any).contextLength;
+  if ((options as any).flashAttention != null) (body as any).flash_attention = (options as any).flashAttention;
+  if ((options as any).offloadKvCache != null) (body as any).offload_kv_cache_to_gpu = (options as any).offloadKvCache;
+  if ((options as any).evalBatchSize != null) (body as any).eval_batch_size = (options as any).evalBatchSize;
   return body;
 }
 
@@ -98,14 +87,12 @@ export function buildDateRangeParams(dateRange: any) {
   const p = {};
   if (dateRange?.from) {
     // ISO datetime (sub-day presets) passes through; day-only gets midnight
-    // @ts-ignore
-    p.from = dateRange.from.includes("T")
+    (p as any).from = dateRange.from.includes("T")
       ? dateRange.from
       : new Date(dateRange.from).toISOString();
   }
   if (dateRange?.to) {
-    // @ts-ignore
-    p.to = dateRange.to.includes("T")
+    (p as any).to = dateRange.to.includes("T")
       ? dateRange.to
       : new Date(dateRange.to + "T23:59:59").toISOString();
   }
@@ -257,8 +244,6 @@ export function getSessionTokenStats(messages: any) {
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
       // so the count doesn't reset when workers transition between phases.
       for (const wp of Object.values(m._workerGenerationProgress)) {
-        // @ts-ignore
-        // @ts-ignore
         const count = wp.totalOutputTokens || wp.outputTokens || 0;
         if (count > 0) {
           output += count;
@@ -315,7 +300,7 @@ export function getUsedTools(messages: any) {
       }
     }
   }
-  return [...counts.entries()].map(([name, count]) => ({ name, count }));
+  return [...counts.entries()].map(([name, count]: any) => ({ name, count }));
 }
 
 /**
@@ -337,10 +322,8 @@ export const CAPABILITY_TOOL_NAMES = new Set([
 export function toolCountsToUsedTools(toolCounts: any) {
   if (!toolCounts || Object.keys(toolCounts).length === 0) return [];
   return Object.entries(toolCounts)
-    .map(([name, count]) => ({ name, count }))
-    // @ts-ignore
-    // @ts-ignore
-    .sort((a, b) => b.count - a.count);
+    .map(([name, count]: any) => ({ name, count }))
+    .sort((a: any, b: any) => b.count - a.count);
 }
 
 /**
@@ -384,20 +367,17 @@ export function mergeUsedToolsWithWorkers(clientTools: any, backendToolCounts: a
   // Overlay live worker tool counts (real-time during generation)
   if (workerToolActivity) {
     for (const w of Object.values(workerToolActivity)) {
-      // @ts-ignore
       if (!w.toolNames) continue;
-      // @ts-ignore
       for (const [name, count] of Object.entries(w.toolNames)) {
         if (CAPABILITY_TOOL_NAMES.has(name)) continue;
-        // @ts-ignore
         merged.set(name, Math.max(merged.get(name) || 0, count));
       }
     }
   }
 
   const mergedTools = [...merged.entries()]
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count);
+    .map(([name, count]: any) => ({ name, count }))
+    .sort((a: any, b: any) => b.count - a.count);
 
   return [...capabilities, ...mergedTools];
 }
@@ -452,7 +432,7 @@ export function getModalities(messages: any) {
           ref.endsWith(".txt");
         const isVideo =
           ref.startsWith("data:video/") ||
-          [".mp4", ".mov", ".avi", ".webm"].some((ext) => ref.endsWith(ext));
+          [".mp4", ".mov", ".avi", ".webm"].some((ext: any) => ref.endsWith(ext));
         if (isDoc) {
           modalities.docIn = true;
         } else if (isVideo) {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
@@ -18,11 +19,10 @@ const WorkspaceContext = createContext({
  * The selected workspace root is stored in localStorage and sent to Prism
  * via the x-workspace-root header (see serviceHeaders.js).
  */
-// @ts-ignore
-export function WorkspaceProvider({ children: any }) {
-  const [workspaces, setWorkspaces] = useState<any>([]);
-  const [currentWorkspace, _setCurrentWorkspace] = useState<any>(null);
-  const [mounted, setMounted] = useState<any>(false);
+export function WorkspaceProvider({ children }: any) {
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [currentWorkspace, _setCurrentWorkspace] = useState(null);
+  const [mounted, setMounted] = useState(false);
 
   /** Set the active workspace and persist to localStorage. */
   const setCurrentWorkspace = useCallback((workspace: any) => {
@@ -72,18 +72,14 @@ export function WorkspaceProvider({ children: any }) {
 
   if (!mounted) {
     return (
-      // @ts-ignore
       <WorkspaceContext.Provider value={{ workspaces: [], currentWorkspace: null, setCurrentWorkspace, refreshWorkspaces }}>
-        {/* @ts-ignore */}
         {children}
       </WorkspaceContext.Provider>
     );
   }
 
   return (
-    // @ts-ignore
     <WorkspaceContext.Provider value={{ workspaces, currentWorkspace, setCurrentWorkspace, refreshWorkspaces }}>
-      {/* @ts-ignore */}
       {children}
     </WorkspaceContext.Provider>
   );

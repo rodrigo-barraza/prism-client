@@ -11,7 +11,7 @@ import StorageService from "../services/StorageService.js";
  */
 export default function useToolToggles(builtInTools: any, storageKey: any) {
   // Load initial state from localStorage if a storage key is provided
-  const [disabledBuiltIns, setDisabledBuiltIns] = useState<any>(() => {
+  const [disabledBuiltIns, setDisabledBuiltIns] = useState(() => {
     if (storageKey) {
       const saved = StorageService.get(storageKey);
       if (saved?.disabledBuiltIns && Array.isArray(saved.disabledBuiltIns)) {

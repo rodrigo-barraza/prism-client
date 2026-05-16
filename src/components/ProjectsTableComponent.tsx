@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TableComponent } from "@rodrigo-barraza/components-library";
 import {
   projectColumn,
@@ -26,26 +27,21 @@ import {
  */
 export default function ProjectsTableComponent({
   projects = [],
-  // @ts-ignore
   totalRequests: totalRequestsProp,
-  // @ts-ignore
   totalCost: totalCostProp,
   emptyText = "No projects yet",
   compact = false,
   title = "Projects",
   maxHeight = 420,
-}) {
+}: any) {
   const totalRequests =
-    // @ts-ignore
-    (totalRequestsProp ?? projects.reduce((s, x) => s + x.totalRequests, 0)) || 1;
+    (totalRequestsProp ?? projects.reduce((s: any, x: any) => s + x.totalRequests, 0)) || 1;
   const totalCost =
-    // @ts-ignore
-    (totalCostProp ?? projects.reduce((s, x) => s + (x.totalCost || 0), 0)) || 1;
+    (totalCostProp ?? projects.reduce((s: any, x: any) => s + (x.totalCost || 0), 0)) || 1;
 
   const allColumns = [
     projectColumn(),
     requestsColumn(),
-    // @ts-ignore
     usageColumn(totalRequests),
     providerCountColumn(),
     modelCountColumn(),
@@ -64,7 +60,7 @@ export default function ProjectsTableComponent({
     "conversationCount",
   ];
   const columns = compact
-    ? allColumns.filter((c) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (

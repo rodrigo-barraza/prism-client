@@ -39,121 +39,72 @@ import styles from "./WorkflowNodeComponent.module.css";
  * Renders input and output ports for a node.
  */
 function NodePorts({
-  // @ts-ignore
-  // @ts-ignore
-  node: any,
-  // @ts-ignore
-  // @ts-ignore
-  inputTypes: any,
-  // @ts-ignore
-  // @ts-ignore
-  outputTypes: any,
+  node,
+  inputTypes,
+  outputTypes,
   configOffset = 0,
   isNodeRunning = false,
   nodeStatusGradient = "url(#prism-gradient)",
-  // @ts-ignore
-  // @ts-ignore
-  connecting: any,
-  // @ts-ignore
-  // @ts-ignore
-  hoveredPort: any,
-  // @ts-ignore
-  // @ts-ignore
-  connections: any,
-  // @ts-ignore
-  // @ts-ignore
-  nodeStatuses: any,
-  // @ts-ignore
-  // @ts-ignore
-  onInputPortClick: any,
-  // @ts-ignore
-  // @ts-ignore
-  onOutputPortClick: any,
-  // @ts-ignore
-  // @ts-ignore
-  onPortHover: any,
-  // @ts-ignore
-  // @ts-ignore
-  onPortLeave: any,
-}) {
-  // @ts-ignore
+  connecting,
+  hoveredPort,
+  connections,
+  nodeStatuses,
+  onInputPortClick,
+  onOutputPortClick,
+  onPortHover,
+  onPortLeave,
+}: any) {
   const nodeWidth = getNodeWidth(node);
   const portStartY = HEADER_HEIGHT + configOffset + 8;
   const isConversationNode =
-    // @ts-ignore
-    // @ts-ignore
     node.nodeType === "input" && node.modality === "conversation";
-  // @ts-ignore
   const nodeMessages = node.messages || [];
 
   return (
     <>
       {/* Input ports */}
-      {/* @ts-ignore */}
       {inputTypes.map((portId: any, i: any) => {
         const compound = parseCompoundPort(portId);
         const baseMod = compound ? compound.modality : portId;
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
-        // @ts-ignore
-        const color = MODALITY_COLORS[baseMod] || "#888";
+        const color = (MODALITY_COLORS as any)[baseMod] || "#888";
         const isCompatible =
-          // @ts-ignore
           connecting &&
-          // @ts-ignore
           getBaseModality(connecting.sourceModality) === baseMod &&
-          // @ts-ignore
-          // @ts-ignore
           connecting.sourceNodeId !== node.id;
         const isHovered =
-          // @ts-ignore
-          // @ts-ignore
           hoveredPort?.nodeId === node.id &&
-          // @ts-ignore
           hoveredPort?.type === "input" &&
-          // @ts-ignore
           hoveredPort?.modality === portId;
-        // @ts-ignore
-        const Icon = MODALITY_ICONS[baseMod]?.icon;
-        // @ts-ignore
+        const Icon = (MODALITY_ICONS as any)[baseMod]?.icon;
         const hasPrismSource = connections.some(
           (c: any) =>
-            // @ts-ignore
             c.targetNodeId === node.id &&
             c.targetModality === portId &&
-            // @ts-ignore
             (nodeStatuses[c.sourceNodeId] === "running" ||
-              // @ts-ignore
               nodeStatuses[c.sourceNodeId] === "done"),
         );
         const hasDoneSource =
           hasPrismSource &&
-          // @ts-ignore
           connections.some(
             (c: any) =>
-              // @ts-ignore
               c.targetNodeId === node.id &&
               c.targetModality === portId &&
-              // @ts-ignore
               nodeStatuses[c.sourceNodeId] === "done",
           ) &&
-          // @ts-ignore
           !connections.some(
             (c: any) =>
-              // @ts-ignore
               c.targetNodeId === node.id &&
               c.targetModality === portId &&
-              // @ts-ignore
               nodeStatuses[c.sourceNodeId] === "running",
           );
 
-        // @ts-ignore
-        let label = MODALITY_ICONS[baseMod]?.label || baseMod;
+        let label = (MODALITY_ICONS as any)[baseMod]?.label || baseMod;
         if (compound && isConversationNode) {
           const msg = nodeMessages[compound.index];
           const roleLabel =
-            // @ts-ignore
-            ROLE_LABELS[msg?.role] || msg?.role || `#${compound.index}`;
+            (ROLE_LABELS as any)[msg?.role] || msg?.role || `#${compound.index}`;
           const roleCount = nodeMessages
             .slice(0, compound.index)
             .filter((m: any) => m.role === msg?.role).length;
@@ -197,26 +148,19 @@ function NodePorts({
               }
               strokeWidth={2}
               className={`${styles.port} ${isCompatible ? styles.portCompatible : ""}`}
-              // @ts-ignore
               data-node-id={node.id}
               data-port-type="input"
               data-port-modality={portId}
-              // @ts-ignore
-              // @ts-ignore
-              onClick={(e) => onInputPortClick(e, node.id, portId)}
+              onClick={(e: any) => onInputPortClick(e, node.id, portId)}
               onMouseEnter={() =>
-                // @ts-ignore
                 onPortHover({
-                  // @ts-ignore
                   nodeId: node.id,
                   type: "input",
                   modality: portId,
                 })
               }
-              // @ts-ignore
               onMouseLeave={onPortLeave}
             >
-              {/* @ts-ignore */}
               <title>{`IN · ${label} · ${node.id}`}</title>
             </circle>
             {Icon && (
@@ -245,19 +189,13 @@ function NodePorts({
       })}
 
       {/* Output ports */}
-      {/* @ts-ignore */}
       {outputTypes.map((modality: any, i: any) => {
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
-        // @ts-ignore
-        const color = MODALITY_COLORS[modality] || "#888";
-        // @ts-ignore
-        const Icon = MODALITY_ICONS[modality]?.icon;
+        const color = (MODALITY_COLORS as any)[modality] || "#888";
+        const Icon = (MODALITY_ICONS as any)[modality]?.icon;
         const isActive =
-          // @ts-ignore
-          // @ts-ignore
           connecting?.sourceNodeId === node.id &&
-          // @ts-ignore
           connecting?.sourceModality === modality;
 
         return (
@@ -276,24 +214,16 @@ function NodePorts({
               stroke={isNodeRunning ? nodeStatusGradient : color}
               strokeWidth={2}
               className={`${styles.port} ${styles.portOutput}`}
-              // @ts-ignore
               data-node-id={node.id}
               data-port-type="output"
               data-port-modality={modality}
-              // @ts-ignore
-              // @ts-ignore
-              onClick={(e) => onOutputPortClick(e, node.id, modality, i)}
+              onClick={(e: any) => onOutputPortClick(e, node.id, modality, i)}
               onMouseEnter={() =>
-                // @ts-ignore
-                // @ts-ignore
                 onPortHover({ nodeId: node.id, type: "output", modality })
               }
-              // @ts-ignore
               onMouseLeave={onPortLeave}
             >
-              // @ts-ignore
-              {/* @ts-ignore */}
-              <title>{`OUT · ${MODALITY_ICONS[modality]?.label || modality} · ${node.id}`}</title>
+              <title>{`OUT · ${(MODALITY_ICONS as any)[modality]?.label || modality} · ${node.id}`}</title>
             </circle>
             {Icon && (
               <foreignObject
@@ -321,8 +251,7 @@ function NodePorts({
               textAnchor="end"
               className={styles.portLabel}
             >
-              {/* @ts-ignore */}
-              {MODALITY_ICONS[modality]?.label || modality}
+              {(MODALITY_ICONS as any)[modality]?.label || modality}
             </text>
           </g>
         );
@@ -355,65 +284,29 @@ function usePortProps(props: any) {
  * via props (headerContent, headerActions, typeBadge, children).
  */
 function NodeShell({
-  // @ts-ignore
-  // @ts-ignore
-  node: any,
-  // @ts-ignore
-  // @ts-ignore
-  width: any,
-  // @ts-ignore
-  // @ts-ignore
-  height: any,
-  // @ts-ignore
-  // @ts-ignore
-  status: any,
-  // @ts-ignore
-  // @ts-ignore
-  isSelected: any,
-  // @ts-ignore
-  // @ts-ignore
-  accentColor: any,
-  // @ts-ignore
-  // @ts-ignore
-  headerFillStyle: any,
-  // @ts-ignore
-  // @ts-ignore
-  headerContent: any,
-  // @ts-ignore
-  // @ts-ignore
-  headerActions: any,
+  node,
+  width,
+  height,
+  status,
+  isSelected,
+  accentColor,
+  headerFillStyle,
+  headerContent,
+  headerActions,
   headerActionsWidth = 26,
-  // @ts-ignore
-  // @ts-ignore
-  typeBadge: any,
-  // @ts-ignore
-  // @ts-ignore
-  onMouseDown: any,
-  // @ts-ignore
-  // @ts-ignore
-  onTouchStart: any,
-  // @ts-ignore
-  // @ts-ignore
-  onDelete: any,
+  typeBadge,
+  onMouseDown,
+  onTouchStart,
+  onDelete,
   // Port props
-  // @ts-ignore
-  // @ts-ignore
-  inputTypes: any,
-  // @ts-ignore
-  // @ts-ignore
-  outputTypes: any,
+  inputTypes,
+  outputTypes,
   configOffset = 0,
   isPrism = false,
-  // @ts-ignore
-  // @ts-ignore
-  statusGradient: any,
-  // @ts-ignore
-  // @ts-ignore
-  portProps: any,
-  // @ts-ignore
-  // @ts-ignore
-  children: any,
-}) {
+  statusGradient,
+  portProps,
+  children,
+}: any) {
   const isRunning = status === "running";
   const isDone = status === "done";
   const statusBorder = isRunning
@@ -428,36 +321,24 @@ function NodeShell({
   // Body style: status border overrides resting accent
   const bodyStyle = statusBorder
     ? { stroke: statusBorder, strokeWidth: borderWidth, strokeOpacity: 1 }
-    // @ts-ignore
     : { stroke: accentColor, strokeOpacity: 0.4 };
 
   // Header fill — default to bg-tertiary if not provided
-  // @ts-ignore
   const headerStyle = headerFillStyle || { fill: "var(--bg-tertiary)" };
 
   return (
     <g
-      // @ts-ignore
       key={node.id}
-      // @ts-ignore
-      // @ts-ignore
       transform={`translate(${node.position.x}, ${node.position.y})`}
       className={styles.nodeGroup}
       data-workflow-node
-      // @ts-ignore
       data-node-id={node.id}
-      // @ts-ignore
-      // @ts-ignore
-      onMouseDown={(e) => onMouseDown(e, node.id)}
-      // @ts-ignore
-      // @ts-ignore
-      onTouchStart={(e) => onTouchStart?.(e, node.id)}
+      onMouseDown={(e: any) => onMouseDown(e, node.id)}
+      onTouchStart={(e: any) => onTouchStart?.(e, node.id)}
     >
       {/* Body */}
       <rect
-        // @ts-ignore
         width={width}
-        // @ts-ignore
         height={height}
         rx="3"
         ry="3"
@@ -467,7 +348,6 @@ function NodeShell({
 
       {/* Header background */}
       <rect
-        // @ts-ignore
         width={width}
         height={HEADER_HEIGHT}
         rx="3"
@@ -478,7 +358,6 @@ function NodeShell({
       <rect
         x={0}
         y={HEADER_HEIGHT - 3}
-        // @ts-ignore
         width={width}
         height={3}
         className={styles.nodeHeader}
@@ -488,18 +367,13 @@ function NodeShell({
       {/* Drag area with header content */}
       <g
         className={styles.nodeDragArea}
-        // @ts-ignore
-        // @ts-ignore
-        onMouseDown={(e) => onMouseDown(e, node.id)}
-        // @ts-ignore
-        // @ts-ignore
-        onTouchStart={(e) => onTouchStart?.(e, node.id)}
+        onMouseDown={(e: any) => onMouseDown(e, node.id)}
+        onTouchStart={(e: any) => onTouchStart?.(e, node.id)}
         style={{ cursor: "grab" }}
       >
         <rect
           x={0}
           y={0}
-          // @ts-ignore
           width={width - headerActionsWidth - 8}
           height={HEADER_HEIGHT}
           fill="transparent"
@@ -507,7 +381,6 @@ function NodeShell({
         <foreignObject
           x={8}
           y={0}
-          // @ts-ignore
           width={width - headerActionsWidth - 16}
           height={HEADER_HEIGHT}
         >
@@ -520,7 +393,6 @@ function NodeShell({
               paddingTop: 1,
             }}
           >
-            {/* @ts-ignore */}
             {headerContent}
             {status === "done" && (
               <Check size={12} style={{ color: "#10b981", flexShrink: 0 }} />
@@ -534,48 +406,35 @@ function NodeShell({
 
       {/* Header right-side actions (modality icons, type badge, info, delete) */}
       <foreignObject
-        // @ts-ignore
         x={width - headerActionsWidth}
         y={0}
         width={headerActionsWidth}
         height={HEADER_HEIGHT}
       >
         <div className={styles.headerActions}>
-          {/* @ts-ignore */}
           {headerActions}
-          {/* @ts-ignore */}
           {typeBadge && (
             <>
               <span className={styles.headerSeparator} />
               <span
                 className={styles.headerTypeBadge}
-                // @ts-ignore
                 style={{ color: accentColor }}
               >
-                {/* @ts-ignore */}
                 {typeBadge}
               </span>
             </>
           )}
-          // @ts-ignore
-          {/* @ts-ignore */}
           {headerActions && onDelete && (
             <span className={styles.headerSeparator} />
           )}
-          // @ts-ignore
-          // @ts-ignore
-          {/* @ts-ignore */}
           {!headerActions && typeBadge && onDelete && (
             <span className={styles.headerSeparator} />
           )}
-          {/* @ts-ignore */}
           {onDelete && (
             <button
               className={styles.deleteNodeBtn}
-              onClick={(e) => {
+              onClick={(e: any) => {
                 e.stopPropagation();
-                // @ts-ignore
-                // @ts-ignore
                 onDelete(node.id);
               }}
               title="Remove node"
@@ -587,33 +446,24 @@ function NodeShell({
       </foreignObject>
 
       {/* Type-specific content (config, asset content, error, etc.) */}
-      {/* @ts-ignore */}
       {children}
 
       {/* Ports */}
       <g transform={`translate(0, ${configOffset})`}>
         <NodePorts
-          // @ts-ignore
           node={node}
-          // @ts-ignore
           inputTypes={inputTypes}
-          // @ts-ignore
           outputTypes={outputTypes}
           isNodeRunning={isPrism}
-          // @ts-ignore
           nodeStatusGradient={statusGradient || "url(#prism-gradient)"}
-          // @ts-ignore
           {...portProps}
         />
       </g>
 
       {/* Selection flash — rendered LAST so it's on top */}
-      {/* @ts-ignore */}
       {isSelected && (
         <rect
-          // @ts-ignore
           width={width}
-          // @ts-ignore
           height={height}
           rx="3"
           ry="3"
@@ -699,8 +549,7 @@ function ModelNode(props: any) {
       )}
       {/* Modality icons from model's input types */}
       {modalityIcons.map((modality: any) => {
-        // @ts-ignore
-        const mod = MODALITY_ICONS[modality];
+        const mod = (MODALITY_ICONS as any)[modality];
         if (!mod) return null;
         const Icon = mod.icon;
         return (
@@ -719,7 +568,6 @@ function ModelNode(props: any) {
   const actionsWidth = modalityAreaWidth + 70 + (status === "running" ? 18 : 0);
 
   return (
-    // @ts-ignore
     <NodeShell
       node={node}
       width={width}
@@ -790,7 +638,7 @@ function ModelNode(props: any) {
                     type="file"
                     accept="image/*,audio/*"
                     className={styles.assetFileInput}
-                    onChange={(e) => {
+                    onChange={(e: any) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       const reader = new FileReader();
@@ -860,14 +708,14 @@ function AssetNode(props: any) {
     readOnly = false,
   } = props;
 
-  const [isRenaming, setIsRenaming] = useState<any>(false);
-  const [renameValue, setRenameValue] = useState<any>("");
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
   const renameInputRef = useRef<any>(null);
 
   useEffect(() => {
     if (isRenaming && renameInputRef.current) {
-      renameInputRef.current.focus();
-      renameInputRef.current.select();
+      (renameInputRef.current as any).focus();
+      (renameInputRef.current as any).select();
     }
   }, [isRenaming]);
 
@@ -878,15 +726,12 @@ function AssetNode(props: any) {
   const outputTypes = node.outputTypes || [];
   const accentColor = isViewer
     ? "#a78bfa"
-    // @ts-ignore
-    : MODALITY_COLORS[node.modality] || "#8b5cf6";
+    : (MODALITY_COLORS as any)[node.modality] || "#8b5cf6";
   const AssetIcon = isViewer
     ? Eye
     : node.modality
-      // @ts-ignore
-      ? ASSET_ICONS[node.modality] ||
-        // @ts-ignore
-        MODALITY_ICONS[node.modality]?.icon ||
+      ? (ASSET_ICONS as any)[node.modality] ||
+        (MODALITY_ICONS as any)[node.modality]?.icon ||
         Paperclip
       : Paperclip;
 
@@ -908,8 +753,7 @@ function AssetNode(props: any) {
 
   const typeLabel = isViewer
     ? NODE_LABELS.viewer
-    // @ts-ignore
-    : NODE_LABELS[node.modality] || "Media";
+    : (NODE_LABELS as any)[node.modality] || "Media";
   const displayTitle = node.customName || typeLabel;
 
   const handleStartRename = () => {
@@ -957,10 +801,10 @@ function AssetNode(props: any) {
           className={styles.nodeRenameInput}
           style={{ color: accentColor }}
           value={renameValue}
-          onChange={(e) => setRenameValue(e.target.value)}
+          onChange={(e: any) => setRenameValue(e.target.value)}
           onBlur={handleFinishRename}
           onKeyDown={handleRenameKeyDown}
-          onMouseDown={(e) => e.stopPropagation()}
+          onMouseDown={(e: any) => e.stopPropagation()}
           placeholder={typeLabel}
           maxLength={40}
         />
@@ -989,8 +833,7 @@ function AssetNode(props: any) {
       {isConversation &&
         conversationModalities.length > 0 &&
         conversationModalities.map((modality: any) => {
-          // @ts-ignore
-          const mod = MODALITY_ICONS[modality];
+          const mod = (MODALITY_ICONS as any)[modality];
           if (!mod) return null;
           const Icon = mod.icon;
           return (
@@ -1005,7 +848,7 @@ function AssetNode(props: any) {
       {/* Gear / eye button */}
       <button
         className={`${styles.deleteNodeBtn} ${isExpanded ? styles.configBtnActive : ""}`}
-        onClick={(e) => {
+        onClick={(e: any) => {
           e.stopPropagation();
           onToggleExpand(node.id);
         }}
@@ -1073,7 +916,6 @@ function AssetNode(props: any) {
                           </div>
                         )}
                         {node.receivedOutputs.audio && (
-                          // @ts-ignore
                           <AudioPlayerRecorderComponent
                             src={PrismService.getFileUrl(
                               node.receivedOutputs.audio,
@@ -1104,7 +946,7 @@ function AssetNode(props: any) {
                               node.receivedOutputs.video,
                             )}
                             className={styles.viewerImage}
-                            onMouseDown={(e) => e.stopPropagation()}
+                            onMouseDown={(e: any) => e.stopPropagation()}
                           />
                         )}
                       </>
@@ -1121,9 +963,9 @@ function AssetNode(props: any) {
                   <textarea
                     className={styles.assetTextarea}
                     value={node.content || ""}
-                    onChange={(e) => onUpdateContent(node.id, e.target.value)}
+                    onChange={(e: any) => onUpdateContent(node.id, e.target.value)}
                     placeholder="Enter text…"
-                    onMouseDown={(e) => {
+                    onMouseDown={(e: any) => {
                       e.stopPropagation();
                       onSelectNode?.(node.id);
                     }}
@@ -1132,11 +974,11 @@ function AssetNode(props: any) {
                   /* File input: upload / drag-drop zone or preview */
                   <div
                     className={styles.assetUploadArea}
-                    onDragOver={(e) => {
+                    onDragOver={(e: any) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    onDrop={(e) => {
+                    onDrop={(e: any) => {
                       e.preventDefault();
                       e.stopPropagation();
                       const file = e.dataTransfer?.files?.[0];
@@ -1153,7 +995,6 @@ function AssetNode(props: any) {
                             className={styles.assetPreviewImg}
                           />
                         ) : node.modality === "audio" ? (
-                          // @ts-ignore
                           <AudioPlayerRecorderComponent
                             src={PrismService.getFileUrl(node.content)}
                             square
@@ -1163,14 +1004,14 @@ function AssetNode(props: any) {
                             controls
                             src={PrismService.getFileUrl(node.content)}
                             className={styles.assetVideoPlayer}
-                            onMouseDown={(e) => e.stopPropagation()}
+                            onMouseDown={(e: any) => e.stopPropagation()}
                           />
                         ) : node.modality === "pdf" ? (
                           <iframe
                             src={PrismService.getFileUrl(node.content)}
                             className={styles.assetPdfViewer}
                             title="PDF preview"
-                            onMouseDown={(e) => e.stopPropagation()}
+                            onMouseDown={(e: any) => e.stopPropagation()}
                           />
                         ) : (
                           <div className={styles.assetFileLabel}>
@@ -1180,7 +1021,7 @@ function AssetNode(props: any) {
                         )}
                         <button
                           className={styles.fileInputClearBtn}
-                          onClick={(e) => {
+                          onClick={(e: any) => {
                             e.stopPropagation();
                             onUpdateFileInput?.(node.id, null, null);
                           }}
@@ -1224,7 +1065,7 @@ function AssetNode(props: any) {
             {(node.messages || []).length > 2 && (
               <button
                 className={styles.deleteNodeBtn}
-                onClick={(e) => {
+                onClick={(e: any) => {
                   e.stopPropagation();
                   const msgs = [...(node.messages || [])];
                   if (msgs.length > 2) {
@@ -1243,7 +1084,7 @@ function AssetNode(props: any) {
             )}
             <button
               className={styles.deleteNodeBtn}
-              onClick={(e) => {
+              onClick={(e: any) => {
                 e.stopPropagation();
                 const msgs = [...(node.messages || [])];
                 msgs.push({ role: "assistant", content: "" });
@@ -1371,7 +1212,7 @@ function ToolNode(props: any) {
       )}
       <button
         className={`${styles.deleteNodeBtn} ${isExpanded ? styles.configBtnActive : ""}`}
-        onClick={(e) => {
+        onClick={(e: any) => {
           e.stopPropagation();
           onToggleExpand(node.id);
         }}
@@ -1414,7 +1255,7 @@ function ToolNode(props: any) {
           height={contentH - 8}
         >
           <div className={styles.toolNodePills}>
-            {displayedTools.map((name) => (
+            {displayedTools.map((name: any) => (
               <span key={name} className={styles.toolNodePill}>
                 {renderToolName(name)}
               </span>

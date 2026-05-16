@@ -20,7 +20,7 @@ export default function useProjectFilter() {
   const hasRestoredRef = useRef<any>(false);
 
   const urlProject = searchParams.get("project") || null;
-  const [projects, setProjects] = useState<any>([]);
+  const [projects, setProjects] = useState<any[]>([]);
 
   // On mount, restore from localStorage if no URL param is present
   useEffect(() => {
@@ -43,11 +43,11 @@ export default function useProjectFilter() {
 
   useEffect(() => {
     IrisService.getConversationFilters()
-      .then((data) => setProjects(data.projects || []))
+      .then((data: any) => setProjects(data.projects || []))
       .catch(() => {});
   }, []);
 
-  const projectOptions = useMemo<any>(
+  const projectOptions = useMemo(
     () => [
       { value: "", label: "All Projects" },
       ...projects.map((p: any) => ({ value: p, label: p })),

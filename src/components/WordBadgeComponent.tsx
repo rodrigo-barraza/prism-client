@@ -10,18 +10,13 @@ import styles from "./WordBadgeComponent.module.css";
  * @param {boolean} [mini]
  */
 export default function WordBadgeComponent({
-  // @ts-ignore
-  count: any,
+  count,
   className = "",
   mini = false,
-}) {
-  // @ts-ignore
-  // @ts-ignore
+}: any) {
   if (!count || count <= 0) return null;
 
-  // @ts-ignore
   const suffix = count !== 1 ? "words" : "word";
-  // @ts-ignore
   const tooltipLabel = `${count.toLocaleString()} ${suffix}`;
 
   return (
@@ -30,7 +25,6 @@ export default function WordBadgeComponent({
         className={`${styles.badge} ${mini ? styles.mini : ""} ${className}`}
       >
         <LetterText size={mini ? 8 : 10} />
-        {/* @ts-ignore */}
         {count.toLocaleString()} {suffix}
       </span>
     </TooltipComponent>

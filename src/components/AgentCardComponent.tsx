@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useMemo } from "react";
@@ -21,54 +22,35 @@ import styles from "./AgentCardComponent.module.css";
  *   onToggleThinking — callback(instanceId)
  */
 export default function AgentCardComponent({
-  // @ts-ignore
-  // @ts-ignore
-  agent: any,
+  agent,
   isThinking = false,
   supportsThinking = false,
-  // @ts-ignore
-  // @ts-ignore
-  config: any,
-  // @ts-ignore
-  // @ts-ignore
-  onRemove: any,
-  // @ts-ignore
-  // @ts-ignore
-  onChangeModel: any,
-  // @ts-ignore
-  // @ts-ignore
-  onToggleThinking: any,
-}) {
+  config,
+  onRemove,
+  onChangeModel,
+  onToggleThinking,
+}: any) {
   // Filter config to only FC-capable models for the picker
-  const fcConfig = useMemo<any>(() => {
-    // @ts-ignore
+  const fcConfig = useMemo(() => {
     if (!config) return null;
-    // @ts-ignore
     const textModelsMap = config.textToText?.models || {};
     const filteredTextModels = {};
 
     for (const [provider, models] of Object.entries(textModelsMap)) {
-      // @ts-ignore
       const fcModels = models.filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );
-      // @ts-ignore
-      if (fcModels.length > 0) filteredTextModels[provider] = fcModels;
+      if (fcModels.length > 0) (filteredTextModels as any)[provider] = fcModels;
     }
 
-    // @ts-ignore
     const filteredProviderList = (config.providerList || []).filter(
-      // @ts-ignore
-      // @ts-ignore
-      (p) => filteredTextModels[p],
+      (p: any) => (filteredTextModels as any)[p],
     );
 
     return {
-      // @ts-ignore
       ...config,
       providerList: filteredProviderList,
       textToText: {
-        // @ts-ignore
         ...config.textToText,
         models: filteredTextModels,
       },
@@ -77,22 +59,15 @@ export default function AgentCardComponent({
       textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
       audioToText: { models: {} },
     };
-  // @ts-ignore
   }, [config]);
 
   // Build settings-like object for the trigger display
-  const pickerSettings = useMemo<any>(() => ({
-    // @ts-ignore
+  const pickerSettings = useMemo(() => ({
     provider: agent.provider || "",
-    // @ts-ignore
     model: agent.modelName || "",
-  // @ts-ignore
-  // @ts-ignore
   }), [agent.provider, agent.modelName]);
 
   const handlePickerSelect = (provider: any, name: any) => {
-    // @ts-ignore
-    // @ts-ignore
     onChangeModel?.(agent.instanceId, provider, name);
   };
 
@@ -100,18 +75,14 @@ export default function AgentCardComponent({
     <div className={styles.card}>
       <div className={styles.header}>
         <Bot size={14} className={styles.botIcon} />
-        {/* @ts-ignore */}
         <span className={styles.name} title={`Agent: ${agent.name}`}>
-          {/* @ts-ignore */}
           Agent: {agent.name}
         </span>
         <span className={styles.badge}>Agent</span>
         <button
           className={styles.removeBtn}
-          onClick={(e) => {
+          onClick={(e: any) => {
             e.stopPropagation();
-            // @ts-ignore
-            // @ts-ignore
             onRemove?.(agent.instanceId);
           }}
           title="Remove"
@@ -121,7 +92,6 @@ export default function AgentCardComponent({
       </div>
 
       {/* Model selector — uses ModelPickerPopoverComponent trigger */}
-      {/* @ts-ignore */}
       <ModelPickerPopoverComponent
         config={fcConfig}
         settings={pickerSettings}
@@ -130,7 +100,6 @@ export default function AgentCardComponent({
 
       <div className={styles.footer}>
         <span className={styles.description}>
-          {/* @ts-ignore */}
           {agent.description}
         </span>
         <div className={styles.toggles}>
@@ -142,8 +111,6 @@ export default function AgentCardComponent({
               title={isThinking ? "Disable thinking" : "Enable thinking"}
               onClick={(e: any) => {
                 e.stopPropagation();
-                // @ts-ignore
-                // @ts-ignore
                 onToggleThinking?.(agent.instanceId);
               }}
             />

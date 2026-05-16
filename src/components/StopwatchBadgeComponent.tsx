@@ -20,20 +20,13 @@ import styles from "./StopwatchBadgeComponent.module.css";
  *   className  — additional class
  */
 export default function StopwatchBadgeComponent({
-  // @ts-ignore
-  // @ts-ignore
-  seconds: any,
-  // @ts-ignore
-  // @ts-ignore
-  startTime: any,
-  // @ts-ignore
+  seconds,
+  startTime,
   live: externalLive,
   className = "",
-}) {
-  const [nowMs, setNowMs] = useState<any>(() => Date.now());
+}: any) {
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
-  // @ts-ignore
-  // @ts-ignore
   const isLive = !!startTime && seconds == null;
 
   useEffect(() => {
@@ -41,20 +34,15 @@ export default function StopwatchBadgeComponent({
     const immediate = setTimeout(() => setNowMs(Date.now()), 0);
     const id = setInterval(() => setNowMs(Date.now()), 1000);
     return () => { clearTimeout(immediate); clearInterval(id); };
-  // @ts-ignore
   }, [isLive, startTime]);
 
   let displaySeconds;
   if (isLive) {
-    // @ts-ignore
     const start = typeof startTime === "number"
-      // @ts-ignore
       ? startTime
-      // @ts-ignore
       : new Date(startTime).getTime();
     displaySeconds = Math.max(0, (nowMs - start) / 1000);
   } else {
-    // @ts-ignore
     displaySeconds = seconds || 0;
   }
 

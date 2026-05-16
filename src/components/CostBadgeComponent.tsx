@@ -25,34 +25,28 @@ function easeOutCubic(t: any) {
  * @param {Function} [formatFn=formatCost] — custom display formatter
  */
 export default function CostBadgeComponent({
-  // @ts-ignore
-  cost: any,
+  cost,
   showIcon = true,
   className = "",
   mini = false,
   formatFn = formatCost,
-}) {
+}: any) {
   const prevCostRef = useRef<any>(null);
   const rafRef = useRef<any>(null);
-  // @ts-ignore
-  const [displayCost, setDisplayCost] = useState<any>(cost);
-  const [tweening, setTweening] = useState<any>(false);
+  const [displayCost, setDisplayCost] = useState(cost);
+  const [tweening, setTweening] = useState(false);
 
   useEffect(() => {
     const from = prevCostRef.current;
-    // @ts-ignore
     prevCostRef.current = cost;
 
     // First mount or no previous value — snap immediately
-    // @ts-ignore
     if (from === null || from === cost) {
-      // @ts-ignore
       setDisplayCost(cost);
       setTweening(false);
       return;
     }
 
-    // @ts-ignore
     const delta = cost - from;
     const start = performance.now();
     setTweening(true);
@@ -76,14 +70,10 @@ export default function CostBadgeComponent({
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       setTweening(false);
     };
-  // @ts-ignore
   }, [cost]);
 
-  // @ts-ignore
-  // @ts-ignore
   if (!cost || cost <= 0) return null;
 
-  // @ts-ignore
   const tooltipLabel = `Estimated cost: ${formatCost(cost)}`;
 
   return (

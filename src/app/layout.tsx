@@ -44,8 +44,7 @@ const themeInitScript = `
 })();
 `;
 
-// @ts-ignore
-export default function RootLayout({ children: any }) {
+export default function RootLayout({ children }: any) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -59,7 +58,6 @@ export default function RootLayout({ children: any }) {
       <body className={inter.variable}>
         <ThemeProvider storageKey="prism:theme" defaultTheme="light">
           <ComponentsProvider sound>
-            {/* @ts-ignore */}
             <WorkspaceProvider>{children}</WorkspaceProvider>
           </ComponentsProvider>
         </ThemeProvider>

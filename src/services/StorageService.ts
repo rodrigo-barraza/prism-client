@@ -67,7 +67,7 @@ const StorageService = {
       const k = localStorage.key(i);
       if (k?.startsWith(prefix)) keysToRemove.push(k);
     }
-    keysToRemove.forEach((k) => localStorage.removeItem(k));
+    keysToRemove.forEach((k: any) => localStorage.removeItem(k));
   },
 };
 

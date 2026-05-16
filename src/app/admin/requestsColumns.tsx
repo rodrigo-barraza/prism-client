@@ -28,7 +28,7 @@ import ProportionBarComponent from "../../components/ProportionBarComponent";
  *                                          (used for Duration % proportion bar)
  * @param {boolean} [opts.mini=false] — Mini density mode
  */
-export const getRequestsColumns = ({ totalCost = 1, totalDuration = 1, mini = false } = {}) => [
+export const getRequestsColumns = ({ totalCost = 1, totalDuration = 1, mini = false }: any = {}) => [
   createdAtColumn("timestamp"),
   projectColumn(),
   modalitiesColumn({ mini }),
@@ -44,7 +44,6 @@ export const getRequestsColumns = ({ totalCost = 1, totalDuration = 1, mini = fa
     align: "left",
     render: (r: any) => {
       if (!r.toolsUsed || !r.toolDisplayNames?.length) return emptyDash();
-      // @ts-ignore
       return <ToolIconComponent toolDisplayNames={r.toolDisplayNames} toolApiNames={r.toolApiNames} size={mini ? 10 : undefined} />;
     },
   },

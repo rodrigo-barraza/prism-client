@@ -7,10 +7,8 @@ import styles from "./page.module.css";
 export default function UserMediaPage() {
   return (
     <div className="page-wrapper">
-      {/* @ts-ignore */}
       <NavigationSidebarComponent mode="user" />
       <div className={styles.page}>
-        {/* @ts-ignore */}
         <MediaPageComponent mode="user" />
       </div>
     </div>

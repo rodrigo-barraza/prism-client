@@ -52,8 +52,7 @@ export default function useModelMemory(storageKey: any) {
    * @param {Function} [options.fallback] — called with (config) if no saved model found; lets the caller apply default selection
    */
   const restoreModel = useCallback(
-    // @ts-ignore: any
-    (config, setSettings, { fcOnly = false, fallback } = {}) => {
+    (config: any, setSettings: any, { fcOnly = false, fallback }: any = {}) => {
       if (!config) return;
       if (restoredRef.current) return;
 

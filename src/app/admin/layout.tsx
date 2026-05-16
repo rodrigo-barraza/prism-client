@@ -7,8 +7,6 @@ export const metadata = {
     "Analytics, activity monitoring, and administration for Prism AI Gateway",
 };
 
-// @ts-ignore
-export default function AdminLayout({ children: any }) {
-  // @ts-ignore
+export default function AdminLayout({ children }: any) {
   return <AdminShell><Suspense>{children}</Suspense></AdminShell>;
 }

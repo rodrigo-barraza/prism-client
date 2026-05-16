@@ -21,19 +21,13 @@ const TABS = [
   { key: "workers",      label: "Workers",       icon: <Users size={10} /> },
 ];
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-export default function StatsTabBarComponent({ activeTab: any, onChange: any }) {
+export default function StatsTabBarComponent({ activeTab, onChange }: any) {
   return (
     <div className={styles.statsTabBar}>
-      {TABS.map((tab) => (
+      {TABS.map((tab: any) => (
         <TooltipComponent key={tab.key} label={tab.label} position="bottom" delay={200}>
           <button
-            // @ts-ignore
             className={`${styles.statsTabBtn}${activeTab === tab.key ? ` ${styles.statsTabBtnActive}` : ""}`}
-            // @ts-ignore
             onClick={() => onChange(tab.key)}
           >
             {tab.icon}

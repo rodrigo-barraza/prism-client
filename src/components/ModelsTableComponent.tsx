@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
@@ -110,44 +111,30 @@ const TOOL_ICONS = {
   "Image Generation": ImagePlus,
 };
 
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function ModalityCell({ inputTypes: any, outputTypes: any }) {
-  // @ts-ignore
-  // @ts-ignore
+function ModalityCell({ inputTypes, outputTypes }: any) {
   if (!inputTypes?.length && !outputTypes?.length) return "—";
   return (
     <span className={styles.modalities}>
-      {/* @ts-ignore */}
       {(inputTypes || []).map((t: any) => {
-        // @ts-ignore
-        const m = MODALITY_ICONS[t];
+        const m = (MODALITY_ICONS as any)[t];
         if (!m) return null;
         const Icon = m.icon;
         return (
           <TooltipComponent key={`in-${t}`} label={m.label} position="top">
-            {/* @ts-ignore */}
-            <Icon size={12} style={{ color: MODALITY_COLORS[t] }} />
+            <Icon size={12} style={{ color: (MODALITY_COLORS as any)[t] }} />
           </TooltipComponent>
         );
       })}
-      // @ts-ignore
-      {/* @ts-ignore */}
       {inputTypes?.length > 0 && outputTypes?.length > 0 && (
         <ArrowRight size={10} className={styles.modalityArrow} />
       )}
-      {/* @ts-ignore */}
       {(outputTypes || []).map((t: any) => {
-        // @ts-ignore
-        const m = MODALITY_ICONS[t];
+        const m = (MODALITY_ICONS as any)[t];
         if (!m) return null;
         const Icon = m.icon;
         return (
           <TooltipComponent key={`out-${t}`} label={m.label} position="top">
-            {/* @ts-ignore */}
-            <Icon size={12} style={{ color: MODALITY_COLORS[t] }} />
+            <Icon size={12} style={{ color: (MODALITY_COLORS as any)[t] }} />
           </TooltipComponent>
         );
       })}
@@ -240,7 +227,6 @@ function buildRow(rawModel: any, favorites = []) {
     publisher: (model.publisher || "").toLowerCase(),
     input: rawModel.pricing?.inputPerMillion ?? Infinity,
     output: rawModel.pricing?.outputPerMillion ?? Infinity,
-    // @ts-ignore
     favorite: favorites.includes(favKey) ? 1 : 0,
     tools: rawModel.tools?.length || 0,
     requests: rawModel.usageCount || 0,
@@ -253,8 +239,7 @@ function buildRow(rawModel: any, favorites = []) {
   };
   // Arena columns
   for (const col of ARENA_COLUMNS) {
-    // @ts-ignore
-    row[col.key] = rawModel.arena?.[col.dataKey] ?? 0;
+    (row as any)[col.key] = rawModel.arena?.[col.dataKey] ?? 0;
   }
   return row;
 }
@@ -266,51 +251,35 @@ function buildRow(rawModel: any, favorites = []) {
  * Build stats-mode columns from tableColumns.js factories.
  * Used when mode="stats" — the same columns the old ModelsTableComponent used.
  */
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-// @ts-ignore
-function buildStatsColumns({ configModels: any, totalRequests: any, totalCost: any, compact: any }) {
+function buildStatsColumns({ configModels, totalRequests, totalCost, compact }: any) {
   const allColumns = [
     {
       key: "model",
       label: "Model",
       description: "The AI model identifier used for the request",
-      // @ts-ignore: any
-      render: (row) => <ModelBadgeComponent models={row.model ? [row.model] : []} />,
+      render: (row: any) => <ModelBadgeComponent models={row.model ? [row.model] : []} />,
     },
     requestsColumn(),
-    // @ts-ignore
-    // @ts-ignore
     usageColumn(totalRequests),
     {
       key: "provider",
       label: "Provider",
       description: "The API provider hosting this model",
       render: (row: any) => (
-        // @ts-ignore
         <ProvidersBadgeComponent providers={row.provider ? [row.provider] : []} />
       ),
     },
     statsModalitiesColumn(),
-    // @ts-ignore
-    // @ts-ignore
     statsToolsColumn({ configModels }),
     ...tokenColumns(),
-    // @ts-ignore
     ...costColumns(totalCost),
     latencyColumn(),
     ...countLinkColumns("model", (row: any) => row.model),
   ];
 
-  // @ts-ignore
   if (compact) {
     const COMPACT_KEYS = ["model", "totalRequests", "provider", "totalCost", "avgLatency"];
-    return allColumns.filter((c) => COMPACT_KEYS.includes(c.key));
+    return allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key));
   }
   return allColumns;
 }
@@ -360,78 +329,45 @@ function buildStatsColumns({ configModels: any, totalRequests: any, totalCost: a
 export default function ModelsTableComponent({
   models = [],
   mode = "model",
-  // @ts-ignore
-  // @ts-ignore
-  onSelect: any,
-  // @ts-ignore
-  // @ts-ignore
-  renderActions: any,
+  onSelect,
+  renderActions,
   showSearch = true,
   showProviderFilter = true,
   favorites = [],
-  // @ts-ignore
-  // @ts-ignore
-  onToggleFavorite: any,
-  // @ts-ignore
-  // @ts-ignore
-  activeRowKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  highlightedRowKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  highlightedRowRef: any,
-  // @ts-ignore
-  // @ts-ignore
-  loadingModelKey: any,
+  onToggleFavorite,
+  activeRowKey,
+  highlightedRowKey,
+  highlightedRowRef,
+  loadingModelKey,
   configModels = {},
-  // @ts-ignore
   totalRequests: totalRequestsProp,
-  // @ts-ignore
   totalCost: totalCostProp,
-  // @ts-ignore
-  // @ts-ignore
-  emptyText: any,
+  emptyText,
   compact = false,
-  // @ts-ignore
-  // @ts-ignore
-  title: any,
-  // @ts-ignore
-  // @ts-ignore
-  maxHeight: any,
-  // @ts-ignore
-  // @ts-ignore
-  selectedKeys: any,
-  // @ts-ignore
-  // @ts-ignore
-  onToggleSelect: any,
-  // @ts-ignore
-  // @ts-ignore
-  getRowClassName: any,
-}) {
+  title,
+  maxHeight,
+  selectedKeys,
+  onToggleSelect,
+  getRowClassName,
+}: any) {
   /* -- Stats-only mode (simple passthrough) -- */
   if (mode === "stats") {
     const totalRequests =
       (totalRequestsProp ??
-      // @ts-ignore
-      models.reduce((s, m) => s + m.totalRequests, 0)) || 1;
+      models.reduce((s: any, m: any) => s + m.totalRequests, 0)) || 1;
     const totalCost =
       (totalCostProp ??
-      // @ts-ignore
-      models.reduce((s, m) => s + (m.totalCost || 0), 0)) || 1;
+      models.reduce((s: any, m: any) => s + (m.totalCost || 0), 0)) || 1;
 
     const columns = buildStatsColumns({ configModels, totalRequests, totalCost, compact });
 
     return (
       <TableComponent
-        // @ts-ignore
         title={title || "Models"}
-        // @ts-ignore
         maxHeight={maxHeight ?? 420}
         columns={columns}
         data={models}
         getRowKey={(m: any, i: any) => `${m.provider}-${m.model}-${i}`}
-        // @ts-ignore
         emptyText={emptyText || "No data yet"}
         storageKey="models-stats"
       />
@@ -443,38 +379,24 @@ export default function ModelsTableComponent({
     <ModelsTableInner
       models={models}
       mode={mode}
-      // @ts-ignore
       onSelect={onSelect}
-      // @ts-ignore
       renderActions={renderActions}
       showSearch={showSearch}
       showProviderFilter={showProviderFilter}
       favorites={favorites}
-      // @ts-ignore
       onToggleFavorite={onToggleFavorite}
-      // @ts-ignore
       activeRowKey={activeRowKey}
-      // @ts-ignore
       highlightedRowKey={highlightedRowKey}
-      // @ts-ignore
       highlightedRowRef={highlightedRowRef}
-      // @ts-ignore
       loadingModelKey={loadingModelKey}
-      // @ts-ignore
       configModels={configModels}
       totalRequests={totalRequestsProp}
       totalCost={totalCostProp}
-      // @ts-ignore
       emptyText={emptyText}
-      // @ts-ignore
       title={title}
-      // @ts-ignore
       maxHeight={maxHeight}
-      // @ts-ignore
       selectedKeys={selectedKeys}
-      // @ts-ignore
       onToggleSelect={onToggleSelect}
-      // @ts-ignore
       getRowClassName={getRowClassName}
     />
   );
@@ -486,131 +408,81 @@ export default function ModelsTableComponent({
  * proper component (can't conditionally call hooks in the parent).
  */
 function ModelsTableInner({
-  // @ts-ignore
-  // @ts-ignore
-  models: any,
-  // @ts-ignore
-  // @ts-ignore
-  mode: any,
-  // @ts-ignore
-  // @ts-ignore
-  onSelect: any,
-  // @ts-ignore
-  // @ts-ignore
-  renderActions: any,
-  // @ts-ignore
-  // @ts-ignore
-  showSearch: any,
-  // @ts-ignore
-  // @ts-ignore
-  showProviderFilter: any,
-  // @ts-ignore
-  // @ts-ignore
-  favorites: any,
-  // @ts-ignore
-  // @ts-ignore
-  onToggleFavorite: any,
-  // @ts-ignore
-  // @ts-ignore
-  activeRowKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  highlightedRowKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  highlightedRowRef: any,
-  // @ts-ignore
-  // @ts-ignore
-  loadingModelKey: any,
-  // @ts-ignore
-  // @ts-ignore
-  emptyText: any,
-  // @ts-ignore
-  // @ts-ignore
-  title: any,
-  // @ts-ignore
-  // @ts-ignore
-  maxHeight: any,
-  // @ts-ignore
-  // @ts-ignore
-  selectedKeys: any,
-  // @ts-ignore
-  // @ts-ignore
-  onToggleSelect: any,
-  // @ts-ignore
+  models,
+  mode,
+  onSelect,
+  renderActions,
+  showSearch,
+  showProviderFilter,
+  favorites,
+  onToggleFavorite,
+  activeRowKey,
+  highlightedRowKey,
+  highlightedRowRef,
+  loadingModelKey,
+  emptyText,
+  title,
+  maxHeight,
+  selectedKeys,
+  onToggleSelect,
   getRowClassName: getRowClassNameProp,
-}) {
-  const [searchQuery, setSearchQuery] = useState<any>("");
-  const [activeProvider, setActiveProvider] = useState<any>(null);
-  const [activeModality, setActiveModality] = useState<any>(null);
-  const [activeTool, setActiveTool] = useState<any>(null);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState<any>(false);
+}: any) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeProvider, setActiveProvider] = useState(null);
+  const [activeModality, setActiveModality] = useState(null);
+  const [activeTool, setActiveTool] = useState(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   // Discover all providers from models (ordered by PROVIDER_LABELS definition)
-  const allProviders = useMemo<any>(() => {
+  const allProviders = useMemo(() => {
     const set = new Set();
-    // @ts-ignore
     for (const m of models) {
       const p = normalizeModel(m).provider;
       if (p) set.add(p);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
-    return [...set].sort((a, b) => {
-      // @ts-ignore
+    return [...set].sort((a: any, b: any) => {
       const ai = labelOrder.indexOf(a);
-      // @ts-ignore
       const bi = labelOrder.indexOf(b);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
     });
-  // @ts-ignore
   }, [models]);
 
   // Discover all unique modalities from models (ordered by MODALITY_ICONS definition)
-  const allModalities = useMemo<any>(() => {
+  const allModalities = useMemo(() => {
     const set = new Set();
-    // @ts-ignore
     for (const m of models) {
       for (const t of m.inputTypes || []) set.add(t);
       for (const t of m.outputTypes || []) set.add(t);
     }
     const iconOrder = Object.keys(MODALITY_ICONS);
-    return [...set].sort((a, b) => {
-      // @ts-ignore
+    return [...set].sort((a: any, b: any) => {
       const ai = iconOrder.indexOf(a);
-      // @ts-ignore
       const bi = iconOrder.indexOf(b);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
     });
-  // @ts-ignore
   }, [models]);
 
   // Discover all unique tools from models (ordered by TOOL_ICONS definition)
-  const allTools = useMemo<any>(() => {
+  const allTools = useMemo(() => {
     const set = new Set();
-    // @ts-ignore
     for (const m of models) {
       for (const t of m.tools || []) set.add(t);
     }
     const iconOrder = Object.keys(TOOL_ICONS);
-    return [...set].sort((a, b) => {
-      // @ts-ignore
+    return [...set].sort((a: any, b: any) => {
       const ai = iconOrder.indexOf(a);
-      // @ts-ignore
       const bi = iconOrder.indexOf(b);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
     });
-  // @ts-ignore
   }, [models]);
 
   // Apply favorites filter → modality filter → tool filter → provider filter → search
   const favFiltered = showFavoritesOnly
-    // @ts-ignore
     ? models.filter((m: any) => {
         const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
-        // @ts-ignore
         return favorites.includes(key);
       })
-    // @ts-ignore
     : models;
 
   const modalityFiltered = activeModality
@@ -645,10 +517,8 @@ function ModelsTableInner({
     : providerFiltered;
 
   // Build flat row objects for TableComponent
-  const tableData = useMemo<any>(
-    // @ts-ignore
+  const tableData = useMemo(
     () => filtered.map((m: any) => buildRow(m, favorites)),
-    // @ts-ignore
     [filtered, favorites],
   );
 
@@ -674,30 +544,22 @@ function ModelsTableInner({
   const hasModelType = filtered.some((m: any) => normalizeModel(m).modelType);
   const hasUsage = filtered.some((m: any) => m.usageCount > 0);
   const hasTokens = filtered.some((m: any) => (m.totalInputTokens || 0) + (m.totalOutputTokens || 0) > 0);
-  // @ts-ignore
   const hasActions = !!renderActions;
-  // @ts-ignore
-  // @ts-ignore
   const hasSelection = !!selectedKeys && !!onToggleSelect;
-  // @ts-ignore
   const isFull = mode === "full";
-  // @ts-ignore
   const isBenchmark = mode === "benchmark";
 
-  const arenaCols = ARENA_COLUMNS.filter((col) =>
+  const arenaCols = ARENA_COLUMNS.filter((col: any) =>
     filtered.some((m: any) => m.arena && m.arena[col.dataKey] != null),
   );
 
   // Build dynamic columns array for TableComponent
   // Memoize select-all handler
   const handleSelectAll = useCallback(() => {
-    // @ts-ignore
-    // @ts-ignore
     if (!onToggleSelect || !selectedKeys) return;
     // Check if all currently visible/filtered models are selected
     const allSelected = filtered.length > 0 && filtered.every((m: any) => {
       const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
-      // @ts-ignore
       return selectedKeys.has(key);
     });
     // Toggle: if all selected, deselect all visible; otherwise select all visible
@@ -705,21 +567,15 @@ function ModelsTableInner({
       const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
       if (allSelected) {
         // Only deselect if currently selected
-        // @ts-ignore
-        // @ts-ignore
         if (selectedKeys.has(key)) onToggleSelect(m);
       } else {
         // Only select if not already selected
-        // @ts-ignore
-        // @ts-ignore
         if (!selectedKeys.has(key)) onToggleSelect(m);
       }
     }
-  // @ts-ignore
-  // @ts-ignore
   }, [filtered, selectedKeys, onToggleSelect]);
 
-  const columns = useMemo<any>(() => {
+  const columns = useMemo(() => {
     const cols = [];
     // In benchmark mode, non-core model-spec columns default to hidden
     const benchmarkHide = isBenchmark ? { defaultHidden: true } : {};
@@ -728,12 +584,10 @@ function ModelsTableInner({
     if (hasSelection) {
       const allSelected = filtered.length > 0 && filtered.every((m: any) => {
         const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
-        // @ts-ignore
         return selectedKeys.has(key);
       });
       const someSelected = !allSelected && filtered.some((m: any) => {
         const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
-        // @ts-ignore
         return selectedKeys.has(key);
       });
 
@@ -742,7 +596,7 @@ function ModelsTableInner({
         label: (
           <span
             className={`${styles.selectWrap} ${allSelected ? styles.selectWrapActive : ""}`}
-            onClick={(e) => {
+            onClick={(e: any) => {
               e.stopPropagation();
               handleSelectAll();
             }}
@@ -761,14 +615,12 @@ function ModelsTableInner({
         hideable: false,
         render: (row: any) => {
           const key = `${row._model.provider}:${row._model.key}`;
-          // @ts-ignore
           const isSelected = selectedKeys.has(key);
           return (
             <span
               className={`${styles.selectWrap} ${isSelected ? styles.selectWrapActive : ""}`}
-              onClick={(e) => {
+              onClick={(e: any) => {
                 e.stopPropagation();
-                // @ts-ignore
                 onToggleSelect(row._raw);
               }}
             >
@@ -848,16 +700,13 @@ function ModelsTableInner({
       align: "center",
       sortable: true,
       render: (row: any) => {
-        // @ts-ignore
         const isFav = favorites.includes(row._favKey);
-        // @ts-ignore
         if (!onToggleFavorite) return "—";
         return (
           <span
             className={styles.favWrap}
-            onClick={(e) => {
+            onClick={(e: any) => {
               e.stopPropagation();
-              // @ts-ignore
               onToggleFavorite(row._favKey);
             }}
           >
@@ -918,7 +767,6 @@ function ModelsTableInner({
                 Loaded
               </span>
             )}
-            {/* @ts-ignore */}
             {model.provider === "lm-studio" && !model.isLoaded && loadingModelKey === model.key && (
               <span className={styles.loadingBadge}>
                 <Loader2 size={9} className={styles.loadingSpin} />
@@ -928,9 +776,8 @@ function ModelsTableInner({
             {hasActions && (
               <span
                 className={styles.inlineActions}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e: any) => e.stopPropagation()}
               >
-                {/* @ts-ignore */}
                 {renderActions(rawModel)}
               </span>
             )}
@@ -946,7 +793,6 @@ function ModelsTableInner({
       description: "Unique model identifier used in API calls",
       align: "left",
       render: (row: any) => (
-        // @ts-ignore
         <ModelBadgeComponent models={[row._model.key]} />
       ),
     });
@@ -959,7 +805,6 @@ function ModelsTableInner({
       align: "left",
       sortValue: (row: any) => resolveProviderLabel(row._model.provider).toLowerCase(),
       render: (row: any) => (
-        // @ts-ignore
         <ProvidersBadgeComponent providers={[row._model.provider]} />
       ),
     });
@@ -1084,7 +929,6 @@ function ModelsTableInner({
         description: "Proportional share of total requests",
         sortValue: (row: any) => row._raw.usageCount || 0,
         render: (row: any) => (
-          // @ts-ignore
           <ProportionBarComponent
             value={row._raw.usageCount || 0}
             total={usageTotal}
@@ -1112,7 +956,6 @@ function ModelsTableInner({
         description: "Proportional share of total requests",
         sortValue: (row: any) => row._raw.usageCount || 0,
         render: (row: any) => (
-          // @ts-ignore
           <ProportionBarComponent
             value={row._raw.usageCount || 0}
             total={usageTotal}
@@ -1180,7 +1023,6 @@ function ModelsTableInner({
         render: (row: any) => {
           const tools = row._raw.tools;
           if (!tools?.length) return "—";
-          // @ts-ignore
           return <ToolIconComponent toolDisplayNames={tools} />;
         },
       });
@@ -1341,9 +1183,7 @@ function ModelsTableInner({
 
     return cols;
   }, [
-    // @ts-ignore
     onToggleFavorite,
-    // @ts-ignore
     favorites,
     filtered,
     hasYear,
@@ -1363,15 +1203,11 @@ function ModelsTableInner({
     hasOutputPrice,
     hasActions,
     hasSelection,
-    // @ts-ignore
     selectedKeys,
-    // @ts-ignore
     onToggleSelect,
     handleSelectAll,
-    // @ts-ignore
     renderActions,
     arenaCols,
-    // @ts-ignore
     loadingModelKey,
     isFull,
     isBenchmark,
@@ -1380,7 +1216,6 @@ function ModelsTableInner({
   return (
     <div className={styles.container}>
       <FilterBarComponent className={styles.toolbar}>
-        {/* @ts-ignore */}
         {showSearch && (
           <SearchInputComponent
             value={searchQuery}
@@ -1390,10 +1225,7 @@ function ModelsTableInner({
           />
         )}
         <FilterDropdownComponent
-          // @ts-ignore
           groups={[
-            // @ts-ignore
-            // @ts-ignore
             ...(onToggleFavorite && favorites.length > 0
               ? [
                   {
@@ -1411,10 +1243,8 @@ function ModelsTableInner({
                     label: "Modality",
                     items: allModalities
                       .map((t: any) => {
-                        // @ts-ignore
-                        const m = MODALITY_ICONS[t];
-                        // @ts-ignore
-                        return m ? { key: t, icon: m.icon, color: MODALITY_COLORS[t], title: m.label } : null;
+                        const m = (MODALITY_ICONS as any)[t];
+                        return m ? { key: t, icon: m.icon, color: (MODALITY_COLORS as any)[t], title: m.label } : null;
                       })
                       .filter(Boolean),
                     activeKeys: activeModality,
@@ -1429,10 +1259,8 @@ function ModelsTableInner({
                     label: "Tools",
                     items: allTools
                       .map((t: any) => {
-                        // @ts-ignore
-                        const Icon = TOOL_ICONS[t];
-                        // @ts-ignore
-                        return Icon ? { key: t, icon: Icon, color: TOOL_COLORS[t], title: t } : null;
+                        const Icon = (TOOL_ICONS as any)[t];
+                        return Icon ? { key: t, icon: Icon, color: (TOOL_COLORS as any)[t], title: t } : null;
                       })
                       .filter(Boolean),
                     activeKeys: activeTool,
@@ -1441,7 +1269,6 @@ function ModelsTableInner({
                   },
                 ]
               : []),
-            // @ts-ignore
             ...(showProviderFilter && allProviders.length >= 2
               ? [
                   {
@@ -1462,9 +1289,7 @@ function ModelsTableInner({
       </FilterBarComponent>
 
       <TableComponent
-        // @ts-ignore
         title={title}
-        // @ts-ignore
         maxHeight={maxHeight}
         columns={columns}
         data={tableData}
@@ -1478,18 +1303,12 @@ function ModelsTableInner({
           }
           return `${row._model.provider}-${row._model.key}`;
         }}
-        // @ts-ignore
-        // @ts-ignore
         onRowClick={onSelect ? (row: any) => onSelect(isBenchmark ? row._raw._benchStat : row._raw) : undefined}
         emptyText={
-          // @ts-ignore
           emptyText || (searchQuery.trim() ? "No matching models" : "No models found")
         }
-        // @ts-ignore
         activeRowKey={activeRowKey}
-        // @ts-ignore
         highlightedRowKey={highlightedRowKey}
-        // @ts-ignore
         highlightedRowRef={highlightedRowRef}
         storageKey={isBenchmark ? "models-benchmark" : "models"}
         getRowClassName={
@@ -1498,7 +1317,6 @@ function ModelsTableInner({
             : hasSelection
               ? (row: any) => {
                   const key = `${row._model.provider}:${row._model.key}`;
-                  // @ts-ignore
                   return selectedKeys.has(key) ? styles.selectedRow : "";
                 }
               : undefined

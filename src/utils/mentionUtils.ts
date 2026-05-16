@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mention Utilities — Pure functions for the @-mention system.
  *
@@ -54,7 +55,6 @@ export function serializeEditable(el: any) {
  * @param {string} prefix — accumulated path prefix
  * @returns {{ path: string, name: string, type: string }[]}
  */
-// @ts-ignore
 export function flattenTree(nodes: any, prefix = "") {
   const out = [];
   for (const n of nodes) {
@@ -138,10 +138,8 @@ export function parseMentionTokens(text: any) {
     const segment = { type: "mention", value: match[1] };
     // Extract line range if present
     if (match[2]) {
-      // @ts-ignore
-      segment.lineStart = parseInt(match[2], 10);
-      // @ts-ignore
-      if (match[3]) segment.lineEnd = parseInt(match[3], 10);
+      (segment as any).lineStart = parseInt(match[2], 10);
+      if (match[3]) (segment as any).lineEnd = parseInt(match[3], 10);
     }
     segments.push(segment);
     lastIndex = mentionRe.lastIndex;
@@ -173,52 +171,31 @@ export function createMentionBadge(path: any, name: any, type: any, opts = {}) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
   const classes = [badgeStyles.mentionBadge];
-  // @ts-ignore
-  if (opts.stale) classes.push(badgeStyles.mentionBadgeStale);
+  if ((opts as any).stale) classes.push(badgeStyles.mentionBadgeStale);
   badge.className = classes.join(" ");
   badge.dataset.mentionPath = path;
   badge.dataset.mentionType = type || "file";
   // Store line range in data attributes for serialization
-  // @ts-ignore
-  if (opts.lineStart != null) {
-    // @ts-ignore
-    badge.dataset.mentionLineStart = String(opts.lineStart);
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
-    if (opts.lineEnd != null && opts.lineEnd !== opts.lineStart) {
-      // @ts-ignore
-      badge.dataset.mentionLineEnd = String(opts.lineEnd);
+  if ((opts as any).lineStart != null) {
+    badge.dataset.mentionLineStart = String((opts as any).lineStart);
+    if ((opts as any).lineEnd != null && (opts as any).lineEnd !== (opts as any).lineStart) {
+      badge.dataset.mentionLineEnd = String((opts as any).lineEnd);
     }
   }
   // Build display name with line suffix (#L format — GitHub convention)
   let displayName = name;
-  // @ts-ignore
-  if (opts.lineStart != null) {
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
-    displayName += opts.lineEnd != null && opts.lineEnd !== opts.lineStart
-      // @ts-ignore
-      // @ts-ignore
-      ? `#L${opts.lineStart}-${opts.lineEnd}`
-      // @ts-ignore
-      : `#L${opts.lineStart}`;
+  if ((opts as any).lineStart != null) {
+    displayName += (opts as any).lineEnd != null && (opts as any).lineEnd !== (opts as any).lineStart
+      ? `#L${(opts as any).lineStart}-${(opts as any).lineEnd}`
+      : `#L${(opts as any).lineStart}`;
   }
   // Native title attribute — used as tooltip fallback inside overflow-clipped
   // contentEditable containers where the ::after CSS tooltip gets cut off.
   let titleText = path;
-  // @ts-ignore
-  if (opts.lineStart != null) {
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
-    titleText += opts.lineEnd != null && opts.lineEnd !== opts.lineStart
-      // @ts-ignore
-      // @ts-ignore
-      ? `#L${opts.lineStart}-${opts.lineEnd}`
-      // @ts-ignore
-      : `#L${opts.lineStart}`;
+  if ((opts as any).lineStart != null) {
+    titleText += (opts as any).lineEnd != null && (opts as any).lineEnd !== (opts as any).lineStart
+      ? `#L${(opts as any).lineStart}-${(opts as any).lineEnd}`
+      : `#L${(opts as any).lineStart}`;
   }
   badge.title = titleText;
   const icon = type === "directory" ? "📁" : "📄";
@@ -238,9 +215,7 @@ export function placeCaretAfter(node: any) {
   const r = document.createRange();
   r.setStartAfter(node);
   r.collapse(true);
-  // @ts-ignore
   sel.removeAllRanges();
-  // @ts-ignore
   sel.addRange(r);
 }
 
