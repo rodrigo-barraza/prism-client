@@ -1,0 +1,380 @@
+"use client";
+
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Download } from "lucide-react";
+import ToolsApiService from "../../../services/ToolsApiService";
+import JsonViewerComponent from "../../../components/JsonViewerComponent";
+import { ButtonComponent, PaginationComponent, TableComponent } from "@rodrigo-barraza/components-library";
+import { ErrorMessage } from "../../../components/StateMessageComponent";
+import {
+  FilterBarComponent,
+  FilterGroupComponent,
+  FilterInputComponent,
+  FilterSelectComponent,
+  FilterClearButton,
+} from "../../../components/FilterBarComponent";
+import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
+import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
+import {
+  formatNumber,
+  formatLatencyMs,
+  formatDateTime,
+  formatFileSize,
+  buildDateRangeParams,
+} from "../../../utils/utilities";
+import { getToolRequestsColumns } from "./toolRequestsColumns";
+import styles from "./page.module.css";
+
+// -- Domain options (from ToolSchemaService TOOL_DOMAINS) ---------
+const DOMAIN_OPTIONS = [
+  { value: "", label: "All" },
+  { value: "Weather & Environment", label: "Weather" },
+  { value: "Events", label: "Events" },
+  { value: "Markets & Commodities", label: "Markets" },
+  { value: "Trends", label: "Trends" },
+  { value: "Products", label: "Products" },
+  { value: "Finance", label: "Finance" },
+  { value: "Knowledge", label: "Knowledge" },
+  { value: "Movies & TV", label: "Movies & TV" },
+  { value: "Health", label: "Health" },
+  { value: "Transit", label: "Transit" },
+  { value: "Utilities", label: "Utilities" },
+  { value: "Compute", label: "Compute" },
+  { value: "Maritime", label: "Maritime" },
+  { value: "Energy", label: "Energy" },
+  { value: "Agentic: File Operations", label: "File Ops" },
+  { value: "Agentic: Search & Discovery", label: "Search" },
+  { value: "Agentic: Web", label: "Web" },
+  { value: "Agentic: Command Execution", label: "Command" },
+  { value: "Agentic: Git", label: "Git" },
+  { value: "Agentic: Browser", label: "Browser" },
+  { value: "Communication", label: "Communication" },
+];
+
+export default function ToolRequestsPage() {
+  const { setControls, setTitleBadge, dateRange } = useAdminHeader();
+  const [toolCalls, setToolCalls] = useState<any>([]);
+  const [total, setTotal] = useState<any>(0);
+  const [page, setPage] = useState<any>(1);
+  const [loading, setLoading] = useState<any>(true);
+  const [error, setError] = useState<any>(null);
+  const [sort, setSort] = useState<any>("timestamp");
+  const [order, setOrder] = useState<any>("desc");
+  const [selectedCall, setSelectedCall] = useState<any>(null);
+  const [filters, setFilters] = useState<any>({
+    toolName: "",
+    domain: "",
+    success: "",
+    callerAgent: "",
+  });
+
+  const LIMIT = 50;
+
+  const loadToolCalls = useCallback(async () => {
+    try {
+      const params = { limit: LIMIT, skip: (page - 1) * LIMIT };
+      Object.entries(filters).forEach(([k, v]) => {
+        // @ts-ignore
+        if (v) params[k] = v;
+      });
+      // Date range
+      const dateParams = buildDateRangeParams(dateRange);
+      // @ts-ignore
+      // @ts-ignore
+      // @ts-ignore
+      if (dateParams.since) params.since = dateParams.since;
+      // @ts-ignore
+      // @ts-ignore
+      // @ts-ignore
+      if (dateParams.until) params.until = dateParams.until;
+
+      const data = await ToolsApiService.getToolCalls(params);
+      setToolCalls(data.toolCalls || []);
+      setTotal(data.total || 0);
+    } catch (error) {
+      // @ts-ignore
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, filters, dateRange]);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    setToolCalls([]);
+    setTotal(0);
+    loadToolCalls();
+  }, [loadToolCalls]);
+
+  function handleSort(key: any, dir: any) {
+    setSort(key);
+    setOrder(dir);
+    setPage(1);
+  }
+
+  const handleFilterChange = useCallback((key: any, value: any) => {
+    setFilters((prev: any) => ({ ...prev, [key]: value }));
+    setPage(1);
+  }, []);
+
+  function clearFilters() {
+    setFilters({
+      toolName: "",
+      domain: "",
+      success: "",
+      callerAgent: "",
+    });
+    setPage(1);
+  }
+
+  // -- Column definitions -----------------------------------------
+  const totalDuration = useMemo<any>(
+    () => toolCalls.reduce((sum: any, tc: any) => sum + (tc.elapsedMs || 0), 0) || 1,
+    [toolCalls],
+  );
+
+  const columns = useMemo<any>(
+    () => getToolRequestsColumns({ totalDuration }),
+    [totalDuration],
+  );
+
+  // -- CSV Export -------------------------------------------------
+  const exportCSV = useCallback(() => {
+    const headers = [
+      "Timestamp", "Tool", "Domain", "Method", "Agent", "User",
+      "Latency (ms)", "Status", "Error",
+    ].join(",");
+    const rows = toolCalls.map((tc: any) =>
+      [
+        tc.timestamp || "",
+        tc.toolName || "",
+        tc.domain || "",
+        tc.method || "",
+        tc.callerAgent || "",
+        tc.callerUsername || "",
+        tc.elapsedMs || 0,
+        tc.success ? "OK" : "ERR",
+        tc.errorMessage || "",
+      ].join(","),
+    );
+    const csv = [headers, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tool-requests-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [toolCalls]);
+
+  const totalPages = Math.ceil(total / LIMIT);
+
+  // -- Build detail sections for the drawer ----------------------
+  function buildDetailSections(tc: any) {
+    if (!tc) return [];
+    return [
+      {
+        title: "Overview",
+        items: [
+          { label: "Tool", value: tc.toolName },
+          { label: "Domain", value: tc.domain },
+          { label: "Method", value: tc.method },
+          { label: "Path", value: tc.path, mono: true },
+          { label: "Status Code", value: tc.status },
+          {
+            label: "Success",
+            value: tc.success ? "✓ OK" : "✗ Error",
+          },
+          ...(tc.errorMessage
+            ? [{ label: "Error", value: tc.errorMessage }]
+            : []),
+        ],
+      },
+      {
+        title: "Performance",
+        items: [
+          {
+            label: "Latency",
+            value: tc.elapsedMs
+              ? formatLatencyMs(tc.elapsedMs)
+              : "—",
+          },
+          {
+            label: "Latency (raw)",
+            value: tc.elapsedMs ? `${tc.elapsedMs.toFixed(2)} ms` : "—",
+            mono: true,
+          },
+          {
+            label: "Request Size",
+            value: tc.inBytes > 0 ? formatFileSize(tc.inBytes) : "—",
+          },
+          {
+            label: "Response Size",
+            value: tc.outBytes > 0 ? formatFileSize(tc.outBytes) : "—",
+          },
+        ],
+      },
+      {
+        title: "Caller Context",
+        items: [
+          { label: "Project", value: tc.callerProject || "—" },
+          { label: "Username", value: tc.callerUsername || "—" },
+          { label: "Agent", value: tc.callerAgent || "—" },
+          { label: "Request ID", value: tc.callerRequestId || "—", mono: true },
+          {
+            label: "Conversation ID",
+            value: tc.callerConversationId || "—",
+            mono: true,
+          },
+          {
+            label: "Iteration",
+            value: tc.callerIteration != null ? `#${tc.callerIteration}` : "—",
+          },
+          { label: "Client IP", value: tc.clientIp || "—", mono: true },
+        ],
+      },
+      {
+        title: "Timing",
+        items: [
+          {
+            label: "Timestamp",
+            value: tc.timestamp ? formatDateTime(tc.timestamp) : "—",
+          },
+        ],
+      },
+    ];
+  }
+
+  // -- Header controls --------------------------------------------
+  useEffect(() => {
+    setControls(
+      // @ts-ignore
+      <>
+        <ErrorMessage message={error} />
+      </>,
+    );
+  }, [setControls, error]);
+
+  useEffect(() => {
+    return () => {
+      // @ts-ignore
+      setControls(null);
+      // @ts-ignore
+      setTitleBadge(null);
+    };
+  }, [setControls, setTitleBadge]);
+
+  useEffect(() => {
+    // @ts-ignore
+    setTitleBadge(formatNumber(total));
+  }, [setTitleBadge, total]);
+
+  return (
+    <div className={styles.page}>
+      {/* Filters */}
+      <FilterBarComponent>
+        <FilterGroupComponent label="Tool">
+          <FilterInputComponent
+            placeholder="Filter by tool name..."
+            value={filters.toolName}
+            onChange={(val: any) => handleFilterChange("toolName", val)}
+          />
+        </FilterGroupComponent>
+        <FilterGroupComponent label="Domain">
+          <FilterSelectComponent
+            value={filters.domain}
+            onChange={(val: any) => handleFilterChange("domain", val)}
+            options={DOMAIN_OPTIONS}
+          />
+        </FilterGroupComponent>
+        <FilterGroupComponent label="Agent">
+          <FilterInputComponent
+            placeholder="Filter by agent..."
+            value={filters.callerAgent}
+            onChange={(val: any) => handleFilterChange("callerAgent", val)}
+          />
+        </FilterGroupComponent>
+        <FilterGroupComponent label="Status">
+          <FilterSelectComponent
+            value={filters.success}
+            onChange={(val: any) => handleFilterChange("success", val)}
+            options={[
+              { value: "", label: "All" },
+              { value: "true", label: "Success" },
+              { value: "false", label: "Error" },
+            ]}
+          />
+        </FilterGroupComponent>
+
+        <FilterClearButton onClick={clearFilters} />
+        <ButtonComponent
+          variant="secondary"
+          icon={Download}
+          onClick={exportCSV}
+        >
+          Export CSV
+        </ButtonComponent>
+      </FilterBarComponent>
+
+      {/* Table */}
+      <div className={styles.tableWrapper}>
+        <TableComponent
+          columns={columns}
+          data={toolCalls}
+          sortKey={sort}
+          sortDir={order}
+          onSort={handleSort}
+          onRowClick={(tc: any) => setSelectedCall(tc)}
+          getRowKey={(tc: any, i: any) => tc._id || `tc-${i}`}
+          emptyText={loading ? "Loading..." : "No tool calls found"}
+          maxHeight={null}
+          storageKey="tool-requests"
+        />
+
+        {/* Pagination */}
+        <PaginationComponent
+          page={page}
+          totalPages={totalPages}
+          totalItems={total}
+          onPageChange={setPage}
+          limit={LIMIT}
+        />
+      </div>
+
+      {/* Detail drawer */}
+      <RequestDetailsComponent
+        open={!!selectedCall}
+        onClose={() => setSelectedCall(null)}
+        title="Tool Call Detail"
+        // @ts-ignore
+        sections={buildDetailSections(selectedCall)}
+      >
+        {selectedCall && (
+          <>
+            {selectedCall.args && Object.keys(selectedCall.args).length > 0 && (
+              <div className={styles.detailSection}>
+                {/* @ts-ignore */}
+                <JsonViewerComponent
+                  data={selectedCall.args}
+                  label="Arguments"
+                  maxHeight="300px"
+                />
+              </div>
+            )}
+            {selectedCall.result && Object.keys(selectedCall.result).length > 0 && (
+              <div className={styles.detailSection}>
+                {/* @ts-ignore */}
+                <JsonViewerComponent
+                  data={selectedCall.result}
+                  label="Result (Sanitized)"
+                  maxHeight="400px"
+                />
+              </div>
+            )}
+          </>
+        )}
+      </RequestDetailsComponent>
+    </div>
+  );
+}

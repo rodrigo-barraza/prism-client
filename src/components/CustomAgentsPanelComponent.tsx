@@ -1,0 +1,683 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import {
+  Plus,
+  Trash2,
+  Edit3,
+  Save,
+  X,
+  Bot,
+  Wrench,
+  FolderTree,
+  BookOpen,
+  AlertCircle,
+  Globe2,
+  Code2,
+  ImageIcon,
+  Skull,
+  Sticker,
+  Apple,
+  Lightbulb,
+  Flame,
+  Zap,
+  Shield,
+  Swords,
+  Palette,
+  Music,
+  Gamepad2,
+  Camera,
+  Telescope,
+  Rocket,
+  Atom,
+  Brain,
+  GraduationCap,
+  Briefcase,
+  Hammer,
+  Microscope,
+  Leaf,
+  Dog,
+  Cat,
+  Bird,
+  Bug,
+  Fish,
+  Crown,
+  Gem,
+  Star,
+  Moon,
+  Sun,
+  Mountain,
+  Anchor,
+  Compass,
+  Crosshair,
+  Target,
+  Trophy,
+  Medal,
+  Dumbbell,
+  HeartPulse,
+  Coffee,
+  UtensilsCrossed,
+  Wine,
+  Cake,
+  Paintbrush,
+  Pen,
+  Wand2,
+  Hexagon,
+  CircuitBoard,
+  Cog,
+  FlaskConical,
+  Cpu,
+  Sparkles,
+  Heart,
+} from "lucide-react";
+import PrismService from "../services/PrismService.js";
+import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
+import AgentBadgeComponent from "./AgentBadgeComponent";
+import ToolSelectionComponent from "./ToolSelectionComponent";
+import styles from "./CustomAgentsPanelComponent.module.css";
+
+
+
+const EMPTY_AGENT = {
+  name: "",
+  description: "",
+  project: "coding",
+  icon: "",
+  color: "",
+  backgroundImage: "",
+  identity: "",
+  guidelines: "",
+  toolPolicy: "",
+  enabledTools: [],
+  usesDirectoryTree: false,
+  usesCodingGuidelines: false,
+};
+
+// -- Curated color palette for agent theming ---------------------
+const COLOR_PALETTE = [
+  { hex: "#6366f1", name: "Indigo" },
+  { hex: "#8b5cf6", name: "Violet" },
+  { hex: "#a855f7", name: "Purple" },
+  { hex: "#d946ef", name: "Fuchsia" },
+  { hex: "#ec4899", name: "Pink" },
+  { hex: "#f43f5e", name: "Rose" },
+  { hex: "#ef4444", name: "Red" },
+  { hex: "#f97316", name: "Orange" },
+  { hex: "#f59e0b", name: "Amber" },
+  { hex: "#eab308", name: "Yellow" },
+  { hex: "#84cc16", name: "Lime" },
+  { hex: "#22c55e", name: "Green" },
+  { hex: "#10b981", name: "Emerald" },
+  { hex: "#14b8a6", name: "Teal" },
+  { hex: "#06b6d4", name: "Cyan" },
+  { hex: "#0ea5e9", name: "Sky" },
+  { hex: "#3b82f6", name: "Blue" },
+  { hex: "#6d28d9", name: "Deep Violet" },
+  { hex: "#78716c", name: "Stone" },
+  { hex: "#64748b", name: "Slate" },
+];
+
+// -- Curated icon palette for the icon picker --------------------
+// Stored as string name → component mapping.
+const ICON_OPTIONS = [
+  { name: "Bot", icon: Bot },
+  { name: "Skull", icon: Skull },
+  { name: "Sticker", icon: Sticker },
+  { name: "Apple", icon: Apple },
+  { name: "Brain", icon: Brain },
+  { name: "Lightbulb", icon: Lightbulb },
+  { name: "Flame", icon: Flame },
+  { name: "Zap", icon: Zap },
+  { name: "Shield", icon: Shield },
+  { name: "Swords", icon: Swords },
+  { name: "Sparkles", icon: Sparkles },
+  { name: "Palette", icon: Palette },
+  { name: "Music", icon: Music },
+  { name: "Gamepad2", icon: Gamepad2 },
+  { name: "Camera", icon: Camera },
+  { name: "Telescope", icon: Telescope },
+  { name: "Rocket", icon: Rocket },
+  { name: "Atom", icon: Atom },
+  { name: "GraduationCap", icon: GraduationCap },
+  { name: "Briefcase", icon: Briefcase },
+  { name: "Hammer", icon: Hammer },
+  { name: "Microscope", icon: Microscope },
+  { name: "Leaf", icon: Leaf },
+  { name: "Dog", icon: Dog },
+  { name: "Cat", icon: Cat },
+  { name: "Bird", icon: Bird },
+  { name: "Bug", icon: Bug },
+  { name: "Fish", icon: Fish },
+  { name: "Crown", icon: Crown },
+  { name: "Gem", icon: Gem },
+  { name: "Star", icon: Star },
+  { name: "Moon", icon: Moon },
+  { name: "Sun", icon: Sun },
+  { name: "Mountain", icon: Mountain },
+  { name: "Anchor", icon: Anchor },
+  { name: "Compass", icon: Compass },
+  { name: "Crosshair", icon: Crosshair },
+  { name: "Target", icon: Target },
+  { name: "Trophy", icon: Trophy },
+  { name: "Medal", icon: Medal },
+  { name: "Dumbbell", icon: Dumbbell },
+  { name: "HeartPulse", icon: HeartPulse },
+  { name: "Coffee", icon: Coffee },
+  { name: "UtensilsCrossed", icon: UtensilsCrossed },
+  { name: "Wine", icon: Wine },
+  { name: "Cake", icon: Cake },
+  { name: "Paintbrush", icon: Paintbrush },
+  { name: "Pen", icon: Pen },
+  { name: "Wand2", icon: Wand2 },
+  { name: "Hexagon", icon: Hexagon },
+  { name: "CircuitBoard", icon: CircuitBoard },
+  { name: "Cog", icon: Cog },
+  { name: "FlaskConical", icon: FlaskConical },
+  { name: "Heart", icon: Heart },
+  { name: "Code2", icon: Code2 },
+  { name: "Globe2", icon: Globe2 },
+  { name: "Cpu", icon: Cpu },
+];
+
+/** Resolve an icon name string to its lucide component. */
+export function resolveIconComponent(name: any) {
+  if (!name) return Bot;
+  const found = ICON_OPTIONS.find((o) => o.name === name);
+  return found?.icon || Bot;
+}
+
+
+
+/**
+ * CustomAgentsPanel — CRUD interface for user-defined agent personas.
+ *
+ * @param {Array} agents - Current list of custom agents from the database
+ * @param {Function} onAgentsChange - Callback to refresh the agents list
+ * @param {Array} availableTools - All built-in tool schemas for the tool picker
+ */
+export default function CustomAgentsPanel({
+  agents = [],
+  // @ts-ignore
+  onAgentsChange: any,
+  availableTools = [],
+}) {
+  const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [isNew, setIsNew] = useState<any>(false);
+  const [saving, setSaving] = useState<any>(false);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
+
+  const [error, setError] = useState<any>(null);
+
+  // -- CRUD -----------------------------------------------------
+
+  const handleCreate = useCallback(() => {
+    setEditingAgent({ ...EMPTY_AGENT, enabledTools: [] });
+    setIsNew(true);
+    setError(null);
+  }, []);
+
+  const handleEdit = useCallback((agent: any) => {
+    setEditingAgent({
+      ...agent,
+      enabledTools: agent.enabledTools || [],
+    });
+    setIsNew(false);
+    setError(null);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setEditingAgent(null);
+    setIsNew(false);
+    setError(null);
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (!editingAgent.name?.trim()) {
+      setError("Agent name is required");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    try {
+      if (isNew) {
+        await PrismService.createCustomAgent(editingAgent);
+      } else {
+        await PrismService.updateCustomAgent(
+          editingAgent._id,
+          editingAgent,
+        );
+      }
+      setEditingAgent(null);
+      setIsNew(false);
+      // @ts-ignore
+      onAgentsChange?.();
+    } catch (error) {
+      // @ts-ignore
+      setError(error.message || "Failed to save agent");
+    } finally {
+      setSaving(false);
+    }
+  // @ts-ignore
+  }, [editingAgent, isNew, onAgentsChange]);
+
+  const handleDelete = useCallback((id: any) => {
+    setConfirmingDeleteId(id);
+  }, []);
+
+  const confirmDelete = useCallback(
+    async (id: any) => {
+      try {
+        await PrismService.deleteCustomAgent(id);
+        setConfirmingDeleteId(null);
+        // @ts-ignore
+        onAgentsChange?.();
+      } catch (error) {
+        // @ts-ignore
+        console.error("Failed to delete agent:", err);
+      }
+    },
+    // @ts-ignore
+    [onAgentsChange],
+  );
+
+
+
+  // -- Form field updaters --------------------------------------
+
+  const updateField = useCallback((field: any, value: any) => {
+    setEditingAgent((a: any) => ({ ...a, [field]: value }));
+  }, []);
+
+  // -- Edit form ------------------------------------------------
+
+  if (editingAgent) {
+    return (
+      <div className={styles.formOverlay}>
+        <div className={styles.formHeader}>
+          <h3>{isNew ? "New Agent" : `Edit: ${editingAgent.name}`}</h3>
+          <button className={styles.cancelBtn} onClick={handleCancel}>
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className={styles.form}>
+          {/* Name + Project */}
+          <div className={styles.formRow}>
+            <div className={styles.formGroup} style={{ flex: 2 }}>
+              <label>Agent Name</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={editingAgent.name}
+                onChange={(e) => updateField("name", e.target.value)}
+                placeholder="My Agent"
+              />
+              <span className={styles.hint}>
+                Display name — will generate ID: CUSTOM_{editingAgent.name
+                  ? editingAgent.name.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "")
+                  : "..."}
+              </span>
+            </div>
+            <div className={styles.formGroup} style={{ flex: 1 }}>
+              <label>Project</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={editingAgent.project}
+                onChange={(e) => updateField("project", e.target.value)}
+                placeholder="coding"
+              />
+              <span className={styles.hint}>
+                Project scope for sessions
+              </span>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className={styles.formGroup}>
+            <label>Description</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={editingAgent.description}
+              onChange={(e) => updateField("description", e.target.value)}
+              placeholder="Short description for the agent picker..."
+            />
+          </div>
+
+          {/* Icon Picker */}
+          <div className={styles.formGroup}>
+            <label>Icon</label>
+            <div className={styles.iconGrid}>
+              {ICON_OPTIONS.map(({ name, icon: IconComp }) => (
+                <button
+                  key={name}
+                  type="button"
+                  className={styles.iconOption}
+                  data-selected={editingAgent.icon === name}
+                  onClick={() => updateField("icon", name)}
+                  title={name}
+                  // @ts-ignore
+                  style={editingAgent.color ? { "--agent-color": editingAgent.color } : undefined}
+                >
+                  <IconComp size={16} />
+                </button>
+              ))}
+            </div>
+            <span className={styles.hint}>
+              {editingAgent.icon ? `Selected: ${editingAgent.icon}` : "Click an icon — defaults to Bot"}
+            </span>
+          </div>
+
+          {/* Color Picker */}
+          <div className={styles.formGroup}>
+            <label>
+              <Palette size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+              Accent Color
+            </label>
+            <div className={styles.colorGrid}>
+              {COLOR_PALETTE.map(({ hex, name }) => (
+                <button
+                  key={hex}
+                  type="button"
+                  className={styles.colorSwatch}
+                  data-selected={editingAgent.color === hex}
+                  onClick={() => updateField("color", editingAgent.color === hex ? "" : hex)}
+                  title={name}
+                  // @ts-ignore
+                  style={{ "--swatch-color": hex }}
+                />
+              ))}
+            </div>
+            <span className={styles.hint}>
+              {editingAgent.color
+                ? <>
+                    Selected: <span className={styles.colorPreviewDot} style={{ background: editingAgent.color }} />{" "}
+                    {COLOR_PALETTE.find((c) => c.hex === editingAgent.color)?.name || editingAgent.color}
+                  </>
+                : "Click a color to brand your agent — used for icon backgrounds and UI accents"
+              }
+            </span>
+          </div>
+
+          {/* Background Image */}
+          <div className={styles.formGroup}>
+            <label>
+              <ImageIcon size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+              Background Image
+            </label>
+            <input
+              type="text"
+              className={styles.input}
+              value={editingAgent.backgroundImage || ""}
+              onChange={(e) => updateField("backgroundImage", e.target.value)}
+              placeholder="https://example.com/background.jpg"
+            />
+            <span className={styles.hint}>
+              URL to a background image displayed behind the chat messages — use a subtle, dark image for best results
+            </span>
+            {editingAgent.backgroundImage && (
+              <div className={styles.bgPreview}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={editingAgent.backgroundImage}
+                  alt="Background preview"
+                  className={styles.bgPreviewImg}
+                  // @ts-ignore
+                  onError={(e) => { e.target.style.display = "none"; }}
+                />
+                <button
+                  type="button"
+                  className={styles.bgPreviewClear}
+                  onClick={() => updateField("backgroundImage", "")}
+                  title="Remove background image"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Identity Prompt */}
+          <div className={styles.formGroup}>
+            <label>Identity Prompt</label>
+            <textarea
+              className={styles.textarea}
+              value={editingAgent.identity}
+              onChange={(e) => updateField("identity", e.target.value)}
+              placeholder="You are a senior backend engineer specializing in..."
+              rows={5}
+            />
+            <span className={styles.hint}>
+              Core personality and role — injected at the top of the system prompt
+            </span>
+          </div>
+
+          {/* Guidelines */}
+          <div className={styles.formGroup}>
+            <label>Response Guidelines</label>
+            <textarea
+              className={styles.textarea}
+              value={editingAgent.guidelines}
+              onChange={(e) => updateField("guidelines", e.target.value)}
+              placeholder="## Guidelines&#10;- Always explain your reasoning...&#10;- Use bullet points for clarity..."
+              rows={4}
+            />
+            <span className={styles.hint}>
+              Always injected into the system prompt — behavioral instructions for how the agent should respond
+            </span>
+          </div>
+
+          {/* Tool Policy */}
+          <div className={styles.formGroup}>
+            <label>Tool Policy</label>
+            <textarea
+              className={styles.textarea}
+              value={editingAgent.toolPolicy}
+              onChange={(e) => updateField("toolPolicy", e.target.value)}
+              placeholder="# Tool Usage&#10;- Use read_file before editing...&#10;- Always run tests after changes..."
+              rows={4}
+            />
+            <span className={styles.hint}>
+              Instructions for how the agent should use its tools
+            </span>
+          </div>
+
+          {/* Toggles */}
+          <div className={styles.formGroup}>
+            <label>Context Injection</label>
+            <div className={styles.toggleRow}>
+              <div className={styles.toggleLabel}>
+                <span className={styles.toggleTitle}>
+                  <FolderTree size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+                  Directory Tree
+                </span>
+                <span className={styles.toggleHint}>
+                  Inject workspace file structure into context
+                </span>
+              </div>
+              <ToggleComponent
+                checked={editingAgent.usesDirectoryTree}
+                onChange={() =>
+                  updateField("usesDirectoryTree", !editingAgent.usesDirectoryTree)
+                }
+              />
+            </div>
+            <div className={styles.toggleRow}>
+              <div className={styles.toggleLabel}>
+                <span className={styles.toggleTitle}>
+                  <BookOpen size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+                  Coding Defaults
+                </span>
+                <span className={styles.toggleHint}>
+                  Inject generic coding conventions and coordinator orchestration mode
+                </span>
+              </div>
+              <ToggleComponent
+                checked={editingAgent.usesCodingGuidelines}
+                onChange={() =>
+                  updateField(
+                    "usesCodingGuidelines",
+                    !editingAgent.usesCodingGuidelines,
+                  )
+                }
+              />
+            </div>
+          </div>
+
+          {/* Tool Picker */}
+          <ToolSelectionComponent
+            availableTools={availableTools}
+            enabledTools={editingAgent.enabledTools}
+            onEnabledToolsChange={(tools: any) => updateField("enabledTools", tools)}
+          />
+
+          {/* Error */}
+          {error && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--error)", fontSize: 12 }}>
+              <AlertCircle size={14} />
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className={styles.formFooter}>
+          <ButtonComponent
+            variant="disabled"
+            onClick={handleCancel}
+          >
+            Cancel
+          </ButtonComponent>
+          <ButtonComponent
+            variant="primary"
+            icon={Save}
+            onClick={handleSave}
+            disabled={saving || !editingAgent.name?.trim()}
+          >
+            {saving ? "Saving…" : isNew ? "Create Agent" : "Save Changes"}
+          </ButtonComponent>
+        </div>
+      </div>
+    );
+  }
+
+  // -- Agent list view ------------------------------------------
+
+  return (
+    <div className={styles.container}>
+      {agents.length > 0 && (
+        <div className={styles.panelHeader}>
+          <ButtonComponent
+            variant="disabled"
+            icon={Plus}
+            onClick={handleCreate}
+          >
+            New Agent
+          </ButtonComponent>
+        </div>
+      )}
+
+      {agents.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>
+            <Bot size={24} />
+          </div>
+          <span className={styles.emptyTitle}>No custom agents yet</span>
+          <span className={styles.emptyHint}>
+            Create your own agent persona with a custom system prompt and
+            hand-picked tools from the full tool suite.
+          </span>
+          <ButtonComponent
+            variant="primary"
+            icon={Plus}
+            onClick={handleCreate}
+          >
+            Create Agent
+          </ButtonComponent>
+        </div>
+      ) : (
+        <div className={styles.agentList}>
+          {agents.map((agent) => {
+            // @ts-ignore
+            const isConfirming = confirmingDeleteId === agent._id;
+
+            return (
+              // @ts-ignore
+              <div key={agent._id} className={styles.agentCard}>
+                <AgentBadgeComponent
+                  // @ts-ignore
+                  // @ts-ignore
+                  // @ts-ignore
+                  agent={{ id: agent.agentId, icon: agent.icon, color: agent.color }}
+                />
+                <div className={styles.agentInfo}>
+                  {/* @ts-ignore */}
+                  <span className={styles.agentName}>{agent.name}</span>
+                  {/* @ts-ignore */}
+                  {agent.description && (
+                    <span className={styles.agentDesc}>
+                      {/* @ts-ignore */}
+                      {agent.description}
+                    </span>
+                  )}
+                  <div className={styles.agentMeta}>
+                    <span className={styles.agentBadge}>
+                      <Wrench size={9} />
+                      {/* @ts-ignore */}
+                      {agent.enabledTools?.length || 0} tools
+                    </span>
+                    <span className={styles.agentBadge}>
+                      {/* @ts-ignore */}
+                      {agent.agentId}
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.agentActions}>
+                  {isConfirming ? (
+                    <div className={styles.confirmRow}>
+                      <span className={styles.confirmText}>Delete?</span>
+                      <ButtonComponent
+                        variant="destructive"
+                        // @ts-ignore
+                        onClick={() => confirmDelete(agent._id)}
+                      >
+                        Yes
+                      </ButtonComponent>
+                      <ButtonComponent
+                        variant="disabled"
+                        onClick={() => setConfirmingDeleteId(null)}
+                      >
+                        No
+                      </ButtonComponent>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={() => handleEdit(agent)}
+                        title="Edit"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                      <button
+                        className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                        // @ts-ignore
+                        onClick={() => handleDelete(agent._id)}
+                        title="Delete"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

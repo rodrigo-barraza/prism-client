@@ -1,0 +1,547 @@
+// ============================================================
+// Prism Client — Utilities
+// ============================================================
+// Functions shared across the workspace are re-exported from
+// @rodrigo-barraza/utilities-library. Prism-specific helpers remain
+// defined here as local exports.
+// ============================================================
+
+import { DateTime } from "luxon";
+
+// -- Re-exports from @rodrigo-barraza/utilities-library ----------------
+
+export {
+  generateUUID,
+  formatNumber,
+  formatTokenCount,
+  formatCost,
+  formatCostAdaptive,
+  formatLatency,
+  formatLatencyMs,
+  formatContextTokens,
+  formatFileSize,
+  formatTokensPerSec,
+  formatCompact,
+  formatElapsedTime,
+  formatDuration,
+  shuffleArray,
+  renderToolName,
+  humanizeToolName,
+  sleep,
+  timeAgo as formatTimeAgo,
+} from "@rodrigo-barraza/utilities-library";
+
+// -- Prism-specific utilities ---------------------------------
+
+/**
+ * Build the JSON body for LM Studio load requests.
+ * Maps camelCase options to the snake_case API contract.
+ * Used by PrismService.loadLmStudioModel, loadLmStudioModelStream,
+ * and IrisService.loadLmStudioModel.
+ */
+export function buildLmStudioLoadBody(model: any, options = {}) {
+  const body = { model };
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  if (options.contextLength != null) body.context_length = options.contextLength;
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  if (options.flashAttention != null) body.flash_attention = options.flashAttention;
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  if (options.offloadKvCache != null) body.offload_kv_cache_to_gpu = options.offloadKvCache;
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  if (options.evalBatchSize != null) body.eval_batch_size = options.evalBatchSize;
+  return body;
+}
+
+/**
+ * Get the total input token count from a usage object.
+ * Providers like Anthropic and Google split prompt tokens into
+ * new + cache_read + cache_write. This aggregates all three.
+ */
+export function getTotalInputTokens(usage: any) {
+  if (!usage) return 0;
+  return (
+    (usage.inputTokens || 0) +
+    (usage.cacheReadInputTokens || 0) +
+    (usage.cacheCreationInputTokens || 0)
+  );
+}
+
+/**
+ * Format an ISO timestamp as a compact human-readable datetime.
+ * Shows "Mar 30, 3:32 PM" for current year, "Mar 30, 2025, 3:32 PM" otherwise.
+ * Returns "—" for null/undefined values.
+ */
+export function formatDateTime(isoString: any) {
+  if (!isoString) return "—";
+  const dt = DateTime.fromISO(isoString);
+  if (!dt.isValid) return "—";
+  const now = DateTime.now();
+  if (dt.year === now.year) {
+    return dt.toFormat("MMM d, h:mm:ss a");
+  }
+  return dt.toFormat("MMM d, yyyy, h:mm:ss a");
+}
+
+/**
+ * Build ISO date range params from a { from, to } object.
+ * Returns an object with optional `from` and `to` keys.
+ */
+export function buildDateRangeParams(dateRange: any) {
+  const p = {};
+  if (dateRange?.from) {
+    // ISO datetime (sub-day presets) passes through; day-only gets midnight
+    // @ts-ignore
+    p.from = dateRange.from.includes("T")
+      ? dateRange.from
+      : new Date(dateRange.from).toISOString();
+  }
+  if (dateRange?.to) {
+    // @ts-ignore
+    p.to = dateRange.to.includes("T")
+      ? dateRange.to
+      : new Date(dateRange.to + "T23:59:59").toISOString();
+  }
+  return p;
+}
+
+/**
+ * Copy text to clipboard with error handling.
+ * Returns true on success, false on failure.
+ */
+export async function copyToClipboard(text: any) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get unique model names from assistant messages.
+ * Shared between AgentComponent and admin/conversations.
+ */
+export function getUniqueModels(messages: any) {
+  return [
+    ...new Set(
+      messages
+        .filter((m: any) => m.role === "assistant" && m.model)
+        .map((m: any) => m.model),
+    ),
+  ];
+}
+
+/**
+ * Get unique provider keys from assistant messages.
+ * Shared between useSessionStats and SettingsPanel.
+ */
+export function getUniqueProviders(messages: any) {
+  return [
+    ...new Set(
+      messages
+        .filter((m: any) => m.role === "assistant" && m.provider)
+        .map((m: any) => m.provider),
+    ),
+  ];
+}
+
+/**
+ * Sum estimatedCost across all messages.
+ */
+export function getSessionCost(messages: any) {
+  return messages.reduce((sum: any, m: any) => sum + (m.estimatedCost || 0), 0);
+}
+
+/**
+ * Aggregate input/output tokens and request count from assistant messages.
+ * Returns { totalTokens: { input, output, total }, requestCount }.
+ */
+export function getSessionTokenStats(messages: any) {
+  let input = 0;
+  let output = 0;
+  let requests = 0;
+  let liveStreamingTokens = 0;
+  let liveStreamingStartTime = null;
+  let liveStreamingLastChunkTime = null;
+  let liveStreamingBurstTokens = 0;
+  let liveStreamingBurstElapsed = 0;
+  let workerGenerationProgress = null;
+  let lastTimeToGeneration = null;     // retroactive TTFT from completed messages (seconds)
+  let liveProcessingStartTime = null;  // performance.now() when processing phase started
+  let liveProcessingPhase = null;      // current phase of in-flight message (processing/loading/generating)
+  let liveTtftSamples = null;          // server-computed TTFT samples (seconds[]) from generation_started events
+  let liveOutputCharacters = 0;         // real character count from streaming chunks
+  let liveGenProgress = null;          // backend-computed tok/s from SessionGenerationTracker
+  for (const m of messages) {
+    if (m.role !== "assistant") continue;
+    // Finalized messages have usage from the provider
+    if (m.usage) {
+      requests += m.usage.requests || 1;
+      input += getTotalInputTokens(m.usage);
+      output += m.usage.outputTokens || 0;
+    }
+    // Retroactive TTFT from completed messages
+    if (m.timeToGeneration != null) {
+      lastTimeToGeneration = m.timeToGeneration;
+    }
+    // Intermediate authoritative usage from backend usage_update events.
+    // Priority: usage (done) > _intermediateUsage (per-iteration) > _liveGenProgress (tracker)
+    //
+    // _liveGenProgress.outputTokens may exceed _intermediateUsage when
+    // a new iteration completes — use whichever is higher so the token
+    // count never stalls between iterations.
+    if (!m.usage && m._intermediateUsage) {
+      const intermediateOutput = m._intermediateUsage.outputTokens || 0;
+      // Use tracker's real token count if it exceeds intermediate (new iteration completed)
+      const trackerOutput = m._liveGenProgress?.outputTokens || 0;
+      const effectiveOutput = Math.max(intermediateOutput, trackerOutput);
+
+      requests += m._intermediateUsage.requests || 1;
+      input += getTotalInputTokens(m._intermediateUsage);
+      output += effectiveOutput;
+      // Still expose streaming metadata for tok/s computation
+      liveStreamingTokens = effectiveOutput;
+      liveStreamingStartTime = m._streamingStartTime || null;
+      liveStreamingLastChunkTime = m._streamingLastChunkTime || null;
+      liveStreamingBurstTokens = m._streamingBurstTokens || 0;
+      liveStreamingBurstElapsed = m._streamingBurstElapsed || 0;
+    }
+    // In-flight streaming messages: use tracker's real token count
+    // (fed exclusively by provider-reported usage, never per-chunk estimates)
+    else if (!m.usage && m._liveGenProgress?.outputTokens > 0) {
+      output += m._liveGenProgress.outputTokens;
+      liveStreamingTokens = m._liveGenProgress.outputTokens;
+      liveStreamingStartTime = m._streamingStartTime || null;
+      liveStreamingLastChunkTime = m._streamingLastChunkTime || null;
+      liveStreamingBurstTokens = m._streamingBurstTokens || 0;
+      liveStreamingBurstElapsed = m._streamingBurstElapsed || 0;
+    }
+    // In-flight streaming with no token data yet (first iteration
+    // before provider-reported usage arrives). Expose streaming
+    // timing metadata so the chunk-counting fallback in useTokenRate
+    // (Priority 3) can compute live tok/s from burst counters.
+    else if (!m.usage && !m._intermediateUsage && m._streamingStartTime && m._streamingLastChunkTime) {
+      liveStreamingStartTime = m._streamingStartTime;
+      liveStreamingLastChunkTime = m._streamingLastChunkTime;
+      liveStreamingBurstTokens = m._streamingBurstTokens || 0;
+      liveStreamingBurstElapsed = m._streamingBurstElapsed || 0;
+    }
+    // Track live output characters (real data, always increasing during streaming)
+    if (m._streamingOutputCharacters > 0) {
+      liveOutputCharacters = m._streamingOutputCharacters;
+    }
+    // Track live processing phase and start time for TTFT estimation
+    if (m._processingStartTime) {
+      liveProcessingStartTime = m._processingStartTime;
+    }
+    if (m.statusPhase) {
+      liveProcessingPhase = m.statusPhase;
+    }
+    // Server-computed TTFT samples from generation_started events (per-iteration, per-worker)
+    if (m._ttftSamples?.length) {
+      liveTtftSamples = m._ttftSamples;
+    }
+    // Worker live generation progress (keyed by workerId)
+    if (m._workerGenerationProgress) {
+      workerGenerationProgress = m._workerGenerationProgress;
+      // Sum live worker output tokens so the token badge increments
+      // in real-time during worker generation (before completion).
+      // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
+      // so the count doesn't reset when workers transition between phases.
+      for (const wp of Object.values(m._workerGenerationProgress)) {
+        // @ts-ignore
+        // @ts-ignore
+        const count = wp.totalOutputTokens || wp.outputTokens || 0;
+        if (count > 0) {
+          output += count;
+        }
+      }
+    }
+    // Backend-computed tok/s from SessionGenerationTracker
+    if (m._liveGenProgress) {
+      liveGenProgress = m._liveGenProgress;
+    }
+    // Accumulated worker tokens (from worker_status complete events)
+    // These arrive independently of the coordinator's own usage.
+    // Only add completed worker tokens that aren't already counted
+    // from _workerGenerationProgress (which is removed on completion).
+    if (m._workerTokens) {
+      input += m._workerTokens.input || 0;
+      output += m._workerTokens.output || 0;
+      requests += m._workerTokens.requests || 0;
+    }
+  }
+  return {
+    totalTokens: { input, output, total: input + output },
+    requestCount: requests,
+    // Live streaming metadata for real-time tok/s computation
+    liveStreamingTokens,
+    liveStreamingStartTime,
+    liveStreamingLastChunkTime,
+    liveStreamingBurstTokens,
+    liveStreamingBurstElapsed,
+    liveOutputCharacters,
+    workerGenerationProgress,
+    // TTFT tracking
+    lastTimeToGeneration,
+    liveProcessingStartTime,
+    liveProcessingPhase,
+    liveTtftSamples,
+    liveGenProgress,
+  };
+}
+
+/**
+ * Count tool invocations across all messages.
+ * Returns [{ name, count }] sorted by count.
+ */
+export function getUsedTools(messages: any) {
+  const counts = new Map();
+  for (const m of messages) {
+    if (m.role !== "assistant") continue;
+    if (m.thinking) counts.set("Thinking", (counts.get("Thinking") || 0) + 1);
+    if (m.toolCalls?.length > 0) {
+      counts.set("Tool Calling", (counts.get("Tool Calling") || 0) + 1);
+      for (const tc of m.toolCalls) {
+        if (tc.name) counts.set(tc.name, (counts.get(tc.name) || 0) + 1);
+      }
+    }
+  }
+  return [...counts.entries()].map(([name, count]) => ({ name, count }));
+}
+
+/**
+ * Tool names that represent provider capabilities rather than
+ * function-level tool calls. Used to separate capability badges
+ * (Thinking, Tool Calling, Web Search, etc.) from individual
+ * tool-call badges (read_file, grep_search, etc.) in the stats UI.
+ */
+export const CAPABILITY_TOOL_NAMES = new Set([
+  "Thinking", "Tool Calling", "Web Search", "Google Search",
+  "Code Execution", "Computer Use", "File Search", "URL Context",
+  "Image Generation",
+]);
+
+/**
+ * Convert a backend toolCounts map ({ name: count }) into the
+ * usedTools array format ([{ name, count }]) sorted by count desc.
+ */
+export function toolCountsToUsedTools(toolCounts: any) {
+  if (!toolCounts || Object.keys(toolCounts).length === 0) return [];
+  return Object.entries(toolCounts)
+    .map(([name, count]) => ({ name, count }))
+    // @ts-ignore
+    // @ts-ignore
+    .sort((a, b) => b.count - a.count);
+}
+
+/**
+ * Merge multiple tool-count sources into a single usedTools array
+ * for display in the stats badges. Handles three layers:
+ *
+ * 1. **clientTools** — from getUsedTools(messages), includes both
+ *    capability-level entries (Thinking, Tool Calling) and
+ *    coordinator function-level entries (read_file, etc.)
+ * 2. **backendToolCounts** — optional { name: count } map from
+ *    backend session stats (authoritative post-completion)
+ * 3. **workerToolActivity** — optional { [workerId]: { toolNames: { name: count } } }
+ *    from live SSE events (real-time during generation)
+ *
+ * When both backend and live worker counts exist for the same tool,
+ * the higher count wins (prevents badges from appearing to decrease
+ * as backend catches up).
+ *
+ * @param {Array<{name: string, count: number}>} clientTools
+ * @param {{ [name: string]: number }} [backendToolCounts]
+ * @param {{ [workerId: string]: { toolNames?: { [name: string]: number } } }} [workerToolActivity]
+ * @returns {Array<{name: string, count: number}>} sorted by count desc
+ */
+export function mergeUsedToolsWithWorkers(clientTools: any, backendToolCounts: any, workerToolActivity: any) {
+  // Separate capabilities from function-level tool calls
+  const capabilities = clientTools.filter((t: any) => CAPABILITY_TOOL_NAMES.has(t.name));
+
+  // Start with authoritative source (backend if available, else client function-level)
+  const merged = new Map();
+  if (backendToolCounts) {
+    for (const t of toolCountsToUsedTools(backendToolCounts)) {
+      merged.set(t.name, t.count);
+    }
+  } else {
+    for (const t of clientTools) {
+      if (CAPABILITY_TOOL_NAMES.has(t.name)) continue;
+      merged.set(t.name, (merged.get(t.name) || 0) + t.count);
+    }
+  }
+
+  // Overlay live worker tool counts (real-time during generation)
+  if (workerToolActivity) {
+    for (const w of Object.values(workerToolActivity)) {
+      // @ts-ignore
+      if (!w.toolNames) continue;
+      // @ts-ignore
+      for (const [name, count] of Object.entries(w.toolNames)) {
+        if (CAPABILITY_TOOL_NAMES.has(name)) continue;
+        // @ts-ignore
+        merged.set(name, Math.max(merged.get(name) || 0, count));
+      }
+    }
+  }
+
+  const mergedTools = [...merged.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
+  return [...capabilities, ...mergedTools];
+}
+
+/**
+ * Derive modality flags from a session's messages array.
+ * Returns an object with boolean flags for each modality
+ * (textIn, textOut, imageIn, imageOut, audioIn, audioOut,
+ * videoIn, docIn, webSearch, codeExecution, functionCalling, thinking).
+ */
+export function getModalities(messages: any) {
+  const modalities = {
+    textIn: false,
+    textOut: false,
+    imageIn: false,
+    imageOut: false,
+    audioIn: false,
+    audioOut: false,
+    videoIn: false,
+    docIn: false,
+    webSearch: false,
+    codeExecution: false,
+    functionCalling: false,
+    thinking: false,
+  };
+
+  const WEB_SEARCH_NAMES = new Set(["web_search", "web_search_preview"]);
+  const CODE_EXEC_NAMES = new Set(["code_execution"]);
+
+  for (const m of messages || []) {
+    const isUser = m.role === "user";
+    const isAssistant = m.role === "assistant";
+    if (m.content && (isUser || isAssistant)) {
+      if (isUser && !m.liveTranscription) modalities.textIn = true;
+      if (isAssistant) modalities.textOut = true;
+    }
+    // Tool calls are structured text output
+    if (isAssistant && m.toolCalls?.length > 0) {
+      modalities.textOut = true;
+    }
+    if (m.audio) {
+      if (isUser) modalities.audioIn = true;
+      if (isAssistant) modalities.audioOut = true;
+    }
+    if (m.images?.length > 0) {
+      for (const ref of m.images) {
+        if (typeof ref !== "string") continue;
+        const isDoc =
+          ref.startsWith("data:application/") ||
+          ref.startsWith("data:text/") ||
+          ref.endsWith(".pdf") ||
+          ref.endsWith(".txt");
+        const isVideo =
+          ref.startsWith("data:video/") ||
+          [".mp4", ".mov", ".avi", ".webm"].some((ext) => ref.endsWith(ext));
+        if (isDoc) {
+          modalities.docIn = true;
+        } else if (isVideo) {
+          if (isUser) modalities.videoIn = true;
+        } else {
+          // Actual image ref
+          if (isUser) modalities.imageIn = true;
+          if (isAssistant) modalities.imageOut = true;
+        }
+      }
+    }
+    // Standalone image field (not from images array)
+    if (m.image && !m.images?.length) {
+      if (isUser) modalities.imageIn = true;
+      if (isAssistant) modalities.imageOut = true;
+    }
+    if (m.documents?.length > 0) {
+      modalities.docIn = true;
+    }
+
+    // Classify tool calls by type
+    if (m.toolCalls?.length > 0) {
+      for (const tc of m.toolCalls) {
+        const name = (tc.name || "").toLowerCase();
+        if (WEB_SEARCH_NAMES.has(name)) {
+          modalities.webSearch = true;
+        } else if (CODE_EXEC_NAMES.has(name)) {
+          modalities.codeExecution = true;
+        } else {
+          modalities.functionCalling = true;
+        }
+      }
+    }
+
+    // Detect inline web search results (from streaming)
+    if (
+      isAssistant &&
+      typeof m.content === "string" &&
+      m.content.includes("> **Sources:**")
+    ) {
+      modalities.webSearch = true;
+    }
+
+    // Detect inline code execution blocks (from streaming)
+    if (
+      isAssistant &&
+      typeof m.content === "string" &&
+      m.content.includes("```exec-")
+    ) {
+      modalities.codeExecution = true;
+    }
+
+    // Tool result messages → function calling
+    if (m.role === "tool") {
+      modalities.functionCalling = true;
+    }
+
+    // Detect thinking / reasoning
+    if (isAssistant && m.thinking) {
+      modalities.thinking = true;
+    }
+  }
+  return modalities;
+}
+
+/**
+ * Compute cumulative wall-clock elapsed time across all user→assistant turns.
+ * Each user message with a `timestamp` paired with a subsequent assistant
+ * message's `completedAt` (or `timestamp`) constitutes one turn.
+ * Works for both live sessions (client-side `completedAt`) and restored
+ * sessions from the DB (server-side `timestamp` on assistant messages).
+ * Returns total elapsed seconds.
+ */
+export function getSessionElapsedTime(messages: any) {
+  let total = 0;
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i];
+    if (m.role !== "user" || !m.timestamp) continue;
+    // Find the next assistant message that completed
+    for (let j = i + 1; j < messages.length; j++) {
+      const a = messages[j];
+      if (a.role !== "assistant") continue;
+      const endTs = a.completedAt || a.timestamp;
+      if (!endTs) break;
+      const start = new Date(m.timestamp).getTime();
+      const end = new Date(endTs).getTime();
+      if (end > start) total += (end - start) / 1000;
+      break;
+    }
+  }
+  return total;
+}

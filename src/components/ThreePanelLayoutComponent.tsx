@@ -1,0 +1,268 @@
+"use client";
+
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  PanelLeftClose,
+  PanelLeft,
+  PanelRightClose,
+  PanelRight,
+} from "lucide-react";
+import styles from "./ThreePanelLayoutComponent.module.css";
+import { LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
+
+/**
+ * Reusable 3-panel layout with a full-width header spanning all panels.
+ * The header sits above the sidebars, matching the workflow page pattern.
+ *
+ * Props:
+ *   leftPanel      — React node for the left sidebar content (e.g. SettingsPanel)
+ *   leftTitle      — Title for the left sidebar (default: "Settings")
+ *   rightPanel     — React node for the right sidebar content (e.g. HistoryPanel)
+ *   rightTitle     — Title for the right sidebar (default: "History")
+ *   headerTitle    — Title displayed in the header
+ *   headerMeta     — React node for meta info in the header (badges, counts)
+ *   headerControls — React node for extra controls in the header (theme toggle, etc.)
+ *   headerCenter   — React node absolutely centered in the header (over the chat area)
+ *   children       — Main content area (chat, viewer, etc.)
+ */
+export default function ThreePanelLayout({
+  navSidebar = null,
+  // @ts-ignore
+  // @ts-ignore
+  leftPanel: any,
+  leftTitle = "Settings",
+  // @ts-ignore
+  // @ts-ignore
+  rightPanel: any,
+  // @ts-ignore
+  // @ts-ignore
+  rightTitle: any,
+  sessionType = "conversation",
+  headerTitle = "",
+  headerMeta = null,
+  headerControls = null,
+  headerCenter = null,
+  fileViewerPanel = null,
+  // @ts-ignore
+  // @ts-ignore
+  children: any,
+}) {
+  // @ts-ignore
+  const resolvedRightTitle = rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
+  // Start with panels hidden to prevent FOUC on mobile; mount effect opens them on desktop
+  const [showLeft, setShowLeft] = useState<any>(false);
+  const [showRight, setShowRight] = useState<any>(false);
+  const [hydrated, setHydrated] = useState<any>(false);
+  const [isMobile, setIsMobile] = useState<any>(false);
+  const [isNarrow, setIsNarrow] = useState<any>(false);
+
+  useEffect(() => {
+    const mobile = window.innerWidth <= 1200;
+    if (mobile) {
+      // On mobile / narrow viewports, always start with panels closed
+      setShowLeft(false);
+      setShowRight(false);
+    } else {
+      // On desktop, restore from localStorage (default open)
+      const storedLeft = localStorage.getItem(LS_PANEL_LEFT);
+      const storedRight = localStorage.getItem(LS_PANEL_RIGHT);
+      setShowLeft(storedLeft !== null ? storedLeft === "true" : true);
+      setShowRight(storedRight !== null ? storedRight === "true" : true);
+    }
+    // eslint-disable-next-line react-compiler/react-compiler
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    const check = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsNarrow(window.innerWidth <= 1400);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  /* Narrow ↔ wide transitions: enforce exclusivity or restore both.
+     Skip on initial mount — the mount effect handles initial panel state. */
+  const isNarrowMountRef = useRef<any>(true);
+  useEffect(() => {
+    if (isNarrowMountRef.current) {
+      isNarrowMountRef.current = false;
+      return;
+    }
+    if (isNarrow) {
+      // Entering narrow: if both are open, close the right
+      if (showLeft && showRight) {
+        setShowRight(false);
+        localStorage.setItem(LS_PANEL_RIGHT, "false");
+      }
+    } else {
+      // Leaving narrow (back to wide): restore both panels
+      setShowLeft(true);
+      setShowRight(true);
+      localStorage.setItem(LS_PANEL_LEFT, "true");
+      localStorage.setItem(LS_PANEL_RIGHT, "true");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNarrow]);
+
+  const toggleLeft = useCallback(() => {
+    setShowLeft((prev: any) => {
+      const next = !prev;
+      localStorage.setItem(LS_PANEL_LEFT, String(next));
+      if (next && window.innerWidth <= 1400) {
+        setShowRight(false);
+        localStorage.setItem(LS_PANEL_RIGHT, "false");
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleRight = useCallback(() => {
+    setShowRight((prev: any) => {
+      const next = !prev;
+      localStorage.setItem(LS_PANEL_RIGHT, String(next));
+      if (next && window.innerWidth <= 1400) {
+        setShowLeft(false);
+        localStorage.setItem(LS_PANEL_LEFT, "false");
+      }
+      return next;
+    });
+  }, []);
+
+  /* -- Mobile: auto-close sidebar when a [data-panel-close] element is clicked -- */
+  const handleSidebarClick = useCallback(
+    (closeFn: any) => (e: any) => {
+      if (!isMobile) return;
+      if (e.target.closest("[data-panel-close]")) {
+        closeFn();
+      }
+    },
+    [isMobile],
+  );
+
+  /* -- Mobile: dismiss all open sidebars -- */
+  const dismissSidebars = useCallback(() => {
+    if (!isMobile) return;
+    if (showLeft) {
+      setShowLeft(false);
+      localStorage.setItem(LS_PANEL_LEFT, "false");
+    }
+    if (showRight) {
+      setShowRight(false);
+      localStorage.setItem(LS_PANEL_RIGHT, "false");
+    }
+  }, [isMobile, showLeft, showRight]);
+
+  /* Backdrop dismiss — tap main area to close any open sidebar */
+  const handleMainClick = dismissSidebars;
+
+  /* Listen for programmatic dismiss from child components (pickers, etc.) */
+  useEffect(() => {
+    const handler = () => dismissSidebars();
+    document.addEventListener("panel:dismiss-sidebars", handler);
+    return () => document.removeEventListener("panel:dismiss-sidebars", handler);
+  }, [dismissSidebars]);
+
+  // Suppress the CSS transition on first paint so panels don't animate from open→closed
+  const transitionStyle = hydrated ? undefined : { transition: "none" };
+
+  return (
+    <div className={styles.container}>
+      {navSidebar}
+      <div className={styles.page}>
+        {/* Full-width header */}
+        <header className={styles.pageHeader}>
+          <button
+            className={`${styles.headerToggle} ${!showLeft ? styles.panelHidden : ""}`}
+            onClick={toggleLeft}
+            title={
+              showLeft
+                ? `Hide ${(leftTitle || "panel").toLowerCase()}`
+                : `Show ${(leftTitle || "panel").toLowerCase()}`
+            }
+          >
+            {showLeft ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
+          </button>
+          <span className={styles.headerTitle}>{headerTitle}</span>
+          {!isMobile && headerMeta}
+          {headerCenter && (
+            <div className={styles.headerCenter}>
+              {headerCenter}
+            </div>
+          )}
+          {headerControls}
+          {/* @ts-ignore */}
+          {rightPanel && (
+            <button
+              className={`${styles.headerToggle} ${!showRight ? styles.panelHidden : ""}`}
+              onClick={toggleRight}
+              title={
+                showRight
+                  ? `Hide ${resolvedRightTitle.toLowerCase()}`
+                  : `Show ${resolvedRightTitle.toLowerCase()}`
+              }
+            >
+              {showRight ? (
+                <PanelRightClose size={16} />
+              ) : (
+                <PanelRight size={16} />
+              )}
+            </button>
+          )}
+        </header>
+        {/* Mobile: meta info row below the header */}
+        {isMobile && headerMeta && (
+          <div className={styles.mobileMetaBar}>{headerMeta}</div>
+        )}
+
+        {/* Body: sidebars + main content */}
+        <div className={styles.body}>
+          {/* Left Sidebar */}
+          <aside
+            className={`${styles.leftSidebar} ${!showLeft ? styles.sidebarHidden : ""}`}
+            style={transitionStyle}
+            onClick={handleSidebarClick(toggleLeft)}
+          >
+            {leftTitle && (
+              <div className={styles.sidebarHeader}>{leftTitle}</div>
+            )}
+            {/* @ts-ignore */}
+            {leftPanel}
+          </aside>
+
+          {/* File Viewer Pane (VS Code-style, between sidebar and chat) */}
+          {fileViewerPanel}
+
+          {/* Main Center */}
+          <section
+            className={`${styles.main} ${isMobile && (showLeft || showRight) ? styles.scrimActive : ""}`}
+            data-chat-area
+            onClick={handleMainClick}
+          >
+            {/* @ts-ignore */}
+            {children}
+          </section>
+
+
+
+          {/* Right Sidebar */}
+          {/* @ts-ignore */}
+          {rightPanel && (
+            <aside
+              className={`${styles.rightSidebar} ${!showRight ? styles.sidebarHidden : ""}`}
+              style={transitionStyle}
+              onClick={handleSidebarClick(toggleRight)}
+            >
+              {/* @ts-ignore */}
+              {rightPanel}
+            </aside>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export { styles as layoutStyles };

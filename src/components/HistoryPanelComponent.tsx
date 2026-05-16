@@ -1,0 +1,325 @@
+"use client";
+
+import { useMemo, useRef, useCallback, useState } from "react";
+import { MessageSquare, Plus } from "lucide-react";
+import HistoryList from "./HistoryListComponent";
+import { ButtonComponent } from "@rodrigo-barraza/components-library";
+import { getModalities } from "../utils/utilities";
+import styles from "./HistoryPanelComponent.module.css";
+
+/* -- Glitch text generator (ported from CycleButton) -------- */
+const SYMBOLS = "!@#$%^&*†‡§¶∆∇≈≠±×÷√∫∑∏⊗⊕⊘⊙◊♠♣♥♦★☆◈⬡⬢⟁⟐⧫⬟";
+const ZALGO = [
+  "\u0300","\u0301","\u0302","\u0303","\u0304","\u0305","\u0306",
+  "\u0307","\u0308","\u0309","\u030A","\u030B","\u030C","\u030D",
+  "\u030E","\u030F","\u0310","\u0311","\u0312","\u0313","\u0314",
+  "\u0315","\u0316","\u0317","\u0318","\u0319","\u031A","\u031B",
+  "\u0320","\u0321","\u0322","\u0323","\u0324","\u0325","\u0326",
+  "\u0327","\u0328","\u0329","\u032A","\u032B","\u032C","\u032D",
+  "\u0330","\u0331","\u0332","\u0333","\u0334","\u0335","\u0336",
+  "\u0340","\u0341","\u0342","\u0343","\u0344","\u0345","\u0346",
+  "\u0350","\u0351","\u0352","\u0353","\u0354","\u0355","\u0356",
+];
+const GLITCH_POOL = SYMBOLS + "ΣΩΨΞΘΔΛΠΦψξθδλπφ¿¡«»░▒▓█▄▀■□▪▫▬▲▼◆●○◎◇";
+
+function glitchText(len = 6) {
+  let result = "";
+  for (let i = 0; i < len; i++) {
+    result += GLITCH_POOL[Math.floor(Math.random() * GLITCH_POOL.length)];
+    const marks = 1 + Math.floor(Math.random() * 2);
+    for (let j = 0; j < marks; j++) {
+      result += ZALGO[Math.floor(Math.random() * ZALGO.length)];
+    }
+  }
+  return result;
+}
+
+export default function HistoryPanel({
+  sessions = [],
+  // @ts-ignore
+  // @ts-ignore
+  activeId: any,
+  // @ts-ignore
+  // @ts-ignore
+  onSelect: any,
+  // @ts-ignore
+  // @ts-ignore
+  onNew: any,
+  // @ts-ignore
+  // @ts-ignore
+  onDelete: any,
+  readOnly = false,
+  showProject = false,
+  showUsername = false,
+  // @ts-ignore
+  // @ts-ignore
+  newIds: any,
+  favorites = [],
+  // @ts-ignore
+  // @ts-ignore
+  onToggleFavorite: any,
+  // @ts-ignore
+  // @ts-ignore
+  initialProviders: any,
+  initialSearch = "",
+  // @ts-ignore
+  // @ts-ignore
+  disableNew: any,
+  // Customisable labels — defaults match conversation-session context
+  newLabel = "New Conversation",
+  emptyText = "No recent chats",
+  searchText = "Search conversations...",
+  // @ts-ignore
+  // @ts-ignore
+  itemIcon: any,
+  // @ts-ignore
+  // @ts-ignore
+  countLabel: any,
+  // @ts-ignore
+  // @ts-ignore
+  onOpenInNewTab: any,
+  // @ts-ignore
+  // @ts-ignore
+  generatingSessionIds: any,
+  // Pagination
+  // @ts-ignore
+  // @ts-ignore
+  hasMore: any,
+  // @ts-ignore
+  // @ts-ignore
+  loadingMore: any,
+  // @ts-ignore
+  // @ts-ignore
+  onLoadMore: any,
+}) {
+  const newBtnRef = useRef<any>(null);
+  const rainbowTimer = useRef<any>(null);
+  const glitchInterval = useRef<any>(null);
+  const [glitchLabel, setGlitchLabel] = useState<any>(null);
+
+  const handleNew = useCallback(() => {
+    const el = newBtnRef.current;
+    if (el) {
+      // Rainbow hue-rotate
+      el.classList.remove(styles.newBtnRainbow);
+      void el.offsetWidth;
+      el.classList.add(styles.newBtnRainbow);
+
+      // Glitch text scramble — 30ms swaps for chaotic feel
+      setGlitchLabel(glitchText());
+      clearInterval(glitchInterval.current);
+      glitchInterval.current = setInterval(() => {
+        setGlitchLabel(glitchText());
+      }, 30);
+
+      clearTimeout(rainbowTimer.current);
+      rainbowTimer.current = setTimeout(() => {
+        el.classList.remove(styles.newBtnRainbow);
+        clearInterval(glitchInterval.current);
+        glitchInterval.current = null;
+        setGlitchLabel(null);
+      }, 1000);
+    }
+    // @ts-ignore
+    onNew?.();
+  // @ts-ignore
+  }, [onNew]);
+
+  // Normalize sessions into HistoryList items
+  const items = useMemo<any>(() => {
+    return sessions.map((conv) => {
+      // Prefer session-level totalCost (authoritative, from request logs
+      // for agent sessions). Fall back to message-sum only for Direct Chat
+      // sessions that carry messages inline with no precomputed total.
+      const totalCost =
+        // @ts-ignore
+        conv.totalCost ??
+        // @ts-ignore
+        (conv.messages || []).reduce(
+          (sum: any, m: any) => sum + (m.estimatedCost || 0),
+          0,
+        );
+
+      const tags = [];
+      // @ts-ignore
+      if (showProject && conv.project) {
+        tags.push({
+          // @ts-ignore
+          label: conv.project,
+          style: {
+            background: "var(--accent-subtle)",
+            color: "var(--accent-color)",
+          },
+        });
+      }
+      // @ts-ignore
+      if (conv.synthetic) {
+        tags.push({
+          label: "SYNTHETIC",
+          style: {
+            background: "rgba(168, 85, 247, 0.12)",
+            color: "rgb(168, 85, 247)",
+          },
+        });
+      }
+
+      // Use live-patched model names if available (from active generation),
+      // then backend-enriched modelNames (from request-log aggregation),
+      // otherwise derive from messages
+      let modelNames;
+      // @ts-ignore
+      if (conv._liveModelNames?.length > 0) {
+        // @ts-ignore
+        modelNames = conv._liveModelNames;
+      // @ts-ignore
+      } else if (conv.modelNames?.length > 0) {
+        // Backend enrichment: the list endpoint aggregates unique models
+        // from request logs — available without fetching the full session.
+        // @ts-ignore
+        modelNames = conv.modelNames;
+      } else {
+        // Extract unique model names and providers used in this conversation
+        // @ts-ignore
+        const msgs = conv.messages || [];
+        const modelNamesSet = new Set();
+
+        // Look at messages from newest to oldest to order recent models first
+        for (let i = msgs.length - 1; i >= 0; i--) {
+          if (msgs[i].role === "assistant") {
+            if (msgs[i].model) modelNamesSet.add(msgs[i].model);
+          }
+        }
+
+        // If no models found in messages, fall back to conv.model
+        // @ts-ignore
+        if (modelNamesSet.size === 0 && conv.model) {
+          // @ts-ignore
+          modelNamesSet.add(conv.model);
+        }
+        modelNames = Array.from(modelNamesSet);
+      }
+
+      // Providers: prefer top-level (from backend or live patch), else derive from messages
+      let derivedProviders;
+      // @ts-ignore
+      if (conv.providers?.length > 0) {
+        // @ts-ignore
+        derivedProviders = conv.providers;
+      } else {
+        // @ts-ignore
+        const msgs = conv.messages || [];
+        const providersSet = new Set();
+        for (let i = msgs.length - 1; i >= 0; i--) {
+          if (msgs[i].role === "assistant" && msgs[i].provider) {
+            providersSet.add(msgs[i].provider);
+          }
+        }
+        derivedProviders = Array.from(providersSet);
+      }
+
+      // Merge request-log toolCounts into modalities for accurate badge counts
+      // @ts-ignore
+      // @ts-ignore
+      const baseModalities = conv.modalities || getModalities(conv.messages);
+      // @ts-ignore
+      const modalities = conv.toolCounts
+        ? {
+            ...baseModalities,
+            // @ts-ignore
+            // @ts-ignore
+            // @ts-ignore
+            functionCalling: Object.values(conv.toolCounts).reduce((s, c) => s + c, 0),
+          }
+        : baseModalities;
+
+      return {
+        // @ts-ignore
+        id: conv.id,
+        // @ts-ignore
+        title: conv.title || "Untitled Chat",
+        // @ts-ignore
+        updatedAt: conv.updatedAt,
+        // @ts-ignore
+        createdAt: conv.createdAt,
+        totalCost,
+        modalities,
+        providers: derivedProviders,
+        tags,
+        // @ts-ignore
+        username: conv.username,
+        modelNames,
+        searchText: [
+          // @ts-ignore
+          conv.project || "",
+          // @ts-ignore
+          conv.username || "",
+          // @ts-ignore
+          ...(conv.messages || []).map((m: any) => m.content || ""),
+        ].join(" "),
+      };
+    });
+  }, [sessions, showProject]);
+
+  return (
+    <div className={styles.container}>
+      {/* @ts-ignore */}
+      {!readOnly && onNew && (
+        <ButtonComponent
+          ref={newBtnRef}
+          variant="primary"
+          icon={glitchLabel ? undefined : Plus}
+          onClick={handleNew}
+          // @ts-ignore
+          // @ts-ignore
+          // @ts-ignore
+          disabled={disableNew !== undefined ? disableNew : !activeId}
+          className={`${styles.newBtn} ${glitchLabel ? styles.newBtnGlitch : ""}`}
+          data-panel-close
+        >
+          {glitchLabel || newLabel}
+        </ButtonComponent>
+      )}
+      {/* @ts-ignore */}
+      <HistoryList
+        items={items}
+        // @ts-ignore
+        activeId={activeId}
+        onSelect={(item: any) => {
+          // @ts-ignore
+          const conv = sessions.find((c) => c.id === item.id);
+          // @ts-ignore
+          if (conv) onSelect(conv);
+        }}
+        // @ts-ignore
+        // @ts-ignore
+        onDelete={!readOnly && onDelete ? onDelete : undefined}
+        // @ts-ignore
+        icon={itemIcon || MessageSquare}
+        readOnly={readOnly}
+        emptyLabel={emptyText}
+        searchPlaceholder={searchText}
+        admin={showUsername}
+        // @ts-ignore
+        newIds={newIds}
+        favorites={favorites}
+        // @ts-ignore
+        onToggleFavorite={onToggleFavorite}
+        // @ts-ignore
+        initialProviders={initialProviders}
+        initialSearch={initialSearch}
+        // @ts-ignore
+        countLabel={countLabel}
+        // @ts-ignore
+        onOpenInNewTab={onOpenInNewTab}
+        // @ts-ignore
+        generatingSessionIds={generatingSessionIds}
+        // @ts-ignore
+        hasMore={hasMore}
+        // @ts-ignore
+        loadingMore={loadingMore}
+        // @ts-ignore
+        onLoadMore={onLoadMore}
+      />
+    </div>
+  );
+}
