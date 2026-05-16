@@ -228,8 +228,8 @@ export default function ToolCallsPage() {
       if (dateParams.since) params.since = dateParams.since;
       const data = await ToolsApiService.getToolCallStats(params);
       setStats(data);
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }

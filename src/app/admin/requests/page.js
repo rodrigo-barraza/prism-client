@@ -134,9 +134,9 @@ export default function RequestsPage() {
       if (gen !== fetchGenRef.current) return;
       setRequests(data.data || []);
       setTotal(data.total || 0);
-    } catch (err) {
+    } catch (error) {
       if (gen !== fetchGenRef.current) return;
-      setError(err.message);
+      setError(error.message);
     } finally {
       if (gen !== fetchGenRef.current) return;
       if (!initialLoadDone.current) {

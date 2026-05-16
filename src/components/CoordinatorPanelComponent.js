@@ -76,8 +76,8 @@ export default function CoordinatorPanel({ project: _project }) {
 
       setPlan(result);
       setPhase("plan");
-    } catch (err) {
-      showToast("error", `Planning failed: ${err.message}`);
+    } catch (error) {
+      showToast("error", `Planning failed: ${error.message}`);
       setPhase("input");
     } finally {
       setLoading(false);
@@ -104,8 +104,8 @@ export default function CoordinatorPanel({ project: _project }) {
 
       setWorkers(result.workers || []);
       setPhase("review");
-    } catch (err) {
-      showToast("error", `Execution failed: ${err.message}`);
+    } catch (error) {
+      showToast("error", `Execution failed: ${error.message}`);
       setPhase("plan");
     } finally {
       setLoading(false);
@@ -129,8 +129,8 @@ export default function CoordinatorPanel({ project: _project }) {
 
       setPhase("merged");
       showToast("success", "All branches merged successfully!");
-    } catch (err) {
-      showToast("error", `Merge failed: ${err.message}`);
+    } catch (error) {
+      showToast("error", `Merge failed: ${error.message}`);
     } finally {
       setLoading(false);
     }

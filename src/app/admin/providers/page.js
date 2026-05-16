@@ -57,8 +57,8 @@ export default function ProvidersPage() {
         ]);
         setModelStats(models);
         setRateLimits(limits);
-      } catch (err) {
-        setError(err.message);
+      } catch (error) {
+        setError(error.message);
       } finally {
         setLoading(false);
       }

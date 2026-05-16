@@ -84,8 +84,8 @@ export default function ToolRequestsPage() {
       const data = await ToolsApiService.getToolCalls(params);
       setToolCalls(data.toolCalls || []);
       setTotal(data.total || 0);
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }

@@ -102,9 +102,9 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
 
       setMemories(fetched);
       setTotal(result.total || 0);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load memories:", err);
-      setError(err.message);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -115,7 +115,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
     try {
       const result = await PrismService.getConsolidationHistory(project, 5);
       setHistory(result.history || []);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load consolidation history:", err);
     } finally {
       setHistoryLoading(false);
@@ -159,7 +159,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
       setMemories((prev) => prev.filter((m) => (m.id || m._id) !== memoryId));
       setTotal((prev) => Math.max(0, prev - 1));
       setConfirmingDeleteId(null);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to delete memory:", err);
     }
   }, []);
@@ -184,8 +184,8 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
       } else {
         setToast({ type: "info", text: result.summary || "No changes needed" });
       }
-    } catch (err) {
-      setToast({ type: "error", text: `Consolidation failed: ${err.message}` });
+    } catch (error) {
+      setToast({ type: "error", text: `Consolidation failed: ${error.message}` });
     } finally {
       setConsolidating(false);
       setTimeout(() => setToast(null), 5000);

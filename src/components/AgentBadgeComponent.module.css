@@ -47,12 +47,12 @@
 }
 
 .badgeInner[data-agent="OOG"] {
-  background: linear-gradient(135deg, #78716c 0%, #a8a29e 100%);
+  background: linear-gradient(135deg, var(--text-muted) 0%, var(--text-secondary) 100%);
 }
 
 /* Custom agents — fallback gradient for any agent not in the hardcoded list */
 .badgeInner:not([data-agent="CODING"]):not([data-agent="LUPOS"]):not([data-agent="STICKERS"]):not([data-agent="DIGEST"]):not([data-agent="OOG"]):not([data-agent="LIGHTS"]) {
-  background: linear-gradient(135deg, #8b5cf6 0%, var(--color-cyan) 100%);
+  background: linear-gradient(135deg, var(--color-violet) 0%, var(--color-cyan) 100%);
 }
 
 /* Ensure SVGs fill the badge space */

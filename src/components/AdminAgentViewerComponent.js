@@ -109,7 +109,7 @@ export default function AdminAgentViewerComponent() {
       });
       setSessions(data.data || []);
       setTotal(data.total || 0);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load admin agent sessions:", err);
     } finally {
       setLoading(false);
@@ -240,7 +240,7 @@ export default function AdminAgentViewerComponent() {
         PrismService.getCoordinatorWorkers(conv.id)
           .then((r) => setWorkersCount((r.workers || []).length))
           .catch(() => {});
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to load agent session:", err);
       }
     },

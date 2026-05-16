@@ -165,7 +165,7 @@ export default function CustomToolsPanel({
       setEditingTool(null);
       setIsNew(false);
       onToolsChange();
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to save tool:", err);
     } finally {
       setSaving(false);
@@ -182,7 +182,7 @@ export default function CustomToolsPanel({
         await PrismService.deleteCustomTool(id);
         setConfirmingDeleteId(null);
         onToolsChange();
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to delete tool:", err);
       }
     },
@@ -196,7 +196,7 @@ export default function CustomToolsPanel({
           enabled: !tool.enabled,
         });
         onToolsChange();
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to toggle tool:", err);
       }
     },
@@ -353,7 +353,7 @@ export default function CustomToolsPanel({
         ),
       );
       onToolsChange();
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to toggle all custom tools:", err);
     }
   }, [allCustomEnabled, tools, onToolsChange]);

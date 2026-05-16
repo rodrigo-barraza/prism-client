@@ -88,8 +88,8 @@ export default function MCPServersPanel({ servers, onServersChange, project }) {
       setEditingServer(null);
       setIsNew(false);
       onServersChange();
-    } catch (err) {
-      setError(err.message || "Failed to save server");
+    } catch (error) {
+      setError(error.message || "Failed to save server");
     } finally {
       setSaving(false);
     }
@@ -105,7 +105,7 @@ export default function MCPServersPanel({ servers, onServersChange, project }) {
         await PrismService.deleteMCPServer(id);
         setConfirmingDeleteId(null);
         onServersChange();
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to delete MCP server:", err);
       }
     },
@@ -122,8 +122,8 @@ export default function MCPServersPanel({ servers, onServersChange, project }) {
       try {
         await PrismService.connectMCPServer(serverId);
         onServersChange();
-      } catch (err) {
-        setError(`Connect failed: ${err.message || "Unknown error"}`);
+      } catch (error) {
+        setError(`Connect failed: ${error.message || "Unknown error"}`);
       } finally {
         setConnecting(null);
       }
@@ -138,7 +138,7 @@ export default function MCPServersPanel({ servers, onServersChange, project }) {
       try {
         await PrismService.disconnectMCPServer(serverId);
         onServersChange();
-      } catch (err) {
+      } catch (error) {
         console.error("Disconnect failed:", err);
       } finally {
         setConnecting(null);

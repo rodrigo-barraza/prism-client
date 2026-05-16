@@ -356,7 +356,7 @@
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: #9333ea;
+    background: color-mix(in srgb, var(--color-purple) 90%, white);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px color-mix(in srgb, var(--color-purple) 30%, transparent);
   }

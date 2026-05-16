@@ -75,9 +75,9 @@ export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange
       setWorkers(list);
       onCountChange?.(list.length);
       hasData.current = true;
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load workers:", err);
-      if (!hasData.current) setError(err.message);
+      if (!hasData.current) setError(error.message);
     } finally {
       setLoading(false);
     }

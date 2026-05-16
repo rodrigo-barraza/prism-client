@@ -42,7 +42,7 @@ export default class PrismService {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `Prism API error: ${res.status}`);
+      throw new Error(error.message || `Prism API error: ${res.status}`);
     }
 
     return res.json();
@@ -749,7 +749,7 @@ export default class PrismService {
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          if (onError) onError(new Error(err.message || `HTTP ${res.status}`));
+          if (onError) onError(new Error(error.message || `HTTP ${res.status}`));
           return;
         }
 
@@ -786,8 +786,8 @@ export default class PrismService {
             }
           }
         }
-      } catch (err) {
-        if (err.name === "AbortError") return;
+      } catch (error) {
+        if (error.name === "AbortError") return;
         if (onError) onError(err);
       }
     })();
@@ -1009,7 +1009,7 @@ export default class PrismService {
       let message = "Failed to generate speech";
       try {
         const err = JSON.parse(text);
-        message = err.message || message;
+        message = error.message || message;
       } catch {
         /* ignore */
       }
@@ -1218,15 +1218,15 @@ export default class PrismService {
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          if (onError) onError(new Error(err.message || `HTTP ${res.status}`));
+          if (onError) onError(new Error(error.message || `HTTP ${res.status}`));
           return;
         }
 
         if (onProgress) onProgress(1);
         if (onComplete) onComplete();
-      } catch (err) {
+      } catch (error) {
         clearInterval(progressInterval);
-        if (err.name === "AbortError") return;
+        if (error.name === "AbortError") return;
         if (onError) onError(err);
       }
     })();

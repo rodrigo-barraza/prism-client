@@ -74,7 +74,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }) {
       setEditingSkill(null);
       setIsNew(false);
       onSkillsChange();
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to save skill:", err);
     } finally {
       setSaving(false);
@@ -91,7 +91,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }) {
         await PrismService.deleteSkill(id);
         setConfirmingDeleteId(null);
         onSkillsChange();
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to delete skill:", err);
       }
     },
@@ -109,7 +109,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }) {
           ),
         );
         onSkillsChange();
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to toggle all skills:", err);
       }
     },

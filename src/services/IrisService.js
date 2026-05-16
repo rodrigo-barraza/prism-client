@@ -24,7 +24,7 @@ async function fetchJSON(path, options = {}, admin = true) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Request failed: ${res.status}`);
+    throw new Error(error.message || `Request failed: ${res.status}`);
   }
   return res.json();
 }

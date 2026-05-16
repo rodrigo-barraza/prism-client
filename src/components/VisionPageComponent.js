@@ -148,7 +148,7 @@ export default function VisionPageComponent() {
       video.play().then(() => {
         setIsStreaming(true);
       }).catch((err) => {
-        console.warn("Video play() interrupted:", err.message);
+        console.warn("Video play() interrupted:", error.message);
       });
     }
 
@@ -167,7 +167,7 @@ export default function VisionPageComponent() {
         audio: false,
       });
       attachStream(stream);
-    } catch (err) {
+    } catch (error) {
       console.error("Webcam error:", err);
     }
   }, [stopSource, attachStream]);
@@ -193,7 +193,7 @@ export default function VisionPageComponent() {
         stopSource();
         setSourceType(null);
       });
-    } catch (err) {
+    } catch (error) {
       console.error("Screen capture error:", err);
     }
   }, [stopSource, attachStream]);
@@ -327,7 +327,7 @@ export default function VisionPageComponent() {
                 r.id === resultId
                   ? {
                     ...r,
-                    text: r.text || `Error: ${err.message}`,
+                    text: r.text || `Error: ${error.message}`,
                     streaming: false,
                   }
                   : r,
@@ -339,11 +339,11 @@ export default function VisionPageComponent() {
       );
 
       abortRef.current = abort;
-    } catch (err) {
+    } catch (error) {
       setResults((prev) =>
         prev.map((r) =>
           r.id === resultId
-            ? { ...r, text: `Error: ${err.message}`, streaming: false }
+            ? { ...r, text: `Error: ${error.message}`, streaming: false }
             : r,
         ),
       );

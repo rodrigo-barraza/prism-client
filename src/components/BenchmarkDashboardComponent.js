@@ -97,7 +97,7 @@ export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }
 
       setConfigLookup(buildConfigLookup(mergedConfig));
       hasLoadedRef.current = true;
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load benchmark stats:", err);
     } finally {
       setLoading(false);

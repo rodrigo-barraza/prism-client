@@ -197,8 +197,8 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }) {
       const fullModels = buildMergedModels(mergedConfig, lmData, modelStats);
       setAllModels(fullModels);
       hasLoadedRef.current = true;
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
       setAllModels([]);
     } finally {
       setLoading(false);
@@ -253,8 +253,8 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }) {
       await lmService.loadLmStudioModel(modelKey, options);
       addToast(`Loaded ${modelKey}`, "success");
       await fetchModels();
-    } catch (err) {
-      addToast(`Failed to load: ${err.message}`, "error");
+    } catch (error) {
+      addToast(`Failed to load: ${error.message}`, "error");
     } finally {
       setActionInProgress(null);
     }
@@ -267,8 +267,8 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }) {
       await lmService.unloadLmStudioModel(instanceId);
       addToast(`Unloaded ${instanceId}`, "success");
       await fetchModels();
-    } catch (err) {
-      addToast(`Failed to unload: ${err.message}`, "error");
+    } catch (error) {
+      addToast(`Failed to unload: ${error.message}`, "error");
     } finally {
       setActionInProgress(null);
     }

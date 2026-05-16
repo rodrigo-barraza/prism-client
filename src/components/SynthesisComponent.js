@@ -144,7 +144,7 @@ export default function SynthesisComponent() {
     try {
       const runs = await PrismService.getSynthesisRuns();
       setSynthesisConversations(runs);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load synthesis history:", err);
     }
   }, []);
@@ -510,19 +510,19 @@ export default function SynthesisComponent() {
             conversationId: convId,
           });
           setActiveHistoryId(synthesisRunId);
-        } catch (err) {
+        } catch (error) {
           console.error("Failed to save synthesis run:", err);
         }
 
         loadSynthesisHistory();
       }
-    } catch (err) {
-      if (err.name !== "AbortError" && !abortedRef.current) {
+    } catch (error) {
+      if (error.name !== "AbortError" && !abortedRef.current) {
         setGeneratedMessages((prev) => [
           ...prev.filter((m) => !m._streaming),
           {
             role: "assistant",
-            content: `⚠️ Generation error: ${err.message}`,
+            content: `⚠️ Generation error: ${error.message}`,
           },
         ]);
       }
@@ -609,7 +609,7 @@ export default function SynthesisComponent() {
         setGeneratedMessages([]);
         setLeftTab("config");
       }
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load synthesis run:", err);
     }
   }, []);
@@ -628,7 +628,7 @@ export default function SynthesisComponent() {
         }
         return prev;
       });
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to delete synthesis run:", err);
     }
   }, []);
@@ -1077,7 +1077,7 @@ function streamTurn(settings, turnSystemPrompt, history, onPartial, abortRef, co
         },
         onThinking: onThinking || undefined,
         onDone: () => resolve(collected),
-        onError: (err) => reject(err),
+        onError: (err) => reject(error),
       },
     );
 

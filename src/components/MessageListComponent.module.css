@@ -549,7 +549,7 @@
   height: 500px;
   border: none;
   display: block;
-  background: #fff;
+  background: var(--text-inverse, #fff); /* PDF renderer needs light background */
 }
 
 /* ── Text / Markdown ── */

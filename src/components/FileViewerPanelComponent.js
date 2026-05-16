@@ -284,13 +284,13 @@ export default function FileViewerPanelComponent({
         }
       })
       .catch((err) => {
-        const isNotFound = /not found|no such file|ENOENT|does not exist/i.test(err.message);
+        const isNotFound = /not found|no such file|ENOENT|does not exist/i.test(error.message);
         if (isNotFound) {
           onFileNotFound?.(id, path);
         }
         setFileContents((prev) => ({
           ...prev,
-          [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: err.message },
+          [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: error.message },
         }));
       })
       .finally(() => {

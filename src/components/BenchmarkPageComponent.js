@@ -68,7 +68,7 @@ export default function BenchmarkPageComponent({ navSidebar, rightSidebar }) {
       if (created?.id) {
         router.push(`/benchmarks/${created.id}`);
       }
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to save benchmark:", err);
     } finally {
       setSaving(false);

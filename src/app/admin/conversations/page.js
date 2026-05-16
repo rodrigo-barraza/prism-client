@@ -194,8 +194,8 @@ function ConversationsPageInner({ initialId = null, traceId = null }) {
       }
 
       setError((prev) => (prev !== null ? null : prev));
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     }
   }, [projectFilter, providerFilter, modelFilter, dateRange, activeSession]);
 
@@ -225,7 +225,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }) {
       setConversationsHasMore(
         (conversations.length + list.length) < (data.total || 0),
       );
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load more conversations:", err);
     } finally {
       setConversationsLoading(false);
@@ -264,7 +264,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }) {
         if (prev?.isGenerating !== full?.isGenerating) return full;
         return prev;
       });
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to refresh selected conversation:", err);
     }
   }, []);

@@ -69,7 +69,7 @@ export default function TracesPage() {
       if (gen !== fetchGenRef.current) return;
       setTraces(data.data || []);
       setTotal(data.total || 0);
-    } catch (err) {
+    } catch (error) {
       if (gen !== fetchGenRef.current) return;
       console.error("Failed to load traces:", err);
     } finally {

@@ -256,7 +256,7 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           `Imported conversation with ${data.messages.length} messages`,
         );
       }
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to import conversation:", err);
     }
   }, []);
@@ -631,8 +631,8 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           console.error("Failed to link conversations to workflow:", err),
         );
       }
-    } catch (err) {
-      addToast(`Execution failed: ${err.message}`, "error");
+    } catch (error) {
+      addToast(`Execution failed: ${error.message}`, "error");
     } finally {
       setIsRunning(false);
     }
@@ -840,8 +840,8 @@ export default function WorkflowsPage({ initialWorkflowId }) {
       const wfs = await WorkflowService.getWorkflows();
       setSavedWorkflows(wfs.map((w) => ({ ...w, id: w._id || w.id })));
       addToast("Workflow saved");
-    } catch (err) {
-      addToast(`Failed to save: ${err.message}`, "error");
+    } catch (error) {
+      addToast(`Failed to save: ${error.message}`, "error");
     }
   }, [workflowId, workflowName, nodes, edges, nodeResults, nodeStatuses]);
 
@@ -876,8 +876,8 @@ export default function WorkflowsPage({ initialWorkflowId }) {
       setSavedSnapshotVersion((v) => v + 1);
       updateUrl(`/workflows/${loadedId}`);
       addToast("Workflow loaded");
-    } catch (err) {
-      addToast(`Failed to load: ${err.message}`, "error");
+    } catch (error) {
+      addToast(`Failed to load: ${error.message}`, "error");
     }
   }, []);
 
@@ -898,8 +898,8 @@ export default function WorkflowsPage({ initialWorkflowId }) {
           updateUrl("/workflows");
         }
         addToast("Workflow deleted");
-      } catch (err) {
-        addToast(`Failed to delete: ${err.message}`, "error");
+      } catch (error) {
+        addToast(`Failed to delete: ${error.message}`, "error");
       }
     },
     [workflowId],
@@ -1031,8 +1031,8 @@ export default function WorkflowsPage({ initialWorkflowId }) {
       a.click();
       URL.revokeObjectURL(url);
       addToast("Workflow downloaded");
-    } catch (err) {
-      addToast(`Download failed: ${err.message}`, "error");
+    } catch (error) {
+      addToast(`Download failed: ${error.message}`, "error");
     }
   }, []);
 
@@ -1042,8 +1042,8 @@ export default function WorkflowsPage({ initialWorkflowId }) {
       if (!wf) return;
       await copyToClipboard(JSON.stringify(wf, null, 2));
       addToast("Workflow copied to clipboard");
-    } catch (err) {
-      addToast(`Copy failed: ${err.message}`, "error");
+    } catch (error) {
+      addToast(`Copy failed: ${error.message}`, "error");
     }
   }, []);
 

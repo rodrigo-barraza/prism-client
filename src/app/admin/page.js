@@ -143,8 +143,8 @@ export default function DashboardPage() {
       setRecentRequests(requestsData.data || []);
       setRecentTraces(tracesData.data || []);
       setRecentConversations(conversationsData.data || []);
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }

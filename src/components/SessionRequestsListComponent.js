@@ -30,10 +30,10 @@ export default function SessionRequestsListComponent({ agentSessionId, refreshKe
     try {
       const result = await IrisService.getSessionRequests(agentSessionId);
       setData(result);
-    } catch (err) {
+    } catch (error) {
       // 404 = no requests yet, don't show error
-      if (!err.message?.includes("404")) {
-        setError(err.message);
+      if (!error.message?.includes("404")) {
+        setError(error.message);
       }
       setData(null);
     } finally {

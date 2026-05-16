@@ -250,8 +250,8 @@ export default function CustomAgentsPanel({
       setEditingAgent(null);
       setIsNew(false);
       onAgentsChange?.();
-    } catch (err) {
-      setError(err.message || "Failed to save agent");
+    } catch (error) {
+      setError(error.message || "Failed to save agent");
     } finally {
       setSaving(false);
     }
@@ -267,7 +267,7 @@ export default function CustomAgentsPanel({
         await PrismService.deleteCustomAgent(id);
         setConfirmingDeleteId(null);
         onAgentsChange?.();
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to delete agent:", err);
       }
     },

@@ -562,8 +562,8 @@ export default function ToolsPageComponent() {
       ]);
       setTools(schemas || []);
       setAgents(agentList || []);
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -594,8 +594,8 @@ export default function ToolsPageComponent() {
       setRefreshing(true);
       await PrismService.refreshBuiltInToolSchemas();
       await fetchTools();
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setRefreshing(false);
     }

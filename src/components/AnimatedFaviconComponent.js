@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { RAINBOW, paletteAt } from "../utils/rainbow";
 
 /**
  * AnimatedFaviconComponent — Renders the 8-bit dithered rainbow animation
@@ -14,35 +15,6 @@ const FAVICON_SIZE = 32;
 const PIXEL_SIZE = 4; // pixelated block size inside 32×32
 const FRAME_COUNT = 16;
 const FRAME_INTERVAL = 180; // ms between frames
-
-const RAINBOW = [
-  [255, 0, 0],
-  [255, 127, 0],
-  [255, 255, 0],
-  [0, 200, 80],
-  [0, 120, 255],
-  [100, 0, 255],
-  [255, 0, 150],
-];
-
-function lerpColor(a, b, t) {
-  return [
-    a[0] + (b[0] - a[0]) * t,
-    a[1] + (b[1] - a[1]) * t,
-    a[2] + (b[2] - a[2]) * t,
-  ];
-}
-
-function rainbowAt(t) {
-  const scaled = (((t % 1) + 1) % 1) * RAINBOW.length;
-  const i = Math.floor(scaled);
-  const f = scaled - i;
-  return lerpColor(
-    RAINBOW[i % RAINBOW.length],
-    RAINBOW[(i + 1) % RAINBOW.length],
-    f,
-  );
-}
 
 /**
  * Pre-render all frames as Base64 PNG data URLs so the animation
@@ -64,7 +36,7 @@ function generateFrames() {
       for (let x = 0; x < cols; x++) {
         const t = (x / cols + y / rows) * 0.5 + offset;
         const dither = ((x * 7 + y * 13) % 5) / 40;
-        const [r, g, b] = rainbowAt(t + dither);
+        const [r, g, b] = paletteAt(RAINBOW, t + dither);
         ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
         ctx.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
       }

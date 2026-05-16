@@ -62,9 +62,9 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
       setSummary(result.summary || null);
       onCountChange?.(result.summary?.total || (result.tasks || []).length);
       hasData.current = true;
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load tasks:", err);
-      if (!hasData.current) setError(err.message);
+      if (!hasData.current) setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,7 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
       setNewDescription("");
       setShowNewForm(false);
       loadTasks();
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to create task:", err);
     } finally {
       setCreating(false);
@@ -123,7 +123,7 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
       );
       // Refresh summary
       loadTasks(true);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to update task:", err);
     }
   }, [loadTasks]);
@@ -138,7 +138,7 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
       );
       setConfirmingDeleteId(null);
       loadTasks(true);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to delete task:", err);
     }
   }, [loadTasks]);

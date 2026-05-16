@@ -600,8 +600,8 @@ export default function VramBenchmarkComponent() {
       setRawData(benchRes.data || []);
       setMachines(machinesRes || []);
       setSettingsLabels(settingsRes || []);
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }

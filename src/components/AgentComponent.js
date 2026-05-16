@@ -584,7 +584,7 @@ export default function AgentComponent({
       setSessions(result.items);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load sessions:", err);
     } finally {
       setSessionsLoading(false);
@@ -602,7 +602,7 @@ export default function AgentComponent({
       setSessions((prev) => [...prev, ...result.items]);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load more sessions:", err);
     } finally {
       setSessionsLoading(false);
@@ -657,7 +657,7 @@ export default function AgentComponent({
         }
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to preload session from URL:", err);
       }
     })();
@@ -668,7 +668,7 @@ export default function AgentComponent({
     try {
       const tools = await PrismService.getCustomTools(agentProject);
       setCustomTools(tools);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load custom tools:", err);
     }
   }, [agentProject]);
@@ -682,7 +682,7 @@ export default function AgentComponent({
     try {
       const s = await PrismService.getSkills(agentProject);
       setSkills(s);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load skills:", err);
     }
   }, [agentProject]);
@@ -696,7 +696,7 @@ export default function AgentComponent({
     try {
       const s = await PrismService.getMCPServers(agentProject);
       setMcpServers(s);
-    } catch (err) {
+    } catch (error) {
       console.error("Failed to load MCP servers:", err);
     }
   }, [agentProject]);
@@ -1473,7 +1473,7 @@ export default function AgentComponent({
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
-                .catch(() => {});
+                .catch(() => { /* Non-critical background count refresh */ });
             }
 
             // Auto-refresh workspace tree when filesystem-mutating tools complete
@@ -1574,7 +1574,7 @@ export default function AgentComponent({
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
-                .catch(() => {});
+                .catch(() => { /* Non-critical background count refresh */ });
             }
 
             // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
@@ -1673,7 +1673,6 @@ export default function AgentComponent({
           },
           onPlanProposal: (data) => {
             if (isStale()) return;
-            console.log("[AgentComponent] plan_proposal received:", data.plan?.length, "chars, autoApproved:", data.autoApproved);
 
             // Inject plan as a content segment so it renders in-flow —
             // subsequent tool/text segments will appear after the plan card
@@ -2067,13 +2066,13 @@ export default function AgentComponent({
                     clearInterval(pollInterval);
                     setMemoriesRefreshKey((k) => k + 1);
                   }
-                } catch { /* ignore */ }
+                } catch { /* Non-critical background poll */ }
                 if (pollAttempts >= 10) clearInterval(pollInterval);
               }, 2000);
             })();
             resolve();
           },
-          onError: (err) => reject(err),
+          onError: (err) => reject(error),
         });
       });
 
@@ -2207,12 +2206,12 @@ export default function AgentComponent({
         );
         // Messages are already updated by the streaming callbacks — just reload history
         loadSessions();
-      } catch (err) {
+      } catch (error) {
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: `⚠️ Error: ${err.message}`,
+            content: `⚠️ Error: ${error.message}`,
             isError: true,
           },
         ]);
@@ -2538,8 +2537,8 @@ export default function AgentComponent({
         applySessionData(full);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
-      } catch (err) {
-        const is404 = err.message?.includes("404") || err.message?.includes("not found");
+      } catch (error) {
+        const is404 = error.message?.includes("404") || error.message?.includes("not found");
         if (is404) {
           console.warn(`Session ${conv.id} not yet persisted (still generating?) — skipping switch`);
         } else {
@@ -2564,7 +2563,7 @@ export default function AgentComponent({
         if (activeId === convId) {
           handleNewChat();
         }
-      } catch (err) {
+      } catch (error) {
         console.error("Failed to delete session:", err);
       }
     },

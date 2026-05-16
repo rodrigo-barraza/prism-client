@@ -1,40 +1,13 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
+import { RAINBOW, paletteAt } from "../utils/rainbow";
 
 /** 8-bit dithered rainbow — auto-animates, turbo during LLM generation */
 const PIXEL_SIZE = 6;
 const BASE_SPEED = 30; // degrees/sec
 const TURBO_ACCEL = 20; // quadratic coefficient — velocity = TURBO_ACCEL × t²
 const TURBO_RELEASE = 0.02; // per-frame smoothing toward zero (at 60fps ≈ 3s wind-down)
-const RAINBOW = [
-  [255, 0, 0],
-  [255, 127, 0],
-  [255, 255, 0],
-  [0, 200, 80],
-  [0, 120, 255],
-  [100, 0, 255],
-  [255, 0, 150],
-];
-
-function lerpColor(a, b, t) {
-  return [
-    a[0] + (b[0] - a[0]) * t,
-    a[1] + (b[1] - a[1]) * t,
-    a[2] + (b[2] - a[2]) * t,
-  ];
-}
-
-function paletteAt(colors, t) {
-  const scaled = (((t % 1) + 1) % 1) * colors.length;
-  const i = Math.floor(scaled);
-  const f = scaled - i;
-  return lerpColor(
-    colors[i % colors.length],
-    colors[(i + 1) % colors.length],
-    f,
-  );
-}
 
 export default function RainbowCanvasComponent({ turbo = false, animate = false, greyscale = false, palette, className, style }) {
   const canvasRef = useRef(null);

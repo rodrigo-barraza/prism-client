@@ -270,9 +270,9 @@ export default class LiveSessionService {
       source.connect(this.audioWorkletNode);
 
       this.isRecording = true;
-    } catch (err) {
+    } catch (error) {
       console.error("[LiveSession] Microphone error:", err);
-      throw err;
+      throw error;
     }
   }
 
@@ -345,7 +345,7 @@ export default class LiveSessionService {
 
       // Post directly to the worklet's ring buffer queue
       this.playbackWorkletNode.port.postMessage(float32);
-    } catch (err) {
+    } catch (error) {
       console.error("[LiveSession] Audio playback error:", err);
     }
   }

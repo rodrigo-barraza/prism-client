@@ -5,10 +5,11 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  background: #0e0e0e;
+  background: var(--bg-primary);
   border-right: 1px solid var(--border-color);
   overflow: hidden;
-  /* GPU-accelerated width transitions for open/close */
+  /* Layout-based width transitions for open/close (not GPU-composited,
+     but acceptable for an infrequent user-toggled panel) */
   transition:
     width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
@@ -24,6 +25,7 @@
   border-width: 0 !important;
   pointer-events: none;
   overflow: hidden;
+  will-change: width, min-width, opacity;
 }
 
 /* ── Title bar — VSCode-style header (accent background) ── */
@@ -99,8 +101,8 @@
   align-items: stretch;
   height: 34px;
   min-height: 34px;
-  background: #1a1a1a;
-  border-bottom: 1px solid #2a2a2a;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -118,9 +120,9 @@
   padding: 0 10px;
   height: 100%;
   border: none;
-  border-right: 1px solid #222222;
+  border-right: 1px solid var(--border-subtle);
   background: transparent;
-  color: #808080;
+  color: var(--text-muted);
   font-size: var(--font-size-xs);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   white-space: nowrap;
@@ -132,8 +134,8 @@
   min-width: 0;
 
   &:hover {
-    background: #1e1e1e;
-    color: #cccccc;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
   }
 
   &:hover .tabClose {
@@ -142,8 +144,8 @@
 }
 
 .tabActive {
-  background: #0e0e0e;
-  color: #e0e0e0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   border-bottom: 2px solid var(--accent-color);
   font-weight: 500;
 }
@@ -172,7 +174,7 @@
   border: none;
   border-radius: 3px;
   background: none;
-  color: #808080;
+  color: var(--text-muted);
   cursor: pointer;
   opacity: 0;
   padding: 0;
@@ -197,7 +199,7 @@
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: #0e0e0e;
+  background: var(--bg-primary);
 }
 
 /* ── Breadcrumb path bar ─────────────────────────────────── */
@@ -209,14 +211,14 @@
   padding: 4px 12px;
   font-size: 0.625rem;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  color: #666666;
-  border-bottom: 1px solid #1a1a1a;
+  color: var(--text-tertiary, var(--text-muted));
+  border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: 24px;
-  background: #0a0a0a;
+  background: var(--bg-primary);
 }
 
 .breadcrumbSep {
@@ -229,13 +231,13 @@
   flex: 1;
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: #333333 transparent;
-  background: #0e0e0e;
+  scrollbar-color: var(--border-medium) transparent;
+  background: var(--bg-primary);
 }
 
 /* Override react-syntax-highlighter's internal pre/code styles */
 .codeScroll pre {
-  background: #0e0e0e !important;
+  background: var(--bg-primary) !important;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
@@ -255,7 +257,7 @@
   justify-content: center;
   flex: 1;
   font-size: var(--font-size-xs);
-  color: #666666;
+  color: var(--text-tertiary, var(--text-muted));
   gap: 8px;
 }
 
@@ -280,7 +282,7 @@
   justify-content: center;
   flex: 1;
   font-size: var(--font-size-xs);
-  color: #999999;
+  color: var(--text-secondary);
   padding: 24px;
   text-align: center;
 }
@@ -292,7 +294,7 @@
   justify-content: center;
   flex: 1;
   gap: 8px;
-  color: #555555;
+  color: var(--text-muted);
   font-size: var(--font-size-xs);
 }
 
@@ -303,13 +305,13 @@
   align-items: center;
   gap: 8px;
   padding: 3px 12px;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid var(--border-subtle);
   font-size: 0.625rem;
-  color: #555555;
+  color: var(--text-muted);
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  background: #0a0a0a;
+  background: var(--bg-primary);
   min-height: 22px;
 }
 
@@ -317,7 +319,7 @@
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: #444444;
+  background: var(--text-muted);
 }
 
 /* ── Resize handle ───────────────────────────────────────── */
@@ -380,7 +382,7 @@
   height: 22px;
   border: 1px solid color-mix(in srgb, var(--accent-color) 40%, transparent);
   border-radius: 4px;
-  background: color-mix(in srgb, var(--accent-color) 14%, #1a1a1a);
+  background: color-mix(in srgb, var(--accent-color) 14%, var(--bg-tertiary));
   color: var(--accent-color);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -430,9 +432,9 @@
   justify-content: center;
   min-height: 0;
   overflow: auto;
-  background: #0a0a0a;
+  background: var(--bg-primary);
   scrollbar-width: thin;
-  scrollbar-color: #333333 transparent;
+  scrollbar-color: var(--border-medium) transparent;
 }
 
 /* ── Image preview ──────────────────────────────────────── */
@@ -456,13 +458,13 @@
   image-rendering: auto;
   /* Checkerboard background for transparent images */
   background-image:
-    linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
-    linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
-    linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+    linear-gradient(45deg, var(--bg-tertiary) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-tertiary) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-tertiary) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-tertiary) 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
-  background-color: #111111;
+  background-color: var(--bg-secondary);
 }
 
 /* ── Audio player ───────────────────────────────────────── */
@@ -479,7 +481,7 @@
 }
 
 .mediaAudioIcon {
-  color: #555555;
+  color: var(--text-muted);
   opacity: 0.6;
 }
 
@@ -499,7 +501,7 @@
   max-height: 100%;
   border-radius: 4px;
   outline: none;
-  background: #000000;
+  background: var(--bg-primary);
 }
 
 /* ── PDF viewer ─────────────────────────────────────────── */
@@ -508,7 +510,7 @@
   width: 100%;
   height: 100%;
   border: none;
-  background: #0a0a0a;
+  background: var(--bg-primary);
 }
 
 /* ── SVG preview ───────────────────────────────────────── */
@@ -521,13 +523,13 @@
   user-select: none;
   /* Checkerboard background for transparent SVGs */
   background-image:
-    linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
-    linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
-    linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+    linear-gradient(45deg, var(--bg-tertiary) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-tertiary) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-tertiary) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-tertiary) 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
-  background-color: #111111;
+  background-color: var(--bg-secondary);
   padding: 24px;
 }
 
