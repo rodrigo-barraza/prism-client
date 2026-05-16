@@ -1742,6 +1742,9 @@ export default function AgentComponent({
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
                 .catch(() => {});
+            } else if (statusData?.message === "custom_tools_updated") {
+              // Agent created/updated/deleted a custom tool — refresh the panel
+              loadCustomTools();
             } else if (statusData?.message === "generation_started") {
               // Server-computed TTFT — accumulate per-iteration samples for averaging
               setMessages((prev) => {
