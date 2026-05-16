@@ -83,7 +83,7 @@ Feature-rich frontend for interacting with AI models through the [Prism AI Gatew
 npm install
 
 # 2. Copy and configure environment
-cp .env.example .env
+# Secrets are resolved from vault-service automatically.
 
 # 3. Start development server
 npm run dev
