@@ -320,6 +320,11 @@
   color: var(--color-warning);
 }
 
+.methodBadge[data-method="JS"] {
+  background: color-mix(in srgb, #f0db4f 15%, transparent);
+  color: #f0db4f;
+}
+
 .toolCardActions {
   display: flex;
   align-items: center;
@@ -617,6 +622,17 @@
   resize: vertical;
   tab-size: 2;
   white-space: pre;
+}
+
+.codeTextarea {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  line-height: 1.6;
+  min-height: 120px;
+  resize: vertical;
+  tab-size: 2;
+  white-space: pre;
+  background: color-mix(in srgb, var(--bg-card) 80%, #000);
 }
 
 .jsonActions {

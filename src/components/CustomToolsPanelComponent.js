@@ -14,7 +14,7 @@ import {
   ChevronDown,
   ChevronRight,
   Globe,
-  Shield,
+  Code2,
 } from "lucide-react";
 import PrismService from "../services/PrismService.js";
 import { ButtonComponent, TextAreaComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
@@ -28,10 +28,7 @@ const PARAM_TYPES = [
   { value: "boolean", label: "Boolean" },
 ];
 
-const HTTP_METHODS = [
-  { value: "GET", label: "GET" },
-  { value: "POST", label: "POST" },
-];
+
 
 const EMPTY_PARAM = {
   name: "",
@@ -44,9 +41,7 @@ const EMPTY_PARAM = {
 const EMPTY_TOOL = {
   name: "",
   description: "",
-  endpoint: "",
-  method: "GET",
-  bearerToken: "",
+  code: "",
   parameters: [],
   enabled: true,
 };
@@ -134,7 +129,7 @@ export default function CustomToolsPanel({
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!editingTool.name || !editingTool.endpoint) return;
+    if (!editingTool.name || !editingTool.code) return;
     setSaving(true);
     try {
       const payload = {
@@ -414,55 +409,21 @@ export default function CustomToolsPanel({
             </span>
           </div>
 
-          <div className={styles.formRow}>
-            <div className={styles.formGroup} style={{ flex: 1 }}>
-              <label>Endpoint URL</label>
-              <input
-                type="text"
-                className={styles.input}
-                value={editingTool.endpoint}
-                onChange={(e) =>
-                  setEditingTool((t) => ({ ...t, endpoint: e.target.value }))
-                }
-                placeholder="http://localhost:3000/api/stock"
-              />
-            </div>
-            <div className={styles.formGroup} style={{ width: 100 }}>
-              <label>Method</label>
-              <select
-                className={styles.select}
-                value={editingTool.method}
-                onChange={(e) =>
-                  setEditingTool((t) => ({ ...t, method: e.target.value }))
-                }
-              >
-                {HTTP_METHODS.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           <div className={styles.formGroup}>
-            <label>
-              <Shield size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
-              Bearer Token
-              <span className={styles.optional}> (optional)</span>
-            </label>
-            <input
-              type="password"
-              className={styles.input}
-              value={editingTool.bearerToken || ""}
+            <label>Code</label>
+            <TextAreaComponent
+              className={`${styles.textarea} ${styles.codeTextarea}`}
+              value={editingTool.code}
               onChange={(e) =>
-                setEditingTool((t) => ({ ...t, bearerToken: e.target.value }))
+                setEditingTool((t) => ({ ...t, code: e.target.value }))
               }
-              placeholder="sk-... or token value"
-              autoComplete="off"
+              placeholder={`// Tool arguments are available via the \`args\` object\nconst { message } = args;\nconsole.log(message);\n// The last expression becomes the return value\n({ logged: message, timestamp: new Date().toISOString() })`}
+              minRows={6}
+              maxRows={20}
+              spellCheck={false}
             />
             <span className={styles.hint}>
-              Sent as Authorization: Bearer &lt;token&gt;
+              Sandboxed JavaScript — access args via <code>args</code> object. Last expression is returned.
             </span>
           </div>
 
@@ -652,7 +613,7 @@ export default function CustomToolsPanel({
           <button
             className={styles.saveBtn}
             onClick={handleSave}
-            disabled={!editingTool.name || !editingTool.endpoint || saving}
+            disabled={!editingTool.name || !editingTool.code || saving}
           >
             <Save size={14} />
             {saving ? "Saving..." : isNew ? "Create Tool" : "Save Changes"}
@@ -742,7 +703,7 @@ export default function CustomToolsPanel({
 
       {customOpen && tools.length === 0 && (
         <div className={styles.emptyCustom}>
-          Create a tool to connect any API.
+          Create a tool to run custom JavaScript.
         </div>
       )}
 
@@ -769,11 +730,8 @@ export default function CustomToolsPanel({
                 <div className={styles.toolCardInfo}>
                   <span className={styles.toolCardName}>{tool.name}</span>
                   <span className={styles.toolCardMeta}>
-                    <span
-                      className={styles.methodBadge}
-                      data-method={tool.method}
-                    >
-                      {tool.method}
+                    <span className={styles.methodBadge} data-method="JS">
+                      JS
                     </span>
                     {tool.parameters?.length > 0 && (
                       <span>{tool.parameters.length} params</span>
@@ -794,16 +752,20 @@ export default function CustomToolsPanel({
                   <p className={styles.toolCardDesc}>
                     {tool.description || "No description"}
                   </p>
-                  <div className={styles.toolCardEndpoint}>
-                    <Globe size={11} />
-                    <code>{tool.endpoint}</code>
-                  </div>
-                  {tool.bearerToken && (
+                  {tool.code && (
                     <div className={styles.toolCardEndpoint}>
-                      <Shield size={11} />
-                      <span style={{ opacity: 0.6 }}>
-                        Bearer token configured
-                      </span>
+                      <Code2 size={11} />
+                      <code style={{ whiteSpace: "pre-wrap", fontSize: 11 }}>
+                        {tool.code.length > 120
+                          ? tool.code.slice(0, 120) + "…"
+                          : tool.code}
+                      </code>
+                    </div>
+                  )}
+                  {!tool.code && tool.endpoint && (
+                    <div className={styles.toolCardEndpoint}>
+                      <Globe size={11} />
+                      <code>{tool.endpoint}</code>
                     </div>
                   )}
                   {tool.parameters?.length > 0 && (
