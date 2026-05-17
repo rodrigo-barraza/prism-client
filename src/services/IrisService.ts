@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { PRISM_SERVICE_URL } from "../../config.js";
+import { PRISM_SERVICE_URL } from "../../config";
 import { getBaseHeaders } from "./serviceHeaders.js";
 import { subscribe as sseSubscribe } from "./SSEManager";
-import { buildLmStudioLoadBody } from "../utils/utilities.js";
-import { setLocalProviderMeta } from "../components/ProviderLogosComponent.js";
+import { buildLmStudioLoadBody } from "../utils/utilities";
+import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
 
 const API_BASE = PRISM_SERVICE_URL;
 

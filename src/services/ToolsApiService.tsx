@@ -1,4 +1,4 @@
-import { TOOLS_SERVICE_URL } from "../../config.js";
+import { TOOLS_SERVICE_URL } from "../../config";
 
 /**
  * ToolsApiService — client-side service for querying the

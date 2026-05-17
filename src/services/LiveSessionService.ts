@@ -6,7 +6,7 @@
 // endpoint, which proxies to Google's Gemini Live API.
 // ============================================================
 
-import { PRISM_WS_URL, PROJECT_NAME } from "../../config.js";
+import { PRISM_WS_URL, PROJECT_NAME } from "../../config";
 
 const LIVE_WS_URL = `${PRISM_WS_URL}/ws/live?project=${PROJECT_NAME}`;
 

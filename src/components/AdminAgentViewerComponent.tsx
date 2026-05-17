@@ -7,9 +7,9 @@ import {
   BookOpen, Users, Info, Layers, PanelLeftClose, PanelLeft,
   PanelRightClose, PanelRight,
 } from "lucide-react";
-import IrisService from "../services/IrisService.js";
-import PrismService from "../services/PrismService.js";
-import ToolsApiService from "../services/ToolsApiService.js";
+import IrisService from "../services/IrisService";
+import PrismService from "../services/PrismService";
+import ToolsApiService from "../services/ToolsApiService";
 import HistoryPanel from "./HistoryPanelComponent.js";
 import SettingsPanel from "./SettingsPanelComponent.js";
 import ModelInfoPanel from "./ModelInfoPanelComponent.js";
@@ -25,9 +25,9 @@ import MessageList, { prepareDisplayMessages } from "./MessageListComponent.js";
 import ModelBadgeComponent from "./ModelBadgeComponent.js";
 import { useAdminHeader } from "./AdminHeaderContextComponent.js";
 
-import { formatNumber } from "../utils/utilities.js";
-import useSessionStats from "../hooks/useSessionStats.js";
-import { PROJECT_AGENT } from "../constants.js";
+import { formatNumber } from "../utils/utilities";
+import useSessionStats from "../hooks/useSessionStats";
+import { PROJECT_AGENT } from "../constants";
 import chatStyles from "./ChatAreaComponent.module.css";
 import styles from "./AdminAgentViewerComponent.module.css";
 import { EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components-library";

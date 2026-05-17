@@ -17,7 +17,7 @@ import {
   Globe,
   Code2,
 } from "lucide-react";
-import PrismService from "../services/PrismService.js";
+import PrismService from "../services/PrismService";
 import { ButtonComponent, TextAreaComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import styles from "./CustomToolsPanelComponent.module.css";

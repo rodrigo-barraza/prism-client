@@ -16,7 +16,7 @@ import {
   Bot,
   Settings2,
 } from "lucide-react";
-import PrismService from "../services/PrismService.js";
+import PrismService from "../services/PrismService";
 import NavigationSidebarComponent from "./NavigationSidebarComponent.js";
 import ThreePanelLayout from "./ThreePanelLayoutComponent.js";
 import SettingsPanel from "./SettingsPanelComponent.js";
@@ -29,10 +29,10 @@ import MessageList from "./MessageListComponent.js";
 
 import JsonViewerComponent from "./JsonViewerComponent.js";
 import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent.js";
-import { SETTINGS_DEFAULTS, SK_MODEL_MEMORY_SYNTHESIS } from "../constants.js";
-import { generateUUID } from "../utils/utilities.js";
+import { SETTINGS_DEFAULTS, SK_MODEL_MEMORY_SYNTHESIS } from "../constants";
+import { generateUUID } from "../utils/utilities";
 import styles from "./SynthesisComponent.module.css";
-import useModelMemory from "../hooks/useModelMemory.js";
+import useModelMemory from "../hooks/useModelMemory";
 
 const DEFAULT_TURNS = 4;
 const MIN_TURNS = 1;

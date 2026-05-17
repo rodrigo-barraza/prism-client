@@ -1,4 +1,4 @@
-import { PRISM_SERVICE_URL } from "../../config.js";
+import { PRISM_SERVICE_URL } from "../../config";
 import { getBaseHeaders } from "./serviceHeaders.js";
 
 const API_BASE = PRISM_SERVICE_URL;

@@ -32,11 +32,11 @@ import {
   TrendingUp,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
-import StorageService from "../services/StorageService.js";
+import StorageService from "../services/StorageService";
 import {
   SK_MODEL_MEMORY_AGENT,
   LOCAL_PROVIDERS,
-} from "../constants.js";
+} from "../constants";
 import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
 import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";
 import {

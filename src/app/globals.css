@@ -4,7 +4,7 @@
    then declares Prism-specific accent tokens and overrides.
    ════════════════════════════════════════════════════════════ */
 
-@import "@rodrigo-barraza/components-library/src/styles/base.css";
+@import "@rodrigo-barraza/components-library/base.css";
 
 /* ── Prism Accent Tokens ──────────────────────────────────── */
 

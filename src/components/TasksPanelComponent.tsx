@@ -8,7 +8,7 @@ import {
   CircleDot, Play, CheckCircle2, ChevronDown, ChevronRight,
   X,
 } from "lucide-react";
-import ToolsApiService from "../services/ToolsApiService.js";
+import ToolsApiService from "../services/ToolsApiService";
 
 import styles from "./TasksPanelComponent.module.css";
 

@@ -5,9 +5,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Users, RefreshCw, Wrench, Clock, GitBranch, FileCode,
 } from "lucide-react";
-import PrismService from "../services/PrismService.js";
-import { renderToolName } from "../utils/utilities.js";
-import { formatDuration } from "../utils/utilities.js";
+import PrismService from "../services/PrismService";
+import { renderToolName } from "../utils/utilities";
+import { formatDuration } from "../utils/utilities";
 import CostBadgeComponent from "./CostBadgeComponent.js";
 import ModelBadgeComponent from "./ModelBadgeComponent.js";
 import ModalityIconComponent from "./ModalityIconComponent";

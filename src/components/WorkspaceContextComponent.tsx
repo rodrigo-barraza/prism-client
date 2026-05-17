@@ -2,8 +2,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import WorkspaceService from "../services/WorkspaceService.js";
-import { LS_WORKSPACE_ROOT } from "../constants.js";
+import WorkspaceService from "../services/WorkspaceService";
+import { LS_WORKSPACE_ROOT } from "../constants";
 
 const WorkspaceContext = createContext({
   workspaces: [],

@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
-import StorageService from "../services/StorageService.js";
-import { LOCAL_PROVIDERS } from "../constants.js";
+import StorageService from "../services/StorageService";
+import { LOCAL_PROVIDERS } from "../constants";
 
 /**
  * useModelMemory — Persist and restore the last-used model per page context.

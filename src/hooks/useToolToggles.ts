@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import StorageService from "../services/StorageService.js";
+import StorageService from "../services/StorageService";
 
 /**
  * useToolToggles — manages the disabled built-in tools state and toggle handlers.

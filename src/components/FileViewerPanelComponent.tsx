@@ -7,7 +7,7 @@ import FileTypeIconComponent from "./FileTypeIconComponent";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
-import ToolsApiService from "../services/ToolsApiService.js";
+import ToolsApiService from "../services/ToolsApiService";
 import styles from "./FileViewerPanelComponent.module.css";
 
 // ─── Binary file type detection ─────────────────────────────

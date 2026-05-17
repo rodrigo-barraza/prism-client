@@ -3,8 +3,8 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { BotMessageSquare, Paperclip, X, ClipboardList, Zap, Settings, Wrench, Brain, Plug, GitBranch, Repeat, ListChecks, BookOpen, Info, Activity, CornerDownLeft, Send, Square, SlidersHorizontal, File, FolderOpen, FolderTree, Plus } from "lucide-react";
-import PrismService from "../services/PrismService.js";
-import ToolsApiService from "../services/ToolsApiService.js";
+import PrismService from "../services/PrismService";
+import ToolsApiService from "../services/ToolsApiService";
 import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent.js";
 import NavigationSidebarComponent from "./NavigationSidebarComponent.js";
 import HistoryPanel from "./HistoryPanelComponent.js";
@@ -33,21 +33,21 @@ import PixelTransitionComponent from "./PixelTransitionComponent.js";
 
 import {
   buildToolSchemas,
-} from "../utils/FunctionCallingUtilities.js";
+} from "../utils/FunctionCallingUtilities";
 
-import useSessionStats from "../hooks/useSessionStats.js";
-import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, generateUUID } from "../utils/utilities.js";
-import { PROJECT_AGENT, SETTINGS_DEFAULTS, SK_MODEL_MEMORY_AGENT, SK_MODEL_MEMORY_AGENT_PREFIX, SK_TOOL_MEMORY_AGENT, SK_TOOL_MEMORY_AGENT_PREFIX, MAX_TOOL_ITERATIONS, LS_FILE_VIEWER_WIDTH } from "../constants.js";
+import useSessionStats from "../hooks/useSessionStats";
+import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, generateUUID } from "../utils/utilities";
+import { PROJECT_AGENT, SETTINGS_DEFAULTS, SK_MODEL_MEMORY_AGENT, SK_MODEL_MEMORY_AGENT_PREFIX, SK_TOOL_MEMORY_AGENT, SK_TOOL_MEMORY_AGENT_PREFIX, MAX_TOOL_ITERATIONS, LS_FILE_VIEWER_WIDTH } from "../constants";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent.js";
 import { ButtonComponent, EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
-import useToolToggles from "../hooks/useToolToggles.js";
-import useModelMemory from "../hooks/useModelMemory.js";
+import useToolToggles from "../hooks/useToolToggles";
+import useModelMemory from "../hooks/useModelMemory";
 import AgentPickerComponent from "./AgentPickerComponent.js";
 import AgentBadgeComponent from "./AgentBadgeComponent.js";
 import WorkspaceSelectorComponent from "./WorkspaceSelectorComponent";
 import { useWorkspace } from "./WorkspaceContextComponent.js";
-import WorkspaceService from "../services/WorkspaceService.js";
+import WorkspaceService from "../services/WorkspaceService";
 import {
   serializeEditable,
   flattenTree,
@@ -56,7 +56,7 @@ import {
   createMentionBadge as _createMentionBadge,
   placeCaretAfter,
   applyMentionToTextNode,
-} from "../utils/mentionUtils.js";
+} from "../utils/mentionUtils";
 
 // -- Per-agent empty state config ---------------------------------
 const AGENT_EMPTY_STATE = {

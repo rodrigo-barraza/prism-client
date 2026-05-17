@@ -4,7 +4,7 @@
 import { usePathname } from "next/navigation";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import PrismService from "../services/PrismService.js";
+import PrismService from "../services/PrismService";
 import {
   LayoutDashboard,
   ScrollText,

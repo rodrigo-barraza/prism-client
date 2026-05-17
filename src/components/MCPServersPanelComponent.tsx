@@ -12,7 +12,7 @@ import {
   Unplug,
   Wrench,
 } from "lucide-react";
-import PrismService from "../services/PrismService.js";
+import PrismService from "../services/PrismService";
 import styles from "./MCPServersPanelComponent.module.css";
 
 /**

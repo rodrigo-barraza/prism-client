@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Brain, RefreshCw, User, MessageSquare, FolderKanban, ExternalLink, Trash2, Sparkles, History, GitMerge, Settings } from "lucide-react";
 import Link from "next/link";
-import PrismService from "../services/PrismService.js";
+import PrismService from "../services/PrismService";
 
 import { DatePickerComponent, SearchInputComponent, DateTimeBadgeComponent,
   LoadingIndicatorComponent,

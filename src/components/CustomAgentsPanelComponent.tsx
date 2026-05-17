@@ -71,7 +71,7 @@ import {
   Sparkles,
   Heart,
 } from "lucide-react";
-import PrismService from "../services/PrismService.js";
+import PrismService from "../services/PrismService";
 import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";

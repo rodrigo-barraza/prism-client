@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import ErrorFallbackComponent from "@rodrigo-barraza/components-library/src/components/ErrorFallbackComponent/ErrorFallbackComponent";
+import { ErrorFallbackComponent } from "@rodrigo-barraza/components-library";
 
 /**
  * Error boundary — catches unhandled client-side errors in route segments

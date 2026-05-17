@@ -18,7 +18,7 @@ import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
 
 import SoundService from "@/services/SoundService";
-import { LOCAL_PROVIDERS } from "../constants.js";
+import { LOCAL_PROVIDERS } from "../constants";
 import styles from "./ModelPickerPopoverComponent.module.css";
 import { CloseButtonComponent } from "@rodrigo-barraza/components-library";
 
