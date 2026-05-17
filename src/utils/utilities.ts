@@ -226,7 +226,7 @@ export function getSessionTokenStats(messages: any) {
       // in real-time during worker generation (before completion).
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
       // so the count doesn't reset when workers transition between phases.
-      for (const wp of Object.values(m._workerGenerationProgress)) {
+      for (const wp of Object.values(m._workerGenerationProgress) as any[]) {
         const count = wp.totalOutputTokens || wp.outputTokens || 0;
         if (count > 0) {
           output += count;
@@ -349,9 +349,9 @@ export function mergeUsedToolsWithWorkers(clientTools: any, backendToolCounts: a
 
   // Overlay live worker tool counts (real-time during generation)
   if (workerToolActivity) {
-    for (const w of Object.values(workerToolActivity)) {
+    for (const w of Object.values(workerToolActivity) as any[]) {
       if (!w.toolNames) continue;
-      for (const [name, count] of Object.entries(w.toolNames)) {
+      for (const [name, count] of Object.entries(w.toolNames) as [string, number][]) {
         if (CAPABILITY_TOOL_NAMES.has(name)) continue;
         merged.set(name, Math.max(merged.get(name) || 0, count));
       }

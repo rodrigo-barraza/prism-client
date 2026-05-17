@@ -164,7 +164,7 @@ export default function AgentComponent({
 
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState<any[]>([]);
-  const [queuedNextTurn, setQueuedNextTurn] = useState(null);
+  const [queuedNextTurn, setQueuedNextTurn] = useState<any>(null);
   const inputValueRef = useRef<any>("");
   const [hasInput, setHasInput] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -178,8 +178,8 @@ export default function AgentComponent({
   const sessionsCursorRef = useRef<any>(null);
   const [sessionsHasMore, setSessionsHasMore] = useState(false);
   const [sessionsLoading, setSessionsLoading] = useState(false);
-  const [activeId, setActiveId] = useState(null);
-  const [config, setConfig] = useState(null);
+  const [activeId, setActiveId] = useState<any>(null);
+  const [config, setConfig] = useState<any>(null);
   const [title, setTitle] = useState(isNoAgent ? "Direct Chat" : "Agent");
   const [leftTab, setLeftTab] = useState("settings"); // "settings" | "tools"
   const [customTools, setCustomTools] = useState<any[]>([]);
@@ -192,11 +192,11 @@ export default function AgentComponent({
   const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
   // When a loaded session references a workspace that isn't currently connected,
   // store the path so the UI can show "workspace not available" instead of looping errors.
-  const [unavailableWorkspace, setUnavailableWorkspace] = useState(null);
+  const [unavailableWorkspace, setUnavailableWorkspace] = useState<any>(null);
 
   // -- File viewer pane state (VS Code-style read-only viewer) --
   const [viewerOpenFiles, setViewerOpenFiles] = useState<any[]>([]); // [{ id, path }]
-  const [viewerActiveFileId, setViewerActiveFileId] = useState(null);
+  const [viewerActiveFileId, setViewerActiveFileId] = useState<any>(null);
   const [viewerRefreshKey, setViewerRefreshKey] = useState(0);
   const viewerOpenFilesRef = useRef<any>(viewerOpenFiles);
   viewerOpenFilesRef.current = viewerOpenFiles;
@@ -274,7 +274,7 @@ export default function AgentComponent({
   const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
 
   const [pendingImages, setPendingImages] = useState<any[]>([]);
-  const [lightboxSrc, setLightboxSrc] = useState(null);
+  const [lightboxSrc, setLightboxSrc] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef<any>(0);
 
@@ -298,12 +298,12 @@ export default function AgentComponent({
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
   const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
-  const [pendingUserQuestion, setPendingUserQuestion] = useState(null); // { question, choices, context }
-  const [planProposal, setPlanProposal] = useState(null); // { plan, steps, status }
-  const [agenticProgress, setAgenticProgress] = useState(null); // { iteration, maxIterations }
-  const [_contextTruncated, setContextTruncated] = useState(null); // { strategy, estimatedTokens }
-  const [currentTurnStart, setCurrentTurnStart] = useState(null); // Date.now() when user sends
-  const [backendSessionStats, setBackendSessionStats] = useState(null); // aggregate from /admin/sessions/:id/stats
+  const [pendingUserQuestion, setPendingUserQuestion] = useState<any>(null); // { question, choices, context }
+  const [planProposal, setPlanProposal] = useState<any>(null); // { plan, steps, status }
+  const [agenticProgress, setAgenticProgress] = useState<any>(null); // { iteration, maxIterations }
+  const [_contextTruncated, setContextTruncated] = useState<any>(null); // { strategy, estimatedTokens }
+  const [currentTurnStart, setCurrentTurnStart] = useState<any>(null); // Date.now() when user sends
+  const [backendSessionStats, setBackendSessionStats] = useState<any>(null); // aggregate from /admin/sessions/:id/stats
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
 
   // Frontend-side high-water marks for token display.
@@ -312,7 +312,7 @@ export default function AgentComponent({
   const tokenHwmRef = useRef<any>({ input: 0, output: 0, total: 0 });
 
   // -- Pixelation transition state ----------------------------
-  const [pixelTransition, setPixelTransition] = useState(null); // 'out' | 'in' | null
+  const [pixelTransition, setPixelTransition] = useState<any>(null); // 'out' | 'in' | null
 
   // -- Adaptive pixel transition timing -----------------------
   // Track session load durations via EMA to predict the "out" duration.
@@ -401,9 +401,9 @@ export default function AgentComponent({
       );
       if (!hasActive) return prev;
       const next = {};
-      for (const [id, w] of Object.entries(prev)) {
+      for (const [id, w] of Object.entries(prev as Record<string, any>)) {
         (next as any)[id] = (w.phase && w.phase !== "complete" && w.phase !== "failed")
-          ? { ...w, phase: "complete", currentTool: null }
+          ? { ...(w as any), phase: "complete", currentTool: null }
           : w;
       }
       return next;
@@ -424,7 +424,7 @@ export default function AgentComponent({
     // Direct Chat: show ALL text models — no FC restriction
     if (isNoAgent) {
       return {
-        ...config,
+        ...(config as any),
         textToImage: { models: {} },
         textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
         audioToText: { models: {} },
@@ -434,7 +434,7 @@ export default function AgentComponent({
     const textModelsMap = (config as any).textToText?.models || {};
     const filteredTextModels = {};
 
-    for (const [provider, models] of Object.entries(textModelsMap)) {
+    for (const [provider, models] of Object.entries(textModelsMap as Record<string, any[]>)) {
       const fcModels = models.filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );
@@ -446,7 +446,7 @@ export default function AgentComponent({
     );
 
     return {
-      ...config,
+      ...(config as any),
       providerList: filteredProviderList,
       textToText: {
         ...(config as any).textToText,
@@ -585,7 +585,7 @@ export default function AgentComponent({
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
     } catch (error: any) {
-      console.error("Failed to load sessions:", err);
+      console.error("Failed to load sessions:", error);
     } finally {
       setSessionsLoading(false);
     }
@@ -603,7 +603,7 @@ export default function AgentComponent({
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
     } catch (error: any) {
-      console.error("Failed to load more sessions:", err);
+      console.error("Failed to load more sessions:", error);
     } finally {
       setSessionsLoading(false);
     }
@@ -658,7 +658,7 @@ export default function AgentComponent({
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
       } catch (error: any) {
-        console.error("Failed to preload session from URL:", err);
+        console.error("Failed to preload session from URL:", error);
       }
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -669,7 +669,7 @@ export default function AgentComponent({
       const tools = await PrismService.getCustomTools(agentProject);
       setCustomTools(tools);
     } catch (error: any) {
-      console.error("Failed to load custom tools:", err);
+      console.error("Failed to load custom tools:", error);
     }
   }, [agentProject]);
 
@@ -683,7 +683,7 @@ export default function AgentComponent({
       const s = await PrismService.getSkills(agentProject);
       setSkills(s);
     } catch (error: any) {
-      console.error("Failed to load skills:", err);
+      console.error("Failed to load skills:", error);
     }
   }, [agentProject]);
 
@@ -697,7 +697,7 @@ export default function AgentComponent({
       const s = await PrismService.getMCPServers(agentProject);
       setMcpServers(s);
     } catch (error: any) {
-      console.error("Failed to load MCP servers:", err);
+      console.error("Failed to load MCP servers:", error);
     }
   }, [agentProject]);
 
@@ -885,7 +885,7 @@ export default function AgentComponent({
   // Pure logic lives in mentionUtils.js; here we just wire it up.
 
   /** Create a styled mention badge span (wraps the pure fn). */
-  const createMentionBadge = useCallback((path: any, name: any, type: any, opts: any) => {
+  const createMentionBadge = useCallback((path: any, name: any, type: any, opts?: any) => {
     return _createMentionBadge(path, name, type, opts);
   }, []);
 
@@ -915,7 +915,7 @@ export default function AgentComponent({
     e.preventDefault();
     const text = e.clipboardData.getData("text/plain");
     const sel = window.getSelection();
-    if (!sel.rangeCount) return;
+    if (!sel || !sel.rangeCount) return;
     const range = sel.getRangeAt(0);
     range.deleteContents();
     const textNode = document.createTextNode(text);
@@ -939,11 +939,11 @@ export default function AgentComponent({
     const badge = createMentionBadge(filePath, name, isDir ? "directory" : "file");
     const space = document.createTextNode(" ");
     const sel = window.getSelection();
-    const range = sel.rangeCount && (element as any).contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
+    const range = sel && sel.rangeCount && (element as any).contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
     if (range) {
       const container = range.startContainer;
       if (container.nodeType === Node.TEXT_NODE) {
-        const ch = container.textContent[range.startOffset - 1];
+        const ch = container.textContent ? container.textContent[range.startOffset - 1] : "";
         if (ch && ch !== " " && ch !== "\n") {
           range.insertNode(document.createTextNode(" "));
           range.collapse(false);
@@ -974,11 +974,11 @@ export default function AgentComponent({
     });
     const space = document.createTextNode(" ");
     const sel = window.getSelection();
-    const range = sel.rangeCount && (element as any).contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
+    const range = sel && sel.rangeCount && (element as any).contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
     if (range) {
       const container = range.startContainer;
       if (container.nodeType === Node.TEXT_NODE) {
-        const ch = container.textContent[range.startOffset - 1];
+        const ch = container.textContent ? container.textContent[range.startOffset - 1] : "";
         if (ch && ch !== " " && ch !== "\n") {
           range.insertNode(document.createTextNode(" "));
           range.collapse(false);
@@ -1006,22 +1006,23 @@ export default function AgentComponent({
   const mentionAnchorRef = useRef<any>(null); // { node, offset } of the `@`
   const mentionListRef = useRef<any>(null);
   // Set of known workspace paths — used for mention badge staleness detection
-  const [knownPaths, setKnownPaths] = useState(null);
+  const [knownPaths, setKnownPaths] = useState<any>(null);
 
+  const currentWorkspacePath = (currentWorkspace as any)?.path;
   const ensureMentionCache = useCallback(async () => {
     if (mentionCacheRef.current || mentionLoadingRef.current) return;
-    if (!(currentWorkspace as any)?.path) return;
+    if (!currentWorkspacePath) return;
     mentionLoadingRef.current = true;
     try {
-      const data = await WorkspaceService.tree((currentWorkspace as any).path, 5);
+      const data = await WorkspaceService.tree(currentWorkspacePath, 5);
       if (data?.tree) {
         const flat = flattenTree(data.tree);
         mentionCacheRef.current = flat;
-        setKnownPaths(new Set(flat.map((e: any) => e.path)));
+        setKnownPaths(new Set(flat.map((e: any) => e.path)) as any);
       }
     } catch { /* autocomplete unavailable */ }
     mentionLoadingRef.current = false;
-  }, [(currentWorkspace as any)?.path]);
+  }, [currentWorkspacePath]);
 
   useEffect(() => {
     mentionCacheRef.current = null;
@@ -1039,9 +1040,9 @@ export default function AgentComponent({
   /** Detect @query from cursor position inside contentEditable. */
   const detectMentionQuery = useCallback((element: any) => {
     const sel = window.getSelection();
-    if (!sel.rangeCount || !element.contains(sel.anchorNode)) { setMentionOpen(false); return; }
+    if (!sel || !sel.rangeCount || !element.contains(sel.anchorNode)) { setMentionOpen(false); return; }
     const anchor = sel.anchorNode;
-    if (anchor.nodeType !== Node.TEXT_NODE) { setMentionOpen(false); return; }
+    if (!anchor || anchor.nodeType !== Node.TEXT_NODE || !anchor.textContent) { setMentionOpen(false); return; }
     const result = detectMentionToken(anchor.textContent, sel.anchorOffset);
     if (result) {
       mentionAnchorRef.current = { node: anchor, offset: result.anchorOffset };
@@ -1067,7 +1068,7 @@ export default function AgentComponent({
     if (!element || !mentionAnchorRef.current) return;
     const { node, offset } = mentionAnchorRef.current;
     const sel = window.getSelection();
-    if (!sel.rangeCount) return;
+    if (!sel || !sel.rangeCount) return;
     const badge = createMentionBadge(entry.path, entry.name, entry.type);
     const space = applyMentionToTextNode(node, offset, sel.anchorOffset, badge);
     placeCaretAfter(space);
@@ -1080,12 +1081,12 @@ export default function AgentComponent({
   // -- Image handlers ------------------------------------------
   const handleImageSelect = useCallback((e: any) => {
     const files = Array.from(e.target.files);
-    for (const file of files) {
+    for (const file of files as any[]) {
       const reader = new FileReader();
       reader.onload = (ev: any) => {
         setPendingImages((prev: any) => [...prev, ev.target.result]);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file as Blob);
     }
     e.target.value = "";
   }, []);
@@ -1129,12 +1130,12 @@ export default function AgentComponent({
       if (!supportsImageInput) return;
       const files = Array.from(e.dataTransfer?.files || []);
       const images = files.filter((f: any) => f.type.startsWith("image/"));
-      for (const file of images) {
+      for (const file of images as any[]) {
         const reader = new FileReader();
         reader.onload = (ev: any) => {
           setPendingImages((prev: any) => [...prev, ev.target.result]);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(file as Blob);
       }
     },
     [supportsImageInput],
@@ -1242,8 +1243,8 @@ export default function AgentComponent({
 
         let streamedText = "";
         let streamedThinking = "";
-        let firstChunkTime = null;
-        let prevChunkTime = null;    // previous chunk's timestamp for delta accumulation
+        let firstChunkTime: any = null;
+        let prevChunkTime: any = null;    // previous chunk's timestamp for delta accumulation
         let burstTokens = 0;         // tokens in current generation burst (resets on gap)
         let burstElapsed = 0;        // elapsed in current generation burst (resets on gap)
         const CHUNK_GAP_THRESHOLD = 500; // ms — gaps larger than this are processing/tool pauses
@@ -1251,11 +1252,11 @@ export default function AgentComponent({
         // contentSegments: ordered list of { type: "thinking", fragmentIndex } | { type: "text", fragmentIndex } | { type: "tools", toolIds: [...] }
         // textFragments: array of strings, one per text segment — the text delta between tool groups
         // thinkingFragments: array of strings, one per thinking segment — the thinking delta between tool groups
-        const contentSegments = [];
-        const textFragments = [];
-        const thinkingFragments = [];
+        const contentSegments: any[] = [];
+        const textFragments: any[] = [];
+        const thinkingFragments: any[] = [];
         const segmentToolIdSet = new Set(); // Dedup: track tool IDs already in contentSegments
-        let lastSegmentType = null; // "thinking" | "text" | "tools"
+        let lastSegmentType: any = null; // "thinking" | "text" | "tools"
         let prevCleanLen = 0; // length of cleanTextRaw at last onChunk — used for computing deltas
         let prevThinkingLen = 0; // length of thinking text at last onThinking — used for computing deltas
 
@@ -2118,7 +2119,7 @@ export default function AgentComponent({
   titleRef.current = title;
 
   const handleSend = useCallback(
-    async (e: any, opts = {}) => {
+    async (e?: any, opts: any = {}) => {
       if (e && typeof e.preventDefault === "function") e.preventDefault();
       
       const { isQueueing = false, overridePayload = null } = opts;
@@ -2301,7 +2302,7 @@ export default function AgentComponent({
         // Shift+Enter: insert a <br> for newline in contentEditable
         e.preventDefault();
         const sel = window.getSelection();
-        if (sel.rangeCount) {
+        if (sel && sel.rangeCount) {
           const range = sel.getRangeAt(0);
           range.deleteContents();
           const br = document.createElement("br");
@@ -2374,7 +2375,7 @@ export default function AgentComponent({
   const chatNewBtnRef = useRef<any>(null);
   const chatRainbowTimer = useRef<any>(null);
   const chatGlitchInterval = useRef<any>(null);
-  const [chatGlitchLabel, setChatGlitchLabel] = useState(null);
+  const [chatGlitchLabel, setChatGlitchLabel] = useState<any>(null);
 
   const handleNewChatGlitch = useCallback(() => {
     const element = chatNewBtnRef.current;
@@ -2411,7 +2412,7 @@ export default function AgentComponent({
       const match = workspaces.find((w: any) => w.path === full.workspaceRoot);
       if (match) {
         if ((match as any).path !== (currentWorkspace as any)?.path) {
-          setCurrentWorkspace(match);
+          (setCurrentWorkspace as any)(match);
         }
         setUnavailableWorkspace(null);
       } else {
@@ -2542,7 +2543,7 @@ export default function AgentComponent({
         if (is404) {
           console.warn(`Session ${conversation.id} not yet persisted (still generating?) — skipping switch`);
         } else {
-          console.error("Failed to load session:", err);
+          console.error("Failed to load session:", error);
         }
         setPixelTransition(null);
       }
@@ -2564,7 +2565,7 @@ export default function AgentComponent({
           handleNewChat();
         }
       } catch (error: any) {
-        console.error("Failed to delete session:", err);
+        console.error("Failed to delete session:", error);
       }
     },
     [activeId, handleNewChat, agentProject, isNoAgent],
@@ -3032,7 +3033,7 @@ export default function AgentComponent({
       <div
         className={`${chatStyles.messagesList} ${agentBackgroundImage ? chatStyles.hasBackground : ""}`}
         ref={messagesListRef}
-        style={agentBackgroundImage ? { "--agent-bg-image": `url(${agentBackgroundImage})` } : undefined}
+        style={agentBackgroundImage ? ({ "--agent-bg-image": `url(${agentBackgroundImage})` } as any) : undefined}
       >
         {messages.length === 0 && activeAgentData && (
           <EmptyStateComponent

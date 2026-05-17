@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import { LS_DATE_RANGE } from "../constants";
 
 const AdminHeaderContext = createContext({
-  controls: null,
-  setControls: () => {},
-  titleBadge: null,
-  setTitleBadge: () => {},
+  controls: null as any,
+  setControls: (_node: any) => {},
+  titleBadge: null as any,
+  setTitleBadge: (_value: any) => {},
   dateRange: { from: "", to: "" },
-  setDateRange: () => {},
-  sessionFilter: null,
-  setSessionFilter: () => {},
+  setDateRange: (_value: any) => {},
+  sessionFilter: null as any,
+  setSessionFilter: (_value: any) => {},
 });
 
 export function AdminHeaderProvider({ children }: any) {

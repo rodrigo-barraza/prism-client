@@ -226,7 +226,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
         (conversations.length + list.length) < (data.total || 0),
       );
     } catch (error: any) {
-      console.error("Failed to load more conversations:", err);
+      console.error("Failed to load more conversations:", error);
     } finally {
       setConversationsLoading(false);
     }
@@ -265,7 +265,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
         return prev;
       });
     } catch (error: any) {
-      console.error("Failed to refresh selected conversation:", err);
+      console.error("Failed to refresh selected conversation:", error);
     }
   }, []);
 
@@ -312,7 +312,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
     loadConversations();
 
     // Subscribe to change stream SSE for real-time updates
-    let pollInterval = null;
+    let pollInterval: NodeJS.Timeout | null = null;
     const es = IrisService.subscribeCollectionChanges({
       onStatus: (data: any) => {
         setChangeStreamsActive(!!data.changeStreams);

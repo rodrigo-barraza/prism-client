@@ -233,7 +233,7 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
         setActiveRunId(detail.latestRun.id);
       }
     } catch (error: any) {
-      console.error("Failed to load benchmark detail:", err);
+      console.error("Failed to load benchmark detail:", error);
     } finally {
       setLoading(false);
     }
@@ -242,7 +242,7 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
       const { runs } = await PrismService.getBenchmarkRuns(benchmarkId);
       setRunHistory(runs || []);
     } catch (error: any) {
-      console.error("Failed to load run history:", err);
+      console.error("Failed to load run history:", error);
     }
   }, [benchmarkId]);
 
@@ -504,7 +504,7 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
             .catch(() => {});
         }
       } catch (error: any) {
-        console.error("Failed to load config:", err);
+        console.error("Failed to load config:", error);
       }
     })();
 
@@ -606,7 +606,7 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
         router.push(`/benchmarks/${created.id}`);
       }
     } catch (error: any) {
-      console.error("Failed to clone benchmark:", err);
+      console.error("Failed to clone benchmark:", error);
     } finally {
       setSaving(false);
     }
@@ -925,7 +925,7 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
       await PrismService.deleteBenchmark(benchmarkId);
       router.push("/benchmarks");
     } catch (error: any) {
-      console.error("Failed to delete benchmark:", err);
+      console.error("Failed to delete benchmark:", error);
       setDeleting(false);
     }
   }, [benchmarkId, router]);

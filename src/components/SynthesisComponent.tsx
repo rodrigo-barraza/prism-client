@@ -145,7 +145,7 @@ export default function SynthesisComponent() {
       const runs = await PrismService.getSynthesisRuns();
       setSynthesisConversations(runs);
     } catch (error: any) {
-      console.error("Failed to load synthesis history:", err);
+      console.error("Failed to load synthesis history:", error);
     }
   }, []);
 
@@ -511,7 +511,7 @@ export default function SynthesisComponent() {
           });
           setActiveHistoryId(synthesisRunId);
         } catch (error: any) {
-          console.error("Failed to save synthesis run:", err);
+          console.error("Failed to save synthesis run:", error);
         }
 
         loadSynthesisHistory();
@@ -610,7 +610,7 @@ export default function SynthesisComponent() {
         setLeftTab("config");
       }
     } catch (error: any) {
-      console.error("Failed to load synthesis run:", err);
+      console.error("Failed to load synthesis run:", error);
     }
   }, []);
 
@@ -629,7 +629,7 @@ export default function SynthesisComponent() {
         return prev;
       });
     } catch (error: any) {
-      console.error("Failed to delete synthesis run:", err);
+      console.error("Failed to delete synthesis run:", error);
     }
   }, []);
 

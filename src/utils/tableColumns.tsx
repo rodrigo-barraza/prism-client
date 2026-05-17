@@ -77,7 +77,7 @@ export function getDurationMs(row: any) {
   const start = row.startedAt || row.createdAt;
   const end = row.finishedAt || row.updatedAt;
   if (!start || !end) return 0;
-  return Math.max(0, new Date(end) - new Date(start));
+  return Math.max(0, new Date(end).getTime() - new Date(start).getTime());
 }
 
 // formatDuration(ms) imported from @rodrigo-barraza/utilities-library via ./utilities
@@ -412,7 +412,7 @@ export const durationColumn = ({ useDurationMs = false }: any = {}) => ({
     const ms = useDurationMs ? getDurationMs(row) : (() => {
       // Session-style: startedAt / finishedAt
       if (!row.startedAt || !row.finishedAt) return 0;
-      return new Date(row.finishedAt) - new Date(row.startedAt);
+      return new Date(row.finishedAt).getTime() - new Date(row.startedAt).getTime();
     })();
     const dur = formatDuration(ms);
     if (!dur) return emptyDash();

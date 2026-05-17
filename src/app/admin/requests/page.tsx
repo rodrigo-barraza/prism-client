@@ -156,8 +156,8 @@ export default function RequestsPage() {
     loadRequests();
 
     // Subscribe to change stream SSE for real-time updates
-    let pollInterval = null;
-    let debounceTimer = null;
+    let pollInterval: any = null;
+    let debounceTimer: any = null;
     const debouncedLoad = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(loadRequests, 800);

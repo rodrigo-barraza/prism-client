@@ -378,7 +378,7 @@ export default function ModelPickerPopoverComponent({
 
     // Watch the ChatArea for size changes (sidebar open/close transitions)
     const chatArea = document.querySelector("[data-chat-area]");
-    let ro;
+    let ro: any;
     if (chatArea) {
       ro = new ResizeObserver(reposition);
       ro.observe(chatArea);

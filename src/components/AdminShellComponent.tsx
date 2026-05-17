@@ -237,7 +237,7 @@ function AdminShellInner({ children }: any) {
     const healthInterval = setInterval(fetchHealth, POLL_SLOW);
 
     // Subscribe to change stream SSE
-    let pollInterval = null;
+    let pollInterval: any = null;
     const es = IrisService.subscribeCollectionChanges({
       onStatus: (data: any) => {
         if (!data.changeStreams) {

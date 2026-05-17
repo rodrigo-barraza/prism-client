@@ -506,7 +506,7 @@ export default function FileViewerPanelComponent({
     if (!container || !onMentionLines) return;
 
     const lineEls = (container as any).querySelectorAll("[data-line-number]");
-    const injected = [];
+    const injected: any[] = [];
     for (const element of lineEls) {
       // Skip if already injected
       if (element.querySelector(`.${styles.lineMentionBtn}`)) continue;

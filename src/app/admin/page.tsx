@@ -166,8 +166,8 @@ export default function DashboardPage() {
 
     loadDashboard();
 
-    let pollInterval = null;
-    let debounceTimer = null;
+    let pollInterval: any = null;
+    let debounceTimer: any = null;
 
     const debouncedReload = () => {
       if (debounceTimer) clearTimeout(debounceTimer);

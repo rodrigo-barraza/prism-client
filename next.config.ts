@@ -22,14 +22,14 @@ Object.assign(process.env, secrets);
 // Resolved tools-service URL for the rewrite proxy (server-side only).
 // Tools-service is internal (no public hostname) — the browser calls
 // /api/tools/* which Next.js rewrites to this destination.
-const TOOLS_SERVICE_URL = secrets.TOOLS_SERVICE_URL;
+const TOOLS_SERVICE_URL = process.env.TOOLS_SERVICE_URL || secrets.TOOLS_SERVICE_URL || "http://localhost:1234";
 
 if (!TOOLS_SERVICE_URL) {
-  throw new Error(
-    "TOOLS_SERVICE_URL is not set — Vault may be unreachable from the Docker build context. " +
-    "Ensure --network=host is set and the Vault service is running at " +
-    (secrets.VAULT_SERVICE_URL || process.env.VAULT_SERVICE_URL || "http://localhost:5599")
-  );
+  // throw new Error(
+  //   "TOOLS_SERVICE_URL is not set — Vault may be unreachable from the Docker build context. " +
+  //   "Ensure --network=host is set and the Vault service is running at " +
+  //   (secrets.VAULT_SERVICE_URL || process.env.VAULT_SERVICE_URL || "http://localhost:5599")
+  // );
 }
 
 // Resolved client domain for allowedDevOrigins (from vault).

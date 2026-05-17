@@ -271,7 +271,7 @@ async function executeModelNode(node: any, inputData: any, { onNodeContentUpdate
 
     let prompt;
     let systemPrompt;
-    const messageImages = [];
+    const messageImages: any[] = [];
 
     if (conversationParts.length > 0) {
       // Extract from conversation input: system message → systemPrompt, user messages → prompt + images
@@ -686,7 +686,7 @@ export async function executeWorkflow(
       if (node.staticInputs) {
         for (const [modality, data] of Object.entries(node.staticInputs)) {
           if (data) {
-            regularInputData.push({ type: modality, data });
+            regularInputData.push({ type: modality, data, sourceNodeId: null });
           }
         }
       }

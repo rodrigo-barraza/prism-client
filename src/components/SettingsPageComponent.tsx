@@ -115,7 +115,7 @@ export default function SettingsPageComponent() {
         clearTimeout(savedTimerRef.current);
         savedTimerRef.current = setTimeout(() => setSaved(false), FEEDBACK_STANDARD_MS);
       } catch (error: any) {
-        console.error("Failed to save settings:", err);
+        console.error("Failed to save settings:", error);
       } finally {
         setSaving(false);
       }
@@ -242,7 +242,7 @@ export default function SettingsPageComponent() {
       setWsValidation(null);
       await refreshWorkspaces();
     } catch (error: any) {
-      console.error("Failed to add workspace:", err);
+      console.error("Failed to add workspace:", error);
       setWsValidation({ valid: false, error: "Failed to add workspace" });
     } finally {
       setWsAdding(false);
@@ -260,7 +260,7 @@ export default function SettingsPageComponent() {
       setWsAgents(agents || []);
       await refreshWorkspaces();
     } catch (error: any) {
-      console.error("Failed to remove workspace:", err);
+      console.error("Failed to remove workspace:", error);
     }
   }, [wsWorkspaces, refreshWorkspaces]);
 
@@ -277,7 +277,7 @@ export default function SettingsPageComponent() {
       const list = await PrismService.getCustomAgents();
       setCustomAgents(list);
     } catch (error: any) {
-      console.error("Failed to load custom agents:", err);
+      console.error("Failed to load custom agents:", error);
     }
   }, []);
 

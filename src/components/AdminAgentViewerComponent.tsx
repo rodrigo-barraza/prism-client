@@ -110,7 +110,7 @@ export default function AdminAgentViewerComponent() {
       setSessions(data.data || []);
       setTotal(data.total || 0);
     } catch (error: any) {
-      console.error("Failed to load admin agent sessions:", err);
+      console.error("Failed to load admin agent sessions:", error);
     } finally {
       setLoading(false);
     }
@@ -241,7 +241,7 @@ export default function AdminAgentViewerComponent() {
           .then((r: any) => setWorkersCount((r.workers || []).length))
           .catch(() => {});
       } catch (error: any) {
-        console.error("Failed to load agent session:", err);
+        console.error("Failed to load agent session:", error);
       }
     },
     [fetchSessionStats],

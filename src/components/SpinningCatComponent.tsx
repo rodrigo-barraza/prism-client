@@ -121,7 +121,7 @@ export default function SpinningCatComponent({
           renderFrame(canvas, frames, bitmaps, 0);
         }
       } catch (error: any) {
-        console.error("SpinningCatComponent: failed to decode GIF", err);
+        console.error("SpinningCatComponent: failed to decode GIF", error);
       }
     })();
 

@@ -1,0 +1,261 @@
+src/app/admin/conversations/page.tsx(238,38): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'null | undefined'.
+  Type 'string' is not assignable to type 'null | undefined'.
+src/app/admin/conversations/page.tsx(593,50): error TS18047: 'selectedConv' is possibly 'null'.
+src/app/admin/conversations/page.tsx(595,31): error TS18047: 'selectedConv' is possibly 'null'.
+src/app/admin/page.tsx(122,29): error TS18046: 'models' is of type 'unknown'.
+src/app/admin/page.tsx(338,7): error TS18047: 'stats' is possibly 'null'.
+src/app/admin/page.tsx(338,25): error TS18047: 'stats' is possibly 'null'.
+src/app/admin/requests/page.tsx(203,29): error TS2353: Object literal may only specify known properties, and 'conversations' does not exist in type '(prevState: null) => null'.
+src/app/admin/requests/page.tsx(451,26): error TS18047: 'associations' is possibly 'null'.
+src/app/admin/requests/page.tsx(493,26): error TS18047: 'associations' is possibly 'null'.
+src/app/admin/requests/page.tsx(527,26): error TS18047: 'associations' is possibly 'null'.
+src/app/admin/tool-calls/page.tsx(401,17): error TS18047: 'stats' is possibly 'null'.
+src/app/admin/tool-calls/page.tsx(416,14): error TS18047: 'stats' is possibly 'null'.
+src/app/admin/traces/page.tsx(138,29): error TS2353: Object literal may only specify known properties, and 'conversations' does not exist in type '(prevState: null) => null'.
+src/app/admin/traces/page.tsx(256,26): error TS18047: 'associations' is possibly 'null'.
+src/app/admin/traces/page.tsx(298,26): error TS18047: 'associations' is possibly 'null'.
+src/app/admin/traces/page.tsx(332,26): error TS18047: 'associations' is possibly 'null'.
+src/app/chat/page.tsx(42,23): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+src/app/workflows/[id]/page.tsx(7,11): error TS2339: Property 'id' does not exist on type 'unknown'.
+src/app/workflows/page.tsx(57,23): error TS18046: 'models' is of type 'unknown'.
+src/app/workflows/page.tsx(367,27): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/app/workflows/page.tsx(388,24): error TS2554: Expected 1 arguments, but got 0.
+src/app/workflows/page.tsx(389,24): error TS2554: Expected 1 arguments, but got 0.
+src/app/workflows/page.tsx(400,27): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/app/workflows/page.tsx(446,25): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/app/workflows/page.tsx(1081,32): error TS2554: Expected 2 arguments, but got 1.
+src/app/workflows/page.tsx(1270,43): error TS2345: Argument of type 'string | ArrayBuffer | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/components/AdminAgentViewerComponent.tsx(153,18): error TS2554: Expected 3 arguments, but got 2.
+src/components/AdminAgentViewerComponent.tsx(165,24): error TS18046: 'models' is of type 'unknown'.
+src/components/AdminAgentViewerComponent.tsx(176,7): error TS2698: Spread types may only be created from object types.
+src/components/AdminAgentViewerComponent.tsx(324,23): error TS18047: 'backendSessionStats' is possibly 'null'.
+src/components/AgentCardComponent.tsx(39,24): error TS18046: 'models' is of type 'unknown'.
+src/components/AgentPickerComponent.tsx(169,42): error TS2322: Type '{ "--agent-accent": any; } | undefined' is not assignable to type 'CSSProperties | undefined'.
+  Object literal may only specify known properties, and '"--agent-accent"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/AnimatedFaviconComponent.tsx(40,9): error TS18047: 'context' is possibly 'null'.
+src/components/AnimatedFaviconComponent.tsx(41,9): error TS18047: 'context' is possibly 'null'.
+src/components/AssetInputOptionsComponent.tsx(85,5): error TS18047: 'context' is possibly 'null'.
+src/components/BenchmarkDashboardComponent.tsx(30,23): error TS18046: 'models' is of type 'unknown'.
+src/components/BenchmarkDetailPageComponent.tsx(52,23): error TS18046: 'models' is of type 'unknown'.
+src/components/BenchmarkDetailPageComponent.tsx(167,25): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/BenchmarkDetailPageComponent.tsx(172,63): error TS2322: Type 'any[]' is not assignable to type 'never[]'.
+  Type 'any' is not assignable to type 'never'.
+src/components/BenchmarkDetailPageComponent.tsx(304,69): error TS2322: Type 'any[]' is not assignable to type 'never[]'.
+  Type 'any' is not assignable to type 'never'.
+src/components/BenchmarkDetailPageComponent.tsx(717,9): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type '(prevState: null) => null'.
+src/components/BenchmarkSidebarComponent.tsx(171,34): error TS2554: Expected 2 arguments, but got 1.
+src/components/ChartTabsComponent.tsx(22,28): error TS2554: Expected 2 arguments, but got 1.
+src/components/CoordinatorPanelComponent.tsx(46,16): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '(prevState: null) => null'.
+src/components/CustomAgentsPanelComponent.tsx(210,39): error TS2353: Object literal may only specify known properties, and 'enabledTools' does not exist in type '(prevState: null) => null'.
+src/components/CustomAgentsPanelComponent.tsx(231,10): error TS18047: 'editingAgent' is possibly 'null'.
+src/components/CustomAgentsPanelComponent.tsx(232,16): error TS2345: Argument of type '"Agent name is required"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/CustomAgentsPanelComponent.tsx(243,11): error TS18047: 'editingAgent' is possibly 'null'.
+src/components/CustomAgentsPanelComponent.tsx(350,58): error TS2322: Type '{ "--agent-color": any; } | undefined' is not assignable to type 'CSSProperties | undefined'.
+  Object literal may only specify known properties, and '"--agent-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/CustomAgentsPanelComponent.tsx(376,28): error TS2353: Object literal may only specify known properties, and '"--swatch-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/CustomToolsPanelComponent.tsx(98,37): error TS2353: Object literal may only specify known properties, and 'parameters' does not exist in type '(prevState: null) => null'.
+src/components/CustomToolsPanelComponent.tsx(131,10): error TS18047: 'editingTool' is possibly 'null'.
+src/components/CustomToolsPanelComponent.tsx(131,31): error TS18047: 'editingTool' is possibly 'null'.
+src/components/CustomToolsPanelComponent.tsx(135,9): error TS2698: Spread types may only be created from object types.
+src/components/CustomToolsPanelComponent.tsx(137,21): error TS18047: 'editingTool' is possibly 'null'.
+src/components/CustomToolsPanelComponent.tsx(159,11): error TS18047: 'editingTool' is possibly 'null'.
+src/components/CustomToolsPanelComponent.tsx(159,29): error TS18047: 'editingTool' is possibly 'null'.
+src/components/CustomToolsPanelComponent.tsx(248,22): error TS2345: Argument of type '"Invalid JSON — check syntax"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/CustomToolsPanelComponent.tsx(255,24): error TS2345: Argument of type '"Empty array — provide at least one tool definition"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/CustomToolsPanelComponent.tsx(283,11): error TS2345: Argument of type '"Unrecognized shape — expected an OpenAI tool definition, a {name, parameters} object, or a raw {type:\"object\", properties} schema"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/CustomToolsPanelComponent.tsx(297,19): error TS18046: 'schema' is of type 'unknown'.
+src/components/CustomToolsPanelComponent.tsx(298,26): error TS18046: 'schema' is of type 'unknown'.
+src/components/CustomToolsPanelComponent.tsx(300,33): error TS18046: 'schema' is of type 'unknown'.
+src/components/CustomToolsPanelComponent.tsx(300,48): error TS18046: 'schema' is of type 'unknown'.
+src/components/CustomToolsPanelComponent.tsx(316,22): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/DistributionChartComponent.tsx(342,21): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(outsideProps: Props<{ name: any; value: any; fill: any; }, any>): ReactElement<unknown, string | JSXElementConstructor<any>>', gave the following error.
+    Type '{ children: Element[]; data: { name: any; value: any; fill: any; }[]; cx: string; cy: string; innerRadius: number; outerRadius: number; paddingAngle: number; dataKey: "value"; activeIndex: null; ... 4 more ...; animationEasing: "ease-in-out"; }' is not assignable to type 'IntrinsicAttributes & PieSvgAttributes & PieProps<{ name: any; value: any; fill: any; }, any>'.
+      Property 'activeIndex' does not exist on type 'IntrinsicAttributes & PieSvgAttributes & PieProps<{ name: any; value: any; fill: any; }, any>'.
+  Overload 2 of 2, '(outsideProps: Props<any, any>): ReactElement<unknown, string | JSXElementConstructor<any>>', gave the following error.
+    Type '{ children: Element[]; data: { name: any; value: any; fill: any; }[]; cx: string; cy: string; innerRadius: number; outerRadius: number; paddingAngle: number; dataKey: string; activeIndex: null; activeShape: (props: any) => Element; onMouseEnter: (_: any, index: any) => void; onMouseLeave: () => void; animationDurati...' is not assignable to type 'IntrinsicAttributes & PieSvgAttributes & PieProps<any, any>'.
+      Property 'activeIndex' does not exist on type 'IntrinsicAttributes & PieSvgAttributes & PieProps<any, any>'.
+src/components/DrawingCanvasComponent.tsx(230,9): error TS2353: Object literal may only specify known properties, and 'tool' does not exist in type '(prevState: null) => null'.
+src/components/DrawingCanvasComponent.tsx(238,9): error TS2353: Object literal may only specify known properties, and 'tool' does not exist in type '(prevState: null) => null'.
+src/components/DrawingCanvasComponent.tsx(256,19): error TS2698: Spread types may only be created from object types.
+src/components/DrawingCanvasComponent.tsx(258,19): error TS2698: Spread types may only be created from object types.
+src/components/DrawingCanvasComponent.tsx(297,7): error TS18047: 'context' is possibly 'null'.
+src/components/DrawingCanvasComponent.tsx(299,7): error TS18047: 'context' is possibly 'null'.
+src/components/DrawingCanvasComponent.tsx(300,7): error TS18047: 'context' is possibly 'null'.
+src/components/DrawingCanvasComponent.tsx(306,7): error TS18047: 'context' is possibly 'null'.
+src/components/FileViewerPanelComponent.tsx(684,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: SyntaxHighlighterProps): SyntaxHighlighter', gave the following error.
+    Type '(lineNumber: any) => { style: { display: string; backgroundColor: string | undefined; borderLeft: string; position: string; }; "data-line-number": any; className: string; }' is not assignable to type 'lineTagPropsFunction | HTMLProps<HTMLElement> | undefined'.
+      Type '(lineNumber: any) => { style: { display: string; backgroundColor: string | undefined; borderLeft: string; position: string; }; "data-line-number": any; className: string; }' is not assignable to type 'lineTagPropsFunction'.
+        Call signature return types '{ style: { display: string; backgroundColor: string | undefined; borderLeft: string; position: string; }; "data-line-number": any; className: string; }' and 'HTMLProps<HTMLElement>' are incompatible.
+          The types of 'style.position' are incompatible between these types.
+            Type 'string' is not assignable to type 'Position | undefined'.
+  Overload 2 of 2, '(props: SyntaxHighlighterProps, context: any): SyntaxHighlighter', gave the following error.
+    Type '(lineNumber: any) => { style: { display: string; backgroundColor: string | undefined; borderLeft: string; position: string; }; "data-line-number": any; className: string; }' is not assignable to type 'lineTagPropsFunction | HTMLProps<HTMLElement> | undefined'.
+      Type '(lineNumber: any) => { style: { display: string; backgroundColor: string | undefined; borderLeft: string; position: string; }; "data-line-number": any; className: string; }' is not assignable to type 'lineTagPropsFunction'.
+        Call signature return types '{ style: { display: string; backgroundColor: string | undefined; borderLeft: string; position: string; }; "data-line-number": any; className: string; }' and 'HTMLProps<HTMLElement>' are incompatible.
+          The types of 'style.position' are incompatible between these types.
+            Type 'string' is not assignable to type 'Position | undefined'.
+src/components/FilterDropdownComponent.tsx(134,30): error TS2554: Expected 2 arguments, but got 1.
+src/components/FilterDropdownComponent.tsx(166,42): error TS2554: Expected 2 arguments, but got 1.
+src/components/FilterDropdownComponent.tsx(179,38): error TS2554: Expected 2 arguments, but got 1.
+src/components/FilterDropdownComponent.tsx(210,44): error TS2554: Expected 2 arguments, but got 1.
+src/components/FilterDropdownComponent.tsx(261,25): error TS2322: Type '{ "--badge-color": any; "--badge-bg": string; "--badge-border": string; } | undefined' is not assignable to type 'CSSProperties | undefined'.
+  Object literal may only specify known properties, and '"--badge-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/HistoryItemComponent.tsx(69,24): error TS2554: Expected 2 arguments, but got 1.
+src/components/HistoryPanelComponent.tsx(79,22): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/HistoryPanelComponent.tsx(82,24): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/ImagePreviewComponent.tsx(129,22): error TS2345: Argument of type '{ color: string; width: number; eraser: boolean; points: { x: number; y: number; }[]; }' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type '{ color: string; width: number; eraser: boolean; points: { x: number; y: number; }[]; }' provides no match for the signature '(prevState: null): null'.
+src/components/ImagePreviewComponent.tsx(138,7): error TS2698: Spread types may only be created from object types.
+src/components/ImagePreviewComponent.tsx(180,5): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(187,7): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(188,7): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(189,7): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(190,7): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(196,9): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(200,7): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(201,7): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(202,7): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(204,9): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(206,7): error TS18047: 'context' is possibly 'null'.
+src/components/ImagePreviewComponent.tsx(207,7): error TS18047: 'context' is possibly 'null'.
+src/components/MCPServersPanelComponent.tsx(35,7): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type '(prevState: null) => null'.
+src/components/MCPServersPanelComponent.tsx(62,10): error TS18047: 'editingServer' is possibly 'null'.
+src/components/MCPServersPanelComponent.tsx(67,9): error TS2698: Spread types may only be created from object types.
+src/components/MCPServersPanelComponent.tsx(70,18): error TS18047: 'editingServer' is possibly 'null'.
+src/components/MCPServersPanelComponent.tsx(71,15): error TS18047: 'editingServer' is possibly 'null'.
+src/components/MCPServersPanelComponent.tsx(75,15): error TS18047: 'editingServer' is possibly 'null'.
+src/components/MCPServersPanelComponent.tsx(83,11): error TS18047: 'editingServer' is possibly 'null'.
+src/components/MCPServersPanelComponent.tsx(83,31): error TS18047: 'editingServer' is possibly 'null'.
+src/components/MCPServersPanelComponent.tsx(126,18): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/MediaPageComponent.tsx(186,20): error TS2554: Expected 3 arguments, but got 2.
+src/components/MemoriesPanelComponent.tsx(146,18): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '(prevState: null) => null'.
+src/components/MemoriesPanelComponent.tsx(150,18): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '(prevState: null) => null'.
+src/components/MemoriesPanelComponent.tsx(178,20): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '(prevState: null) => null'.
+src/components/MemoriesPanelComponent.tsx(180,20): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '(prevState: null) => null'.
+src/components/MemoriesPanelComponent.tsx(185,20): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '(prevState: null) => null'.
+src/components/MemoriesPanelComponent.tsx(188,18): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '(prevState: null) => null'.
+src/components/MessageListComponent.tsx(115,65): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/MessageListComponent.tsx(117,50): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/MessageListComponent.tsx(118,42): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/ModelPickerPopoverComponent.tsx(30,32): error TS18046: 'fn' is of type 'unknown'.
+src/components/ModelPickerPopoverComponent.tsx(147,21): error TS2345: Argument of type 'Map<any, any>' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type 'Map<any, any>' provides no match for the signature '(prevState: null): null'.
+src/components/ModelPickerPopoverComponent.tsx(538,17): error TS2322: Type 'string | ((value: any) => void)' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type '(value: any) => void' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/ModelPickerPopoverComponent.tsx(540,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'string | ((value: any) => void)' are callable.
+    Type 'string' has no call signatures.
+src/components/ModelPickerPopoverComponent.tsx(547,34): error TS2349: This expression is not callable.
+  Not all constituents of type 'string | ((value: any) => void)' are callable.
+    Type 'string' has no call signatures.
+src/components/ModelPickerPopoverComponent.tsx(601,23): error TS18046: 'models' is of type 'unknown'.
+src/components/ModelsPageComponent.tsx(37,23): error TS18046: 'models' is of type 'unknown'.
+src/components/ModelsPageComponent.tsx(250,27): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type '(prevState: null) => null'.
+src/components/ModelsPageComponent.tsx(265,27): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type '(prevState: null) => null'.
+src/components/ModelsTableComponent.tsx(229,34): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+src/components/ModelsTableComponent.tsx(262,5): error TS2554: Expected 2 arguments, but got 1.
+src/components/NavigationSidebarComponent.tsx(254,9): error TS7034: Variable 'rafId' implicitly has type 'any' in some locations where its type cannot be determined.
+src/components/NavigationSidebarComponent.tsx(423,39): error TS7005: Variable 'rafId' implicitly has an 'any' type.
+src/components/ProjectsTableComponent.tsx(40,5): error TS2554: Expected 2 arguments, but got 1.
+src/components/RainbowCanvasComponent.tsx(119,9): error TS7034: Variable 'ro' implicitly has type 'any' in some locations where its type cannot be determined.
+src/components/RainbowCanvasComponent.tsx(129,7): error TS7005: Variable 'ro' implicitly has an 'any' type.
+src/components/ResourceCardComponent.tsx(29,24): error TS2554: Expected 2 arguments, but got 1.
+src/components/RunHistorySidebarComponent.tsx(273,38): error TS2554: Expected 2 arguments, but got 1.
+src/components/SearchFilterComponent.tsx(157,21): error TS2322: Type '{ "--badge-color": any; "--badge-bg": string; "--badge-border": string; } | undefined' is not assignable to type 'CSSProperties | undefined'.
+  Object literal may only specify known properties, and '"--badge-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/SessionRequestsListComponent.tsx(72,31): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/components/SessionRequestsListComponent.tsx(72,55): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/components/SettingsPageComponent.tsx(89,18): error TS2554: Expected 1 arguments, but got 0.
+src/components/SettingsPageComponent.tsx(222,27): error TS2353: Object literal may only specify known properties, and 'valid' does not exist in type '(prevState: null) => null'.
+src/components/SettingsPageComponent.tsx(246,25): error TS2353: Object literal may only specify known properties, and 'valid' does not exist in type '(prevState: null) => null'.
+src/components/SettingsPageComponent.tsx(527,47): error TS2345: Argument of type '"docker" | null' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type '"docker"' is not assignable to type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(550,42): error TS2345: Argument of type '"docker-1"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(571,42): error TS2345: Argument of type '"docker-2"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(593,42): error TS2345: Argument of type '"docker-3"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(618,42): error TS2345: Argument of type '"docker-4"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(650,47): error TS2345: Argument of type '"local" | null' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type '"local"' is not assignable to type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(673,42): error TS2345: Argument of type '"local-1"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(694,42): error TS2345: Argument of type '"local-2"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(709,42): error TS2345: Argument of type '"local-2b"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/SettingsPageComponent.tsx(730,42): error TS2345: Argument of type '"local-3"' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/SidebarFilterComponent.tsx(435,27): error TS2322: Type '{ "--badge-color": any; "--badge-bg": string; "--badge-border": string; } | undefined' is not assignable to type 'CSSProperties | undefined'.
+  Object literal may only specify known properties, and '"--badge-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/SkillsPanelComponent.tsx(38,7): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type '(prevState: null) => null'.
+src/components/SkillsPanelComponent.tsx(57,10): error TS18047: 'editingSkill' is possibly 'null'.
+src/components/SkillsPanelComponent.tsx(57,40): error TS18047: 'editingSkill' is possibly 'null'.
+src/components/SkillsPanelComponent.tsx(61,9): error TS2698: Spread types may only be created from object types.
+src/components/SkillsPanelComponent.tsx(69,11): error TS18047: 'editingSkill' is possibly 'null'.
+src/components/SkillsPanelComponent.tsx(69,30): error TS18047: 'editingSkill' is possibly 'null'.
+src/components/SynthesisComponent.tsx(204,7): error TS2698: Spread types may only be created from object types.
+src/components/SynthesisComponent.tsx(376,77): error TS2353: Object literal may only specify known properties, and 'thinking' does not exist in type '{ role: any; content: any; }'.
+src/components/SynthesisComponent.tsx(485,77): error TS2353: Object literal may only specify known properties, and 'thinking' does not exist in type '{ role: any; content: any; }'.
+src/components/SynthesisComponent.tsx(817,54): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<number>'.
+src/components/TasksPanelComponent.tsx(125,17): error TS2554: Expected 0 arguments, but got 1.
+src/components/TasksPanelComponent.tsx(140,17): error TS2554: Expected 0 arguments, but got 1.
+src/components/TextPageComponent.tsx(95,20): error TS2554: Expected 3 arguments, but got 2.
+src/components/ToolCardComponent.tsx(39,16): error TS2353: Object literal may only specify known properties, and '"--tool-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/ToolCountBadgeComponent.tsx(26,26): error TS2322: Type '{ "--tool-badge-accent": any; } | undefined' is not assignable to type 'CSSProperties | undefined'.
+  Object literal may only specify known properties, and '"--tool-badge-accent"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/ToolResultRenderersComponent.tsx(718,85): error TS2538: Type 'null' cannot be used as an index type.
+src/components/ToolsPageComponent.tsx(262,28): error TS2353: Object literal may only specify known properties, and '"--agent-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/ToolsPageComponent.tsx(479,26): error TS2353: Object literal may only specify known properties, and '"--agent-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/ToolsPageComponent.tsx(514,22): error TS2353: Object literal may only specify known properties, and '"--agent-color"' does not exist in type 'Properties<string | number, string & {}>'.
+src/components/ToolsPageComponent.tsx(560,22): error TS2554: Expected 1 arguments, but got 0.
+src/components/UserQuestionCardComponent.tsx(53,24): error TS18047: 'selected' is possibly 'null'.
+src/components/UserQuestionCardComponent.tsx(91,19): error TS18047: 'selected' is possibly 'null'.
+src/components/UserQuestionCardComponent.tsx(91,37): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/components/UserQuestionCardComponent.tsx(149,73): error TS18047: 'selected' is possibly 'null'.
+src/components/VisionPageComponent.tsx(94,24): error TS2698: Spread types may only be created from object types.
+src/components/VisionPageComponent.tsx(99,28): error TS18046: 'models' is of type 'unknown'.
+src/components/VisionPageComponent.tsx(158,21): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/VisionPageComponent.tsx(181,18): error TS2353: Object literal may only specify known properties, and 'cursor' does not exist in type 'MediaTrackConstraints'.
+src/components/VisionPageComponent.tsx(240,21): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<null>'.
+src/components/WorkflowCanvasComponent.tsx(132,9): error TS2353: Object literal may only specify known properties, and 'nodeId' does not exist in type '(prevState: null) => null'.
+src/components/WorkflowCanvasComponent.tsx(167,9): error TS2353: Object literal may only specify known properties, and 'nodeId' does not exist in type '(prevState: null) => null'.
+src/components/WorkflowCanvasComponent.tsx(215,28): error TS2345: Argument of type '{ x: any; y: any; }' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type '{ x: any; y: any; }' provides no match for the signature '(prevState: null): null'.
+src/components/WorkflowCanvasComponent.tsx(584,9): error TS2353: Object literal may only specify known properties, and 'sourceNodeId' does not exist in type '(prevState: null) => null'.
+src/components/WorkflowCanvasComponent.tsx(589,26): error TS2345: Argument of type '{ x: any; y: any; }' is not assignable to parameter of type 'SetStateAction<null>'.
+  Type '{ x: any; y: any; }' provides no match for the signature '(prevState: null): null'.
+src/components/WorkspaceContextComponent.tsx(74,83): error TS2322: Type '(workspace: any) => void' is not assignable to type '() => void'.
+  Target signature provides too few arguments. Expected 1 or more, but got 0.
+src/components/WorkspaceContextComponent.tsx(81,41): error TS2322: Type 'any[]' is not assignable to type 'never[]'.
+  Type 'any' is not assignable to type 'never'.
+src/components/WorkspaceContextComponent.tsx(81,71): error TS2322: Type '(workspace: any) => void' is not assignable to type '() => void'.
+  Target signature provides too few arguments. Expected 1 or more, but got 0.
+src/components/WorkspaceSelectorComponent.tsx(83,52): error TS2554: Expected 0 arguments, but got 1.
+src/components/WorkspaceTreePanelComponent.tsx(243,54): error TS18047: 'currentWorkspace' is possibly 'null'.
+src/components/WorkspaceTreePanelComponent.tsx(243,80): error TS18047: 'currentWorkspace' is possibly 'null'.
+src/components/WorkspaceTreePanelComponent.tsx(246,49): error TS18047: 'currentWorkspace' is possibly 'null'.
+src/components/WorkspaceTreePanelComponent.tsx(255,16): error TS18047: 'treeData' is possibly 'null'.
+src/components/WorkspaceTreePanelComponent.tsx(255,39): error TS18047: 'treeData' is possibly 'null'.
+src/components/WorkspaceTreePanelComponent.tsx(271,41): error TS2554: Expected 0 arguments, but got 1.
+src/hooks/useTokenRate.ts(65,9): error TS18046: 'wp' is of type 'unknown'.
+src/hooks/useTokenRate.ts(65,33): error TS18046: 'wp' is of type 'unknown'.
+src/hooks/useTokenRate.ts(66,14): error TS18046: 'wp' is of type 'unknown'.
+src/services/AudioPlayerService.ts(20,10): error TS2339: Property 'pcmChunks' does not exist on type 'AudioPlayerService'.
+src/services/IrisService.ts(71,39): error TS2345: Argument of type '{ hours: number; }' is not assignable to parameter of type 'string | Record<string, string> | string[][] | URLSearchParams | undefined'.
+  Type '{ hours: number; }' is not assignable to type 'Record<string, string>'.
+    Property 'hours' is incompatible with index signature.
+      Type 'number' is not assignable to type 'string'.
+src/services/LiveSessionService.ts(33,10): error TS2551: Property 'connected' does not exist on type 'LiveSessionService'. Did you mean 'connect'?
+src/services/LiveSessionService.ts(78,12): error TS2551: Property 'connected' does not exist on type 'LiveSessionService'. Did you mean 'connect'?
+src/services/LiveSessionService.ts(88,14): error TS2551: Property 'connected' does not exist on type 'LiveSessionService'. Did you mean 'connect'?
+src/services/LiveSessionService.ts(161,14): error TS2551: Property 'connected' does not exist on type 'LiveSessionService'. Did you mean 'connect'?
+src/services/LiveSessionService.ts(191,10): error TS2551: Property 'connected' does not exist on type 'LiveSessionService'. Did you mean 'connect'?
+src/services/PrismService.tsx(100,23): error TS18046: 'providerModels' is of type 'unknown'.
+src/services/PrismService.tsx(714,13): error TS2339: Property 'onError' does not exist on type '{}'.
+src/services/PrismService.tsx(732,24): error TS18047: 'response.body' is possibly 'null'.
+src/services/PrismService.tsx(744,11): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/services/PrismService.tsx(1162,13): error TS2339: Property 'onProgress' does not exist on type '{}'.
+src/services/PrismService.tsx(1162,25): error TS2339: Property 'onComplete' does not exist on type '{}'.
+src/services/PrismService.tsx(1162,37): error TS2339: Property 'onError' does not exist on type '{}'.

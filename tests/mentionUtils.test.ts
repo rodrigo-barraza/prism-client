@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   serializeEditable,
   flattenTree,
@@ -14,7 +14,7 @@ import {
 // ═════════════════════════════════════════════════════════════════
 
 describe("serializeEditable", () => {
-  let root;
+  let root: any;
   beforeEach(() => {
     root = document.createElement("div");
   });
@@ -354,7 +354,7 @@ describe("createMentionBadge", () => {
 // ═════════════════════════════════════════════════════════════════
 
 describe("applyMentionToTextNode", () => {
-  let container;
+  let container: any;
 
   beforeEach(() => {
     container = document.createElement("div");
@@ -402,8 +402,8 @@ describe("applyMentionToTextNode", () => {
 
     expect(serializeEditable(container)).toBe("look @src  here");
     // The " here" text is in a separate text node after the trailing space
-    const afterSpace = badge.nextSibling.nextSibling;
-    expect(afterSpace.textContent).toBe(" here");
+    const afterSpace = badge.nextSibling!.nextSibling;
+    expect(afterSpace!.textContent).toBe(" here");
   });
 
   it("handles @ at the start of text", () => {
@@ -434,7 +434,7 @@ describe("applyMentionToTextNode", () => {
 // ═════════════════════════════════════════════════════════════════
 
 describe("placeCaretAfter", () => {
-  let container;
+  let container: any;
 
   beforeEach(() => {
     container = document.createElement("div");
@@ -458,7 +458,7 @@ describe("placeCaretAfter", () => {
 
     placeCaretAfter(badge);
 
-    const sel = window.getSelection();
+    const sel = window.getSelection()!;
     expect(sel.rangeCount).toBe(1);
     const range = sel.getRangeAt(0);
     expect(range.collapsed).toBe(true);
@@ -544,7 +544,7 @@ describe("Integration: full mention flow", () => {
     // User typed "For @bir" — cursor at 8
     const token = detectMentionToken("For @bir", 8);
     expect(token).not.toBeNull();
-    expect(token.query).toBe("bir");
+    expect(token!.query).toBe("bir");
 
     // Filter with that query
     const flat = flattenTree([
@@ -566,9 +566,9 @@ describe("Integration: full mention flow", () => {
         ],
       },
     ]);
-    const results = filterMentionResults(flat, token.query);
+    const results = filterMentionResults(flat, token!.query);
     // "birthdays.js" should match "bir"
     expect(results.length).toBeGreaterThan(0);
-    expect(results.some((r) => r.name === "birthdays.js")).toBe(true);
+    expect(results.some((r: any) => r.name === "birthdays.js")).toBe(true);
   });
 });

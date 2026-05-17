@@ -265,7 +265,7 @@ export default function CustomAgentsPanel({
         setConfirmingDeleteId(null);
         onAgentsChange?.();
       } catch (error: any) {
-        console.error("Failed to delete agent:", err);
+        console.error("Failed to delete agent:", error);
       }
     },
     [onAgentsChange],

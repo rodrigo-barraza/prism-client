@@ -75,7 +75,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
       setIsNew(false);
       onSkillsChange();
     } catch (error: any) {
-      console.error("Failed to save skill:", err);
+      console.error("Failed to save skill:", error);
     } finally {
       setSaving(false);
     }
@@ -92,7 +92,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
         setConfirmingDeleteId(null);
         onSkillsChange();
       } catch (error: any) {
-        console.error("Failed to delete skill:", err);
+        console.error("Failed to delete skill:", error);
       }
     },
     [onSkillsChange],
@@ -110,7 +110,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
         );
         onSkillsChange();
       } catch (error: any) {
-        console.error("Failed to toggle all skills:", err);
+        console.error("Failed to toggle all skills:", error);
       }
     },
     [skills, onSkillsChange],

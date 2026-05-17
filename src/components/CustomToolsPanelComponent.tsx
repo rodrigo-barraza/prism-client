@@ -165,7 +165,7 @@ export default function CustomToolsPanel({
       setIsNew(false);
       onToolsChange();
     } catch (error: any) {
-      console.error("Failed to save tool:", err);
+      console.error("Failed to save tool:", error);
     } finally {
       setSaving(false);
     }
@@ -182,7 +182,7 @@ export default function CustomToolsPanel({
         setConfirmingDeleteId(null);
         onToolsChange();
       } catch (error: any) {
-        console.error("Failed to delete tool:", err);
+        console.error("Failed to delete tool:", error);
       }
     },
     [onToolsChange],
@@ -196,7 +196,7 @@ export default function CustomToolsPanel({
         });
         onToolsChange();
       } catch (error: any) {
-        console.error("Failed to toggle tool:", err);
+        console.error("Failed to toggle tool:", error);
       }
     },
     [onToolsChange],
@@ -286,7 +286,7 @@ export default function CustomToolsPanel({
       }
 
       // Convert parametersObj → flat parameter list
-      const params = [];
+      const params: any[] = [];
       if (parametersObj?.properties) {
         const required = parametersObj.required || [];
         for (const [pName, schema] of Object.entries(
@@ -353,7 +353,7 @@ export default function CustomToolsPanel({
       );
       onToolsChange();
     } catch (error: any) {
-      console.error("Failed to toggle all custom tools:", err);
+      console.error("Failed to toggle all custom tools:", error);
     }
   }, [allCustomEnabled, tools, onToolsChange]);
 

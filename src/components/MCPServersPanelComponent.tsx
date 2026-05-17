@@ -106,7 +106,7 @@ export default function MCPServersPanel({ servers, onServersChange, project }: a
         setConfirmingDeleteId(null);
         onServersChange();
       } catch (error: any) {
-        console.error("Failed to delete MCP server:", err);
+        console.error("Failed to delete MCP server:", error);
       }
     },
     [onServersChange],
@@ -139,7 +139,7 @@ export default function MCPServersPanel({ servers, onServersChange, project }: a
         await PrismService.disconnectMCPServer(serverId);
         onServersChange();
       } catch (error: any) {
-        console.error("Disconnect failed:", err);
+        console.error("Disconnect failed:", error);
       } finally {
         setConnecting(null);
       }

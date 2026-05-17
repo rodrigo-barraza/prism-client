@@ -33,7 +33,7 @@ import { prepareDisplayMessages } from "../components/MessageListComponent";
  */
 export function extractMediaAssets(object: any) {
   const seen = new Set();
-  const assets = [];
+  const assets: any[] = [];
   const search = (node: any, origin: any) => {
     if (!node) return;
     if (typeof node === "string") {
@@ -50,7 +50,7 @@ export function extractMediaAssets(object: any) {
       } else if (node.startsWith("http://") || node.startsWith("https://")) {
         const ext = node.split("?")[0].split(".").pop()?.toLowerCase();
         if (
-          ["png", "jpg", "jpeg", "gif", "webp", "mp3", "wav", "ogg", "webm", "mp4", "mov", "avi", "pdf"].includes(ext)
+          ["png", "jpg", "jpeg", "gif", "webp", "mp3", "wav", "ogg", "webm", "mp4", "mov", "avi", "pdf"].includes(ext as string)
         ) {
           seen.add(node);
           assets.push({ url: node, origin });

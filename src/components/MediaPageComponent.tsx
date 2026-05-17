@@ -145,7 +145,7 @@ export default function MediaPageComponent({
       if (result.providers) setProviders(result.providers);
       if (result.models) setModels(result.models);
     } catch (error: any) {
-      console.error("Failed to load media:", err);
+      console.error("Failed to load media:", error);
     } finally {
       setLoading(false);
     }

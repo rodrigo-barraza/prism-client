@@ -54,7 +54,7 @@ export function serializeEditable(element: any) {
  * @param {string} prefix — accumulated path prefix
  * @returns {{ path: string, name: string, type: string }[]}
  */
-export function flattenTree(nodes: any, prefix = "") {
+export function flattenTree(nodes: any, prefix = ""): any[] {
   const out = [];
   for (const n of nodes) {
     const p = prefix ? `${prefix}/${n.name}` : n.name;
@@ -210,7 +210,7 @@ export function createMentionBadge(path: any, name: any, type: any, opts = {}) {
  * @param {Node} node — the node to place the caret after
  */
 export function placeCaretAfter(node: any) {
-  const sel = window.getSelection();
+  const sel = window.getSelection()!;
   const r = document.createRange();
   r.setStartAfter(node);
   r.collapse(true);

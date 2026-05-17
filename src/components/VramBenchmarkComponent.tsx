@@ -112,7 +112,7 @@ function shortModelName(name: any, max = 18) {
 
 const CHART_FONT = "'Inter', sans-serif";
 
-const TOOLTIP_STYLE = {
+const TOOLTIP_STYLE: any = {
   backgroundColor: "rgba(10, 10, 15, 0.92)",
   titleColor: "#f8f8f8",
   bodyColor: "#8e95ae",
@@ -126,25 +126,25 @@ const TOOLTIP_STYLE = {
   boxPadding: 4,
 };
 
-const GRID_STYLE = {
+const GRID_STYLE: any = {
   color: "rgba(255,255,255,0.04)",
   drawBorder: false,
 };
 
-const TICK_STYLE = {
+const TICK_STYLE: any = {
   font: { family: CHART_FONT, size: 11, weight: "500" },
   color: "#6b728e",
   padding: 6,
 };
 
-const AXIS_TITLE_STYLE = {
+const AXIS_TITLE_STYLE: any = {
   display: true,
   font: { family: CHART_FONT, weight: "600", size: 12 },
   color: "#8e95ae",
   padding: { top: 8 },
 };
 
-const LEGEND_STYLE = {
+const LEGEND_STYLE: any = {
   position: "top",
   labels: {
     usePointStyle: true,
@@ -663,7 +663,7 @@ export default function VramBenchmarkComponent() {
 
     // Deduplicate: one per model+context combo
     // When "All Settings" is loaded, prefer "default" setting as representative
-    const byKey = {};
+    const byKey: Record<string, any> = {};
     for (const d of filtered) {
       const key = `${(d as any).displayName}__${(d as any).contextLength}`;
       const existing = (byKey as any)[key];
@@ -684,7 +684,7 @@ export default function VramBenchmarkComponent() {
     }
 
     // Further deduplicate to one per model for chart views (prefer default context)
-    const byModel = {};
+    const byModel: Record<string, any> = {};
     for (const d of Object.values(byKey)) {
       const mKey = d.displayName;
       if (!(byModel as any)[mKey] || d.contextLength > (byModel as any)[mKey].contextLength) {
@@ -766,7 +766,7 @@ export default function VramBenchmarkComponent() {
 
   const stats = useMemo(() => {
     if (models.length === 0) return null;
-    const modelCount = models.length;
+    const n = models.length;
 
     // VRAM range — min→max across profiled models
     const vramValues = models.map((m: any) => m.modelVramGiB);
@@ -794,7 +794,7 @@ export default function VramBenchmarkComponent() {
       models.reduce(
         (s: any, m: any) => s + Math.abs(m.modelVramGiB - m.estimatedGiB),
         0,
-      ) / modelCount
+      ) / n
     ).toFixed(2);
 
     // Count how many don't fit in GPU VRAM
@@ -1161,7 +1161,7 @@ export default function VramBenchmarkComponent() {
     // With range-based context filter, check if multiple distinct contexts exist
     const distinctCtx = new Set(allFilteredData.map((d: any) => d.contextLength));
     const showAllCtx = distinctCtx.size > 1;
-    let datasets;
+    let datasets: any[] = [];
 
     // Helper to build bubble data point from a model entry
     const toPoint = (m: any) => {
@@ -1190,7 +1190,7 @@ export default function VramBenchmarkComponent() {
     // Compute bestKeys: for "all contexts", find the highest-TPS entry per group
     const computeBestKeys = (entries: any, groupKeyFn: any) => {
       if (!showAllCtx) return null;
-      const bestByGroup = {};
+      const bestByGroup: Record<string, any> = {};
       for (const m of entries) {
         const gk = groupKeyFn(m);
         if (!(bestByGroup as any)[gk] || m.tokensPerSecond > (bestByGroup as any)[gk].tokensPerSecond) {
@@ -1214,7 +1214,7 @@ export default function VramBenchmarkComponent() {
       }
 
       // Dedup: one per model+GPU (+context when showing all)
-      const byKey = {};
+      const byKey: Record<string, any> = {};
       for (const d of source) {
         const gpu = (d as any).system?.gpu?.name || "Unknown";
         const key = showAllCtx
@@ -1232,7 +1232,7 @@ export default function VramBenchmarkComponent() {
       );
 
       // Group by GPU for bubble coloring
-      const gpuGroups = {};
+      const gpuGroups: Record<string, any[]> = {};
       for (const m of scatterModels) {
         const gpu = m.system?.gpu?.name || "Unknown";
         if (!(gpuGroups as any)[gpu]) (gpuGroups as any)[gpu] = [];
@@ -1278,7 +1278,7 @@ export default function VramBenchmarkComponent() {
       });
 
       // Connector lines — only link "best" bubbles across GPUs
-      const modelToPoints = {};
+      const modelToPoints: Record<string, any[]> = {};
       for (const m of scatterModels) {
         if (bestKeys && !bestKeys.has(entryKey(m))) continue;
         const pt = toPoint(m);
@@ -1318,7 +1318,7 @@ export default function VramBenchmarkComponent() {
       if (mode.filter) source = source.filter(mode.filter);
 
       // Dedup per model (+context when showing all)
-      const byKey = {};
+      const byKey: Record<string, any> = {};
       for (const d of source) {
         const key = showAllCtx
           ? `${d.displayName}__${d.contextLength}`
@@ -1334,7 +1334,7 @@ export default function VramBenchmarkComponent() {
         (m: any) => m.displayName,
       );
 
-      const quantGroups = {};
+      const quantGroups: Record<string, any[]> = {};
       for (const m of scatterData) {
         const q = m.quantization || "unknown";
         if (!(quantGroups as any)[q]) (quantGroups as any)[q] = [];
@@ -1588,9 +1588,9 @@ export default function VramBenchmarkComponent() {
     }
 
     // Build scatter overlay: individual entries as interactive dots
-    const scatterData = [];
+    const scatterData: any[] = [];
     for (let i = 0; i < models.length; i++) {
-      const m = models[i];
+      const m: any = models[i];
       const range = (vramRanges as any)[m.displayName];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
@@ -1620,7 +1620,7 @@ export default function VramBenchmarkComponent() {
           {
             type: "scatter",
             label: "Individual Runs",
-            data: scatterData,
+            data: scatterData as any,
             backgroundColor: "rgba(255, 255, 255, 0.7)",
             borderColor: "rgba(255, 255, 255, 0.3)",
             borderWidth: 0.5,
@@ -1665,7 +1665,7 @@ export default function VramBenchmarkComponent() {
             ...(clipMax != null ? { max: clipMax } : {}),
           },
           y: {
-            grid: { color: "rgba(255,255,255,0.04)", drawBorder: false },
+            grid: { color: "rgba(255,255,255,0.04)" },
             ticks: { ...TICK_STYLE, padding: 8 },
           },
         },
@@ -1808,7 +1808,7 @@ export default function VramBenchmarkComponent() {
     // Build scatter overlay: individual TPS entries as interactive dots
     const scatterData = [];
     for (let i = 0; i < sorted.length; i++) {
-      const m = sorted[i];
+      const m: any = sorted[i];
       const range = (tpsRanges as any)[m.displayName];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
@@ -1836,7 +1836,7 @@ export default function VramBenchmarkComponent() {
           {
             type: "scatter",
             label: "Individual Runs",
-            data: scatterData,
+            data: scatterData as any,
             backgroundColor: "rgba(255, 255, 255, 0.7)",
             borderColor: "rgba(255, 255, 255, 0.3)",
             borderWidth: 0.5,
@@ -1881,7 +1881,7 @@ export default function VramBenchmarkComponent() {
             ...(tpsClipMaxVal !== undefined ? { max: tpsClipMaxVal } : {}),
           },
           y: {
-            grid: { color: "rgba(255,255,255,0.04)", drawBorder: false },
+            grid: { color: "rgba(255,255,255,0.04)" },
             ticks: { ...TICK_STYLE, padding: 8 },
           },
         },
@@ -2313,7 +2313,7 @@ export default function VramBenchmarkComponent() {
           {
             type: "scatter",
             label: "Context Runs",
-            data: ctxScatterData,
+            data: ctxScatterData as any,
             backgroundColor: "rgba(255, 255, 255, 0.7)",
             borderColor: "rgba(255, 255, 255, 0.3)",
             borderWidth: 0.5,
@@ -2328,7 +2328,7 @@ export default function VramBenchmarkComponent() {
           {
             type: "scatter",
             label: "TPS Runs",
-            data: tpsScatterData,
+            data: tpsScatterData as any,
             backgroundColor: "rgba(255, 255, 255, 0.5)",
             borderColor: "rgba(255, 255, 255, 0.2)",
             borderWidth: 0.5,
@@ -2397,7 +2397,7 @@ export default function VramBenchmarkComponent() {
             ticks: TICK_STYLE,
           },
           y: {
-            grid: { color: "rgba(255,255,255,0.04)", drawBorder: false },
+            grid: { color: "rgba(255,255,255,0.04)" },
             ticks: { ...TICK_STYLE, padding: 8 },
           },
         },

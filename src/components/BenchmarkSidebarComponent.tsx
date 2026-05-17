@@ -41,7 +41,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
       const { benchmarks: data } = await PrismService.getBenchmarks();
       setBenchmarks(data || []);
     } catch (error: any) {
-      console.error("Failed to load benchmarks:", err);
+      console.error("Failed to load benchmarks:", error);
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
   // -- Adaptive poll: only keep polling while benchmarks are active --
   useEffect(() => {
     let cancelled = false;
-    let interval = null;
+    let interval: any = null;
 
     const poll = async () => {
       try {

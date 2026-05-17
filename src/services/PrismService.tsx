@@ -764,7 +764,7 @@ export default class PrismService {
         }
       } catch (error: any) {
         if (error.name === "AbortError") return;
-        if (onError) onError(err);
+        if (onError) onError(error);
       }
     })();
 
@@ -1202,7 +1202,7 @@ export default class PrismService {
       } catch (error: any) {
         clearInterval(progressInterval);
         if (error.name === "AbortError") return;
-        if (onError) onError(err);
+        if (onError) onError(error);
       }
     })();
 

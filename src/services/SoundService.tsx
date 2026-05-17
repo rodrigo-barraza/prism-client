@@ -11,19 +11,19 @@
  */
 
 
-let context = null;
+let context: AudioContext | null = null;
 
 /** @type {AudioBuffer|null} Cached hover noise buffer */
-let hoverBuffer = null;
+let hoverBuffer: AudioBuffer | null = null;
 
 /** @type {AudioBuffer|null} Cached click buffer */
-let clickBuffer = null;
+let clickBuffer: AudioBuffer | null = null;
 
 /** @type {AudioBuffer|null} Cached button hover buffer */
-let buttonHoverBuffer = null;
+let buttonHoverBuffer: AudioBuffer | null = null;
 
 /** @type {AudioBuffer|null} Cached button click buffer */
-let buttonClickBuffer = null;
+let buttonClickBuffer: AudioBuffer | null = null;
 
 /**
  * Lazily initialise the shared AudioContext.

@@ -257,7 +257,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
         );
       }
     } catch (error: any) {
-      console.error("Failed to import conversation:", err);
+      console.error("Failed to import conversation:", error);
     }
   }, []);
 

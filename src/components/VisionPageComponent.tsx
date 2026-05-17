@@ -168,7 +168,7 @@ export default function VisionPageComponent() {
       });
       attachStream(stream);
     } catch (error: any) {
-      console.error("Webcam error:", err);
+      console.error("Webcam error:", error);
     }
   }, [stopSource, attachStream]);
 
@@ -194,7 +194,7 @@ export default function VisionPageComponent() {
         setSourceType(null);
       });
     } catch (error: any) {
-      console.error("Screen capture error:", err);
+      console.error("Screen capture error:", error);
     }
   }, [stopSource, attachStream]);
 

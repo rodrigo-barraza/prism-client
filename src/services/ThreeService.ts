@@ -26,7 +26,7 @@ import * as THREE from "three";
 const instances = new Map();
 
 let nextId = 0;
-let rafId = null;
+let rafId: number | null = null;
 
 /**
  * @typedef {object} ThreeInstance
@@ -172,7 +172,7 @@ const ThreeService = {
    * @param {boolean} [options.shadowMap=false]     — Enable shadow maps
    * @returns {string} Instance ID
    */
-  create(canvas: any, options = {}) {
+  create(canvas: any, options: any = {}) {
     const {
       cameraFov = 60,
       cameraNear = 0.1,
@@ -239,7 +239,7 @@ const ThreeService = {
       camera,
       timer,
       tick: null,
-      resizeObserver: null,
+      resizeObserver: null as ResizeObserver | null,
       width: 0,
       height: 0,
       paused: false,
@@ -319,7 +319,7 @@ const ThreeService = {
 
    * @returns {{ ambient: THREE.AmbientLight, key: THREE.DirectionalLight, fill: THREE.DirectionalLight, rim: THREE.PointLight }}
    */
-  addLightingRig(scene: any, options = {}) {
+  addLightingRig(scene: any, options: any = {}) {
     const {
       ambientIntensity = 0.4,
       keyIntensity = 1.0,

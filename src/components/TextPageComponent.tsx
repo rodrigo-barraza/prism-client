@@ -65,7 +65,7 @@ export default function TextPageComponent({ mode = "user", dateRange: externalDa
       if (result.providers) setProviders(result.providers);
       if (result.models) setModels(result.models);
     } catch (error: any) {
-      console.error("Failed to load text:", err);
+      console.error("Failed to load text:", error);
     } finally {
       setLoading(false);
     }

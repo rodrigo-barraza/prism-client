@@ -71,7 +71,7 @@ export default function TracesPage() {
       setTotal(data.total || 0);
     } catch (error: any) {
       if (gen !== fetchGenRef.current) return;
-      console.error("Failed to load traces:", err);
+      console.error("Failed to load traces:", error);
     } finally {
       if (gen !== fetchGenRef.current) return;
       if (!initialLoadDone.current) {
@@ -91,8 +91,8 @@ export default function TracesPage() {
 
     // Subscribe to change stream SSE for real-time updates.
     // Traces are derived from requests, so we refresh on request changes.
-    let pollInterval = null;
-    let debounceTimer = null;
+    let pollInterval: any = null;
+    let debounceTimer: any = null;
     const debouncedLoad = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(loadTraces, 800);
