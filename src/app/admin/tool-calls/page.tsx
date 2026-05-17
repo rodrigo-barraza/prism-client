@@ -4,7 +4,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   BarChart3,
-  Zap,
   CheckCircle,
   AlertTriangle,
   Clock,
@@ -362,62 +361,50 @@ export default function ToolCallsPage() {
       </div>
 
       {/* -- Per-Tool Statistics -- */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <Zap size={16} /> Per-Tool Statistics
-        </h2>
-        <TableComponent
-          columns={toolColumns}
-          data={sortedTools}
-          sortKey={toolSort}
-          sortDir={toolOrder}
-          onSort={(key: any, dir: any) => {
-            setToolSort(key);
-            setToolOrder(dir);
-          }}
-          getRowKey={(r: any) => r.toolName}
-          emptyText="No tool data"
-          maxHeight={null}
-          storageKey="tool-calls-by-tool"
-        />
-      </section>
+      <TableComponent
+        title="Per-Tool Statistics"
+        columns={toolColumns}
+        data={sortedTools}
+        sortKey={toolSort}
+        sortDir={toolOrder}
+        onSort={(key: any, dir: any) => {
+          setToolSort(key);
+          setToolOrder(dir);
+        }}
+        getRowKey={(r: any) => r.toolName}
+        emptyText="No tool data"
+        maxHeight={null}
+        storageKey="tool-calls-by-tool"
+      />
 
       {/* -- Domain Breakdown -- */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <Activity size={16} /> Domain Breakdown
-        </h2>
-        <TableComponent
-          columns={domainColumns}
-          data={sortedDomains}
-          sortKey={domainSort}
-          sortDir={domainOrder}
-          onSort={(key: any, dir: any) => {
-            setDomainSort(key);
-            setDomainOrder(dir);
-          }}
-          getRowKey={(r: any) => r.domain}
-          emptyText="No domain data"
-          maxHeight={null}
-          storageKey="tool-calls-by-domain"
-        />
-      </section>
+      <TableComponent
+        title="Domain Breakdown"
+        columns={domainColumns}
+        data={sortedDomains}
+        sortKey={domainSort}
+        sortDir={domainOrder}
+        onSort={(key: any, dir: any) => {
+          setDomainSort(key);
+          setDomainOrder(dir);
+        }}
+        getRowKey={(r: any) => r.domain}
+        emptyText="No domain data"
+        maxHeight={null}
+        storageKey="tool-calls-by-domain"
+      />
 
       {/* -- Slowest Calls -- */}
       {(stats as any)?.slowest?.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            <Clock size={16} /> Top 10 Slowest Calls
-          </h2>
-          <TableComponent
-            columns={slowestColumns}
-            data={stats.slowest}
-            getRowKey={(r: any, i: any) => r._id || `slow-${i}`}
-            emptyText="No data"
-            maxHeight={null}
-            storageKey="tool-calls-slowest"
-          />
-        </section>
+        <TableComponent
+          title="Top 10 Slowest Calls"
+          columns={slowestColumns}
+          data={stats.slowest}
+          getRowKey={(r: any, i: any) => r._id || `slow-${i}`}
+          emptyText="No data"
+          maxHeight={null}
+          storageKey="tool-calls-slowest"
+        />
       )}
 
       {/* -- Error Breakdown -- */}

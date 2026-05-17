@@ -401,15 +401,23 @@
 }
 
 .statusDot {
-  width: 7px;
-  height: 7px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--success);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--success) 50%, transparent);
   flex-shrink: 0;
+  animation: statusDotPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusDotPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
 }
 
 .statusDot.offline {
   background: var(--danger);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--danger) 50%, transparent);
 }
 
 /* ── Mobile ── */
