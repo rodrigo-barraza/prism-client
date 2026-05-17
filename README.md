@@ -158,8 +158,8 @@ prism-client/
 │   ├── hooks/                  # Custom React hooks
 │   ├── services/               # API clients (PrismService, SSEManager, etc.)
 │   └── utils/                  # Utility helpers
-├── config.js                   # Runtime configuration
-├── secrets.js                  # Secret resolution (gitignored)
+├── config.ts                   # Runtime configuration
+├── secrets.ts                  # Secret resolution (gitignored)
 ├── next.config.mjs             # Next.js + Vault bootstrap
 └── deploy.sh                   # Synology NAS deploy script
 ```
