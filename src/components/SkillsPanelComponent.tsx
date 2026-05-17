@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useCallback } from "react";
@@ -194,7 +193,6 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
               {isOverWarn && !isOverMax && " ⚠️ nearing limit"}
             </div>
           </div>
-
 
 
           <div className={styles.formActions}>

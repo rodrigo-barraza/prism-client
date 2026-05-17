@@ -1,9 +1,9 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { X } from "lucide-react";
+import { POLL_SLOW, POLL_STANDARD, POLL_FAST } from "@rodrigo-barraza/utilities-library";
 import IrisService from "../services/IrisService";
 
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -83,7 +83,7 @@ function AdminShellInner({ children }: any) {
           generatingTimerRef.current = setTimeout(() => {
             setGeneratingCount(0);
             generatingTimerRef.current = null;
-          }, 3000);
+          }, POLL_FAST);
         }
       }
     });
@@ -234,7 +234,7 @@ function AdminShellInner({ children }: any) {
     fetchHealth();
 
     // Health check on a long interval (doesn't need real-time)
-    const healthInterval = setInterval(fetchHealth, 30000);
+    const healthInterval = setInterval(fetchHealth, POLL_SLOW);
 
     // Subscribe to change stream SSE
     let pollInterval = null;
@@ -243,7 +243,7 @@ function AdminShellInner({ children }: any) {
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
           if (!pollInterval) {
-            pollInterval = setInterval(fetchConversations, 5000);
+            pollInterval = setInterval(fetchConversations, POLL_STANDARD);
           }
         }
       },

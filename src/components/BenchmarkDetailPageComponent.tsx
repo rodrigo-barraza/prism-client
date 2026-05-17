@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -275,7 +274,7 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
    * Build the unified SSE callbacks object shared by both `streamBenchmarkRun`
    * and `followBenchmarkRun`. Identical event handling — no duplication.
    *
-   * @param {object} overrides - Extra callbacks merged on top (e.g. onRunComplete, onError)
+
    */
   const buildBenchmarkSSECallbacks = useCallback((overrides = {}) => ({
     onRunInfo: (data: any) => {
@@ -551,7 +550,6 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
       return { ...config, ...inst };
     });
   }, [allModels, selectedInstances]);
-
 
 
   // Derive a selectedKeys Set for the model picker checkmarks
@@ -933,7 +931,6 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
   }, [benchmarkId, router]);
 
 
-
   // -- Loading state ------------------------------------------
   if (loading) {
     return (
@@ -1117,7 +1114,6 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
               ))}
             </div>
           </div>
-
 
 
           {/* -- Running Progress -- */}

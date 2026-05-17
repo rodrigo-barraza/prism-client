@@ -10,7 +10,7 @@ import styles from "./MentionBadgeComponent.module.css";
  * - MessageListComponent (read-only rendered messages)
  * - ChatAreaComponent input (via createMentionBadgeElement for contentEditable)
  *
- * @param {object}  props
+
  * @param {string}  props.path       — Full file/directory path
  * @param {string}  [props.name]     — Display name (defaults to basename of path)
  * @param {string}  [props.type]     — "file" or "directory" (auto-detected from name if omitted)

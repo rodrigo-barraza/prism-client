@@ -93,7 +93,7 @@ const SYNTHETIC_TICK_MS = 200;
  * />
  * ```
  *
- * @param {object}  props
+
  * @param {boolean} props.active          – Whether the bar is expanded (28px) or collapsed (4px).
  * @param {"orchestrator"|"worker"} [props.variant="orchestrator"] – Bar variant. "orchestrator" collapses to 4px when inactive; "worker" maintains 28px height.
  * @param {string}  [props.phase]         – Current lifecycle phase key.

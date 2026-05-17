@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, useCallback, Suspense, lazy } from "react";
@@ -939,8 +938,6 @@ function BrowserActionRenderer({ result, args }: any) {
       )}
 
 
-
-
       {action === "get_elements" && parsed.elements && (
         <div className={styles.dirList}>
           {parsed.elements.slice(0, 30).map((element: any, i: any) => (
@@ -1371,7 +1368,7 @@ const TOOL_RESULT_REGISTRY = {
 /**
  * Resolve the appropriate result renderer for a tool call.
  *
- * @param {string} toolName - Raw tool function name
+
  * @returns {{ Renderer: React.Component, language?: string }}
  */
 export function resolveToolResultRenderer(toolName: any) {
@@ -1381,10 +1378,10 @@ export function resolveToolResultRenderer(toolName: any) {
 /**
  * Render a tool call's result using the registry.
  *
- * @param {object} props
+
  * @param {object} props.toolCall - The tool call object { name, args, result, id }
- * @param {string} [props.streamingOutput] - Live streaming output for compute tools
- * @param {object} [props.workerToolActivity] - Live worker activity map for team_create
+
+
  */
 export function ToolResultView({ toolCall, streamingOutput, workerToolActivity }: any) {
   const { Renderer, language } = resolveToolResultRenderer(toolCall.name);

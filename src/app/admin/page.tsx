@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -21,6 +20,7 @@ import {
   Bot,
   FolderKanban,
 } from "lucide-react";
+import { POLL_LAZY, FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import IrisService from "../../services/IrisService";
 import PrismService from "../../services/PrismService";
 import {
@@ -63,7 +63,6 @@ export default function DashboardPage() {
   const [recentConversations, setRecentConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
 
 
   const dateParams = useMemo(
@@ -174,7 +173,7 @@ export default function DashboardPage() {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         loadDashboard();
-      }, 2000);
+      }, FEEDBACK_STANDARD_MS);
     };
 
     const es = IrisService.subscribeCollectionChanges({
@@ -182,7 +181,7 @@ export default function DashboardPage() {
         if (!data.changeStreams) {
           // No Change Streams — fall back to 60s polling
           if (!pollInterval) {
-            pollInterval = setInterval(loadDashboard, 60000);
+            pollInterval = setInterval(loadDashboard, POLL_LAZY);
           }
         }
       },

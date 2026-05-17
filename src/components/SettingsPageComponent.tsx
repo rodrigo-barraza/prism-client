@@ -1,8 +1,8 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Brain, Network, Bot, RotateCcw, Loader2, Check, FolderOpen, Lock, X, Plus, ArrowRight, CheckCircle2, XCircle, Server, Wifi, WifiOff, FolderTree, Settings2, Cpu, Container, Terminal, ChevronRight, Copy, CheckCheck } from "lucide-react";
+import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 import WorkspaceService from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContextComponent";
@@ -113,7 +113,7 @@ export default function SettingsPageComponent() {
         setSettings(result);
         setSaved(true);
         clearTimeout(savedTimerRef.current);
-        savedTimerRef.current = setTimeout(() => setSaved(false), 2000);
+        savedTimerRef.current = setTimeout(() => setSaved(false), FEEDBACK_STANDARD_MS);
       } catch (error: any) {
         console.error("Failed to save settings:", err);
       } finally {
@@ -548,7 +548,7 @@ export default function SettingsPageComponent() {
                         onClick={() => {
                           navigator.clipboard.writeText("git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service");
                           setCopiedBlock("docker-1");
-                          setTimeout(() => setCopiedBlock(null), 2000);
+                          setTimeout(() => setCopiedBlock(null), FEEDBACK_STANDARD_MS);
                         }}
                       >
                         {copiedBlock === "docker-1" ? <CheckCheck size={12} /> : <Copy size={12} />}
@@ -569,7 +569,7 @@ export default function SettingsPageComponent() {
                         onClick={() => {
                           navigator.clipboard.writeText("cp .env.example .env");
                           setCopiedBlock("docker-2");
-                          setTimeout(() => setCopiedBlock(null), 2000);
+                          setTimeout(() => setCopiedBlock(null), FEEDBACK_STANDARD_MS);
                         }}
                       >
                         {copiedBlock === "docker-2" ? <CheckCheck size={12} /> : <Copy size={12} />}
@@ -591,7 +591,7 @@ export default function SettingsPageComponent() {
                         onClick={() => {
                           navigator.clipboard.writeText("docker compose up -d");
                           setCopiedBlock("docker-3");
-                          setTimeout(() => setCopiedBlock(null), 2000);
+                          setTimeout(() => setCopiedBlock(null), FEEDBACK_STANDARD_MS);
                         }}
                       >
                         {copiedBlock === "docker-3" ? <CheckCheck size={12} /> : <Copy size={12} />}
@@ -616,7 +616,7 @@ export default function SettingsPageComponent() {
                         onClick={() => {
                           navigator.clipboard.writeText("docker logs workspace-service");
                           setCopiedBlock("docker-4");
-                          setTimeout(() => setCopiedBlock(null), 2000);
+                          setTimeout(() => setCopiedBlock(null), FEEDBACK_STANDARD_MS);
                         }}
                       >
                         {copiedBlock === "docker-4" ? <CheckCheck size={12} /> : <Copy size={12} />}
@@ -671,7 +671,7 @@ export default function SettingsPageComponent() {
                         onClick={() => {
                           navigator.clipboard.writeText("git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service\nnpm install");
                           setCopiedBlock("local-1");
-                          setTimeout(() => setCopiedBlock(null), 2000);
+                          setTimeout(() => setCopiedBlock(null), FEEDBACK_STANDARD_MS);
                         }}
                       >
                         {copiedBlock === "local-1" ? <CheckCheck size={12} /> : <Copy size={12} />}
@@ -692,7 +692,7 @@ export default function SettingsPageComponent() {
                         onClick={() => {
                           navigator.clipboard.writeText("cp .env.example .env");
                           setCopiedBlock("local-2");
-                          setTimeout(() => setCopiedBlock(null), 2000);
+                          setTimeout(() => setCopiedBlock(null), FEEDBACK_STANDARD_MS);
                         }}
                       >
                         {copiedBlock === "local-2" ? <CheckCheck size={12} /> : <Copy size={12} />}
@@ -707,7 +707,7 @@ export default function SettingsPageComponent() {
                         onClick={() => {
                           navigator.clipboard.writeText("WORKSPACE_BACKEND=ws://192.168.86.2:5590\nWORKSPACE_ROOTS=/home/you/development\nWORKSPACE_SERVICE_SECRET=your-agent-secret");
                           setCopiedBlock("local-2b");
-                          setTimeout(() => setCopiedBlock(null), 2000);
+                          setTimeout(() => setCopiedBlock(null), FEEDBACK_STANDARD_MS);
                         }}
                       >
                         {copiedBlock === "local-2b" ? <CheckCheck size={12} /> : <Copy size={12} />}
@@ -728,7 +728,7 @@ export default function SettingsPageComponent() {
                         onClick={() => {
                           navigator.clipboard.writeText("npm run dev:local");
                           setCopiedBlock("local-3");
-                          setTimeout(() => setCopiedBlock(null), 2000);
+                          setTimeout(() => setCopiedBlock(null), FEEDBACK_STANDARD_MS);
                         }}
                       >
                         {copiedBlock === "local-3" ? <CheckCheck size={12} /> : <Copy size={12} />}

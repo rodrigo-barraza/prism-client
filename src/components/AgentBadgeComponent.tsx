@@ -160,10 +160,8 @@ function CoinStatic({ agent, size }: any) {
  * AgentBadgeComponent — Reusable rounded-square icon badge for an agent persona.
  *
  * @param {{ id?: string, icon?: string, color?: string }} agent
- * @param {number}  [size=22]         - Outer container size in px
- * @param {number}  [iconSize=13]     - Inner icon size in px
- * @param {boolean} [animation=false] - 3D coin-spin via Three.js
- * @param {string}  [className]
+
+
  */
 export default function AgentBadgeComponent({
   agent,

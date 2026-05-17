@@ -6,7 +6,7 @@ import styles from "./ProjectBadgeComponent.module.css";
  * ProjectBadgeComponent — cyan-colored project badge with icon.
  *
  * @param {string} project — project name to display
- * @param {string} [className]
+
  */
 export default function ProjectBadgeComponent({ project, className = "" }: any) {
   if (!project) return null;

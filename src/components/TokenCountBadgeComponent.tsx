@@ -20,8 +20,8 @@ function easeOutCubic(t: any) {
  * @param {number} value — token count
  * @param {string} label — suffix label (e.g. "tokens in", "tokens out", "tokens total")
  * @param {boolean} [showIcon=true] — show Hash icon
- * @param {string} [className]
- * @param {boolean} [mini]
+
+
  */
 export default function TokenCountBadgeComponent({
   value,

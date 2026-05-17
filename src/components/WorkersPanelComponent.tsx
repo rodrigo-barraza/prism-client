@@ -1,10 +1,10 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Users, RefreshCw, Wrench, Clock, GitBranch, FileCode,
 } from "lucide-react";
+import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 import { renderToolName } from "../utils/utilities";
 import { formatDuration } from "../utils/utilities";
@@ -38,7 +38,6 @@ const CARD_CLASS = {
 };
 
 
-
 /**
  * Extract a short agent number from an agentId like "agent-1" → "1"
  */
@@ -54,9 +53,8 @@ function getAgentNumber(agentId: any) {
  * Workers represent parallel sub-agents spawned via the `team_create` tool
  * during agentic coding sessions.
  *
- * @param {object} props
- * @param {string} [props.agentSessionId] - Current agent session ID to filter workers by
- * @param {number} [props.refreshKey] - External trigger to refresh worker list
+
+
  */
 export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange, workerToolActivity = {} }: any) {
   const [workers, setWorkers] = useState<any[]>([]);
@@ -100,7 +98,7 @@ export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange
     const hasRunning = workers.some((w: any) => w.status === "running");
 
     if (hasRunning) {
-      pollRef.current = setInterval(loadWorkers, 3000);
+      pollRef.current = setInterval(loadWorkers, POLL_FAST);
     } else {
       clearInterval(pollRef.current);
     }

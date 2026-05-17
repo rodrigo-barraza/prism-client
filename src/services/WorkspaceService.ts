@@ -37,7 +37,7 @@ export default class WorkspaceService {
 
   /**
    * Update user-configured workspace roots.
-   * @param {string[]} roots - Array of absolute paths to set as user roots
+
    * @returns {Promise<object>} Updated workspace config with workspaceRoots, staticRoots, userRoots
    */
   static async update(roots: any) {
@@ -52,7 +52,7 @@ export default class WorkspaceService {
 
   /**
    * Validate a single workspace path without persisting.
-   * @param {string} path - Path to validate (Windows or WSL)
+
    * @returns {Promise<object>} Validation result with resolvedPath, isWsl, exists, etc.
    */
   static async validate(path: any) {
@@ -67,8 +67,8 @@ export default class WorkspaceService {
 
   /**
    * Fetch the directory tree for a workspace path.
-   * @param {string} path - Workspace root path
-   * @param {number} [maxDepth=3] - Max depth for tree traversal
+
+
    * @returns {Promise<object>} Project summary with tree structure
    */
   static async tree(path: any, maxDepth = 3) {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
@@ -302,29 +301,10 @@ function buildStatsColumns({ configModels, totalRequests, totalCost, compact }: 
  *                       columns (Tests, Passed, Failed, Pass Rate, Avg Latency, Cost).
  *                       Other model columns are hidden by default but toggleable.
  *
- * @param {Object}   props
+
  * @param {Array}    props.models            - Model data array (raw models or stat objects)
- * @param {string}   [props.mode="model"]    - Display mode: "model" | "stats" | "full" | "benchmark"
- * @param {Function} [props.onSelect]        - (rawModel) => void — row click handler
- * @param {Function} [props.renderActions]   - (rawModel) => ReactNode — per-row actions
- * @param {boolean}  [props.showSearch]      - Show search bar (model/full modes)
- * @param {boolean}  [props.showProviderFilter] - Show provider filter chips
- * @param {Array}    [props.favorites]       - Array of "provider:model" favorite keys
- * @param {Function} [props.onToggleFavorite] - (key) => void
- * @param {string}   [props.activeRowKey]    - Currently active row key
- * @param {string}   [props.highlightedRowKey] - Keyboard-highlighted row key
- * @param {Function} [props.highlightedRowRef] - Ref callback for highlighted row
- * @param {string}   [props.loadingModelKey] - Model key currently being loaded
- * @param {Object}   [props.configModels]    - Map of "provider:model" → tool names (stats mode)
- * @param {number}   [props.totalRequests]   - Total requests for proportion bars (stats mode)
- * @param {number}   [props.totalCost]       - Total cost for proportion bars (stats mode)
- * @param {string}   [props.emptyText]       - Empty state text
- * @param {boolean}  [props.compact]         - Reduced column set (stats mode)
- * @param {string}   [props.title]           - Optional table title
- * @param {number}   [props.maxHeight]       - Max height for scrollable body
- * @param {Set}      [props.selectedKeys]    - Set of "provider:model" keys for selection column
- * @param {Function} [props.onToggleSelect]  - (rawModel) => void — toggle selection
- * @param {Function} [props.getRowClassName] - (row) => string — custom row class (benchmark mode)
+
+
  */
 export default function ModelsTableComponent({
   models = [],

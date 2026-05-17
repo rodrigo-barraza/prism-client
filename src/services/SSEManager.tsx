@@ -17,8 +17,8 @@ const pools = new Map();
 /**
  * Subscribe to an SSE endpoint. Returns an unsubscribe function.
  *
- * @param {string} url - Full SSE endpoint URL
- * @param {Function} onMessage - (parsedData: object) => void
+
+
  * @returns {{ unsubscribe: Function }} — call unsubscribe() to detach
  */
 export function subscribe(url: any, onMessage: any) {

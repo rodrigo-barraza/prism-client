@@ -25,7 +25,7 @@ import {
  * ConversationsTableComponent — reusable admin table for displaying
  * conversation lists (used in sessions, request associations, etc.).
  *
- * @param {Object} props
+
  * @param {Array} props.conversations — Array of conversation objects
  * @param {string} [props.emptyText] — Text when empty
  * @param {string} [props.sortKey] — Current sort key

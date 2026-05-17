@@ -1,8 +1,8 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useCallback } from "react";
 import { GitBranch, RefreshCw, Play, Check, X, AlertTriangle, Loader } from "lucide-react";
+import { TOAST_DURATION_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 import styles from "./CoordinatorPanelComponent.module.css";
 
@@ -29,7 +29,7 @@ const COMPLEXITY_CLASSES = {
  *
  * Lifecycle: Input → Plan → Execute → Review → Merge
  *
- * @param {object} props
+
  * @param {string} props.project - Project identifier
  */
 export default function CoordinatorPanel({ project: _project }: any) {
@@ -44,7 +44,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
   const showToast = useCallback((type: any, text: any) => {
     setToast({ type, text });
-    setTimeout(() => setToast(null), 5000);
+    setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, []);
 
   // -- Plan --------------------------------------------------

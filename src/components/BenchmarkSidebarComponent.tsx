@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -11,6 +10,7 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
+import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 import { ButtonComponent, SearchInputComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 import CostBadgeComponent from "./CostBadgeComponent";
@@ -66,7 +66,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
 
         // Start polling if active runs exist, stop if none
         if (ids.length > 0 && !interval) {
-          interval = setInterval(poll, 3000);
+          interval = setInterval(poll, POLL_FAST);
         } else if (ids.length === 0 && interval) {
           clearInterval(interval);
           interval = null;

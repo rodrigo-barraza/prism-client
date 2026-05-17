@@ -20,7 +20,6 @@ export function sanitizeToolName(name: any) {
 }
 
 
-
 /**
  * Build a merged array of tool schemas from built-in and custom tools.
  * Used by AgentComponent.

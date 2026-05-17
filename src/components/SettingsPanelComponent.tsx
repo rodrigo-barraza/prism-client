@@ -32,7 +32,6 @@ import useTokenRate from "../hooks/useTokenRate";
 import useTtft from "../hooks/useTtft";
 
 
-
 export default function SettingsPanel({
   config,
   settings,
@@ -330,7 +329,6 @@ export default function SettingsPanel({
             </div>
           )}
         </div>
-
 
 
         {workflows.length > 0 && (

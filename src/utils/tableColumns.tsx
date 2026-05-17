@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * tableColumns.js — Shared column factory functions for all *TableComponent
  * wrappers. Each factory returns one or more column definition objects

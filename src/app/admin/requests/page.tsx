@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
@@ -234,7 +233,6 @@ export default function RequestsPage() {
   }
 
 
-
   const exportCSV = useCallback(() => {
     const headers = [
       "Timestamp", "Project", "Endpoint", "Operation", "Provider", "Model",
@@ -267,7 +265,6 @@ export default function RequestsPage() {
   }, [requests]);
 
   const totalPages = Math.ceil(total / LIMIT);
-
 
 
   // Inject controls into AdminShell header

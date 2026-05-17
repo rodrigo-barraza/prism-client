@@ -270,9 +270,8 @@ function DomainCheckbox({ domainEnabled, totalCount, onToggle }: any) {
  *   - "label:X"     → all tools carrying label X
  *   - "domain:X"    → all tools in domain X
  *
- * @param {Array}    availableTools       - All tool schemas to display
- * @param {Array}    enabledTools         - Currently enabled tool entries
- * @param {Function} onEnabledToolsChange - Callback with the new enabledTools array
+
+
  */
 export default function ToolSelectionComponent({
   availableTools = [],

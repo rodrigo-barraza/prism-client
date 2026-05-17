@@ -280,7 +280,7 @@ function _resolveBaseType(id: any) {
  *   3. Base type label      → "LM Studio"
  *   4. Raw ID fallback      → "lm-studio-2"
  *
- * @param {string} id - Provider instance ID (e.g. "lm-studio", "lm-studio-2")
+
  * @returns {string} Human-readable label
  */
 export function resolveProviderLabel(id: any) {
@@ -310,7 +310,7 @@ export function resolveProviderLabel(id: any) {
 /**
  * Resolve the logo key for a provider ID.
  * Multi-instance IDs (e.g. "lm-studio-2") map to the base type logo.
- * @param {string} id
+
  * @returns {string} Logo key for the LOGOS map
  */
 export function resolveProviderLogoKey(id: any) {

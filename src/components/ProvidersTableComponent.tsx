@@ -15,14 +15,10 @@ import {
  * ProvidersTableComponent — reusable admin table for displaying provider-level
  * aggregated stats (requests, tokens, cost, latency, etc.).
  *
- * @param {Object}  props
+
  * @param {Array}   props.providers         - Array of provider stat objects
- * @param {number}  [props.totalRequests]   - Sum of all provider requests (for proportion bars)
- * @param {number}  [props.totalCost]       - Sum of all provider costs (for proportion bars)
- * @param {string}  [props.emptyText]       - Text shown when no data
- * @param {boolean} [props.compact]         - Reduced column set
- * @param {string}  [props.title]           - Optional table title
- * @param {number}  [props.maxHeight]       - Optional max height for scrollable body
+
+
  */
 export default function ProvidersTableComponent({
   providers = [],

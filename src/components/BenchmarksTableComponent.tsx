@@ -32,20 +32,10 @@ import styles from "./BenchmarksTableComponent.module.css";
  * by "provider:model" → { model, progress, phase }. Multiple models
  * from different provider buckets can run simultaneously.
  *
- * @param {Object}   props
+
  * @param {Array}    props.results           - Array of per-model result objects from a benchmark run
- * @param {string}   [props.emptyText]       - Text shown when no results
- * @param {boolean}  [props.mini]            - Mini density mode
- * @param {string}   [props.title]           - Optional table title
- * @param {number}   [props.maxHeight]       - Optional max height for scrollable body
- * @param {string}   [props.sortKey]         - Current sort key
- * @param {string}   [props.sortDir]         - Current sort direction
- * @param {Function} [props.onSort]          - (key, dir) => void
- * @param {string}   [props.expectedValue]   - Expected value to highlight in responses
- * @param {Function} [props.onRowClick]      - (row) => void — called when a row is clicked
- * @param {string}   [props.activeRowKey]    - Key of the currently active/selected row
- * @param {Map}      [props.activeModels]    - Map<"provider:model", { model, progress, phase }> of all running models
- * @param {Array}    [props.pendingTargets]  - Full list of model targets for the current run
+
+
  */
 export default function BenchmarksTableComponent({
   results = [],

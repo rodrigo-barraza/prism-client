@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -35,7 +34,6 @@ export function renderAgentIcon(agent: any, size = 15) {
 }
 
 
-
 /**
  * AgentPickerComponent — Compact popover for selecting the active agent persona.
  *
@@ -44,12 +42,8 @@ export function renderAgentIcon(agent: any, size = 15) {
  *   - **addMode**: Add agents to a list (benchmark page). Shows "Add Agent" / "N Agents" trigger pill.
  *
  * @param {Array<{ id, name, project, toolCount, icon?, color? }>} agents - Available agent personas
- * @param {string} [activeAgentId] - Currently selected agent ID (default mode)
- * @param {Function} [onSelect] - Called with agent ID when user picks an agent (default mode)
- * @param {boolean} [disabled] - Disable interaction during generation
- * @param {boolean} [addMode] - When true, shows "Add Agent" trigger and fires onAddAgent
- * @param {number} [addCount] - Number of agents currently added (addMode only)
- * @param {Function} [onAddAgent] - Called with agent object when user clicks to add (addMode only)
+
+
  */
 export default function AgentPickerComponent({
   agents = [],

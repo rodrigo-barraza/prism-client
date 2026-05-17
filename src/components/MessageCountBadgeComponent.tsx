@@ -20,8 +20,8 @@ function easeOutCubic(t: any) {
  * @param {number} count — message count
  * @param {number} [deletedCount=0] — number of deleted messages
  * @param {boolean} [showIcon=true] — show MessageSquare icon
- * @param {string} [className]
- * @param {boolean} [mini]
+
+
  */
 export default function MessageCountBadgeComponent({
   count,

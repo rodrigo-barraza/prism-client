@@ -21,7 +21,7 @@ import ProportionBarComponent from "../../components/ProportionBarComponent";
 /**
  * getRequestsColumns — shared column definitions for the requests table.
  *
- * @param {Object} [opts]
+
  * @param {number} [opts.totalCost=1] — Total cost across all visible requests
  *                                       (used for the Cost % proportion bar)
  * @param {number} [opts.totalDuration=1] — Total duration across all visible requests

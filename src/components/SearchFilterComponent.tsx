@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -11,13 +10,8 @@ import styles from "./SearchFilterComponent.module.css";
  * When a value is selected, it renders as a removable badge chip below the trigger,
  * matching the badge pattern from FilterDropdownComponent.
  *
- * @param {string[]}  options      - Available values to search through
- * @param {string}    value        - Currently selected value ("" = none)
- * @param {Function}  onChange     - Called with the selected value (or "" to clear)
- * @param {string}    placeholder  - Input placeholder when no value is selected
- * @param {string}    allLabel     - Label for the "All" / clear option (default: "All")
- * @param {string}    badgeColor   - Optional CSS color for the badge chip
- * @param {React.Component} icon   - Optional Lucide icon for the trigger (default: Search)
+
+
  */
 export default function SearchFilterComponent({
   options = [],

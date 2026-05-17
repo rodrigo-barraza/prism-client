@@ -1,9 +1,9 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Brain, RefreshCw, User, MessageSquare, FolderKanban, ExternalLink, Trash2, Sparkles, History, GitMerge, Settings } from "lucide-react";
 import Link from "next/link";
+import { TOAST_DURATION_MS, HIGHLIGHT_DURATION_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 
 import { DatePickerComponent, SearchInputComponent, DateTimeBadgeComponent,
@@ -12,7 +12,6 @@ import { DatePickerComponent, SearchInputComponent, DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
 import styles from "./MemoriesPanelComponent.module.css";
-
 
 
 /**
@@ -52,10 +51,10 @@ const TRIGGER_LABELS = {
  * (user, feedback, project, reference). These are extracted automatically
  * by the SessionSummarizer and stored via AgentMemoryService.
  *
- * @param {object} props
+
  * @param {string} props.project - Project identifier
  * @param {number} props.refreshKey - External refresh trigger
- * @param {object} [props.consolidationEvent] - Real-time consolidation event from WebSocket
+
  */
 export default function MemoriesPanel({ project, agent, refreshKey, consolidationEvent, onCountChange, memoryConfigured = true }: any) {
   const [memories, setMemories] = useState<any[]>([]);
@@ -98,7 +97,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
       if (freshIds.size > 0) {
         setNewMemoryIds(freshIds);
         // Auto-clear highlight after 6s
-        setTimeout(() => setNewMemoryIds(new Set()), 6000);
+        setTimeout(() => setNewMemoryIds(new Set()), HIGHLIGHT_DURATION_MS);
       }
 
       setMemories(fetched);
@@ -150,7 +149,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
     } else {
       setToast({ type: "info", text: summary || "No changes needed" });
     }
-    setTimeout(() => setToast(null), 5000);
+    setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, [consolidationEvent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = useCallback(async (memoryId: any) => {
@@ -189,7 +188,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
       setToast({ type: "error", text: `Consolidation failed: ${error.message}` });
     } finally {
       setConsolidating(false);
-      setTimeout(() => setToast(null), 5000);
+      setTimeout(() => setToast(null), TOAST_DURATION_MS);
     }
   }, [project, agent, loadMemories, loadHistory, historyOpen]);
 

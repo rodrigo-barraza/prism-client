@@ -19,8 +19,8 @@ const MODEL_TYPE_META = {
  * endpoint-based type (conversation | audio | embed).
  *
  * @param {string}  modelType — "conversation" | "audio" | "embed"
- * @param {string}  [className]
- * @param {boolean} [mini]
+
+
  */
 export default function ModelTypeBadgeComponent({
   modelType,

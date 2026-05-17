@@ -19,8 +19,8 @@ function easeOutCubic(t: any) {
  *
  * @param {number} count — request count
  * @param {boolean} [showIcon=true] — show Zap icon
- * @param {string} [className]
- * @param {boolean} [mini]
+
+
  */
 export default function RequestCountBadgeComponent({
   count,

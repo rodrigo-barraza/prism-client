@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -16,8 +15,8 @@ import styles from "./SessionRequestsListComponent.module.css";
  * SessionRequestsListComponent — displays all requests for an agent session
  * and its associated worker sessions as a flat chronological timeline (newest first).
  *
- * @param {string} agentSessionId - The root agent session ID to fetch requests for
- * @param {number} [refreshKey=0] - Bump to force re-fetch
+
+
  */
 export default function SessionRequestsListComponent({ agentSessionId, refreshKey = 0 }: any) {
   const [data, setData] = useState(null);

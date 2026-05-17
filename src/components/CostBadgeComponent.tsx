@@ -20,8 +20,8 @@ function easeOutCubic(t: any) {
  *
  * @param {number} cost — dollar amount
  * @param {boolean} [showIcon=true] — show Coins icon
- * @param {string} [className]
- * @param {boolean} [mini]
+
+
  * @param {Function} [formatFn=formatCost] — custom display formatter
  */
 export default function CostBadgeComponent({

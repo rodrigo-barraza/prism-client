@@ -6,8 +6,8 @@ import styles from "./WordBadgeComponent.module.css";
  * WordBadgeComponent — displays a word count badge with an icon.
  *
  * @param {number} count — word count
- * @param {string} [className]
- * @param {boolean} [mini]
+
+
  */
 export default function WordBadgeComponent({
   count,

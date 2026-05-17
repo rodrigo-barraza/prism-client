@@ -19,13 +19,10 @@ import {
  * tableColumns.js, following the same pattern as BenchmarksTableComponent,
  * ConversationsTableComponent, etc.
  *
- * @param {Object}   props
+
  * @param {Array}    props.models           - Array of aggregated model stats
- * @param {Function} [props.onRowClick]     - (row) => void — called when a row is clicked
- * @param {Object}   [props.selectedModel]  - Currently selected model row (for highlight)
- * @param {string}   [props.emptyText]      - Text shown when no data
- * @param {string}   [props.title]          - Optional table title
- * @param {number}   [props.maxHeight]      - Optional max height for scrollable body
+
+
  */
 export default function BenchmarkDashboardTableComponent({
   models = [],

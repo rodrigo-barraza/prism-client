@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * ThreeService — Three.js lifecycle manager for Prism.
  *
@@ -23,7 +22,7 @@ import * as THREE from "three";
 
 // --- Instance Registry ---------------------------------------------
 
-/** @type {Map<string, ThreeInstance>} */
+
 const instances = new Map();
 
 let nextId = 0;
@@ -160,8 +159,8 @@ const ThreeService = {
   /**
    * Create a new Three.js instance bound to the given canvas element.
    *
-   * @param {HTMLCanvasElement} canvas
-   * @param {object}  [options]
+
+
    * @param {number}  [options.cameraFov=60]       — Perspective camera FOV
    * @param {number}  [options.cameraNear=0.1]     — Near clipping plane
    * @param {number}  [options.cameraFar=1000]     — Far clipping plane
@@ -169,7 +168,7 @@ const ThreeService = {
    * @param {boolean} [options.antialias=true]      — WebGL antialiasing
    * @param {boolean} [options.alpha=true]          — Transparent background
    * @param {string}  [options.toneMapping="ACESFilmic"] — Tone mapping preset
-   * @param {number}  [options.toneMappingExposure=1]
+
    * @param {boolean} [options.shadowMap=false]     — Enable shadow maps
    * @returns {string} Instance ID
    */
@@ -265,7 +264,7 @@ const ThreeService = {
   /**
    * Register a per-frame tick callback for an instance.
    *
-   * @param {string}   id
+
    * @param {Function} fn — (state: TickState) => void
    *
    * TickState: { scene, camera, renderer, timer, dt, elapsed, width, height }
@@ -277,7 +276,7 @@ const ThreeService = {
 
   /**
    * Pause rendering for an instance (e.g. when off-screen).
-   * @param {string} id
+
    */
   pause(id: any) {
     const inst = instances.get(id);
@@ -286,7 +285,7 @@ const ThreeService = {
 
   /**
    * Resume rendering for a paused instance.
-   * @param {string} id
+
    */
   resume(id: any) {
     const inst = instances.get(id);
@@ -297,7 +296,7 @@ const ThreeService = {
    * Get the scene, camera, and renderer for an instance.
    * Useful for imperative setup (adding meshes, lights, etc.).
    *
-   * @param {string} id
+
    * @returns {{ scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer } | null}
    */
   getInstance(id: any) {
@@ -316,16 +315,8 @@ const ThreeService = {
   /**
    * Create a standard three-point lighting rig and add it to a scene.
    *
-   * @param {THREE.Scene} scene
-   * @param {object} [options]
-   * @param {number} [options.ambientIntensity=0.4]
-   * @param {number} [options.keyIntensity=1.0]
-   * @param {number} [options.fillIntensity=0.5]
-   * @param {number} [options.rimIntensity=0.3]
-   * @param {string} [options.ambientColor="#404060"]
-   * @param {string} [options.keyColor="#ffffff"]
-   * @param {string} [options.fillColor="#8888ff"]
-   * @param {string} [options.rimColor="#ff8844"]
+
+
    * @returns {{ ambient: THREE.AmbientLight, key: THREE.DirectionalLight, fill: THREE.DirectionalLight, rim: THREE.PointLight }}
    */
   addLightingRig(scene: any, options = {}) {
@@ -361,10 +352,10 @@ const ThreeService = {
   /**
    * Create a mesh with geometry and material, optionally adding it to a scene.
    *
-   * @param {THREE.BufferGeometry} geometry
-   * @param {THREE.Material}       material
+
+
    * @param {THREE.Scene}         [scene] — if provided, the mesh is added to the scene
-   * @returns {THREE.Mesh}
+
    */
   createMesh(geometry: any, material: any, scene: any) {
     const mesh = new THREE.Mesh(geometry, material);
@@ -375,10 +366,10 @@ const ThreeService = {
   /**
    * Create a fog configuration on a scene.
    *
-   * @param {THREE.Scene} scene
+
    * @param {string}      color — Hex color
-   * @param {number}      near
-   * @param {number}      far
+
+
    */
   addFog(scene: any, color: any, near = 5, far = 30) {
     scene.fog = new THREE.Fog(color, near, far);
@@ -387,7 +378,7 @@ const ThreeService = {
   /**
    * Set the scene background color.
    *
-   * @param {THREE.Scene}      scene
+
    * @param {string|null}      color — Hex color string or null for transparent
    */
   setBackground(scene: any, color: any) {
@@ -400,8 +391,8 @@ const ThreeService = {
    * Placeholder for future EffectComposer integration.
    * Returns null until post-processing passes are needed.
    *
-   * @param {string} _id
-   * @returns {null}
+
+
    */
   getComposer(_id: any) {
     return null;
@@ -413,7 +404,7 @@ const ThreeService = {
    * Destroy a Three.js instance — disposes all GPU resources,
    * removes from the loop, and disconnects the ResizeObserver.
    *
-   * @param {string} id
+
    */
   destroy(id: any) {
     const inst = instances.get(id);
@@ -444,7 +435,7 @@ const ThreeService = {
 
   /**
    * Get the count of active instances (for debugging).
-   * @returns {number}
+
    */
   get activeCount() {
     return instances.size;

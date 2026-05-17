@@ -23,17 +23,10 @@ import styles from "./TracesTableComponent.module.css";
  * TracesTableComponent — reusable traces table with expandable rows
  * showing both a conversations table and a requests table side by side.
  *
- * @param {Object}  props
+
  * @param {Array}   props.traces       - Array of trace objects
- * @param {string}  [props.emptyText]    - Text shown when no traces
- * @param {boolean} [props.compact]      - Hide some columns for compact layouts
- * @param {boolean} [props.mini]         - Mini density mode
- * @param {string}  [props.title]        - Optional table title
- * @param {number}  [props.maxHeight]    - Optional max height for scrollable body
- * @param {string}  [props.sortKey]    - Current sort key (for server-side sorting)
- * @param {string}  [props.sortDir]    - Current sort direction
- * @param {Function} [props.onSort]    - (key, dir) => void (server-side sort)
- * @param {Function} [props.onRequestRowClick] - (request) => void, opens detail drawer
+
+
  */
 export default function TracesTableComponent({
   traces = [],

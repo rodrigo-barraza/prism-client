@@ -1,4 +1,3 @@
-// @ts-nocheck
 // ============================================================
 // Prism Client — Utilities
 // ============================================================
@@ -63,25 +62,24 @@ export function getTotalInputTokens(usage: any) {
 }
 
 
-
 /**
  * Build ISO date range params from a { from, to } object.
  * Returns an object with optional `from` and `to` keys.
  */
 export function buildDateRangeParams(dateRange: any) {
-  const p = {};
+  const params = {};
   if (dateRange?.from) {
     // ISO datetime (sub-day presets) passes through; day-only gets midnight
-    (p as any).from = dateRange.from.includes("T")
+    (params as any).from = dateRange.from.includes("T")
       ? dateRange.from
       : new Date(dateRange.from).toISOString();
   }
   if (dateRange?.to) {
-    (p as any).to = dateRange.to.includes("T")
+    (params as any).to = dateRange.to.includes("T")
       ? dateRange.to
       : new Date(dateRange.to + "T23:59:59").toISOString();
   }
-  return p;
+  return params;
 }
 
 /**
@@ -494,15 +492,15 @@ export function getModalities(messages: any) {
 export function getSessionElapsedTime(messages: any) {
   let total = 0;
   for (let i = 0; i < messages.length; i++) {
-    const m = messages[i];
-    if (m.role !== "user" || !m.timestamp) continue;
+    const userMessage = messages[i];
+    if (userMessage.role !== "user" || !userMessage.timestamp) continue;
     // Find the next assistant message that completed
     for (let j = i + 1; j < messages.length; j++) {
-      const a = messages[j];
-      if (a.role !== "assistant") continue;
-      const endTs = a.completedAt || a.timestamp;
+      const assistantMessage = messages[j];
+      if (assistantMessage.role !== "assistant") continue;
+      const endTs = assistantMessage.completedAt || assistantMessage.timestamp;
       if (!endTs) break;
-      const start = new Date(m.timestamp).getTime();
+      const start = new Date(userMessage.timestamp).getTime();
       const end = new Date(endTs).getTime();
       if (end > start) total += (end - start) / 1000;
       break;

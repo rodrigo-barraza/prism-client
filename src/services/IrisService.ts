@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { PRISM_SERVICE_URL } from "../../config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { subscribe as sseSubscribe } from "./SSEManager";
@@ -109,8 +108,8 @@ export default class IrisService {
   /**
    * Subscribe to real-time conversation stats via SSE.
    * Uses a shared singleton connection per URL (SSEManager).
-   * @param {Function} onStats - ({ generatingCount, recentCount }) => void
-   * @param {string} [project] - Optional project filter
+
+
    * @returns {{ close: Function }} — call .close() to unsubscribe
    */
   static subscribeConversationStats(onStats: any, project = null) {
@@ -124,9 +123,9 @@ export default class IrisService {
    * Subscribe to real-time collection change events via SSE.
    * Powered by MongoDB Change Streams on the backend.
    * Uses a shared singleton connection (SSEManager).
-   * @param {object} callbacks
+
    * @param {Function} callbacks.onChange - ({ collection, operationType, id, timestamp }) => void
-   * @param {Function} [callbacks.onStatus] - ({ changeStreams: boolean }) => void
+
    * @returns {{ close: Function }} — call .close() to unsubscribe
    */
   static subscribeCollectionChanges({ onChange, onStatus }: any) {

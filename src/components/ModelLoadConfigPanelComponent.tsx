@@ -117,7 +117,6 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
   const barMax = Math.max(maxMemory.totalGiB, memory.totalGiB, 1);
 
 
-
   const handleLoad = useCallback(() => {
     if (rememberSettings) {
       savePersistedConfig(modelKey, {

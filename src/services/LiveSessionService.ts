@@ -1,4 +1,3 @@
-// @ts-nocheck
 // ============================================================
 // LiveSessionService — Manages persistent Live API sessions
 // ============================================================
@@ -38,9 +37,9 @@ export default class LiveSessionService {
 
   /**
    * Connect to Prism's /ws/live and set up a Live API session.
-   * @param {object} params
+
    * @param {string} params.model - e.g. "gemini-3.1-flash-live-preview"
-   * @param {object} [params.config] - Live API config (responseModalities, systemInstruction, etc.)
+
    * @param {object} params.callbacks - { onSetupComplete, onAudio, onText, onThinking, onToolCall, onInputTranscription, onOutputTranscription, onTurnComplete, onInterrupted, onError, onClose }
    */
   connect({ model, config = {}, callbacks = {} }: any) {

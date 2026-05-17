@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useCallback, useRef } from "react";
@@ -28,7 +27,6 @@ const PARAM_TYPES = [
   { value: "integer", label: "Integer" },
   { value: "boolean", label: "Boolean" },
 ];
-
 
 
 const EMPTY_PARAM = {

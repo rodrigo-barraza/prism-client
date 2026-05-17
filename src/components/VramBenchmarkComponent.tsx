@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from "react";
@@ -81,9 +80,9 @@ const PALETTE = [
 let colorIdx = 0;
 function getQuantColor(q: any) {
   if ((QUANT_COLORS as any)[q]) return (QUANT_COLORS as any)[q];
-  const c = PALETTE[colorIdx % PALETTE.length];
+  const fallbackColor = PALETTE[colorIdx % PALETTE.length];
   colorIdx++;
-  return c;
+  return fallbackColor;
 }
 
 function getGPUColor(gpuName: any) {
@@ -767,7 +766,7 @@ export default function VramBenchmarkComponent() {
 
   const stats = useMemo(() => {
     if (models.length === 0) return null;
-    const n = models.length;
+    const modelCount = models.length;
 
     // VRAM range — min→max across profiled models
     const vramValues = models.map((m: any) => m.modelVramGiB);
@@ -795,7 +794,7 @@ export default function VramBenchmarkComponent() {
       models.reduce(
         (s: any, m: any) => s + Math.abs(m.modelVramGiB - m.estimatedGiB),
         0,
-      ) / n
+      ) / modelCount
     ).toFixed(2);
 
     // Count how many don't fit in GPU VRAM

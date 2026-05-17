@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * AudioPlayerService — Real-time PCM audio playback via Web Audio API.
  *
@@ -52,8 +51,8 @@ export default class AudioPlayerService {
 
   /**
    * Enqueue a base64-encoded PCM audio chunk for playback.
-   * @param {string} base64Data - Base64-encoded 16-bit PCM samples
-   * @param {string} mimeType - e.g. "audio/pcm;rate=24000"
+
+
    */
   enqueue(base64Data: any, mimeType: any) {
     if (!(this as any).audioContext || !(this as any).isPlaying) return;
@@ -150,7 +149,7 @@ export default class AudioPlayerService {
 
   /**
    * Build a WAV Blob URL. Returns null if no data.
-   * @returns {string|null}
+
    */
   buildWavUrl() {
     const blob = this.buildWavBlob();

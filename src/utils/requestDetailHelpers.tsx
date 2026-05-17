@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * requestDetailHelpers.js — Shared helpers for the request detail drawer
  * used by both /admin/requests and /admin/traces pages.

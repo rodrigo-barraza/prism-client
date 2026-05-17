@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * WorkflowExecutor — executes a workflow graph by topologically sorting nodes
  * and calling PrismService for each model, passing outputs forward via edges.
@@ -58,7 +57,7 @@ async function resolveToDataUrl(ref: any) {
 
 /**
  * Execute a single model node.
- * @param {Object} node - The workflow node
+
  * @param {Array<{type: string, data: string}>} inputData - Collected inputs from edges
  * @returns {Promise<Object>} - { [modality]: data }
  */
@@ -452,12 +451,8 @@ function topologicalSort(nodes: any, edges: any) {
 
 /**
  * Execute the entire workflow.
- * @param {Array} nodes - Workflow nodes
- * @param {Array} edges - Workflow edges
- * @param {Function} onNodeStart - Called when a node begins execution (nodeId)
- * @param {Function} onNodeComplete - Called when a node completes (nodeId, outputs)
- * @param {Function} onNodeError - Called when a node errors (nodeId, error)
- * @param {Function} onViewerPartial - Called when a viewer receives partial output (viewerNodeId, partialOutputs)
+
+
  */
 export async function executeWorkflow(
   nodes: any,

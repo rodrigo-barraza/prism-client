@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Mention Utilities — Pure functions for the @-mention system.
  *
@@ -18,7 +17,7 @@ import badgeStyles from "../components/MentionBadgeComponent.module.css";
  * Mention badges (spans with data-mention-path) become `@full/path`.
  *
  * @param {HTMLElement} element — root contentEditable element
- * @returns {string}
+
  */
 export function serializeEditable(element: any) {
   let text = "";
@@ -96,7 +95,7 @@ export function detectMentionToken(text: any, cursorOffset: any) {
  * @param {Array} entries — flat list from flattenTree
  * @param {string} query — search string (may be empty)
  * @param {number} limit — max results to return
- * @returns {Array}
+
  */
 export function filterMentionResults(entries: any, query: any, limit = 20) {
   if (!entries || !entries.length) return [];
@@ -165,7 +164,7 @@ export function parseMentionTokens(text: any) {
  * @param {string} type — "file" or "directory"
  * @param {object} [opts] — options
  * @param {boolean} [opts.stale] — true if the path no longer exists
- * @returns {HTMLSpanElement}
+
  */
 export function createMentionBadge(path: any, name: any, type: any, opts = {}) {
   const badge = document.createElement("span");

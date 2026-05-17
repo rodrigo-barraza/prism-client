@@ -46,7 +46,7 @@ const TOOL_SHORT_NAMES = {
 /**
  * Resolve any tool name to a human-readable display label.
  * @param {string} name  — raw tool function name or canonical name
- * @param {"default"|"compact"|"condensed"} variant
+
  */
 function resolveDisplayName(name: any, variant = "default") {
   if (variant === "condensed" && (TOOL_SHORT_NAMES as any)[name]) return (TOOL_SHORT_NAMES as any)[name];

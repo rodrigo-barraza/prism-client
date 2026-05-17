@@ -234,7 +234,6 @@ export default function ThreePanelLayout({
           </section>
 
 
-
           {/* Right Sidebar */}
           {rightPanel && (
             <aside

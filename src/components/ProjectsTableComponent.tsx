@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TableComponent } from "@rodrigo-barraza/components-library";
 import {
   projectColumn,
@@ -16,14 +15,10 @@ import {
  * ProjectsTableComponent — reusable admin table for displaying project-level
  * aggregated stats (requests, tokens, cost, latency, etc.).
  *
- * @param {Object}  props
+
  * @param {Array}   props.projects          - Array of project stat objects
- * @param {number}  [props.totalRequests]   - Sum of all project requests (for proportion bars)
- * @param {number}  [props.totalCost]       - Sum of all project costs (for proportion bars)
- * @param {string}  [props.emptyText]       - Text shown when no data
- * @param {boolean} [props.compact]         - Reduced column set
- * @param {string}  [props.title]           - Optional table title
- * @param {number}  [props.maxHeight]       - Optional max height for scrollable body
+
+
  */
 export default function ProjectsTableComponent({
   projects = [],

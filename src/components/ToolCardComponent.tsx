@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { CircleCheck, Circle, Lock } from "lucide-react";

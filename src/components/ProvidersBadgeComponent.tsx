@@ -8,8 +8,8 @@ import styles from "./ProvidersBadgeComponent.module.css";
  * or a "N providers" badge with the Layers icon and a tooltip listing all names.
  *
  * @param {string[]} providers — array of provider key strings (e.g. "openai", "google")
- * @param {string}   [className]
- * @param {boolean}  [mini]
+
+
  */
 export default function ProvidersBadgeComponent({ providers = [], className = "", mini = false }: any) {
   if (!providers || providers.length === 0) {

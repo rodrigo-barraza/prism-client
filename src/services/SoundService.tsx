@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SoundService — Procedural UI sound synthesis via Web Audio API.
  *
@@ -11,7 +10,7 @@
  * GainNode → ChannelMerger topology.
  */
 
-/** @type {AudioContext|null} */
+
 let context = null;
 
 /** @type {AudioBuffer|null} Cached hover noise buffer */
@@ -214,7 +213,7 @@ function getButtonClickBuffer() {
  * signal on both channels. Each GainNode then scales independently
  * according to the caller's 0–100 value.
  *
- * @param {AudioBufferSourceNode} source
+
  * @param {number} left  — 0-100 left speaker volume
  * @param {number} right — 0-100 right speaker volume
  */
@@ -281,7 +280,7 @@ const SoundService = {
    * By default, stereo is calculated from the event target's
    * position in the viewport. Pass explicit left/right to override.
    *
-   * @param {object}  [options]
+
    * @param {Event}   [options.event] — DOM event for spatial stereo
    * @param {number}  [options.left]  — Left speaker volume 0-100 (override)
    * @param {number}  [options.right] — Right speaker volume 0-100 (override)
@@ -306,7 +305,7 @@ const SoundService = {
    * By default, stereo is calculated from the event target's
    * position in the viewport. Pass explicit left/right to override.
    *
-   * @param {object}  [options]
+
    * @param {Event}   [options.event] — DOM event for spatial stereo
    * @param {number}  [options.left]  — Left speaker volume 0-100 (override)
    * @param {number}  [options.right] — Right speaker volume 0-100 (override)
@@ -326,7 +325,7 @@ const SoundService = {
   /**
    * Play the button hover sound — soft sine ping.
    *
-   * @param {object}  [options]
+
    * @param {Event}   [options.event] — DOM event for spatial stereo
    * @param {number}  [options.left]  — Left speaker volume 0-100 (override)
    * @param {number}  [options.right] — Right speaker volume 0-100 (override)
@@ -347,7 +346,7 @@ const SoundService = {
   /**
    * Play the button click sound — two-tone chord snap.
    *
-   * @param {object}  [options]
+
    * @param {Event}   [options.event] — DOM event for spatial stereo
    * @param {number}  [options.left]  — Left speaker volume 0-100 (override)
    * @param {number}  [options.right] — Right speaker volume 0-100 (override)

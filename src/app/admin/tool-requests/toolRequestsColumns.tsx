@@ -10,7 +10,7 @@ import { formatLatencyMs, formatFileSize } from "../../../utils/utilities";
 /**
  * getToolRequestsColumns — column definitions for the tool-call telemetry table.
  *
- * @param {Object} [opts]
+
  * @param {number} [opts.totalDuration=1] — Total elapsed ms across all visible calls
  *                                          (used for Duration % proportion bar)
  */

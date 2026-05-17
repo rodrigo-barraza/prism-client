@@ -5,7 +5,7 @@ import PrismService from "./PrismService";
 const WorkflowService = {
   /**
    * Get all saved workflows (metadata only).
-   * @returns {Promise<Array>}
+
    */
   async getWorkflows() {
     try {
@@ -17,8 +17,8 @@ const WorkflowService = {
 
   /**
    * Get a single workflow by ID (full document).
-   * @param {string} id
-   * @returns {Promise<object|null>}
+
+
    */
   async getWorkflow(id: any) {
     try {
@@ -30,7 +30,7 @@ const WorkflowService = {
 
   /**
    * Save or update a workflow.
-   * @param {object} workflow - { id?, name, nodes, edges, nodeResults?, nodeStatuses? }
+
    * @returns {Promise<object>} The saved workflow with id
    */
   async saveWorkflow(workflow: any) {
@@ -47,7 +47,7 @@ const WorkflowService = {
 
   /**
    * Delete a workflow by ID.
-   * @param {string} id
+
    */
   async deleteWorkflow(id: any) {
     await PrismService.deleteWorkflow(id);

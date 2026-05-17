@@ -1,8 +1,8 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2, Power, PowerOff, RefreshCw } from "lucide-react";
+import { POLL_MODERATE } from "@rodrigo-barraza/utilities-library";
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
 import ModelsTableComponent from "./ModelsTableComponent";
@@ -211,7 +211,7 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }: an
     PrismService.getFavorites("model")
       .then((favs: any) => setFavoriteKeys(favs.map((f: any) => f.key)))
       .catch(() => {});
-    const interval = setInterval(fetchModels, 15000);
+    const interval = setInterval(fetchModels, POLL_MODERATE);
     return () => clearInterval(interval);
   }, [fetchModels]);
 

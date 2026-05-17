@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -28,9 +27,9 @@ const STATUS_CYCLE = ["pending", "in_progress", "completed"];
  * by the agent (via task_create tool) and persist across conversations.
  * Users can also create tasks manually from this panel.
  *
- * @param {object} props
+
  * @param {string} props.project - Project identifier
- * @param {number} [props.refreshKey] - External refresh trigger
+
  */
 export default function TasksPanel({ project, refreshKey, agentSessionId, onCountChange }: any) {
   const [tasks, setTasks] = useState<any[]>([]);

@@ -26,8 +26,8 @@ export default function useModelMemory(storageKey: any) {
    * Save the current model selection to localStorage.
    * Call this whenever the user picks a model.
    *
-   * @param {string} provider
-   * @param {string} model
+
+
    */
   const saveModel = useCallback(
     (provider: any, model: any) => {
@@ -47,7 +47,7 @@ export default function useModelMemory(storageKey: any) {
    *
    * @param {object} config — Prism config (may or may not include local models yet)
    * @param {Function} setSettings — React setState for the settings object
-   * @param {object} [options]
+
    * @param {boolean} [options.fcOnly] — if true, only restore if the model supports Function Calling
    * @param {Function} [options.fallback] — called with (config) if no saved model found; lets the caller apply default selection
    */

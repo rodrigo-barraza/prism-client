@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -25,8 +24,6 @@ import { PROVIDER_COLORS } from "../../../constants";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import styles from "./page.module.css";
-
-
 
 
 export default function ProvidersPage() {
@@ -147,7 +144,6 @@ export default function ProvidersPage() {
     ],
     [],
   );
-
 
 
   useEffect(() => {

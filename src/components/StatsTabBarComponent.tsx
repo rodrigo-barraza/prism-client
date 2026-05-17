@@ -10,7 +10,7 @@ import styles from "./StatsTabBarComponent.module.css";
  * the parent is responsible for gating visibility via the `visible` prop
  * (or simply not rendering the component).
  *
- * @param {object}   props
+
  * @param {string}   props.activeTab  - Current tab key ("all" | "orchestrator" | "workers")
  * @param {Function} props.onChange   - Called with the new tab key on click
  */

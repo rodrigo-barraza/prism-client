@@ -10,8 +10,8 @@ import styles from "./ModelBadgeComponent.module.css";
  * @param {string[]} models — array of model name strings
  * @param {string} [provider] — provider key for single-model icon (e.g. "openai", "google")
  * @param {string[]} [providers] — provider keys; when a single unique provider exists, its logo is shown
- * @param {string} [className]
- * @param {boolean} [mini]
+
+
  */
 export default function ModelBadgeComponent({ models = [], provider, providers, className = "", mini = false }: any) {
   if (!models || models.length === 0) {

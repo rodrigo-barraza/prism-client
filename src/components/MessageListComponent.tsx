@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
@@ -571,19 +570,10 @@ function EditableMessage({
 /**
  * Shared message list component.
  *
- * @param {object} props
+
  * @param {Array}  props.messages          - array of message objects
- * @param {boolean} [props.readOnly=false] - hide edit/delete/rerun actions
- * @param {boolean} [props.isGenerating]   - show generating indicator
- * @param {Function} [props.onDelete]      - (index) => void
- * @param {Function} [props.onEdit]        - (index, newContent) => void
- * @param {Function} [props.onRerun]       - (index) => void
- * @param {Function} [props.onImageClick]  - (resolvedUrl) => void
- * @param {Function} [props.onDocClick]    - (resolvedUrl) => void
- * @param {Map}      [props.streamingOutputs] - toolCallId → accumulated output string
- * @param {object}   [props.workerToolActivity] - workerId → { currentTool, toolCount, iteration, maxIterations }
- * @param {Set}      [props.knownPaths] - Set of workspace paths that currently exist (for mention staleness)
- * @param {Function} [props.onMentionFileOpen] - (absolutePath) => void - open a mentioned file in file viewer
+
+
  */
 export default function MessageList({
   messages = [],

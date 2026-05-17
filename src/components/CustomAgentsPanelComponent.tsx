@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import { useState, useCallback } from "react";
@@ -76,7 +75,6 @@ import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components-li
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import styles from "./CustomAgentsPanelComponent.module.css";
-
 
 
 const EMPTY_AGENT = {
@@ -188,13 +186,11 @@ export function resolveIconComponent(name: any) {
 }
 
 
-
 /**
  * CustomAgentsPanel — CRUD interface for user-defined agent personas.
  *
- * @param {Array} agents - Current list of custom agents from the database
- * @param {Function} onAgentsChange - Callback to refresh the agents list
- * @param {Array} availableTools - All built-in tool schemas for the tool picker
+
+
  */
 export default function CustomAgentsPanel({
   agents = [],
@@ -274,7 +270,6 @@ export default function CustomAgentsPanel({
     },
     [onAgentsChange],
   );
-
 
 
   // -- Form field updaters --------------------------------------
