@@ -149,9 +149,9 @@ function ThinkingBlock({ thinking, isStreaming, children }: any) {
   // Auto-scroll to bottom of thinking content while streaming (smooth)
   useEffect(() => {
     if (isStreaming && !streamClosed && contentRef.current) {
-      const el = contentRef.current;
+      const element = contentRef.current;
       requestAnimationFrame(() => {
-        (el as any).scrollTo({ top: (el as any).scrollHeight, behavior: "smooth" });
+        (element as any).scrollTo({ top: (element as any).scrollHeight, behavior: "smooth" });
       });
     }
   }, [thinking, isStreaming, streamClosed]);
@@ -442,9 +442,9 @@ function EditableMessage({
   // Auto-resize textarea to fit content on open
   useEffect(() => {
     if (editing && textareaRef.current) {
-      const el = textareaRef.current;
-      (el as any).style.height = "auto";
-      (el as any).style.height = Math.min((el as any).scrollHeight, 600) + "px";
+      const element = textareaRef.current;
+      (element as any).style.height = "auto";
+      (element as any).style.height = Math.min((element as any).scrollHeight, 600) + "px";
     }
   }, [editing]);
 
@@ -483,9 +483,9 @@ function EditableMessage({
           onChange={(e: any) => {
             setEditValue(e.target.value);
             // Auto-resize as content changes
-            const el = e.target;
-            el.style.height = "auto";
-            el.style.height = Math.min(el.scrollHeight, 600) + "px";
+            const element = e.target;
+            element.style.height = "auto";
+            element.style.height = Math.min(element.scrollHeight, 600) + "px";
           }}
           onKeyDown={handleKey}
           rows={isAssistant ? 8 : 3}
@@ -669,11 +669,11 @@ export default function MessageList({
   // Derive sticky message data from the boolean flag
   const stickyUserMsg = useMemo(() => {
     if (!isUserMsgScrolledPast || lastUserMsgIndex < 0) return null;
-    const msg = messages[lastUserMsgIndex];
-    if (!msg) return null;
+    const message = messages[lastUserMsgIndex];
+    if (!message) return null;
     return {
-      content: msg.content,
-      images: msg.images,
+      content: message.content,
+      images: message.images,
       index: lastUserMsgIndex,
     };
   }, [isUserMsgScrolledPast, lastUserMsgIndex, messages]);
@@ -721,28 +721,28 @@ export default function MessageList({
   };
 
   const swapBefore = useMemo(() => {
-    const arr = new Array(messages.length).fill(false);
+    const array = new Array(messages.length).fill(false);
     let lastModel = null;
     let prospectiveSwapIndex = null;
 
     for (let i = 0; i < messages.length; i++) {
-      const msg = messages[i];
-      if (msg.role === "user") {
+      const message = messages[i];
+      if (message.role === "user") {
         if (prospectiveSwapIndex === null) {
           prospectiveSwapIndex = i; // The start of the user's turn
         }
-      } else if (msg.role === "assistant" && msg.model) {
-        if (lastModel && lastModel !== msg.model) {
+      } else if (message.role === "assistant" && message.model) {
+        if (lastModel && lastModel !== message.model) {
           // Model changed! Show swap before the user's turn that led to this,
           // or before this assistant message if no user message preceded it.
           const swapIdx = prospectiveSwapIndex !== null ? prospectiveSwapIndex : i;
-          arr[swapIdx] = true;
+          array[swapIdx] = true;
         }
-        lastModel = msg.model;
+        lastModel = message.model;
         prospectiveSwapIndex = null;
       }
     }
-    return arr;
+    return array;
   }, [messages]);
 
   // -- Coalesce consecutive deleted messages into groups ------
@@ -863,18 +863,18 @@ export default function MessageList({
         </div>
       )}
       {headerContent}
-      {messages.map((msg: any, i: any) => {
+      {messages.map((message: any, i: any) => {
         const roleClass =
-          msg.role === "user"
+          message.role === "user"
             ? styles.userNode
-            : msg.role === "system"
+            : message.role === "system"
               ? styles.systemNode
               : styles.aiNode;
         const isStreaming =
           (isGenerating &&
-            msg.role === "assistant" &&
+            message.role === "assistant" &&
             i === messages.length - 1) ||
-          (msg.role === "assistant" && msg._liveStreaming === true);
+          (message.role === "assistant" && message._liveStreaming === true);
         const coalesce = coalesceMeta[i];
 
         const showModelChange = swapBefore[i];
@@ -883,8 +883,8 @@ export default function MessageList({
 
         // If message is a non-leader deleted message, skip rendering the whole 
         // top-level block so we don't leak the model swap outside the group
-        const deletedGroupInfo = msg.deleted ? deletedGroups.get(i) : null;
-        if (msg.deleted && !deletedGroupInfo?.isLeader) {
+        const deletedGroupInfo = message.deleted ? deletedGroups.get(i) : null;
+        if (message.deleted && !deletedGroupInfo?.isLeader) {
           return null;
         }
 
@@ -901,7 +901,7 @@ export default function MessageList({
               </div>
             )}
             {/* -- Deleted message group: coalesced into a single row -- */}
-            {msg.deleted && (() => {
+            {message.deleted && (() => {
               const groupInfo = deletedGroups.get(i);
               // Non-leader deleted messages are rendered inside the leader block
               if (!groupInfo?.isLeader) return null;
@@ -924,19 +924,19 @@ export default function MessageList({
                       {groupCount === 1 && (
                         <>
                           <BadgeComponent variant="info" mini tooltip="Message role">
-                            {msg.role === "user" ? "User" : "Model"}
+                            {message.role === "user" ? "User" : "Model"}
                           </BadgeComponent>
-                          {msg.model && (
-                            <ModelBadgeComponent models={[msg.model]} mini />
+                          {message.model && (
+                            <ModelBadgeComponent models={[message.model]} mini />
                           )}
-                          {msg.timestamp && (
-                            <DateTimeBadgeComponent date={msg.timestamp} mini />
+                          {message.timestamp && (
+                            <DateTimeBadgeComponent date={message.timestamp} mini />
                           )}
-                          {msg.content && (
+                          {message.content && (
                             <span className={styles.deletedPreview}>
-                              {msg.content.length > 80
-                                ? msg.content.slice(0, 80) + "…"
-                                : msg.content}
+                              {message.content.length > 80
+                                ? message.content.slice(0, 80) + "…"
+                                : message.content}
                             </span>
                           )}
                         </>
@@ -1075,16 +1075,16 @@ export default function MessageList({
             );
           })()}
             {/* -- Normal (non-deleted) message -- */}
-            {!msg.deleted && (() => {
+            {!message.deleted && (() => {
               // -- Task notification card (replaces user bubble for worker results) --
               // Only renders for non-absorbed notifications (i.e. edge cases where
               // the matching team_create tool call isn't in the visible window).
-              const taskNotif = msg.role === "user" ? parseTaskNotification(msg.content) : null;
+              const taskNotif = message.role === "user" ? parseTaskNotification(message.content) : null;
               if (taskNotif) {
                 return (
                   <WorkerNotificationComponent
                     taskNotif={taskNotif}
-                    timestamp={msg.timestamp}
+                    timestamp={message.timestamp}
                     readOnly={readOnly}
                     onDelete={() => onDelete?.(i)}
                   />
@@ -1093,15 +1093,15 @@ export default function MessageList({
               // -- Normal message rendering --
               return (
             <div
-              ref={i === lastUserMsgIndex && msg.role === "user" ? lastUserMsgRef : undefined}
+              ref={i === lastUserMsgIndex && message.role === "user" ? lastUserMsgRef : undefined}
               className={`${styles.message} ${roleClass}${coalesce?.isContinuation ? ` ${styles.continuationMessage}` : ""}`}
             >
               {/* Avatar: hidden for continuation messages */}
               {!coalesce?.isContinuation && (
                 <div
-                  className={`${styles.avatar}${msg.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles.prismAvatar}` : ""}`}
+                  className={`${styles.avatar}${message.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles.prismAvatar}` : ""}`}
                 >
-                  {msg.role === "user" ? <User size={16} /> : msg.role === "system" ? "S" : <Bot size={16} />}
+                  {message.role === "user" ? <User size={16} /> : message.role === "system" ? "S" : <Bot size={16} />}
                 </div>
               )}
               <div className={styles.content}>
@@ -1109,18 +1109,18 @@ export default function MessageList({
                 {!coalesce?.isContinuation && (
                 <div className={styles.messageHeader}>
                   <div className={styles.roleLabel}>
-                    {msg.role === "user"
+                    {message.role === "user"
                       ? "User"
-                      : msg.role === "system"
+                      : message.role === "system"
                         ? "System"
                         : "Model"}
-                    {msg.timestamp && (
-                      <DateTimeBadgeComponent date={msg.timestamp} mini />
+                    {message.timestamp && (
+                      <DateTimeBadgeComponent date={message.timestamp} mini />
                     )}
                   </div>
                   {!readOnly && (
                     <div className={styles.messageActions}>
-                      {msg.role === "user" && (
+                      {message.role === "user" && (
                         <>
                           <IconButtonComponent
                             icon={<Pencil size={14} />}
@@ -1140,7 +1140,7 @@ export default function MessageList({
                           />
                         </>
                       )}
-                      {msg.role === "assistant" && msg.content && (
+                      {message.role === "assistant" && message.content && (
                         <IconButtonComponent
                           icon={<Pencil size={14} />}
                           onClick={() =>
@@ -1151,9 +1151,9 @@ export default function MessageList({
                           className={styles.actionBtn}
                         />
                       )}
-                      {msg.content && (
+                      {message.content && (
                         <CopyButtonComponent
-                          text={msg.content}
+                          text={message.content}
                           tooltip="Copy raw text"
                           className={styles.actionBtn}
                         />
@@ -1167,10 +1167,10 @@ export default function MessageList({
                       />
                     </div>
                   )}
-                  {readOnly && msg.content && (
+                  {readOnly && message.content && (
                     <div className={styles.messageActions}>
                       <CopyButtonComponent
-                        text={msg.content}
+                        text={message.content}
                         tooltip="Copy raw text"
                         className={styles.actionBtn}
                       />
@@ -1180,9 +1180,9 @@ export default function MessageList({
                 )}
 
                 {/* -- Interleaved content: thinking + tool calls + text -- */}
-                {msg.contentSegments && msg.contentSegments.length > 0 ? (
+                {message.contentSegments && message.contentSegments.length > 0 ? (
                   (() => {
-                    const segs = msg.contentSegments;
+                    const segs = message.contentSegments;
                     const hasThinking = segs.some((s: any) => s.type === "thinking");
                     // Dedup guard: track tool IDs already rendered to prevent
                     // the same tool call from appearing in multiple segments
@@ -1191,13 +1191,13 @@ export default function MessageList({
                     // Helper: render a segment by type
                     const renderSeg = (seg: any, si: any, opts = {}) => {
                       if (seg.type === "thinking") {
-                        const fragment = msg.thinkingFragments?.[seg.fragmentIndex]?.trim();
+                        const fragment = message.thinkingFragments?.[seg.fragmentIndex]?.trim();
                         if (!fragment) return null;
                         return <MarkdownContent key={`seg-k-${si}`} content={fragment} />;
                       }
-                      if (seg.type === "tools" && msg.toolCalls?.length > 0) {
+                      if (seg.type === "tools" && message.toolCalls?.length > 0) {
                         const toolIdSet = new Set(seg.toolIds || []);
-                        const segmentTools = msg.toolCalls.filter((tc: any) => {
+                        const segmentTools = message.toolCalls.filter((tc: any) => {
                           if (!toolIdSet.has(tc.id)) return false;
                           if (renderedToolIds.has(tc.id)) return false;
                           renderedToolIds.add(tc.id);
@@ -1207,7 +1207,7 @@ export default function MessageList({
                         return <ToolCallsBlock key={`seg-t-${si}`} toolCalls={segmentTools} streamingOutputs={streamingOutputs} workerToolActivity={workerToolActivity} />;
                       }
                       if (seg.type === "text") {
-                        const fragmentText = msg.textFragments?.[seg.fragmentIndex]?.trim();
+                        const fragmentText = message.textFragments?.[seg.fragmentIndex]?.trim();
                         const isLastTextSeg = !!(opts as any).isLastText;
                         const showCursor = !(opts as any).insideThinking && !(opts as any).suppressCursor;
                         if (fragmentText) {
@@ -1242,7 +1242,7 @@ export default function MessageList({
                     };
 
                     // Edit mode: show reasoning then editable text
-                    if (msg.role === "assistant" && !readOnly && editingIndex === i) {
+                    if (message.role === "assistant" && !readOnly && editingIndex === i) {
                       const thinkingOnly = segs.filter((s: any) => s.type === "thinking");
                       const nonThinking = segs.filter((s: any) => s.type !== "thinking");
                       return (
@@ -1255,7 +1255,7 @@ export default function MessageList({
                           {nonThinking.map((seg: any, si: any) => renderSeg(seg, si))}
                           <EditableMessage
                             key="seg-edit"
-                            content={msg.content}
+                            content={message.content}
                             index={i}
                             role="assistant"
                             onEdit={onEdit}
@@ -1275,7 +1275,7 @@ export default function MessageList({
                     if (hasThinking) {
                       const thinkingOnly = segs.filter((s: any) => s.type === "thinking");
                       const visibleSegs = segs
-                        .map((s: any, idx: any) => ({ seg: s, origIdx: idx }))
+                        .map((s: any, index: any) => ({ seg: s, origIdx: index }))
                         .filter(({ seg }: any) => seg.type !== "thinking");
                       // ThinkingBlock is streaming when thinking is the current
                       // activity (last segment is thinking)
@@ -1329,22 +1329,22 @@ export default function MessageList({
                 ) : (
                   <>
                     {/* Thinking block (persisted conversations without segments) */}
-                    {msg.thinking && (
+                    {message.thinking && (
                       <ThinkingBlock
-                        thinking={msg.thinking}
-                        isStreaming={isStreaming && !!msg.thinking && !msg.content}
+                        thinking={message.thinking}
+                        isStreaming={isStreaming && !!message.thinking && !message.content}
                       />
                     )}
 
                     {/* Tool calls (persisted conversations without segments) */}
-                    {msg.toolCalls && msg.toolCalls.length > 0 && (
-                      <ToolCallsBlock toolCalls={msg.toolCalls} streamingOutputs={streamingOutputs} workerToolActivity={workerToolActivity} />
+                    {message.toolCalls && message.toolCalls.length > 0 && (
+                      <ToolCallsBlock toolCalls={message.toolCalls} streamingOutputs={streamingOutputs} workerToolActivity={workerToolActivity} />
                     )}
 
                     {/* Text content */}
-                    {msg.role === "user" && !readOnly ? (
+                    {message.role === "user" && !readOnly ? (
                       <EditableMessage
-                        content={msg.content}
+                        content={message.content}
                         index={i}
                         role="user"
                         onEdit={onEdit}
@@ -1353,9 +1353,9 @@ export default function MessageList({
                         knownPaths={knownPaths}
                         onMentionFileOpen={onMentionFileOpen}
                       />
-                    ) : msg.role === "assistant" && !readOnly && editingIndex === i ? (
+                    ) : message.role === "assistant" && !readOnly && editingIndex === i ? (
                       <EditableMessage
-                        content={msg.content}
+                        content={message.content}
                         index={i}
                         role="assistant"
                         onEdit={onEdit}
@@ -1364,9 +1364,9 @@ export default function MessageList({
                         knownPaths={knownPaths}
                         onMentionFileOpen={onMentionFileOpen}
                       />
-                    ) : msg.content ? (
+                    ) : message.content ? (
                       <MarkdownContent
-                        content={msg.content}
+                        content={message.content}
                         className={isStreaming ? styles.streamingText : ""}
                       >
                         <StreamingCursorComponent active={isStreaming} />
@@ -1378,9 +1378,9 @@ export default function MessageList({
                 )}
 
                 {/* Images / media */}
-                {msg.images && msg.images.length > 0 && (
+                {message.images && message.images.length > 0 && (
                   <div className={styles.imagePreviewRow}>
-                    {msg.images.map((rawUrl: any, j: any) => {
+                    {message.images.map((rawUrl: any, j: any) => {
                       const resolvedUrl = PrismService.getFileUrl(rawUrl);
                       const cat = getMimeCategory(rawUrl);
                       let clickHandler;
@@ -1401,18 +1401,18 @@ export default function MessageList({
 
                 {/* Streaming audio (live session in progress) */}
                 {!readOnly &&
-                  msg.role === "assistant" &&
-                  msg._liveStreaming &&
-                  !msg.audio && (
+                  message.role === "assistant" &&
+                  message._liveStreaming &&
+                  !message.audio && (
                     <div className={styles.audioCard}>
                       <AudioPlayerRecorderComponent streaming compact />
                     </div>
                   )}
 
                 {/* Audio */}
-                {msg.audio && (
+                {message.audio && (
                   <div className={styles.imagePreviewRow}>
-                    {(Array.isArray(msg.audio) ? msg.audio : [msg.audio]).map(
+                    {(Array.isArray(message.audio) ? message.audio : [message.audio]).map(
                       (rawUrl: any, j: any) => (
                         <MediaPreview key={`aud-${j}`} dataUrl={rawUrl} />
                       ),
@@ -1421,11 +1421,11 @@ export default function MessageList({
                 )}
 
                 {/* Video */}
-                {msg.video &&
-                  (Array.isArray(msg.video) ? msg.video : [msg.video]).length >
+                {message.video &&
+                  (Array.isArray(message.video) ? message.video : [message.video]).length >
                     0 && (
                     <div className={styles.imagePreviewRow}>
-                      {(Array.isArray(msg.video) ? msg.video : [msg.video]).map(
+                      {(Array.isArray(message.video) ? message.video : [message.video]).map(
                         (rawUrl: any, j: any) => (
                           <MediaPreview key={`vid-${j}`} dataUrl={rawUrl} />
                         ),
@@ -1434,10 +1434,10 @@ export default function MessageList({
                   )}
 
                 {/* PDF */}
-                {msg.pdf &&
-                  (Array.isArray(msg.pdf) ? msg.pdf : [msg.pdf]).length > 0 && (
+                {message.pdf &&
+                  (Array.isArray(message.pdf) ? message.pdf : [message.pdf]).length > 0 && (
                     <div className={styles.imagePreviewRow}>
-                      {(Array.isArray(msg.pdf) ? msg.pdf : [msg.pdf]).map(
+                      {(Array.isArray(message.pdf) ? message.pdf : [message.pdf]).map(
                         (rawUrl: any, j: any) => {
                           const resolvedUrl = PrismService.getFileUrl(rawUrl);
                           return (
@@ -1453,49 +1453,49 @@ export default function MessageList({
                   )}
 
                 {/* Error block */}
-                {msg.error && (
+                {message.error && (
                   <div className={styles.errorBlock}>
                     <AlertTriangle size={14} className={styles.errorIcon} />
-                    <span>{msg.error}</span>
+                    <span>{message.error}</span>
                   </div>
                 )}
 
                 {/* User metadata */}
-                {msg.role === "user" && msg.content && (
+                {message.role === "user" && message.content && (
                   <div className={styles.metaBadges}>
-                    <WordBadgeComponent count={msg.content.trim().split(/\s+/).filter(Boolean).length} mini />
+                    <WordBadgeComponent count={message.content.trim().split(/\s+/).filter(Boolean).length} mini />
                   </div>
                 )}
 
                 {/* Assistant metadata — only on the last message in a coalesced group */}
-                {msg.role === "assistant" &&
+                {message.role === "assistant" &&
                   (coalesce?.isLastInGroup !== false) &&
-                  (msg.usage || msg.audio || msg.provider) && (
+                  (message.usage || message.audio || message.provider) && (
                     <div className={styles.metaBadges}>
-                      {msg.provider && (
-                        <ProvidersBadgeComponent providers={[msg.provider]} mini />
+                      {message.provider && (
+                        <ProvidersBadgeComponent providers={[message.provider]} mini />
                       )}
-                      {msg.model && (
-                        <ModelBadgeComponent models={[msg.model]} mini />
+                      {message.model && (
+                        <ModelBadgeComponent models={[message.model]} mini />
                       )}
-                      {msg.voice && (
-                        <BadgeComponent variant="info" mini tooltip={`Voice: ${msg.voice}`}>🔊 {msg.voice}</BadgeComponent>
+                      {message.voice && (
+                        <BadgeComponent variant="info" mini tooltip={`Voice: ${message.voice}`}>🔊 {message.voice}</BadgeComponent>
                       )}
                       {(() => {
-                        if (msg.usage?.inputTokens != null && msg.usage?.outputTokens != null) {
-                          const cacheRead = msg.usage.cacheReadInputTokens || 0;
-                          const cacheWrite = msg.usage.cacheCreationInputTokens || 0;
+                        if (message.usage?.inputTokens != null && message.usage?.outputTokens != null) {
+                          const cacheRead = message.usage.cacheReadInputTokens || 0;
+                          const cacheWrite = message.usage.cacheCreationInputTokens || 0;
                           const cached = cacheRead + cacheWrite;
-                          const totalIn = getTotalInputTokens(msg.usage);
+                          const totalIn = getTotalInputTokens(message.usage);
                           let inLabel = "in";
                           if (cached) {
                             const parts = [];
-                            if (msg.usage.inputTokens) parts.push(`${msg.usage.inputTokens.toLocaleString()} new`);
+                            if (message.usage.inputTokens) parts.push(`${message.usage.inputTokens.toLocaleString()} new`);
                             if (cacheRead) parts.push(`${cacheRead.toLocaleString()} read`);
                             if (cacheWrite) parts.push(`${cacheWrite.toLocaleString()} write`);
                             inLabel = `in (${parts.join(" · ")})`;
                           }
-                          const reasoning = msg.usage.reasoningOutputTokens || 0;
+                          const reasoning = message.usage.reasoningOutputTokens || 0;
                           let outLabel = "out";
                           if (reasoning > 0) {
                             outLabel = `out (${reasoning.toLocaleString()} reasoning)`;
@@ -1503,39 +1503,39 @@ export default function MessageList({
                           return (
                             <>
                               <TokenCountBadgeComponent value={totalIn} label={inLabel} mini />
-                              <TokenCountBadgeComponent value={msg.usage.outputTokens} label={outLabel} mini />
+                              <TokenCountBadgeComponent value={message.usage.outputTokens} label={outLabel} mini />
                             </>
                           );
                         }
-                        if (msg.usage?.outputTokens != null) {
-                          return <TokenCountBadgeComponent value={msg.usage.outputTokens} label="tokens" mini />;
+                        if (message.usage?.outputTokens != null) {
+                          return <TokenCountBadgeComponent value={message.usage.outputTokens} label="tokens" mini />;
                         }
                         return null;
                       })()}
-                      {msg.content && (
-                        <WordBadgeComponent count={msg.content.trim().split(/\s+/).filter(Boolean).length} mini />
+                      {message.content && (
+                        <WordBadgeComponent count={message.content.trim().split(/\s+/).filter(Boolean).length} mini />
                       )}
-                      {msg.totalTime != null && (
-                        <StopwatchBadgeComponent seconds={msg.totalTime} className={styles.metaMini} />
+                      {message.totalTime != null && (
+                        <StopwatchBadgeComponent seconds={message.totalTime} className={styles.metaMini} />
                       )}
-                      {msg.tokensPerSec && (
-                        <BadgeComponent variant="info" mini tooltip={`${msg.tokensPerSec} tokens per second`}>{msg.tokensPerSec} tok/s</BadgeComponent>
+                      {message.tokensPerSec && (
+                        <BadgeComponent variant="info" mini tooltip={`${message.tokensPerSec} tokens per second`}>{message.tokensPerSec} tok/s</BadgeComponent>
                       )}
-                      {(msg.provider === "lm-studio" || msg.provider === "vllm")
+                      {(message.provider === "lm-studio" || message.provider === "vllm")
                         ? <BadgeComponent variant="success" mini tooltip="Free (local model)">$0</BadgeComponent>
-                        : msg.estimatedCost
-                          ? <CostBadgeComponent cost={msg.estimatedCost} mini />
+                        : message.estimatedCost
+                          ? <CostBadgeComponent cost={message.estimatedCost} mini />
                           : null
                       }
-                      {msg.timestamp && (
-                        <DateTimeBadgeComponent date={msg.timestamp} mini />
+                      {message.timestamp && (
+                        <DateTimeBadgeComponent date={message.timestamp} mini />
                       )}
                     </div>
                   )}
 
                 {/* Plan proposal card — fallback for non-segmented messages */}
-                {planProposal && msg.role === "assistant" && i === messages.length - 1 &&
-                  !(msg.contentSegments?.some((s: any) => s.type === "plan")) && (
+                {planProposal && message.role === "assistant" && i === messages.length - 1 &&
+                  !(message.contentSegments?.some((s: any) => s.type === "plan")) && (
                   <PlanCardComponent
                     planText={planProposal.plan}
                     steps={planProposal.steps}

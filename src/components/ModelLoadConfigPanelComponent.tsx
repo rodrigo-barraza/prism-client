@@ -155,16 +155,16 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
   }, [handleLoad]);
 
   const handleContextInput = (e: any) => {
-    const val = parseInt(e.target.value, 10);
-    if (!isNaN(val)) {
-      setContextLength(Math.max(2048, Math.min(val, maxContext)));
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setContextLength(Math.max(2048, Math.min(value, maxContext)));
     }
   };
 
   const handleGpuInput = (e: any) => {
-    const val = parseInt(e.target.value, 10);
-    if (!isNaN(val)) {
-      setGpuLayers(Math.max(0, Math.min(val, totalLayers)));
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value)) {
+      setGpuLayers(Math.max(0, Math.min(value, totalLayers)));
     }
   };
 

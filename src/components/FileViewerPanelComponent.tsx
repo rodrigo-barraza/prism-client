@@ -284,7 +284,7 @@ export default function FileViewerPanelComponent({
           setSvgViewMode((prev: any) => prev[id] ? prev : { ...prev, [id]: "preview" });
         }
       })
-      .catch((err: any) => {
+      .catch((error: any) => {
         const isNotFound = /not found|no such file|ENOENT|does not exist/i.test(error.message);
         if (isNotFound) {
           onFileNotFound?.(id, path);
@@ -371,15 +371,15 @@ export default function FileViewerPanelComponent({
 
   // ── Wheel-to-horizontal-scroll on tab bar ───────────────────
   useEffect(() => {
-    const el = tabBarRef.current;
-    if (!el) return;
+    const element = tabBarRef.current;
+    if (!element) return;
     const onWheel = (e: any) => {
       if (Math.abs(e.deltaY) < 1) return;
       e.preventDefault();
-      (el as any).scrollLeft += e.deltaY;
+      (element as any).scrollLeft += e.deltaY;
     };
-    (el as any).addEventListener("wheel", onWheel, { passive: false });
-    return () => (el as any).removeEventListener("wheel", onWheel);
+    (element as any).addEventListener("wheel", onWheel, { passive: false });
+    return () => (element as any).removeEventListener("wheel", onWheel);
   }, []);
 
   const isCollapsed = !isOpen || openFiles.length === 0;
@@ -508,20 +508,20 @@ export default function FileViewerPanelComponent({
 
     const lineEls = (container as any).querySelectorAll("[data-line-number]");
     const injected = [];
-    for (const el of lineEls) {
+    for (const element of lineEls) {
       // Skip if already injected
-      if (el.querySelector(`.${styles.lineMentionBtn}`)) continue;
-      const btn = document.createElement("button");
-      btn.className = styles.lineMentionBtn;
-      btn.type = "button";
-      btn.title = "Reference this line in chat";
-      btn.textContent = "@";
-      el.appendChild(btn);
-      injected.push(btn);
+      if (element.querySelector(`.${styles.lineMentionBtn}`)) continue;
+      const button = document.createElement("button");
+      button.className = styles.lineMentionBtn;
+      button.type = "button";
+      button.title = "Reference this line in chat";
+      button.textContent = "@";
+      element.appendChild(button);
+      injected.push(button);
     }
 
     return () => {
-      for (const btn of injected) btn.remove();
+      for (const button of injected) button.remove();
     };
   }, [cached?.content, onMentionLines]);
 
@@ -587,10 +587,10 @@ export default function FileViewerPanelComponent({
         {/* Breadcrumb path */}
         {activeFile && (
           <div className={styles.breadcrumb}>
-            {getPathSegments(activeFile.path).map((seg: any, i: any, arr: any) => (
+            {getPathSegments(activeFile.path).map((seg: any, i: any, array: any) => (
               <span key={i}>
                 {i > 0 && <ChevronRight size={8} className={styles.breadcrumbSep} />}
-                <span style={i === arr.length - 1 ? { color: "var(--text-primary)", opacity: 1 } : undefined}>
+                <span style={i === array.length - 1 ? { color: "var(--text-primary)", opacity: 1 } : undefined}>
                   {seg}
                 </span>
               </span>

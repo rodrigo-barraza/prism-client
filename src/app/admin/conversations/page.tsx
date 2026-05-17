@@ -351,9 +351,9 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
   // Auto-scroll to bottom
   useEffect(() => {
     if (!loadingDetail && selectedConv && viewerBodyRef.current) {
-      const el = viewerBodyRef.current;
+      const element = viewerBodyRef.current;
       requestAnimationFrame(() => {
-        (el as any).scrollTop = (el as any).scrollHeight;
+        (element as any).scrollTop = (element as any).scrollHeight;
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -385,8 +385,8 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
     });
     setLoadingDetail(true);
     try {
-      const conv = await IrisService.getConversation(id);
-      setSelectedConv(conv);
+      const conversation = await IrisService.getConversation(id);
+      setSelectedConv(conversation);
     } catch {
       setSelectedConv(null);
     } finally {
@@ -536,7 +536,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
             <HistoryPanel
               sessions={conversations}
               activeId={selectedId}
-              onSelect={(conv: any) => selectConversation(conv.id)}
+              onSelect={(conversation: any) => selectConversation(conversation.id)}
               readOnly
               showProject
               showUsername

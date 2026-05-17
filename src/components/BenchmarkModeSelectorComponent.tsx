@@ -29,12 +29,12 @@ export default function BenchmarkModeSelector({ value, onChange }: any) {
 
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;
-    const idx = BENCHMARK_MODES.findIndex((m: any) => m.value === value);
+    const index = BENCHMARK_MODES.findIndex((m: any) => m.value === value);
     const buttons = (containerRef.current as any).querySelectorAll(`.${styles.option}`);
-    if (!buttons[idx]) return;
+    if (!buttons[index]) return;
 
     const containerRect = (containerRef.current as any).getBoundingClientRect();
-    const btnRect = buttons[idx].getBoundingClientRect();
+    const btnRect = buttons[index].getBoundingClientRect();
 
     setPillStyle({
       transform: `translateX(${btnRect.left - containerRect.left}px)`,

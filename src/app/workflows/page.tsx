@@ -106,11 +106,11 @@ function flattenConfigModels(config: any) {
 function buildConversationPorts(messages: any, supportedModalities = ["text"]) {
   const ports = [];
   for (let i = 0; i < messages.length; i++) {
-    const msg = messages[i];
+    const message = messages[i];
     ports.push(`${i}.text`);
     // User and assistant messages get extra modality ports (image, audio, etc.)
     // System messages are text-only (system prompt)
-    if (msg.role === "user" || msg.role === "assistant") {
+    if (message.role === "user" || message.role === "assistant") {
       for (const mod of supportedModalities) {
         if (mod !== "text") {
           ports.push(`${i}.${mod}`);
@@ -174,9 +174,9 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
   // Load config + saved workflows
   useEffect(() => {
     PrismService.getConfigWithLocalModels({
-      onConfig: (cfg: any) => {
-        setConfig(cfg);
-        setAllModels(flattenConfigModels(cfg));
+      onConfig: (config: any) => {
+        setConfig(config);
+        setAllModels(flattenConfigModels(config));
       },
       onLocalMerge: (merged: any) => {
         setConfig(merged);
@@ -628,8 +628,8 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
         PrismService.patchWorkflowConversations(
           workflowId,
           conversationIds,
-        ).catch((err: any) =>
-          console.error("Failed to link conversations to workflow:", err),
+        ).catch((error: any) =>
+          console.error("Failed to link conversations to workflow:", error),
         );
       }
     } catch (error: any) {

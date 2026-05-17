@@ -71,16 +71,16 @@ export function AdminHeaderProvider({ children }: any) {
     setControlsState(node);
   }, []);
 
-  const setTitleBadge = useCallback((val: any) => {
-    setTitleBadgeState(val);
+  const setTitleBadge = useCallback((value: any) => {
+    setTitleBadgeState(value);
   }, []);
 
-  const setDateRange = useCallback((val: any) => {
-    setDateRangeState(val);
+  const setDateRange = useCallback((value: any) => {
+    setDateRangeState(value);
   }, []);
 
-  const setSessionFilter = useCallback((val: any) => {
-    setSessionFilterState(val);
+  const setSessionFilter = useCallback((value: any) => {
+    setSessionFilterState(value);
   }, []);
 
   return (

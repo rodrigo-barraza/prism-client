@@ -117,9 +117,9 @@ export default function DashboardPage() {
 
       // Build model→tools lookup from Prism config
       if (prismConfig?.textToText?.models) {
-        const buildLookup = (cfg: any) => {
+        const buildLookup = (config: any) => {
           const lookup = {};
-          for (const [provider, models] of Object.entries(cfg.textToText?.models || {})) {
+          for (const [provider, models] of Object.entries(config.textToText?.models || {})) {
             for (const m of models) {
               const key = `${provider}:${m.name}`;
               if (m.tools?.length) (lookup as any)[key] = m.tools;

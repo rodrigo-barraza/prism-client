@@ -108,8 +108,8 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
   // -- Status cycle -------------------------------------------
 
   const handleCycleStatus = useCallback(async (task: any) => {
-    const idx = STATUS_CYCLE.indexOf(task.status);
-    const nextStatus = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
+    const index = STATUS_CYCLE.indexOf(task.status);
+    const nextStatus = STATUS_CYCLE[(index + 1) % STATUS_CYCLE.length];
     try {
       await ToolsApiService.updateAgenticTask(task.project, task.taskId, {
         status: nextStatus,
@@ -199,18 +199,18 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
       {summary && (summary as any).total > 0 && (
         <div className={styles.summaryRow}>
           {STATUS_CYCLE.map((s: any) => {
-            const cfg = (STATUS_CONFIG as any)[s];
+            const config = (STATUS_CONFIG as any)[s];
             const count = summary[s] || 0;
             if (count === 0 && statusFilter !== s) return null;
             const isActive = statusFilter === s;
             return (
               <button
                 key={s}
-                className={`${styles.summaryBadge} ${styles[cfg.colorClass]} ${isActive ? styles.summaryBadgeActive : ""}`}
+                className={`${styles.summaryBadge} ${styles[config.colorClass]} ${isActive ? styles.summaryBadgeActive : ""}`}
                 onClick={() => setStatusFilter(isActive ? null : s)}
-                title={`${isActive ? "Clear" : "Filter"}: ${cfg.label}`}
+                title={`${isActive ? "Clear" : "Filter"}: ${config.label}`}
               >
-                <cfg.icon size={9} />
+                <config.icon size={9} />
                 {count}
               </button>
             );
@@ -276,19 +276,19 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
 
       {/* -- Task list --------------------------------------- */}
       {tasks.map((task: any) => {
-        const cfg = (STATUS_CONFIG as any)[task.status] || STATUS_CONFIG.pending;
-        const StatusIcon = cfg.icon;
+        const config = (STATUS_CONFIG as any)[task.status] || STATUS_CONFIG.pending;
+        const StatusIcon = config.icon;
         const isExpanded = expandedId === task.taskId;
         const isConfirming = confirmingDeleteId === task.taskId;
 
         return (
-          <div key={`${task.project}-${task.taskId}`} className={`${styles.taskCard} ${styles[cfg.colorClass + "Card"]}`}>
+          <div key={`${task.project}-${task.taskId}`} className={`${styles.taskCard} ${styles[config.colorClass + "Card"]}`}>
             <div className={styles.taskCardHeader}>
               {/* Status cycle button */}
               <button
-                className={`${styles.statusBtn} ${styles[cfg.colorClass]}`}
+                className={`${styles.statusBtn} ${styles[config.colorClass]}`}
                 onClick={() => handleCycleStatus(task)}
-                title={`Status: ${cfg.label} — click to cycle`}
+                title={`Status: ${config.label} — click to cycle`}
               >
                 <StatusIcon size={14} />
               </button>
@@ -303,8 +303,8 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
                   {task.subject}
                 </div>
                 <div className={styles.taskMeta}>
-                  <span className={`${styles.taskStatusBadge} ${styles[cfg.colorClass]}`}>
-                    {cfg.label}
+                  <span className={`${styles.taskStatusBadge} ${styles[config.colorClass]}`}>
+                    {config.label}
                   </span>
                   {task.status === "in_progress" && task.activeForm && (
                     <span className={styles.activeFormBadge}>

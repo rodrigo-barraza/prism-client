@@ -505,7 +505,7 @@ export default function WorkflowInspector({
               onChange={
                 readOnly
                   ? undefined
-                  : (val: any) => onUpdateNodeContent?.(node.id, val)
+                  : (value: any) => onUpdateNodeContent?.(node.id, value)
               }
               readOnly={readOnly}
               placeholder="Enter text..."
@@ -588,19 +588,19 @@ export default function WorkflowInspector({
                 (n: any) => n.id === conn.sourceNodeId,
               );
               if (!sourceNode?.content) continue;
-              const msg = resolved[msgIdx];
+              const message = resolved[msgIdx];
               if (modality === "text") {
-                msg.content = msg.content
-                  ? `${msg.content}\n\n${sourceNode.content}`
+                message.content = message.content
+                  ? `${message.content}\n\n${sourceNode.content}`
                   : sourceNode.content;
               } else if (modality === "image") {
-                msg.images = [...(msg.images || []), "[image attached]"];
+                message.images = [...(message.images || []), "[image attached]"];
               } else if (modality === "audio") {
-                msg.audio = [...(msg.audio || []), "[audio attached]"];
+                message.audio = [...(message.audio || []), "[audio attached]"];
               } else if (modality === "video") {
-                msg.video = [...(msg.video || []), "[video attached]"];
+                message.video = [...(message.video || []), "[video attached]"];
               } else if (modality === "pdf") {
-                msg.pdf = [...(msg.pdf || []), "[pdf attached]"];
+                message.pdf = [...(message.pdf || []), "[pdf attached]"];
               }
             }
             const resolveRef = (ref: any) => {

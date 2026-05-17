@@ -148,7 +148,7 @@ export default function VisionPageComponent() {
       // play() returns a promise — only set streaming on success
       (video as any).play().then(() => {
         setIsStreaming(true);
-      }).catch((err: any) => {
+      }).catch((error: any) => {
         console.warn("Video play() interrupted:", error.message);
       });
     }
@@ -251,8 +251,8 @@ export default function VisionPageComponent() {
 
     (canvas as any).width = (video as any).videoWidth || (video as any).clientWidth;
     (canvas as any).height = (video as any).videoHeight || (video as any).clientHeight;
-    const ctx = (canvas as any).getContext("2d");
-    ctx.drawImage(video, 0, 0, (canvas as any).width, (canvas as any).height);
+    const context = (canvas as any).getContext("2d");
+    context.drawImage(video, 0, 0, (canvas as any).width, (canvas as any).height);
 
     // JPEG at 80% quality for bandwidth efficiency
     return (canvas as any).toDataURL("image/jpeg", 0.8);
@@ -322,7 +322,7 @@ export default function VisionPageComponent() {
             );
             setIsCapturing(false);
           },
-          onError: (err: any) => {
+          onError: (error: any) => {
             setResults((prev: any) =>
               prev.map((r: any) =>
                 r.id === resultId

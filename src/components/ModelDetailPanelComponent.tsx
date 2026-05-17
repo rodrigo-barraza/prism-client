@@ -192,13 +192,13 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
   // Collect pricing entries
   const pricingEntries = m.pricing
     ? Object.entries(m.pricing).filter(
-        ([, val]: any) => val != null && val > 0,
+        ([, value]: any) => value != null && value > 0,
       )
     : [];
 
   // Collect arena entries
   const arenaEntries = m.arena
-    ? Object.entries(m.arena).filter(([, val]: any) => val != null && val > 0)
+    ? Object.entries(m.arena).filter(([, value]: any) => value != null && value > 0)
     : [];
 
   // Capability flags
@@ -535,13 +535,13 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Pricing
                 </div>
                 <div className={styles.pricingGrid}>
-                  {pricingEntries.map(([key, val]: any) => (
+                  {pricingEntries.map(([key, value]: any) => (
                     <div key={key} className={styles.pricingRow}>
                       <span className={styles.pricingLabel}>
                         {(PRICING_LABELS as any)[key] || key}
                       </span>
                       <span className={styles.pricingValue}>
-                        ${typeof val === "number" ? val.toFixed(val < 0.01 ? 4 : 2) : val}
+                        ${typeof value === "number" ? value.toFixed(value < 0.01 ? 4 : 2) : value}
                       </span>
                     </div>
                   ))}
@@ -560,9 +560,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   LMArena ELO Scores
                 </div>
                 <div className={styles.arenaGrid}>
-                  {arenaEntries.map(([key, val]: any) => (
+                  {arenaEntries.map(([key, value]: any) => (
                     <div key={key} className={styles.arenaCard}>
-                      <span className={styles.arenaScore}>{val}</span>
+                      <span className={styles.arenaScore}>{value}</span>
                       <span className={styles.arenaLabel}>
                         {(ARENA_LABELS as any)[key] || key}
                       </span>

@@ -82,8 +82,8 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
     const canvas = document.createElement("canvas");
     canvas.width = (video as any).videoWidth;
     canvas.height = (video as any).videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
+    const context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0);
     const dataUrl = canvas.toDataURL("image/png");
     onFile?.(dataUrl, "image/png");
     stopWebcam();

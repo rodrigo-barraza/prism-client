@@ -299,8 +299,8 @@ export default function NavigationSidebarComponent({
           catStateRef.current.set((cat as any).id, p);
         }
 
-        const el = catElsRef.current.get((cat as any).id);
-        if (!el) continue;
+        const element = catElsRef.current.get((cat as any).id);
+        if (!element) continue;
 
         // Phase transition: worker finished → start winding down
         if ((cat as any).retired && p.phase === "active") {
@@ -336,12 +336,12 @@ export default function NavigationSidebarComponent({
           bounce();
 
           const fx = computeFx();
-          el.style.left = `${p.x}px`;
-          el.style.top = `${p.y}px`;
-          el.style.transform = `translate(-50%, -50%) scale(${fx.scale})`;
-          el.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
-          el.style.opacity = "0.85";
-          if (!el.src.endsWith("cat-spinning.gif")) el.src = "/cat-spinning.gif";
+          element.style.left = `${p.x}px`;
+          element.style.top = `${p.y}px`;
+          element.style.transform = `translate(-50%, -50%) scale(${fx.scale})`;
+          element.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
+          element.style.opacity = "0.85";
+          if (!element.src.endsWith("cat-spinning.gif")) element.src = "/cat-spinning.gif";
 
         } else if (p.phase === "windingDown") {
           // --- Winding down: decelerating, FX reversing ---
@@ -355,24 +355,24 @@ export default function NavigationSidebarComponent({
           // Reverse FX (wind down twice as fast as ramp up)
           p.accelTime = Math.max(0, p.accelTime - dt * 2);
           const fx = computeFx();
-          el.style.left = `${p.x}px`;
-          el.style.top = `${p.y}px`;
-          el.style.transform = `translate(-50%, -50%) scale(${fx.scale})`;
-          el.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
+          element.style.left = `${p.x}px`;
+          element.style.top = `${p.y}px`;
+          element.style.transform = `translate(-50%, -50%) scale(${fx.scale})`;
+          element.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
 
           // Stopped → transition to idle, switch to static cat
           if (Math.sqrt(p.vx * p.vx + p.vy * p.vy) < 2) {
             p.vx = 0;
             p.vy = 0;
             p.phase = "idle";
-            el.src = "/cat.gif";
+            element.src = "/cat.gif";
           }
 
         } else if (p.phase === "idle") {
           // --- Idle: sitting still, static sprite, waiting ---
-          el.style.transform = "translate(-50%, -50%)";
-          el.style.filter = "drop-shadow(0 1px 4px rgba(0,0,0,0.45))";
-          el.style.opacity = "0.85";
+          element.style.transform = "translate(-50%, -50%)";
+          element.style.filter = "drop-shadow(0 1px 4px rgba(0,0,0,0.45))";
+          element.style.opacity = "0.85";
 
         } else if (p.phase === "fading") {
           // --- Fading: decelerating + fade/shrink over 3 seconds ---
@@ -392,15 +392,15 @@ export default function NavigationSidebarComponent({
           const opacity = 0.85 * (1 - progress);
           const scale = 1 - progress * 0.3;
 
-          el.style.left = `${p.x}px`;
-          el.style.top = `${p.y}px`;
-          el.style.transform = `translate(-50%, -50%) scale(${scale})`;
-          el.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
-          el.style.opacity = `${opacity}`;
+          element.style.left = `${p.x}px`;
+          element.style.top = `${p.y}px`;
+          element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+          element.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
+          element.style.opacity = `${opacity}`;
 
           // Switch to static cat once slowed enough
-          if (Math.sqrt(p.vx * p.vx + p.vy * p.vy) < 2 && el.src.endsWith("cat-spinning.gif")) {
-            el.src = "/cat.gif";
+          if (Math.sqrt(p.vx * p.vx + p.vy * p.vy) < 2 && element.src.endsWith("cat-spinning.gif")) {
+            element.src = "/cat.gif";
           }
 
           if (progress >= 1) toRemove.push((cat as any).id);
@@ -566,7 +566,7 @@ export default function NavigationSidebarComponent({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={cat.id}
-              ref={(el: any) => { if (el) catElsRef.current.set(cat.id, el); else catElsRef.current.delete(cat.id); }}
+              ref={(element: any) => { if (element) catElsRef.current.set(cat.id, element); else catElsRef.current.delete(cat.id); }}
               src="/cat-spinning.gif"
               alt=""
               className={styles.miniCat}

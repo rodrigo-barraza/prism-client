@@ -141,11 +141,11 @@ function InputArgsToggle({ args }: any) {
       </button>
       {show && (
         <div className={styles.inputArgsContent}>
-          {entries.map(([key, val]: any) => {
-            const isLong = typeof val === "string" && val.length > 80;
-            const display = typeof val === "string"
-              ? val
-              : JSON.stringify(val, null, 2);
+          {entries.map(([key, value]: any) => {
+            const isLong = typeof value === "string" && value.length > 80;
+            const display = typeof value === "string"
+              ? value
+              : JSON.stringify(value, null, 2);
 
             return (
               <div key={key} className={styles.inputArgRow}>
@@ -208,11 +208,11 @@ function OutputResultToggle({ result }: any) {
           {display.type === "object" && !Array.isArray(display.data) ? (
             Object.entries(display.data)
               .filter(([, v]: any) => v !== undefined && v !== null)
-              .map(([key, val]: any) => {
-                const isComplex = typeof val === "object";
+              .map(([key, value]: any) => {
+                const isComplex = typeof value === "object";
                 const valStr = isComplex
-                  ? JSON.stringify(val, null, 2)
-                  : String(val);
+                  ? JSON.stringify(value, null, 2)
+                  : String(value);
                 const isLong = valStr.length > 80;
 
                 return (
@@ -532,10 +532,10 @@ function ansi256ToHex(n: any) {
   if (n < 8) return ANSI_COLORS[n];
   if (n < 16) return ANSI_BRIGHT_COLORS[n - 8];
   if (n < 232) {
-    const idx = n - 16;
-    const r = Math.floor(idx / 36) * 51;
-    const g = (Math.floor(idx / 6) % 6) * 51;
-    const b = (idx % 6) * 51;
+    const index = n - 16;
+    const r = Math.floor(index / 36) * 51;
+    const g = (Math.floor(index / 6) % 6) * 51;
+    const b = (index % 6) * 51;
     return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }
   const v = (n - 232) * 10 + 8;
@@ -943,11 +943,11 @@ function BrowserActionRenderer({ result, args }: any) {
 
       {action === "get_elements" && parsed.elements && (
         <div className={styles.dirList}>
-          {parsed.elements.slice(0, 30).map((el: any, i: any) => (
+          {parsed.elements.slice(0, 30).map((element: any, i: any) => (
             <div key={i} className={styles.dirEntry}>
-              <code className={styles.inlineCode}>{el.selector}</code>
+              <code className={styles.inlineCode}>{element.selector}</code>
 
-              {el.text && <span>{el.text}</span>}
+              {element.text && <span>{element.text}</span>}
 
             </div>
           ))}
@@ -1109,11 +1109,11 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
     return null;
   };
 
-  const toggleMember = (idx: any) => {
+  const toggleMember = (index: any) => {
     setExpandedMembers((prev: any) => {
       const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);
-      else next.add(idx);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
       return next;
     });
   };

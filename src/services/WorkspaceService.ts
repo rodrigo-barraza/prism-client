@@ -11,13 +11,13 @@ const API_BASE = PRISM_SERVICE_URL;
  */
 export default class WorkspaceService {
   static async list() {
-    const res = await fetch(`${API_BASE}/workspaces`, {
+    const response = await fetch(`${API_BASE}/workspaces`, {
       method: "GET",
       headers: getBaseHeaders(),
       cache: "no-store",
     });
-    if (!res.ok) throw new Error(`WorkspaceService.list failed: ${res.status}`);
-    return res.json();
+    if (!response.ok) throw new Error(`WorkspaceService.list failed: ${response.status}`);
+    return response.json();
   }
 
   /**
@@ -26,13 +26,13 @@ export default class WorkspaceService {
    * @returns {Promise<{ workspaces: object[], agents: object[], staticRoots: string[] }>}
    */
   static async listFull() {
-    const res = await fetch(`${API_BASE}/workspaces/full`, {
+    const response = await fetch(`${API_BASE}/workspaces/full`, {
       method: "GET",
       headers: getBaseHeaders(),
       cache: "no-store",
     });
-    if (!res.ok) throw new Error(`WorkspaceService.listFull failed: ${res.status}`);
-    return res.json();
+    if (!response.ok) throw new Error(`WorkspaceService.listFull failed: ${response.status}`);
+    return response.json();
   }
 
   /**
@@ -41,13 +41,13 @@ export default class WorkspaceService {
    * @returns {Promise<object>} Updated workspace config with workspaceRoots, staticRoots, userRoots
    */
   static async update(roots: any) {
-    const res = await fetch(`${API_BASE}/workspaces`, {
+    const response = await fetch(`${API_BASE}/workspaces`, {
       method: "PUT",
       headers: { ...getBaseHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ roots }),
     });
-    if (!res.ok) throw new Error(`WorkspaceService.update failed: ${res.status}`);
-    return res.json();
+    if (!response.ok) throw new Error(`WorkspaceService.update failed: ${response.status}`);
+    return response.json();
   }
 
   /**
@@ -56,13 +56,13 @@ export default class WorkspaceService {
    * @returns {Promise<object>} Validation result with resolvedPath, isWsl, exists, etc.
    */
   static async validate(path: any) {
-    const res = await fetch(`${API_BASE}/workspaces/validate`, {
+    const response = await fetch(`${API_BASE}/workspaces/validate`, {
       method: "POST",
       headers: { ...getBaseHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ path }),
     });
-    if (!res.ok) throw new Error(`WorkspaceService.validate failed: ${res.status}`);
-    return res.json();
+    if (!response.ok) throw new Error(`WorkspaceService.validate failed: ${response.status}`);
+    return response.json();
   }
 
   /**
@@ -74,13 +74,13 @@ export default class WorkspaceService {
   static async tree(path: any, maxDepth = 3) {
     const params = new URLSearchParams({ path });
     if (maxDepth !== 3) params.set("maxDepth", String(maxDepth));
-    const res = await fetch(`${API_BASE}/workspaces/tree?${params}`, {
+    const response = await fetch(`${API_BASE}/workspaces/tree?${params}`, {
       method: "GET",
       headers: getBaseHeaders(),
       cache: "no-store",
     });
-    if (!res.ok) throw new Error(`WorkspaceService.tree failed: ${res.status}`);
-    return res.json();
+    if (!response.ok) throw new Error(`WorkspaceService.tree failed: ${response.status}`);
+    return response.json();
   }
 }
 

@@ -34,7 +34,7 @@ export default function RainbowCanvasComponent({ turbo = false, animate = false,
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = (canvas as any).getContext("2d", { alpha: false });
+    const context = (canvas as any).getContext("2d", { alpha: false });
     const { width, height } = canvas;
     const cols = Math.ceil(width / PIXEL_SIZE);
     const rows = Math.ceil(height / PIXEL_SIZE);
@@ -46,8 +46,8 @@ export default function RainbowCanvasComponent({ turbo = false, animate = false,
         const t = (x / cols + y / rows) * 0.5 + s.offset / 360;
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(colors, t + dither);
-        ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
-        ctx.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+        context.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
+        context.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
       }
     }
   }, []);

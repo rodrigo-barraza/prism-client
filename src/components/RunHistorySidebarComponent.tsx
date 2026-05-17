@@ -260,7 +260,7 @@ export default function RunHistorySidebarComponent({
                 No runs yet
               </div>
             ) : (
-              runHistory.map((run: any, idx: any) => {
+              runHistory.map((run: any, index: any) => {
                 const isActive = activeRunId === run.id;
                 const totalCost =
                   run.summary.totalCost ??
@@ -277,7 +277,7 @@ export default function RunHistorySidebarComponent({
                     <div className={styles.runItemHeader}>
                       <DateTimeBadgeComponent date={run.completedAt} mini />
                       <CostBadgeComponent cost={totalCost} mini />
-                      <span className={styles.runIndex}>#{runHistory.length - idx}</span>
+                      <span className={styles.runIndex}>#{runHistory.length - index}</span>
                       {run.aborted && (
                         <AlertTriangle size={11} style={{ color: "var(--warning)", flexShrink: 0 }} />
                       )}

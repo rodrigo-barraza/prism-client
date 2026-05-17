@@ -267,13 +267,13 @@ export default function ToolRequestsPage() {
           <FilterInputComponent
             placeholder="Filter by tool name..."
             value={filters.toolName}
-            onChange={(val: any) => handleFilterChange("toolName", val)}
+            onChange={(value: any) => handleFilterChange("toolName", value)}
           />
         </FilterGroupComponent>
         <FilterGroupComponent label="Domain">
           <FilterSelectComponent
             value={filters.domain}
-            onChange={(val: any) => handleFilterChange("domain", val)}
+            onChange={(value: any) => handleFilterChange("domain", value)}
             options={DOMAIN_OPTIONS}
           />
         </FilterGroupComponent>
@@ -281,13 +281,13 @@ export default function ToolRequestsPage() {
           <FilterInputComponent
             placeholder="Filter by agent..."
             value={filters.callerAgent}
-            onChange={(val: any) => handleFilterChange("callerAgent", val)}
+            onChange={(value: any) => handleFilterChange("callerAgent", value)}
           />
         </FilterGroupComponent>
         <FilterGroupComponent label="Status">
           <FilterSelectComponent
             value={filters.success}
-            onChange={(val: any) => handleFilterChange("success", val)}
+            onChange={(value: any) => handleFilterChange("success", value)}
             options={[
               { value: "", label: "All" },
               { value: "true", label: "Success" },

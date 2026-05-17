@@ -153,9 +153,9 @@ export default function SynthesisComponent() {
   // -- Load config -----------------------------------------------
   useEffect(() => {
     PrismService.getConfigWithLocalModels({
-      onConfig: (cfg: any) => {
-        setConfig(cfg);
-        restoreModel(cfg, setSettings, {
+      onConfig: (config: any) => {
+        setConfig(config);
+        restoreModel(config, setSettings, {
           fallback: (config: any) => {
             // Auto-select first text-to-text provider/model if none set
             const textModels = config?.textToText?.models || {};
@@ -899,26 +899,26 @@ export default function SynthesisComponent() {
             className={styles.collapsibleSection}
           >
             <div className={styles.seedMessages}>
-              {seedMessages.map((msg: any, i: any) => (
+              {seedMessages.map((message: any, i: any) => (
                 <div key={i} className={styles.seedMessage}>
                   <div className={styles.seedMessageHeader}>
                     <button
-                      className={`${styles.roleToggle} ${styles[`role_${msg.role}`]}`}
+                      className={`${styles.roleToggle} ${styles[`role_${message.role}`]}`}
                       onClick={() =>
                         updateSeedMessage(
                           i,
                           "role",
-                          msg.role === "user" ? "assistant" : "user",
+                          message.role === "user" ? "assistant" : "user",
                         )
                       }
                       title="Toggle role"
                     >
-                      {msg.role === "user" ? (
+                      {message.role === "user" ? (
                         <User size={12} />
                       ) : (
                         <Bot size={12} />
                       )}
-                      {msg.role}
+                      {message.role}
                     </button>
                     <IconButtonComponent
                       icon={<Trash2 size={12} />}
@@ -930,11 +930,11 @@ export default function SynthesisComponent() {
                   </div>
                   <TextAreaComponent
                     className={styles.seedTextarea}
-                    value={msg.content}
+                    value={message.content}
                     onChange={(e: any) =>
                       updateSeedMessage(i, "content", e.target.value)
                     }
-                    placeholder={`${msg.role === "user" ? "User" : "Assistant"} message...`}
+                    placeholder={`${message.role === "user" ? "User" : "Assistant"} message...`}
                     minRows={2}
                     maxRows={6}
                   />
@@ -1078,7 +1078,7 @@ function streamTurn(settings: any, turnSystemPrompt: any, history: any, onPartia
         },
         onThinking: onThinking || undefined,
         onDone: () => resolve(collected),
-        onError: (err: any) => reject(error),
+        onError: (error: any) => reject(error),
       },
     );
 

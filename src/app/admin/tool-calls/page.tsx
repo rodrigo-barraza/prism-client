@@ -268,24 +268,24 @@ export default function ToolCallsPage() {
   // -- Sorted data --------------------------------------------
   const sortedTools = useMemo(() => {
     if (!(stats as any)?.byTool) return [];
-    const arr = [...(stats as any).byTool];
-    arr.sort((a: any, b: any) => {
+    const array = [...(stats as any).byTool];
+    array.sort((a: any, b: any) => {
       const mult = toolOrder === "desc" ? -1 : 1;
       if (toolSort === "toolName") return mult * a.toolName.localeCompare(b.toolName);
       return mult * ((a[toolSort] || 0) - (b[toolSort] || 0));
     });
-    return arr;
+    return array;
   }, [stats, toolSort, toolOrder]);
 
   const sortedDomains = useMemo(() => {
     if (!(stats as any)?.byDomain) return [];
-    const arr = [...(stats as any).byDomain];
-    arr.sort((a: any, b: any) => {
+    const array = [...(stats as any).byDomain];
+    array.sort((a: any, b: any) => {
       const mult = domainOrder === "desc" ? -1 : 1;
       if (domainSort === "domain") return mult * (a.domain || "").localeCompare(b.domain || "");
       return mult * ((a[domainSort] || 0) - (b[domainSort] || 0));
     });
-    return arr;
+    return array;
   }, [stats, domainSort, domainOrder]);
 
   // -- Derived computed stats ---------------------------------
@@ -427,22 +427,22 @@ export default function ToolCallsPage() {
             <AlertTriangle size={16} /> Errors by Tool
           </h2>
           <div className={styles.errorGrid}>
-            {stats.errorsByTool.map((err: any) => (
-              <div key={err._id} className={styles.errorCard}>
+            {stats.errorsByTool.map((error: any) => (
+              <div key={error._id} className={styles.errorCard}>
                 <div className={styles.errorCardHeader}>
-                  <BadgeComponent variant="provider">{err._id}</BadgeComponent>
+                  <BadgeComponent variant="provider">{error._id}</BadgeComponent>
                   <span className={styles.errorCardCount}>
-                    {err.errorCount} error{err.errorCount !== 1 ? "s" : ""}
+                    {error.errorCount} error{error.errorCount !== 1 ? "s" : ""}
                   </span>
                 </div>
-                {err.lastError && (
+                {error.lastError && (
                   <div className={styles.errorCardMessage}>
-                    {err.lastError}
+                    {error.lastError}
                   </div>
                 )}
-                {err.lastErrorAt && (
+                {error.lastErrorAt && (
                   <div className={styles.errorCardTime}>
-                    Last: {formatDateTime(err.lastErrorAt)}
+                    Last: {formatDateTime(error.lastErrorAt)}
                   </div>
                 )}
               </div>

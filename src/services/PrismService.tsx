@@ -34,19 +34,19 @@ export default class PrismService {
    * @returns {Promise<any>}
    */
   static async _request(endpoint: any, { method = "POST", body }: any = {}) {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
       method,
       headers: getHeaders(),
       cache: "no-store",
       ...(body && { body: JSON.stringify(body) }),
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(error.message || `Prism API error: ${res.status}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || `Prism API error: ${response.status}`);
     }
 
-    return res.json();
+    return response.json();
   }
 
   /**
@@ -741,20 +741,20 @@ export default class PrismService {
 
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}${endpoint}`, {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
           method,
           headers: getHeaders(),
           ...(body && { body: JSON.stringify(body) }),
           signal: controller.signal,
         });
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          if (onError) onError(new Error(error.message || `HTTP ${res.status}`));
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          if (onError) onError(new Error(error.message || `HTTP ${response.status}`));
           return;
         }
 
-        const reader = res.body.getReader();
+        const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
 
@@ -952,9 +952,9 @@ export default class PrismService {
     };
 
     if (images?.length > 0) {
-      (userMessage as any).images = images.map((img: any) => {
-        if (typeof img === "string") return img;
-        return `data:${img.mimeType || "image/png"};base64,${img.imageData}`;
+      (userMessage as any).images = images.map((image: any) => {
+        if (typeof image === "string") return image;
+        return `data:${image.mimeType || "image/png"};base64,${image.imageData}`;
       });
     }
 
@@ -999,17 +999,17 @@ export default class PrismService {
    * @returns {Promise<{ audioDataUrl: string, contentType: string }>}
    */
   static async generateSpeech(payload: any) {
-    const res = await fetch(`${API_BASE}/text-to-audio?format=dataUrl`, {
+    const response = await fetch(`${API_BASE}/text-to-audio?format=dataUrl`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) {
-      const text = await res.text();
+    if (!response.ok) {
+      const text = await response.text();
       let message = "Failed to generate speech";
       try {
-        const err = JSON.parse(text);
+        const error = JSON.parse(text);
         message = error.message || message;
       } catch {
         /* ignore */
@@ -1017,7 +1017,7 @@ export default class PrismService {
       throw new Error(message);
     }
 
-    return res.json();
+    return response.json();
   }
 
   // ---------------------------------------------------------------------------
@@ -1208,7 +1208,7 @@ export default class PrismService {
       try {
         if (onProgress) onProgress(0);
 
-        const res = await fetch(`${API_BASE}/lm-studio/load`, {
+        const response = await fetch(`${API_BASE}/lm-studio/load`, {
           method: "POST",
           headers: getHeaders(),
           body: JSON.stringify(body),
@@ -1217,9 +1217,9 @@ export default class PrismService {
 
         clearInterval(progressInterval);
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          if (onError) onError(new Error(error.message || `HTTP ${res.status}`));
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          if (onError) onError(new Error(error.message || `HTTP ${response.status}`));
           return;
         }
 

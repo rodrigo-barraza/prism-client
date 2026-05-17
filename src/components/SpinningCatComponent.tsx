@@ -38,16 +38,16 @@ const MAX_GLOW_OPACITY = 0.9; // Maximum glow drop-shadow opacity
 function renderFrame(canvas: any, frames: any, bitmaps: any, index: any) {
   if (!canvas || !bitmaps?.length) return;
 
-  const ctx = canvas.getContext("2d");
+  const context = canvas.getContext("2d");
   const frame = frames[index];
   const bitmap = bitmaps[index];
   if (!frame || !bitmap) return;
 
   if (frame.disposalType === 2) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    context.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  ctx.drawImage(bitmap, frame.dims.left, frame.dims.top);
+  context.drawImage(bitmap, frame.dims.left, frame.dims.top);
 }
 
 export default function SpinningCatComponent({
@@ -90,8 +90,8 @@ export default function SpinningCatComponent({
 
     (async () => {
       try {
-        const res = await fetch("/cat-spinning.gif");
-        const buffer = await res.arrayBuffer();
+        const response = await fetch("/cat-spinning.gif");
+        const buffer = await response.arrayBuffer();
         const gif = parseGIF(buffer);
         const frames = decompressFrames(gif, true);
         if (cancelled) return;
@@ -185,8 +185,8 @@ export default function SpinningCatComponent({
         if (s.frameIndex === 0) {
           const canvas = canvasRef.current;
           if (canvas) {
-            const ctx = (canvas as any).getContext("2d");
-            ctx.clearRect(0, 0, (canvas as any).width, (canvas as any).height);
+            const context = (canvas as any).getContext("2d");
+            context.clearRect(0, 0, (canvas as any).width, (canvas as any).height);
           }
         }
 

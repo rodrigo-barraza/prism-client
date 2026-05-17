@@ -482,15 +482,15 @@ export default function AgentComponent({
   // they scroll back to the bottom (within SCROLL_BOTTOM_THRESHOLD px), it
   // re-engages.  Uses a passive scroll listener for zero main-thread cost.
   useEffect(() => {
-    const el = messagesListRef.current;
-    if (!el) return;
+    const element = messagesListRef.current;
+    if (!element) return;
     const onScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = el;
+      const { scrollTop, scrollHeight, clientHeight } = element;
       isUserNearBottomRef.current =
         scrollHeight - scrollTop - clientHeight <= SCROLL_BOTTOM_THRESHOLD;
     };
-    (el as any).addEventListener("scroll", onScroll, { passive: true });
-    return () => (el as any).removeEventListener("scroll", onScroll);
+    (element as any).addEventListener("scroll", onScroll, { passive: true });
+    return () => (element as any).removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -517,12 +517,12 @@ export default function AgentComponent({
   // URL ?model= param takes highest priority over localStorage memory.
   useEffect(() => {
     /** Try to apply the URL model param against the given config. */
-    const tryApplyUrlModel = (cfg: any) => {
+    const tryApplyUrlModel = (config: any) => {
       if (!initialModel || urlModelAppliedRef.current) return false;
       const [urlProvider, ...rest] = initialModel.split(":");
       const urlModelName = rest.join(":"); // handles model names with colons
       if (!urlProvider || !urlModelName) return false;
-      const providerModels = cfg.textToText?.models?.[urlProvider] || [];
+      const providerModels = config.textToText?.models?.[urlProvider] || [];
       const modelDef = providerModels.find((m: any) => m.name === urlModelName);
       if (!modelDef) return false; // model not (yet) in config — may arrive with local merge
       // FC gate for agent mode
@@ -537,9 +537,9 @@ export default function AgentComponent({
       return true;
     };
 
-    const fcFallback = (cfg: any) => {
-      const textModels = cfg.textToText?.models || {};
-      for (const provider of cfg.providerList || []) {
+    const fcFallback = (config: any) => {
+      const textModels = config.textToText?.models || {};
+      for (const provider of config.providerList || []) {
         const models = textModels[provider] || [];
         // Direct Chat: pick first model; agents: pick first FC-capable model
         const fallbackModel = isNoAgent
@@ -558,11 +558,11 @@ export default function AgentComponent({
     };
 
     PrismService.getConfigWithLocalModels({
-      onConfig: (cfg: any) => {
-        setConfig(cfg);
+      onConfig: (config: any) => {
+        setConfig(config);
         // URL model param takes priority over localStorage memory
-        if (!tryApplyUrlModel(cfg)) {
-          restoreModel(cfg, setSettings, { fcOnly: !isNoAgent, fallback: fcFallback });
+        if (!tryApplyUrlModel(config)) {
+          restoreModel(config, setSettings, { fcOnly: !isNoAgent, fallback: fcFallback });
         }
       },
       onLocalMerge: (merged: any) => {
@@ -783,9 +783,9 @@ export default function AgentComponent({
   useEffect(() => {
     if (!activeId || messages.length === 0) return;
     setSessions((prev: any) => {
-      const idx = prev.findIndex((s: any) => s.id === activeId);
-      if (idx === -1) return prev;
-      const existing = prev[idx];
+      const index = prev.findIndex((s: any) => s.id === activeId);
+      if (index === -1) return prev;
+      const existing = prev[index];
       // Only patch if something actually changed to avoid churn
       const resolvedCost = (backendSessionStats as any)?.totalCost ?? totalCost;
       const resolvedModalities = (backendSessionStats as any)?.modalities ?? modalities;
@@ -811,7 +811,7 @@ export default function AgentComponent({
         return prev;
       }
       const updated = [...prev];
-      updated[idx] = {
+      updated[index] = {
         ...existing,
         title,
         totalCost: resolvedCost,
@@ -892,14 +892,14 @@ export default function AgentComponent({
 
   // -- Stable input change handler -----------------------------
   const handleInputChange = useCallback((_e: any) => {
-    const el = textareaRef.current;
-    if (!el) return;
-    const val = serializeEditable(el);
-    inputValueRef.current = val;
-    const nowHasInput = val.trim().length > 0;
+    const element = textareaRef.current;
+    if (!element) return;
+    const value = serializeEditable(element);
+    inputValueRef.current = value;
+    const nowHasInput = value.trim().length > 0;
     setHasInput((prev: any) => (prev !== nowHasInput ? nowHasInput : prev));
     // -- Mention autocomplete detection --
-    detectMentionQueryRef.current?.(el);
+    detectMentionQueryRef.current?.(element);
   }, []);
 
   // Helper to programmatically set the editable value (quick prompts, queue cancel)
@@ -923,9 +923,9 @@ export default function AgentComponent({
     range.insertNode(textNode);
     placeCaretAfter(textNode);
     // Sync
-    const el = textareaRef.current;
-    if (el) {
-      inputValueRef.current = serializeEditable(el);
+    const element = textareaRef.current;
+    if (element) {
+      inputValueRef.current = serializeEditable(element);
       setHasInput(inputValueRef.current.trim().length > 0);
     }
   }, []);
@@ -933,14 +933,14 @@ export default function AgentComponent({
   // -- File mention handler (@ in workspace tree) ---------------
   // Inserts a styled badge at the current cursor position.
   const handleMentionFile = useCallback((filePath: any) => {
-    const el = textareaRef.current;
-    if (!el) return;
+    const element = textareaRef.current;
+    if (!element) return;
     const name = filePath.split("/").pop();
     const isDir = !name.includes(".");
     const badge = createMentionBadge(filePath, name, isDir ? "directory" : "file");
     const space = document.createTextNode(" ");
     const sel = window.getSelection();
-    const range = sel.rangeCount && (el as any).contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
+    const range = sel.rangeCount && (element as any).contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
     if (range) {
       const container = range.startContainer;
       if (container.nodeType === Node.TEXT_NODE) {
@@ -953,21 +953,21 @@ export default function AgentComponent({
       range.insertNode(space);
       range.insertNode(badge);
     } else {
-      if ((el as any).textContent.length > 0) (el as any).appendChild(document.createTextNode(" "));
-      (el as any).appendChild(badge);
-      (el as any).appendChild(space);
+      if ((element as any).textContent.length > 0) (element as any).appendChild(document.createTextNode(" "));
+      (element as any).appendChild(badge);
+      (element as any).appendChild(space);
     }
     placeCaretAfter(space);
-    inputValueRef.current = serializeEditable(el);
+    inputValueRef.current = serializeEditable(element);
     setHasInput(true);
-    (el as any).focus();
+    (element as any).focus();
   }, [createMentionBadge]);
 
   // -- File-line mention handler (@ gutter in FileViewerPanel) --
   // Inserts a file-line badge (e.g. 📄 file.js:42 or 📄 file.js:10-25)
   const handleMentionLines = useCallback((filePath: any, startLine: any, endLine: any) => {
-    const el = textareaRef.current;
-    if (!el) return;
+    const element = textareaRef.current;
+    if (!element) return;
     const name = filePath.split("/").pop();
     const badge = createMentionBadge(filePath, name, "file", {
       lineStart: startLine,
@@ -975,7 +975,7 @@ export default function AgentComponent({
     });
     const space = document.createTextNode(" ");
     const sel = window.getSelection();
-    const range = sel.rangeCount && (el as any).contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
+    const range = sel.rangeCount && (element as any).contains(sel.anchorNode) ? sel.getRangeAt(0) : null;
     if (range) {
       const container = range.startContainer;
       if (container.nodeType === Node.TEXT_NODE) {
@@ -988,14 +988,14 @@ export default function AgentComponent({
       range.insertNode(space);
       range.insertNode(badge);
     } else {
-      if ((el as any).textContent.length > 0) (el as any).appendChild(document.createTextNode(" "));
-      (el as any).appendChild(badge);
-      (el as any).appendChild(space);
+      if ((element as any).textContent.length > 0) (element as any).appendChild(document.createTextNode(" "));
+      (element as any).appendChild(badge);
+      (element as any).appendChild(space);
     }
     placeCaretAfter(space);
-    inputValueRef.current = serializeEditable(el);
+    inputValueRef.current = serializeEditable(element);
     setHasInput(true);
-    (el as any).focus();
+    (element as any).focus();
   }, [createMentionBadge]);
 
   // ── Mention Autocomplete ───────────────────────────────────────
@@ -1038,9 +1038,9 @@ export default function AgentComponent({
   }, [ensureMentionCache]);
 
   /** Detect @query from cursor position inside contentEditable. */
-  const detectMentionQuery = useCallback((el: any) => {
+  const detectMentionQuery = useCallback((element: any) => {
     const sel = window.getSelection();
-    if (!sel.rangeCount || !el.contains(sel.anchorNode)) { setMentionOpen(false); return; }
+    if (!sel.rangeCount || !element.contains(sel.anchorNode)) { setMentionOpen(false); return; }
     const anchor = sel.anchorNode;
     if (anchor.nodeType !== Node.TEXT_NODE) { setMentionOpen(false); return; }
     const result = detectMentionToken(anchor.textContent, sel.anchorOffset);
@@ -1064,18 +1064,18 @@ export default function AgentComponent({
 
   /** Apply mention — replace @query text with a badge span. */
   const applyMention = useCallback((entry: any) => {
-    const el = textareaRef.current;
-    if (!el || !mentionAnchorRef.current) return;
+    const element = textareaRef.current;
+    if (!element || !mentionAnchorRef.current) return;
     const { node, offset } = mentionAnchorRef.current;
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
     const badge = createMentionBadge(entry.path, entry.name, entry.type);
     const space = applyMentionToTextNode(node, offset, sel.anchorOffset, badge);
     placeCaretAfter(space);
-    inputValueRef.current = serializeEditable(el);
+    inputValueRef.current = serializeEditable(element);
     setHasInput(inputValueRef.current.trim().length > 0);
     setMentionOpen(false);
-    (el as any).focus();
+    (element as any).focus();
   }, [createMentionBadge]);
 
   // -- Image handlers ------------------------------------------
@@ -1450,15 +1450,15 @@ export default function AgentComponent({
                 });
               }
               setMessages((msgPrev: any) => {
-                const arr = [...msgPrev];
-                const last = arr[arr.length - 1];
+                const array = [...msgPrev];
+                const last = array[array.length - 1];
                 if (last?.role === "assistant") {
-                  arr[arr.length - 1] = { ...last, toolCalls: updated, contentSegments: snapshotSegments(), textFragments: [...textFragments], thinkingFragments: [...thinkingFragments] };
+                  array[array.length - 1] = { ...last, toolCalls: updated, contentSegments: snapshotSegments(), textFragments: [...textFragments], thinkingFragments: [...thinkingFragments] };
                 } else {
                   // Tool events can arrive before any text chunks — create placeholder
-                  arr.push({ role: "assistant", content: "", toolCalls: updated, contentSegments: snapshotSegments(), textFragments: [...textFragments], thinkingFragments: [...thinkingFragments] });
+                  array.push({ role: "assistant", content: "", toolCalls: updated, contentSegments: snapshotSegments(), textFragments: [...textFragments], thinkingFragments: [...thinkingFragments] });
                 }
-                return arr;
+                return array;
               });
               return updated;
             });
@@ -1552,14 +1552,14 @@ export default function AgentComponent({
                 });
               }
               setMessages((msgPrev: any) => {
-                const arr = [...msgPrev];
-                const last = arr[arr.length - 1];
+                const array = [...msgPrev];
+                const last = array[array.length - 1];
                 if (last?.role === "assistant") {
-                  arr[arr.length - 1] = { ...last, toolCalls: updated, contentSegments: snapshotSegments(), textFragments: [...textFragments], thinkingFragments: [...thinkingFragments] };
+                  array[array.length - 1] = { ...last, toolCalls: updated, contentSegments: snapshotSegments(), textFragments: [...textFragments], thinkingFragments: [...thinkingFragments] };
                 } else {
-                  arr.push({ role: "assistant", content: "", toolCalls: updated, contentSegments: snapshotSegments(), textFragments: [...textFragments], thinkingFragments: [...thinkingFragments] });
+                  array.push({ role: "assistant", content: "", toolCalls: updated, contentSegments: snapshotSegments(), textFragments: [...textFragments], thinkingFragments: [...thinkingFragments] });
                 }
-                return arr;
+                return array;
               });
               return updated;
             });
@@ -2073,7 +2073,7 @@ export default function AgentComponent({
             })();
             resolve();
           },
-          onError: (err: any) => reject(error),
+          onError: (error: any) => reject(error),
         });
       });
 
@@ -2378,11 +2378,11 @@ export default function AgentComponent({
   const [chatGlitchLabel, setChatGlitchLabel] = useState(null);
 
   const handleNewChatGlitch = useCallback(() => {
-    const el = chatNewBtnRef.current;
-    if (el) {
-      (el as any).classList.remove(chatStyles.chatHeaderNewBtnRainbow);
-      void (el as any).offsetWidth;
-      (el as any).classList.add(chatStyles.chatHeaderNewBtnRainbow);
+    const element = chatNewBtnRef.current;
+    if (element) {
+      (element as any).classList.remove(chatStyles.chatHeaderNewBtnRainbow);
+      void (element as any).offsetWidth;
+      (element as any).classList.add(chatStyles.chatHeaderNewBtnRainbow);
 
       setChatGlitchLabel(glitchText());
       clearInterval(chatGlitchInterval.current);
@@ -2392,7 +2392,7 @@ export default function AgentComponent({
 
       clearTimeout(chatRainbowTimer.current);
       chatRainbowTimer.current = setTimeout(() => {
-        (el as any).classList.remove(chatStyles.chatHeaderNewBtnRainbow);
+        (element as any).classList.remove(chatStyles.chatHeaderNewBtnRainbow);
         clearInterval(chatGlitchInterval.current);
         chatGlitchInterval.current = null;
         setChatGlitchLabel(null);
@@ -2488,7 +2488,7 @@ export default function AgentComponent({
   }, [workspaces, (currentWorkspace as any)?.path, setCurrentWorkspace]);
 
   const handleSelectSession = useCallback(
-    async (conv: any) => {
+    async (conversation: any) => {
       // If generating, snapshot the current session so user can switch back to it
       if (isGenerating) {
         const currentId = agentSessionIdRef.current;
@@ -2501,7 +2501,7 @@ export default function AgentComponent({
         setIsGenerating(false);
       }
       // Already viewing this session — just scroll to bottom instantly
-      if (conv.id === activeId) {
+      if (conversation.id === activeId) {
         (endRef.current as any)?.scrollIntoView({ behavior: "instant" });
         return;
       }
@@ -2515,10 +2515,10 @@ export default function AgentComponent({
       // If the target session is still generating in the background,
       // restore from the in-memory snapshot instead of hitting the backend
       // (which would 404 because the session hasn't been persisted yet).
-      const snapshot = backgroundSessionsRef.current.get(conv.id);
-      if (snapshot && generatingSessionIds.has(conv.id)) {
+      const snapshot = backgroundSessionsRef.current.get(conversation.id);
+      if (snapshot && generatingSessionIds.has(conversation.id)) {
         applySessionData({
-          id: conv.id,
+          id: conversation.id,
           title: snapshot.title,
           messages: snapshot.messages,
           stats: snapshot.backendSessionStats,
@@ -2533,15 +2533,15 @@ export default function AgentComponent({
 
       try {
         const full = isNoAgent
-          ? await PrismService.getConversation(conv.id)
-          : await PrismService.getAgentSession(conv.id, agentProject);
+          ? await PrismService.getConversation(conversation.id)
+          : await PrismService.getAgentSession(conversation.id, agentProject);
         applySessionData(full);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
       } catch (error: any) {
         const is404 = error.message?.includes("404") || error.message?.includes("not found");
         if (is404) {
-          console.warn(`Session ${conv.id} not yet persisted (still generating?) — skipping switch`);
+          console.warn(`Session ${conversation.id} not yet persisted (still generating?) — skipping switch`);
         } else {
           console.error("Failed to load session:", err);
         }
@@ -2722,8 +2722,8 @@ export default function AgentComponent({
               title: "Click to cycle: 10 → 25 → 50 → 100 → ∞",
               onChange: () => {
                 const steps = [10, 25, 50, 100, Infinity];
-                const idx = steps.indexOf(maxIterations);
-                const next = steps[(idx + 1) % steps.length];
+                const index = steps.indexOf(maxIterations);
+                const next = steps[(index + 1) % steps.length];
                 setMaxIterations(next);
                 localStorage.setItem("agent:maxIterations", String(next));
               },
@@ -2738,8 +2738,8 @@ export default function AgentComponent({
               title: "Click to cycle: 10 → 25 → 50 → 100 → ∞",
               onChange: () => {
                 const steps = [10, 25, 50, 100, Infinity];
-                const idx = steps.indexOf(maxWorkerIterations);
-                const next = steps[(idx + 1) % steps.length];
+                const index = steps.indexOf(maxWorkerIterations);
+                const next = steps[(index + 1) % steps.length];
                 setMaxWorkerIterations(next);
                 localStorage.setItem("agent:maxWorkerIterations", String(next));
               },

@@ -38,8 +38,8 @@ export default function SearchFilterComponent({
     : options;
 
   const handleSelect = useCallback(
-    (val: any) => {
-      onChange(val);
+    (value: any) => {
+      onChange(value);
       setQuery("");
       setOpen(false);
     },

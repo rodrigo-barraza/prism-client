@@ -89,23 +89,23 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
   // Load background image (edit mode)
   useEffect(() => {
     if (!src) return;
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      setCanvasSize({ w: img.naturalWidth, h: img.naturalHeight });
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      setCanvasSize({ w: image.naturalWidth, h: image.naturalHeight });
       setBgReady(true);
 
       // Draw background onto the bg canvas
       requestAnimationFrame(() => {
         const bgCanvas = bgCanvasRef.current;
         if (!bgCanvas) return;
-        (bgCanvas as any).width = img.naturalWidth;
-        (bgCanvas as any).height = img.naturalHeight;
-        const ctx = (bgCanvas as any).getContext("2d");
-        ctx.drawImage(img, 0, 0);
+        (bgCanvas as any).width = image.naturalWidth;
+        (bgCanvas as any).height = image.naturalHeight;
+        const context = (bgCanvas as any).getContext("2d");
+        context.drawImage(image, 0, 0);
       });
     };
-    img.src = src;
+    image.src = src;
   }, [src]);
 
   // Set drawing canvas size when canvasSize changes
@@ -125,65 +125,65 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
-  const renderStroke = (ctx: any, stroke: any) => {
-    ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = stroke.width;
+  const renderStroke = (context: any, stroke: any) => {
+    context.save();
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.lineWidth = stroke.width;
 
     if (stroke.eraser) {
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.strokeStyle = "rgba(0,0,0,1)";
+      context.globalCompositeOperation = "destination-out";
+      context.strokeStyle = "rgba(0,0,0,1)";
     } else {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.strokeStyle = stroke.color;
+      context.globalCompositeOperation = "source-over";
+      context.strokeStyle = stroke.color;
     }
 
     if (stroke.tool === "pen" || stroke.tool === "eraser") {
       if (stroke.points.length < 2) {
-        ctx.restore();
+        context.restore();
         return;
       }
-      ctx.beginPath();
-      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+      context.beginPath();
+      context.moveTo(stroke.points[0].x, stroke.points[0].y);
       for (let i = 1; i < stroke.points.length; i++) {
-        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        context.lineTo(stroke.points[i].x, stroke.points[i].y);
       }
-      ctx.stroke();
+      context.stroke();
     } else if (stroke.tool === "line") {
       if (!stroke.start || !stroke.end) {
-        ctx.restore();
+        context.restore();
         return;
       }
-      ctx.beginPath();
-      ctx.moveTo(stroke.start.x, stroke.start.y);
-      ctx.lineTo(stroke.end.x, stroke.end.y);
-      ctx.stroke();
+      context.beginPath();
+      context.moveTo(stroke.start.x, stroke.start.y);
+      context.lineTo(stroke.end.x, stroke.end.y);
+      context.stroke();
     } else if (stroke.tool === "rect") {
       if (!stroke.start || !stroke.end) {
-        ctx.restore();
+        context.restore();
         return;
       }
       const x = Math.min(stroke.start.x, stroke.end.x);
       const y = Math.min(stroke.start.y, stroke.end.y);
       const w = Math.abs(stroke.end.x - stroke.start.x);
       const h = Math.abs(stroke.end.y - stroke.start.y);
-      ctx.strokeRect(x, y, w, h);
+      context.strokeRect(x, y, w, h);
     } else if (stroke.tool === "circle") {
       if (!stroke.start || !stroke.end) {
-        ctx.restore();
+        context.restore();
         return;
       }
       const cx = (stroke.start.x + stroke.end.x) / 2;
       const cy = (stroke.start.y + stroke.end.y) / 2;
       const rx = Math.abs(stroke.end.x - stroke.start.x) / 2;
       const ry = Math.abs(stroke.end.y - stroke.start.y) / 2;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-      ctx.stroke();
+      context.beginPath();
+      context.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      context.stroke();
     }
 
-    ctx.restore();
+    context.restore();
   };
 
   /* -- Drawing helpers -- */
@@ -191,10 +191,10 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
   const redrawAll = useCallback((strokeList: any) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = (canvas as any).getContext("2d");
-    ctx.clearRect(0, 0, (canvas as any).width, (canvas as any).height);
+    const context = (canvas as any).getContext("2d");
+    context.clearRect(0, 0, (canvas as any).width, (canvas as any).height);
     for (const s of strokeList) {
-      renderStroke(ctx, s);
+      renderStroke(context, s);
     }
   }, []);
 
@@ -262,9 +262,9 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = (canvas as any).getContext("2d");
+    const context = (canvas as any).getContext("2d");
     redrawAll(strokes);
-    renderStroke(ctx, updated);
+    renderStroke(context, updated);
   };
 
   const handlePointerUp = () => {
@@ -291,20 +291,20 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     const offscreen = document.createElement("canvas");
     offscreen.width = canvasSize.w;
     offscreen.height = canvasSize.h;
-    const ctx = offscreen.getContext("2d");
+    const context = offscreen.getContext("2d");
 
     // Draw background
     if (src && bgCanvasRef.current) {
-      ctx.drawImage(bgCanvasRef.current, 0, 0);
+      context.drawImage(bgCanvasRef.current, 0, 0);
     } else {
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, offscreen.width, offscreen.height);
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, offscreen.width, offscreen.height);
     }
 
     // Draw strokes
     const drawCanvas = canvasRef.current;
     if (drawCanvas) {
-      ctx.drawImage(drawCanvas, 0, 0);
+      context.drawImage(drawCanvas, 0, 0);
     }
 
     onSave(offscreen.toDataURL("image/png"));

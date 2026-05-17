@@ -171,12 +171,12 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
     try {
       const result = await PrismService.consolidateMemories(project, agent);
       if (result.skipped) {
-        const msg = result.reason === "daily_limit_reached"
+        const message = result.reason === "daily_limit_reached"
           ? "Daily consolidation limit reached"
           : result.reason === "insufficient memories"
             ? "Not enough memories to consolidate"
             : "No consolidation needed";
-        setToast({ type: "info", text: msg });
+        setToast({ type: "info", text: message });
       } else if (result.actionsApplied > 0) {
         setToast({ type: "success", text: result.summary || `Consolidated ${result.merged || 0} memories` });
         // Refresh after consolidation

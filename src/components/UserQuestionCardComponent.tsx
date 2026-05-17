@@ -216,10 +216,10 @@ export default function UserQuestionCardComponent({
     ? Object.keys(collectedAnswers).length === normalizedQuestions.length
     : false;
 
-  const handleQuestionAnswer = useCallback((idx: any, answerData: any) => {
+  const handleQuestionAnswer = useCallback((index: any, answerData: any) => {
     if (isMultiQuestion) {
       // Collect answers for batch submission
-      setCollectedAnswers((prev: any) => ({ ...prev, [idx]: answerData }));
+      setCollectedAnswers((prev: any) => ({ ...prev, [index]: answerData }));
     } else {
       // Single question — submit immediately
       onAnswer?.([answerData]);

@@ -52,8 +52,8 @@ export default function SystemPromptModal({ activePrompt, onApply, onClose }: an
     [onApply],
   );
 
-  const handleSelectInstruction = (val: any) => {
-    if (val === "__new__") {
+  const handleSelectInstruction = (value: any) => {
+    if (value === "__new__") {
       // Create new
       const newId = Date.now().toString();
       const newInstruction = { id: newId, title: "", body: "" };
@@ -68,7 +68,7 @@ export default function SystemPromptModal({ activePrompt, onApply, onClose }: an
       onApply("");
       return;
     }
-    const found = instructions.find((i: any) => i.id === val);
+    const found = instructions.find((i: any) => i.id === value);
     if (found) {
       setSelectedId(found.id);
       setTitle(found.title);
@@ -78,14 +78,14 @@ export default function SystemPromptModal({ activePrompt, onApply, onClose }: an
   };
 
   const handleTitleChange = (e: any) => {
-    const val = e.target.value;
-    setTitle(val);
+    const value = e.target.value;
+    setTitle(value);
     if (selectedId) {
-      persistInstruction(selectedId, val, body);
+      persistInstruction(selectedId, value, body);
     } else {
       // Auto-create instruction
       const newId = Date.now().toString();
-      const newInstruction = { id: newId, title: val, body };
+      const newInstruction = { id: newId, title: value, body };
       setInstructions((prev: any) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
@@ -96,21 +96,21 @@ export default function SystemPromptModal({ activePrompt, onApply, onClose }: an
   };
 
   const handleBodyChange = (e: any) => {
-    const val = e.target.value;
-    setBody(val);
+    const value = e.target.value;
+    setBody(value);
     if (selectedId) {
-      persistInstruction(selectedId, title, val);
+      persistInstruction(selectedId, title, value);
     } else {
       // Auto-create instruction
       const newId = Date.now().toString();
-      const newInstruction = { id: newId, title, body: val };
+      const newInstruction = { id: newId, title, body: value };
       setInstructions((prev: any) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
         return updated;
       });
       setSelectedId(newId);
-      onApply(val);
+      onApply(value);
     }
   };
 

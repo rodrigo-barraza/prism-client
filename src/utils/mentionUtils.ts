@@ -17,12 +17,12 @@ import badgeStyles from "../components/MentionBadgeComponent.module.css";
  * Serialize a contentEditable element's DOM to plain text.
  * Mention badges (spans with data-mention-path) become `@full/path`.
  *
- * @param {HTMLElement} el — root contentEditable element
+ * @param {HTMLElement} element — root contentEditable element
  * @returns {string}
  */
-export function serializeEditable(el: any) {
+export function serializeEditable(element: any) {
   let text = "";
-  for (const node of el.childNodes) {
+  for (const node of element.childNodes) {
     if (node.nodeType === Node.TEXT_NODE) {
       text += node.textContent;
     } else if (node.dataset?.mentionPath) {

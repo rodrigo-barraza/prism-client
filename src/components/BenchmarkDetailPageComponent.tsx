@@ -155,9 +155,9 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
   // Compute the active row key for table highlight
   const getActiveKey = useCallback((results: any) => {
     if (!selectedResult) return undefined;
-    const idx = results.indexOf(selectedResult);
-    if (idx === -1) return undefined;
-    return `${(selectedResult as any).provider}:${(selectedResult as any).label}:${idx}`;
+    const index = results.indexOf(selectedResult);
+    if (index === -1) return undefined;
+    return `${(selectedResult as any).provider}:${(selectedResult as any).label}:${index}`;
   }, [selectedResult]);
 
   // Smart row click: running rows switch the live preview, completed rows set selectedResult
@@ -469,8 +469,8 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
               setRunHistory(runs || []);
             } catch { /* noop */ }
           },
-          onError: (err: any) => {
-            if (err?.name === "AbortError" || err?.message?.includes("abort")) return;
+          onError: (error: any) => {
+            if (error?.name === "AbortError" || error?.message?.includes("abort")) return;
             resetLiveState();
             setRunning(false);
             setActiveModels(new Map());
@@ -547,8 +547,8 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
     const configMap = new Map();
     for (const m of allModels) configMap.set(`${m.provider}:${m.name}`, m);
     return selectedInstances.map((inst: any) => {
-      const cfg = configMap.get(`${inst.provider}:${inst.name}`) || {};
-      return { ...cfg, ...inst };
+      const config = configMap.get(`${inst.provider}:${inst.name}`) || {};
+      return { ...config, ...inst };
     });
   }, [allModels, selectedInstances]);
 
@@ -674,11 +674,11 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
           setRunHistory(runs || []);
         } catch { /* noop */ }
       },
-      onError: (err: any) => {
+      onError: (error: any) => {
         // AbortError means user clicked Stop — handleStop already handled cleanup
-        if (err?.name === "AbortError" || err?.message?.includes("abort")) return;
+        if (error?.name === "AbortError" || error?.message?.includes("abort")) return;
         resetLiveState();
-        console.error("Benchmark run error:", err);
+        console.error("Benchmark run error:", error);
         setRunning(false);
         setActiveModels(new Map());
         setViewedModelKey(null);

@@ -58,16 +58,16 @@ import styles from "../components/TableComponentsComponent.module.css";
 export const emptyDash = () => <span className={styles.emptyDash}>—</span>;
 
 /** Render a value or a muted dash if falsy/zero */
-export const valueOrDash = (val: any, render: any) =>
-  val ? render(val) : emptyDash();
+export const valueOrDash = (value: any, render: any) =>
+  value ? render(value) : emptyDash();
 
 /** Merge modalities from an array of conversations into a single object */
 export function mergeModalities(conversations: any) {
   const merged = {};
   for (const c of conversations) {
     if (!c.modalities) continue;
-    for (const [key, val] of Object.entries(c.modalities)) {
-      if (val) (merged as any)[key] = true;
+    for (const [key, value] of Object.entries(c.modalities)) {
+      if (value) (merged as any)[key] = true;
     }
   }
   return Object.keys(merged).length > 0 ? merged : null;
@@ -681,24 +681,24 @@ export const benchmarkSizeColumn = ({ modelConfigMap = {} }: any = {}) => ({
   description: "Model file/weight size on disk (local models only)",
   sortable: true,
   sortValue: (r: any) => {
-    const cfg = modelConfigMap[`${r.provider}:${r.model}`];
-    const s = cfg?.size || "";
+    const config = modelConfigMap[`${r.provider}:${r.model}`];
+    const s = config?.size || "";
     const match = s.match(/([\d.]+)\s*(GB|MB|KB)/i);
     if (!match) return 0;
-    const val = parseFloat(match[1]);
+    const value = parseFloat(match[1]);
     const unit = match[2].toUpperCase();
-    if (unit === "GB") return val * 1024;
-    if (unit === "MB") return val;
-    return val / 1024;
+    if (unit === "GB") return value * 1024;
+    if (unit === "MB") return value;
+    return value / 1024;
   },
   align: "right",
   render: (r: any) => {
-    const cfg = modelConfigMap[`${r.provider}:${r.model}`];
-    if (!cfg?.size) return emptyDash();
+    const config = modelConfigMap[`${r.provider}:${r.model}`];
+    if (!config?.size) return emptyDash();
     return (
       <span className={styles.benchmarkTpsCell}>
         <HardDrive size={10} />
-        {cfg.size}
+        {config.size}
       </span>
     );
   },
@@ -721,13 +721,13 @@ function highlightExpected(text: any, expected: any, matchMode: any) {
       const re = new RegExp(`(${expected})`, "i");
       const match = text.match(re);
       if (!match) return text;
-      const idx = match.index;
+      const index = match.index;
       const len = match[0].length;
       return (
         <>
-          {text.slice(0, idx)}
-          <mark className={styles.benchmarkHighlight}>{text.slice(idx, idx + len)}</mark>
-          {text.slice(idx + len)}
+          {text.slice(0, index)}
+          <mark className={styles.benchmarkHighlight}>{text.slice(index, index + len)}</mark>
+          {text.slice(index + len)}
         </>
       );
     } catch {
@@ -741,12 +741,12 @@ function highlightExpected(text: any, expected: any, matchMode: any) {
   }
 
   // For contains / startsWith — find the substring position (case-insensitive)
-  const idx = normText.indexOf(normExpected);
-  if (idx === -1) return text;
+  const index = normText.indexOf(normExpected);
+  if (index === -1) return text;
 
-  const before = text.slice(0, idx);
-  const matched = text.slice(idx, idx + expected.trim().length);
-  const after = text.slice(idx + expected.trim().length);
+  const before = text.slice(0, index);
+  const matched = text.slice(index, index + expected.trim().length);
+  const after = text.slice(index + expected.trim().length);
 
   return (
     <>

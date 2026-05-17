@@ -102,14 +102,14 @@ export default function AgentAssertionsComponent({
     onAssertionsChange([...assertions, newAssertion]);
   };
 
-  const removeAssertion = (idx: any) => {
-    const next = assertions.filter((_: any, i: any) => i !== idx);
+  const removeAssertion = (index: any) => {
+    const next = assertions.filter((_: any, i: any) => i !== index);
     onAssertionsChange(next.length > 0 ? next : []);
   };
 
-  const updateAssertion = (idx: any, field: any, value: any) => {
+  const updateAssertion = (index: any, field: any, value: any) => {
     const next = assertions.map((a: any, i: any) =>
-      i === idx ? { ...a, [field]: value } : a
+      i === index ? { ...a, [field]: value } : a
     );
     onAssertionsChange(next);
   };

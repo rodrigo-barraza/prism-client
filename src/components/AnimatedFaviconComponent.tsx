@@ -25,7 +25,7 @@ function generateFrames() {
   const canvas = document.createElement("canvas");
   canvas.width = FAVICON_SIZE;
   canvas.height = FAVICON_SIZE;
-  const ctx = canvas.getContext("2d", { alpha: false });
+  const context = canvas.getContext("2d", { alpha: false });
   const cols = Math.ceil(FAVICON_SIZE / PIXEL_SIZE);
   const rows = Math.ceil(FAVICON_SIZE / PIXEL_SIZE);
   const frames = [];
@@ -38,8 +38,8 @@ function generateFrames() {
         const t = (x / cols + y / rows) * 0.5 + offset;
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(RAINBOW, t + dither);
-        ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
-        ctx.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+        context.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
+        context.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
       }
     }
 
@@ -64,7 +64,7 @@ function changeFavicon(src: any) {
   const oldLinks = document.querySelectorAll(
     'link[rel="icon"]:not(#dynamic-favicon), link[rel="shortcut icon"]:not(#dynamic-favicon)',
   );
-  oldLinks.forEach((el: any) => el.remove());
+  oldLinks.forEach((element: any) => element.remove());
 }
 
 export default function AnimatedFaviconComponent() {

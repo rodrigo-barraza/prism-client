@@ -30,8 +30,8 @@ export default function ComboboxFilter({
     : options;
 
   const handleSelect = useCallback(
-    (val: any) => {
-      onChange(val);
+    (value: any) => {
+      onChange(value);
       setQuery("");
       setOpen(false);
     },

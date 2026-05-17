@@ -102,15 +102,15 @@ function NodePorts({
 
         let label = (MODALITY_ICONS as any)[baseMod]?.label || baseMod;
         if (compound && isConversationNode) {
-          const msg = nodeMessages[compound.index];
+          const message = nodeMessages[compound.index];
           const roleLabel =
-            (ROLE_LABELS as any)[msg?.role] || msg?.role || `#${compound.index}`;
+            (ROLE_LABELS as any)[message?.role] || message?.role || `#${compound.index}`;
           const roleCount = nodeMessages
             .slice(0, compound.index)
-            .filter((m: any) => m.role === msg?.role).length;
+            .filter((m: any) => m.role === message?.role).length;
           const numberedRole =
             roleCount > 0 ? `${roleLabel} ${roleCount + 1}` : roleLabel;
-          if (msg?.role === "system") {
+          if (message?.role === "system") {
             label = numberedRole;
           } else {
             const modLabel = baseMod !== "text" ? `${label}s` : label;

@@ -142,15 +142,15 @@ function JsonNode({ keyName, value, depth, defaultCollapsed, isLast = true }: an
   );
 }
 
-function getType(val: any) {
-  if (val === null || val === undefined) return "null";
-  if (Array.isArray(val)) return "array";
-  return typeof val; // "string", "number", "boolean", "object"
+function getType(value: any) {
+  if (value === null || value === undefined) return "null";
+  if (Array.isArray(value)) return "array";
+  return typeof value; // "string", "number", "boolean", "object"
 }
 
-function formatValue(val: any, type: any) {
-  if (type === "string") return JSON.stringify(val);
+function formatValue(value: any, type: any) {
+  if (type === "string") return JSON.stringify(value);
   if (type === "null") return "null";
-  if (type === "boolean") return val ? "true" : "false";
-  return String(val);
+  if (type === "boolean") return value ? "true" : "false";
+  return String(value);
 }

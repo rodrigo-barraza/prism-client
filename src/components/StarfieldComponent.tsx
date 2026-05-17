@@ -460,8 +460,8 @@ function renderNebulaLayer(w: any, h: any, rng: any) {
   const offscreen = document.createElement("canvas");
   offscreen.width = w;
   offscreen.height = h;
-  const ctx = offscreen.getContext("2d");
-  if (!ctx) return offscreen;
+  const context = offscreen.getContext("2d");
+  if (!context) return offscreen;
 
   // Milky Way band parameters (must match field star generation)
   const bandAngle = -0.35;
@@ -476,18 +476,18 @@ function renderNebulaLayer(w: any, h: any, rng: any) {
   const coreRadius = Math.max(w, h) * 0.22;
 
   // Elongated ellipse via scale transform
-  ctx.save();
-  ctx.translate(coreX, coreY);
-  ctx.rotate(bandAngle);
-  ctx.scale(1.8, 1); // stretch along the band
-  const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
+  context.save();
+  context.translate(coreX, coreY);
+  context.rotate(bandAngle);
+  context.scale(1.8, 1); // stretch along the band
+  const coreGrad = context.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
   coreGrad.addColorStop(0, "rgba(180, 160, 120, 0.06)");
   coreGrad.addColorStop(0.3, "rgba(160, 140, 100, 0.035)");
   coreGrad.addColorStop(0.6, "rgba(140, 120, 90, 0.015)");
   coreGrad.addColorStop(1, "rgba(100, 90, 80, 0)");
-  ctx.fillStyle = coreGrad;
-  ctx.fillRect(-coreRadius * 2, -coreRadius, coreRadius * 4, coreRadius * 2);
-  ctx.restore();
+  context.fillStyle = coreGrad;
+  context.fillRect(-coreRadius * 2, -coreRadius, coreRadius * 4, coreRadius * 2);
+  context.restore();
 
   // -- Milky Way diffuse glow band --
   // Multiple overlapping soft patches along the band
@@ -500,17 +500,17 @@ function renderNebulaLayer(w: any, h: any, rng: any) {
     const patchR = (rng() * 0.12 + 0.06) * Math.max(w, h);
     const alpha = rng() * 0.02 + 0.01; // 0.01–0.03 — barely visible
 
-    ctx.save();
-    ctx.translate(patchX, patchY);
-    ctx.rotate(bandAngle + (rng() - 0.5) * 0.3);
-    ctx.scale(1.5 + rng() * 0.8, 1);
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, patchR);
+    context.save();
+    context.translate(patchX, patchY);
+    context.rotate(bandAngle + (rng() - 0.5) * 0.3);
+    context.scale(1.5 + rng() * 0.8, 1);
+    const g = context.createRadialGradient(0, 0, 0, 0, 0, patchR);
     g.addColorStop(0, `rgba(200, 195, 180, ${alpha})`);
     g.addColorStop(0.5, `rgba(180, 175, 165, ${alpha * 0.5})`);
     g.addColorStop(1, "rgba(150, 145, 140, 0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(-patchR * 2, -patchR, patchR * 4, patchR * 2);
-    ctx.restore();
+    context.fillStyle = g;
+    context.fillRect(-patchR * 2, -patchR, patchR * 4, patchR * 2);
+    context.restore();
   }
 
   // -- Nebula patches --
@@ -539,20 +539,20 @@ function renderNebulaLayer(w: any, h: any, rng: any) {
     const nx = n.x * w;
     const ny = n.y * h;
     const nr = n.r * Math.max(w, h);
-    const [cr, cg, cb] = n.color;
+    const [cr, cg, callback] = n.color;
 
-    ctx.save();
-    ctx.translate(nx, ny);
-    ctx.rotate((rng() - 0.5) * 1.2);
-    ctx.scale(1 + rng() * 0.6, 1);
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, nr);
-    g.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${n.a})`);
-    g.addColorStop(0.4, `rgba(${cr}, ${cg}, ${cb}, ${n.a * 0.5})`);
-    g.addColorStop(0.7, `rgba(${cr}, ${cg}, ${cb}, ${n.a * 0.2})`);
-    g.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`);
-    ctx.fillStyle = g;
-    ctx.fillRect(-nr * 2, -nr, nr * 4, nr * 2);
-    ctx.restore();
+    context.save();
+    context.translate(nx, ny);
+    context.rotate((rng() - 0.5) * 1.2);
+    context.scale(1 + rng() * 0.6, 1);
+    const g = context.createRadialGradient(0, 0, 0, 0, 0, nr);
+    g.addColorStop(0, `rgba(${cr}, ${cg}, ${callback}, ${n.a})`);
+    g.addColorStop(0.4, `rgba(${cr}, ${cg}, ${callback}, ${n.a * 0.5})`);
+    g.addColorStop(0.7, `rgba(${cr}, ${cg}, ${callback}, ${n.a * 0.2})`);
+    g.addColorStop(1, `rgba(${cr}, ${cg}, ${callback}, 0)`);
+    context.fillStyle = g;
+    context.fillRect(-nr * 2, -nr, nr * 4, nr * 2);
+    context.restore();
   }
 
   return offscreen;
@@ -622,8 +622,8 @@ export default function StarfieldComponent({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = (canvas as any).getContext("2d");
-    if (!ctx) return;
+    const context = (canvas as any).getContext("2d");
+    if (!context) return;
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -632,7 +632,7 @@ export default function StarfieldComponent({
       const h = rect.height;
       (canvas as any).width = w * dpr;
       (canvas as any).height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
       ensureStars(w, h);
     };
 
@@ -654,13 +654,13 @@ export default function StarfieldComponent({
       const px = panRef.current.x * PARALLAX_FACTOR;
       const py = panRef.current.y * PARALLAX_FACTOR;
 
-      ctx.clearRect(0, 0, w, h);
-      ctx.save();
-      ctx.translate(px, py);
+      context.clearRect(0, 0, w, h);
+      context.save();
+      context.translate(px, py);
 
       // -- Draw nebula / galactic core layer (pre-rendered) --
       if (nebulaCanvasRef.current) {
-        ctx.drawImage(nebulaCanvasRef.current, 0, 0, w, h);
+        context.drawImage(nebulaCanvasRef.current, 0, 0, w, h);
       }
 
       // -- Draw field stars with atmospheric scintillation --
@@ -682,20 +682,20 @@ export default function StarfieldComponent({
             (0.5 + 0.5 * Math.cos(t * 7.7 + star.y * 0.9 + star.x * 0.4));
         const alpha = star.brightness * twinkle * scintillation;
 
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = `rgb(${star.r},${star.g},${star.b})`;
+        context.globalAlpha = alpha;
+        context.fillStyle = `rgb(${star.r},${star.g},${star.b})`;
 
         if (star.radius <= 0.5) {
           // Sub-pixel dust — single pixel
-          ctx.fillRect(star.x, star.y, 1, 1);
+          context.fillRect(star.x, star.y, 1, 1);
         } else if (star.radius <= 0.8) {
           // Small point
-          ctx.fillRect(star.x - 0.5, star.y - 0.5, 1, 1);
+          context.fillRect(star.x - 0.5, star.y - 0.5, 1, 1);
         } else {
           // Slightly larger star — tiny arc
-          ctx.beginPath();
-          ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-          ctx.fill();
+          context.beginPath();
+          context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+          context.fill();
         }
       }
 
@@ -703,16 +703,16 @@ export default function StarfieldComponent({
       if (constellations) {
         for (const c of constellations) {
           const pulse = 0.05 + 0.025 * Math.sin(t * 0.6 + c.stars[0].x * 0.01);
-          ctx.globalAlpha = 1;
-          ctx.strokeStyle = `rgba(140, 165, 220, ${pulse})`;
-          ctx.lineWidth = 0.4;
+          context.globalAlpha = 1;
+          context.strokeStyle = `rgba(140, 165, 220, ${pulse})`;
+          context.lineWidth = 0.4;
 
           for (const [a, b] of c.edges) {
             if (!c.stars[a] || !c.stars[b]) continue;
-            ctx.beginPath();
-            ctx.moveTo(c.stars[a].x, c.stars[a].y);
-            ctx.lineTo(c.stars[b].x, c.stars[b].y);
-            ctx.stroke();
+            context.beginPath();
+            context.moveTo(c.stars[a].x, c.stars[a].y);
+            context.lineTo(c.stars[b].x, c.stars[b].y);
+            context.stroke();
           }
 
           // Draw constellation anchor stars (brighter than field stars)
@@ -733,17 +733,17 @@ export default function StarfieldComponent({
                 (0.5 + 0.5 * Math.cos(t * 6.3 + star.y * 0.7 + star.x * 0.3));
             const alpha = star.brightness * twinkle * scintillation;
 
-            ctx.globalAlpha = alpha;
-            ctx.fillStyle = `rgb(${star.r},${star.g},${star.b})`;
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-            ctx.fill();
+            context.globalAlpha = alpha;
+            context.fillStyle = `rgb(${star.r},${star.g},${star.b})`;
+            context.beginPath();
+            context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            context.fill();
           }
         }
       }
 
-      ctx.globalAlpha = 1;
-      ctx.restore();
+      context.globalAlpha = 1;
+      context.restore();
       rafRef.current = requestAnimationFrame(draw);
     };
 

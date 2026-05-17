@@ -166,11 +166,11 @@ function makeDatalabelsPlugin({ getLabel, anchor = "end", align = "top", offset 
   return {
     id: "customDatalabels",
     afterDatasetsDraw(chart: any) {
-      const { ctx } = chart;
-      ctx.save();
-      ctx.font = `500 9px ${CHART_FONT}`;
-      ctx.fillStyle = "rgba(142, 149, 174, 0.85)";
-      ctx.textBaseline = align === "top" ? "bottom" : "middle";
+      const { context } = chart;
+      context.save();
+      context.font = `500 9px ${CHART_FONT}`;
+      context.fillStyle = "rgba(142, 149, 174, 0.85)";
+      context.textBaseline = align === "top" ? "bottom" : "middle";
 
       let labelCount = 0;
       for (let di = 0; di < chart.data.datasets.length; di++) {
@@ -179,28 +179,28 @@ function makeDatalabelsPlugin({ getLabel, anchor = "end", align = "top", offset 
         if (!meta.visible) continue;
         for (let i = 0; i < meta.data.length; i++) {
           if (labelCount >= maxLabels) break;
-          const el = meta.data[i];
+          const element = meta.data[i];
           const raw = chart.data.datasets[di].data[i];
           const label = getLabel(raw, i, di);
           if (!label) continue;
 
-          let x = el.x;
-          let y = el.y;
+          let x = element.x;
+          let y = element.y;
 
           if (anchor === "end" && align === "top") {
-            y = y - (el.height || el.options?.radius || 6) - offset;
-            ctx.textAlign = "center";
+            y = y - (element.height || element.options?.radius || 6) - offset;
+            context.textAlign = "center";
           } else if (anchor === "end" && align === "right") {
             x = x + offset;
-            ctx.textAlign = "left";
-            ctx.textBaseline = "middle";
+            context.textAlign = "left";
+            context.textBaseline = "middle";
           }
 
-          ctx.fillText(label, x, y);
+          context.fillText(label, x, y);
           labelCount++;
         }
       }
-      ctx.restore();
+      context.restore();
     },
   };
 }
@@ -220,11 +220,11 @@ function makeConnectorHighlightPlugin() {
       let hoveredModel = null;
 
       if (elements.length > 0) {
-        const el = elements[0];
-        const ds = chart.data.datasets[el.datasetIndex];
+        const element = elements[0];
+        const ds = chart.data.datasets[element.datasetIndex];
         // Only trigger on bubble datasets, not connector lines
         if (ds.type !== "line") {
-          const raw = ds.data[el.index];
+          const raw = ds.data[element.index];
           hoveredModel = raw?.model?.displayName || null;
         }
       }
@@ -237,8 +237,8 @@ function makeConnectorHighlightPlugin() {
       const hoveredModel = chart._hoveredConnectorModel;
       if (!hoveredModel) return;
 
-      const { ctx } = chart;
-      ctx.save();
+      const { context } = chart;
+      context.save();
 
       // Collect pixel positions for all bubbles matching this model
       const bubblePoints = [];
@@ -252,19 +252,19 @@ function makeConnectorHighlightPlugin() {
         for (let i = 0; i < ds.data.length; i++) {
           const raw = ds.data[i];
           if (raw?.model?.displayName !== hoveredModel) continue;
-          const el = meta.data[i];
-          if (!el) continue;
+          const element = meta.data[i];
+          if (!element) continue;
           bubblePoints.push({
-            x: el.x,
-            y: el.y,
-            r: el.options?.radius || raw.r || 5,
+            x: element.x,
+            y: element.y,
+            r: element.options?.radius || raw.r || 5,
             borderColor: ds.borderColor,
           });
         }
       }
 
       if (bubblePoints.length < 2) {
-        ctx.restore();
+        context.restore();
         return;
       }
 
@@ -272,34 +272,34 @@ function makeConnectorHighlightPlugin() {
       bubblePoints.sort((a: any, b: any) => a.x - b.x);
 
       // Draw bold solid connector line
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
-      ctx.lineWidth = 2.5;
-      ctx.setLineDash([]);
-      ctx.moveTo(bubblePoints[0].x, bubblePoints[0].y);
+      context.beginPath();
+      context.strokeStyle = "rgba(255, 255, 255, 0.55)";
+      context.lineWidth = 2.5;
+      context.setLineDash([]);
+      context.moveTo(bubblePoints[0].x, bubblePoints[0].y);
       for (let i = 1; i < bubblePoints.length; i++) {
-        ctx.lineTo(bubblePoints[i].x, bubblePoints[i].y);
+        context.lineTo(bubblePoints[i].x, bubblePoints[i].y);
       }
-      ctx.stroke();
+      context.stroke();
 
       // Draw glow rings around sibling bubbles
       for (const p of bubblePoints) {
         // Outer glow
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-        ctx.lineWidth = 4;
-        ctx.stroke();
+        context.beginPath();
+        context.arc(p.x, p.y, p.r + 5, 0, Math.PI * 2);
+        context.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        context.lineWidth = 4;
+        context.stroke();
 
         // Inner ring
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r + 2, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        context.beginPath();
+        context.arc(p.x, p.y, p.r + 2, 0, Math.PI * 2);
+        context.strokeStyle = "rgba(255, 255, 255, 0.6)";
+        context.lineWidth = 1.5;
+        context.stroke();
       }
 
-      ctx.restore();
+      context.restore();
     },
   };
 }
@@ -1082,28 +1082,28 @@ export default function VramBenchmarkComponent() {
       const ds = chart.data.datasets[di];
       const data = ds.data;
 
-      for (let idx = 0; idx < data.length; idx++) {
+      for (let index = 0; index < data.length; index++) {
         let match = false;
 
         // Scatter / bubble: raw has .model.displayName
-        if (data[idx]?.model?.displayName === displayName) {
+        if (data[index]?.model?.displayName === displayName) {
           match = true;
         }
 
         // Scatter overlay entries on bar/efficiency charts: raw has .entry.displayName
-        if (data[idx]?.entry?.displayName === displayName) {
+        if (data[index]?.entry?.displayName === displayName) {
           match = true;
         }
 
         // Context scaling: raw has .ctx.displayName
-        if (data[idx]?.ctx?.displayName === displayName) {
+        if (data[index]?.ctx?.displayName === displayName) {
           match = true;
         }
 
         // Index-axis bar charts (bar, efficiency, ctxLeaderboard):
         // match against chart labels — check if displayName starts with (or equals) the label
-        if (!match && chart.data.labels?.[idx]) {
-          const label = chart.data.labels[idx];
+        if (!match && chart.data.labels?.[index]) {
+          const label = chart.data.labels[index];
           if (
             displayName === label ||
             displayName.startsWith(label.replace("…", ""))
@@ -1121,7 +1121,7 @@ export default function VramBenchmarkComponent() {
         }
 
         if (match) {
-          activeEls.push({ datasetIndex: di, index: idx });
+          activeEls.push({ datasetIndex: di, index: index });
         }
       }
     }
@@ -1130,11 +1130,11 @@ export default function VramBenchmarkComponent() {
       chart.setActiveElements(activeEls);
       // Position tooltip near the first highlighted element
       const meta = chart.getDatasetMeta(activeEls[0].datasetIndex);
-      const el = meta.data[activeEls[0].index];
-      if (el) {
+      const element = meta.data[activeEls[0].index];
+      if (element) {
         chart.tooltip?.setActiveElements(activeEls, {
-          x: el.x,
-          y: el.y,
+          x: element.x,
+          y: element.y,
         });
       }
     } else {
@@ -1157,7 +1157,7 @@ export default function VramBenchmarkComponent() {
       (chartInstances.current as any).scatter = null;
     }
 
-    const ctx = (canvas as any).getContext("2d");
+    const context = (canvas as any).getContext("2d");
     const mode = activeScatterMode;
     // With range-based context filter, check if multiple distinct contexts exist
     const distinctCtx = new Set(allFilteredData.map((d: any) => d.contextLength));
@@ -1387,7 +1387,7 @@ export default function VramBenchmarkComponent() {
       if (scatterClipXMaxVal !== undefined) { currentChart.options.scales.x.max = scatterClipXMaxVal; } else { delete currentChart.options.scales.x.max; }
       currentChart.update("none");
     } else {
-      (chartInstances.current as any).scatter = new Chart(ctx, {
+      (chartInstances.current as any).scatter = new Chart(context, {
         type: "bubble",
         data: { datasets },
         plugins: [
@@ -1549,7 +1549,7 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
     destroyChart("bar");
 
-    const ctx = (canvas as any).getContext("2d");
+    const context = (canvas as any).getContext("2d");
 
     const labels = models.map((m: any) => {
       const name = m.displayName;
@@ -1599,7 +1599,7 @@ export default function VramBenchmarkComponent() {
       }
     }
 
-    (chartInstances.current as any).bar = new Chart(ctx, {
+    (chartInstances.current as any).bar = new Chart(context, {
       type: "bar",
       data: {
         labels,
@@ -1762,7 +1762,7 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
     destroyChart("efficiency");
 
-    const ctx = (canvas as any).getContext("2d");
+    const context = (canvas as any).getContext("2d");
 
     // Sort by peak TPS descending
     const sorted = [...models].sort(
@@ -1817,7 +1817,7 @@ export default function VramBenchmarkComponent() {
       }
     }
 
-    (chartInstances.current as any).efficiency = new Chart(ctx, {
+    (chartInstances.current as any).efficiency = new Chart(context, {
       type: "bar",
       data: {
         labels,
@@ -1976,7 +1976,7 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
     destroyChart("quantDist");
 
-    const ctx = (canvas as any).getContext("2d");
+    const context = (canvas as any).getContext("2d");
 
     // Group by quantization
     const quantGroups = {};
@@ -2086,7 +2086,7 @@ export default function VramBenchmarkComponent() {
       },
     };
 
-    (chartInstances.current as any).quantDist = new Chart(ctx, {
+    (chartInstances.current as any).quantDist = new Chart(context, {
       type: "bar",
       data: {
         labels: quantLabels,
@@ -2188,7 +2188,7 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
     destroyChart("ctxLeaderboard");
 
-    const ctx = (canvas as any).getContext("2d");
+    const context = (canvas as any).getContext("2d");
 
     // Sort by max context descending, then TPS within same tier
     const sorted = [...models].sort((a: any, b: any) => {
@@ -2274,7 +2274,7 @@ export default function VramBenchmarkComponent() {
       }
     }
 
-    (chartInstances.current as any).ctxLeaderboard = new Chart(ctx, {
+    (chartInstances.current as any).ctxLeaderboard = new Chart(context, {
       type: "bar",
       data: {
         labels,
@@ -2496,7 +2496,7 @@ export default function VramBenchmarkComponent() {
     if (!canvas || allFilteredData.length === 0) return;
     destroyChart("context");
 
-    const ctx = (canvas as any).getContext("2d");
+    const context = (canvas as any).getContext("2d");
     const showAllMachines = machineFilter === "all";
 
     // -- Group data --
@@ -2580,7 +2580,7 @@ export default function VramBenchmarkComponent() {
       };
     });
 
-    (chartInstances.current as any).context = new Chart(ctx, {
+    (chartInstances.current as any).context = new Chart(context, {
       type: "scatter",
       data: { datasets },
       options: {
@@ -3019,8 +3019,8 @@ export default function VramBenchmarkComponent() {
             </div>
             <SelectComponent
               value={settingsFilter}
-              onChange={(val: any) => {
-                setSettingsFilter(val);
+              onChange={(value: any) => {
+                setSettingsFilter(value);
                 setLoading(true);
               }}
               triggerTooltip={<SettingsMatrixTooltip />}

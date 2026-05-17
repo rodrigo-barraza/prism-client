@@ -410,8 +410,8 @@ export default function SidebarFilterComponent({
           <DatePickerComponent
             from={dateFrom}
             to={dateTo}
-            onChange={(val: any) => {
-              onDateChange(val);
+            onChange={(value: any) => {
+              onDateChange(value);
               setShowCustomDatePicker(false);
             }}
             placeholder="Pick range…"

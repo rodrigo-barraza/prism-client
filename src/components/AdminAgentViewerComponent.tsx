@@ -93,7 +93,7 @@ export default function AdminAgentViewerComponent() {
   // Fetch Prism config (for model info panels, provider logos, etc.)
   useEffect(() => {
     PrismService.getConfigWithLocalModels({
-      onConfig: (cfg: any) => setConfig(cfg),
+      onConfig: (config: any) => setConfig(config),
       onLocalMerge: (merged: any) => setConfig(merged),
     }).catch(console.error);
   }, []);
@@ -202,13 +202,13 @@ export default function AdminAgentViewerComponent() {
 
   // -- Session selection ----------------------------------------
   const handleSelectSession = useCallback(
-    async (conv: any) => {
+    async (conversation: any) => {
       try {
-        const full = await IrisService.getAgentSession(conv.id);
+        const full = await IrisService.getAgentSession(conversation.id);
         const displayMessages = prepareDisplayMessages(full.messages || []);
         setMessages(displayMessages);
-        setAgentSessionId(conv.id);
-        setActiveId(conv.id);
+        setAgentSessionId(conversation.id);
+        setActiveId(conversation.id);
         setTitle(full.title || "Agent Session");
 
         // Restore settings from the last assistant message
@@ -230,15 +230,15 @@ export default function AdminAgentViewerComponent() {
         }
 
         // Fetch backend aggregate stats
-        fetchSessionStats(conv.id);
+        fetchSessionStats(conversation.id);
 
         // Fetch tasks count for this session
-        ToolsApiService.getAllAgenticTasks({ agentSessionId: conv.id })
+        ToolsApiService.getAllAgenticTasks({ agentSessionId: conversation.id })
           .then((r: any) => setTasksCount(r.summary?.total || (r.tasks || []).length))
           .catch(() => {});
 
         // Fetch workers count
-        PrismService.getCoordinatorWorkers(conv.id)
+        PrismService.getCoordinatorWorkers(conversation.id)
           .then((r: any) => setWorkersCount((r.workers || []).length))
           .catch(() => {});
       } catch (error: any) {

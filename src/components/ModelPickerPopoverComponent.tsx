@@ -30,9 +30,9 @@ const _listeners = new Set();
 function _notify() {
   for (const fn of _listeners) fn();
 }
-function subscribeSearch(cb: any) {
-  _listeners.add(cb);
-  return () => _listeners.delete(cb);
+function subscribeSearch(callback: any) {
+  _listeners.add(callback);
+  return () => _listeners.delete(callback);
 }
 function getSearchSnapshot() {
   return _sharedSearch;
@@ -111,9 +111,9 @@ export default function ModelPickerPopoverComponent({
   const triggerRef = useRef<any>(null);
   const bodyRef = useRef<any>(null);
   const searchRef = useRef<any>(null);
-  const highlightedRowRef = useCallback((el: any) => {
-    if (el) {
-      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  const highlightedRowRef = useCallback((element: any) => {
+    if (element) {
+      element.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
   }, []);
 

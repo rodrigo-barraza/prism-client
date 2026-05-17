@@ -80,11 +80,11 @@ function parseSize(str: any) {
   if (!str) return 0;
   const match = str.match(/([\d.]+)\s*(GB|MB|KB)/i);
   if (!match) return 0;
-  const val = parseFloat(match[1]);
+  const value = parseFloat(match[1]);
   const unit = match[2].toUpperCase();
-  if (unit === "GB") return val * 1_073_741_824;
-  if (unit === "MB") return val * 1_048_576;
-  if (unit === "KB") return val * 1024;
+  if (unit === "GB") return value * 1_073_741_824;
+  if (unit === "MB") return value * 1_048_576;
+  if (unit === "KB") return value * 1024;
   return 0;
 }
 

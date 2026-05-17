@@ -32,9 +32,9 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }: a
     onChange((f: any) => ({ ...f, [field]: e.target.value }));
 
   const handlePresetChange = (e: any) => {
-    const idx = parseInt(e.target.value, 10);
-    if (!isNaN(idx) && benchmarkPresets[idx]) {
-      const preset = benchmarkPresets[idx];
+    const index = parseInt(e.target.value, 10);
+    if (!isNaN(index) && benchmarkPresets[index]) {
+      const preset = benchmarkPresets[index];
       onChange((f: any) => ({
         ...f,
         name: preset.name,
@@ -68,18 +68,18 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }: a
     }));
   };
 
-  const removeAssertion = (idx: any) => {
+  const removeAssertion = (index: any) => {
     onChange((f: any) => {
       const next = [...(f.assertions || [])];
-      next.splice(idx, 1);
+      next.splice(index, 1);
       return { ...f, assertions: next.length > 0 ? next : [{ expectedValue: "", matchMode: "contains" }] };
     });
   };
 
-  const updateAssertion = (idx: any, field: any) => (e: any) => {
+  const updateAssertion = (index: any, field: any) => (e: any) => {
     onChange((f: any) => {
       const next = [...(f.assertions || [{ expectedValue: f.expectedValue || "", matchMode: f.matchMode || "contains" }])];
-      next[idx] = { ...next[idx], [field]: e.target.value };
+      next[index] = { ...next[index], [field]: e.target.value };
       return { ...f, assertions: next };
     });
   };
@@ -121,8 +121,8 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }: a
         <FormGroupComponent label="Load Preset (Optional)">
           <select onChange={handlePresetChange} defaultValue="">
             <option value="" disabled>-- Select an industry standard benchmark --</option>
-            {benchmarkPresets.map((p: any, idx: any) => (
-              <option key={idx} value={idx}>
+            {benchmarkPresets.map((p: any, index: any) => (
+              <option key={index} value={index}>
                 {p.name}
               </option>
             ))}

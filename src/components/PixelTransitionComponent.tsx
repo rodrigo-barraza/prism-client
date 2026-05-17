@@ -113,9 +113,9 @@ export default function PixelTransitionComponent({
     // Only mutate the DOM when the quantized block size actually changes
     if (blockSize !== lastBlockRef.current) {
       lastBlockRef.current = blockSize;
-      const el = p.targetRef?.current;
-      if (el) {
-        el.style.filter = blockSize <= 1 ? "" : getFilterCSS(blockSize);
+      const element = p.targetRef?.current;
+      if (element) {
+        element.style.filter = blockSize <= 1 ? "" : getFilterCSS(blockSize);
       }
     }
 
@@ -123,10 +123,10 @@ export default function PixelTransitionComponent({
       rafRef.current = requestAnimationFrame(tickRef.current);
     } else {
       // Transition complete
-      const el = p.targetRef?.current;
-      if (p.phase === "in" && el) {
-        el.style.filter = "";
-        el.style.willChange = "";
+      const element = p.targetRef?.current;
+      if (p.phase === "in" && element) {
+        element.style.filter = "";
+        element.style.willChange = "";
 
       }
       lastBlockRef.current = 0;
@@ -137,10 +137,10 @@ export default function PixelTransitionComponent({
   useEffect(() => {
     if (!phase) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      const el = targetRef?.current;
-      if (el) {
-        el.style.filter = "";
-        el.style.willChange = "";
+      const element = targetRef?.current;
+      if (element) {
+        element.style.filter = "";
+        element.style.willChange = "";
 
       }
       lastBlockRef.current = 0;
@@ -148,9 +148,9 @@ export default function PixelTransitionComponent({
     }
 
     // Promote to compositor layer before the first frame
-    const el = targetRef?.current;
-    if (el) {
-      el.style.willChange = "filter";
+    const element = targetRef?.current;
+    if (element) {
+      element.style.willChange = "filter";
 
     }
 

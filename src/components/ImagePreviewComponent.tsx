@@ -39,11 +39,11 @@ export default function ImagePreviewComponent({
 
   // Resize canvas to match image display size
   const syncCanvas = useCallback(() => {
-    const img = imgRef.current;
+    const image = imgRef.current;
     const canvas = canvasRef.current;
-    if (!img || !canvas) return;
+    if (!image || !canvas) return;
 
-    const rect = (img as any).getBoundingClientRect();
+    const rect = (image as any).getBoundingClientRect();
     (canvas as any).width = rect.width;
     (canvas as any).height = rect.height;
     (canvas as any).style.width = `${rect.width}px`;
@@ -52,14 +52,14 @@ export default function ImagePreviewComponent({
   }, []);
 
   useEffect(() => {
-    const img = imgRef.current;
-    if (!img) return;
+    const image = imgRef.current;
+    if (!image) return;
 
-    if ((img as any).complete) {
+    if ((image as any).complete) {
       syncCanvas();
     } else {
-      (img as any).addEventListener("load", syncCanvas);
-      return () => (img as any).removeEventListener("load", syncCanvas);
+      (image as any).addEventListener("load", syncCanvas);
+      return () => (image as any).removeEventListener("load", syncCanvas);
     }
   }, [src, syncCanvas]);
 
@@ -78,36 +78,36 @@ export default function ImagePreviewComponent({
   const redrawAll = (strokeList: any) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = (canvas as any).getContext("2d");
-    ctx.clearRect(0, 0, (canvas as any).width, (canvas as any).height);
+    const context = (canvas as any).getContext("2d");
+    context.clearRect(0, 0, (canvas as any).width, (canvas as any).height);
 
     for (const stroke of strokeList) {
-      drawStroke(ctx, stroke);
+      drawStroke(context, stroke);
     }
   };
 
-  const drawStroke = (ctx: any, stroke: any) => {
+  const drawStroke = (context: any, stroke: any) => {
     if (stroke.points.length < 2) return;
-    ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = stroke.width;
+    context.save();
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.lineWidth = stroke.width;
 
     if (stroke.eraser) {
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.strokeStyle = "rgba(0,0,0,1)";
+      context.globalCompositeOperation = "destination-out";
+      context.strokeStyle = "rgba(0,0,0,1)";
     } else {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.strokeStyle = stroke.color;
+      context.globalCompositeOperation = "source-over";
+      context.strokeStyle = stroke.color;
     }
 
-    ctx.beginPath();
-    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+    context.beginPath();
+    context.moveTo(stroke.points[0].x, stroke.points[0].y);
     for (let i = 1; i < stroke.points.length; i++) {
-      ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+      context.lineTo(stroke.points[i].x, stroke.points[i].y);
     }
-    ctx.stroke();
-    ctx.restore();
+    context.stroke();
+    context.restore();
   };
 
   const getPos = (e: any) => {
@@ -144,9 +144,9 @@ export default function ImagePreviewComponent({
     // Draw current stroke on top of committed strokes
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = (canvas as any).getContext("2d");
+    const context = (canvas as any).getContext("2d");
     redrawAll(strokes);
-    drawStroke(ctx, updated);
+    drawStroke(context, updated);
   };
 
   const handlePointerUp = () => {
@@ -168,44 +168,44 @@ export default function ImagePreviewComponent({
 
   const handleUse = () => {
     // Composite image + canvas into one data URL
-    const img = imgRef.current;
+    const image = imgRef.current;
     const canvas = canvasRef.current;
-    if (!img || !canvas) return;
+    if (!image || !canvas) return;
 
     const offscreen = document.createElement("canvas");
-    offscreen.width = (img as any).naturalWidth;
-    offscreen.height = (img as any).naturalHeight;
-    const ctx = offscreen.getContext("2d");
+    offscreen.width = (image as any).naturalWidth;
+    offscreen.height = (image as any).naturalHeight;
+    const context = offscreen.getContext("2d");
 
     // Draw the original image at full resolution
-    ctx.drawImage(img, 0, 0, (img as any).naturalWidth, (img as any).naturalHeight);
+    context.drawImage(image, 0, 0, (image as any).naturalWidth, (image as any).naturalHeight);
 
     // Scale annotations from display size to natural size
-    const scaleX = (img as any).naturalWidth / (canvas as any).width;
-    const scaleY = (img as any).naturalHeight / (canvas as any).height;
+    const scaleX = (image as any).naturalWidth / (canvas as any).width;
+    const scaleY = (image as any).naturalHeight / (canvas as any).height;
 
     for (const stroke of strokes) {
-      ctx.save();
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.lineWidth = (stroke as any).width * Math.max(scaleX, scaleY);
+      context.save();
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.lineWidth = (stroke as any).width * Math.max(scaleX, scaleY);
 
       if ((stroke as any).eraser) {
         // For eraser in the composite, we just skip — strokes won't look right
         // Instead we re-draw the image underneath by not erasing it.
         // The composite approach: draw strokes only (non-eraser).
-        ctx.restore();
+        context.restore();
         continue;
       }
 
-      ctx.strokeStyle = (stroke as any).color;
-      ctx.beginPath();
-      ctx.moveTo((stroke as any).points[0].x * scaleX, (stroke as any).points[0].y * scaleY);
+      context.strokeStyle = (stroke as any).color;
+      context.beginPath();
+      context.moveTo((stroke as any).points[0].x * scaleX, (stroke as any).points[0].y * scaleY);
       for (let i = 1; i < (stroke as any).points.length; i++) {
-        ctx.lineTo((stroke as any).points[i].x * scaleX, (stroke as any).points[i].y * scaleY);
+        context.lineTo((stroke as any).points[i].x * scaleX, (stroke as any).points[i].y * scaleY);
       }
-      ctx.stroke();
-      ctx.restore();
+      context.stroke();
+      context.restore();
     }
 
     const dataUrl = offscreen.toDataURL("image/png");

@@ -56,11 +56,11 @@ export default function useProjectFilter() {
   );
 
   const handleProjectChange = useCallback(
-    (val: any) => {
+    (value: any) => {
       // Persist to localStorage
       try {
-        if (val) {
-          localStorage.setItem(LS_ADMIN_PROJECT_FILTER, val);
+        if (value) {
+          localStorage.setItem(LS_ADMIN_PROJECT_FILTER, value);
         } else {
           localStorage.removeItem(LS_ADMIN_PROJECT_FILTER);
         }
@@ -69,8 +69,8 @@ export default function useProjectFilter() {
       }
 
       const params = new URLSearchParams(searchParams.toString());
-      if (val) {
-        params.set("project", val);
+      if (value) {
+        params.set("project", value);
       } else {
         params.delete("project");
       }

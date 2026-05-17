@@ -177,18 +177,18 @@ export default function WorkflowCanvas({
   const handleCanvasMouseDown = useCallback(
     (e: any) => {
       if (e.button !== 0) return;
-      const el = e.target;
+      const element = e.target;
       const isContainerOrSvg =
-        el === containerRef.current || el === svgRef.current;
+        element === containerRef.current || element === svgRef.current;
       const isGridBg =
-        el.classList?.contains?.(styles.starfield) || el.tagName === "CANVAS";
-      const isInsideInteractive = el.closest?.(
+        element.classList?.contains?.(styles.starfield) || element.tagName === "CANVAS";
+      const isInsideInteractive = element.closest?.(
         "[data-workflow-node], [data-workflow-connection]",
       );
       if (
         isContainerOrSvg ||
         isGridBg ||
-        (!isInsideInteractive && (containerRef.current as any)?.contains(el))
+        (!isInsideInteractive && (containerRef.current as any)?.contains(element))
       ) {
         setIsPanning(true);
         panStart.current = {
@@ -437,8 +437,8 @@ export default function WorkflowCanvas({
       if (e.touches.length === 1 && touchRef.current.type !== "drag") {
         // Canvas pan start (only if not already dragging a node)
         const touch = e.touches[0];
-        const el = e.target;
-        const isInsideNode = el.closest?.("[data-workflow-node]");
+        const element = e.target;
+        const isInsideNode = element.closest?.("[data-workflow-node]");
         if (!isInsideNode) {
           e.preventDefault();
           touchRef.current = { type: "pan", nodeId: null, lastDist: 0 };

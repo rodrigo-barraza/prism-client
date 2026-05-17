@@ -60,29 +60,29 @@ export default function ParametersPanelComponent({
   const isTTS = selectedModelDef?._isTTS === true;
   const isSpecialModel = isTranscription || isTTS;
 
-  const handleTempChange = (val: any) => onChange({ temperature: val });
-  const handleMaxTokensChange = (val: any) => onChange({ maxTokens: val });
-  const handleTopPChange = (val: any) => onChange({ topP: val });
-  const handleTopKChange = (val: any) => onChange({ topK: val });
-  const handleFreqPenaltyChange = (val: any) => onChange({ frequencyPenalty: val });
-  const handlePresPenaltyChange = (val: any) => onChange({ presencePenalty: val });
-  const handleMinPChange = (val: any) => onChange({ minP: val });
-  const handleRepeatPenaltyChange = (val: any) => onChange({ repeatPenalty: val });
+  const handleTempChange = (value: any) => onChange({ temperature: value });
+  const handleMaxTokensChange = (value: any) => onChange({ maxTokens: value });
+  const handleTopPChange = (value: any) => onChange({ topP: value });
+  const handleTopKChange = (value: any) => onChange({ topK: value });
+  const handleFreqPenaltyChange = (value: any) => onChange({ frequencyPenalty: value });
+  const handlePresPenaltyChange = (value: any) => onChange({ presencePenalty: value });
+  const handleMinPChange = (value: any) => onChange({ minP: value });
+  const handleRepeatPenaltyChange = (value: any) => onChange({ repeatPenalty: value });
   const handleSeedChange = (e: any) => onChange({ seed: e.target.value });
   const handleStopSeqChange = (e: any) =>
     onChange({ stopSequences: e.target.value });
-  const handleReasoningEffortChange = (val: any) =>
-    onChange({ reasoningEffort: val });
-  const handleThinkingLevelChange = (val: any) => onChange({ thinkingLevel: val });
+  const handleReasoningEffortChange = (value: any) =>
+    onChange({ reasoningEffort: value });
+  const handleThinkingLevelChange = (value: any) => onChange({ thinkingLevel: value });
   const handleThinkingBudgetChange = (e: any) =>
     onChange({ thinkingBudget: e.target.value });
-  const handleVerbosityChange = (val: any) => onChange({ verbosity: val });
-  const handleReasoningSummaryChange = (val: any) =>
-    onChange({ reasoningSummary: val });
-  const handleResponseFormatChange = (val: any) =>
-    onChange({ responseFormat: val });
-  const handleServiceTierChange = (val: any) =>
-    onChange({ serviceTier: val });
+  const handleVerbosityChange = (value: any) => onChange({ verbosity: value });
+  const handleReasoningSummaryChange = (value: any) =>
+    onChange({ reasoningSummary: value });
+  const handleResponseFormatChange = (value: any) =>
+    onChange({ responseFormat: value });
+  const handleServiceTierChange = (value: any) =>
+    onChange({ serviceTier: value });
 
   if (isSpecialModel || settings.provider === "ollama") {
     return (

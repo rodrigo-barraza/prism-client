@@ -368,9 +368,9 @@ export default function TracesPage() {
                 <div className={styles.detailSection}>
                   <div className={styles.detailSectionTitle}>Media Assets</div>
                   <div className={styles.mediaGrid}>
-                    {mediaAssets.map((asset: any, idx: any) => (
+                    {mediaAssets.map((asset: any, index: any) => (
                       <MediaCardComponent
-                        key={idx}
+                        key={index}
                         media={{
                           url: asset.url,
                           mediaType: getMediaTypeFromRef(asset.url),

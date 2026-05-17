@@ -433,7 +433,7 @@ export default function SettingsPanel({
                 <SelectComponent
                   value={currentVoice}
                   options={voiceOptions}
-                  onChange={(val: any) => onChange({ voice: val })}
+                  onChange={(value: any) => onChange({ voice: value })}
                   placeholder="Select Voice"
                   icon={<Mic size={18} />}
                 />
@@ -466,10 +466,10 @@ export default function SettingsPanel({
                 <SelectComponent
                   value={currentValue}
                   options={options}
-                  onChange={(val: any) =>
+                  onChange={(value: any) =>
                     onChange({
-                      thinkingLevel: val === "none" ? undefined : val,
-                      thinkingEnabled: val !== "none",
+                      thinkingLevel: value === "none" ? undefined : value,
+                      thinkingEnabled: value !== "none",
                     })
                   }
                   icon={<Brain size={18} />}
@@ -495,7 +495,7 @@ export default function SettingsPanel({
                 <SelectComponent
                   value={currentLiveVoice}
                   options={voiceOptions}
-                  onChange={(val: any) => onChange({ liveVoice: val })}
+                  onChange={(value: any) => onChange({ liveVoice: value })}
                   placeholder="Select Voice"
                   icon={<AudioLines size={18} />}
                 />
@@ -525,10 +525,10 @@ export default function SettingsPanel({
                     (canDisable ? "none" : selectedModelDef.thinkingLevels[0])
                   }
                   options={options}
-                  onChange={(val: any) =>
+                  onChange={(value: any) =>
                     onChange({
-                      liveThinkingLevel: val,
-                      thinkingEnabled: val !== "none",
+                      liveThinkingLevel: value,
+                      thinkingEnabled: value !== "none",
                     })
                   }
                   icon={<Brain size={18} />}
@@ -666,11 +666,11 @@ export default function SettingsPanel({
                           ? settings.thinkingEnabled !== false
                           : settings.thinkingEnabled || false,
                     onChange: isLive
-                      ? (val: any) =>
-                          onChange({ liveThinkingLevel: val ? "low" : "none" })
+                      ? (value: any) =>
+                          onChange({ liveThinkingLevel: value ? "low" : "none" })
                       : lmLocked || alwaysOn
                         ? () => {}
-                        : (val: any) => onChange({ thinkingEnabled: val }),
+                        : (value: any) => onChange({ thinkingEnabled: value }),
                     disabled: lmLocked || alwaysOn,
                   };
                 }
@@ -679,15 +679,15 @@ export default function SettingsPanel({
                 case "Web Fetch":
                   return {
                     checked: settings.webSearchEnabled || false,
-                    onChange: (val: any) => onChange({ webSearchEnabled: val }),
+                    onChange: (value: any) => onChange({ webSearchEnabled: value }),
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Code Execution":
                   return {
                     checked: settings.codeExecutionEnabled || false,
-                    onChange: (val: any) => {
-                      const updates = { codeExecutionEnabled: val };
-                      if (val) {
+                    onChange: (value: any) => {
+                      const updates = { codeExecutionEnabled: value };
+                      if (value) {
                         (updates as any).webSearchEnabled = false;
                         (updates as any).urlContextEnabled = false;
                       }
@@ -698,7 +698,7 @@ export default function SettingsPanel({
                 case "URL Context":
                   return {
                     checked: settings.urlContextEnabled || false,
-                    onChange: (val: any) => onChange({ urlContextEnabled: val }),
+                    onChange: (value: any) => onChange({ urlContextEnabled: value }),
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Tool Calling":
@@ -709,13 +709,13 @@ export default function SettingsPanel({
                       false,
                     onChange: lockedTools?.has("Tool Calling")
                       ? () => {}
-                      : (val: any) => onChange({ functionCallingEnabled: val }),
+                      : (value: any) => onChange({ functionCallingEnabled: value }),
                     disabled: !!lockedTools?.has("Tool Calling"),
                   };
                 case "Image Generation":
                   return {
                     checked: settings.forceImageGeneration || false,
-                    onChange: (val: any) => onChange({ forceImageGeneration: val }),
+                    onChange: (value: any) => onChange({ forceImageGeneration: value }),
                     disabled: false,
                   };
                 default:

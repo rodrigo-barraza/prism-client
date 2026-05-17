@@ -29,10 +29,10 @@ const BAR_GAP = 1;
 
 /* -- Draw waveform bars on a canvas -- */
 function drawBars(canvas: any, peaks: any, progress: any, playedColor: any, unplayedColor: any) {
-  const ctx = canvas.getContext("2d");
+  const context = canvas.getContext("2d");
   const w = canvas.width;
   const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
+  context.clearRect(0, 0, w, h);
 
   const totalBars = Math.floor(w / (BAR_WIDTH + BAR_GAP));
   const mid = h / 2;
@@ -42,8 +42,8 @@ function drawBars(canvas: any, peaks: any, progress: any, playedColor: any, unpl
     const amp = peaks[peakIdx] ?? 0;
     const barH = Math.max(2, amp * (h * 0.8));
 
-    ctx.fillStyle = i / totalBars <= progress ? playedColor : unplayedColor;
-    ctx.fillRect(i * (BAR_WIDTH + BAR_GAP), mid - barH / 2, BAR_WIDTH, barH);
+    context.fillStyle = i / totalBars <= progress ? playedColor : unplayedColor;
+    context.fillRect(i * (BAR_WIDTH + BAR_GAP), mid - barH / 2, BAR_WIDTH, barH);
   }
 }
 
@@ -233,10 +233,10 @@ export default function AudioPlayerRecorderComponent({
       }
 
       // Redraw every frame for smoothness
-      const ctx = (canvas as any).getContext("2d");
+      const context = (canvas as any).getContext("2d");
       const w = (canvas as any).width;
       const h = (canvas as any).height;
-      ctx.clearRect(0, 0, w, h);
+      context.clearRect(0, 0, w, h);
 
       const curPeaks = recPeaksRef.current;
       const mid = h / 2;
@@ -244,8 +244,8 @@ export default function AudioPlayerRecorderComponent({
       for (let i = 0; i < curPeaks.length; i++) {
         const amp = curPeaks[i];
         const barH = Math.max(2, amp * (h * 0.85));
-        ctx.fillStyle = "#ef4444";
-        ctx.fillRect(
+        context.fillStyle = "#ef4444";
+        context.fillRect(
           startX + i * (BAR_WIDTH + BAR_GAP),
           mid - barH / 2,
           BAR_WIDTH,
@@ -505,12 +505,12 @@ export default function AudioPlayerRecorderComponent({
             max={1}
             step={0.01}
             value={muted ? 0 : volume}
-            onChange={(val: any) => {
-              setVolume(val);
-              setMuted(val === 0);
+            onChange={(value: any) => {
+              setVolume(value);
+              setMuted(value === 0);
               if (audioRef.current) {
-                (audioRef.current as any).volume = val;
-                (audioRef.current as any).muted = val === 0;
+                (audioRef.current as any).volume = value;
+                (audioRef.current as any).muted = value === 0;
               }
             }}
             compact

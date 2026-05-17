@@ -19,15 +19,15 @@ function getAdminHeaders() {
  */
 async function fetchJSON(path: any, options = {}, admin = true) {
   const prefix = admin ? "/admin" : "";
-  const res = await fetch(`${API_BASE}${prefix}${path}`, {
+  const response = await fetch(`${API_BASE}${prefix}${path}`, {
     headers: getAdminHeaders(),
     ...options,
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(error.message || `Request failed: ${res.status}`);
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || `Request failed: ${response.status}`);
   }
-  return res.json();
+  return response.json();
 }
 
 

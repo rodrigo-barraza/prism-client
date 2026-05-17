@@ -25,27 +25,27 @@ function resolveGradient(agent: any) {
 // -- Canvas texture helpers -----------------------------------------
 
 /** Draw a rounded-rect gradient fill on a canvas context. */
-function drawGradientBase(ctx: any, s: any, gradient: any) {
+function drawGradientBase(context: any, s: any, gradient: any) {
   const r = s * 0.16;
-  ctx.beginPath();
-  ctx.roundRect(0, 0, s, s, r);
-  ctx.closePath();
-  const g = ctx.createLinearGradient(0, 0, s, s);
+  context.beginPath();
+  context.roundRect(0, 0, s, s, r);
+  context.closePath();
+  const g = context.createLinearGradient(0, 0, s, s);
   g.addColorStop(0, gradient[0]);
   g.addColorStop(1, gradient[1]);
-  ctx.fillStyle = g;
-  ctx.fill();
+  context.fillStyle = g;
+  context.fill();
 }
 
 /** Load an SVG string as an Image (returns a Promise). */
 function loadSvgImage(svgMarkup: any) {
   return new Promise((resolve: any) => {
-    const img = new Image();
+    const image = new Image();
     const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
-    img.src = url;
+    image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+    image.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    image.src = url;
   });
 }
 
@@ -79,8 +79,8 @@ function CoinStatic({ agent, size }: any) {
     const texCanvas = document.createElement("canvas");
     texCanvas.width = TEX_SIZE;
     texCanvas.height = TEX_SIZE;
-    const ctx = texCanvas.getContext("2d");
-    drawGradientBase(ctx, TEX_SIZE, gradient);
+    const context = texCanvas.getContext("2d");
+    drawGradientBase(context, TEX_SIZE, gradient);
     canvasRef.current = texCanvas;
 
     const tex = new THREE.CanvasTexture(texCanvas);
@@ -113,13 +113,13 @@ function CoinStatic({ agent, size }: any) {
       svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       const markup = svg.outerHTML.replace(/currentColor/g, "#ffffff");
 
-      loadSvgImage(markup).then((img: any) => {
-        if (!img || !canvasRef.current) return;
+      loadSvgImage(markup).then((image: any) => {
+        if (!image || !canvasRef.current) return;
         const iconSz = TEX_SIZE * 0.55;
         const off = (TEX_SIZE - iconSz) / 2;
 
-        const ctx = (canvasRef.current as any).getContext("2d");
-        ctx.drawImage(img, off, off, iconSz, iconSz);
+        const context = (canvasRef.current as any).getContext("2d");
+        context.drawImage(image, off, off, iconSz, iconSz);
         if (texRef.current) (texRef.current as any).needsUpdate = true;
       });
     });

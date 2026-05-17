@@ -69,12 +69,12 @@ export default function HistoryPanel({
   const [glitchLabel, setGlitchLabel] = useState(null);
 
   const handleNew = useCallback(() => {
-    const el = newBtnRef.current;
-    if (el) {
+    const element = newBtnRef.current;
+    if (element) {
       // Rainbow hue-rotate
-      (el as any).classList.remove(styles.newBtnRainbow);
-      void (el as any).offsetWidth;
-      (el as any).classList.add(styles.newBtnRainbow);
+      (element as any).classList.remove(styles.newBtnRainbow);
+      void (element as any).offsetWidth;
+      (element as any).classList.add(styles.newBtnRainbow);
 
       // Glitch text scramble — 30ms swaps for chaotic feel
       setGlitchLabel(glitchText());
@@ -85,7 +85,7 @@ export default function HistoryPanel({
 
       clearTimeout(rainbowTimer.current);
       rainbowTimer.current = setTimeout(() => {
-        (el as any).classList.remove(styles.newBtnRainbow);
+        (element as any).classList.remove(styles.newBtnRainbow);
         clearInterval(glitchInterval.current);
         glitchInterval.current = null;
         setGlitchLabel(null);
@@ -96,28 +96,28 @@ export default function HistoryPanel({
 
   // Normalize sessions into HistoryList items
   const items = useMemo(() => {
-    return sessions.map((conv: any) => {
+    return sessions.map((conversation: any) => {
       // Prefer session-level totalCost (authoritative, from request logs
       // for agent sessions). Fall back to message-sum only for Direct Chat
       // sessions that carry messages inline with no precomputed total.
       const totalCost =
-        conv.totalCost ??
-        (conv.messages || []).reduce(
+        conversation.totalCost ??
+        (conversation.messages || []).reduce(
           (sum: any, m: any) => sum + (m.estimatedCost || 0),
           0,
         );
 
       const tags = [];
-      if (showProject && conv.project) {
+      if (showProject && conversation.project) {
         tags.push({
-          label: conv.project,
+          label: conversation.project,
           style: {
             background: "var(--accent-subtle)",
             color: "var(--accent-color)",
           },
         });
       }
-      if (conv.synthetic) {
+      if (conversation.synthetic) {
         tags.push({
           label: "SYNTHETIC",
           style: {
@@ -131,15 +131,15 @@ export default function HistoryPanel({
       // then backend-enriched modelNames (from request-log aggregation),
       // otherwise derive from messages
       let modelNames;
-      if (conv._liveModelNames?.length > 0) {
-        modelNames = conv._liveModelNames;
-      } else if (conv.modelNames?.length > 0) {
+      if (conversation._liveModelNames?.length > 0) {
+        modelNames = conversation._liveModelNames;
+      } else if (conversation.modelNames?.length > 0) {
         // Backend enrichment: the list endpoint aggregates unique models
         // from request logs — available without fetching the full session.
-        modelNames = conv.modelNames;
+        modelNames = conversation.modelNames;
       } else {
         // Extract unique model names and providers used in this conversation
-        const msgs = conv.messages || [];
+        const msgs = conversation.messages || [];
         const modelNamesSet = new Set();
 
         // Look at messages from newest to oldest to order recent models first
@@ -150,18 +150,18 @@ export default function HistoryPanel({
         }
 
         // If no models found in messages, fall back to conv.model
-        if (modelNamesSet.size === 0 && conv.model) {
-          modelNamesSet.add(conv.model);
+        if (modelNamesSet.size === 0 && conversation.model) {
+          modelNamesSet.add(conversation.model);
         }
         modelNames = Array.from(modelNamesSet);
       }
 
       // Providers: prefer top-level (from backend or live patch), else derive from messages
       let derivedProviders;
-      if (conv.providers?.length > 0) {
-        derivedProviders = conv.providers;
+      if (conversation.providers?.length > 0) {
+        derivedProviders = conversation.providers;
       } else {
-        const msgs = conv.messages || [];
+        const msgs = conversation.messages || [];
         const providersSet = new Set();
         for (let i = msgs.length - 1; i >= 0; i--) {
           if (msgs[i].role === "assistant" && msgs[i].provider) {
@@ -172,29 +172,29 @@ export default function HistoryPanel({
       }
 
       // Merge request-log toolCounts into modalities for accurate badge counts
-      const baseModalities = conv.modalities || getModalities(conv.messages);
-      const modalities = conv.toolCounts
+      const baseModalities = conversation.modalities || getModalities(conversation.messages);
+      const modalities = conversation.toolCounts
         ? {
             ...baseModalities,
-            functionCalling: Object.values(conv.toolCounts).reduce((s: any, c: any) => s + c, 0),
+            functionCalling: Object.values(conversation.toolCounts).reduce((s: any, c: any) => s + c, 0),
           }
         : baseModalities;
 
       return {
-        id: conv.id,
-        title: conv.title || "Untitled Chat",
-        updatedAt: conv.updatedAt,
-        createdAt: conv.createdAt,
+        id: conversation.id,
+        title: conversation.title || "Untitled Chat",
+        updatedAt: conversation.updatedAt,
+        createdAt: conversation.createdAt,
         totalCost,
         modalities,
         providers: derivedProviders,
         tags,
-        username: conv.username,
+        username: conversation.username,
         modelNames,
         searchText: [
-          conv.project || "",
-          conv.username || "",
-          ...(conv.messages || []).map((m: any) => m.content || ""),
+          conversation.project || "",
+          conversation.username || "",
+          ...(conversation.messages || []).map((m: any) => m.content || ""),
         ].join(" "),
       };
     });
@@ -219,8 +219,8 @@ export default function HistoryPanel({
         items={items}
         activeId={activeId}
         onSelect={(item: any) => {
-          const conv = sessions.find((c: any) => c.id === item.id);
-          if (conv) onSelect(conv);
+          const conversation = sessions.find((c: any) => c.id === item.id);
+          if (conversation) onSelect(conversation);
         }}
         onDelete={!readOnly && onDelete ? onDelete : undefined}
         icon={itemIcon || MessageSquare}

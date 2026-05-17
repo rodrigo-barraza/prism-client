@@ -12,7 +12,7 @@
  */
 
 /** @type {AudioContext|null} */
-let ctx = null;
+let context = null;
 
 /** @type {AudioBuffer|null} Cached hover noise buffer */
 let hoverBuffer = null;
@@ -31,13 +31,13 @@ let buttonClickBuffer = null;
  * Must be called from a user-gesture context on first invocation.
  */
 function ensureContext() {
-  if (!ctx) {
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!context) {
+    context = new (window.AudioContext || window.webkitAudioContext)();
   }
-  if (ctx.state === "suspended") {
-    ctx.resume();
+  if (context.state === "suspended") {
+    context.resume();
   }
-  return ctx;
+  return context;
 }
 
 // --- Sound generators ----------------------------------------------
@@ -259,10 +259,10 @@ function connectStereo(source: any, left: any, right: any) {
  * @returns {{ left: number, right: number }}
  */
 function spatialFromEvent(event: any) {
-  const el = event?.currentTarget;
-  if (!el?.getBoundingClientRect) return { left: 50, right: 50 };
+  const element = event?.currentTarget;
+  if (!element?.getBoundingClientRect) return { left: 50, right: 50 };
 
-  const rect = el.getBoundingClientRect();
+  const rect = element.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
   const ratio = Math.max(0, Math.min(1, centerX / window.innerWidth));
 
@@ -393,9 +393,9 @@ const SoundService = {
    * Tear down the AudioContext (e.g. on unmount / navigation).
    */
   dispose() {
-    if (ctx) {
-      ctx.close().catch(() => {});
-      ctx = null;
+    if (context) {
+      context.close().catch(() => {});
+      context = null;
     }
     hoverBuffer = null;
     clickBuffer = null;

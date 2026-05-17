@@ -32,7 +32,7 @@ import { prepareDisplayMessages } from "../components/MessageListComponent";
  * (minio://, data:image/…, https://…jpg, etc.) with their origin
  * ("user" for request, "ai" for response).
  */
-export function extractMediaAssets(obj: any) {
+export function extractMediaAssets(object: any) {
   const seen = new Set();
   const assets = [];
   const search = (node: any, origin: any) => {
@@ -63,8 +63,8 @@ export function extractMediaAssets(obj: any) {
       Object.values(node).forEach((n: any) => search(n, origin));
     }
   };
-  search(obj?.requestPayload, "user");
-  search(obj?.responsePayload, "ai");
+  search(object?.requestPayload, "user");
+  search(object?.responsePayload, "ai");
   return assets;
 }
 

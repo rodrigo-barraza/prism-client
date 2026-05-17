@@ -323,17 +323,17 @@ async function executeModelNode(node: any, inputData: any, { onNodeContentUpdate
     const allRawImages = [...rawImages, ...messageImages];
 
     // Convert data URLs → { imageData, mimeType } objects for Prism/providers
-    const images = allRawImages.map((img: any) => {
-      if (typeof img === "string" && img.startsWith("data:")) {
-        const match = img.match(/^data:([^;]+);base64,(.+)$/);
+    const images = allRawImages.map((image: any) => {
+      if (typeof image === "string" && image.startsWith("data:")) {
+        const match = image.match(/^data:([^;]+);base64,(.+)$/);
         if (match) {
           return { imageData: match[2], mimeType: match[1] };
         }
       }
       // Already an object or fallback
-      return typeof img === "object"
-        ? img
-        : { imageData: img, mimeType: "image/jpeg" };
+      return typeof image === "object"
+        ? image
+        : { imageData: image, mimeType: "image/jpeg" };
     });
 
     const result = await PrismService.generateImage({
@@ -535,18 +535,18 @@ export async function executeWorkflow(
             const modality = conn.targetModality.substring(dotIdx + 1);
 
             if (msgIdx < 0 || msgIdx >= messages.length) continue;
-            const msg = messages[msgIdx];
+            const message = messages[msgIdx];
 
             if (modality === "text") {
-              msg.content = msg.content ? `${msg.content}\n\n${data}` : data;
+              message.content = message.content ? `${message.content}\n\n${data}` : data;
             } else if (modality === "image") {
-              msg.images = [...(msg.images || []), data];
+              message.images = [...(message.images || []), data];
             } else if (modality === "audio") {
-              msg.audio = [...(msg.audio || []), data];
+              message.audio = [...(message.audio || []), data];
             } else if (modality === "video") {
-              msg.video = [...(msg.video || []), data];
+              message.video = [...(message.video || []), data];
             } else if (modality === "pdf") {
-              msg.pdf = [...(msg.pdf || []), data];
+              message.pdf = [...(message.pdf || []), data];
             }
           }
 

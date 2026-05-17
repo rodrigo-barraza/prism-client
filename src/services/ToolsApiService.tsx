@@ -6,12 +6,12 @@ import { TOOLS_SERVICE_URL } from "../../config";
  */
 export default class ToolsApiService {
   static async _fetch(path: any) {
-    const res = await fetch(`${TOOLS_SERVICE_URL}${path}`);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `tools-api error: ${res.status}`);
+    const response = await fetch(`${TOOLS_SERVICE_URL}${path}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `tools-api error: ${response.status}`);
     }
-    return res.json();
+    return response.json();
   }
 
   /**
@@ -39,16 +39,16 @@ export default class ToolsApiService {
   // ---------------------------------------------------------------------------
 
   static async _post(path: any, body: any) {
-    const res = await fetch(`${TOOLS_SERVICE_URL}${path}`, {
+    const response = await fetch(`${TOOLS_SERVICE_URL}${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `tools-api error: ${res.status}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `tools-api error: ${response.status}`);
     }
-    return res.json();
+    return response.json();
   }
 
   /**

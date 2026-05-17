@@ -312,7 +312,7 @@ export default function RequestsPage() {
         <FilterGroupComponent label="Provider">
           <FilterSelectComponent
             value={filters.provider}
-            onChange={(val: any) => handleFilterChange("provider", val)}
+            onChange={(value: any) => handleFilterChange("provider", value)}
             options={[
               { value: "", label: "All" },
               { value: "openai", label: "OpenAI" },
@@ -326,13 +326,13 @@ export default function RequestsPage() {
           <FilterInputComponent
             placeholder="Filter by model..."
             value={filters.model}
-            onChange={(val: any) => handleFilterChange("model", val)}
+            onChange={(value: any) => handleFilterChange("model", value)}
           />
         </FilterGroupComponent>
         <FilterGroupComponent label="Endpoint">
           <FilterSelectComponent
             value={filters.endpoint}
-            onChange={(val: any) => handleFilterChange("endpoint", val)}
+            onChange={(value: any) => handleFilterChange("endpoint", value)}
             options={[
               { value: "", label: "All" },
               { value: "/chat", label: "/chat" },
@@ -345,7 +345,7 @@ export default function RequestsPage() {
         <FilterGroupComponent label="Operation">
           <FilterSelectComponent
             value={filters.operation}
-            onChange={(val: any) => handleFilterChange("operation", val)}
+            onChange={(value: any) => handleFilterChange("operation", value)}
             options={[
               { value: "", label: "All" },
               { value: "chat", label: "Chat" },
@@ -368,7 +368,7 @@ export default function RequestsPage() {
         <FilterGroupComponent label="Status">
           <FilterSelectComponent
             value={filters.success}
-            onChange={(val: any) => handleFilterChange("success", val)}
+            onChange={(value: any) => handleFilterChange("success", value)}
             options={[
               { value: "", label: "All" },
               { value: "true", label: "Success" },
@@ -565,9 +565,9 @@ export default function RequestsPage() {
                 <div className={styles.detailSection}>
                   <div className={styles.detailSectionTitle}>Media Assets</div>
                   <div className={styles.mediaGrid}>
-                    {mediaAssets.map((asset: any, idx: any) => (
+                    {mediaAssets.map((asset: any, index: any) => (
                       <MediaCardComponent
-                        key={idx}
+                        key={index}
                         media={{
                           url: asset.url,
                           mediaType: getMediaTypeFromRef(asset.url),
