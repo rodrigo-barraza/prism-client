@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import RainbowCanvasComponent from "./RainbowCanvasComponent.js";
+import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import styles from "./StatusBarComponent.module.css";
 
 // -- Shared phase vocabulary ------------------------------------------

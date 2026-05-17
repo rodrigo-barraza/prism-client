@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { PRISM_SERVICE_URL } from "../../config";
-import { getBaseHeaders } from "./serviceHeaders.js";
+import { getBaseHeaders } from "./serviceHeaders";
 import { subscribe as sseSubscribe } from "./SSEManager";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";

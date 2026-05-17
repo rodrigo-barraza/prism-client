@@ -1,7 +1,7 @@
 "use client";
 
 import { FlaskConical } from "lucide-react";
-import HistoryPanel from "./HistoryPanelComponent.js";
+import HistoryPanel from "./HistoryPanelComponent";
 
 /**
  * Thin wrapper around HistoryPanel with synthesis-specific labels.

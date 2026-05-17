@@ -38,7 +38,7 @@ import { BadgeComponent, CopyButtonComponent, IconButtonComponent, DateTimeBadge
 } from "@rodrigo-barraza/components-library";
 import WordBadgeComponent from "./WordBadgeComponent";
 import WorkerNotificationComponent from "./WorkerNotificationComponent";
-import PlanCardComponent from "./PlanCardComponent.js";
+import PlanCardComponent from "./PlanCardComponent";
 import styles from "./MessageListComponent.module.css";
 import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";

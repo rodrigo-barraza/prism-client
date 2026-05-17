@@ -8,8 +8,8 @@ import {
 import PrismService from "../services/PrismService";
 import { renderToolName } from "../utils/utilities";
 import { formatDuration } from "../utils/utilities";
-import CostBadgeComponent from "./CostBadgeComponent.js";
-import ModelBadgeComponent from "./ModelBadgeComponent.js";
+import CostBadgeComponent from "./CostBadgeComponent";
+import ModelBadgeComponent from "./ModelBadgeComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
 import styles from "./WorkersPanelComponent.module.css";
 

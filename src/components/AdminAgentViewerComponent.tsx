@@ -10,20 +10,20 @@ import {
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
-import HistoryPanel from "./HistoryPanelComponent.js";
-import SettingsPanel from "./SettingsPanelComponent.js";
-import ModelInfoPanel from "./ModelInfoPanelComponent.js";
-import CustomToolsPanel from "./CustomToolsPanelComponent.js";
-import SkillsPanel from "./SkillsPanelComponent.js";
-import MemoriesPanel from "./MemoriesPanelComponent.js";
-import TasksPanel from "./TasksPanelComponent.js";
-import MCPServersPanel from "./MCPServersPanelComponent.js";
-import CoordinatorPanel from "./CoordinatorPanelComponent.js";
-import WorkersPanel from "./WorkersPanelComponent.js";
-import MessageList, { prepareDisplayMessages } from "./MessageListComponent.js";
+import HistoryPanel from "./HistoryPanelComponent";
+import SettingsPanel from "./SettingsPanelComponent";
+import ModelInfoPanel from "./ModelInfoPanelComponent";
+import CustomToolsPanel from "./CustomToolsPanelComponent";
+import SkillsPanel from "./SkillsPanelComponent";
+import MemoriesPanel from "./MemoriesPanelComponent";
+import TasksPanel from "./TasksPanelComponent";
+import MCPServersPanel from "./MCPServersPanelComponent";
+import CoordinatorPanel from "./CoordinatorPanelComponent";
+import WorkersPanel from "./WorkersPanelComponent";
+import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
 
-import ModelBadgeComponent from "./ModelBadgeComponent.js";
-import { useAdminHeader } from "./AdminHeaderContextComponent.js";
+import ModelBadgeComponent from "./ModelBadgeComponent";
+import { useAdminHeader } from "./AdminHeaderContextComponent";
 
 import { formatNumber } from "../utils/utilities";
 import useSessionStats from "../hooks/useSessionStats";

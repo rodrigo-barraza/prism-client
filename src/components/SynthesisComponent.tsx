@@ -17,18 +17,18 @@ import {
   Settings2,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import NavigationSidebarComponent from "./NavigationSidebarComponent.js";
-import ThreePanelLayout from "./ThreePanelLayoutComponent.js";
-import SettingsPanel from "./SettingsPanelComponent.js";
-import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent.js";
+import NavigationSidebarComponent from "./NavigationSidebarComponent";
+import ThreePanelLayout from "./ThreePanelLayoutComponent";
+import SettingsPanel from "./SettingsPanelComponent";
+import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import { BadgeComponent, ButtonComponent, CollapsibleBlockComponent, CopyButtonComponent, EmptyStateComponent, IconButtonComponent, SelectComponent, TabBarComponent, TextAreaComponent } from "@rodrigo-barraza/components-library";
 
-import PromptSectionComponent from "./PromptSectionComponent.js";
+import PromptSectionComponent from "./PromptSectionComponent";
 
-import MessageList from "./MessageListComponent.js";
+import MessageList from "./MessageListComponent";
 
-import JsonViewerComponent from "./JsonViewerComponent.js";
-import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent.js";
+import JsonViewerComponent from "./JsonViewerComponent";
+import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent";
 import { SETTINGS_DEFAULTS, SK_MODEL_MEMORY_SYNTHESIS } from "../constants";
 import { generateUUID } from "../utils/utilities";
 import styles from "./SynthesisComponent.module.css";

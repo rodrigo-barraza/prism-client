@@ -29,7 +29,7 @@ import MarkdownContent from "./MarkdownContentComponent";
 const LazyMessageList = lazy(() => import("./MessageListComponent"));
 import { prepareDisplayMessages } from "./MessageListComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
-import StatusBarComponent from "./StatusBarComponent.js";
+import StatusBarComponent from "./StatusBarComponent";
 import PrismService from "../services/PrismService";
 import { formatLatency, renderToolName } from "../utils/utilities";
 import styles from "./ToolResultRenderersComponent.module.css";

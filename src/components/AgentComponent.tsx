@@ -5,31 +5,31 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { BotMessageSquare, Paperclip, X, ClipboardList, Zap, Settings, Wrench, Brain, Plug, GitBranch, Repeat, ListChecks, BookOpen, Info, Activity, CornerDownLeft, Send, Square, SlidersHorizontal, File, FolderOpen, FolderTree, Plus } from "lucide-react";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
-import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent.js";
-import NavigationSidebarComponent from "./NavigationSidebarComponent.js";
-import HistoryPanel from "./HistoryPanelComponent.js";
-import SettingsPanel from "./SettingsPanelComponent.js";
-import ModelInfoPanel from "./ModelInfoPanelComponent.js";
-import CustomToolsPanel from "./CustomToolsPanelComponent.js";
-import SkillsPanel from "./SkillsPanelComponent.js";
-import MemoriesPanel from "./MemoriesPanelComponent.js";
-import TasksPanel from "./TasksPanelComponent.js";
-import MCPServersPanel from "./MCPServersPanelComponent.js";
-import CoordinatorPanel from "./CoordinatorPanelComponent.js";
-import WorkersPanel from "./WorkersPanelComponent.js";
-import ParametersPanelComponent from "./ParametersPanelComponent.js";
-import SessionRequestsListComponent from "./SessionRequestsListComponent.js";
-import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent.js";
-import FileViewerPanelComponent from "./FileViewerPanelComponent.js";
-import MessageList, { prepareDisplayMessages } from "./MessageListComponent.js";
-import ImagePreviewComponent from "./ImagePreviewComponent.js";
+import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent";
+import NavigationSidebarComponent from "./NavigationSidebarComponent";
+import HistoryPanel from "./HistoryPanelComponent";
+import SettingsPanel from "./SettingsPanelComponent";
+import ModelInfoPanel from "./ModelInfoPanelComponent";
+import CustomToolsPanel from "./CustomToolsPanelComponent";
+import SkillsPanel from "./SkillsPanelComponent";
+import MemoriesPanel from "./MemoriesPanelComponent";
+import TasksPanel from "./TasksPanelComponent";
+import MCPServersPanel from "./MCPServersPanelComponent";
+import CoordinatorPanel from "./CoordinatorPanelComponent";
+import WorkersPanel from "./WorkersPanelComponent";
+import ParametersPanelComponent from "./ParametersPanelComponent";
+import SessionRequestsListComponent from "./SessionRequestsListComponent";
+import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent";
+import FileViewerPanelComponent from "./FileViewerPanelComponent";
+import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
+import ImagePreviewComponent from "./ImagePreviewComponent";
 
-import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent.js";
-import ApprovalCardComponent from "./ApprovalCardComponent.js";
-import UserQuestionCardComponent from "./UserQuestionCardComponent.js";
+import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
+import ApprovalCardComponent from "./ApprovalCardComponent";
+import UserQuestionCardComponent from "./UserQuestionCardComponent";
 
-import StatusBarComponent from "./StatusBarComponent.js";
-import PixelTransitionComponent from "./PixelTransitionComponent.js";
+import StatusBarComponent from "./StatusBarComponent";
+import PixelTransitionComponent from "./PixelTransitionComponent";
 
 import {
   buildToolSchemas,
@@ -39,14 +39,14 @@ import useSessionStats from "../hooks/useSessionStats";
 import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, generateUUID } from "../utils/utilities";
 import { PROJECT_AGENT, SETTINGS_DEFAULTS, SK_MODEL_MEMORY_AGENT, SK_MODEL_MEMORY_AGENT_PREFIX, SK_TOOL_MEMORY_AGENT, SK_TOOL_MEMORY_AGENT_PREFIX, MAX_TOOL_ITERATIONS, LS_FILE_VIEWER_WIDTH } from "../constants";
 import chatStyles from "./ChatAreaComponent.module.css";
-import ChatInputButton from "./ChatInputButtonComponent.js";
+import ChatInputButton from "./ChatInputButtonComponent";
 import { ButtonComponent, EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
 import useToolToggles from "../hooks/useToolToggles";
 import useModelMemory from "../hooks/useModelMemory";
-import AgentPickerComponent from "./AgentPickerComponent.js";
-import AgentBadgeComponent from "./AgentBadgeComponent.js";
+import AgentPickerComponent from "./AgentPickerComponent";
+import AgentBadgeComponent from "./AgentBadgeComponent";
 import WorkspaceSelectorComponent from "./WorkspaceSelectorComponent";
-import { useWorkspace } from "./WorkspaceContextComponent.js";
+import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
 import {
   serializeEditable,
