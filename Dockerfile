@@ -20,6 +20,10 @@ RUN npm ci
 FROM base AS builder
 WORKDIR /app
 
+# curl is required by the vault client's fetchSync() (execFileSync("curl"))
+# to resolve secrets at build time. Alpine doesn't include it by default.
+RUN apk add --no-cache curl
+
 # Vault credentials — needed at build time for next.config.ts
 # to resolve PRISM_SERVICE_URL, TOOLS_SERVICE_URL, etc.
 ARG VAULT_SERVICE_URL=http://192.168.86.2:5599
