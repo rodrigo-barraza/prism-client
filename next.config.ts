@@ -6,6 +6,7 @@
 // ============================================================
 
 import { createVaultClient } from "@rodrigo-barraza/utilities-library/node";
+import type { NextConfig } from "next";
 
 // ── Bootstrap secrets at build/dev time ────────────────────────
 const vault = createVaultClient({
@@ -34,8 +35,7 @@ if (!TOOLS_SERVICE_URL) {
 // Resolved client domain for allowedDevOrigins (from vault).
 const PRISM_CLIENT_DOMAIN = secrets.PRISM_CLIENT_DOMAIN;
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: PRISM_CLIENT_DOMAIN ? [PRISM_CLIENT_DOMAIN] : undefined,
   turbopack: {},
