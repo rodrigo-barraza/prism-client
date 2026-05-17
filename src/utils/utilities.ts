@@ -7,8 +7,6 @@
 // defined here as local exports.
 // ============================================================
 
-import { DateTime } from "luxon";
-
 // -- Re-exports from @rodrigo-barraza/utilities-library ----------------
 
 export {
@@ -30,6 +28,7 @@ export {
   humanizeToolName,
   sleep,
   timeAgo as formatTimeAgo,
+  formatDateTime,
 } from "@rodrigo-barraza/utilities-library";
 
 // -- Prism-specific utilities ---------------------------------
@@ -63,21 +62,7 @@ export function getTotalInputTokens(usage: any) {
   );
 }
 
-/**
- * Format an ISO timestamp as a compact human-readable datetime.
- * Shows "Mar 30, 3:32 PM" for current year, "Mar 30, 2025, 3:32 PM" otherwise.
- * Returns "—" for null/undefined values.
- */
-export function formatDateTime(isoString: any) {
-  if (!isoString) return "—";
-  const dt = DateTime.fromISO(isoString);
-  if (!dt.isValid) return "—";
-  const now = DateTime.now();
-  if (dt.year === now.year) {
-    return dt.toFormat("MMM d, h:mm:ss a");
-  }
-  return dt.toFormat("MMM d, yyyy, h:mm:ss a");
-}
+
 
 /**
  * Build ISO date range params from a { from, to } object.
