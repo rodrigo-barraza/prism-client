@@ -37,9 +37,9 @@ export default function CoordinatorPanel({ project: _project }: any) {
   const [phase, setPhase] = useState("input"); // input | planning | plan | executing | review | merged
   const [task, setTask] = useState("");
   const [filesInput, setFilesInput] = useState("");
-  const [plan, setPlan] = useState(null);
+  const [plan, setPlan] = useState<any>(null);
   const [workers, setWorkers] = useState<any[]>([]);
-  const [toast, setToast] = useState(null);
+  const [toast, setToast] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const showToast = useCallback((type: any, text: any) => {

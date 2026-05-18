@@ -60,11 +60,11 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
   const [memories, setMemories] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [error, setError] = useState<any>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
   const [newMemoryIds, setNewMemoryIds] = useState(new Set());
   const [consolidating, setConsolidating] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [toast, setToast] = useState<any>(null);
   const knownIdsRef = useRef<any>(new Set());
 
   // -- Search & filter state ----------------------------------

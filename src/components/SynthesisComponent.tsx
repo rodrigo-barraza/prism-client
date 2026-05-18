@@ -201,7 +201,7 @@ export default function SynthesisComponent() {
   const filteredConfig = useMemo(() => {
     if (!config) return null;
     return {
-      ...config,
+      ...(config as any),
       textToImage: { models: {} },
       textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
       audioToText: { models: {} },
@@ -373,7 +373,7 @@ export default function SynthesisComponent() {
 
           if (abortedRef.current) break;
 
-          conversation.push({ role: "assistant", content: assistantContent, thinking: turnThinking || undefined });
+          conversation.push({ role: "assistant", content: assistantContent, thinking: turnThinking || undefined } as any);
           setGeneratedMessages([...conversation]);
           setGenerationProgress("");
           nextRole = "user";
@@ -482,7 +482,7 @@ export default function SynthesisComponent() {
         );
 
         if (!abortedRef.current) {
-          conversation.push({ role: "assistant", content: assistantContent, thinking: finalThinking || undefined });
+          conversation.push({ role: "assistant", content: assistantContent, thinking: finalThinking || undefined } as any);
           setGeneratedMessages([...conversation]);
         }
       }
@@ -814,7 +814,7 @@ export default function SynthesisComponent() {
                   step={1}
                   onChange={(e: any) => {
                     const raw = e.target.value;
-                    if (raw === "") { setTargetTurns(""); return; }
+                    if (raw === "") { setTargetTurns("" as any); return; }
                     const v = parseInt(raw, 10);
                     if (!isNaN(v)) setTargetTurns(v);
                   }}

@@ -122,7 +122,7 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
         ),
       );
       // Refresh summary
-      loadTasks(true);
+      loadTasks();
     } catch (error: any) {
       console.error("Failed to update task:", error);
     }
@@ -137,7 +137,7 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
         prev.filter((t: any) => !(t.project === task.project && t.taskId === task.taskId)),
       );
       setConfirmingDeleteId(null);
-      loadTasks(true);
+      loadTasks();
     } catch (error: any) {
       console.error("Failed to delete task:", error);
     }

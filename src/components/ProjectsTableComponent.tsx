@@ -37,7 +37,7 @@ export default function ProjectsTableComponent({
   const allColumns = [
     projectColumn(),
     requestsColumn(),
-    usageColumn(totalRequests),
+    usageColumn(totalRequests, ""),
     providerCountColumn(),
     modelCountColumn(),
     ...tokenColumns(),

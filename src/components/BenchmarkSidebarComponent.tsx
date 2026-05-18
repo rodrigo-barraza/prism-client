@@ -168,7 +168,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
               <div
                 key={b.id}
                 className={`${styles.item} ${isActive ? styles.itemActive : ""} ${isRunning ? styles.itemRunning : ""}`}
-                {...SoundService.interactive(() => navigate(b))}
+                {...(SoundService as any).interactive(() => navigate(b))}
                 data-panel-close
               >
                 {/* Row 1: date (left) · cost (right) */}

@@ -59,13 +59,13 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
   const conversationsPageRef = useRef<any>(1);
   const conversationsTotalRef = useRef<any>(0);
 
-  const [error, setError] = useState(null);
-  const [selectedId, setSelectedId] = useState(initialId);
-  const [selectedConv, setSelectedConv] = useState(null);
+  const [error, setError] = useState<any>(null);
+  const [selectedId, setSelectedId] = useState<any>(initialId);
+  const [selectedConv, setSelectedConv] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [config, setConfig] = useState(null);
+  const [config, setConfig] = useState<any>(null);
 
-  const [newIds, setNewIds] = useState(new Set());
+  const [newIds, setNewIds] = useState<any>(new Set());
   const [generatingCount, setGeneratingCount] = useState(0);
   const [changeStreamsActive, setChangeStreamsActive] = useState(false);
 

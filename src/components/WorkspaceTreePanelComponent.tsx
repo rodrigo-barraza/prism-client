@@ -240,10 +240,10 @@ export default function WorkspaceTreePanelComponent({
           onClick={hasMultiple ? () => setSwitcherOpen((v: any) => !v) : undefined}
           role={hasMultiple ? "button" : undefined}
           tabIndex={hasMultiple ? 0 : undefined}
-          title={hasMultiple ? `Switch workspace — ${currentWorkspace.path}` : currentWorkspace.path}
+          title={hasMultiple ? `Switch workspace — ${currentWorkspace!.path}` : currentWorkspace!.path}
         >
           <FolderOpen size={11} className={styles.headerIcon} />
-          <span className={styles.headerLabel}>{currentWorkspace.name}</span>
+          <span className={styles.headerLabel}>{currentWorkspace!.name}</span>
           {locked && (
             <Lock size={9} className={styles.headerLock} />
           )}
@@ -252,7 +252,7 @@ export default function WorkspaceTreePanelComponent({
           )}
           {(treeData as any)?.totalEntries > 0 && (
             <span className={styles.headerCount}>
-              {treeData.totalEntries}{treeData.truncated ? "+" : ""}
+              {(treeData as any).totalEntries}{(treeData as any).truncated ? "+" : ""}
             </span>
           )}
         </div>
@@ -268,7 +268,7 @@ export default function WorkspaceTreePanelComponent({
                   type="button"
                   className={`${styles.switcherItem} ${isActive ? styles.switcherItemActive : ""}`}
                   onClick={() => {
-                    setCurrentWorkspace(w);
+                    (setCurrentWorkspace as any)(w);
                     setSwitcherOpen(false);
                   }}
                   title={w.path}

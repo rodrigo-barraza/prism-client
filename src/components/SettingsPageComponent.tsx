@@ -22,24 +22,24 @@ import styles from "./SettingsPageComponent.module.css";
  *   - "Agent Defaults" section for subagent/worker model configuration
  */
 export default function SettingsPageComponent() {
-  const [config, setConfig] = useState(null);
-  const [settings, setSettings] = useState(null);
-  const [defaults, setDefaults] = useState(null);
+  const [config, setConfig] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(null);
+  const [defaults, setDefaults] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<any>(null);
   const [customAgents, setCustomAgents] = useState<any[]>([]);
   const [availableTools, setAvailableTools] = useState<any[]>([]);
   const [harnesses, setHarnesses] = useState<any[]>([]);
-  const [expandedGuide, setExpandedGuide] = useState(null); // 'docker' | 'local' | null
-  const [copiedBlock, setCopiedBlock] = useState(null);
+  const [expandedGuide, setExpandedGuide] = useState<any>(null); // 'docker' | 'local' | null
+  const [copiedBlock, setCopiedBlock] = useState<any>(null);
 
   // -- Workspace state ------------------------------------------------
   const { refreshWorkspaces } = useWorkspace();
   const [wsWorkspaces, setWsWorkspaces] = useState<any[]>([]);
   const [wsAgents, setWsAgents] = useState<any[]>([]);
   const [wsAddPath, setWsAddPath] = useState("");
-  const [wsValidation, setWsValidation] = useState(null);
+  const [wsValidation, setWsValidation] = useState<any>(null);
   const [wsAdding, setWsAdding] = useState(false);
   const wsValidateTimer = useRef<any>(null);
 
@@ -86,7 +86,7 @@ export default function SettingsPageComponent() {
       .catch(console.error);
 
     // Fetch all available tools (unfiltered) for the tool picker
-    PrismService.getBuiltInToolSchemas()
+    PrismService.getBuiltInToolSchemas(true)
       .then(setAvailableTools)
       .catch(console.error);
 

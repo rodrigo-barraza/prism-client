@@ -183,7 +183,7 @@ export default function MediaPageComponent({
       PrismService.removeFavorite("media", mediaKey).catch(() => {});
     } else {
       setFavoriteKeys((prev: any) => [...prev, mediaKey]);
-      PrismService.addFavorite("media", mediaKey).catch(() => {});
+      PrismService.addFavorite("media", mediaKey, {}).catch(() => {});
     }
   };
 

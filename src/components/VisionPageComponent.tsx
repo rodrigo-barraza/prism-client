@@ -50,10 +50,10 @@ export default function VisionPageComponent() {
   const [favorites, setFavorites] = useState<any[]>([]);
 
   // ── Source state ────────────────────────────────────────────────
-  const [sourceType, setSourceType] = useState(null);
+  const [sourceType, setSourceType] = useState<any>(null);
   const [ipCamUrl, setIpCamUrl] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [resolution, setResolution] = useState(null);
+  const [resolution, setResolution] = useState<any>(null);
 
   // ── Analysis state ─────────────────────────────────────────────
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -91,11 +91,11 @@ export default function VisionPageComponent() {
   // Filter config to only vision-capable models (have image input)
   const visionConfig = useMemo(() => {
     if (!config) return null;
-    const filtered = { ...config };
-    const textModels = (config as any).textToText?.models || {};
+    const filtered = { ...(config as any) };
+    const textModels = (config as any)?.textToText?.models || {};
     const filteredModels = {};
 
-    for (const [provider, models] of Object.entries(textModels)) {
+    for (const [provider, models] of Object.entries(textModels) as any) {
       const visionModels = models.filter(
         (m: any) => m.inputTypes?.includes("image"),
       );
@@ -178,7 +178,7 @@ export default function VisionPageComponent() {
       // We intentionally delay stopSource() until we have a valid stream so
       // the video element is never hidden (isStreaming=false) when play() fires.
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: "always" },
+        video: { cursor: "always" } as any,
         audio: false,
       });
 

@@ -52,10 +52,10 @@ export default function RequestsPage() {
   const [error, setError] = useState(null);
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [associations, setAssociations] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [associations, setAssociations] = useState<any>(null);
   const [loadingAssociations, setLoadingAssociations] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<any>({
     provider: "",
     model: "",
     endpoint: "",

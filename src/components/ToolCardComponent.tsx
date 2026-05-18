@@ -36,7 +36,7 @@ export default function ToolCardComponent({
   return (
     <div
       className={`${styles.card}${!enabled ? ` ${styles.cardDisabled}` : ""}${glowing ? ` ${styles.cardGlow}` : ""}${locked ? ` ${styles.cardLocked}` : ""}`}
-      style={{ "--tool-color": color }}
+      style={{ "--tool-color": color } as any}
       onClick={locked ? undefined : (e: any) => { SoundService.playClickButton({ event: e }); onClick?.(); }}
       role={onClick && !locked ? "button" : undefined}
       tabIndex={onClick && !locked ? 0 : undefined}

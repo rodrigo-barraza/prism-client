@@ -12,13 +12,19 @@
 const DEFAULT_SAMPLE_RATE = 24000; // Gemini Live API outputs 24kHz
 
 export default class AudioPlayerService {
+  audioContext: any = null;
+  nextStartTime: number = 0;
+  isPlaying: boolean = false;
+  pcmChunks: any[] = [];
+  sampleRate: number = DEFAULT_SAMPLE_RATE;
+
   constructor() {
-    (this as any).audioContext = null;
-    (this as any).nextStartTime = 0;
-    (this as any).isPlaying = false;
+    this.audioContext = null;
+    this.nextStartTime = 0;
+    this.isPlaying = false;
     /** @type {Uint8Array[]} accumulated raw PCM bytes for WAV export */
     this.pcmChunks = [];
-    (this as any).sampleRate = DEFAULT_SAMPLE_RATE;
+    this.sampleRate = DEFAULT_SAMPLE_RATE;
   }
 
   /**

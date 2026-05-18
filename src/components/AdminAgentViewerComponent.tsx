@@ -150,7 +150,7 @@ export default function AdminAgentViewerComponent() {
 
   // Fetch memory count
   useEffect(() => {
-    PrismService.getAgentMemories(PROJECT_AGENT, 1)
+    PrismService.getAgentMemories(PROJECT_AGENT, 1, 0 as any)
       .then((r: any) => setTotalMemoriesCount(r.total || 0))
       .catch(() => {});
   }, []);
@@ -161,7 +161,7 @@ export default function AdminAgentViewerComponent() {
     const textModelsMap = (config as any).textToText?.models || {};
     const filteredTextModels = {};
 
-    for (const [provider, models] of Object.entries(textModelsMap)) {
+    for (const [provider, models] of Object.entries<any>(textModelsMap)) {
       const fcModels = models.filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );
@@ -173,10 +173,10 @@ export default function AdminAgentViewerComponent() {
     );
 
     return {
-      ...config,
+      ...(config as any),
       providerList: filteredProviderList,
       textToText: {
-        ...(config as any).textToText,
+        ...(((config as any).textToText as any) || {}),
         models: filteredTextModels,
       },
       textToImage: { models: {} },
@@ -320,8 +320,8 @@ export default function AdminAgentViewerComponent() {
                   messageCount: messages.length,
                   deletedCount: 0,
                   requestCount: (backendSessionStats as any)?.requestCount || requestCount,
-                  uniqueModels: (backendSessionStats as any)?.models?.length > uniqueModels.length
-                    ? backendSessionStats.models
+                  uniqueModels: ((backendSessionStats as any)?.models?.length || 0) > uniqueModels.length
+                    ? (backendSessionStats as any).models
                     : uniqueModels,
                   uniqueProviders,
                   totalTokens: backendSessionStats

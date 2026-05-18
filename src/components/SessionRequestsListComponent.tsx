@@ -69,7 +69,7 @@ export default function SessionRequestsListComponent({ agentSessionId, refreshKe
   // Flat list, newest first — each request tagged with isWorker
   const rootSessionId = (data as any).rootSessionId;
   const requests = [...(data as any).requests]
-    .sort((a: any, b: any) => new Date(b.timestamp) - new Date(a.timestamp))
+    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .map((req: any) => ({
       ...req,
       isWorker: req.agentSessionId !== rootSessionId,

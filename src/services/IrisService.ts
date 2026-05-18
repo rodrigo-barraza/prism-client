@@ -68,7 +68,7 @@ export default class IrisService {
 
   static async getTimeline(hours = 24, params = {}) {
     const allParams = { hours, ...params };
-    const query = new URLSearchParams(allParams).toString();
+    const query = new URLSearchParams(allParams as any).toString();
     return fetchJSON(`/stats/timeline?${query}`);
   }
 
@@ -100,7 +100,7 @@ export default class IrisService {
     return fetchJSON(`/live?minutes=${minutes}`);
   }
 
-  static async getConversationStats(project = null) {
+  static async getConversationStats(project: string | null = null) {
     const params = project ? `?project=${encodeURIComponent(project)}` : "";
     return fetchJSON(`/conversations/stats${params}`);
   }

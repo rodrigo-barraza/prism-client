@@ -53,7 +53,7 @@ function flattenConfigModels(config: any) {
 
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
-    for (const [provider, models] of Object.entries(providers)) {
+    for (const [provider, models] of Object.entries<any>(providers)) {
       for (const m of models) {
         const key = `${provider}:${m.name}`;
         if (!modelsMap.has(key)) {
@@ -168,7 +168,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
   const skipNextSnapshotRef = useRef<any>(false); // skip snapshot after undo restore
 
   // Selection state
-  const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<any>(null);
 
   // Load config + saved workflows
   useEffect(() => {
@@ -385,8 +385,8 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
         };
         // Load both custom tools and built-in schemas, then attach them
         Promise.all([
-          PrismService.getCustomTools().catch(() => []),
-          PrismService.getBuiltInToolSchemas().catch(() => []),
+          PrismService.getCustomTools("CODING" as any).catch(() => []),
+          PrismService.getBuiltInToolSchemas("CODING" as any).catch(() => []),
         ]).then(([custom, builtIn]: any) => {
           setNodes((prev: any) =>
             prev.map((n: any) =>
@@ -1078,7 +1078,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
             <div className={styles.assetButtons}>
               <button
                 className={styles.assetBtn}
-                onClick={() => handleAddAsset("model")}
+                onClick={() => handleAddAsset("model", "model")}
                 title="Add AI Model"
               >
                 <Bot size={12} style={{ color: "#3b82f6" }} />
@@ -1267,7 +1267,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
               const reader = new FileReader();
               reader.onload = () => {
                 try {
-                  const data = JSON.parse(reader.result);
+                  const data = JSON.parse(reader.result as string);
                   if (data.nodes && (data.edges || data.connections)) {
                     setNodes(data.nodes);
                     setEdges(data.edges || data.connections);

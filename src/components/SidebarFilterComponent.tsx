@@ -431,11 +431,11 @@ export default function SidebarFilterComponent({
                   className={styles.badge}
                   style={
                     b.color
-                      ? {
+                      ? ({
                           "--badge-color": b.color,
                           "--badge-bg": `${b.color}18`,
                           "--badge-border": `${b.color}40`,
-                        }
+                        } as any)
                       : undefined
                   }
                 >

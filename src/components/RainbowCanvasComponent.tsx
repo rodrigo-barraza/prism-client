@@ -116,7 +116,7 @@ export default function RainbowCanvasComponent({ turbo = false, animate = false,
     resize();
     window.addEventListener("resize", resize);
 
-    let ro;
+    let ro: any;
     if (typeof ResizeObserver !== "undefined") {
       ro = new ResizeObserver(resize);
       ro.observe(parent);

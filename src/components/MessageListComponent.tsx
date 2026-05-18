@@ -112,10 +112,10 @@ function getMimeCategory(ref: any) {
     try {
       const pathname = new URL(ref).pathname;
       const ext = pathname.split(".").pop()?.toLowerCase();
-      if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
+      if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext as string))
         return "image";
-      if (["wav", "mp3", "webm", "ogg"].includes(ext)) return "audio";
-      if (["mp4", "mov", "avi"].includes(ext)) return "video";
+      if (["wav", "mp3", "webm", "ogg"].includes(ext as string)) return "audio";
+      if (["mp4", "mov", "avi"].includes(ext as string)) return "video";
       if (ext === "pdf") return "pdf";
       if (ext === "txt") return "text";
     } catch {

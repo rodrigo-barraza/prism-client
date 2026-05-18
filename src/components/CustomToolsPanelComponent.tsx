@@ -56,7 +56,7 @@ function resolveShorthands(entries: any, allTools: any) {
     if (entry.startsWith("label:")) {
       const label = entry.slice(6);
       for (const t of allTools) {
-        if (t.labels?.includes(label)) resolved.add(t.name);
+        if ((t as any).labels?.includes(label)) resolved.add(t.name);
       }
     } else if (entry.startsWith("domain:")) {
       const domain = entry.slice(7);
@@ -72,24 +72,24 @@ function resolveShorthands(entries: any, allTools: any) {
 
 
 export default function CustomToolsPanel({
-  tools,
+  tools = [] as any[],
   onToolsChange,
   project,
-  builtInTools = [],
+  builtInTools = [] as any[],
   disabledBuiltIns = new Set(),
   onToggleBuiltIn,
   agent = true,
 }: any) {
-  const [editingTool, setEditingTool] = useState(null);
+  const [editingTool, setEditingTool] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
-  const [expandedId, setExpandedId] = useState(null);
+  const [expandedId, setExpandedId] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [customOpen, setCustomOpen] = useState(true);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
   const [inputMode, setInputMode] = useState("manual"); // "manual" | "json"
   const [jsonText, setJsonText] = useState("");
-  const [jsonError, setJsonError] = useState(null);
-  const [jsonSuccess, setJsonSuccess] = useState(null);
+  const [jsonError, setJsonError] = useState<any>(null);
+  const [jsonSuccess, setJsonSuccess] = useState<any>(null);
   const fileInputRef = useRef<any>(null);
 
   // -- CRUD -----------------------------------------------------
@@ -106,7 +106,7 @@ export default function CustomToolsPanel({
   const handleEdit = useCallback((tool: any) => {
     setEditingTool({
       ...tool,
-      parameters: (tool.parameters || []).map((p: any) => ({
+      parameters: ((tool as any).parameters || []).map((p: any) => ({
         ...p,
         enum: Array.isArray(p.enum) ? p.enum.join(", ") : p.enum || "",
       })),
@@ -294,10 +294,10 @@ export default function CustomToolsPanel({
         )) {
           params.push({
             name: pName,
-            type: schema.type || "string",
-            description: schema.description || "",
+            type: (schema as any).type || "string",
+            description: (schema as any).description || "",
             required: required.includes(pName),
-            enum: Array.isArray(schema.enum) ? schema.enum.join(", ") : "",
+            enum: Array.isArray((schema as any).enum) ? (schema as any).enum.join(", ") : "",
           });
         }
       }
@@ -310,8 +310,8 @@ export default function CustomToolsPanel({
       }));
 
       const parts = [];
-      if (name) parts.push("name");
-      if (description) parts.push("description");
+      if (name) parts.push(name);
+      if (description) parts.push(description);
       parts.push(`${params.length} parameter${params.length !== 1 ? "s" : ""}`);
       setJsonSuccess(`Imported ${parts.join(", ")}`);
     },

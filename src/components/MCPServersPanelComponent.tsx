@@ -21,12 +21,12 @@ import styles from "./MCPServersPanelComponent.module.css";
  * add/edit/delete servers, connect/disconnect, and see discovered tools.
  */
 export default function MCPServersPanel({ servers, onServersChange, project }: any) {
-  const [editingServer, setEditingServer] = useState(null);
+  const [editingServer, setEditingServer] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [connecting, setConnecting] = useState(null); // server ID being connected
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
-  const [error, setError] = useState(null);
+  const [connecting, setConnecting] = useState<any>(null); // server ID being connected
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
+  const [error, setError] = useState<any>(null);
 
   // -- CRUD -----------------------------------------------------
 

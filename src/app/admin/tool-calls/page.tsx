@@ -206,9 +206,9 @@ function getSlowestColumns() {
 
 export default function ToolCallsPage() {
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any>(null);
 
   // Sort state for tools table
   const [toolSort, setToolSort] = useState("count");

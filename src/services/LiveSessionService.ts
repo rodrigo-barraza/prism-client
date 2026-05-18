@@ -21,6 +21,7 @@ const LIVE_WS_URL = `${PRISM_WS_URL}/ws/live?project=${PROJECT_NAME}`;
  *   session.disconnect();
  */
 export default class LiveSessionService {
+  connected: boolean = false;
   constructor() {
     (this as any).ws = null;
     (this as any).audioContext = null; // Capture context (16kHz)

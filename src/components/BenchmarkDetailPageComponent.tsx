@@ -48,7 +48,7 @@ function flattenAllModels(config: any) {
   const sections = ["textToText", "textToImage", "audioToText", "textToSpeech"];
   for (const key of sections) {
     const modelsMap = config[key]?.models || {};
-    for (const [provider, models] of Object.entries(modelsMap)) {
+    for (const [provider, models] of Object.entries<any>(modelsMap)) {
       for (const m of models) {
         const id = `${provider}:${m.name}`;
         if (!seen.has(id)) seen.set(id, { ...m, provider });
@@ -79,11 +79,11 @@ function resolveModelKeyForContent(liveDataMap: any, sourceModel: any) {
 export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningChange, navSidebar, rightSidebar }: any) {
   const router = useRouter();
   // -- State --------------------------------------------------
-  const [benchmark, setBenchmark] = useState(null);
+  const [benchmark, setBenchmark] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [latestRun, setLatestRun] = useState(null);
+  const [latestRun, setLatestRun] = useState<any>(null);
   const [runHistory, setRunHistory] = useState<any[]>([]);
-  const [activeRunId, setActiveRunId] = useState(null);
+  const [activeRunId, setActiveRunId] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -130,7 +130,7 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
   const [availableAgents, setAvailableAgents] = useState<any[]>([]);
 
   // Selected result (for chat preview)
-  const [selectedResult, setSelectedResult] = useState(null);
+  const [selectedResult, setSelectedResult] = useState<any>(null);
 
   // Per-model thinking toggle: Map<instanceId, boolean>
   const [thinkingMap, setThinkingMap] = useState(() => {
@@ -191,13 +191,13 @@ export default function BenchmarkDetailPageComponent({ benchmarkId, onRunningCha
   const progressIntervalsRef = useRef<any>(new Map());
 
   // The model key the user is currently viewing in live preview (sticky — doesn't auto-switch)
-  const [viewedModelKey, setViewedModelKey] = useState(null);
+  const [viewedModelKey, setViewedModelKey] = useState<any>(null);
 
   // Live streaming text for the currently-viewed model
   // Map<modelKey, { text, thinking, toolCalls }> — accumulates per model
   const liveDataRef = useRef<any>(new Map());
   const liveFlushRef = useRef<any>(null);
-  const [liveSnapshot, setLiveSnapshot] = useState({ text: "", thinking: "", toolCalls: [] });
+  const [liveSnapshot, setLiveSnapshot] = useState<any>({ text: "", thinking: "", toolCalls: [] });
 
   // Cleanup intervals on unmount
   useEffect(() => {

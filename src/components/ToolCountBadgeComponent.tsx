@@ -23,7 +23,7 @@ export default function ToolCountBadgeComponent({ count, color }: any) {
     <TooltipComponent label={tooltipLabel} position="top">
       <div
         className={styles.badge}
-        style={color ? { "--tool-badge-accent": color } : undefined}
+        style={color ? { "--tool-badge-accent": color } as any : undefined}
       >
         <FunctionSquare size={9} className={styles.icon} />
         <span className={styles.label}>

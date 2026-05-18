@@ -26,7 +26,7 @@ function buildConfigLookup(config: any) {
   ];
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
-    for (const [provider, models] of Object.entries(providers)) {
+    for (const [provider, models] of Object.entries<any>(providers)) {
       for (const m of models) {
         const key = `${provider}:${m.name}`;
         if (!map.has(key)) {

@@ -43,8 +43,8 @@ export default function TracesPage() {
   const fetchGenRef = useRef<any>(0);
 
   // Request detail drawer state
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [associations, setAssociations] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [associations, setAssociations] = useState<any>(null);
   const [loadingAssociations, setLoadingAssociations] = useState(false);
 
   const dateParams = useMemo(

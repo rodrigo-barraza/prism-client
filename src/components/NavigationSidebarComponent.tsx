@@ -251,7 +251,7 @@ export default function NavigationSidebarComponent({
   // Always-on RAF: movement, bouncing, FX, lifecycle phases
   useEffect(() => {
     let lastTime = 0;
-    let rafId;
+    let rafId: any;
 
     const tick = (now: any) => {
       const cats = miniCatsRef.current;

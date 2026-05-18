@@ -259,7 +259,7 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
                 <span
                   key={a.id}
                   className={styles.agentBadge}
-                  style={{ "--agent-color": getAgentColor(a.id) }}
+                  style={{ "--agent-color": getAgentColor(a.id) } as any}
                 >
                   <Bot size={10} />
                   {a.name}
@@ -476,7 +476,7 @@ function ToolCard({ tool, onClick, agents }: any) {
               <span
                 key={a.id}
                 className={styles.agentBadge}
-                style={{ "--agent-color": getAgentColor(a.id) }}
+                style={{ "--agent-color": getAgentColor(a.id) } as any}
                 title={`Used by ${a.name}`}
               >
                 <Bot size={10} />
@@ -511,7 +511,7 @@ function ToolRow({ tool, onClick, agents }: any) {
           <span
             key={a.id}
             className={styles.agentBadge}
-            style={{ "--agent-color": getAgentColor(a.id) }}
+            style={{ "--agent-color": getAgentColor(a.id) } as any}
             title={`Used by ${a.name}`}
           >
             <Bot size={10} />
@@ -557,7 +557,7 @@ export default function ToolsPageComponent() {
       setLoading(true);
       setError(null);
       const [schemas, agentList] = await Promise.all([
-        PrismService.getBuiltInToolSchemas(),
+        PrismService.getBuiltInToolSchemas(null),
         PrismService.getAgentPersonas().catch(() => []),
       ]);
       setTools(schemas || []);

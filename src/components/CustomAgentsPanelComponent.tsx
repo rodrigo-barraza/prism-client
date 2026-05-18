@@ -197,12 +197,12 @@ export default function CustomAgentsPanel({
   onAgentsChange,
   availableTools = [],
 }: any) {
-  const [editingAgent, setEditingAgent] = useState(null);
+  const [editingAgent, setEditingAgent] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
 
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any>(null);
 
   // -- CRUD -----------------------------------------------------
 
@@ -347,7 +347,7 @@ export default function CustomAgentsPanel({
                   data-selected={(editingAgent as any).icon === name}
                   onClick={() => updateField("icon", name)}
                   title={name}
-                  style={(editingAgent as any).color ? { "--agent-color": (editingAgent as any).color } : undefined}
+                  style={(editingAgent as any).color ? ({ "--agent-color": (editingAgent as any).color } as React.CSSProperties) : undefined}
                 >
                   <IconComp size={16} />
                 </button>
@@ -373,7 +373,7 @@ export default function CustomAgentsPanel({
                   data-selected={(editingAgent as any).color === hex}
                   onClick={() => updateField("color", (editingAgent as any).color === hex ? "" : hex)}
                   title={name}
-                  style={{ "--swatch-color": hex }}
+                  style={{ "--swatch-color": hex } as React.CSSProperties}
                 />
               ))}
             </div>

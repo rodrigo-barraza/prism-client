@@ -97,7 +97,7 @@ export default class PrismService {
       const existing = existingModels[provider] || [];
       const existingKeys = new Set(existing.map((m: any) => m.name));
       const merged = [...existing];
-      for (const m of providerModels) {
+      for (const m of providerModels as any) {
         if (!existingKeys.has(m.name)) merged.push(m);
       }
       existingModels[provider] = merged;
@@ -302,7 +302,7 @@ export default class PrismService {
 
 
    */
-  static async addFavorite(type: any, key: any, meta: any) {
+  static async addFavorite(type: any, key: any, meta: any = {}) {
     return PrismService._request("/favorites", { body: { type, key, meta } });
   }
 
@@ -327,7 +327,7 @@ export default class PrismService {
 
 
    */
-  static async getCustomTools(project: any) {
+  static async getCustomTools(project?: any) {
     const qs = project ? `?project=${encodeURIComponent(project)}` : "";
     return PrismService._request(`/custom-tools${qs}`, { method: "GET" });
   }
@@ -710,7 +710,7 @@ export default class PrismService {
    * @param {Function} callbacks.onError   - Required for error delivery
    * @returns {Function} abort — call to cancel the stream
    */
-  static _streamSSE(endpoint: any, { method = "POST", body }: any = {}, callbacks = {}) {
+  static _streamSSE(endpoint: any, { method = "POST", body }: any = {}, callbacks: any = {}) {
     const { onError } = callbacks;
     const controller = new AbortController();
 
@@ -729,7 +729,7 @@ export default class PrismService {
           return;
         }
 
-        const reader = response.body.getReader();
+        const reader = response.body!.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
 
@@ -741,7 +741,7 @@ export default class PrismService {
 
           // Parse SSE lines: "data: {...}\n\n"
           const lines = buffer.split("\n");
-          buffer = lines.pop(); // Keep incomplete line in buffer
+          buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
           for (const line of lines) {
             if (!line.startsWith("data: ")) continue;
@@ -1158,7 +1158,7 @@ export default class PrismService {
    * @param {object} callbacks — { onProgress(0-1), onComplete(), onError(err) }
    * @returns {Function} abort — call to cancel
    */
-  static loadLmStudioModelStream(model: any, options = {}, callbacks = {}) {
+  static loadLmStudioModelStream(model: any, options = {}, callbacks: any = {}) {
     const { onProgress, onComplete, onError } = callbacks;
     const controller = new AbortController();
 

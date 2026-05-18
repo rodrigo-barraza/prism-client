@@ -61,7 +61,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
   const [sizeIdx, setSizeIdx] = useState(1);
   const [drawing, setDrawing] = useState(false);
   const [strokes, setStrokes] = useState<any[]>([]);
-  const [currentStroke, setCurrentStroke] = useState(null);
+  const [currentStroke, setCurrentStroke] = useState<any>(null);
   const [canvasSize, setCanvasSize] = useState({ w: CANVAS_W, h: CANVAS_H });
   const [displaySize, setDisplaySize] = useState({ w: 0, h: 0 });
   const [bgReady, setBgReady] = useState(!src);
@@ -294,16 +294,16 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
     // Draw background
     if (src && bgCanvasRef.current) {
-      context.drawImage(bgCanvasRef.current, 0, 0);
+      context!.drawImage(bgCanvasRef.current, 0, 0);
     } else {
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, offscreen.width, offscreen.height);
+      context!.fillStyle = "#ffffff";
+      context!.fillRect(0, 0, offscreen.width, offscreen.height);
     }
 
     // Draw strokes
     const drawCanvas = canvasRef.current;
     if (drawCanvas) {
-      context.drawImage(drawCanvas, 0, 0);
+      context!.drawImage(drawCanvas, 0, 0);
     }
 
     onSave(offscreen.toDataURL("image/png"));

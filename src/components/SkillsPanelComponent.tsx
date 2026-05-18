@@ -26,10 +26,10 @@ const CONTENT_MAX_CHARS = 10000;
  * rules without consuming tool call slots.
  */
 export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
-  const [editingSkill, setEditingSkill] = useState(null);
+  const [editingSkill, setEditingSkill] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
 
   // -- CRUD -----------------------------------------------------
 

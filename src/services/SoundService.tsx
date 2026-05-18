@@ -375,7 +375,7 @@ const SoundService = {
    * @param {Function} [onMouseEnter] — callback invoked after hover sound
    * @returns {{ onClick: Function, onMouseEnter: Function }}
    */
-  interactive(onClick: any, onMouseEnter: any) {
+  interactive(onClick?: any, onMouseEnter?: any) {
     return {
       onMouseEnter: (e: any) => {
         this.playHover({ event: e });

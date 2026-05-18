@@ -52,7 +52,7 @@ export default function DashboardPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, dateRange } = useAdminHeader();
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState<any>(null);
   const [projectStats, setProjectStats] = useState<any[]>([]);
   const [modelStats, setModelStats] = useState<any[]>([]);
   const [configModels, setConfigModels] = useState<any>({});
@@ -118,7 +118,7 @@ export default function DashboardPage() {
       if (prismConfig?.textToText?.models) {
         const buildLookup = (config: any) => {
           const lookup = {};
-          for (const [provider, models] of Object.entries(config.textToText?.models || {})) {
+          for (const [provider, models] of Object.entries(config.textToText?.models || {}) as [string, any[]][]) {
             for (const m of models) {
               const key = `${provider}:${m.name}`;
               if (m.tools?.length) (lookup as any)[key] = m.tools;

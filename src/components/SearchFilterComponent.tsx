@@ -153,11 +153,11 @@ export default function SearchFilterComponent({
             className={styles.badge}
             style={
               badgeColor
-                ? {
+                ? ({
                     "--badge-color": badgeColor,
                     "--badge-bg": `${badgeColor}18`,
                     "--badge-border": `${badgeColor}40`,
-                  }
+                  } as any)
                 : undefined
             }
           >

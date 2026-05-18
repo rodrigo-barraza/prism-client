@@ -226,7 +226,7 @@ function buildRow(rawModel: any, favorites = []) {
     publisher: (model.publisher || "").toLowerCase(),
     input: rawModel.pricing?.inputPerMillion ?? Infinity,
     output: rawModel.pricing?.outputPerMillion ?? Infinity,
-    favorite: favorites.includes(favKey) ? 1 : 0,
+    favorite: (favorites as any).includes(favKey) ? 1 : 0,
     tools: rawModel.tools?.length || 0,
     requests: rawModel.usageCount || 0,
     totalInputTokens: rawModel.totalInputTokens || 0,
@@ -259,7 +259,7 @@ function buildStatsColumns({ configModels, totalRequests, totalCost, compact }: 
       render: (row: any) => <ModelBadgeComponent models={row.model ? [row.model] : []} />,
     },
     requestsColumn(),
-    usageColumn(totalRequests),
+    usageColumn(totalRequests, ""),
     {
       key: "provider",
       label: "Provider",

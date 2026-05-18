@@ -715,7 +715,7 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
           const level = detectTerminalLevel(line);
           const lineNum = inputLines.length + i + 1;
           return (
-            <div key={`out-${i}`} className={`${styles.termLine} ${TERM_LEVEL_CLASS[level] || ""}`}>
+            <div key={`out-${i}`} className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as any)[level] || "" : ""}`}>
               <span className={styles.termLineNum}>{lineNum}</span>
               <span className={`${styles.termLineContent} ${level ? TERM_CONTENT_LEVEL_CLASS[level] || "" : ""}`}>
                 {parseAnsi(line)}

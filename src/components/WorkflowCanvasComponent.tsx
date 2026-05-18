@@ -43,9 +43,9 @@ export default function WorkflowCanvas({
   const svgRef = useRef<any>(null);
   const containerRef = useRef<any>(null);
   const clipboardRef = useRef<any>(null);
-  const [dragging, setDragging] = useState(null);
-  const [connecting, setConnecting] = useState(null);
-  const [connectingMouse, setConnectingMouse] = useState(null);
+  const [dragging, setDragging] = useState<any>(null);
+  const [connecting, setConnecting] = useState<any>(null);
+  const [connectingMouse, setConnectingMouse] = useState<any>(null);
   const [expandedInputs, setExpandedInputs] = useState(() => {
     if (typeof window === "undefined") return new Set();
     try {

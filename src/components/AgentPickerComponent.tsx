@@ -166,7 +166,7 @@ export default function AgentPickerComponent({
                   data-active={isActive}
                   onClick={() => addMode ? handleAdd(agent) : handleSelect(agent.id)}
                   type="button"
-                  style={agent.color ? { "--agent-accent": agent.color } : undefined}
+                  style={agent.color ? ({ "--agent-accent": agent.color } as any) : undefined}
                 >
                   <AgentBadgeComponent agent={agent} />
                   <div className={styles.agentInfo}>

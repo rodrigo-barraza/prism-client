@@ -131,7 +131,7 @@ export default function FilterDropdownComponent({
           <button
             type="button"
             className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
-            {...SoundService.interactive(() => setIsOpen((v: any) => !v))}
+            {...(SoundService.interactive(() => setIsOpen((v: any) => !v)) as any)}
             style={fullWidth ? { width: "100%" } : undefined}
           >
             <span className={styles.triggerContent}>
@@ -163,7 +163,7 @@ export default function FilterDropdownComponent({
                         key={preset.label}
                         type="button"
                         className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
-                        {...SoundService.interactive(() => onDateChange(preset.getValue()))}
+                        {...(SoundService.interactive(() => onDateChange(preset.getValue())) as any)}
                       >
                         <Calendar size={13} style={{ color: "#6366f1" }} />
                         <span>{preset.label}</span>
@@ -176,10 +176,10 @@ export default function FilterDropdownComponent({
                   <button
                     type="button"
                     className={`${styles.menuItem} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles.menuItemActive : ""}`}
-                    {...SoundService.interactive(() => {
+                    {...(SoundService.interactive(() => {
                       setShowCustomDatePicker(true);
                       setIsOpen(false);
-                    })}
+                    }) as any)}
                   >
                     <Calendar size={13} style={{ color: "#6366f1" }} />
                     <span>Custom…</span>
@@ -207,7 +207,7 @@ export default function FilterDropdownComponent({
                           key={item.key}
                           type="button"
                           className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
-                          {...SoundService.interactive(() => onToggle(isSingleSelect && isActive ? null : item.key))}
+                          {...(SoundService.interactive(() => onToggle(isSingleSelect && isActive ? null : item.key)) as any)}
                         >
                           {Icon && (
                             <Icon
@@ -257,11 +257,11 @@ export default function FilterDropdownComponent({
                 className={styles.badge}
                 style={
                   b.color
-                    ? {
+                    ? ({
                         "--badge-color": b.color,
                         "--badge-bg": `${b.color}18`,
                         "--badge-border": `${b.color}40`,
-                      }
+                      } as any)
                     : undefined
                 }
               >

@@ -35,7 +35,7 @@ export default function AgentCardComponent({
     const textModelsMap = config.textToText?.models || {};
     const filteredTextModels = {};
 
-    for (const [provider, models] of Object.entries(textModelsMap)) {
+    for (const [provider, models] of Object.entries<any>(textModelsMap)) {
       const fcModels = models.filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );

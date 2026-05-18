@@ -39,7 +39,7 @@ function buildUrl(currentParams: any, updates: any) {
     if (value == null || value === "") {
       params.delete(key);
     } else {
-      params.set(key, value);
+      params.set(key, value as any);
     }
   }
   const qs = params.toString();

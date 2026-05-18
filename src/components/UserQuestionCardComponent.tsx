@@ -18,7 +18,7 @@ function QuestionBlock({
   onAnswer,
   answeredWith = null,
 }: any) {
-  const [selected, setSelected] = useState(multiSelect ? [] : null);
+  const [selected, setSelected] = useState<any>(multiSelect ? [] : null);
   const [freeText, setFreeText] = useState("");
   const [annotations, setAnnotations] = useState("");
   const [showAnnotations, setShowAnnotations] = useState(false);
@@ -50,7 +50,7 @@ function QuestionBlock({
 
   const handleSubmit = () => {
     let answer;
-    if (multiSelect && selected.length > 0) {
+    if (multiSelect && selected && selected.length > 0) {
       answer = selected;
     } else if (!multiSelect && selected) {
       answer = selected;
@@ -88,7 +88,7 @@ function QuestionBlock({
           <div className={styles.optionsList}>
             {options.map((opt: any, i: any) => {
               const isSelected = multiSelect
-                ? selected.includes(opt.label)
+                ? selected?.includes(opt.label)
                 : selected === opt.label;
               const isFocused = previewIdx === i;
 
@@ -146,7 +146,7 @@ function QuestionBlock({
           <button
             className={styles.sendBtn}
             onClick={handleSubmit}
-            disabled={!freeText.trim() && !selected && !(multiSelect && selected.length > 0)}
+            disabled={!freeText.trim() && !selected && !(multiSelect && selected && selected.length > 0)}
           >
             <Send size={14} />
           </button>

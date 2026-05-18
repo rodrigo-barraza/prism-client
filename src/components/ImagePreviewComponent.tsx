@@ -33,7 +33,7 @@ export default function ImagePreviewComponent({
   const [isEraser, setIsEraser] = useState(false);
   const [drawing, setDrawing] = useState(false);
   const [strokes, setStrokes] = useState<any[]>([]);
-  const [currentStroke, setCurrentStroke] = useState(null);
+  const [currentStroke, setCurrentStroke] = useState<any>(null);
   const [canvasReady, setCanvasReady] = useState(false);
 
   // Resize canvas to match image display size
@@ -177,34 +177,34 @@ export default function ImagePreviewComponent({
     const context = offscreen.getContext("2d");
 
     // Draw the original image at full resolution
-    context.drawImage(image, 0, 0, (image as any).naturalWidth, (image as any).naturalHeight);
+    context!.drawImage(image, 0, 0, (image as any).naturalWidth, (image as any).naturalHeight);
 
     // Scale annotations from display size to natural size
     const scaleX = (image as any).naturalWidth / (canvas as any).width;
     const scaleY = (image as any).naturalHeight / (canvas as any).height;
 
     for (const stroke of strokes) {
-      context.save();
-      context.lineCap = "round";
-      context.lineJoin = "round";
-      context.lineWidth = (stroke as any).width * Math.max(scaleX, scaleY);
+      context!.save();
+      context!.lineCap = "round";
+      context!.lineJoin = "round";
+      context!.lineWidth = (stroke as any).width * Math.max(scaleX, scaleY);
 
       if ((stroke as any).eraser) {
         // For eraser in the composite, we just skip — strokes won't look right
         // Instead we re-draw the image underneath by not erasing it.
         // The composite approach: draw strokes only (non-eraser).
-        context.restore();
+        context!.restore();
         continue;
       }
 
-      context.strokeStyle = (stroke as any).color;
-      context.beginPath();
-      context.moveTo((stroke as any).points[0].x * scaleX, (stroke as any).points[0].y * scaleY);
+      context!.strokeStyle = (stroke as any).color;
+      context!.beginPath();
+      context!.moveTo((stroke as any).points[0].x * scaleX, (stroke as any).points[0].y * scaleY);
       for (let i = 1; i < (stroke as any).points.length; i++) {
-        context.lineTo((stroke as any).points[i].x * scaleX, (stroke as any).points[i].y * scaleY);
+        context!.lineTo((stroke as any).points[i].x * scaleX, (stroke as any).points[i].y * scaleY);
       }
-      context.stroke();
-      context.restore();
+      context!.stroke();
+      context!.restore();
     }
 
     const dataUrl = offscreen.toDataURL("image/png");

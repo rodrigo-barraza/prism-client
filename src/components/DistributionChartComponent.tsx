@@ -339,7 +339,7 @@ export default function DistributionChartComponent({
                     outerRadius={height * 0.36}
                     paddingAngle={2}
                     dataKey="value"
-                    activeIndex={activeIndex}
+                    {...({ activeIndex } as any)}
                     activeShape={(props: any) => (
                       <ActiveSectorRenderer {...props} metric={activeMetric} />
                     )}

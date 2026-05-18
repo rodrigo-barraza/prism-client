@@ -34,7 +34,7 @@ function flattenConfigModels(config: any) {
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
     for (const [provider, models] of Object.entries(providers)) {
-      for (const m of models) {
+      for (const m of models as any[]) {
         const key = `${provider}:${m.name}`;
         if (!modelsMap.has(key)) {
           modelsMap.set(key, { ...m, provider });
@@ -57,7 +57,7 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }: an
   const [allModels, setAllModels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [actionInProgress, setActionInProgress] = useState(null);
+  const [actionInProgress, setActionInProgress] = useState<any>(null);
   const { toasts, addToast, removeToast } = useToast(4000);
   const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
   const [loadConfigModel, setLoadConfigModel] = useState(null);
@@ -247,7 +247,7 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }: an
 
   // Called from the config panel with load options
   const handleConfigLoad = async (modelKey: any, options: any) => {
-    setActionInProgress({ id: modelKey, type: "load" });
+    setActionInProgress({ id: modelKey, type: "load" } as any);
     setLoadConfigModel(null);
     try {
       const lmService = isAdmin ? IrisService : PrismService;
@@ -262,7 +262,7 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }: an
   };
 
   const handleUnload = async (instanceId: any) => {
-    setActionInProgress({ id: instanceId, type: "unload" });
+    setActionInProgress({ id: instanceId, type: "unload" } as any);
     try {
       const lmService = isAdmin ? IrisService : PrismService;
       await lmService.unloadLmStudioModel(instanceId);

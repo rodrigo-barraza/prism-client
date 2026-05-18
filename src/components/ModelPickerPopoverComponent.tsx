@@ -25,7 +25,7 @@ import { CloseButtonComponent } from "@rodrigo-barraza/components-library";
 // Module-scoped so every ModelPickerPopoverComponent instance shares the
 // same search term. Uses useSyncExternalStore for tear-free reads.
 let _sharedSearch = "";
-const _listeners = new Set();
+const _listeners = new Set<any>();
 function _notify() {
   for (const fn of _listeners) fn();
 }
@@ -42,7 +42,7 @@ function setSharedSearch(value: any) {
 }
 function useSharedModelSearch() {
   const value = useSyncExternalStore(subscribeSearch, getSearchSnapshot, getSearchSnapshot);
-  return [value, setSharedSearch];
+  return [value, setSharedSearch] as const;
 }
 
 /**
@@ -120,7 +120,7 @@ export default function ModelPickerPopoverComponent({
   const baseModels = buildAllModels(config, modelTypeFilter);
 
   // -- Fetch usage stats and enrich models ------------------------------
-  const [usageMap, setUsageMap] = useState(null);
+  const [usageMap, setUsageMap] = useState<any>(null);
   const usageFetchedRef = useRef<any>(false);
 
   useEffect(() => {
@@ -598,7 +598,7 @@ function buildAllModels(config: any, modelTypeFilter: any) {
   for (const { key, suffix } of sections) {
     const modelsMap = config[key]?.models || {};
     for (const [provider, models] of Object.entries(modelsMap)) {
-      for (const m of models) {
+      for (const m of (models as any)) {
         const id = `${provider}:${m.name}`;
         if (!seen.has(id)) {
           seen.set(id, {

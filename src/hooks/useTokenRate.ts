@@ -61,7 +61,7 @@ function sumWorkerThroughput(workerGenerationProgress: any) {
   let sum = 0;
   let count = 0;
   if (!workerGenerationProgress) return { sum: 0, count: 0 };
-  for (const wp of Object.values(workerGenerationProgress)) {
+  for (const wp of Object.values(workerGenerationProgress) as any) {
     if (wp.tokPerSec != null && wp.tokPerSec > 0) {
       sum += wp.tokPerSec;
       count++;

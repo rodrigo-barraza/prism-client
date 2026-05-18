@@ -65,7 +65,7 @@ export default function HistoryPanel({
   const newBtnRef = useRef<any>(null);
   const rainbowTimer = useRef<any>(null);
   const glitchInterval = useRef<any>(null);
-  const [glitchLabel, setGlitchLabel] = useState(null);
+  const [glitchLabel, setGlitchLabel] = useState<string | null>(null);
 
   const handleNew = useCallback(() => {
     const element = newBtnRef.current;

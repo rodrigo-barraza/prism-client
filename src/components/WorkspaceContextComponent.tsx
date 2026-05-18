@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import WorkspaceService from "../services/WorkspaceService";
 import { LS_WORKSPACE_ROOT } from "../constants";
 
-const WorkspaceContext = createContext({
+const WorkspaceContext = createContext<any>({
   workspaces: [],
   currentWorkspace: null,
   setCurrentWorkspace: () => {},
