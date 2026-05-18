@@ -4,7 +4,7 @@
  * so PrismService, IrisService, and any future services stay in sync.
  */
 
-import { PROJECT_NAME } from "../../config";
+import { PROJECT_NAME } from "@/config";
 
 export function getBaseHeaders() {
   const headers = {

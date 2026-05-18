@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3333",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3333",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -18,8 +18,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@rodrigo-barraza/components-library": "git+https://github.com/rodrigo-barraza/components-library.git",
-    "@rodrigo-barraza/utilities-library": "git+https://github.com/rodrigo-barraza/utilities-library.git",
+    "@rodrigo-barraza/components-library": "github:rodrigo-barraza/components-library",
+    "@rodrigo-barraza/utilities-library": "github:rodrigo-barraza/utilities-library",
     "chart.js": "^4.5.1",
     "gifuct-js": "^2.1.2",
     "lucide-react": "^1.14.0",

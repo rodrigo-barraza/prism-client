@@ -1,4 +1,4 @@
-import { PRISM_SERVICE_URL, MINIO_URL } from "../../config";
+import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";

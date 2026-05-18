@@ -1,7 +1,7 @@
 // ============================================================
 // Prism Client — Next.js Configuration
 // ============================================================
-// Bootstraps secrets from Vault (or .env fallback) at startup
+// Bootstraps secrets from Vault at startup
 // and injects them into process.env for the app.
 // ============================================================
 
@@ -9,10 +9,7 @@ import { createVaultClient } from "@rodrigo-barraza/utilities-library/node";
 import type { NextConfig } from "next";
 
 // ── Bootstrap secrets at build/dev time ────────────────────────
-const vault = createVaultClient({
-  localEnvFile: "./.env",
-  fallbackEnvFile: "../vault-service/.env",
-});
+const vault = createVaultClient();
 
 const secrets = vault.fetchSync();
 
@@ -42,7 +39,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@rodrigo-barraza/components-library", "@rodrigo-barraza/utilities-library"],
 
   // Expose resolved values to both server and client bundles.
-  // config.js applies environment-aware overrides for browser contexts
+  // config.ts applies environment-aware overrides for browser contexts
   // (e.g. public domain for prism-service, proxy path for tools-service).
   env: {
     PRISM_CLIENT_PORT: secrets.PRISM_CLIENT_PORT,

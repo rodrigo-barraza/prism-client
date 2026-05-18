@@ -1,4 +1,4 @@
-import { PRISM_SERVICE_URL } from "../../config";
+import { PRISM_SERVICE_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { subscribe as sseSubscribe } from "./SSEManager";
 import { buildLmStudioLoadBody } from "../utils/utilities";
