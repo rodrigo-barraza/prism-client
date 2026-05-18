@@ -1,17 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import {
-  Plus,
-  Trash2,
-  Edit3,
-  Save,
-  X,
-  BookOpen,
-  Sparkles,
-} from "lucide-react";
+import { Plus, Trash2, Edit3, Save, X, BookOpen, Sparkles } from "lucide-react";
 import PrismService from "../services/PrismService";
-import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
+import {
+  ButtonComponent,
+  ToggleComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./SkillsPanelComponent.module.css";
 
 const CONTENT_WARN_CHARS = 2000;
@@ -98,23 +93,20 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
     [onSkillsChange],
   );
 
-  const handleToggleAll = useCallback(
-    async () => {
-      const allEnabled = skills.length > 0 && skills.every((s: any) => s.enabled);
-      const newEnabled = !allEnabled;
-      try {
-        await Promise.all(
-          skills.map((s: any) =>
-            PrismService.updateSkill(s.id || s._id, { enabled: newEnabled }),
-          ),
-        );
-        onSkillsChange();
-      } catch (error: any) {
-        console.error("Failed to toggle all skills:", error);
-      }
-    },
-    [skills, onSkillsChange],
-  );
+  const handleToggleAll = useCallback(async () => {
+    const allEnabled = skills.length > 0 && skills.every((s: any) => s.enabled);
+    const newEnabled = !allEnabled;
+    try {
+      await Promise.all(
+        skills.map((s: any) =>
+          PrismService.updateSkill(s.id || s._id, { enabled: newEnabled }),
+        ),
+      );
+      onSkillsChange();
+    } catch (error: any) {
+      console.error("Failed to toggle all skills:", error);
+    }
+  }, [skills, onSkillsChange]);
 
   // -- Edit / Create Form ---------------------------------------
 
@@ -189,11 +181,11 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             <div
               className={`${styles.charCounter} ${isOverMax ? styles.charCounterDanger : isOverWarn ? styles.charCounterWarn : ""}`}
             >
-              {contentLen.toLocaleString()} / {CONTENT_MAX_CHARS.toLocaleString()} chars
+              {contentLen.toLocaleString()} /{" "}
+              {CONTENT_MAX_CHARS.toLocaleString()} chars
               {isOverWarn && !isOverMax && " ⚠️ nearing limit"}
             </div>
           </div>
-
 
           <div className={styles.formActions}>
             <button
@@ -222,9 +214,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <span className={styles.headerTitle}>
-          Skills ({skills.length})
-        </span>
+        <span className={styles.headerTitle}>Skills ({skills.length})</span>
         <div className={styles.headerActions}>
           {skills.length > 0 && (
             <ToggleComponent
@@ -233,7 +223,11 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
               size="mini"
             />
           )}
-          <ButtonComponent variant="disabled" icon={Plus} onClick={handleCreate}>
+          <ButtonComponent
+            variant="disabled"
+            icon={Plus}
+            onClick={handleCreate}
+          >
             New
           </ButtonComponent>
         </div>
@@ -250,7 +244,11 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             system prompt. Add coding conventions, project rules, or
             domain-specific context.
           </div>
-          <ButtonComponent variant="disabled" icon={Plus} onClick={handleCreate}>
+          <ButtonComponent
+            variant="disabled"
+            icon={Plus}
+            onClick={handleCreate}
+          >
             Create your first skill
           </ButtonComponent>
         </div>
@@ -296,9 +294,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             </div>
 
             {skill.content && (
-              <div className={styles.skillContentPreview}>
-                {skill.content}
-              </div>
+              <div className={styles.skillContentPreview}>{skill.content}</div>
             )}
 
             {skill.content && (

@@ -37,7 +37,14 @@ export default function ToolCardComponent({
     <div
       className={`${styles.card}${!enabled ? ` ${styles.cardDisabled}` : ""}${glowing ? ` ${styles.cardGlow}` : ""}${locked ? ` ${styles.cardLocked}` : ""}`}
       style={{ "--tool-color": color } as any}
-      onClick={locked ? undefined : (e: any) => { SoundService.playClickButton({ event: e }); onClick?.(); }}
+      onClick={
+        locked
+          ? undefined
+          : (e: any) => {
+              SoundService.playClickButton({ event: e });
+              onClick?.();
+            }
+      }
       role={onClick && !locked ? "button" : undefined}
       tabIndex={onClick && !locked ? 0 : undefined}
       onKeyDown={
@@ -50,7 +57,10 @@ export default function ToolCardComponent({
             }
           : undefined
       }
-      onMouseEnter={(e: any) => { SoundService.playHoverButton({ event: e }); onHover?.(true); }}
+      onMouseEnter={(e: any) => {
+        SoundService.playHoverButton({ event: e });
+        onHover?.(true);
+      }}
       onMouseLeave={() => onHover?.(false)}
     >
       <div className={styles.icon}>{icon}</div>

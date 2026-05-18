@@ -2,10 +2,16 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Star } from "lucide-react";
-import ProviderLogo, { PROVIDER_LABELS, resolveProviderLabel } from "./ProviderLogosComponent";
+import ProviderLogo, {
+  PROVIDER_LABELS,
+  resolveProviderLabel,
+} from "./ProviderLogosComponent";
 import { MODALITY_FILTERS, TOOL_FILTERS } from "./SidebarFilterComponent";
 import FilterDropdownComponent from "./FilterDropdownComponent";
-import { SearchInputComponent, LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
+import {
+  SearchInputComponent,
+  LoadingIndicatorComponent,
+} from "@rodrigo-barraza/components-library";
 import HistoryItemComponent from "./HistoryItemComponent";
 import styles from "./HistoryListComponent.module.css";
 import { LS_DATE_RANGE } from "../constants";
@@ -175,7 +181,6 @@ export default function HistoryList({
     return () => observer.disconnect();
   }, [hasMore, onLoadMore, loadingMore]);
 
-
   return (
     <div className={styles.container}>
       <SearchInputComponent
@@ -192,7 +197,14 @@ export default function HistoryList({
             ? [
                 {
                   label: "Favorites",
-                  items: [{ key: "favorites", icon: Star, title: "Favorites Only", color: "#eab308" }],
+                  items: [
+                    {
+                      key: "favorites",
+                      icon: Star,
+                      title: "Favorites Only",
+                      color: "#eab308",
+                    },
+                  ],
                   activeKeys: showFavoritesOnly ? "favorites" : null,
                   isSingleSelect: true,
                   onToggle: () => setShowFavoritesOnly((v: any) => !v),
@@ -203,7 +215,12 @@ export default function HistoryList({
             ? [
                 {
                   label: "Modality",
-                  items: allModalities.map((m: any) => ({ key: m.key, icon: m.icon, title: m.title, color: m.color })),
+                  items: allModalities.map((m: any) => ({
+                    key: m.key,
+                    icon: m.icon,
+                    title: m.title,
+                    color: m.color,
+                  })),
                   activeKeys: activeModalities,
                   onToggle: (key: any) => {
                     setActiveModalities((prev: any) => {
@@ -219,7 +236,12 @@ export default function HistoryList({
             ? [
                 {
                   label: "Tools",
-                  items: allTools.map((t: any) => ({ key: t.key, icon: t.icon, title: t.title, color: t.color })),
+                  items: allTools.map((t: any) => ({
+                    key: t.key,
+                    icon: t.icon,
+                    title: t.title,
+                    color: t.color,
+                  })),
                   activeKeys: activeTools,
                   onToggle: (key: any) => {
                     setActiveTools((prev: any) => {
@@ -284,7 +306,9 @@ export default function HistoryList({
             isFavorite={(favorites || []).includes(item.id)}
             onToggleFavorite={onToggleFavorite}
             dataPanelClose
-            onOpenInNewTab={onOpenInNewTab ? (item: any) => onOpenInNewTab(item) : undefined}
+            onOpenInNewTab={
+              onOpenInNewTab ? (item: any) => onOpenInNewTab(item) : undefined
+            }
             isGenerating={generatingSessionIds?.has?.(item.id)}
           />
         ))}

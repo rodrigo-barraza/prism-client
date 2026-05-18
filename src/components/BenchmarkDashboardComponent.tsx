@@ -2,13 +2,24 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart3, Bot, CheckCircle2, Coins, Cpu, Loader2, XCircle } from "lucide-react";
+import {
+  BarChart3,
+  Bot,
+  CheckCircle2,
+  Coins,
+  Cpu,
+  Loader2,
+  XCircle,
+} from "lucide-react";
 import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import SummaryBarComponent from "./SummaryBarComponent";
 import ModelsTableComponent from "./ModelsTableComponent";
 
-import { ButtonComponent, EmptyStateComponent } from "@rodrigo-barraza/components-library";
+import {
+  ButtonComponent,
+  EmptyStateComponent,
+} from "@rodrigo-barraza/components-library";
 import { formatCost } from "../utils/utilities";
 import styles from "./BenchmarkDashboardComponent.module.css";
 
@@ -21,8 +32,12 @@ function buildConfigLookup(config: any) {
   if (!config) return new Map();
   const map = new Map();
   const MODEL_SECTIONS = [
-    "textToText", "textToImage", "textToSpeech",
-    "imageToText", "audioToText", "embedding",
+    "textToText",
+    "textToImage",
+    "textToSpeech",
+    "imageToText",
+    "audioToText",
+    "embedding",
   ];
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
@@ -61,12 +76,15 @@ function humanizeModelPath(raw: any) {
 }
 
 const TABS = [
-  { key: "all",    label: "All",    icon: null },
+  { key: "all", label: "All", icon: null },
   { key: "models", label: "Models", icon: Cpu },
   { key: "agents", label: "Agents", icon: Bot },
 ];
 
-export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }: any) {
+export default function BenchmarkDashboardComponent({
+  navSidebar,
+  rightSidebar,
+}: any) {
   const router = useRouter();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -91,8 +109,13 @@ export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }
       if (config?.localProviders?.length > 0) {
         try {
           const localResult = await PrismService.getLocalConfig();
-          mergedConfig = PrismService.mergeLocalModels(config, localResult?.models);
-        } catch { /* local config unavailable, use base config */ }
+          mergedConfig = PrismService.mergeLocalModels(
+            config,
+            localResult?.models,
+          );
+        } catch {
+          /* local config unavailable, use base config */
+        }
       }
 
       setConfigLookup(buildConfigLookup(mergedConfig));
@@ -112,19 +135,22 @@ export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }
   }, [loadData]);
 
   // -- Favorites ----------------------------------------------
-  const handleToggleFavorite = useCallback(async (key: any) => {
-    if (favoriteKeys.includes(key)) {
-      setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
-      PrismService.removeFavorite("model", key).catch(() => {});
-    } else {
-      setFavoriteKeys((prev: any) => [...prev, key]);
-      const [provider, ...rest] = key.split(":");
-      PrismService.addFavorite("model", key, {
-        provider,
-        name: rest.join(":"),
-      }).catch(() => {});
-    }
-  }, [favoriteKeys]);
+  const handleToggleFavorite = useCallback(
+    async (key: any) => {
+      if (favoriteKeys.includes(key)) {
+        setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
+        PrismService.removeFavorite("model", key).catch(() => {});
+      } else {
+        setFavoriteKeys((prev: any) => [...prev, key]);
+        const [provider, ...rest] = key.split(":");
+        PrismService.addFavorite("model", key, {
+          provider,
+          name: rest.join(":"),
+        }).catch(() => {});
+      }
+    },
+    [favoriteKeys],
+  );
 
   // -- Aggregate totals --------------------------------------
   const totals = useMemo(() => {
@@ -157,7 +183,8 @@ export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }
         key: s.model,
         provider: s.provider,
         // Use config display_name if available, otherwise humanize the raw path
-        display_name: configModel?.display_name || humanizeModelPath(s.label || s.model),
+        display_name:
+          configModel?.display_name || humanizeModelPath(s.label || s.model),
         // Benchmark config flags (thinking / tools / agent)
         _benchThinkingEnabled: s.thinkingEnabled || false,
         _benchToolsEnabled: s.toolsEnabled || false,
@@ -178,17 +205,22 @@ export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }
 
   // -- Tab filtering ----------------------------------
   const modelRows = useMemo(() => {
-    if (activeTab === "models") return allModelRows.filter((r: any) => !r._benchAgent);
-    if (activeTab === "agents") return allModelRows.filter((r: any) => !!r._benchAgent);
+    if (activeTab === "models")
+      return allModelRows.filter((r: any) => !r._benchAgent);
+    if (activeTab === "agents")
+      return allModelRows.filter((r: any) => !!r._benchAgent);
     return allModelRows;
   }, [allModelRows, activeTab]);
 
   // -- Tab counts -------------------------------------
-  const tabCounts = useMemo(() => ({
-    all: allModelRows.length,
-    models: allModelRows.filter((r: any) => !r._benchAgent).length,
-    agents: allModelRows.filter((r: any) => !!r._benchAgent).length,
-  }), [allModelRows]);
+  const tabCounts = useMemo(
+    () => ({
+      all: allModelRows.length,
+      models: allModelRows.filter((r: any) => !r._benchAgent).length,
+      agents: allModelRows.filter((r: any) => !!r._benchAgent).length,
+    }),
+    [allModelRows],
+  );
 
   // -- Composite stat identity (model + config flags) ---------
   const statId = (s: any) =>
@@ -321,24 +353,46 @@ export default function BenchmarkDashboardComponent({ navSidebar, rightSidebar }
             <div className={styles.stickyBar}>
               <SummaryBarComponent
                 items={[
-                  { value: (stats as any).totalModels, label: "Configs Tested" },
-                  { value: (stats as any).totalBenchmarks, label: "Benchmarks" },
-                  { value: totals.total, label: "Total Tests" },
-                  { value: totals.passed, label: "Passed", color: "var(--success)" },
-                  { value: totals.failed + totals.errored, label: "Failed", color: "var(--danger)" },
                   {
-                    bar: totals.total > 0 ? (totals.passed / totals.total) * 100 : 0,
+                    value: (stats as any).totalModels,
+                    label: "Configs Tested",
+                  },
+                  {
+                    value: (stats as any).totalBenchmarks,
+                    label: "Benchmarks",
+                  },
+                  { value: totals.total, label: "Total Tests" },
+                  {
+                    value: totals.passed,
+                    label: "Passed",
+                    color: "var(--success)",
+                  },
+                  {
+                    value: totals.failed + totals.errored,
+                    label: "Failed",
+                    color: "var(--danger)",
+                  },
+                  {
+                    bar:
+                      totals.total > 0
+                        ? (totals.passed / totals.total) * 100
+                        : 0,
                     barPassed: totals.passed,
                     barTotal: totals.total,
-                    label: totals.total > 0 ? `${Math.round((totals.passed / totals.total) * 100)}%` : "—",
+                    label:
+                      totals.total > 0
+                        ? `${Math.round((totals.passed / totals.total) * 100)}%`
+                        : "—",
                   },
                   ...(totals.cost > 0
-                    ? [{
-                        value: formatCost(totals.cost),
-                        label: "Total Cost",
-                        color: "var(--success)",
-                        icon: <Coins size={14} />,
-                      }]
+                    ? [
+                        {
+                          value: formatCost(totals.cost),
+                          label: "Total Cost",
+                          color: "var(--success)",
+                          icon: <Coins size={14} />,
+                        },
+                      ]
                     : []),
                 ]}
               />

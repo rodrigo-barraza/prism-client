@@ -10,7 +10,6 @@
  * GainNode → ChannelMerger topology.
  */
 
-
 let context: AudioContext | null = null;
 
 /** @type {AudioBuffer|null} Cached hover noise buffer */
@@ -113,7 +112,7 @@ function getClickBuffer() {
     const noise = (Math.random() * 2 - 1) * noiseAmt * 0.3;
 
     // Combined — ~2× louder than hover tick
-    data[i] = (sine * 0.06 + noise * 0.02);
+    data[i] = sine * 0.06 + noise * 0.02;
   }
 
   return clickBuffer;
@@ -161,7 +160,7 @@ function getButtonClickBuffer() {
 
   const audio = ensureContext();
   const sampleRate = audio.sampleRate;
-  const duration = 0.030; // 30 ms
+  const duration = 0.03; // 30 ms
   const length = Math.ceil(sampleRate * duration);
 
   buttonClickBuffer = audio.createBuffer(1, length, sampleRate);
@@ -292,7 +291,7 @@ const SoundService = {
 
     const source = audio.createBufferSource();
     source.buffer = buffer;
-    source.playbackRate.value = 0.85 + Math.random() * 0.30; // ±15% pitch variation
+    source.playbackRate.value = 0.85 + Math.random() * 0.3; // ±15% pitch variation
 
     connectStereo(source, left ?? spatial.left, right ?? spatial.right);
     source.start(0);
@@ -337,7 +336,7 @@ const SoundService = {
 
     const source = audio.createBufferSource();
     source.buffer = buffer;
-    source.playbackRate.value = 0.85 + Math.random() * 0.30; // ±15% pitch variation
+    source.playbackRate.value = 0.85 + Math.random() * 0.3; // ±15% pitch variation
 
     connectStereo(source, left ?? spatial.left, right ?? spatial.right);
     source.start(0);

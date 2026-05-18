@@ -3,12 +3,19 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { X } from "lucide-react";
-import { POLL_SLOW, POLL_STANDARD, POLL_FAST } from "@rodrigo-barraza/utilities-library";
+import {
+  POLL_SLOW,
+  POLL_STANDARD,
+  POLL_FAST,
+} from "@rodrigo-barraza/utilities-library";
 import IrisService from "../services/IrisService";
 
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import { DatePickerComponent } from "@rodrigo-barraza/components-library";
-import { AdminHeaderProvider, useAdminHeader } from "./AdminHeaderContextComponent";
+import {
+  AdminHeaderProvider,
+  useAdminHeader,
+} from "./AdminHeaderContextComponent";
 import styles from "./AdminShellComponent.module.css";
 
 function AdminShellInner({ children }: any) {
@@ -31,18 +38,10 @@ function AdminShellInner({ children }: any) {
   const isOnConversationsRef = useRef<any>(
     pathname.startsWith("/admin/conversations"),
   );
-  const isOnSessionsRef = useRef<any>(
-    pathname.startsWith("/admin/traces"),
-  );
-  const isOnRequestsRef = useRef<any>(
-    pathname.startsWith("/admin/requests"),
-  );
-  const isOnMediaRef = useRef<any>(
-    pathname.startsWith("/admin/media"),
-  );
-  const isOnTextRef = useRef<any>(
-    pathname.startsWith("/admin/text"),
-  );
+  const isOnSessionsRef = useRef<any>(pathname.startsWith("/admin/traces"));
+  const isOnRequestsRef = useRef<any>(pathname.startsWith("/admin/requests"));
+  const isOnMediaRef = useRef<any>(pathname.startsWith("/admin/media"));
+  const isOnTextRef = useRef<any>(pathname.startsWith("/admin/text"));
 
   // Keep refs in sync with pathname
   useEffect(() => {
@@ -168,7 +167,11 @@ function AdminShellInner({ children }: any) {
 
     async function fetchRequests() {
       try {
-        const data = await IrisService.getRequests({ limit: 50, sort: "timestamp", order: "desc" });
+        const data = await IrisService.getRequests({
+          limit: 50,
+          sort: "timestamp",
+          order: "desc",
+        });
         const list = data.data || [];
         const currentIds = new Set(list.map((r: any) => r.requestId || r._id));
 
@@ -197,7 +200,9 @@ function AdminShellInner({ children }: any) {
         if (knownMediaRef.current === null) {
           knownMediaRef.current = total;
         } else if (!isOnMediaRef.current && total > knownMediaRef.current) {
-          setNewMediaCount((prev: any) => prev + (total - knownMediaRef.current));
+          setNewMediaCount(
+            (prev: any) => prev + (total - knownMediaRef.current),
+          );
           knownMediaRef.current = total;
         } else {
           knownMediaRef.current = total;
@@ -275,7 +280,14 @@ function AdminShellInner({ children }: any) {
     if (href.startsWith("/admin/text")) setNewTextCount(0);
   }, []);
 
-  const { controls, titleBadge, dateRange, setDateRange, sessionFilter, setSessionFilter } = useAdminHeader();
+  const {
+    controls,
+    titleBadge,
+    dateRange,
+    setDateRange,
+    sessionFilter,
+    setSessionFilter,
+  } = useAdminHeader();
 
   const hasSessionFilter = !!sessionFilter;
 

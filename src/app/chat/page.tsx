@@ -90,10 +90,9 @@ function AgentsPageInner() {
     const hasModel = searchParams.has("model");
     const hasAgent = searchParams.has("agent");
     if (hasModel || hasAgent) {
-      router.replace(
-        buildUrl(searchParams, { model: null, agent: null }),
-        { scroll: false },
-      );
+      router.replace(buildUrl(searchParams, { model: null, agent: null }), {
+        scroll: false,
+      });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -121,10 +120,9 @@ function AgentsPageInner() {
       const modelKey = `${provider}:${model}`;
       const current = searchParams.get("model");
       if (current === modelKey) return;
-      router.replace(
-        buildUrl(searchParams, { model: modelKey }),
-        { scroll: false },
-      );
+      router.replace(buildUrl(searchParams, { model: modelKey }), {
+        scroll: false,
+      });
     },
     [router, searchParams],
   );
@@ -140,15 +138,18 @@ function AgentsPageInner() {
       if (conversationId) {
         // Session active → keep only session param
         router.replace(
-          buildUrl(searchParams, { session: conversationId, model: null, agent: null }),
+          buildUrl(searchParams, {
+            session: conversationId,
+            model: null,
+            agent: null,
+          }),
           { scroll: false },
         );
       } else {
         // New chat → clear session param, keep everything else
-        router.replace(
-          buildUrl(searchParams, { session: null }),
-          { scroll: false },
-        );
+        router.replace(buildUrl(searchParams, { session: null }), {
+          scroll: false,
+        });
       }
     },
     [router, searchParams],
@@ -161,7 +162,10 @@ function AgentsPageInner() {
     return () => {
       window.removeEventListener("agent:switch", handleAgentSwitch);
       window.removeEventListener("model:change", handleModelChange);
-      window.removeEventListener("conversation:change", handleConversationChange);
+      window.removeEventListener(
+        "conversation:change",
+        handleConversationChange,
+      );
     };
   }, [handleAgentSwitch, handleModelChange, handleConversationChange]);
 

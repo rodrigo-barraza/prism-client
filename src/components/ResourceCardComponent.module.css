@@ -12,7 +12,7 @@
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast),
-    transform 0.18s cubic-bezier(.4, 0, .2, 1);
+    transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -33,7 +33,9 @@
 
   &:hover {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 1px var(--accent-color), 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 0 0 1px var(--accent-color),
+      0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
     color: var(--text-primary);
 

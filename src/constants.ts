@@ -41,7 +41,12 @@ export const PROJECT_AGENT = "coding";
  * Models from these providers are considered "local" for memory,
  * model-picker grouping, and progressive-config-load gating.
  */
-export const LOCAL_PROVIDERS = new Set(["lm-studio", "ollama", "vllm", "llama-cpp"]);
+export const LOCAL_PROVIDERS = new Set([
+  "lm-studio",
+  "ollama",
+  "vllm",
+  "llama-cpp",
+]);
 
 // -- Raw localStorage keys (no namespace prefix) -----------------
 export const LS_PANEL_LEFT = "panel_left";
@@ -80,15 +85,21 @@ export const SETTINGS_DEFAULTS = {
 // -- Chart / UI color palette -------------------------------------
 /** Cycled by row index for provider charts, tables, and distribution bars. */
 export const PROVIDER_COLORS = [
-  "#6366f1", "#a855f7", "#ec4899", "#f59e0b",
-  "#10b981", "#3b82f6", "#ef4444", "#06b6d4",
+  "#6366f1",
+  "#a855f7",
+  "#ec4899",
+  "#f59e0b",
+  "#10b981",
+  "#3b82f6",
+  "#ef4444",
+  "#06b6d4",
 ];
 
 // -- Polling intervals (re-exported from utilities-library) -------
 export {
-  POLL_FAST,        // 3s  — benchmarks, workers
-  POLL_STANDARD,    // 5s  — conversations, requests, traces
-  POLL_MODERATE,    // 15s — model lists, analytics
-  POLL_SLOW,        // 30s — health checks
-  POLL_LAZY,        // 60s — dashboard refresh
+  POLL_FAST, // 3s  — benchmarks, workers
+  POLL_STANDARD, // 5s  — conversations, requests, traces
+  POLL_MODERATE, // 15s — model lists, analytics
+  POLL_SLOW, // 30s — health checks
+  POLL_LAZY, // 60s — dashboard refresh
 } from "@rodrigo-barraza/utilities-library";

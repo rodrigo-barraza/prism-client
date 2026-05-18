@@ -67,9 +67,10 @@ export default function MessageCountBadgeComponent({
   // Derive tweening state — avoids synchronous setState in effect
   const tweening = displayCount !== count;
   const suffix = displayCount !== 1 ? "messages" : "message";
-  const tooltipLabel = deletedCount > 0
-    ? `${count.toLocaleString()} ${suffix} (${deletedCount} deleted)`
-    : `${count.toLocaleString()} ${suffix}`;
+  const tooltipLabel =
+    deletedCount > 0
+      ? `${count.toLocaleString()} ${suffix} (${deletedCount} deleted)`
+      : `${count.toLocaleString()} ${suffix}`;
 
   return (
     <TooltipComponent label={tooltipLabel} position="top">
@@ -79,9 +80,7 @@ export default function MessageCountBadgeComponent({
         {showIcon && <MessageSquare size={mini ? 8 : 10} />}
         {displayCount.toLocaleString()} {suffix}
         {deletedCount > 0 && (
-          <span className={styles.deletedSub}>
-            ({deletedCount} deleted)
-          </span>
+          <span className={styles.deletedSub}>({deletedCount} deleted)</span>
         )}
       </span>
     </TooltipComponent>

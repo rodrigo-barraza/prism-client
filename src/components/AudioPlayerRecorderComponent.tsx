@@ -12,7 +12,10 @@ import {
   X,
   Radio,
 } from "lucide-react";
-import { SliderComponent, TooltipComponent } from "@rodrigo-barraza/components-library";
+import {
+  SliderComponent,
+  TooltipComponent,
+} from "@rodrigo-barraza/components-library";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import styles from "./AudioPlayerRecorderComponent.module.css";
 
@@ -27,7 +30,13 @@ const BAR_WIDTH = 1.5;
 const BAR_GAP = 1;
 
 /* -- Draw waveform bars on a canvas -- */
-function drawBars(canvas: any, peaks: any, progress: any, playedColor: any, unplayedColor: any) {
+function drawBars(
+  canvas: any,
+  peaks: any,
+  progress: any,
+  playedColor: any,
+  unplayedColor: any,
+) {
   const context = canvas.getContext("2d");
   const w = canvas.width;
   const h = canvas.height;
@@ -42,7 +51,12 @@ function drawBars(canvas: any, peaks: any, progress: any, playedColor: any, unpl
     const barH = Math.max(2, amp * (h * 0.8));
 
     context.fillStyle = i / totalBars <= progress ? playedColor : unplayedColor;
-    context.fillRect(i * (BAR_WIDTH + BAR_GAP), mid - barH / 2, BAR_WIDTH, barH);
+    context.fillRect(
+      i * (BAR_WIDTH + BAR_GAP),
+      mid - barH / 2,
+      BAR_WIDTH,
+      barH,
+    );
   }
 }
 
@@ -177,7 +191,8 @@ export default function AudioPlayerRecorderComponent({
       return;
     }
     const tick = () => {
-      if (audioRef.current) setCurrentTime((audioRef.current as any).currentTime);
+      if (audioRef.current)
+        setCurrentTime((audioRef.current as any).currentTime);
       playAnimRef.current = requestAnimationFrame(tick);
     };
     tick();

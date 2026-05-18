@@ -36,13 +36,14 @@ export default function ModelCardComponent({
   onToggleThinking,
   onToggleTools,
 }: any) {
-
-
   // Build settings-like object for the picker trigger display
-  const pickerSettings = useMemo(() => ({
-    provider: model.provider || "",
-    model: model.name || "",
-  }), [model.provider, model.name]);
+  const pickerSettings = useMemo(
+    () => ({
+      provider: model.provider || "",
+      model: model.name || "",
+    }),
+    [model.provider, model.name],
+  );
 
   const handlePickerSelect = (provider: any, name: any) => {
     onChangeModel?.(model.instanceId, provider, name);
@@ -56,7 +57,10 @@ export default function ModelCardComponent({
           Model: {model.key}
         </span>
         {dupeCount > 1 && (
-          <span className={styles.dupeBadge} title={`${dupeCount} instances of this model`}>
+          <span
+            className={styles.dupeBadge}
+            title={`${dupeCount} instances of this model`}
+          >
             <Copy size={8} />
             {dupeCount}
           </span>

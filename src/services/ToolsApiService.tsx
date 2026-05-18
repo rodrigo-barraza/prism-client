@@ -21,7 +21,9 @@ export default class ToolsApiService {
    */
   static async getToolCalls(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return ToolsApiService._fetch(`/admin/tool-calls${query ? `?${query}` : ""}`);
+    return ToolsApiService._fetch(
+      `/admin/tool-calls${query ? `?${query}` : ""}`,
+    );
   }
 
   /**
@@ -31,7 +33,9 @@ export default class ToolsApiService {
    */
   static async getToolCallStats(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return ToolsApiService._fetch(`/admin/tool-calls/stats${query ? `?${query}` : ""}`);
+    return ToolsApiService._fetch(
+      `/admin/tool-calls/stats${query ? `?${query}` : ""}`,
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -58,7 +62,11 @@ export default class ToolsApiService {
    * @returns {Promise<{ project, tasks, summary }>}
    */
   static async getAgenticTasks(project: any, { status, limit }: any = {}) {
-    return ToolsApiService._post("/agentic/task/list", { project, status, limit });
+    return ToolsApiService._post("/agentic/task/list", {
+      project,
+      status,
+      limit,
+    });
   }
 
   /**
@@ -72,7 +80,9 @@ export default class ToolsApiService {
     if (status) params.set("status", status);
     if (agentSessionId) params.set("agentSessionId", agentSessionId);
     const query = params.toString();
-    return ToolsApiService._fetch(`/agentic/task/list-all${query ? `?${query}` : ""}`);
+    return ToolsApiService._fetch(
+      `/agentic/task/list-all${query ? `?${query}` : ""}`,
+    );
   }
 
   /**
@@ -92,7 +102,11 @@ export default class ToolsApiService {
    * @returns {Promise<{ task, message }>}
    */
   static async updateAgenticTask(project: any, taskId: any, updates: any) {
-    return ToolsApiService._post("/agentic/task/update", { project, taskId, ...updates });
+    return ToolsApiService._post("/agentic/task/update", {
+      project,
+      taskId,
+      ...updates,
+    });
   }
 
   /**
@@ -116,7 +130,11 @@ export default class ToolsApiService {
    * @returns {Promise<{ path, content, totalLines, language?, truncated? }>}
    */
   static async readFile(path: any, { startLine, endLine }: any = {}) {
-    return ToolsApiService._post("/agentic/file/read", { path, startLine, endLine });
+    return ToolsApiService._post("/agentic/file/read", {
+      path,
+      startLine,
+      endLine,
+    });
   }
 
   /**

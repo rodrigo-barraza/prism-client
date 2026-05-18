@@ -19,8 +19,11 @@ import {
 } from "../../../utils/requestDetailHelpers";
 
 import RequestsTableComponent from "../../../components/RequestsTableComponent";
-import { ButtonComponent, PaginationComponent, SelectComponent } from "@rodrigo-barraza/components-library";
-
+import {
+  ButtonComponent,
+  PaginationComponent,
+  SelectComponent,
+} from "@rodrigo-barraza/components-library";
 
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import {
@@ -38,7 +41,6 @@ import useProjectFilter from "../../../hooks/useProjectFilter";
 import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000;
-
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -81,7 +83,8 @@ export default function RequestsPage() {
       if (!(r as any).timestamp) continue;
       const age = now - new Date((r as any).timestamp).getTime();
       // Treat timestamps up to 10s in the future (clock skew) or < 5s old
-      if (age < 5000 && age > -10000) ids.add((r as any).requestId || (r as any)._id);
+      if (age < 5000 && age > -10000)
+        ids.add((r as any).requestId || (r as any)._id);
     }
     return ids;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,9 +102,17 @@ export default function RequestsPage() {
     const prev = prevJustNowIds.current;
     for (const id of prev) {
       if (!justNowIds.has(id) && !fadingTimers.current.has(id)) {
-        setFadingIds((s: any) => { const n = new Set(s); n.add(id); return n; });
+        setFadingIds((s: any) => {
+          const n = new Set(s);
+          n.add(id);
+          return n;
+        });
         const timer = setTimeout(() => {
-          setFadingIds((s: any) => { const n = new Set(s); n.delete(id); return n; });
+          setFadingIds((s: any) => {
+            const n = new Set(s);
+            n.delete(id);
+            return n;
+          });
           fadingTimers.current.delete(id);
         }, 1000);
         fadingTimers.current.set(id, timer);
@@ -185,7 +196,6 @@ export default function RequestsPage() {
     };
   }, [loadRequests]);
 
-
   // Fetch associations when a request is selected
   useEffect(() => {
     if (!(selectedRequest as any)?.requestId) {
@@ -232,11 +242,20 @@ export default function RequestsPage() {
     setPage(1);
   }
 
-
   const exportCSV = useCallback(() => {
     const headers = [
-      "Timestamp", "Project", "Endpoint", "Operation", "Provider", "Model",
-      "Tokens In", "Tokens Out", "Cost", "Tok/s", "Latency", "Status",
+      "Timestamp",
+      "Project",
+      "Endpoint",
+      "Operation",
+      "Provider",
+      "Model",
+      "Tokens In",
+      "Tokens Out",
+      "Cost",
+      "Tok/s",
+      "Latency",
+      "Status",
     ].join(",");
     const rows = requests.map((r: any) =>
       [
@@ -265,7 +284,6 @@ export default function RequestsPage() {
   }, [requests]);
 
   const totalPages = Math.ceil(total / LIMIT);
-
 
   // Inject controls into AdminShell header
   useEffect(() => {
@@ -354,7 +372,10 @@ export default function RequestsPage() {
               { value: "memory:extract", label: "Memory: Extract" },
               { value: "memory:consolidate", label: "Memory: Consolidate" },
               { value: "session:summarize", label: "Session: Summarize" },
-              { value: "coordinator:decompose", label: "Coordinator: Decompose" },
+              {
+                value: "coordinator:decompose",
+                label: "Coordinator: Decompose",
+              },
               { value: "embed:memory", label: "Embed: Memory" },
               { value: "embed:api", label: "Embed: API" },
               { value: "embed:agent-memory", label: "Embed: Agent Memory" },
@@ -393,13 +414,17 @@ export default function RequestsPage() {
           onSort={handleSort}
           maxHeight={null}
           onRowMouseEnter={(row: any) => {
-            if (row.conversationId) setHoveredConversationId(row.conversationId);
+            if (row.conversationId)
+              setHoveredConversationId(row.conversationId);
           }}
           onRowMouseLeave={() => setHoveredConversationId(null)}
           getRowClassName={(row: any) => {
             const id = row.requestId || row._id;
             const classes = [];
-            if (hoveredConversationId && row.conversationId === hoveredConversationId) {
+            if (
+              hoveredConversationId &&
+              row.conversationId === hoveredConversationId
+            ) {
               classes.push(styles.sharedConversationRow);
             }
             if (justNowIds.has(id)) classes.push(styles.newRow);
@@ -542,9 +567,7 @@ export default function RequestsPage() {
                               updatedAt: s.updatedAt || s.createdAt,
                             }}
                             icon={FolderOpen}
-                            onClick={() =>
-                              router.push("/admin/traces")
-                            }
+                            onClick={() => router.push("/admin/traces")}
                           />
                         ))}
                       </div>

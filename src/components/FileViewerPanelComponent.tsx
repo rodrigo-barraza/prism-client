@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
-import { X, FileCode, ChevronRight, WrapText, XCircle, Music, Eye, Code2 } from "lucide-react";
+import {
+  X,
+  FileCode,
+  ChevronRight,
+  WrapText,
+  XCircle,
+  Music,
+  Eye,
+  Code2,
+} from "lucide-react";
 import FileTypeIconComponent from "./FileTypeIconComponent";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -10,8 +19,29 @@ import ToolsApiService from "../services/ToolsApiService";
 import styles from "./FileViewerPanelComponent.module.css";
 
 // ─── Binary file type detection ─────────────────────────────
-const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp", "bmp", "ico", "avif", "tiff", "tif"]);
-const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "flac", "aac", "m4a", "wma", "webm", "opus"]);
+const IMAGE_EXTENSIONS = new Set([
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "bmp",
+  "ico",
+  "avif",
+  "tiff",
+  "tif",
+]);
+const AUDIO_EXTENSIONS = new Set([
+  "mp3",
+  "wav",
+  "ogg",
+  "flac",
+  "aac",
+  "m4a",
+  "wma",
+  "webm",
+  "opus",
+]);
 const VIDEO_EXTENSIONS = new Set(["mp4", "avi", "mov", "mkv", "wmv", "flv"]);
 const PDF_EXTENSIONS = new Set(["pdf"]);
 const SVG_EXTENSION = "svg";
@@ -28,56 +58,146 @@ function getMediaType(ext: any) {
 
 /** Map extension → MIME type for building data URIs from base64 content. */
 const EXT_TO_MIME = {
-  png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
-  gif: "image/gif", webp: "image/webp", bmp: "image/bmp",
-  ico: "image/x-icon", avif: "image/avif", tiff: "image/tiff", tif: "image/tiff",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+  bmp: "image/bmp",
+  ico: "image/x-icon",
+  avif: "image/avif",
+  tiff: "image/tiff",
+  tif: "image/tiff",
 };
 
 // ─── Extension → Prism language key mapping ─────────────────
 // Keys must match Prism language identifiers for syntax highlighting
 const EXT_TO_PRISM = {
-  js: "javascript", jsx: "jsx", mjs: "javascript", cjs: "javascript",
-  ts: "typescript", tsx: "tsx",
-  py: "python", rb: "ruby", rs: "rust", go: "go", java: "java", kt: "kotlin",
-  c: "c", h: "c", cpp: "cpp", hpp: "cpp", cs: "csharp",
-  swift: "swift", m: "objectivec", php: "php", pl: "perl",
-  sh: "bash", bash: "bash", zsh: "bash", fish: "bash",
-  html: "html", htm: "html", css: "css", scss: "scss", less: "less",
-  json: "json", yaml: "yaml", yml: "yaml", toml: "toml", xml: "xml", svg: "xml",
-  md: "markdown", mdx: "markdown", txt: "text", csv: "text",
-  sql: "sql", graphql: "graphql", gql: "graphql",
+  js: "javascript",
+  jsx: "jsx",
+  mjs: "javascript",
+  cjs: "javascript",
+  ts: "typescript",
+  tsx: "tsx",
+  py: "python",
+  rb: "ruby",
+  rs: "rust",
+  go: "go",
+  java: "java",
+  kt: "kotlin",
+  c: "c",
+  h: "c",
+  cpp: "cpp",
+  hpp: "cpp",
+  cs: "csharp",
+  swift: "swift",
+  m: "objectivec",
+  php: "php",
+  pl: "perl",
+  sh: "bash",
+  bash: "bash",
+  zsh: "bash",
+  fish: "bash",
+  html: "html",
+  htm: "html",
+  css: "css",
+  scss: "scss",
+  less: "less",
+  json: "json",
+  yaml: "yaml",
+  yml: "yaml",
+  toml: "toml",
+  xml: "xml",
+  svg: "xml",
+  md: "markdown",
+  mdx: "markdown",
+  txt: "text",
+  csv: "text",
+  sql: "sql",
+  graphql: "graphql",
+  gql: "graphql",
   dockerfile: "docker",
-  env: "text", gitignore: "text",
-  lua: "lua", r: "r", dart: "dart", scala: "scala", ex: "elixir",
-  vue: "markup", svelte: "markup",
-  proto: "protobuf", prisma: "text",
-  tf: "hcl", hcl: "hcl",
+  env: "text",
+  gitignore: "text",
+  lua: "lua",
+  r: "r",
+  dart: "dart",
+  scala: "scala",
+  ex: "elixir",
+  vue: "markup",
+  svelte: "markup",
+  proto: "protobuf",
+  prisma: "text",
+  tf: "hcl",
+  hcl: "hcl",
 };
 
 // Extension → display label (for the meta bar)
 const EXT_TO_LABEL = {
-  js: "JavaScript", jsx: "JSX", mjs: "ES Module", cjs: "CommonJS",
-  ts: "TypeScript", tsx: "TSX",
-  py: "Python", rb: "Ruby", rs: "Rust", go: "Go", java: "Java", kt: "Kotlin",
-  c: "C", h: "C Header", cpp: "C++", hpp: "C++ Header", cs: "C#",
-  swift: "Swift", m: "Objective-C", php: "PHP", pl: "Perl",
-  sh: "Shell", bash: "Bash", zsh: "Zsh", fish: "Fish",
-  html: "HTML", htm: "HTML", css: "CSS", scss: "SCSS", less: "LESS",
-  json: "JSON", yaml: "YAML", yml: "YAML", toml: "TOML", xml: "XML", svg: "SVG",
-  md: "Markdown", mdx: "MDX", txt: "Plain Text", csv: "CSV",
-  sql: "SQL", graphql: "GraphQL", gql: "GraphQL",
+  js: "JavaScript",
+  jsx: "JSX",
+  mjs: "ES Module",
+  cjs: "CommonJS",
+  ts: "TypeScript",
+  tsx: "TSX",
+  py: "Python",
+  rb: "Ruby",
+  rs: "Rust",
+  go: "Go",
+  java: "Java",
+  kt: "Kotlin",
+  c: "C",
+  h: "C Header",
+  cpp: "C++",
+  hpp: "C++ Header",
+  cs: "C#",
+  swift: "Swift",
+  m: "Objective-C",
+  php: "PHP",
+  pl: "Perl",
+  sh: "Shell",
+  bash: "Bash",
+  zsh: "Zsh",
+  fish: "Fish",
+  html: "HTML",
+  htm: "HTML",
+  css: "CSS",
+  scss: "SCSS",
+  less: "LESS",
+  json: "JSON",
+  yaml: "YAML",
+  yml: "YAML",
+  toml: "TOML",
+  xml: "XML",
+  svg: "SVG",
+  md: "Markdown",
+  mdx: "MDX",
+  txt: "Plain Text",
+  csv: "CSV",
+  sql: "SQL",
+  graphql: "GraphQL",
+  gql: "GraphQL",
   dockerfile: "Dockerfile",
-  env: "Environment", gitignore: "Git Ignore",
-  lua: "Lua", r: "R", dart: "Dart", scala: "Scala", ex: "Elixir",
-  vue: "Vue", svelte: "Svelte",
-  proto: "Protocol Buffers", prisma: "Prisma",
-  tf: "Terraform", hcl: "HCL",
+  env: "Environment",
+  gitignore: "Git Ignore",
+  lua: "Lua",
+  r: "R",
+  dart: "Dart",
+  scala: "Scala",
+  ex: "Elixir",
+  vue: "Vue",
+  svelte: "Svelte",
+  proto: "Protocol Buffers",
+  prisma: "Prisma",
+  tf: "Terraform",
+  hcl: "HCL",
 };
 
 function getFileExt(filepath: any) {
   if (!filepath) return null;
   const basename = filepath.split("/").pop();
-  if (basename === "Dockerfile" || basename.startsWith("Dockerfile.")) return "dockerfile";
+  if (basename === "Dockerfile" || basename.startsWith("Dockerfile."))
+    return "dockerfile";
   if (basename.startsWith(".")) return basename.slice(1).toLowerCase();
   const ext = basename.split(".").pop()?.toLowerCase();
   return ext || null;
@@ -85,12 +205,12 @@ function getFileExt(filepath: any) {
 
 function getPrismLanguage(filepath: any) {
   const ext = getFileExt(filepath);
-  return ext ? ((EXT_TO_PRISM as any)[ext] || "text") : "text";
+  return ext ? (EXT_TO_PRISM as any)[ext] || "text" : "text";
 }
 
 function getLanguageLabel(filepath: any) {
   const ext = getFileExt(filepath);
-  return ext ? ((EXT_TO_LABEL as any)[ext] || null) : null;
+  return ext ? (EXT_TO_LABEL as any)[ext] || null : null;
 }
 
 function getBasename(filepath: any) {
@@ -126,19 +246,26 @@ const codeTheme = {
     borderRadius: 0,
     fontSize: "12px",
     lineHeight: "1.55",
-    fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
+    fontFamily:
+      '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
   },
   'code[class*="language-"]': {
     ...vscDarkPlus['code[class*="language-"]'],
     background: "transparent",
     fontSize: "12px",
     lineHeight: "1.55",
-    fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
+    fontFamily:
+      '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
   },
 };
 
 // ─── Single file tab ────────────────────────────────────────
-const FileTab = memo(function FileTab({ file, isActive, onSelect, onClose }: any) {
+const FileTab = memo(function FileTab({
+  file,
+  isActive,
+  onSelect,
+  onClose,
+}: any) {
   const basename = getBasename(file.path);
   return (
     <button
@@ -147,11 +274,18 @@ const FileTab = memo(function FileTab({ file, isActive, onSelect, onClose }: any
       onClick={() => onSelect(file.id)}
       title={file.path}
     >
-      <FileTypeIconComponent filename={basename} size={11} className={styles.tabIcon} />
+      <FileTypeIconComponent
+        filename={basename}
+        size={11}
+        className={styles.tabIcon}
+      />
       <span className={styles.tabName}>{basename}</span>
       <span
         className={styles.tabClose}
-        onClick={(e: any) => { e.stopPropagation(); onClose(file.id); }}
+        onClick={(e: any) => {
+          e.stopPropagation();
+          onClose(file.id);
+        }}
         role="button"
         tabIndex={-1}
       >
@@ -203,40 +337,116 @@ export default function FileViewerPanelComponent({
   const inflightRef = useRef<any>(new Set());
 
   // Fetch file content when active file changes
-  const fetchFileContent = useCallback((id: any, path: any) => {
-    if (inflightRef.current.has(id)) return;
-    inflightRef.current.add(id);
+  const fetchFileContent = useCallback(
+    (id: any, path: any) => {
+      if (inflightRef.current.has(id)) return;
+      inflightRef.current.add(id);
 
-    // Set loading state immediately
-    setFileContents((prev: any) => ({
-      ...prev,
-      [id]: { loading: true, content: prev[id]?.content ?? null, totalLines: prev[id]?.totalLines ?? 0, language: prev[id]?.language ?? null, languageLabel: prev[id]?.languageLabel ?? null, error: null, isBinary: prev[id]?.isBinary ?? false },
-    }));
+      // Set loading state immediately
+      setFileContents((prev: any) => ({
+        ...prev,
+        [id]: {
+          loading: true,
+          content: prev[id]?.content ?? null,
+          totalLines: prev[id]?.totalLines ?? 0,
+          language: prev[id]?.language ?? null,
+          languageLabel: prev[id]?.languageLabel ?? null,
+          error: null,
+          isBinary: prev[id]?.isBinary ?? false,
+        },
+      }));
 
-    ToolsApiService.readFile(path)
-      .then((result: any) => {
-        // File not found / deleted — notify parent so it can close the tab
-        if (result.error) {
-          const isNotFound = /not found|no such file|ENOENT|does not exist/i.test(result.error);
+      ToolsApiService.readFile(path)
+        .then((result: any) => {
+          // File not found / deleted — notify parent so it can close the tab
+          if (result.error) {
+            const isNotFound =
+              /not found|no such file|ENOENT|does not exist/i.test(
+                result.error,
+              );
+            if (isNotFound) {
+              onFileNotFound?.(id, path);
+            }
+            setFileContents((prev: any) => ({
+              ...prev,
+              [id]: {
+                loading: false,
+                content: null,
+                totalLines: 0,
+                language: null,
+                languageLabel: null,
+                error: result.error,
+                isBinary: false,
+              },
+            }));
+            return;
+          }
+
+          // Binary file — render via data URI (base64) or raw URL
+          if (result.isBinary) {
+            const ext = result.extension?.replace(".", "") || getFileExt(path);
+            const mediaType = getMediaType(ext);
+            const rawUrl = ToolsApiService.getFileRawUrl(path);
+            // Prefer inline base64 data URI when the backend provides it (works for remote workspaces)
+            const dataUri =
+              result.contentBase64 && (EXT_TO_MIME as any)[ext]
+                ? `data:${(EXT_TO_MIME as any)[ext]};base64,${result.contentBase64}`
+                : null;
+            setFileContents((prev: any) => ({
+              ...prev,
+              [id]: {
+                loading: false,
+                content: null,
+                totalLines: 0,
+                language: null,
+                languageLabel: ext?.toUpperCase() || null,
+                error: null,
+                isBinary: true,
+                mediaType,
+                rawUrl: dataUri || rawUrl,
+                sizeBytes: result.sizeBytes || 0,
+              },
+            }));
+            return;
+          }
+
+          const language = getPrismLanguage(path);
+          const languageLabel =
+            getLanguageLabel(path) || result.language || null;
+          // Strip the "N: " line-number prefixes from the API response
+          const cleanContent = stripLineNumberPrefixes(result.content ?? "");
+
+          // SVG files are text but also renderable — flag them for dual-view
+          const ext = getFileExt(path);
+          const isSvg = ext === SVG_EXTENSION;
+
+          setFileContents((prev: any) => ({
+            ...prev,
+            [id]: {
+              loading: false,
+              content: cleanContent,
+              totalLines: result.totalLines || 0,
+              language,
+              languageLabel,
+              error: null,
+              isBinary: false,
+              isSvg,
+            },
+          }));
+
+          // Default SVG view mode to preview
+          if (isSvg) {
+            setSvgViewMode((prev: any) =>
+              prev[id] ? prev : { ...prev, [id]: "preview" },
+            );
+          }
+        })
+        .catch((error: any) => {
+          const isNotFound =
+            /not found|no such file|ENOENT|does not exist/i.test(error.message);
           if (isNotFound) {
             onFileNotFound?.(id, path);
           }
-          setFileContents((prev: any) => ({
-            ...prev,
-            [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: result.error, isBinary: false },
-          }));
-          return;
-        }
-
-        // Binary file — render via data URI (base64) or raw URL
-        if (result.isBinary) {
-          const ext = result.extension?.replace(".", "") || getFileExt(path);
-          const mediaType = getMediaType(ext);
-          const rawUrl = ToolsApiService.getFileRawUrl(path);
-          // Prefer inline base64 data URI when the backend provides it (works for remote workspaces)
-          const dataUri = result.contentBase64 && (EXT_TO_MIME as any)[ext]
-            ? `data:${(EXT_TO_MIME as any)[ext]};base64,${result.contentBase64}`
-            : null;
           setFileContents((prev: any) => ({
             ...prev,
             [id]: {
@@ -244,64 +454,27 @@ export default function FileViewerPanelComponent({
               content: null,
               totalLines: 0,
               language: null,
-              languageLabel: ext?.toUpperCase() || null,
-              error: null,
-              isBinary: true,
-              mediaType,
-              rawUrl: dataUri || rawUrl,
-              sizeBytes: result.sizeBytes || 0,
+              languageLabel: null,
+              error: error.message,
             },
           }));
-          return;
-        }
-
-        const language = getPrismLanguage(path);
-        const languageLabel = getLanguageLabel(path) || result.language || null;
-        // Strip the "N: " line-number prefixes from the API response
-        const cleanContent = stripLineNumberPrefixes(result.content ?? "");
-
-        // SVG files are text but also renderable — flag them for dual-view
-        const ext = getFileExt(path);
-        const isSvg = ext === SVG_EXTENSION;
-
-        setFileContents((prev: any) => ({
-          ...prev,
-          [id]: {
-            loading: false,
-            content: cleanContent,
-            totalLines: result.totalLines || 0,
-            language,
-            languageLabel,
-            error: null,
-            isBinary: false,
-            isSvg,
-          },
-        }));
-
-        // Default SVG view mode to preview
-        if (isSvg) {
-          setSvgViewMode((prev: any) => prev[id] ? prev : { ...prev, [id]: "preview" });
-        }
-      })
-      .catch((error: any) => {
-        const isNotFound = /not found|no such file|ENOENT|does not exist/i.test(error.message);
-        if (isNotFound) {
-          onFileNotFound?.(id, path);
-        }
-        setFileContents((prev: any) => ({
-          ...prev,
-          [id]: { loading: false, content: null, totalLines: 0, language: null, languageLabel: null, error: error.message },
-        }));
-      })
-      .finally(() => {
-        inflightRef.current.delete(id);
-      });
-  }, [onFileNotFound]);
+        })
+        .finally(() => {
+          inflightRef.current.delete(id);
+        });
+    },
+    [onFileNotFound],
+  );
 
   useEffect(() => {
     if (!activeFile) return;
     const { id, path } = activeFile;
-    if ((fileContents as any)[id]?.content != null || (fileContents as any)[id]?.isBinary || (fileContents as any)[id]?.loading) return;
+    if (
+      (fileContents as any)[id]?.content != null ||
+      (fileContents as any)[id]?.isBinary ||
+      (fileContents as any)[id]?.loading
+    )
+      return;
     fetchFileContent(id, path);
   }, [activeFile, fileContents, fetchFileContent]);
 
@@ -344,29 +517,32 @@ export default function FileViewerPanelComponent({
   }, [activeFileId]);
 
   // ── Resize handle drag ──────────────────────────────────────
-  const handleResizeStart = useCallback((e: any) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = width;
+  const handleResizeStart = useCallback(
+    (e: any) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startWidth = width;
 
-    const onMove = (ev: any) => {
-      const delta = ev.clientX - startX;
-      const newWidth = Math.max(300, Math.min(startWidth + delta, 1200));
-      onWidthChange?.(newWidth);
-    };
+      const onMove = (ev: any) => {
+        const delta = ev.clientX - startX;
+        const newWidth = Math.max(300, Math.min(startWidth + delta, 1200));
+        onWidthChange?.(newWidth);
+      };
 
-    const onUp = () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
 
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-  }, [width, onWidthChange]);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    },
+    [width, onWidthChange],
+  );
 
   // ── Wheel-to-horizontal-scroll on tab bar ───────────────────
   useEffect(() => {
@@ -425,77 +601,87 @@ export default function FileViewerPanelComponent({
 
   // lineProps — adds selection styles + data attribute + CSS class
   // Hover highlighting is handled by CSS .codeLine:hover (zero re-renders)
-  const linePropsBuilder = useCallback((lineNumber: any) => {
-    const isSelected = selectedLines.has(lineNumber);
-    return {
-      style: {
-        display: "block",
-        backgroundColor: isSelected ? "rgba(99,102,241,0.12)" : undefined,
-        borderLeft: isSelected ? "2px solid var(--accent-color)" : "2px solid transparent",
-        position: "relative" as any,
-      },
-      "data-line-number": lineNumber,
-      className: `${styles.codeLine} ${isSelected ? styles.codeLineSelected : ""}`,
-    };
-  }, [selectedLines]);
+  const linePropsBuilder = useCallback(
+    (lineNumber: any) => {
+      const isSelected = selectedLines.has(lineNumber);
+      return {
+        style: {
+          display: "block",
+          backgroundColor: isSelected ? "rgba(99,102,241,0.12)" : undefined,
+          borderLeft: isSelected
+            ? "2px solid var(--accent-color)"
+            : "2px solid transparent",
+          position: "relative" as any,
+        },
+        "data-line-number": lineNumber,
+        className: `${styles.codeLine} ${isSelected ? styles.codeLineSelected : ""}`,
+      };
+    },
+    [selectedLines],
+  );
 
   // Event delegation — handles line number clicks, inline @ button, and clears selection
-  const handleCodeAreaClick = useCallback((e: any) => {
-    // ── Inline @ mention button click ──
-    const mentionBtn = e.target.closest(`.${styles.lineMentionBtn}`);
-    if (mentionBtn) {
-      e.stopPropagation();
-      const lineEl = mentionBtn.closest("[data-line-number]");
-      if (lineEl && activeFile && onMentionLines) {
-        const lineNum = parseInt(lineEl.dataset.lineNumber, 10);
-        if (!isNaN(lineNum)) {
-          // If lines are selected, mention the full range; otherwise mention the hovered line
-          if (selectedLines.size > 0) {
-            handleMentionSelection();
-          } else {
-            onMentionLines(activeFile.path, lineNum, lineNum);
+  const handleCodeAreaClick = useCallback(
+    (e: any) => {
+      // ── Inline @ mention button click ──
+      const mentionBtn = e.target.closest(`.${styles.lineMentionBtn}`);
+      if (mentionBtn) {
+        e.stopPropagation();
+        const lineEl = mentionBtn.closest("[data-line-number]");
+        if (lineEl && activeFile && onMentionLines) {
+          const lineNum = parseInt(lineEl.dataset.lineNumber, 10);
+          if (!isNaN(lineNum)) {
+            // If lines are selected, mention the full range; otherwise mention the hovered line
+            if (selectedLines.size > 0) {
+              handleMentionSelection();
+            } else {
+              onMentionLines(activeFile.path, lineNum, lineNum);
+            }
           }
         }
+        return;
       }
-      return;
-    }
 
-    // Detect click on a line number span (react-syntax-highlighter uses this class)
-    const lineNumEl = e.target.closest(".react-syntax-highlighter-line-number");
-    if (lineNumEl) {
-      const lineEl = lineNumEl.closest("[data-line-number]");
-      if (!lineEl) return;
-      const lineNum = parseInt(lineEl.dataset.lineNumber, 10);
-      if (isNaN(lineNum)) return;
+      // Detect click on a line number span (react-syntax-highlighter uses this class)
+      const lineNumEl = e.target.closest(
+        ".react-syntax-highlighter-line-number",
+      );
+      if (lineNumEl) {
+        const lineEl = lineNumEl.closest("[data-line-number]");
+        if (!lineEl) return;
+        const lineNum = parseInt(lineEl.dataset.lineNumber, 10);
+        if (isNaN(lineNum)) return;
 
-      if (e.shiftKey && lastClickedLineRef.current != null) {
-        // Shift+click: select range
-        const from = Math.min(lastClickedLineRef.current, lineNum);
-        const to = Math.max(lastClickedLineRef.current, lineNum);
-        const newSet = new Set();
-        for (let i = from; i <= to; i++) newSet.add(i);
-        setSelectedLines(newSet);
-      } else if (e.altKey && onMentionLines && activeFile) {
-        // Alt+click line number: instant single-line @ mention
-        e.stopPropagation();
-        onMentionLines(activeFile.path, lineNum, lineNum);
-      } else {
-        // Regular click: toggle single line
-        setSelectedLines((prev: any) => {
-          const next = new Set(prev);
-          if (next.has(lineNum)) next.delete(lineNum);
-          else next.add(lineNum);
-          return next;
-        });
-        lastClickedLineRef.current = lineNum;
+        if (e.shiftKey && lastClickedLineRef.current != null) {
+          // Shift+click: select range
+          const from = Math.min(lastClickedLineRef.current, lineNum);
+          const to = Math.max(lastClickedLineRef.current, lineNum);
+          const newSet = new Set();
+          for (let i = from; i <= to; i++) newSet.add(i);
+          setSelectedLines(newSet);
+        } else if (e.altKey && onMentionLines && activeFile) {
+          // Alt+click line number: instant single-line @ mention
+          e.stopPropagation();
+          onMentionLines(activeFile.path, lineNum, lineNum);
+        } else {
+          // Regular click: toggle single line
+          setSelectedLines((prev: any) => {
+            const next = new Set(prev);
+            if (next.has(lineNum)) next.delete(lineNum);
+            else next.add(lineNum);
+            return next;
+          });
+          lastClickedLineRef.current = lineNum;
+        }
+        return;
       }
-      return;
-    }
 
-    // Click on code content — clear selection
-    setSelectedLines(new Set());
-    lastClickedLineRef.current = null;
-  }, [activeFile, selectedLines, onMentionLines, handleMentionSelection]);
+      // Click on code content — clear selection
+      setSelectedLines(new Set());
+      lastClickedLineRef.current = null;
+    },
+    [activeFile, selectedLines, onMentionLines, handleMentionSelection],
+  );
 
   // ── Inject inline @ buttons into every code line (DOM-level) ───
   // Buttons are hidden by default and revealed on .codeLine:hover via CSS.
@@ -527,7 +713,11 @@ export default function FileViewerPanelComponent({
   return (
     <div
       className={`${styles.container} ${isCollapsed ? styles.containerCollapsed : ""}`}
-      style={isCollapsed ? undefined : { width: `${width}px`, minWidth: `${width}px` }}
+      style={
+        isCollapsed
+          ? undefined
+          : { width: `${width}px`, minWidth: `${width}px` }
+      }
     >
       {/* Title bar — VSCode-style header */}
       <div className={styles.titleBar}>
@@ -541,12 +731,21 @@ export default function FileViewerPanelComponent({
               onClick={() => {
                 setSvgViewMode((prev: any) => ({
                   ...prev,
-                  [activeFileId]: prev[activeFileId] === "preview" ? "source" : "preview",
+                  [activeFileId]:
+                    prev[activeFileId] === "preview" ? "source" : "preview",
                 }));
               }}
-              title={(svgViewMode as any)[activeFileId] === "preview" ? "Show SVG source" : "Show SVG preview"}
+              title={
+                (svgViewMode as any)[activeFileId] === "preview"
+                  ? "Show SVG source"
+                  : "Show SVG preview"
+              }
             >
-              {(svgViewMode as any)[activeFileId] === "preview" ? <Code2 size={14} /> : <Eye size={14} />}
+              {(svgViewMode as any)[activeFileId] === "preview" ? (
+                <Code2 size={14} />
+              ) : (
+                <Eye size={14} />
+              )}
             </button>
           )}
           <button
@@ -586,14 +785,24 @@ export default function FileViewerPanelComponent({
         {/* Breadcrumb path */}
         {activeFile && (
           <div className={styles.breadcrumb}>
-            {getPathSegments(activeFile.path).map((seg: any, i: any, array: any) => (
-              <span key={i}>
-                {i > 0 && <ChevronRight size={8} className={styles.breadcrumbSep} />}
-                <span style={i === array.length - 1 ? { color: "var(--text-primary)", opacity: 1 } : undefined}>
-                  {seg}
+            {getPathSegments(activeFile.path).map(
+              (seg: any, i: any, array: any) => (
+                <span key={i}>
+                  {i > 0 && (
+                    <ChevronRight size={8} className={styles.breadcrumbSep} />
+                  )}
+                  <span
+                    style={
+                      i === array.length - 1
+                        ? { color: "var(--text-primary)", opacity: 1 }
+                        : undefined
+                    }
+                  >
+                    {seg}
+                  </span>
                 </span>
-              </span>
-            ))}
+              ),
+            )}
           </div>
         )}
 
@@ -657,61 +866,72 @@ export default function FileViewerPanelComponent({
         )}
 
         {/* SVG preview mode — rendered from content via data URI */}
-        {cached?.isSvg && cached?.content && (svgViewMode as any)[activeFileId] === "preview" && (
-          <div className={styles.mediaViewer}>
-            <div className={styles.mediaImageWrap}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(cached.content)}`}
-                alt={getBasename(activeFile?.path)}
-                className={styles.mediaSvg}
-                draggable={false}
-              />
+        {cached?.isSvg &&
+          cached?.content &&
+          (svgViewMode as any)[activeFileId] === "preview" && (
+            <div className={styles.mediaViewer}>
+              <div className={styles.mediaImageWrap}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(cached.content)}`}
+                  alt={getBasename(activeFile?.path)}
+                  className={styles.mediaSvg}
+                  draggable={false}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Syntax-highlighted content — stay visible during refresh (stale-while-revalidate) */}
-        {cached?.content != null && !cached?.isBinary && !(cached?.isSvg && (svgViewMode as any)[activeFileId] === "preview") && (
-          <div className={`${styles.codeScroll} ${!wordWrap ? styles.codeScrollNoWrap : ""}`} ref={codeScrollRef} onClick={handleCodeAreaClick}>
-            <SyntaxHighlighter
-              style={codeTheme}
-              language={cached.language || "text"}
-              showLineNumbers
-              startingLineNumber={startLineNumber}
-              wrapLines
-              wrapLongLines={wordWrap}
-              lineProps={linePropsBuilder}
-              lineNumberStyle={{
-                minWidth: "3em",
-                paddingRight: "12px",
-                color: "rgba(255,255,255,0.2)",
-                userSelect: "none",
-                textAlign: "right",
-                fontVariantNumeric: "tabular-nums",
-                cursor: "pointer",
-              }}
-              customStyle={{
-                margin: 0,
-                padding: "8px 0",
-                background: "#000000",
-                borderRadius: 0,
-                overflow: "visible",
-              }}
-              codeTagProps={{
-                style: {
-                  fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
-                  fontSize: "12px",
-                  lineHeight: "1.55",
-                },
-              }}
+        {cached?.content != null &&
+          !cached?.isBinary &&
+          !(
+            cached?.isSvg && (svgViewMode as any)[activeFileId] === "preview"
+          ) && (
+            <div
+              className={`${styles.codeScroll} ${!wordWrap ? styles.codeScrollNoWrap : ""}`}
+              ref={codeScrollRef}
+              onClick={handleCodeAreaClick}
             >
-              {cached.content}
-            </SyntaxHighlighter>
+              <SyntaxHighlighter
+                style={codeTheme}
+                language={cached.language || "text"}
+                showLineNumbers
+                startingLineNumber={startLineNumber}
+                wrapLines
+                wrapLongLines={wordWrap}
+                lineProps={linePropsBuilder}
+                lineNumberStyle={{
+                  minWidth: "3em",
+                  paddingRight: "12px",
+                  color: "rgba(255,255,255,0.2)",
+                  userSelect: "none",
+                  textAlign: "right",
+                  fontVariantNumeric: "tabular-nums",
+                  cursor: "pointer",
+                }}
+                customStyle={{
+                  margin: 0,
+                  padding: "8px 0",
+                  background: "#000000",
+                  borderRadius: 0,
+                  overflow: "visible",
+                }}
+                codeTagProps={{
+                  style: {
+                    fontFamily:
+                      '"SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace',
+                    fontSize: "12px",
+                    lineHeight: "1.55",
+                  },
+                }}
+              >
+                {cached.content}
+              </SyntaxHighlighter>
 
-            {/* Inline @ mention buttons are injected via useEffect below */}
-          </div>
-        )}
+              {/* Inline @ mention buttons are injected via useEffect below */}
+            </div>
+          )}
 
         {/* Empty — no file selected */}
         {!activeFile && openFiles.length === 0 && (
@@ -734,7 +954,10 @@ export default function FileViewerPanelComponent({
         <div className={styles.metaBar}>
           {cached.loading && (
             <>
-              <span className={styles.spinner} style={{ width: 10, height: 10, borderWidth: 1.5 }} />
+              <span
+                className={styles.spinner}
+                style={{ width: 10, height: 10, borderWidth: 1.5 }}
+              />
               <span className={styles.metaDot} />
             </>
           )}
@@ -744,13 +967,19 @@ export default function FileViewerPanelComponent({
               {cached.sizeBytes > 0 && (
                 <>
                   <span className={styles.metaDot} />
-                  <span>{cached.sizeBytes >= 1048576 ? `${(cached.sizeBytes / 1048576).toFixed(1)} MB` : `${(cached.sizeBytes / 1024).toFixed(1)} KB`}</span>
+                  <span>
+                    {cached.sizeBytes >= 1048576
+                      ? `${(cached.sizeBytes / 1048576).toFixed(1)} MB`
+                      : `${(cached.sizeBytes / 1024).toFixed(1)} KB`}
+                  </span>
                 </>
               )}
             </>
           ) : (
             <>
-              <span>{cached.totalLines || cached.content.split("\n").length} lines</span>
+              <span>
+                {cached.totalLines || cached.content.split("\n").length} lines
+              </span>
               {cached.languageLabel && (
                 <>
                   <span className={styles.metaDot} />

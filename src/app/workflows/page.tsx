@@ -30,7 +30,11 @@ import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComp
 import HistoryList from "../../components/HistoryListComponent";
 import ThreePanelLayout from "../../components/ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
-import { ButtonComponent, ToastComponent, useToast } from "@rodrigo-barraza/components-library";
+import {
+  ButtonComponent,
+  ToastComponent,
+  useToast,
+} from "@rodrigo-barraza/components-library";
 import { copyToClipboard } from "../../utils/utilities";
 import styles from "./page.module.css";
 
@@ -252,9 +256,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
         setWorkflowName(
           data.title ? `${data.title} (workflow)` : "Imported Conversation",
         );
-        addToast(
-          `Imported conversation with ${data.messages.length} messages`,
-        );
+        addToast(`Imported conversation with ${data.messages.length} messages`);
       }
     } catch (error: any) {
       console.error("Failed to import conversation:", error);
@@ -334,8 +336,11 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
       // Model node
       if (modality === "model") {
         const defaultModel = modelsWithModalities[0];
-        const isConversation = (defaultModel as any)?.modelType === "conversation";
-        const supportsFC = (defaultModel as any)?.tools?.includes("Tool Calling");
+        const isConversation =
+          (defaultModel as any)?.modelType === "conversation";
+        const supportsFC = (defaultModel as any)?.tools?.includes(
+          "Tool Calling",
+        );
         const baseInputs = isConversation
           ? ["conversation"]
           : (defaultModel as any)?.inputTypes || [];
@@ -351,9 +356,12 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
           modelType: (defaultModel as any)?.modelType || "conversation",
           inputTypes: supportsFC ? [...baseInputs, "tools"] : baseInputs,
           rawInputTypes:
-            (defaultModel as any)?.rawInputTypes || (defaultModel as any)?.inputTypes || [],
+            (defaultModel as any)?.rawInputTypes ||
+            (defaultModel as any)?.inputTypes ||
+            [],
           outputTypes: (defaultModel as any)?.outputTypes || [],
-          supportsSystemPrompt: (defaultModel as any)?.supportsSystemPrompt !== false,
+          supportsSystemPrompt:
+            (defaultModel as any)?.supportsSystemPrompt !== false,
           messages: [
             { role: "system", content: "" },
             { role: "user", content: "" },
@@ -502,26 +510,29 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
   );
 
   // Update config of a model node (systemPrompt, staticInputs, etc.)
-  const handleUpdateNodeConfig = useCallback((nodeId: any, key: any, value: any) => {
-    setNodes((prev: any) =>
-      prev.map((n: any) => {
-        if (n.id !== nodeId) return n;
-        const updated = { ...n, [key]: value };
-        // Regenerate compound ports when messages change on conversation input nodes
-        if (
-          key === "messages" &&
-          n.nodeType === "input" &&
-          n.modality === "conversation"
-        ) {
-          updated.inputTypes = buildConversationPorts(
-            value,
-            n.supportedModalities || ["text"],
-          );
-        }
-        return updated;
-      }),
-    );
-  }, []);
+  const handleUpdateNodeConfig = useCallback(
+    (nodeId: any, key: any, value: any) => {
+      setNodes((prev: any) =>
+        prev.map((n: any) => {
+          if (n.id !== nodeId) return n;
+          const updated = { ...n, [key]: value };
+          // Regenerate compound ports when messages change on conversation input nodes
+          if (
+            key === "messages" &&
+            n.nodeType === "input" &&
+            n.modality === "conversation"
+          ) {
+            updated.inputTypes = buildConversationPorts(
+              value,
+              n.supportedModalities || ["text"],
+            );
+          }
+          return updated;
+        }),
+      );
+    },
+    [],
+  );
 
   // Run the workflow
   const handleRunWorkflow = useCallback(async () => {
@@ -1198,7 +1209,9 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
             favorites={modelFavoriteKeys}
             onToggleFavorite={async (key: any) => {
               if (modelFavoriteKeys.includes(key)) {
-                setModelFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
+                setModelFavoriteKeys((prev: any) =>
+                  prev.filter((k: any) => k !== key),
+                );
                 PrismService.removeFavorite("model", key).catch(() => {});
               } else {
                 setModelFavoriteKeys((prev: any) => [...prev, key]);

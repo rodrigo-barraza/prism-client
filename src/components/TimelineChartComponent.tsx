@@ -34,8 +34,7 @@ function VerticalGridLines(props: any) {
   const { formattedGraphicalItems, offset } = props;
 
   const areaItem = formattedGraphicalItems?.[0];
-  const points =
-    areaItem?.props?.points || areaItem?.points || [];
+  const points = areaItem?.props?.points || areaItem?.points || [];
   if (points.length < 2) return null;
 
   const yTop = offset?.top ?? 0;
@@ -122,13 +121,7 @@ function SparseTick({ x, y, payload, data }: any) {
   const text = entry?.tickLabel;
   if (!text) return null;
   return (
-    <text
-      x={x}
-      y={y + 12}
-      textAnchor="middle"
-      fill="#5a6078"
-      fontSize={11}
-    >
+    <text x={x} y={y + 12} textAnchor="middle" fill="#5a6078" fontSize={11}>
       {text}
     </text>
   );
@@ -226,7 +219,11 @@ export default function TimelineChartComponent({
               )}
               <XAxis
                 dataKey="label"
-                tick={hasSubHourBins ? renderTick : { fill: "#5a6078", fontSize: 11 }}
+                tick={
+                  hasSubHourBins
+                    ? renderTick
+                    : { fill: "#5a6078", fontSize: 11 }
+                }
                 axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
                 tickLine={false}
                 interval={hasSubHourBins ? 0 : "preserveStartEnd"}

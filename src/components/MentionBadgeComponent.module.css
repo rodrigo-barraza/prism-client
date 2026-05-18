@@ -12,7 +12,8 @@
   padding: 1px 7px 1px 5px;
   margin: 0 1px;
   background: color-mix(in srgb, var(--accent-color) 10%, var(--bg-tertiary));
-  border: 1px solid color-mix(in srgb, var(--accent-color) 25%, var(--border-color));
+  border: 1px solid
+    color-mix(in srgb, var(--accent-color) 25%, var(--border-color));
   border-radius: var(--radius-full, 999px);
   font-size: var(--font-size-sm);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
@@ -22,12 +23,20 @@
   vertical-align: baseline;
   cursor: default;
   line-height: 1.6;
-  transition: background 0.15s, border-color 0.15s, opacity 0.2s, filter 0.2s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    opacity 0.2s,
+    filter 0.2s;
 }
 
 .mentionBadge:hover {
   background: color-mix(in srgb, var(--accent-color) 16%, var(--bg-tertiary));
-  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
+  border-color: color-mix(
+    in srgb,
+    var(--accent-color) 40%,
+    var(--border-color)
+  );
 }
 
 /* ── Tooltip (full path on hover) ────────────────────────────── */
@@ -49,7 +58,9 @@
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
   z-index: 200;
 }
 

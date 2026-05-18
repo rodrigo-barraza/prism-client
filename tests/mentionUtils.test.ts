@@ -31,7 +31,9 @@ describe("serializeEditable", () => {
     badge.textContent = "📄 mentionUtils.js";
     root.appendChild(badge);
     root.appendChild(document.createTextNode(" for details"));
-    expect(serializeEditable(root)).toBe("Check @src/utils/mentionUtils.js for details");
+    expect(serializeEditable(root)).toBe(
+      "Check @src/utils/mentionUtils.js for details",
+    );
   });
 
   it("serializes multiple mentions", () => {
@@ -130,9 +132,7 @@ describe("flattenTree", () => {
           {
             name: "b",
             type: "directory",
-            children: [
-              { name: "c.js", type: "file" },
-            ],
+            children: [{ name: "c.js", type: "file" }],
           },
         ],
       },
@@ -338,7 +338,11 @@ describe("createMentionBadge", () => {
   });
 
   it("sets title attribute to the full path", () => {
-    const badge = createMentionBadge("src/utils/helpers.js", "helpers.js", "file");
+    const badge = createMentionBadge(
+      "src/utils/helpers.js",
+      "helpers.js",
+      "file",
+    );
     expect(badge.title).toBe("src/utils/helpers.js");
   });
 
@@ -382,7 +386,9 @@ describe("applyMentionToTextNode", () => {
     expect(textNode.textContent).toBe("For the file ");
     // Badge should follow the text node
     expect(textNode.nextSibling).toBe(badge);
-    expect(badge.dataset.mentionPath).toBe("pineapple/lupos-bot/arrays/birthdays.js");
+    expect(badge.dataset.mentionPath).toBe(
+      "pineapple/lupos-bot/arrays/birthdays.js",
+    );
     // Space should follow badge
     expect(badge.nextSibling).toBe(space);
     expect(space.textContent).toBe(" ");
@@ -526,14 +532,24 @@ describe("Integration: full mention flow", () => {
 
     // Simulate: "Compare [App.js badge] and [Header.js badge]"
     container.appendChild(document.createTextNode("Compare "));
-    const badge1 = createMentionBadge("src/components/App.js", "App.js", "file");
+    const badge1 = createMentionBadge(
+      "src/components/App.js",
+      "App.js",
+      "file",
+    );
     container.appendChild(badge1);
     container.appendChild(document.createTextNode(" and "));
-    const badge2 = createMentionBadge("src/components/Header.js", "Header.js", "file");
+    const badge2 = createMentionBadge(
+      "src/components/Header.js",
+      "Header.js",
+      "file",
+    );
     container.appendChild(badge2);
 
     const serialized = serializeEditable(container);
-    expect(serialized).toBe("Compare @src/components/App.js and @src/components/Header.js");
+    expect(serialized).toBe(
+      "Compare @src/components/App.js and @src/components/Header.js",
+    );
 
     // Both @paths should be present for the model
     expect(serialized).toContain("@src/components/App.js");

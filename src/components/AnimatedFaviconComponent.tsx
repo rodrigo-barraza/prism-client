@@ -38,7 +38,12 @@ function generateFrames() {
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(RAINBOW, t + dither);
         context!.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
-        context!.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+        context!.fillRect(
+          x * PIXEL_SIZE,
+          y * PIXEL_SIZE,
+          PIXEL_SIZE,
+          PIXEL_SIZE,
+        );
       }
     }
 

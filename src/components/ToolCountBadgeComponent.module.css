@@ -17,13 +17,25 @@
   text-transform: none;
   color: var(--tool-badge-accent, var(--text-primary));
   box-shadow: var(--shadow-md);
-  transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
   width: fit-content;
 }
 
 .badge:hover {
-  border-color: color-mix(in srgb, var(--tool-badge-accent, var(--accent-color)) 40%, transparent);
-  background: color-mix(in srgb, var(--tool-badge-accent, var(--accent-color)) 6%, var(--bg-card));
+  border-color: color-mix(
+    in srgb,
+    var(--tool-badge-accent, var(--accent-color)) 40%,
+    transparent
+  );
+  background: color-mix(
+    in srgb,
+    var(--tool-badge-accent, var(--accent-color)) 6%,
+    var(--bg-card)
+  );
 }
 
 .icon {

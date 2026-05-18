@@ -61,7 +61,11 @@ async function resolveToDataUrl(ref: any) {
  * @param {Array<{type: string, data: string}>} inputData - Collected inputs from edges
  * @returns {Promise<Object>} - { [modality]: data }
  */
-async function executeModelNode(node: any, inputData: any, { onNodeContentUpdate, toolSchemas }: any = {}) {
+async function executeModelNode(
+  node: any,
+  inputData: any,
+  { onNodeContentUpdate, toolSchemas }: any = {},
+) {
   const endpoint = resolveEndpoint(node, inputData);
   const outputs = {};
 
@@ -217,9 +221,10 @@ async function executeModelNode(node: any, inputData: any, { onNodeContentUpdate
     };
 
     // Route through /agent for tool-enabled runs, /chat for simple text
-    const result = toolSchemas !== null
-      ? await PrismService.generateAgentText(generatePayload)
-      : await PrismService.generateText(generatePayload);
+    const result =
+      toolSchemas !== null
+        ? await PrismService.generateAgentText(generatePayload)
+        : await PrismService.generateText(generatePayload);
 
     const currentResult = result;
 
@@ -261,7 +266,8 @@ async function executeModelNode(node: any, inputData: any, { onNodeContentUpdate
       (outputs as any).image = await resolveToDataUrl(currentResult.images[0]);
     }
   } else if (endpoint === "textToImage") {
-    const pipedPrompt = inputData.find((d: any) => d.type === "text")?.data || "";
+    const pipedPrompt =
+      inputData.find((d: any) => d.type === "text")?.data || "";
     const rawImages = inputData
       .filter((d: any) => d.type === "image")
       .map((d: any) => d.data);
@@ -427,12 +433,16 @@ function topologicalSort(nodes: any, edges: any) {
     (adjacency as any)[node.id] = [];
   }
   for (const conn of edges) {
-    (inDegree as any)[conn.targetNodeId] = ((inDegree as any)[conn.targetNodeId] || 0) + 1;
-    (adjacency as any)[conn.sourceNodeId] = (adjacency as any)[conn.sourceNodeId] || [];
+    (inDegree as any)[conn.targetNodeId] =
+      ((inDegree as any)[conn.targetNodeId] || 0) + 1;
+    (adjacency as any)[conn.sourceNodeId] =
+      (adjacency as any)[conn.sourceNodeId] || [];
     (adjacency as any)[conn.sourceNodeId].push(conn.targetNodeId);
   }
 
-  const queue = nodes.filter((n: any) => (inDegree as any)[n.id] === 0).map((n: any) => n.id);
+  const queue = nodes
+    .filter((n: any) => (inDegree as any)[n.id] === 0)
+    .map((n: any) => n.id);
   const sorted = [];
 
   while (queue.length > 0) {
@@ -494,7 +504,9 @@ export async function executeWorkflow(
     if (!node) continue;
 
     // Check if any upstream source has errored — if so, skip this node
-    const incomingForCheck = edges.filter((c: any) => c.targetNodeId === nodeId);
+    const incomingForCheck = edges.filter(
+      (c: any) => c.targetNodeId === nodeId,
+    );
     const hasErroredUpstream = incomingForCheck.some((c: any) =>
       erroredNodeIds.has(c.sourceNodeId),
     );
@@ -515,7 +527,9 @@ export async function executeWorkflow(
 
           // Collect piped data from upstream edges using compound port IDs
           // Port format: "{msgIndex}.{modality}" e.g. "0.text", "1.image"
-          const incomingConns = edges.filter((c: any) => c.targetNodeId === nodeId);
+          const incomingConns = edges.filter(
+            (c: any) => c.targetNodeId === nodeId,
+          );
 
           for (const conn of incomingConns) {
             const sourceOut = (nodeOutputs as any)[conn.sourceNodeId];
@@ -533,7 +547,9 @@ export async function executeWorkflow(
             const message = messages[msgIdx];
 
             if (modality === "text") {
-              message.content = message.content ? `${message.content}\n\n${data}` : data;
+              message.content = message.content
+                ? `${message.content}\n\n${data}`
+                : data;
             } else if (modality === "image") {
               message.images = [...(message.images || []), data];
             } else if (modality === "audio") {
@@ -560,7 +576,8 @@ export async function executeWorkflow(
             const data = (nodeOutputs as any)[nodeId]?.[conn.sourceModality];
             if (data) {
               (viewerPartials as any)[conn.targetNodeId] ??= {};
-              (viewerPartials as any)[conn.targetNodeId][conn.targetModality] = data;
+              (viewerPartials as any)[conn.targetNodeId][conn.targetModality] =
+                data;
               onViewerPartial?.(conn.targetNodeId, {
                 ...(viewerPartials as any)[conn.targetNodeId],
               });
@@ -630,7 +647,9 @@ export async function executeWorkflow(
 
       if (node.nodeType === "viewer") {
         // Viewer nodes collect connected input data and display it
-        const incomingConns = edges.filter((c: any) => c.targetNodeId === nodeId);
+        const incomingConns = edges.filter(
+          (c: any) => c.targetNodeId === nodeId,
+        );
         const collectedOutputs = {};
 
         for (const conn of incomingConns) {
@@ -711,7 +730,8 @@ export async function executeWorkflow(
           const data = (outputs as any)[conn.sourceModality];
           if (data) {
             (viewerPartials as any)[conn.targetNodeId] ??= {};
-            (viewerPartials as any)[conn.targetNodeId][conn.targetModality] = data;
+            (viewerPartials as any)[conn.targetNodeId][conn.targetModality] =
+              data;
             onViewerPartial?.(conn.targetNodeId, {
               ...(viewerPartials as any)[conn.targetNodeId],
             });

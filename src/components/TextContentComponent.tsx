@@ -63,9 +63,7 @@ export default function TextContentComponent({
           className={`${styles.textarea} ${!isEditable ? styles.textareaReadOnly : ""}`}
           value={value}
           onChange={
-            isEditable
-              ? (e: any) => onChange(e.target.value)
-              : undefined
+            isEditable ? (e: any) => onChange(e.target.value) : undefined
           }
           readOnly={!isEditable}
           placeholder={isEditable ? placeholder : undefined}
@@ -76,4 +74,3 @@ export default function TextContentComponent({
     </div>
   );
 }
-

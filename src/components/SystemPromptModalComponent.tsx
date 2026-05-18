@@ -2,7 +2,12 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Plus } from "lucide-react";
-import { SelectComponent, TextAreaComponent, InputComponent, ModalComponent } from "@rodrigo-barraza/components-library";
+import {
+  SelectComponent,
+  TextAreaComponent,
+  InputComponent,
+  ModalComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./SystemPromptModalComponent.module.css";
 import { LS_SYSTEM_INSTRUCTIONS } from "../constants";
 
@@ -19,7 +24,11 @@ function saveInstructions(list: any) {
   localStorage.setItem(LS_SYSTEM_INSTRUCTIONS, JSON.stringify(list));
 }
 
-export default function SystemPromptModal({ activePrompt, onApply, onClose }: any) {
+export default function SystemPromptModal({
+  activePrompt,
+  onApply,
+  onClose,
+}: any) {
   const [instructions, setInstructions] = useState(() => loadInstructions());
   const [selectedId, setSelectedId] = useState(() => {
     const list = loadInstructions();
@@ -141,7 +150,12 @@ export default function SystemPromptModal({ activePrompt, onApply, onClose }: an
   ];
 
   return (
-    <ModalComponent title="System Instructions" onClose={onClose} size="md" className={styles.modal}>
+    <ModalComponent
+      title="System Instructions"
+      onClose={onClose}
+      size="md"
+      className={styles.modal}
+    >
       <div className={styles.body}>
         <div className={styles.field}>
           <label>Saved Instructions</label>

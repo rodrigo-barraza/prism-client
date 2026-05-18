@@ -30,9 +30,13 @@ export default function ProjectsTableComponent({
   maxHeight = 420,
 }: any) {
   const totalRequests =
-    (totalRequestsProp ?? projects.reduce((s: any, x: any) => s + x.totalRequests, 0)) || 1;
+    (totalRequestsProp ??
+      projects.reduce((s: any, x: any) => s + x.totalRequests, 0)) ||
+    1;
   const totalCost =
-    (totalCostProp ?? projects.reduce((s: any, x: any) => s + (x.totalCost || 0), 0)) || 1;
+    (totalCostProp ??
+      projects.reduce((s: any, x: any) => s + (x.totalCost || 0), 0)) ||
+    1;
 
   const allColumns = [
     projectColumn(),

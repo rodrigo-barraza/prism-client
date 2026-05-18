@@ -30,7 +30,10 @@
   text-transform: uppercase;
   border-radius: 3px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
   background: var(--accent-subtle);
   color: var(--accent-color);
   border: 1px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
@@ -92,7 +95,10 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .quickAddBtn:hover {

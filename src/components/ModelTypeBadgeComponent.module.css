@@ -11,7 +11,10 @@
   letter-spacing: 0.2px;
   white-space: nowrap;
   border: 1px solid transparent;
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s;
   text-transform: capitalize;
 }
 

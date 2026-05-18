@@ -16,7 +16,11 @@ import styles from "./WorkspaceSelectorComponent.module.css";
  *   locked  — if true, renders a non-interactive locked state (e.g. mid-conversation)
  *   className — optional wrapper className for layout integration
  */
-export default function WorkspaceSelectorComponent({ locked = false, className, unavailableWorkspace = null }: any) {
+export default function WorkspaceSelectorComponent({
+  locked = false,
+  className,
+  unavailableWorkspace = null,
+}: any) {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
 
   const [open, setOpen] = useState(false);
@@ -38,10 +42,17 @@ export default function WorkspaceSelectorComponent({ locked = false, className, 
   if (locked) {
     // When the session's workspace is not currently connected
     if (unavailableWorkspace) {
-      const label = unavailableWorkspace.split("/").filter(Boolean).pop() || unavailableWorkspace;
+      const label =
+        unavailableWorkspace.split("/").filter(Boolean).pop() ||
+        unavailableWorkspace;
       return (
         <div className={`${styles.wrapper} ${className || ""}`}>
-          <div className={styles.button} data-locked data-unavailable title={`Workspace not available: ${unavailableWorkspace}`}>
+          <div
+            className={styles.button}
+            data-locked
+            data-unavailable
+            title={`Workspace not available: ${unavailableWorkspace}`}
+          >
             <WifiOff className={styles.buttonIcon} />
             <span className={styles.unavailableLabel}>{label}</span>
           </div>
@@ -70,7 +81,9 @@ export default function WorkspaceSelectorComponent({ locked = false, className, 
       >
         <Monitor className={styles.buttonIcon} />
         <span>{(currentWorkspace as any)?.name ?? "Workspace"}</span>
-        {(workspaces.length > 1 || true) && <ChevronDown size={12} className={open ? styles.chevronOpen : ""} />}
+        {(workspaces.length > 1 || true) && (
+          <ChevronDown size={12} className={open ? styles.chevronOpen : ""} />
+        )}
       </button>
 
       {open && (
@@ -80,16 +93,19 @@ export default function WorkspaceSelectorComponent({ locked = false, className, 
             <button
               key={w.id}
               className={`${styles.menuItem} ${(currentWorkspace as any)?.path === w.path ? styles.menuItemActive : ""}`}
-              onClick={() => { setCurrentWorkspace(w); setOpen(false); }}
+              onClick={() => {
+                setCurrentWorkspace(w);
+                setOpen(false);
+              }}
               title={w.path}
             >
               <FolderOpen size={12} className={styles.menuItemIcon} />
               <span className={styles.menuItemName}>{w.name}</span>
-              {w.isPinned && <Lock size={9} className={styles.menuItemPinned} />}
+              {w.isPinned && (
+                <Lock size={9} className={styles.menuItemPinned} />
+              )}
             </button>
           ))}
-
-
         </div>
       )}
     </div>

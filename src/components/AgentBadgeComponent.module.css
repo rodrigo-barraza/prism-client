@@ -31,15 +31,27 @@
 }
 
 .badgeInner[data-agent="LUPOS"] {
-  background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-orange) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-danger) 0%,
+    var(--color-orange) 100%
+  );
 }
 
 .badgeInner[data-agent="STICKERS"] {
-  background: linear-gradient(135deg, var(--color-emerald) 0%, var(--color-success) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-emerald) 0%,
+    var(--color-success) 100%
+  );
 }
 
 .badgeInner[data-agent="DIGEST"] {
-  background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-danger) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-warning) 0%,
+    var(--color-danger) 100%
+  );
 }
 
 .badgeInner[data-agent="LIGHTS"] {
@@ -47,12 +59,24 @@
 }
 
 .badgeInner[data-agent="OOG"] {
-  background: linear-gradient(135deg, var(--text-muted) 0%, var(--text-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--text-muted) 0%,
+    var(--text-secondary) 100%
+  );
 }
 
 /* Custom agents — fallback gradient for any agent not in the hardcoded list */
-.badgeInner:not([data-agent="CODING"]):not([data-agent="LUPOS"]):not([data-agent="STICKERS"]):not([data-agent="DIGEST"]):not([data-agent="OOG"]):not([data-agent="LIGHTS"]) {
-  background: linear-gradient(135deg, var(--color-violet) 0%, var(--color-cyan) 100%);
+.badgeInner:not([data-agent="CODING"]):not([data-agent="LUPOS"]):not(
+    [data-agent="STICKERS"]
+  ):not([data-agent="DIGEST"]):not([data-agent="OOG"]):not(
+    [data-agent="LIGHTS"]
+  ) {
+  background: linear-gradient(
+    135deg,
+    var(--color-violet) 0%,
+    var(--color-cyan) 100%
+  );
 }
 
 /* Ensure SVGs fill the badge space */
@@ -60,8 +84,6 @@
   display: block;
   flex-shrink: 0;
 }
-
-
 
 /* ── 3D Coin-spin animation ───────────────────────── */
 
@@ -85,4 +107,3 @@
   pointer-events: none;
   opacity: 0;
 }
-

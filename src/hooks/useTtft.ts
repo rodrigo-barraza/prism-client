@@ -12,7 +12,10 @@ import { useReducer, useMemo } from "react";
  * For the client-side fallback (LM Studio native path), it live-counts
  * during the "processing" phase and latches on phase transition.
  */
-function ttftReducer(prev: any, { phase, startTime, perfNow, active, samples }: any) {
+function ttftReducer(
+  prev: any,
+  { phase, startTime, perfNow, active, samples }: any,
+) {
   // Turn ended → clear
   if (!active) {
     if (prev.value === null && !prev.live && prev.seenCount === 0) return prev;
@@ -26,7 +29,12 @@ function ttftReducer(prev: any, { phase, startTime, perfNow, active, samples }: 
     const prevTotal = (prev.value || 0) * prev.seenCount;
     const newTotal = newSamples.reduce((a: any, b: any) => a + b, 0);
     const avg = (prevTotal + newTotal) / samples.length;
-    return { value: avg, live: false, prevPhase: phase, seenCount: samples.length };
+    return {
+      value: avg,
+      live: false,
+      prevPhase: phase,
+      seenCount: samples.length,
+    };
   }
 
   // Active processing → live counting (client-side fallback for LM Studio native)
@@ -62,7 +70,12 @@ function ttftReducer(prev: any, { phase, startTime, perfNow, active, samples }: 
   return prev;
 }
 
-const TTFT_INITIAL = { value: null, live: false, prevPhase: null, seenCount: 0 };
+const TTFT_INITIAL = {
+  value: null,
+  live: false,
+  prevPhase: null,
+  seenCount: 0,
+};
 
 /**
  * useTtft — Time To First Token tracking with burst averaging.
@@ -83,7 +96,11 @@ const TTFT_INITIAL = { value: null, live: false, prevPhase: null, seenCount: 0 }
  * @param {boolean} needsTicker — whether a turn is active (from useTokenRate)
  * @returns {{ liveTtft: number|null, isLiveTtft: boolean }}
  */
-export default function useTtft(sessionStats: any, perfNow: any, needsTicker: any) {
+export default function useTtft(
+  sessionStats: any,
+  perfNow: any,
+  needsTicker: any,
+) {
   const phase = sessionStats?.liveProcessingPhase || null;
   const startTime = sessionStats?.liveProcessingStartTime || null;
   const samples = sessionStats?.liveTtftSamples || null;

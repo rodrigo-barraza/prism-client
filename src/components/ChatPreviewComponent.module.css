@@ -84,7 +84,8 @@
 
 /* User block gets accent left border */
 .promptBlockUser {
-  border-left: 2px solid color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-left: 2px solid
+    color-mix(in srgb, var(--accent-color) 40%, transparent);
 }
 
 /* ── Mini Mode ───────────────────────────────────────── */
@@ -109,7 +110,6 @@
   max-width: 100% !important;
   gap: 8px !important;
 }
-
 
 /* Shrink avatars */
 .mini > div > div > div:first-child {

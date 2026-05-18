@@ -22,10 +22,14 @@ export default function PlanCardComponent({
 
   const statusLabel = useMemo(() => {
     switch (status) {
-      case "approved": return "Approved";
-      case "rejected": return "Rejected";
-      case "executing": return `Executing (${completedSteps.length}/${steps.length})`;
-      default: return "Awaiting Approval";
+      case "approved":
+        return "Approved";
+      case "rejected":
+        return "Rejected";
+      case "executing":
+        return `Executing (${completedSteps.length}/${steps.length})`;
+      default:
+        return "Awaiting Approval";
     }
   }, [status, completedSteps.length, steps.length]);
 
@@ -101,7 +105,11 @@ export default function PlanCardComponent({
                     className={`${styles.step} ${isDone ? styles.stepDone : ""}`}
                   >
                     <span className={styles.stepCheck}>
-                      {isDone ? <Check size={12} /> : <span className={styles.stepDot} />}
+                      {isDone ? (
+                        <Check size={12} />
+                      ) : (
+                        <span className={styles.stepDot} />
+                      )}
                     </span>
                     <span className={styles.stepText}>{step}</span>
                   </div>

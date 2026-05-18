@@ -61,20 +61,20 @@ Feature-rich frontend for interacting with AI models through the [Prism AI Gatew
 
 ## Stack
 
-| Dependency | Purpose |
-|---|---|
-| Next.js 16 | React framework (App Router) |
-| React 19 | UI library |
-| `@rodrigo-barraza/components-library` | Shared component library |
-| `@rodrigo-barraza/utilities-library` | Shared utility functions |
-| react-markdown | Markdown rendering |
-| react-syntax-highlighter | Code block syntax highlighting |
-| remark-gfm | GitHub-flavored markdown |
-| Recharts | Analytics charts |
-| Chart.js | Additional chart types |
-| Three.js | 3D visualizations |
-| Lucide React | Icons |
-| Luxon | Date/time formatting |
+| Dependency                            | Purpose                        |
+| ------------------------------------- | ------------------------------ |
+| Next.js 16                            | React framework (App Router)   |
+| React 19                              | UI library                     |
+| `@rodrigo-barraza/components-library` | Shared component library       |
+| `@rodrigo-barraza/utilities-library`  | Shared utility functions       |
+| react-markdown                        | Markdown rendering             |
+| react-syntax-highlighter              | Code block syntax highlighting |
+| remark-gfm                            | GitHub-flavored markdown       |
+| Recharts                              | Analytics charts               |
+| Chart.js                              | Additional chart types         |
+| Three.js                              | 3D visualizations              |
+| Lucide React                          | Icons                          |
+| Luxon                                 | Date/time formatting           |
 
 ## Getting Started
 
@@ -98,14 +98,14 @@ Secrets are resolved in priority order:
 3. Vault service (`VAULT_SERVICE_URL` + `VAULT_SERVICE_TOKEN`)
 4. Shared `../vault-service/.env` fallback
 
-| Variable | Description |
-|---|---|
+| Variable            | Description                      |
+| ------------------- | -------------------------------- |
 | `PRISM_CLIENT_PORT` | Dev server port (default `3333`) |
-| `VAULT_SERVICE_URL` | Vault service endpoint |
-| `PRISM_URL` | Prism backend REST URL |
-| `PRISM_WS_URL` | Prism backend WebSocket URL |
-| `TOOLS_API_URL` | Tools service URL |
-| `MINIO_PUBLIC_URL` | MinIO public endpoint for media |
+| `VAULT_SERVICE_URL` | Vault service endpoint           |
+| `PRISM_URL`         | Prism backend REST URL           |
+| `PRISM_WS_URL`      | Prism backend WebSocket URL      |
+| `TOOLS_API_URL`     | Tools service URL                |
+| `MINIO_PUBLIC_URL`  | MinIO public endpoint for media  |
 
 ## Scripts
 

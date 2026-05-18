@@ -17,7 +17,7 @@ import styles from "./ToolBadgeComponent.module.css";
 const TOOL_DISPLAY_NAMES = {
   // -- Canonical capability names --
   "Tool Calling": "Tool Calling",
-  "Thinking": "Thinking",
+  Thinking: "Thinking",
   "Web Search": "Web Search",
   "Google Search": "Web Search",
   "Code Execution": "Code Execution",
@@ -31,7 +31,7 @@ const TOOL_DISPLAY_NAMES = {
  * Abbreviated display names for the "condensed" variant.
  */
 const TOOL_SHORT_NAMES = {
-  "Thinking": "Think",
+  Thinking: "Think",
   "Tool Calling": "Tool",
   "Web Search": "Web",
   "Google Search": "Web",
@@ -42,15 +42,16 @@ const TOOL_SHORT_NAMES = {
   "Image Generation": "Image",
 };
 
-
 /**
  * Resolve any tool name to a human-readable display label.
  * @param {string} name  — raw tool function name or canonical name
 
  */
 function resolveDisplayName(name: any, variant = "default") {
-  if (variant === "condensed" && (TOOL_SHORT_NAMES as any)[name]) return (TOOL_SHORT_NAMES as any)[name];
-  if ((TOOL_DISPLAY_NAMES as any)[name]) return (TOOL_DISPLAY_NAMES as any)[name];
+  if (variant === "condensed" && (TOOL_SHORT_NAMES as any)[name])
+    return (TOOL_SHORT_NAMES as any)[name];
+  if ((TOOL_DISPLAY_NAMES as any)[name])
+    return (TOOL_DISPLAY_NAMES as any)[name];
   // Fallback: title-case via shared utility
   return renderToolName(name);
 }
@@ -121,12 +122,17 @@ export function ToolBadgeRow({ tools, activeTool, variant }: any) {
       {Object.entries(tools)
         .sort(([, a]: any, [, b]: any) => b - a)
         .map(([name, count]: any) => (
-          <ToolBadgeComponent key={name} name={name} count={count} active={name === activeTool} variant={variant} />
+          <ToolBadgeComponent
+            key={name}
+            name={name}
+            count={count}
+            active={name === activeTool}
+            variant={variant}
+          />
         ))}
     </div>
   );
 }
-
 
 // ═══════════════════════════════════════════════════════════════════════
 // ModelToolsRow — data-driven row of tool-capability badges for models.
@@ -157,11 +163,7 @@ const TOOL_DEFS = [
  *   variant   — "default" | "compact" | "condensed"
  *   className — extra root class name
  */
-export function ModelToolsRow({
-  tools,
-  variant,
-  className,
-}: any) {
+export function ModelToolsRow({ tools, variant, className }: any) {
   if (!tools) return null;
 
   const activeTools = TOOL_DEFS.filter((t: any) => tools[t.key]);

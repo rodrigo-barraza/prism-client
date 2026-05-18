@@ -33,10 +33,7 @@ import {
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import StorageService from "../services/StorageService";
-import {
-  SK_MODEL_MEMORY_AGENT,
-  LOCAL_PROVIDERS,
-} from "../constants";
+import { SK_MODEL_MEMORY_AGENT, LOCAL_PROVIDERS } from "../constants";
 import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
 import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";
 import {
@@ -51,7 +48,6 @@ import {
   formatTokenCount,
 } from "../utils/utilities";
 import styles from "./ModelDetailPanelComponent.module.css";
-
 
 const TOOL_ICONS = {
   Thinking: Brain,
@@ -91,7 +87,6 @@ const PRICING_LABELS = {
   perMinute: "Per minute",
   perCharacter: "Per character",
 };
-
 
 /**
  * ModelDetailPanelComponent — a slide-in right panel showing comprehensive
@@ -141,10 +136,13 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
       tools: model.tools || [],
       pricing: model.pricing || null,
       arena: model.arena || null,
-      size: model.size || (model.size_bytes ? formatFileSize(model.size_bytes) : null),
+      size:
+        model.size ||
+        (model.size_bytes ? formatFileSize(model.size_bytes) : null),
       params: model.params || model.params_string || null,
       quantization,
-      bitsPerWeight: model.bitsPerWeight ?? model.quantization?.bits_per_weight ?? null,
+      bitsPerWeight:
+        model.bitsPerWeight ?? model.quantization?.bits_per_weight ?? null,
       architecture: model.architecture || null,
       publisher: model.publisher || null,
       isLoaded: model.loaded || model.loaded_instances?.length > 0 || false,
@@ -198,7 +196,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
   // Collect arena entries
   const arenaEntries = m.arena
-    ? Object.entries(m.arena).filter(([, value]: any) => value != null && value > 0)
+    ? Object.entries(m.arena).filter(
+        ([, value]: any) => value != null && value > 0,
+      )
     : [];
 
   // Capability flags
@@ -366,21 +366,27 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   {m.quantization && (
                     <>
                       <span className={styles.kvLabel}>Quantization</span>
-                      <span className={styles.kvValueMono}>{m.quantization}</span>
+                      <span className={styles.kvValueMono}>
+                        {m.quantization}
+                      </span>
                     </>
                   )}
 
                   {m.bitsPerWeight != null && (
                     <>
                       <span className={styles.kvLabel}>Bits per Weight</span>
-                      <span className={styles.kvValueMono}>{m.bitsPerWeight}</span>
+                      <span className={styles.kvValueMono}>
+                        {m.bitsPerWeight}
+                      </span>
                     </>
                   )}
 
                   {m.defaultTemperature != null && (
                     <>
                       <span className={styles.kvLabel}>Default Temp</span>
-                      <span className={styles.kvValueMono}>{m.defaultTemperature}</span>
+                      <span className={styles.kvValueMono}>
+                        {m.defaultTemperature}
+                      </span>
                     </>
                   )}
                 </div>
@@ -483,7 +489,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                       <span
                         key={tool}
                         className={styles.toolChip}
-                        style={color ? { color, borderColor: `${color}33` } : undefined}
+                        style={
+                          color
+                            ? { color, borderColor: `${color}33` }
+                            : undefined
+                        }
                       >
                         {Icon && <Icon size={12} />}
                         {tool}
@@ -541,7 +551,10 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                         {(PRICING_LABELS as any)[key] || key}
                       </span>
                       <span className={styles.pricingValue}>
-                        ${typeof value === "number" ? value.toFixed(value < 0.01 ? 4 : 2) : value}
+                        $
+                        {typeof value === "number"
+                          ? value.toFixed(value < 0.01 ? 4 : 2)
+                          : value}
                       </span>
                     </div>
                   ))}
@@ -603,10 +616,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 )}
 
                 {m.totalCost > 0 && (
-                  <div className={`${styles.statsCard} ${styles.statsCardCost}`}>
+                  <div
+                    className={`${styles.statsCard} ${styles.statsCardCost}`}
+                  >
                     <DollarSign size={14} className={styles.statsCardIcon} />
                     <span className={styles.statsCardValue}>
-                      ${m.totalCost < 0.01 ? m.totalCost.toFixed(4) : m.totalCost.toFixed(2)}
+                      $
+                      {m.totalCost < 0.01
+                        ? m.totalCost.toFixed(4)
+                        : m.totalCost.toFixed(2)}
                     </span>
                     <span className={styles.statsCardLabel}>Total Cost</span>
                   </div>
@@ -629,7 +647,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   <div className={styles.successRateBar}>
                     <div
                       className={styles.successRateFill}
-                      style={{ width: `${(m.successCount / m.usageCount) * 100}%` }}
+                      style={{
+                        width: `${(m.successCount / m.usageCount) * 100}%`,
+                      }}
                     />
                   </div>
                   <div className={styles.successRateLabels}>
@@ -681,11 +701,18 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 {m.firstUsed && (
                   <>
                     <span className={styles.kvLabel}>
-                      <Calendar size={10} style={{ marginRight: 4, opacity: 0.5 }} />
+                      <Calendar
+                        size={10}
+                        style={{ marginRight: 4, opacity: 0.5 }}
+                      />
                       First Used
                     </span>
                     <span className={styles.kvValueMono}>
-                      {new Date(m.firstUsed).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                      {new Date(m.firstUsed).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </span>
                   </>
                 )}
@@ -693,11 +720,18 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 {m.lastUsed && (
                   <>
                     <span className={styles.kvLabel}>
-                      <Clock size={10} style={{ marginRight: 4, opacity: 0.5 }} />
+                      <Clock
+                        size={10}
+                        style={{ marginRight: 4, opacity: 0.5 }}
+                      />
                       Last Used
                     </span>
                     <span className={styles.kvValueMono}>
-                      {new Date(m.lastUsed).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                      {new Date(m.lastUsed).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </span>
                   </>
                 )}

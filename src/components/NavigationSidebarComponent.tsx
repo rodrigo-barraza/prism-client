@@ -29,7 +29,10 @@ import {
   AlertCircle,
   Eye,
 } from "lucide-react";
-import { useTheme, ThemePickerComponent } from "@rodrigo-barraza/components-library";
+import {
+  useTheme,
+  ThemePickerComponent,
+} from "@rodrigo-barraza/components-library";
 import SpinningCatComponent from "./SpinningCatComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./NavigationSidebarComponent.module.css";
@@ -41,7 +44,11 @@ import SoundService from "@/services/SoundService";
 
 function RainbowCanvas({ turbo = false, greyscale = false }: any) {
   return (
-    <RainbowCanvasComponent turbo={turbo} greyscale={greyscale} className={styles.rainbowCanvas} />
+    <RainbowCanvasComponent
+      turbo={turbo}
+      greyscale={greyscale}
+      className={styles.rainbowCanvas}
+    />
   );
 }
 
@@ -49,7 +56,12 @@ const USER_NAV_SECTIONS = [
   {
     label: "Workspace",
     items: [
-      { href: "/chat", label: "Chat", icon: Bot, alsoMatches: ["/coding-agent", "/agents"] },
+      {
+        href: "/chat",
+        label: "Chat",
+        icon: Bot,
+        alsoMatches: ["/coding-agent", "/agents"],
+      },
       { href: "/settings", label: "Settings", icon: Settings },
     ],
   },
@@ -81,7 +93,12 @@ const USER_NAV_SECTIONS = [
 
 const ADMIN_NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/requests", label: "Requests", icon: ScrollText, showBadge: "requests" },
+  {
+    href: "/admin/requests",
+    label: "Requests",
+    icon: ScrollText,
+    showBadge: "requests",
+  },
   { href: "/admin/tool-requests", label: "Tool Requests", icon: Wrench },
   { href: "/admin/tool-calls", label: "Tool Calls", icon: BarChart3 },
   {
@@ -90,7 +107,12 @@ const ADMIN_NAV_ITEMS = [
     icon: MessageSquare,
     showBadge: "conversations",
   },
-  { href: "/admin/traces", label: "Traces", icon: FolderOpen, showBadge: "traces" },
+  {
+    href: "/admin/traces",
+    label: "Traces",
+    icon: FolderOpen,
+    showBadge: "traces",
+  },
   { href: "/admin/agent-sessions", label: "Agent Sessions", icon: Bot },
   { href: "/admin/providers", label: "Providers", icon: Layers },
   { href: "/admin/media", label: "Media", icon: ImageIcon, showBadge: "media" },
@@ -147,9 +169,14 @@ export default function NavigationSidebarComponent({
       .then((s: any) => {
         const mem = s?.memory || {};
         setMemoryConfigured(
-          Boolean(mem.extractionProvider && mem.extractionModel &&
-                  mem.consolidationProvider && mem.consolidationModel &&
-                  mem.embeddingProvider && mem.embeddingModel),
+          Boolean(
+            mem.extractionProvider &&
+            mem.extractionModel &&
+            mem.consolidationProvider &&
+            mem.consolidationModel &&
+            mem.embeddingProvider &&
+            mem.embeddingModel,
+          ),
         );
       })
       .catch(() => {});
@@ -169,7 +196,7 @@ export default function NavigationSidebarComponent({
     } else {
       document.documentElement.removeAttribute("data-nav-collapsed");
     }
-    
+
     // Enable transitions after first paint
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setNavReady(true));
@@ -207,8 +234,12 @@ export default function NavigationSidebarComponent({
   const [miniCats, setMiniCats] = useState<any[]>([]);
 
   // Mirror props into refs for RAF access
-  useEffect(() => { isGenRef.current = isGenerating; }, [isGenerating]);
-  useEffect(() => { miniCatsRef.current = miniCats; }, [miniCats]);
+  useEffect(() => {
+    isGenRef.current = isGenerating;
+  }, [isGenerating]);
+  useEffect(() => {
+    miniCatsRef.current = miniCats;
+  }, [miniCats]);
 
   // Add cats when workers spawn, retire cats when workers finish
   useEffect(() => {
@@ -262,12 +293,19 @@ export default function NavigationSidebarComponent({
         return;
       }
 
-      if (!lastTime) { lastTime = now; rafId = requestAnimationFrame(tick); return; }
+      if (!lastTime) {
+        lastTime = now;
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
 
       const banner = bannerRef.current;
-      if (!banner) { rafId = requestAnimationFrame(tick); return; }
+      if (!banner) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
       const bw = (banner as any).offsetWidth;
       const bh = (banner as any).offsetHeight;
       const isGen = isGenRef.current;
@@ -289,8 +327,10 @@ export default function NavigationSidebarComponent({
         let p = catStateRef.current.get((cat as any).id);
         if (!p) {
           p = {
-            x: bw / 2, y: bh / 2,
-            vx: (cat as any).initVx, vy: (cat as any).initVy,
+            x: bw / 2,
+            y: bh / 2,
+            vx: (cat as any).initVx,
+            vy: (cat as any).initVy,
             accelTime: 0,
             phase: "active",
             fadeStart: null,
@@ -309,10 +349,20 @@ export default function NavigationSidebarComponent({
         // Bounce helper (specular reflection)
         const hs = (cat as any).size / 2;
         const bounce = () => {
-          if (p.x < hs) { p.x = hs; p.vx = Math.abs(p.vx); }
-          else if (p.x > bw - hs) { p.x = bw - hs; p.vx = -Math.abs(p.vx); }
-          if (p.y < hs) { p.y = hs; p.vy = Math.abs(p.vy); }
-          else if (p.y > bh - hs) { p.y = bh - hs; p.vy = -Math.abs(p.vy); }
+          if (p.x < hs) {
+            p.x = hs;
+            p.vx = Math.abs(p.vx);
+          } else if (p.x > bw - hs) {
+            p.x = bw - hs;
+            p.vx = -Math.abs(p.vx);
+          }
+          if (p.y < hs) {
+            p.y = hs;
+            p.vy = Math.abs(p.vy);
+          } else if (p.y > bh - hs) {
+            p.y = bh - hs;
+            p.vy = -Math.abs(p.vy);
+          }
         };
 
         // FX helper (SpinningCat-style quadratic ramp)
@@ -340,8 +390,8 @@ export default function NavigationSidebarComponent({
           element.style.transform = `translate(-50%, -50%) scale(${fx.scale})`;
           element.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
           element.style.opacity = "0.85";
-          if (!element.src.endsWith("cat-spinning.gif")) element.src = "/cat-spinning.gif";
-
+          if (!element.src.endsWith("cat-spinning.gif"))
+            element.src = "/cat-spinning.gif";
         } else if (p.phase === "windingDown") {
           // --- Winding down: decelerating, FX reversing ---
           const smoothing = Math.pow(0.97, dt * 60);
@@ -366,13 +416,11 @@ export default function NavigationSidebarComponent({
             p.phase = "idle";
             element.src = "/cat.gif";
           }
-
         } else if (p.phase === "idle") {
           // --- Idle: sitting still, static sprite, waiting ---
           element.style.transform = "translate(-50%, -50%)";
           element.style.filter = "drop-shadow(0 1px 4px rgba(0,0,0,0.45))";
           element.style.opacity = "0.85";
-
         } else if (p.phase === "fading") {
           // --- Fading: decelerating + fade/shrink over 3 seconds ---
           const smoothing = Math.pow(0.95, dt * 60);
@@ -398,7 +446,10 @@ export default function NavigationSidebarComponent({
           element.style.opacity = `${opacity}`;
 
           // Switch to static cat once slowed enough
-          if (Math.sqrt(p.vx * p.vx + p.vy * p.vy) < 2 && element.src.endsWith("cat-spinning.gif")) {
+          if (
+            Math.sqrt(p.vx * p.vx + p.vy * p.vy) < 2 &&
+            element.src.endsWith("cat-spinning.gif")
+          ) {
             element.src = "/cat.gif";
           }
 
@@ -413,7 +464,9 @@ export default function NavigationSidebarComponent({
           catStateRef.current.delete(id);
           catElsRef.current.delete(id);
         }
-        setMiniCats((prev: any) => prev.filter((c: any) => !removeSet.has(c.id)));
+        setMiniCats((prev: any) =>
+          prev.filter((c: any) => !removeSet.has(c.id)),
+        );
       }
 
       rafId = requestAnimationFrame(tick);
@@ -480,7 +533,7 @@ export default function NavigationSidebarComponent({
                           ? pathname === item.href
                           : pathname.startsWith(item.href)) ||
                         item.alsoMatches?.some((p: any) =>
-                          pathname.startsWith(p)
+                          pathname.startsWith(p),
                         );
 
                       return (
@@ -488,7 +541,9 @@ export default function NavigationSidebarComponent({
                           key={item.href}
                           href={item.href}
                           className={`${styles.navLink} ${isActive ? styles.active : ""}`}
-                          onMouseEnter={(e: any) => SoundService.playHover({ event: e })}
+                          onMouseEnter={(e: any) =>
+                            SoundService.playHover({ event: e })
+                          }
                           onClick={(e: any) => {
                             SoundService.playClick({ event: e });
                             onNavClick?.(item.href);
@@ -501,15 +556,21 @@ export default function NavigationSidebarComponent({
                           <Icon className={styles.navIcon} />
                           <span className={styles.navLabel}>{item.label}</span>
                           {item.href === "/settings" && !memoryConfigured && (
-                            <span className={styles.attentionDot} title="Memory models need to be configured">
+                            <span
+                              className={styles.attentionDot}
+                              title="Memory models need to be configured"
+                            >
                               <AlertCircle size={13} />
                             </span>
                           )}
-                          {item.showBadge && (badgeCounts as any)[item.showBadge] > 0 && (
-                            <span className={`${styles.badge} ${styles.live}`}>
-                              {(badgeCounts as any)[item.showBadge]}
-                            </span>
-                          )}
+                          {item.showBadge &&
+                            (badgeCounts as any)[item.showBadge] > 0 && (
+                              <span
+                                className={`${styles.badge} ${styles.live}`}
+                              >
+                                {(badgeCounts as any)[item.showBadge]}
+                              </span>
+                            )}
                         </Link>
                       );
                     })}
@@ -554,8 +615,9 @@ export default function NavigationSidebarComponent({
   /* -- Desktop: standard collapsible sidebar -- */
 
   return (
-    <div className={`${styles.wrapper} ${!showNav ? styles.collapsed : ""} ${!navReady ? styles.noTransition : ""}`}>
-
+    <div
+      className={`${styles.wrapper} ${!showNav ? styles.collapsed : ""} ${!navReady ? styles.noTransition : ""}`}
+    >
       {/* Expanded sidebar */}
       <aside className={styles.sidebar}>
         {/* Rainbow logo banner */}
@@ -565,7 +627,10 @@ export default function NavigationSidebarComponent({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={cat.id}
-              ref={(element: any) => { if (element) catElsRef.current.set(cat.id, element); else catElsRef.current.delete(cat.id); }}
+              ref={(element: any) => {
+                if (element) catElsRef.current.set(cat.id, element);
+                else catElsRef.current.delete(cat.id);
+              }}
               src="/cat-spinning.gif"
               alt=""
               className={styles.miniCat}
@@ -598,35 +663,49 @@ export default function NavigationSidebarComponent({
                   (item.exact
                     ? pathname === item.href
                     : pathname.startsWith(item.href)) ||
-                  item.alsoMatches?.some((p: any) =>
-                    pathname.startsWith(p)
-                  );
+                  item.alsoMatches?.some((p: any) => pathname.startsWith(p));
 
                 const link = (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={`${styles.navLink} ${isActive ? styles.active : ""}`}
-                    onMouseEnter={(e: any) => SoundService.playHover({ event: e })}
-                    onClick={(e: any) => { SoundService.playClick({ event: e }); onNavClick?.(item.href); }}
+                    onMouseEnter={(e: any) =>
+                      SoundService.playHover({ event: e })
+                    }
+                    onClick={(e: any) => {
+                      SoundService.playClick({ event: e });
+                      onNavClick?.(item.href);
+                    }}
                   >
                     <Icon className={styles.navIcon} />
                     <span className={styles.navLabel}>{item.label}</span>
                     {item.href === "/settings" && !memoryConfigured && (
-                      <span className={styles.attentionDot} title="Memory models need to be configured">
+                      <span
+                        className={styles.attentionDot}
+                        title="Memory models need to be configured"
+                      >
                         <AlertCircle size={13} />
                       </span>
                     )}
-                    {item.showBadge && (badgeCounts as any)[item.showBadge] > 0 && (
-                      <span className={`${styles.badge} ${styles.live}`}>
-                        {(badgeCounts as any)[item.showBadge]}
-                      </span>
-                    )}
+                    {item.showBadge &&
+                      (badgeCounts as any)[item.showBadge] > 0 && (
+                        <span className={`${styles.badge} ${styles.live}`}>
+                          {(badgeCounts as any)[item.showBadge]}
+                        </span>
+                      )}
                   </Link>
                 );
 
                 return (
-                  <TooltipComponent key={item.href} label={item.label} position="right" delay={200} disabled={showNav} className={styles.tooltipFill}>
+                  <TooltipComponent
+                    key={item.href}
+                    label={item.label}
+                    position="right"
+                    delay={200}
+                    disabled={showNav}
+                    className={styles.tooltipFill}
+                  >
                     {link}
                   </TooltipComponent>
                 );
@@ -638,15 +717,37 @@ export default function NavigationSidebarComponent({
         {/* Footer */}
         <div className={styles.footer}>
           {isAdmin ? (
-            <TooltipComponent label="Back to Prism" position="right" delay={200} disabled={showNav} className={styles.tooltipFill}>
-              <Link href="/" className={styles.navLink} onMouseEnter={(e: any) => SoundService.playHover({ event: e })} onClick={(e: any) => SoundService.playClick({ event: e })}>
+            <TooltipComponent
+              label="Back to Prism"
+              position="right"
+              delay={200}
+              disabled={showNav}
+              className={styles.tooltipFill}
+            >
+              <Link
+                href="/"
+                className={styles.navLink}
+                onMouseEnter={(e: any) => SoundService.playHover({ event: e })}
+                onClick={(e: any) => SoundService.playClick({ event: e })}
+              >
                 <ArrowLeft className={styles.navIcon} />
                 <span className={styles.navLabel}>Back to Prism</span>
               </Link>
             </TooltipComponent>
           ) : isLocal ? (
-            <TooltipComponent label="Admin" position="right" delay={200} disabled={showNav} className={styles.tooltipFill}>
-              <Link href="/admin" className={styles.navLink} onMouseEnter={(e: any) => SoundService.playHover({ event: e })} onClick={(e: any) => SoundService.playClick({ event: e })}>
+            <TooltipComponent
+              label="Admin"
+              position="right"
+              delay={200}
+              disabled={showNav}
+              className={styles.tooltipFill}
+            >
+              <Link
+                href="/admin"
+                className={styles.navLink}
+                onMouseEnter={(e: any) => SoundService.playHover({ event: e })}
+                onClick={(e: any) => SoundService.playClick({ event: e })}
+              >
                 <Settings className={styles.navIcon} />
                 <span className={styles.navLabel}>Admin</span>
               </Link>

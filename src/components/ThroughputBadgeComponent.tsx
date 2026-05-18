@@ -25,9 +25,8 @@ export default function ThroughputBadgeComponent({
 }: any) {
   // Live tok/s takes priority over static average
   if (liveTokPerSec !== null) {
-    const variant = (isActivelyGenerating || turnActive)
-      ? styles.live
-      : styles.stale;
+    const variant =
+      isActivelyGenerating || turnActive ? styles.live : styles.stale;
     return (
       <span className={`${styles.badge} ${variant}`}>
         ⚡ {liveTokPerSec.toFixed(1)} tok/s

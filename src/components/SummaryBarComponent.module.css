@@ -15,7 +15,11 @@
 /* ── Live variant (accent glow + pulse stripe) ── */
 
 .live {
-  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
+  border-color: color-mix(
+    in srgb,
+    var(--accent-color) 40%,
+    var(--border-color)
+  );
   background: color-mix(in srgb, var(--accent-color) 3%, var(--bg-secondary));
   position: relative;
   animation: fadeIn 0.3s ease-out;
@@ -34,13 +38,24 @@
 }
 
 @keyframes livePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-2px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Entry wrapper (item + preceding divider) ── */

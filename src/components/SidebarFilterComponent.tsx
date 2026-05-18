@@ -20,7 +20,12 @@ import {
 import ProviderLogo from "./ProviderLogosComponent";
 import { resolveProviderLabel } from "./ProviderLogosComponent";
 import { MODALITY_COLORS, TOOL_COLORS } from "./WorkflowNodeConstantsComponent";
-import { DatePickerComponent, DATE_PRESETS, formatDateDisplay, getActiveDatePreset } from "@rodrigo-barraza/components-library";
+import {
+  DatePickerComponent,
+  DATE_PRESETS,
+  formatDateDisplay,
+  getActiveDatePreset,
+} from "@rodrigo-barraza/components-library";
 import styles from "./SidebarFilterComponent.module.css";
 
 const MODALITY_FILTERS = [
@@ -105,7 +110,9 @@ export default function SidebarFilterComponent({
         const parsed = JSON.parse(stored);
         if (parsed.from || parsed.to) onDateChange(parsed);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [dateStorageKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist date range to localStorage
@@ -117,17 +124,26 @@ export default function SidebarFilterComponent({
       } else {
         localStorage.removeItem(dateStorageKey);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [dateStorageKey, dateRange]);
 
   const hasAnyOptions =
-    showFavoriteRow || showModalityRow || showToolRow || showProviderRow || showDateRange;
+    showFavoriteRow ||
+    showModalityRow ||
+    showToolRow ||
+    showProviderRow ||
+    showDateRange;
 
   // Close dropdown on outside click
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: any) => {
-      if (dropdownRef.current && !(dropdownRef.current as any).contains(e.target)) {
+      if (
+        dropdownRef.current &&
+        !(dropdownRef.current as any).contains(e.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -269,7 +285,8 @@ export default function SidebarFilterComponent({
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
                   {DATE_PRESETS.map((preset: any) => {
-                    const isActive = getActiveDatePreset(dateFrom, dateTo) === preset.label;
+                    const isActive =
+                      getActiveDatePreset(dateFrom, dateTo) === preset.label;
                     return (
                       <button
                         key={preset.label}
@@ -295,9 +312,10 @@ export default function SidebarFilterComponent({
                   >
                     <Calendar size={13} style={{ color: "#6366f1" }} />
                     <span>Custom…</span>
-                    {!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) && (
-                      <span className={styles.menuCheck}>✓</span>
-                    )}
+                    {!getActiveDatePreset(dateFrom, dateTo) &&
+                      (dateFrom || dateTo) && (
+                        <span className={styles.menuCheck}>✓</span>
+                      )}
                   </button>
                 </div>
               )}
@@ -312,10 +330,7 @@ export default function SidebarFilterComponent({
                       onFavoritesToggle();
                     }}
                   >
-                    <Star
-                      size={13}
-                      style={{ color: "#eab308" }}
-                    />
+                    <Star size={13} style={{ color: "#eab308" }} />
                     <span>Favorites Only</span>
                     {showFavoritesOnly && (
                       <span className={styles.menuCheck}>✓</span>

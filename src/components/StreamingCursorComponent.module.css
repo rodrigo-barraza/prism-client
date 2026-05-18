@@ -23,7 +23,6 @@
   -webkit-background-clip: text;
   background-clip: text;
   animation: scrambleGlitch 0.15s steps(1) infinite;
-
 }
 
 /* Caret — rainbow gradient, blinking */
@@ -73,7 +72,8 @@
 
 /* Caret blink — step-end gives a hard on/off toggle, not a fade */
 @keyframes caretBlink {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

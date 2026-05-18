@@ -124,7 +124,10 @@ export default function ChatInputButton({
     <button
       type={isSubmit ? "submit" : "button"}
       className={classes}
-      onClick={(e: any) => { SoundService.playClickButton({ event: e }); onClick?.(e); }}
+      onClick={(e: any) => {
+        SoundService.playClickButton({ event: e });
+        onClick?.(e);
+      }}
       onMouseEnter={(e: any) => SoundService.playHoverButton({ event: e })}
       disabled={disabled}
       aria-label={label}

@@ -1,18 +1,35 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Brain, RefreshCw, User, MessageSquare, FolderKanban, ExternalLink, Trash2, Sparkles, History, GitMerge, Settings } from "lucide-react";
+import {
+  Brain,
+  RefreshCw,
+  User,
+  MessageSquare,
+  FolderKanban,
+  ExternalLink,
+  Trash2,
+  Sparkles,
+  History,
+  GitMerge,
+  Settings,
+} from "lucide-react";
 import Link from "next/link";
-import { TOAST_DURATION_MS, HIGHLIGHT_DURATION_MS } from "@rodrigo-barraza/utilities-library";
+import {
+  TOAST_DURATION_MS,
+  HIGHLIGHT_DURATION_MS,
+} from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 
-import { DatePickerComponent, SearchInputComponent, DateTimeBadgeComponent,
+import {
+  DatePickerComponent,
+  SearchInputComponent,
+  DateTimeBadgeComponent,
   LoadingIndicatorComponent,
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
 import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
 import styles from "./MemoriesPanelComponent.module.css";
-
 
 /**
  * Type → icon mapping for memory categories.
@@ -56,7 +73,14 @@ const TRIGGER_LABELS = {
  * @param {number} props.refreshKey - External refresh trigger
 
  */
-export default function MemoriesPanel({ project, agent, refreshKey, consolidationEvent, onCountChange, memoryConfigured = true }: any) {
+export default function MemoriesPanel({
+  project,
+  agent,
+  refreshKey,
+  consolidationEvent,
+  onCountChange,
+  memoryConfigured = true,
+}: any) {
   const [memories, setMemories] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -139,11 +163,15 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
   // React to real-time consolidation events from WebSocket
   useEffect(() => {
     if (!consolidationEvent) return;
-    if (consolidationEvent.project && consolidationEvent.project !== project) return;
+    if (consolidationEvent.project && consolidationEvent.project !== project)
+      return;
 
     const { summary, actionsApplied } = consolidationEvent;
     if (actionsApplied > 0) {
-      setToast({ type: "success", text: `✨ ${summary || "Memories consolidated"}` });
+      setToast({
+        type: "success",
+        text: `✨ ${summary || "Memories consolidated"}`,
+      });
       loadMemories();
       if (historyOpen) loadHistory();
     } else {
@@ -156,7 +184,9 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
     try {
       await PrismService.deleteAgentMemory(memoryId);
       // Optimistic removal from local state
-      setMemories((prev: any) => prev.filter((m: any) => (m.id || m._id) !== memoryId));
+      setMemories((prev: any) =>
+        prev.filter((m: any) => (m.id || m._id) !== memoryId),
+      );
       setTotal((prev: any) => Math.max(0, prev - 1));
       setConfirmingDeleteId(null);
     } catch (error: any) {
@@ -170,14 +200,18 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
     try {
       const result = await PrismService.consolidateMemories(project, agent);
       if (result.skipped) {
-        const message = result.reason === "daily_limit_reached"
-          ? "Daily consolidation limit reached"
-          : result.reason === "insufficient memories"
-            ? "Not enough memories to consolidate"
-            : "No consolidation needed";
+        const message =
+          result.reason === "daily_limit_reached"
+            ? "Daily consolidation limit reached"
+            : result.reason === "insufficient memories"
+              ? "Not enough memories to consolidate"
+              : "No consolidation needed";
         setToast({ type: "info", text: message });
       } else if (result.actionsApplied > 0) {
-        setToast({ type: "success", text: result.summary || `Consolidated ${result.merged || 0} memories` });
+        setToast({
+          type: "success",
+          text: result.summary || `Consolidated ${result.merged || 0} memories`,
+        });
         // Refresh after consolidation
         loadMemories();
         if (historyOpen) loadHistory();
@@ -185,7 +219,10 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
         setToast({ type: "info", text: result.summary || "No changes needed" });
       }
     } catch (error: any) {
-      setToast({ type: "error", text: `Consolidation failed: ${error.message}` });
+      setToast({
+        type: "error",
+        text: `Consolidation failed: ${error.message}`,
+      });
     } finally {
       setConsolidating(false);
       setTimeout(() => setToast(null), TOAST_DURATION_MS);
@@ -211,9 +248,18 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
       const from = parseDateValue(dateFrom);
       const to = parseDateValue(dateTo);
       // If "to" is a date-only (no time), extend to end of day
-      const toEnd = to && !dateTo.includes("T")
-        ? new Date(to.getFullYear(), to.getMonth(), to.getDate(), 23, 59, 59, 999)
-        : to;
+      const toEnd =
+        to && !dateTo.includes("T")
+          ? new Date(
+              to.getFullYear(),
+              to.getMonth(),
+              to.getDate(),
+              23,
+              59,
+              59,
+              999,
+            )
+          : to;
 
       result = result.filter((m: any) => {
         if (!m.createdAt) return false;
@@ -239,9 +285,9 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
           </div>
           <div className={styles.emptyTitle}>Memories Not Available</div>
           <div className={styles.emptySubtitle}>
-            Memory models need to be configured before memories can be
-            extracted and stored. Set the extraction, consolidation, and
-            embedding models in Settings.
+            Memory models need to be configured before memories can be extracted
+            and stored. Set the extraction, consolidation, and embedding models
+            in Settings.
           </div>
           <Link href="/settings" className={styles.settingsLink}>
             <Settings size={13} />
@@ -257,7 +303,11 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
     return (
       <div className={styles.container}>
         <div className={styles.loading}>
-          <LoadingIndicatorComponent size="small" color="inherit" label="Loading memories…" />
+          <LoadingIndicatorComponent
+            size="small"
+            color="inherit"
+            label="Loading memories…"
+          />
         </div>
       </div>
     );
@@ -267,9 +317,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
   if (error) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>
-          Failed to load memories: {error}
-        </div>
+        <div className={styles.error}>Failed to load memories: {error}</div>
       </div>
     );
   }
@@ -284,9 +332,9 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
           </div>
           <div className={styles.emptyTitle}>No memories yet</div>
           <div className={styles.emptySubtitle}>
-            Memories are automatically extracted from your conversations.
-            They capture user preferences, feedback, project context, and
-            external references.
+            Memories are automatically extracted from your conversations. They
+            capture user preferences, feedback, project context, and external
+            references.
           </div>
         </div>
       </div>
@@ -298,7 +346,8 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
     <div className={styles.container}>
       <div className={styles.header}>
         <span className={styles.headerTitle}>
-          Memories ({isFiltered ? `${filteredMemories.length} / ${total}` : total})
+          Memories (
+          {isFiltered ? `${filteredMemories.length} / ${total}` : total})
         </span>
         <button
           className={styles.refreshBtn}
@@ -306,7 +355,10 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
           disabled={consolidating || total < 2}
           title="Consolidate memories — merge duplicates and clean stale entries"
         >
-          <Sparkles size={11} className={consolidating ? styles.refreshSpin : ""} />
+          <Sparkles
+            size={11}
+            className={consolidating ? styles.refreshSpin : ""}
+          />
         </button>
         <button
           className={`${styles.refreshBtn} ${historyOpen ? styles.historyBtnActive : ""}`}
@@ -326,7 +378,9 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
       </div>
 
       {toast && (
-        <div className={`${styles.toast} ${styles[`toast${(toast as any).type.charAt(0).toUpperCase() + (toast as any).type.slice(1)}`]}`}>
+        <div
+          className={`${styles.toast} ${styles[`toast${(toast as any).type.charAt(0).toUpperCase() + (toast as any).type.slice(1)}`]}`}
+        >
           {(toast as any).text}
         </div>
       )}
@@ -342,7 +396,10 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
         <DatePickerComponent
           from={dateFrom}
           to={dateTo}
-          onChange={({ from, to }: any) => { setDateFrom(from); setDateTo(to); }}
+          onChange={({ from, to }: any) => {
+            setDateFrom(from);
+            setDateTo(to);
+          }}
           placeholder="All time"
           storageKey="memories-panel-date-range"
         />
@@ -352,8 +409,12 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
       {historyOpen && (
         <div className={styles.historySection}>
           <div className={styles.historySectionHeader}>
-            <span className={styles.historySectionTitle}>Consolidation History</span>
-            {historyLoading && <RefreshCw size={10} className={styles.refreshSpin} />}
+            <span className={styles.historySectionTitle}>
+              Consolidation History
+            </span>
+            {historyLoading && (
+              <RefreshCw size={10} className={styles.refreshSpin} />
+            )}
           </div>
           {history.length === 0 && !historyLoading && (
             <div className={styles.historyEmpty}>No consolidation runs yet</div>
@@ -361,16 +422,29 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
           {history.map((run: any, i: any) => (
             <div key={i} className={styles.historyEntry}>
               <div className={styles.historyEntryHeader}>
-                <span className={`${styles.historyTrigger} ${styles[`trigger${run.trigger?.charAt(0).toUpperCase()}${run.trigger?.slice(1)}`] || ""}`}>
-                  {(TRIGGER_LABELS as any)[run.trigger] || run.trigger || "unknown"}
+                <span
+                  className={`${styles.historyTrigger} ${styles[`trigger${run.trigger?.charAt(0).toUpperCase()}${run.trigger?.slice(1)}`] || ""}`}
+                >
+                  {(TRIGGER_LABELS as any)[run.trigger] ||
+                    run.trigger ||
+                    "unknown"}
                 </span>
-                <span className={styles.historyTime}>{formatTimeAgo(run.runAt)}</span>
+                <span className={styles.historyTime}>
+                  {formatTimeAgo(run.runAt)}
+                </span>
               </div>
               <div className={styles.historySummary}>{run.summary}</div>
               <div className={styles.historyStats}>
-                <span><GitMerge size={9} /> {run.actionsApplied} action{run.actionsApplied !== 1 ? "s" : ""}</span>
-                <span>{run.memoriesBefore} → {run.memoriesAfter} memories</span>
-                {run.durationMs && <span>{formatLatencyMs(run.durationMs)}</span>}
+                <span>
+                  <GitMerge size={9} /> {run.actionsApplied} action
+                  {run.actionsApplied !== 1 ? "s" : ""}
+                </span>
+                <span>
+                  {run.memoriesBefore} → {run.memoriesAfter} memories
+                </span>
+                {run.durationMs && (
+                  <span>{formatLatencyMs(run.durationMs)}</span>
+                )}
               </div>
             </div>
           ))}
@@ -391,7 +465,8 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
         const memoryId = memory.id || memory._id;
         const type = memory.type || "project";
         const IconComponent = (TYPE_ICONS as any)[type] || FolderKanban;
-        const iconClass = (TYPE_ICON_CLASSES as any)[type] || "memoryIconProject";
+        const iconClass =
+          (TYPE_ICON_CLASSES as any)[type] || "memoryIconProject";
         const badgeClass = (TYPE_BADGE_CLASSES as any)[type] || "badgeProject";
         const isConfirming = confirmingDeleteId === memoryId;
         const isNew = newMemoryIds.has(memoryId);
@@ -407,10 +482,15 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
               </div>
               <div className={styles.memoryInfo}>
                 <div className={styles.memoryTitle}>
-                  {memory.title || (memory.content ? memory.content.substring(0, 60) : "Untitled")}
+                  {memory.title ||
+                    (memory.content
+                      ? memory.content.substring(0, 60)
+                      : "Untitled")}
                 </div>
                 <div className={styles.memoryMeta}>
-                  <span className={`${styles.memoryTypeBadge} ${styles[badgeClass]}`}>
+                  <span
+                    className={`${styles.memoryTypeBadge} ${styles[badgeClass]}`}
+                  >
                     {type}
                   </span>
                   {memory.createdAt && (
@@ -420,7 +500,9 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
               </div>
               <button
                 className={styles.deleteBtn}
-                onClick={() => setConfirmingDeleteId(isConfirming ? null : memoryId)}
+                onClick={() =>
+                  setConfirmingDeleteId(isConfirming ? null : memoryId)
+                }
                 title="Delete memory"
               >
                 <Trash2 size={12} />
@@ -428,9 +510,7 @@ export default function MemoriesPanel({ project, agent, refreshKey, consolidatio
             </div>
 
             {memory.content && (
-              <div className={styles.memoryContent}>
-                {memory.content}
-              </div>
+              <div className={styles.memoryContent}>{memory.content}</div>
             )}
 
             {isConfirming && (

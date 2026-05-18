@@ -20,7 +20,10 @@ import {
   Bot,
   FolderKanban,
 } from "lucide-react";
-import { POLL_LAZY, FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
+import {
+  POLL_LAZY,
+  FEEDBACK_STANDARD_MS,
+} from "@rodrigo-barraza/utilities-library";
 import IrisService from "../../services/IrisService";
 import PrismService from "../../services/PrismService";
 import {
@@ -31,7 +34,10 @@ import {
   formatElapsedTime,
   buildDateRangeParams,
 } from "../../utils/utilities";
-import { SelectComponent, StatsCardComponent as StatsCard } from "@rodrigo-barraza/components-library";
+import {
+  SelectComponent,
+  StatsCardComponent as StatsCard,
+} from "@rodrigo-barraza/components-library";
 
 import TimelineChartComponent from "../../components/TimelineChartComponent";
 import DistributionChartComponent from "../../components/DistributionChartComponent";
@@ -64,7 +70,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-
   const dateParams = useMemo(
     () => buildDateRangeParams(dateRange),
     [dateRange],
@@ -77,38 +82,45 @@ export default function DashboardPage() {
 
   const loadDashboard = useCallback(async () => {
     try {
-
       const filterParams = { ...dateParams };
       if (projectFilter) (filterParams as any).project = projectFilter;
 
-      const [statsData, projects, models, timelineData, requestsData, tracesData, conversationsData, prismConfig] =
-        await Promise.all([
-          IrisService.getStats(filterParams),
-          IrisService.getProjectStats(filterParams),
-          IrisService.getModelStats(filterParams),
-          IrisService.getTimeline(timelineHours, filterParams),
-          IrisService.getRequests({
-            limit: 10,
-            sort: "timestamp",
-            order: "desc",
-            ...filterParams,
-          }),
-          IrisService.getTraces({
-            page: 1,
-            limit: 5,
-            sort: "createdAt",
-            order: "desc",
-            ...filterParams,
-          }),
-          IrisService.getConversations({
-            page: 1,
-            limit: 10,
-            sort: "updatedAt",
-            order: "desc",
-            ...filterParams,
-          }),
-          PrismService.getConfig().catch(() => null),
-        ]);
+      const [
+        statsData,
+        projects,
+        models,
+        timelineData,
+        requestsData,
+        tracesData,
+        conversationsData,
+        prismConfig,
+      ] = await Promise.all([
+        IrisService.getStats(filterParams),
+        IrisService.getProjectStats(filterParams),
+        IrisService.getModelStats(filterParams),
+        IrisService.getTimeline(timelineHours, filterParams),
+        IrisService.getRequests({
+          limit: 10,
+          sort: "timestamp",
+          order: "desc",
+          ...filterParams,
+        }),
+        IrisService.getTraces({
+          page: 1,
+          limit: 5,
+          sort: "createdAt",
+          order: "desc",
+          ...filterParams,
+        }),
+        IrisService.getConversations({
+          page: 1,
+          limit: 10,
+          sort: "updatedAt",
+          order: "desc",
+          ...filterParams,
+        }),
+        PrismService.getConfig().catch(() => null),
+      ]);
 
       setStats(statsData);
       setProjectStats(projects);
@@ -118,7 +130,9 @@ export default function DashboardPage() {
       if (prismConfig?.textToText?.models) {
         const buildLookup = (config: any) => {
           const lookup = {};
-          for (const [provider, models] of Object.entries(config.textToText?.models || {}) as [string, any[]][]) {
+          for (const [provider, models] of Object.entries(
+            config.textToText?.models || {},
+          ) as [string, any[]][]) {
             for (const m of models) {
               const key = `${provider}:${m.name}`;
               if (m.tools?.length) (lookup as any)[key] = m.tools;
@@ -287,7 +301,10 @@ export default function DashboardPage() {
         if (key.length <= 10) {
           // Daily bin: "2026-03-21"
           const date = new Date(key + "T00:00:00Z");
-          label = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          label = date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
           tickLabel = label;
         } else {
           // All sub-day bins: parse as UTC
@@ -297,7 +314,9 @@ export default function DashboardPage() {
 
           if (colonCount >= 2) {
             // Has seconds: 1s, 5s, or 15s bins — "22:05:31", "22:05:05"
-            const [hh, mm, ss] = timePart.split(":").map((s: any) => s.padStart(2, "0"));
+            const [hh, mm, ss] = timePart
+              .split(":")
+              .map((s: any) => s.padStart(2, "0"));
             const date = new Date(`${key.slice(0, 10)}T${hh}:${mm}:${ss}Z`);
             const lH = String(date.getHours()).padStart(2, "0");
             const lM = String(date.getMinutes()).padStart(2, "0");
@@ -316,13 +335,17 @@ export default function DashboardPage() {
             label = `${lH}:${lM}`;
             // Tick on hour marks or every 15 minutes
             const minNum = parseInt(lM, 10);
-            tickLabel = minNum === 0 ? `${lH}h` : minNum % 15 === 0 ? `${lH}:${lM}` : "";
+            tickLabel =
+              minNum === 0 ? `${lH}h` : minNum % 15 === 0 ? `${lH}:${lM}` : "";
           } else {
             // Hourly or 6-hour bin: "14", "06"
             const hourStr = timePart.padStart(2, "0");
             const date = new Date(`${key.slice(0, 10)}T${hourStr}:00:00Z`);
             const lH = String(date.getHours()).padStart(2, "0");
-            const dayLabel = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            const dayLabel = date.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            });
             label = `${lH}h`;
             // For 6h bins across multi-day spans, show day at midnight
             tickLabel = lH === "00" ? dayLabel : `${lH}h`;
@@ -334,13 +357,13 @@ export default function DashboardPage() {
   }, [timeline]);
 
   // Derived stats for extra cards
-  const avgCostPerRequest = (stats as any)?.totalRequests > 0
-    ? stats.totalCost / stats.totalRequests
-    : 0;
+  const avgCostPerRequest =
+    (stats as any)?.totalRequests > 0
+      ? stats.totalCost / stats.totalRequests
+      : 0;
 
   return (
     <div className={styles.page}>
-
       <ErrorMessage message={error} />
 
       {/* -- Resource Navigation -- */}
@@ -350,7 +373,12 @@ export default function DashboardPage() {
           icon={Box}
           count={loading ? "—" : formatNumber(projectStats.length)}
           label="Projects"
-          onClick={(e: any) => { e.preventDefault(); document.getElementById('projects-table')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+          onClick={(e: any) => {
+            e.preventDefault();
+            document
+              .getElementById("projects-table")
+              ?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
         />
         <ResourceCardComponent
           href="/admin/providers"
@@ -373,7 +401,9 @@ export default function DashboardPage() {
         <ResourceCardComponent
           href="/admin/conversations"
           icon={MessageSquare}
-          count={loading ? "—" : formatNumber((stats as any)?.conversationCount)}
+          count={
+            loading ? "—" : formatNumber((stats as any)?.conversationCount)
+          }
           label="Conversations"
         />
         <ResourceCardComponent
@@ -427,7 +457,9 @@ export default function DashboardPage() {
         />
         <StatsCard
           label="Total Duration"
-          value={loading ? "..." : formatElapsedTime((stats as any)?.totalDuration)}
+          value={
+            loading ? "..." : formatElapsedTime((stats as any)?.totalDuration)
+          }
           subtitle="Cumulative request time"
           icon={Timer}
           variant="info"
@@ -437,7 +469,9 @@ export default function DashboardPage() {
           label="Avg Latency"
           value={loading ? "..." : formatLatency((stats as any)?.avgLatency)}
           subtitle={
-            loading ? "" : `${formatTokensPerSec((stats as any)?.avgTokensPerSec)} tok/s`
+            loading
+              ? ""
+              : `${formatTokensPerSec((stats as any)?.avgTokensPerSec)} tok/s`
           }
           icon={Clock}
           variant="success"

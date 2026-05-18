@@ -33,9 +33,18 @@
   font-size: var(--font-size-base);
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  background: color-mix(in srgb, var(--accent-color, var(--color-indigo)) 10%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--accent-color, var(--color-indigo)) 10%,
+    transparent
+  );
   color: var(--accent-color, var(--color-indigo));
-  border: 1px solid color-mix(in srgb, var(--accent-color, var(--color-indigo)) 30%, transparent);
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--accent-color, var(--color-indigo)) 30%,
+      transparent
+    );
 }
 
 /* ── Content column ── */

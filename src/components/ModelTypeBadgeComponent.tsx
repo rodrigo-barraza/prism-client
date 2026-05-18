@@ -10,8 +10,8 @@ import styles from "./ModelTypeBadgeComponent.module.css";
  */
 const MODEL_TYPE_META = {
   conversation: { icon: MessageSquare, label: "Conversation" },
-  audio:        { icon: Volume2,       label: "Audio" },
-  embed:        { icon: Cpu,           label: "Embed" },
+  audio: { icon: Volume2, label: "Audio" },
+  embed: { icon: Cpu, label: "Embed" },
 };
 
 /**

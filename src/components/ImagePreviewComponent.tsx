@@ -177,7 +177,13 @@ export default function ImagePreviewComponent({
     const context = offscreen.getContext("2d");
 
     // Draw the original image at full resolution
-    context!.drawImage(image, 0, 0, (image as any).naturalWidth, (image as any).naturalHeight);
+    context!.drawImage(
+      image,
+      0,
+      0,
+      (image as any).naturalWidth,
+      (image as any).naturalHeight,
+    );
 
     // Scale annotations from display size to natural size
     const scaleX = (image as any).naturalWidth / (canvas as any).width;
@@ -199,9 +205,15 @@ export default function ImagePreviewComponent({
 
       context!.strokeStyle = (stroke as any).color;
       context!.beginPath();
-      context!.moveTo((stroke as any).points[0].x * scaleX, (stroke as any).points[0].y * scaleY);
+      context!.moveTo(
+        (stroke as any).points[0].x * scaleX,
+        (stroke as any).points[0].y * scaleY,
+      );
       for (let i = 1; i < (stroke as any).points.length; i++) {
-        context!.lineTo((stroke as any).points[i].x * scaleX, (stroke as any).points[i].y * scaleY);
+        context!.lineTo(
+          (stroke as any).points[i].x * scaleX,
+          (stroke as any).points[i].y * scaleY,
+        );
       }
       context!.stroke();
       context!.restore();

@@ -1,8 +1,20 @@
 "use client";
 
-import { Plus, Trash2, MessageSquare, Wrench, Brain, RotateCcw } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  MessageSquare,
+  Wrench,
+  Brain,
+  RotateCcw,
+} from "lucide-react";
 
-import { BadgeComponent, ButtonComponent, FormGroupComponent, IconButtonComponent } from "@rodrigo-barraza/components-library";
+import {
+  BadgeComponent,
+  ButtonComponent,
+  FormGroupComponent,
+  IconButtonComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./AgentAssertionsComponent.module.css";
 
 /**
@@ -68,7 +80,7 @@ export const AGENT_ASSERTION_TYPES = [
 ];
 
 const ASSERTION_TYPE_MAP = Object.fromEntries(
-  AGENT_ASSERTION_TYPES.map((t: any) => [t.value, t])
+  AGENT_ASSERTION_TYPES.map((t: any) => [t.value, t]),
 );
 
 /**
@@ -97,7 +109,10 @@ export default function AgentAssertionsComponent({
     const typeDef = ASSERTION_TYPE_MAP[type];
     const newAssertion = {
       type,
-      ...(typeDef?.hasOperand && { operator: typeDef.operators[0].value, operand: "" }),
+      ...(typeDef?.hasOperand && {
+        operator: typeDef.operators[0].value,
+        operand: "",
+      }),
     };
     onAssertionsChange([...assertions, newAssertion]);
   };
@@ -109,7 +124,7 @@ export default function AgentAssertionsComponent({
 
   const updateAssertion = (index: any, field: any, value: any) => {
     const next = assertions.map((a: any, i: any) =>
-      i === index ? { ...a, [field]: value } : a
+      i === index ? { ...a, [field]: value } : a,
     );
     onAssertionsChange(next);
   };
@@ -119,7 +134,9 @@ export default function AgentAssertionsComponent({
   };
 
   // Available types that haven't been added yet
-  const availableTypes = AGENT_ASSERTION_TYPES.filter((t: any) => !usedTypes.has(t.value));
+  const availableTypes = AGENT_ASSERTION_TYPES.filter(
+    (t: any) => !usedTypes.has(t.value),
+  );
 
   return (
     <div className={styles.section}>
@@ -150,7 +167,10 @@ export default function AgentAssertionsComponent({
 
       {assertions.length === 0 && (
         <div className={styles.emptyState}>
-          <p>No assertions configured. Add at least one to evaluate agent behavior.</p>
+          <p>
+            No assertions configured. Add at least one to evaluate agent
+            behavior.
+          </p>
           <div className={styles.quickAdd}>
             {AGENT_ASSERTION_TYPES.map((t: any) => {
               const Icon = t.icon;
@@ -183,7 +203,10 @@ export default function AgentAssertionsComponent({
                 {i > 0 && (
                   <div className={styles.operatorDivider}>
                     <span className={styles.operatorDividerLine} />
-                    <BadgeComponent variant={operator === "OR" ? "warning" : "accent"} mini>
+                    <BadgeComponent
+                      variant={operator === "OR" ? "warning" : "accent"}
+                      mini
+                    >
                       {operator}
                     </BadgeComponent>
                     <span className={styles.operatorDividerLine} />
@@ -199,7 +222,9 @@ export default function AgentAssertionsComponent({
                       <FormGroupComponent label="Condition">
                         <select
                           value={a.operator || typeDef.operators[0].value}
-                          onChange={(e: any) => updateAssertion(i, "operator", e.target.value)}
+                          onChange={(e: any) =>
+                            updateAssertion(i, "operator", e.target.value)
+                          }
                         >
                           {typeDef.operators.map((op: any) => (
                             <option key={op.value} value={op.value}>
@@ -213,7 +238,9 @@ export default function AgentAssertionsComponent({
                           type="number"
                           min="0"
                           value={a.operand ?? ""}
-                          onChange={(e: any) => updateAssertion(i, "operand", e.target.value)}
+                          onChange={(e: any) =>
+                            updateAssertion(i, "operand", e.target.value)
+                          }
                           placeholder={typeDef.placeholder}
                         />
                       </FormGroupComponent>
@@ -221,7 +248,9 @@ export default function AgentAssertionsComponent({
                   )}
                   {!typeDef.hasOperand && (
                     <div className={styles.noOperand}>
-                      <span className={styles.noOperandHint}>{typeDef.description}</span>
+                      <span className={styles.noOperandHint}>
+                        {typeDef.description}
+                      </span>
                     </div>
                   )}
                   <div className={styles.removeBtn}>

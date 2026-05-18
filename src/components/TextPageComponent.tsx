@@ -13,7 +13,11 @@ import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 import SearchFilterComponent from "./SearchFilterComponent";
-import { PageHeaderComponent, PaginationComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
+import {
+  PageHeaderComponent,
+  PaginationComponent,
+  SearchInputComponent,
+} from "@rodrigo-barraza/components-library";
 
 import FilterDropdownComponent from "./FilterDropdownComponent";
 import { LoadingMessage, EmptyMessage } from "./StateMessageComponent";
@@ -27,7 +31,11 @@ const ORIGIN_FILTERS = [
   { key: "ai", label: "Responses", icon: Sparkles },
 ];
 
-export default function TextPageComponent({ mode = "user", dateRange: externalDateRange, onCountChange }: any) {
+export default function TextPageComponent({
+  mode = "user",
+  dateRange: externalDateRange,
+  onCountChange,
+}: any) {
   const isAdmin = mode === "admin";
   const convBasePath = "/admin/conversations";
 
@@ -42,7 +50,10 @@ export default function TextPageComponent({ mode = "user", dateRange: externalDa
   const [providers, setProviders] = useState<any[]>([]);
   const [models, setModels] = useState<any[]>([]);
   const [page, setPage] = useState(1);
-  const [internalDateRange, setInternalDateRange] = useState({ from: "", to: "" });
+  const [internalDateRange, setInternalDateRange] = useState({
+    from: "",
+    to: "",
+  });
   const dateRange = externalDateRange ?? internalDateRange;
   const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -144,17 +155,23 @@ export default function TextPageComponent({ mode = "user", dateRange: externalDa
               },
               {
                 label: "Favorites",
-                items: [{ key: "favorites", icon: Star, title: "Favorites Only" }],
+                items: [
+                  { key: "favorites", icon: Star, title: "Favorites Only" },
+                ],
                 activeKeys: showFavoritesOnly ? "favorites" : null,
                 isSingleSelect: true,
                 onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
               },
             ]}
             dateRange={!externalDateRange ? dateRange : undefined}
-            onDateChange={!externalDateRange ? (v: any) => {
-              setInternalDateRange(v);
-              setPage(1);
-            } : undefined}
+            onDateChange={
+              !externalDateRange
+                ? (v: any) => {
+                    setInternalDateRange(v);
+                    setPage(1);
+                  }
+                : undefined
+            }
             dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
           />
 
@@ -244,12 +261,14 @@ export default function TextPageComponent({ mode = "user", dateRange: externalDa
                     )}
                   </div>
                   <ChatPreviewComponent
-                    messages={[{
-                      role: t.origin === "ai" ? "assistant" : "user",
-                      content: t.content,
-                      model: t.model,
-                      estimatedCost: t.estimatedCost,
-                    }]}
+                    messages={[
+                      {
+                        role: t.origin === "ai" ? "assistant" : "user",
+                        content: t.content,
+                        model: t.model,
+                        estimatedCost: t.estimatedCost,
+                      },
+                    ]}
                     readOnly
                     maxHeight="400px"
                     className={styles.cardPreview}

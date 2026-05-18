@@ -22,10 +22,7 @@ import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
  * @param {object} config    — Full Prism config (used to resolve model definitions)
  * @param {object} settings  — Current settings (provider, model)
  */
-export default function ModelInfoPanel({
-  config,
-  settings,
-}: any) {
+export default function ModelInfoPanel({ config, settings }: any) {
   const { textToText = {} } = config || {};
   const textModelsMap = textToText.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
@@ -72,7 +69,6 @@ export default function ModelInfoPanel({
   const selectedModelDef = currentProviderModels.find(
     (m: any) => m.name === settings.model,
   );
-
 
   if (!selectedModelDef) {
     return (
@@ -150,7 +146,9 @@ export default function ModelInfoPanel({
           {selectedModelDef.contextLength && (
             <div className={styles.modalityRow}>
               <span className={styles.modalityName}>Context Window</span>
-              <span className={`${styles.modalityStatus} ${styles.modalityActive}`}>
+              <span
+                className={`${styles.modalityStatus} ${styles.modalityActive}`}
+              >
                 {selectedModelDef.contextLength.toLocaleString()} tokens
               </span>
             </div>
@@ -158,7 +156,9 @@ export default function ModelInfoPanel({
           {selectedModelDef.maxOutputTokens && (
             <div className={styles.modalityRow}>
               <span className={styles.modalityName}>Max Output</span>
-              <span className={`${styles.modalityStatus} ${styles.modalityActive}`}>
+              <span
+                className={`${styles.modalityStatus} ${styles.modalityActive}`}
+              >
                 {selectedModelDef.maxOutputTokens.toLocaleString()} tokens
               </span>
             </div>
@@ -166,19 +166,27 @@ export default function ModelInfoPanel({
         </div>
       )}
 
-
       {/* Pricing */}
       {(() => {
         const PRICING_LABELS = {
           inputPerMillion: { label: "Input", unit: "/ 1M tokens" },
           cachedInputPerMillion: { label: "Cached Input", unit: "/ 1M tokens" },
           outputPerMillion: { label: "Output", unit: "/ 1M tokens" },
-          inputOver272kPerMillion: { label: "Input >272K", unit: "/ 1M tokens" },
-          outputOver272kPerMillion: { label: "Output >272K", unit: "/ 1M tokens" },
+          inputOver272kPerMillion: {
+            label: "Input >272K",
+            unit: "/ 1M tokens",
+          },
+          outputOver272kPerMillion: {
+            label: "Output >272K",
+            unit: "/ 1M tokens",
+          },
           audioInputPerMillion: { label: "Audio Input", unit: "/ 1M tokens" },
           audioOutputPerMillion: { label: "Audio Output", unit: "/ 1M tokens" },
           imageInputPerMillion: { label: "Image Input", unit: "/ 1M tokens" },
-          cachedImageInputPerMillion: { label: "Cached Img Input", unit: "/ 1M tokens" },
+          cachedImageInputPerMillion: {
+            label: "Cached Img Input",
+            unit: "/ 1M tokens",
+          },
           imageOutputPerMillion: { label: "Image Output", unit: "/ 1M tokens" },
           perCharacter: { label: "Per Character", unit: "" },
           perMinute: { label: "Per Minute", unit: "" },
@@ -187,7 +195,10 @@ export default function ModelInfoPanel({
         if (!selectedModelDef.pricing) return null;
         const entries = Object.entries(selectedModelDef.pricing)
           .filter(([key]: any) => (PRICING_LABELS as any)[key])
-          .map(([key, value]: any) => ({ ...(PRICING_LABELS as any)[key], value }));
+          .map(([key, value]: any) => ({
+            ...(PRICING_LABELS as any)[key],
+            value,
+          }));
         return entries.length > 0 ? (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Pricing</div>
@@ -197,7 +208,9 @@ export default function ModelInfoPanel({
                   <DollarSign size={12} />
                 </span>
                 <span className={styles.modalityName}>{e.label}</span>
-                <span className={`${styles.modalityStatus} ${styles.pricingValue}`}>
+                <span
+                  className={`${styles.modalityStatus} ${styles.pricingValue}`}
+                >
                   ${e.value} {e.unit}
                 </span>
               </div>
@@ -232,7 +245,9 @@ export default function ModelInfoPanel({
                 <span className={styles.modalityName}>
                   {(arenaLabels as any)[key] || key}
                 </span>
-                <span className={`${styles.modalityStatus} ${styles.arenaValue}`}>
+                <span
+                  className={`${styles.modalityStatus} ${styles.arenaValue}`}
+                >
                   {value}
                 </span>
               </div>
@@ -240,8 +255,6 @@ export default function ModelInfoPanel({
           </div>
         );
       })()}
-
-
     </div>
   );
 }

@@ -12,9 +12,24 @@ import styles from "./BenchmarkModeSelectorComponent.module.css";
  * "combined" → Combined Benchmark — both model + agent targets in one run
  */
 export const BENCHMARK_MODES = [
-  { value: "model",    label: "Model",    icon: Cpu,    description: "Raw model inference — no tools or agentic loop" },
-  { value: "agent",    label: "Agent",    icon: Bot,    description: "Agentic loop — tools, thinking, multi-turn" },
-  { value: "combined", label: "Combined", icon: Layers, description: "Both model and agent targets in one run" },
+  {
+    value: "model",
+    label: "Model",
+    icon: Cpu,
+    description: "Raw model inference — no tools or agentic loop",
+  },
+  {
+    value: "agent",
+    label: "Agent",
+    icon: Bot,
+    description: "Agentic loop — tools, thinking, multi-turn",
+  },
+  {
+    value: "combined",
+    label: "Combined",
+    icon: Layers,
+    description: "Both model and agent targets in one run",
+  },
 ];
 
 /**
@@ -30,7 +45,9 @@ export default function BenchmarkModeSelector({ value, onChange }: any) {
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;
     const index = BENCHMARK_MODES.findIndex((m: any) => m.value === value);
-    const buttons = (containerRef.current as any).querySelectorAll(`.${styles.option}`);
+    const buttons = (containerRef.current as any).querySelectorAll(
+      `.${styles.option}`,
+    );
     if (!buttons[index]) return;
 
     const containerRect = (containerRef.current as any).getBoundingClientRect();

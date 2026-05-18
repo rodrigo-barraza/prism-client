@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { MessageCircleQuestion, Send, CornerDownLeft, Check, ChevronRight, StickyNote } from "lucide-react";
+import {
+  MessageCircleQuestion,
+  Send,
+  CornerDownLeft,
+  Check,
+  ChevronRight,
+  StickyNote,
+} from "lucide-react";
 import styles from "./UserQuestionCardComponent.module.css";
 
 /**
@@ -70,21 +77,22 @@ function QuestionBlock({
   };
 
   // The preview currently focused
-  const activePreview = previewIdx !== null ? options[previewIdx]?.preview : null;
+  const activePreview =
+    previewIdx !== null ? options[previewIdx]?.preview : null;
 
   return (
     <div className={styles.questionBlock}>
       {/* Header chip */}
-      {header && (
-        <span className={styles.headerChip}>{header}</span>
-      )}
+      {header && <span className={styles.headerChip}>{header}</span>}
 
       {/* Question text */}
       <div className={styles.questionText}>{question}</div>
 
       {/* Options + Preview side-by-side layout */}
       {isPending && options.length > 0 && (
-        <div className={`${styles.optionsRow} ${activePreview ? styles.withPreview : ""}`}>
+        <div
+          className={`${styles.optionsRow} ${activePreview ? styles.withPreview : ""}`}
+        >
           <div className={styles.optionsList}>
             {options.map((opt: any, i: any) => {
               const isSelected = multiSelect
@@ -97,11 +105,13 @@ function QuestionBlock({
                   key={i}
                   className={`${styles.optionBtn} ${isSelected ? styles.optionSelected : ""} ${isFocused ? styles.optionFocused : ""}`}
                   onClick={() => handleOptionClick(opt.label)}
-                  onMouseEnter={() => opt.preview ? setPreviewIdx(i) : null}
+                  onMouseEnter={() => (opt.preview ? setPreviewIdx(i) : null)}
                   onMouseLeave={() => setPreviewIdx(null)}
                 >
                   {multiSelect && (
-                    <span className={`${styles.checkbox} ${isSelected ? styles.checkboxChecked : ""}`}>
+                    <span
+                      className={`${styles.checkbox} ${isSelected ? styles.checkboxChecked : ""}`}
+                    >
                       {isSelected && <Check size={10} />}
                     </span>
                   )}
@@ -130,7 +140,11 @@ function QuestionBlock({
             ref={inputRef}
             type="text"
             className={styles.input}
-            placeholder={options.length > 0 ? "Or type a custom answer…" : "Type your answer…"}
+            placeholder={
+              options.length > 0
+                ? "Or type a custom answer…"
+                : "Type your answer…"
+            }
             value={freeText}
             onChange={(e: any) => setFreeText(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -146,7 +160,11 @@ function QuestionBlock({
           <button
             className={styles.sendBtn}
             onClick={handleSubmit}
-            disabled={!freeText.trim() && !selected && !(multiSelect && selected && selected.length > 0)}
+            disabled={
+              !freeText.trim() &&
+              !selected &&
+              !(multiSelect && selected && selected.length > 0)
+            }
           >
             <Send size={14} />
           </button>
@@ -171,7 +189,9 @@ function QuestionBlock({
         <div className={styles.answeredRow}>
           <CornerDownLeft size={12} className={styles.answeredIcon} />
           <span className={styles.answeredText}>
-            {Array.isArray(answeredWith) ? answeredWith.join(", ") : answeredWith}
+            {Array.isArray(answeredWith)
+              ? answeredWith.join(", ")
+              : answeredWith}
           </span>
         </div>
       )}
@@ -198,12 +218,14 @@ export default function UserQuestionCardComponent({
   const normalizedQuestions = useMemo(() => {
     if (questions.length > 0) return questions;
     if (question) {
-      return [{
-        question,
-        header: null,
-        options: choices.map((c: any) => ({ label: c, preview: null })),
-        multiSelect: false,
-      }];
+      return [
+        {
+          question,
+          header: null,
+          options: choices.map((c: any) => ({ label: c, preview: null })),
+          multiSelect: false,
+        },
+      ];
     }
     return [];
   }, [questions, question, choices]);
@@ -215,19 +237,24 @@ export default function UserQuestionCardComponent({
     ? Object.keys(collectedAnswers).length === normalizedQuestions.length
     : false;
 
-  const handleQuestionAnswer = useCallback((index: any, answerData: any) => {
-    if (isMultiQuestion) {
-      // Collect answers for batch submission
-      setCollectedAnswers((prev: any) => ({ ...prev, [index]: answerData }));
-    } else {
-      // Single question — submit immediately
-      onAnswer?.([answerData]);
-    }
-  }, [isMultiQuestion, onAnswer]);
+  const handleQuestionAnswer = useCallback(
+    (index: any, answerData: any) => {
+      if (isMultiQuestion) {
+        // Collect answers for batch submission
+        setCollectedAnswers((prev: any) => ({ ...prev, [index]: answerData }));
+      } else {
+        // Single question — submit immediately
+        onAnswer?.([answerData]);
+      }
+    },
+    [isMultiQuestion, onAnswer],
+  );
 
   const handleSubmitAll = useCallback(() => {
     if (!allAnswered) return;
-    const orderedAnswers = normalizedQuestions.map((_: any, i: any) => (collectedAnswers as any)[i]);
+    const orderedAnswers = normalizedQuestions.map(
+      (_: any, i: any) => (collectedAnswers as any)[i],
+    );
     onAnswer?.(orderedAnswers);
   }, [allAnswered, normalizedQuestions, collectedAnswers, onAnswer]);
 
@@ -267,8 +294,8 @@ export default function UserQuestionCardComponent({
           onAnswer={(answerData: any) => handleQuestionAnswer(i, answerData)}
           answeredWith={
             !isPending
-              ? (answeredWith?.[i]?.answer || answeredWith?.[i])
-              : ((collectedAnswers as any)[i]?.answer || null)
+              ? answeredWith?.[i]?.answer || answeredWith?.[i]
+              : (collectedAnswers as any)[i]?.answer || null
           }
         />
       ))}
@@ -285,7 +312,10 @@ export default function UserQuestionCardComponent({
             Submit All Answers
             {!allAnswered && (
               <span className={styles.remaining}>
-                ({normalizedQuestions.length - Object.keys(collectedAnswers).length} remaining)
+                (
+                {normalizedQuestions.length -
+                  Object.keys(collectedAnswers).length}{" "}
+                remaining)
               </span>
             )}
           </button>

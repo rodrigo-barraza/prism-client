@@ -17,18 +17,63 @@ import styles from "./ModalityIconComponent.module.css";
  * for input and output modality badges. Modalities only — no tools.
  */
 const INPUT_MODALITIES = [
-  { key: "textIn", label: "Text input", icon: Type, color: MODALITY_COLORS.text },
-  { key: "imageIn", label: "Image input", icon: Image, color: MODALITY_COLORS.image },
-  { key: "audioIn", label: "Audio input", icon: Volume2, color: MODALITY_COLORS.audio },
-  { key: "videoIn", label: "Video input", icon: Video, color: MODALITY_COLORS.video },
-  { key: "docIn", label: "Document input", icon: DocIcon, color: MODALITY_COLORS.pdf },
+  {
+    key: "textIn",
+    label: "Text input",
+    icon: Type,
+    color: MODALITY_COLORS.text,
+  },
+  {
+    key: "imageIn",
+    label: "Image input",
+    icon: Image,
+    color: MODALITY_COLORS.image,
+  },
+  {
+    key: "audioIn",
+    label: "Audio input",
+    icon: Volume2,
+    color: MODALITY_COLORS.audio,
+  },
+  {
+    key: "videoIn",
+    label: "Video input",
+    icon: Video,
+    color: MODALITY_COLORS.video,
+  },
+  {
+    key: "docIn",
+    label: "Document input",
+    icon: DocIcon,
+    color: MODALITY_COLORS.pdf,
+  },
 ];
 
 const OUTPUT_MODALITIES = [
-  { key: "textOut", label: "Text output", icon: Type, color: MODALITY_COLORS.text },
-  { key: "imageOut", label: "Image output", icon: Image, color: MODALITY_COLORS.image },
-  { key: "audioOut", label: "Audio output", icon: Volume2, color: MODALITY_COLORS.audio },
-  { key: "embeddingOut", label: "Embedding output", icon: Hash, color: MODALITY_COLORS.embedding },
+  {
+    key: "textOut",
+    label: "Text output",
+    icon: Type,
+    color: MODALITY_COLORS.text,
+  },
+  {
+    key: "imageOut",
+    label: "Image output",
+    icon: Image,
+    color: MODALITY_COLORS.image,
+  },
+  {
+    key: "audioOut",
+    label: "Audio output",
+    icon: Volume2,
+    color: MODALITY_COLORS.audio,
+  },
+  {
+    key: "embeddingOut",
+    label: "Embedding output",
+    icon: Hash,
+    color: MODALITY_COLORS.embedding,
+  },
 ];
 
 /**

@@ -33,14 +33,16 @@ export default function StopwatchBadgeComponent({
     if (!isLive) return;
     const immediate = setTimeout(() => setNowMs(Date.now()), 0);
     const id = setInterval(() => setNowMs(Date.now()), 1000);
-    return () => { clearTimeout(immediate); clearInterval(id); };
+    return () => {
+      clearTimeout(immediate);
+      clearInterval(id);
+    };
   }, [isLive, startTime]);
 
   let displaySeconds;
   if (isLive) {
-    const start = typeof startTime === "number"
-      ? startTime
-      : new Date(startTime).getTime();
+    const start =
+      typeof startTime === "number" ? startTime : new Date(startTime).getTime();
     displaySeconds = Math.max(0, (nowMs - start) / 1000);
   } else {
     displaySeconds = seconds || 0;

@@ -56,11 +56,11 @@ const TOOL_CALL_DISPLAY_NAMES = {
  * Resolve a raw tool function name to a human-readable display label.
  */
 function resolveDisplayName(name: any) {
-  if ((TOOL_CALL_DISPLAY_NAMES as any)[name]) return (TOOL_CALL_DISPLAY_NAMES as any)[name];
+  if ((TOOL_CALL_DISPLAY_NAMES as any)[name])
+    return (TOOL_CALL_DISPLAY_NAMES as any)[name];
   // Fallback: title-case via shared utility
   return renderToolName(name);
 }
-
 
 // ═══════════════════════════════════════════════════════════════════════
 // ToolCallBadgeComponent — A single badge for an individual tool call.
@@ -131,7 +131,12 @@ export function ToolCallBadgeRow({ tools, activeTool }: any) {
       {Object.entries(tools)
         .sort(([, a]: any, [, b]: any) => b - a)
         .map(([name, count]: any) => (
-          <ToolCallBadgeComponent key={name} name={name} count={count} active={name === activeTool} />
+          <ToolCallBadgeComponent
+            key={name}
+            name={name}
+            count={count}
+            active={name === activeTool}
+          />
         ))}
     </div>
   );

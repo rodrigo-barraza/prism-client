@@ -20,7 +20,17 @@ import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import SettingsPanel from "./SettingsPanelComponent";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
-import { BadgeComponent, ButtonComponent, CollapsibleBlockComponent, CopyButtonComponent, EmptyStateComponent, IconButtonComponent, SelectComponent, TabBarComponent, TextAreaComponent } from "@rodrigo-barraza/components-library";
+import {
+  BadgeComponent,
+  ButtonComponent,
+  CollapsibleBlockComponent,
+  CopyButtonComponent,
+  EmptyStateComponent,
+  IconButtonComponent,
+  SelectComponent,
+  TabBarComponent,
+  TextAreaComponent,
+} from "@rodrigo-barraza/components-library";
 
 import PromptSectionComponent from "./PromptSectionComponent";
 
@@ -40,45 +50,78 @@ const MAX_TURNS = 500;
 const SAMPLE_SEEDS = [
   {
     label: "Chatbot with personality",
-    system: "Bunny is a chatbot that stutters, and acts timid and unsure of its answers.",
+    system:
+      "Bunny is a chatbot that stutters, and acts timid and unsure of its answers.",
     messages: [
-      { role: "user", content: "When was the Library of Alexandria burned down?" },
-      { role: "assistant", content: "Umm, I-I think that was in 48 BC, b-but I'm not sure, I'm sorry." },
+      {
+        role: "user",
+        content: "When was the Library of Alexandria burned down?",
+      },
+      {
+        role: "assistant",
+        content:
+          "Umm, I-I think that was in 48 BC, b-but I'm not sure, I'm sorry.",
+      },
     ],
     category: "Chat",
   },
   {
     label: "Coding assistant",
-    system: "You are a senior software engineer who explains concepts clearly and provides production-quality code.",
+    system:
+      "You are a senior software engineer who explains concepts clearly and provides production-quality code.",
     messages: [
-      { role: "user", content: "How do I implement a debounce function in JavaScript?" },
+      {
+        role: "user",
+        content: "How do I implement a debounce function in JavaScript?",
+      },
     ],
     category: "Coding",
   },
   {
     label: "Creative writing",
-    system: "You are a creative writing assistant with a poetic, evocative style. You help users craft vivid prose and poetry.",
+    system:
+      "You are a creative writing assistant with a poetic, evocative style. You help users craft vivid prose and poetry.",
     messages: [
-      { role: "user", content: "Write a haiku about the first rain of spring." },
-      { role: "assistant", content: "Petrichor rising,\nearth exhales its longest sigh—\nblossoms drink the sky." },
-      { role: "user", content: "Now turn that into a short paragraph of prose." },
+      {
+        role: "user",
+        content: "Write a haiku about the first rain of spring.",
+      },
+      {
+        role: "assistant",
+        content:
+          "Petrichor rising,\nearth exhales its longest sigh—\nblossoms drink the sky.",
+      },
+      {
+        role: "user",
+        content: "Now turn that into a short paragraph of prose.",
+      },
     ],
     category: "Creative Writing",
   },
   {
     label: "Brainstorming",
-    system: "You are an enthusiastic brainstorming partner. You generate creative, diverse ideas and build on the user's suggestions.",
+    system:
+      "You are an enthusiastic brainstorming partner. You generate creative, diverse ideas and build on the user's suggestions.",
     messages: [
-      { role: "user", content: "I need ideas for a mobile app that helps people learn languages through music." },
+      {
+        role: "user",
+        content:
+          "I need ideas for a mobile app that helps people learn languages through music.",
+      },
     ],
     category: "Brainstorm",
   },
   {
     label: "Roleplay - medieval guide",
-    system: "You are a medieval town guide named Aldric. You speak in an old English dialect and are eager to show travelers around your village.",
+    system:
+      "You are a medieval town guide named Aldric. You speak in an old English dialect and are eager to show travelers around your village.",
     messages: [
       { role: "user", content: "What can I do in this town?" },
-      { role: "assistant", content: "Ah, a weary traveler! Welcome, welcome to Thornhollow! Pray, follow me — I shall show thee the finest tavern this side of the King's Road, and mayhaps the blacksmith if thou needst thy blade sharpened." },
+      {
+        role: "assistant",
+        content:
+          "Ah, a weary traveler! Welcome, welcome to Thornhollow! Pray, follow me — I shall show thee the finest tavern this side of the King's Road, and mayhaps the blacksmith if thou needst thy blade sharpened.",
+      },
       { role: "user", content: "Take me to the tavern." },
     ],
     category: "Chat",
@@ -135,7 +178,9 @@ export default function SynthesisComponent() {
   const [conversationId, setConversationId] = useState(null);
 
   // -- History state ---------------------------------------------
-  const [synthesisConversations, setSynthesisConversations] = useState<any[]>([]);
+  const [synthesisConversations, setSynthesisConversations] = useState<any[]>(
+    [],
+  );
   const [activeHistoryId, setActiveHistoryId] = useState(null);
   const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
 
@@ -183,19 +228,22 @@ export default function SynthesisComponent() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -- Favorites -------------------------------------------------
-  const handleToggleFavorite = useCallback(async (key: any) => {
-    if (favoriteKeys.includes(key)) {
-      setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
-      PrismService.removeFavorite("model", key).catch(() => {});
-    } else {
-      setFavoriteKeys((prev: any) => [...prev, key]);
-      const [provider, ...rest] = key.split(":");
-      PrismService.addFavorite("model", key, {
-        provider,
-        name: rest.join(":"),
-      }).catch(() => {});
-    }
-  }, [favoriteKeys]);
+  const handleToggleFavorite = useCallback(
+    async (key: any) => {
+      if (favoriteKeys.includes(key)) {
+        setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
+        PrismService.removeFavorite("model", key).catch(() => {});
+      } else {
+        setFavoriteKeys((prev: any) => [...prev, key]);
+        const [provider, ...rest] = key.split(":");
+        PrismService.addFavorite("model", key, {
+          provider,
+          name: rest.join(":"),
+        }).catch(() => {});
+      }
+    },
+    [favoriteKeys],
+  );
 
   // -- Filtered config: text-to-text models only -----------------
   const filteredConfig = useMemo(() => {
@@ -209,10 +257,13 @@ export default function SynthesisComponent() {
   }, [config]);
 
   // -- Model selection handler -----------------------------------
-  const handleSelectModel = useCallback((provider: any, model: any) => {
-    setSettings((s: any) => ({ ...s, provider, model }));
-    saveModel(provider, model);
-  }, [saveModel]);
+  const handleSelectModel = useCallback(
+    (provider: any, model: any) => {
+      setSettings((s: any) => ({ ...s, provider, model }));
+      saveModel(provider, model);
+    },
+    [saveModel],
+  );
 
   const handleSelectUserSimModel = useCallback((provider: any, model: any) => {
     setUserSimSettings((s: any) => ({ ...s, provider, model }));
@@ -231,14 +282,20 @@ export default function SynthesisComponent() {
     return msgs;
   }, [systemPrompt, generatedMessages]);
 
-  const sftData = useMemo(() => ({
-    prompt: systemPrompt.trim(),
-    prompt_id: generateUUID().replace(/-/g, ""),
-    messages: sftOutput,
-    category,
-  }), [sftOutput, category, systemPrompt]);
+  const sftData = useMemo(
+    () => ({
+      prompt: systemPrompt.trim(),
+      prompt_id: generateUUID().replace(/-/g, ""),
+      messages: sftOutput,
+      category,
+    }),
+    [sftOutput, category, systemPrompt],
+  );
 
-  const sftJsonString = useMemo(() => JSON.stringify(sftData, null, 2), [sftData]);
+  const sftJsonString = useMemo(
+    () => JSON.stringify(sftData, null, 2),
+    [sftData],
+  );
 
   // -- Auto-scroll messages --------------------------------------
   useEffect(() => {
@@ -250,14 +307,21 @@ export default function SynthesisComponent() {
     setSeedMessages((prev: any) => [...prev, { role, content: "" }]);
   }, []);
 
-  const updateSeedMessage = useCallback((index: any, field: any, value: any) => {
-    setSeedMessages((prev: any) =>
-      prev.map((m: any, i: any) => (i === index ? { ...m, [field]: value } : m)),
-    );
-  }, []);
+  const updateSeedMessage = useCallback(
+    (index: any, field: any, value: any) => {
+      setSeedMessages((prev: any) =>
+        prev.map((m: any, i: any) =>
+          i === index ? { ...m, [field]: value } : m,
+        ),
+      );
+    },
+    [],
+  );
 
   const removeSeedMessage = useCallback((index: any) => {
-    setSeedMessages((prev: any) => prev.filter((_: any, i: any) => i !== index));
+    setSeedMessages((prev: any) =>
+      prev.filter((_: any, i: any) => i !== index),
+    );
   }, []);
 
   const loadSeedTemplate = useCallback((seed: any) => {
@@ -352,7 +416,12 @@ export default function SynthesisComponent() {
             (partial: any) => {
               setGeneratedMessages([
                 ...conversation,
-                { role: "assistant", content: partial, thinking: turnThinking || undefined, _streaming: true },
+                {
+                  role: "assistant",
+                  content: partial,
+                  thinking: turnThinking || undefined,
+                  _streaming: true,
+                },
               ]);
               setGenerationProgress(partial);
             },
@@ -364,7 +433,12 @@ export default function SynthesisComponent() {
                 turnThinking += chunk;
                 setGeneratedMessages([
                   ...conversation,
-                  { role: "assistant", content: "", thinking: turnThinking, _streaming: true },
+                  {
+                    role: "assistant",
+                    content: "",
+                    thinking: turnThinking,
+                    _streaming: true,
+                  },
                 ]);
               },
             },
@@ -373,7 +447,11 @@ export default function SynthesisComponent() {
 
           if (abortedRef.current) break;
 
-          conversation.push({ role: "assistant", content: assistantContent, thinking: turnThinking || undefined } as any);
+          conversation.push({
+            role: "assistant",
+            content: assistantContent,
+            thinking: turnThinking || undefined,
+          } as any);
           setGeneratedMessages([...conversation]);
           setGenerationProgress("");
           nextRole = "user";
@@ -400,18 +478,31 @@ export default function SynthesisComponent() {
             if (swapped[0].role === "assistant") {
               swapped.unshift({
                 role: "user",
-                content: "Continue the conversation. Generate the next natural user message.",
+                content:
+                  "Continue the conversation. Generate the next natural user message.",
               });
             }
             simulatorHistory = swapped;
           } else {
-            simulatorHistory = [{ role: "user", content: "Start the conversation. Send the first message as the user." }];
+            simulatorHistory = [
+              {
+                role: "user",
+                content:
+                  "Start the conversation. Send the first message as the user.",
+              },
+            ];
           }
 
           // Use separate model for user simulation when enabled
-          const userTurnSettings = useUserSimModel && userSimSettings.provider && userSimSettings.model
-            ? { ...settings, provider: userSimSettings.provider, model: userSimSettings.model, temperature: userSimSettings.temperature }
-            : settings;
+          const userTurnSettings =
+            useUserSimModel && userSimSettings.provider && userSimSettings.model
+              ? {
+                  ...settings,
+                  provider: userSimSettings.provider,
+                  model: userSimSettings.model,
+                  temperature: userSimSettings.temperature,
+                }
+              : settings;
 
           const userContent = await streamTurn(
             userTurnSettings,
@@ -438,7 +529,12 @@ export default function SynthesisComponent() {
           try {
             // Pass meta on the first call to create the conversation record
             const appendMeta = conversationCreated ? undefined : convMeta;
-            await PrismService.appendMessages(convId, [userMsg], undefined, appendMeta);
+            await PrismService.appendMessages(
+              convId,
+              [userMsg],
+              undefined,
+              appendMeta,
+            );
             conversationCreated = true;
           } catch {
             // Non-critical
@@ -463,7 +559,12 @@ export default function SynthesisComponent() {
           (partial: any) => {
             setGeneratedMessages([
               ...conversation,
-              { role: "assistant", content: partial, thinking: finalThinking || undefined, _streaming: true },
+              {
+                role: "assistant",
+                content: partial,
+                thinking: finalThinking || undefined,
+                _streaming: true,
+              },
             ]);
             setGenerationProgress(partial);
           },
@@ -475,14 +576,23 @@ export default function SynthesisComponent() {
               finalThinking += chunk;
               setGeneratedMessages([
                 ...conversation,
-                { role: "assistant", content: "", thinking: finalThinking, _streaming: true },
+                {
+                  role: "assistant",
+                  content: "",
+                  thinking: finalThinking,
+                  _streaming: true,
+                },
               ]);
             },
           },
         );
 
         if (!abortedRef.current) {
-          conversation.push({ role: "assistant", content: assistantContent, thinking: finalThinking || undefined } as any);
+          conversation.push({
+            role: "assistant",
+            content: assistantContent,
+            thinking: finalThinking || undefined,
+          } as any);
           setGeneratedMessages([...conversation]);
         }
       }
@@ -597,7 +707,9 @@ export default function SynthesisComponent() {
       if (run.conversationId) {
         try {
           const full = await PrismService.getConversation(run.conversationId);
-          const msgs = (full.messages || []).filter((m: any) => m.role !== "system");
+          const msgs = (full.messages || []).filter(
+            (m: any) => m.role !== "system",
+          );
           setGeneratedMessages(msgs);
           if (msgs.length > 0) setLeftTab("output");
         } catch {
@@ -617,7 +729,9 @@ export default function SynthesisComponent() {
   const handleDeleteHistory = useCallback(async (id: any) => {
     try {
       await PrismService.deleteSynthesisRun(id);
-      setSynthesisConversations((prev: any) => prev.filter((c: any) => c.id !== id));
+      setSynthesisConversations((prev: any) =>
+        prev.filter((c: any) => c.id !== id),
+      );
       // If the deleted run is currently active, clear the view
       setActiveHistoryId((prev: any) => {
         if (prev === id) {
@@ -651,7 +765,9 @@ export default function SynthesisComponent() {
   }, []);
 
   const removeGeneratedMessage = useCallback((index: any) => {
-    setGeneratedMessages((prev: any) => prev.filter((_: any, i: any) => i !== index));
+    setGeneratedMessages((prev: any) =>
+      prev.filter((_: any, i: any) => i !== index),
+    );
   }, []);
 
   // -- Render ----------------------------------------------------
@@ -664,7 +780,10 @@ export default function SynthesisComponent() {
           {
             key: "output",
             label: "Output",
-            badge: generatedMessages.length > 0 ? generatedMessages.length : undefined,
+            badge:
+              generatedMessages.length > 0
+                ? generatedMessages.length
+                : undefined,
           },
         ]}
         activeTab={leftTab}
@@ -677,11 +796,12 @@ export default function SynthesisComponent() {
           <SettingsPanel
             config={filteredConfig}
             settings={settings}
-            onChange={(updates: any) => setSettings((s: any) => ({ ...s, ...updates }))}
+            onChange={(updates: any) =>
+              setSettings((s: any) => ({ ...s, ...updates }))
+            }
             hasAssistantImages={false}
             hideProviderModel={false}
           />
-
         </div>
       )}
 
@@ -705,10 +825,7 @@ export default function SynthesisComponent() {
                   Download
                 </ButtonComponent>
               </div>
-              <JsonViewerComponent
-                data={sftData}
-                label="SFT Output"
-              />
+              <JsonViewerComponent data={sftData} label="SFT Output" />
             </>
           ) : (
             <div className={styles.outputEmpty}>
@@ -737,10 +854,7 @@ export default function SynthesisComponent() {
         }
         headerTitle="Synthesis"
         navSidebar={
-          <NavigationSidebarComponent
-            mode="user"
-            isGenerating={isGenerating}
-          />
+          <NavigationSidebarComponent mode="user" isGenerating={isGenerating} />
         }
         headerCenter={
           <div className={styles.headerCenterGroup}>
@@ -814,12 +928,18 @@ export default function SynthesisComponent() {
                   step={1}
                   onChange={(e: any) => {
                     const raw = e.target.value;
-                    if (raw === "") { setTargetTurns("" as any); return; }
+                    if (raw === "") {
+                      setTargetTurns("" as any);
+                      return;
+                    }
                     const v = parseInt(raw, 10);
                     if (!isNaN(v)) setTargetTurns(v);
                   }}
                   onBlur={() => {
-                    const clamped = Math.max(MIN_TURNS, Math.min(MAX_TURNS, Number(targetTurns) || DEFAULT_TURNS));
+                    const clamped = Math.max(
+                      MIN_TURNS,
+                      Math.min(MAX_TURNS, Number(targetTurns) || DEFAULT_TURNS),
+                    );
                     setTargetTurns(clamped);
                   }}
                 />
@@ -892,7 +1012,9 @@ export default function SynthesisComponent() {
           <CollapsibleBlockComponent
             icon={<MessageSquare size={14} />}
             label="Prefilled Messages"
-            badge={seedMessages.length > 0 ? String(seedMessages.length) : undefined}
+            badge={
+              seedMessages.length > 0 ? String(seedMessages.length) : undefined
+            }
             open={seedsExpanded}
             onToggle={setSeedsExpanded}
             className={styles.collapsibleSection}
@@ -981,7 +1103,10 @@ export default function SynthesisComponent() {
                   </a>
                 )}
                 {isGenerating && (
-                  <BadgeComponent variant="success" className={styles.streamingBadge}>
+                  <BadgeComponent
+                    variant="success"
+                    className={styles.streamingBadge}
+                  >
                     <span className={styles.streamingDot} />
                     Streaming
                   </BadgeComponent>
@@ -1002,7 +1127,8 @@ export default function SynthesisComponent() {
                 }}
                 onEdit={(index: any, content: any) => {
                   const offset = systemPrompt.trim() ? 1 : 0;
-                  if (index >= offset) updateGeneratedMessage(index - offset, content);
+                  if (index >= offset)
+                    updateGeneratedMessage(index - offset, content);
                 }}
                 readOnly={false}
               />
@@ -1034,28 +1160,38 @@ export default function SynthesisComponent() {
  * Each turn is a real /chat call — the model genuinely responds to the context.
  * When conversationId is provided, the messages are persisted to that conversation.
  */
-function streamTurn(settings: any, turnSystemPrompt: any, history: any, onPartial: any, abortRef: any, conversationId: any, conversationMeta: any, { skipConversation = false, onThinking }: any = {}) {
+function streamTurn(
+  settings: any,
+  turnSystemPrompt: any,
+  history: any,
+  onPartial: any,
+  abortRef: any,
+  conversationId: any,
+  conversationMeta: any,
+  { skipConversation = false, onThinking }: any = {},
+) {
   return new Promise((resolve: any, reject: any) => {
     let collected = "";
 
     const payload = {
       provider: settings.provider,
       model: settings.model,
-      messages: [
-        { role: "system", content: turnSystemPrompt },
-        ...history,
-      ],
+      messages: [{ role: "system", content: turnSystemPrompt }, ...history],
       temperature: settings.temperature,
       maxTokens: settings.maxTokens,
     };
 
     // Thinking / reasoning settings — respect the user's toggle
-    const thinkingOn = settings.thinkingEnabled ?? (settings.provider === "lm-studio");
+    const thinkingOn =
+      settings.thinkingEnabled ?? settings.provider === "lm-studio";
     if (thinkingOn) {
       (payload as any).thinkingEnabled = true;
-      if (settings.reasoningEffort) (payload as any).reasoningEffort = settings.reasoningEffort;
-      if (settings.thinkingLevel) (payload as any).thinkingLevel = settings.thinkingLevel;
-      if (settings.thinkingBudget) (payload as any).thinkingBudget = settings.thinkingBudget;
+      if (settings.reasoningEffort)
+        (payload as any).reasoningEffort = settings.reasoningEffort;
+      if (settings.thinkingLevel)
+        (payload as any).thinkingLevel = settings.thinkingLevel;
+      if (settings.thinkingBudget)
+        (payload as any).thinkingBudget = settings.thinkingBudget;
     } else {
       (payload as any).thinkingEnabled = false;
     }
@@ -1065,21 +1201,19 @@ function streamTurn(settings: any, turnSystemPrompt: any, history: any, onPartia
       (payload as any).skipConversation = true;
     } else if (conversationId) {
       (payload as any).conversationId = conversationId;
-      if (conversationMeta) (payload as any).conversationMeta = conversationMeta;
+      if (conversationMeta)
+        (payload as any).conversationMeta = conversationMeta;
     }
 
-    const cancel = PrismService.streamText(
-      payload,
-      {
-        onChunk: (content: any) => {
-          collected += content;
-          onPartial(collected);
-        },
-        onThinking: onThinking || undefined,
-        onDone: () => resolve(collected),
-        onError: (error: any) => reject(error),
+    const cancel = PrismService.streamText(payload, {
+      onChunk: (content: any) => {
+        collected += content;
+        onPartial(collected);
       },
-    );
+      onThinking: onThinking || undefined,
+      onDone: () => resolve(collected),
+      onError: (error: any) => reject(error),
+    });
 
     abortRef.current = cancel;
   });

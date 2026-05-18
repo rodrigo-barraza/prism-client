@@ -67,7 +67,10 @@ export default function ComboboxFilter({
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: any) => {
-      if (containerRef.current && !(containerRef.current as any).contains(e.target)) {
+      if (
+        containerRef.current &&
+        !(containerRef.current as any).contains(e.target)
+      ) {
         setOpen(false);
         setQuery("");
       }

@@ -252,8 +252,14 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     const pos = getPos(e);
 
     let updated;
-    if ((currentStroke as any).tool === "pen" || (currentStroke as any).tool === "eraser") {
-      updated = { ...currentStroke, points: [...(currentStroke as any).points, pos] };
+    if (
+      (currentStroke as any).tool === "pen" ||
+      (currentStroke as any).tool === "eraser"
+    ) {
+      updated = {
+        ...currentStroke,
+        points: [...(currentStroke as any).points, pos],
+      };
     } else {
       updated = { ...currentStroke, end: pos };
     }
@@ -270,7 +276,8 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     if (!drawing || !currentStroke) return;
 
     const isValid =
-      (currentStroke as any).tool === "pen" || (currentStroke as any).tool === "eraser"
+      (currentStroke as any).tool === "pen" ||
+      (currentStroke as any).tool === "eraser"
         ? (currentStroke as any).points.length >= 2
         : (currentStroke as any).start && (currentStroke as any).end;
 

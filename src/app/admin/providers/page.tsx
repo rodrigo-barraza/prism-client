@@ -3,9 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import IrisService from "../../../services/IrisService";
 import PrismService from "../../../services/PrismService";
-import { SelectComponent, TableComponent } from "@rodrigo-barraza/components-library";
+import {
+  SelectComponent,
+  TableComponent,
+} from "@rodrigo-barraza/components-library";
 import { resolveProviderLabel } from "../../../components/ProviderLogosComponent";
-
 
 import {
   LoadingMessage,
@@ -24,7 +26,6 @@ import { PROVIDER_COLORS } from "../../../constants";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import styles from "./page.module.css";
-
 
 export default function ProvidersPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
@@ -93,12 +94,15 @@ export default function ProvidersPage() {
       .map((p: any) => ({
         ...p,
         avgLatency: p._latencyCount ? p._latencySum / p._latencyCount : 0,
-        models: p.models.sort((a: any, b: any) => b.totalRequests - a.totalRequests),
+        models: p.models.sort(
+          (a: any, b: any) => b.totalRequests - a.totalRequests,
+        ),
       }))
       .sort((a: any, b: any) => b.totalRequests - a.totalRequests);
   }, [modelStats]);
 
-  const totalRequests = providers.reduce((s: any, p: any) => s + p.totalRequests, 0) || 1;
+  const totalRequests =
+    providers.reduce((s: any, p: any) => s + p.totalRequests, 0) || 1;
 
   const modelColumns = useMemo(
     () => [
@@ -145,7 +149,6 @@ export default function ProvidersPage() {
     [],
   );
 
-
   useEffect(() => {
     setControls(
       <>
@@ -174,7 +177,6 @@ export default function ProvidersPage() {
 
   return (
     <div className={styles.page}>
-
       {loading && <LoadingMessage message="Loading provider data..." />}
 
       <div className={styles.providerList}>
@@ -240,9 +242,7 @@ export default function ProvidersPage() {
               </button>
 
               {/* Rate Limits Section */}
-              {providerLimits && (
-                <RateLimitPanel data={providerLimits} />
-              )}
+              {providerLimits && <RateLimitPanel data={providerLimits} />}
 
               {isExpanded && (
                 <div className={styles.modelList}>
@@ -272,9 +272,7 @@ function RateLimitPanel({ data }: any) {
     <div className={styles.rateLimitPanel}>
       <div className={styles.rateLimitHeader}>
         <span className={styles.rateLimitTitle}>Rate Limits</span>
-        {note && (
-          <span className={styles.rateLimitMeta}>{note}</span>
-        )}
+        {note && <span className={styles.rateLimitMeta}>{note}</span>}
       </div>
       <div className={styles.rateLimitModels}>
         {Object.entries(models).map(([modelName, modelData]: any) => (
@@ -304,7 +302,9 @@ function ModelRateLimitCard({ modelName, modelData, dynamic }: any) {
         <div className={styles.rateLimitMetrics}>
           <RateLimitMetric label="RPM" value={modelData.rpm} />
           <RateLimitMetric label="TPM" value={modelData.tpm} />
-          {modelData.rpd != null && <RateLimitMetric label="RPD" value={modelData.rpd} />}
+          {modelData.rpd != null && (
+            <RateLimitMetric label="RPD" value={modelData.rpd} />
+          )}
         </div>
       </div>
     );
@@ -320,9 +320,7 @@ function ModelRateLimitCard({ modelName, modelData, dynamic }: any) {
     <div className={styles.rateLimitModelCard}>
       <div className={styles.rateLimitModelHeader}>
         <span className={styles.rateLimitModelName}>{modelName}</span>
-        {timeAgo && (
-          <span className={styles.rateLimitMeta}>{timeAgo}</span>
-        )}
+        {timeAgo && <span className={styles.rateLimitMeta}>{timeAgo}</span>}
       </div>
       <div className={styles.rateLimitMetrics}>
         {/* Requests per minute */}
@@ -394,9 +392,7 @@ function LimitBar({ label, remaining, limit, reset }: any) {
           }}
         />
       </div>
-      {reset && (
-        <span className={styles.rateLimitReset}>resets {reset}</span>
-      )}
+      {reset && <span className={styles.rateLimitReset}>resets {reset}</span>}
     </div>
   );
 }
@@ -411,5 +407,3 @@ function RateLimitMetric({ label, value }: any) {
     </span>
   );
 }
-
-

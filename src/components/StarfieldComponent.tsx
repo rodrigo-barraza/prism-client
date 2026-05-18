@@ -486,7 +486,12 @@ function renderNebulaLayer(w: any, h: any, rng: any) {
   coreGrad.addColorStop(0.6, "rgba(140, 120, 90, 0.015)");
   coreGrad.addColorStop(1, "rgba(100, 90, 80, 0)");
   context.fillStyle = coreGrad;
-  context.fillRect(-coreRadius * 2, -coreRadius, coreRadius * 4, coreRadius * 2);
+  context.fillRect(
+    -coreRadius * 2,
+    -coreRadius,
+    coreRadius * 4,
+    coreRadius * 2,
+  );
   context.restore();
 
   // -- Milky Way diffuse glow band --

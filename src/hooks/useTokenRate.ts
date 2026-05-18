@@ -111,17 +111,26 @@ export default function useTokenRate(sessionStats: any) {
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [perfNow, setPerfNow] = useState(() => performance.now());
 
-  const isStreaming = !!(sessionStats?.liveStreamingStartTime);
-  const turnActive = !!(sessionStats?.currentTurnStart);
+  const isStreaming = !!sessionStats?.liveStreamingStartTime;
+  const turnActive = !!sessionStats?.currentTurnStart;
   const needsTicker = turnActive || isStreaming;
 
   useEffect(() => {
     if (!needsTicker) return;
     // Immediate tick via microtask to avoid synchronous setState in effect body
-    const immediate = setTimeout(() => { setNowMs(Date.now()); setPerfNow(performance.now()); }, 0);
+    const immediate = setTimeout(() => {
+      setNowMs(Date.now());
+      setPerfNow(performance.now());
+    }, 0);
     // 500ms interval for smoother tok/s updates during streaming
-    const id = setInterval(() => { setNowMs(Date.now()); setPerfNow(performance.now()); }, 500);
-    return () => { clearTimeout(immediate); clearInterval(id); };
+    const id = setInterval(() => {
+      setNowMs(Date.now());
+      setPerfNow(performance.now());
+    }, 500);
+    return () => {
+      clearTimeout(immediate);
+      clearInterval(id);
+    };
   }, [needsTicker]);
 
   // -- Elapsed time ----------------------------------------------
@@ -138,8 +147,9 @@ export default function useTokenRate(sessionStats: any) {
   // Priority 1: Sum per-worker tok/s from workerGenerationProgress.
   // These come from CoordinatorService's buildProgress() which uses
   // burst-scoped chunk counters — accurate and independent per worker.
-  const { sum: workerSum, count: activeWorkerCount } =
-    sumWorkerThroughput(sessionStats?.workerGenerationProgress);
+  const { sum: workerSum, count: activeWorkerCount } = sumWorkerThroughput(
+    sessionStats?.workerGenerationProgress,
+  );
 
   if (activeWorkerCount > 0) {
     hasActiveWorkers = true;
@@ -147,9 +157,10 @@ export default function useTokenRate(sessionStats: any) {
 
     // Add orchestrator's own rate if it's also generating
     // (the orchestrator streams chunks independently via its own SSE path)
-    const coordActive = isStreaming
-      && sessionStats?.liveStreamingLastChunkTime
-      && (perfNow - sessionStats.liveStreamingLastChunkTime) < CHUNK_STALE_MS;
+    const coordActive =
+      isStreaming &&
+      sessionStats?.liveStreamingLastChunkTime &&
+      perfNow - sessionStats.liveStreamingLastChunkTime < CHUNK_STALE_MS;
     if (coordActive) {
       const burstElapsed = (sessionStats.liveStreamingBurstElapsed || 0) / 1000;
       const burstTokens = sessionStats.liveStreamingBurstTokens || 0;
@@ -163,9 +174,10 @@ export default function useTokenRate(sessionStats: any) {
     // Priority 2: Backend-sourced generation_progress from
     // SessionGenerationTracker (for solo orchestrator sessions).
     const genProgress = sessionStats?.liveGenProgress;
-    const genProgressFresh = genProgress
-      && genProgress.timestamp
-      && (perfNow - genProgress.timestamp) < PROGRESS_STALE_MS;
+    const genProgressFresh =
+      genProgress &&
+      genProgress.timestamp &&
+      perfNow - genProgress.timestamp < PROGRESS_STALE_MS;
 
     if (genProgressFresh && genProgress.tokPerSec != null) {
       computedTokPerSec = genProgress.tokPerSec;
@@ -173,11 +185,13 @@ export default function useTokenRate(sessionStats: any) {
     } else {
       // Priority 3: Frontend chunk-counting fallback for non-agentic
       // sessions (Direct Chat) that don't go through the agentic loop.
-      const coordActive = isStreaming
-        && sessionStats?.liveStreamingLastChunkTime
-        && (perfNow - sessionStats.liveStreamingLastChunkTime) < CHUNK_STALE_MS;
+      const coordActive =
+        isStreaming &&
+        sessionStats?.liveStreamingLastChunkTime &&
+        perfNow - sessionStats.liveStreamingLastChunkTime < CHUNK_STALE_MS;
       if (coordActive) {
-        const burstElapsed = (sessionStats.liveStreamingBurstElapsed || 0) / 1000;
+        const burstElapsed =
+          (sessionStats.liveStreamingBurstElapsed || 0) / 1000;
         const burstTokens = sessionStats.liveStreamingBurstTokens || 0;
         if (burstElapsed > 0 && burstTokens > 0) {
           computedTokPerSec = burstTokens / burstElapsed;

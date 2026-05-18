@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -33,7 +39,11 @@ import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
 import CostBadgeComponent from "./CostBadgeComponent";
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
 
-import { BadgeComponent, CopyButtonComponent, IconButtonComponent, DateTimeBadgeComponent,
+import {
+  BadgeComponent,
+  CopyButtonComponent,
+  IconButtonComponent,
+  DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import WordBadgeComponent from "./WordBadgeComponent";
 import WorkerNotificationComponent from "./WorkerNotificationComponent";
@@ -73,7 +83,11 @@ function parseTaskNotification(content: any) {
  * strings. This function parses them back into styled badges
  * for display in the message list.                             */
 
-function renderContentWithMentions(text: any, knownPaths: any, onMentionFileOpen: any) {
+function renderContentWithMentions(
+  text: any,
+  knownPaths: any,
+  onMentionFileOpen: any,
+) {
   const segments = parseMentionTokens(text);
   // Fast path: no mentions found, return plain string
   if (segments.length === 1 && segments[0].type === "text") return text;
@@ -150,7 +164,10 @@ function ThinkingBlock({ thinking, isStreaming, children }: any) {
     if (isStreaming && !streamClosed && contentRef.current) {
       const element = contentRef.current;
       requestAnimationFrame(() => {
-        (element as any).scrollTo({ top: (element as any).scrollHeight, behavior: "smooth" });
+        (element as any).scrollTo({
+          top: (element as any).scrollHeight,
+          behavior: "smooth",
+        });
       });
     }
   }, [thinking, isStreaming, streamClosed]);
@@ -184,29 +201,41 @@ function ThinkingBlock({ thinking, isStreaming, children }: any) {
   );
 }
 
-function ToolCallsBlock({ toolCalls, streamingOutputs, workerToolActivity }: any) {
+function ToolCallsBlock({
+  toolCalls,
+  streamingOutputs,
+  workerToolActivity,
+}: any) {
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   if (!toolCalls || toolCalls.length === 0) return null;
 
   const hasActiveCalls = toolCalls.some((tc: any) => tc.status === "calling");
-  const doneCount = toolCalls.filter((tc: any) => tc.status === "done" || tc.status === "error").length;
+  const doneCount = toolCalls.filter(
+    (tc: any) => tc.status === "done" || tc.status === "error",
+  ).length;
 
   // Build header text with active tense awareness
   const headerText = (() => {
     if (toolCalls.length === 1) {
-      const name = toolCalls[0].name === "googleSearch" ? "Google Search" : renderToolName(toolCalls[0].name);
+      const name =
+        toolCalls[0].name === "googleSearch"
+          ? "Google Search"
+          : renderToolName(toolCalls[0].name);
       if (hasActiveCalls) return `Calling ${name}…`;
       return `Used tool: ${name}`;
     }
     if (hasActiveCalls) {
-      const progress = doneCount > 0 ? ` (${doneCount}/${toolCalls.length} done)` : "";
+      const progress =
+        doneCount > 0 ? ` (${doneCount}/${toolCalls.length} done)` : "";
       return `Running ${toolCalls.length} tools${progress}…`;
     }
     return `Used ${toolCalls.length} tools`;
   })();
 
   return (
-    <div className={`${styles.toolCallsBlock}${hasActiveCalls ? ` ${styles.toolCallsStreaming}` : ""}`}>
+    <div
+      className={`${styles.toolCallsBlock}${hasActiveCalls ? ` ${styles.toolCallsStreaming}` : ""}`}
+    >
       {/* -- Header toggle -- */}
       <button
         className={styles.toolCallsToggle}
@@ -214,14 +243,21 @@ function ToolCallsBlock({ toolCalls, streamingOutputs, workerToolActivity }: any
       >
         <Zap size={13} />
         <span>{headerText}</span>
-        {headerCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+        {headerCollapsed ? (
+          <ChevronRight size={14} />
+        ) : (
+          <ChevronDown size={14} />
+        )}
       </button>
 
       {/* -- Always-visible tool cards -- */}
       {!headerCollapsed && (
         <div className={styles.toolCallsContent}>
           {toolCalls.map((tc: any, j: any) => {
-            const name = tc.name === "googleSearch" ? "Google Search" : renderToolName(tc.name);
+            const name =
+              tc.name === "googleSearch"
+                ? "Google Search"
+                : renderToolName(tc.name);
             const { Icon, color } = resolveToolVisuals(tc.name);
 
             const isCalling = tc.status === "calling";
@@ -230,12 +266,16 @@ function ToolCallsBlock({ toolCalls, streamingOutputs, workerToolActivity }: any
             return (
               <div key={j} className={styles.toolCallItem}>
                 {/* Status indicator */}
-                <span className={`${styles.toolCallStatusIcon}${isCalling ? ` ${styles.toolCallStatusCalling}` : ""}${isError ? ` ${styles.toolCallStatusError}` : ""}`}>
-                  {isCalling
-                    ? <Loader size={12} className={styles.toolCallSpinner} />
-                    : isError
-                      ? <AlertTriangle size={12} />
-                      : <Check size={12} />}
+                <span
+                  className={`${styles.toolCallStatusIcon}${isCalling ? ` ${styles.toolCallStatusCalling}` : ""}${isError ? ` ${styles.toolCallStatusError}` : ""}`}
+                >
+                  {isCalling ? (
+                    <Loader size={12} className={styles.toolCallSpinner} />
+                  ) : isError ? (
+                    <AlertTriangle size={12} />
+                  ) : (
+                    <Check size={12} />
+                  )}
                 </span>
 
                 <span className={styles.toolCallIcon} style={{ color }}>
@@ -244,42 +284,84 @@ function ToolCallsBlock({ toolCalls, streamingOutputs, workerToolActivity }: any
                 <span className={styles.toolCallName}>{name}</span>
 
                 {/* Worker tool badges — show which tools a spawned agent used */}
-                {tc.name === "team_create" && (() => {
-                  const parsed = tc.result ? (typeof tc.result === "string" ? (() => { try { return JSON.parse(tc.result); } catch { return null; } })() : tc.result) : null;
-                  const members = parsed?.members || [];
-                  // Aggregate tool activity from all team members
-                  const allToolNames = {};
-                  let activeTool = null;
-                  for (const member of members) {
-                    const activity = member.agent_id && workerToolActivity ? workerToolActivity[member.agent_id] : null;
-                    if (activity?.toolNames) {
-                      for (const [name, count] of Object.entries(activity.toolNames)) {
-                        (allToolNames as any)[name] = ((allToolNames as any)[name] || 0) + count;
-                      }
-                      if (activity.currentTool) activeTool = activity.currentTool;
-                    }
-                  }
-                  // Fallback: match by description during calling state (before result arrives)
-                  // createTeam prefixes descriptions as "[teamName] description"
-                  if (Object.keys(allToolNames).length === 0 && workerToolActivity && Array.isArray(tc.args?.members)) {
-                    for (const argMember of tc.args.members) {
-                      const match = Object.values(workerToolActivity).find((v: any) =>
-                        v.description && v.description.includes(argMember.description),
-                      );
-                      if ((match as any)?.toolNames) {
-                        for (const [name, count] of Object.entries((match as any).toolNames)) {
-                          (allToolNames as any)[name] = ((allToolNames as any)[name] || 0) + count;
+                {tc.name === "team_create" &&
+                  (() => {
+                    const parsed = tc.result
+                      ? typeof tc.result === "string"
+                        ? (() => {
+                            try {
+                              return JSON.parse(tc.result);
+                            } catch {
+                              return null;
+                            }
+                          })()
+                        : tc.result
+                      : null;
+                    const members = parsed?.members || [];
+                    // Aggregate tool activity from all team members
+                    const allToolNames = {};
+                    let activeTool = null;
+                    for (const member of members) {
+                      const activity =
+                        member.agent_id && workerToolActivity
+                          ? workerToolActivity[member.agent_id]
+                          : null;
+                      if (activity?.toolNames) {
+                        for (const [name, count] of Object.entries(
+                          activity.toolNames,
+                        )) {
+                          (allToolNames as any)[name] =
+                            ((allToolNames as any)[name] || 0) + count;
                         }
-                        if ((match as any).currentTool) activeTool = (match as any).currentTool;
+                        if (activity.currentTool)
+                          activeTool = activity.currentTool;
                       }
                     }
-                  }
-                  if (Object.keys(allToolNames).length > 0) return <ToolBadgeRow tools={allToolNames} activeTool={activeTool} />;
-                  // Static badge from completed result
-                  const totalToolUses = members.reduce((sum: any, m: any) => sum + (m.toolUses || 0), 0);
-                  if (totalToolUses > 0) return <ToolBadgeRow tools={{ "Tool Calling": totalToolUses }} />;
-                  return null;
-                })()}
+                    // Fallback: match by description during calling state (before result arrives)
+                    // createTeam prefixes descriptions as "[teamName] description"
+                    if (
+                      Object.keys(allToolNames).length === 0 &&
+                      workerToolActivity &&
+                      Array.isArray(tc.args?.members)
+                    ) {
+                      for (const argMember of tc.args.members) {
+                        const match = Object.values(workerToolActivity).find(
+                          (v: any) =>
+                            v.description &&
+                            v.description.includes(argMember.description),
+                        );
+                        if ((match as any)?.toolNames) {
+                          for (const [name, count] of Object.entries(
+                            (match as any).toolNames,
+                          )) {
+                            (allToolNames as any)[name] =
+                              ((allToolNames as any)[name] || 0) + count;
+                          }
+                          if ((match as any).currentTool)
+                            activeTool = (match as any).currentTool;
+                        }
+                      }
+                    }
+                    if (Object.keys(allToolNames).length > 0)
+                      return (
+                        <ToolBadgeRow
+                          tools={allToolNames}
+                          activeTool={activeTool}
+                        />
+                      );
+                    // Static badge from completed result
+                    const totalToolUses = members.reduce(
+                      (sum: any, m: any) => sum + (m.toolUses || 0),
+                      0,
+                    );
+                    if (totalToolUses > 0)
+                      return (
+                        <ToolBadgeRow
+                          tools={{ "Tool Calling": totalToolUses }}
+                        />
+                      );
+                    return null;
+                  })()}
 
                 {/* Tool-specific result renderer (registry pattern) */}
                 <ToolResultView
@@ -443,7 +525,8 @@ function EditableMessage({
     if (editing && textareaRef.current) {
       const element = textareaRef.current;
       (element as any).style.height = "auto";
-      (element as any).style.height = Math.min((element as any).scrollHeight, 600) + "px";
+      (element as any).style.height =
+        Math.min((element as any).scrollHeight, 600) + "px";
     }
   }, [editing]);
 
@@ -560,7 +643,11 @@ function EditableMessage({
 
   // Non-editing: user messages show plain text, assistant uses caller's rendering
   if (!isAssistant) {
-    return <div className={styles.text}>{renderContentWithMentions(content, knownPaths, onMentionFileOpen)}</div>;
+    return (
+      <div className={styles.text}>
+        {renderContentWithMentions(content, knownPaths, onMentionFileOpen)}
+      </div>
+    );
   }
   return null; // Assistant non-editing rendering is handled by the caller
 }
@@ -610,7 +697,12 @@ export default function MessageList({
   // Find the last user message
   const lastUserMsgIndex = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === "user" && !messages[i].deleted && !parseTaskNotification(messages[i].content)) return i;
+      if (
+        messages[i].role === "user" &&
+        !messages[i].deleted &&
+        !parseTaskNotification(messages[i].content)
+      )
+        return i;
     }
     return -1;
   }, [messages]);
@@ -638,7 +730,8 @@ export default function MessageList({
         if (scrollingToUserMsgRef.current) return;
         // Show sticky when user message is NOT intersecting
         // AND the element is above the viewport (scrolled past)
-        const scrolledPast = !entry.isIntersecting &&
+        const scrolledPast =
+          !entry.isIntersecting &&
           entry.boundingClientRect.bottom < entry.rootBounds.top + 20;
         setIsUserMsgScrolledPast(scrolledPast);
       },
@@ -725,7 +818,8 @@ export default function MessageList({
         if (lastModel && lastModel !== message.model) {
           // Model changed! Show swap before the user's turn that led to this,
           // or before this assistant message if no user message preceded it.
-          const swapIdx = prospectiveSwapIndex !== null ? prospectiveSwapIndex : i;
+          const swapIdx =
+            prospectiveSwapIndex !== null ? prospectiveSwapIndex : i;
           array[swapIdx] = true;
         }
         lastModel = message.model;
@@ -779,12 +873,17 @@ export default function MessageList({
         continue;
       }
       const prevIsAssistant =
-        i > 0 && messages[i - 1].role === "assistant" && !messages[i - 1].deleted;
+        i > 0 &&
+        messages[i - 1].role === "assistant" &&
+        !messages[i - 1].deleted;
       const nextIsAssistant =
-        i < messages.length - 1 && messages[i + 1].role === "assistant" && !messages[i + 1].deleted;
+        i < messages.length - 1 &&
+        messages[i + 1].role === "assistant" &&
+        !messages[i + 1].deleted;
       meta[i] = {
         isContinuation: prevIsAssistant && !swapBefore[i],
-        isLastInGroup: !nextIsAssistant || (i < messages.length - 1 && swapBefore[i + 1]),
+        isLastInGroup:
+          !nextIsAssistant || (i < messages.length - 1 && swapBefore[i + 1]),
       };
     }
     return meta;
@@ -795,8 +894,15 @@ export default function MessageList({
       {/* -- Sticky pinned user message -- */}
       <div
         className={styles.stickyUserMsg}
-        onMouseEnter={(e: any) => stickyUserMsg && SoundService.playHoverButton({ event: e })}
-        onClick={(e: any) => { if (stickyUserMsg) { SoundService.playClickButton({ event: e }); handleStickyClick(); } }}
+        onMouseEnter={(e: any) =>
+          stickyUserMsg && SoundService.playHoverButton({ event: e })
+        }
+        onClick={(e: any) => {
+          if (stickyUserMsg) {
+            SoundService.playClickButton({ event: e });
+            handleStickyClick();
+          }
+        }}
         style={{
           visibility: stickyUserMsg ? "visible" : "hidden",
           opacity: stickyUserMsg ? 1 : 0,
@@ -811,7 +917,8 @@ export default function MessageList({
           <div className={styles.stickyUserMsgContent}>
             {stickyUserMsg?.images && stickyUserMsg.images.length > 0 && (
               <span className={styles.stickyUserMsgBadge}>
-                {stickyUserMsg.images.length} attachment{stickyUserMsg.images.length > 1 ? "s" : ""}
+                {stickyUserMsg.images.length} attachment
+                {stickyUserMsg.images.length > 1 ? "s" : ""}
               </span>
             )}
             <span className={styles.stickyUserMsgText}>
@@ -868,10 +975,15 @@ export default function MessageList({
         const coalesce = coalesceMeta[i];
 
         const showModelChange = swapBefore[i];
-        const isFadedSwap = showModelChange && i > 0 && messages[i - 1].deleted && messages[i].deleted;
-        const swapDividerClass = `${styles.modelChangeDivider} ${isFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
+        const isFadedSwap =
+          showModelChange &&
+          i > 0 &&
+          messages[i - 1].deleted &&
+          messages[i].deleted;
+        const swapDividerClass =
+          `${styles.modelChangeDivider} ${isFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
 
-        // If message is a non-leader deleted message, skip rendering the whole 
+        // If message is a non-leader deleted message, skip rendering the whole
         // top-level block so we don't leak the model swap outside the group
         const deletedGroupInfo = message.deleted ? deletedGroups.get(i) : null;
         if (message.deleted && !deletedGroupInfo?.isLeader) {
@@ -891,657 +1003,938 @@ export default function MessageList({
               </div>
             )}
             {/* -- Deleted message group: coalesced into a single row -- */}
-            {message.deleted && (() => {
-              const groupInfo = deletedGroups.get(i);
-              // Non-leader deleted messages are rendered inside the leader block
-              if (!groupInfo?.isLeader) return null;
-              const groupIndices = groupInfo.groupIndices;
-              const groupCount = groupIndices.length;
-              const isExpanded = expandedDeletedSet.has(i);
+            {message.deleted &&
+              (() => {
+                const groupInfo = deletedGroups.get(i);
+                // Non-leader deleted messages are rendered inside the leader block
+                if (!groupInfo?.isLeader) return null;
+                const groupIndices = groupInfo.groupIndices;
+                const groupCount = groupIndices.length;
+                const isExpanded = expandedDeletedSet.has(i);
 
-              if (!isExpanded) {
-                // -- Collapsed: single summary row --
-                return (
-                  <div className={styles.deletedRow}>
-                    <button
-                      className={styles.deletedToggle}
-                      onClick={() => toggleDeletedExpanded(i)}
-                    >
-                      <ChevronRight size={13} />
-                      <span className={styles.deletedBadge}>
-                        Deleted{groupCount > 1 ? ` (${groupCount})` : ""}
-                      </span>
-                      {groupCount === 1 && (
-                        <>
-                          <BadgeComponent variant="info" mini tooltip="Message role">
-                            {message.role === "user" ? "User" : "Model"}
-                          </BadgeComponent>
-                          {message.model && (
-                            <ModelBadgeComponent models={[message.model]} mini />
-                          )}
-                          {message.timestamp && (
-                            <DateTimeBadgeComponent date={message.timestamp} mini />
-                          )}
-                          {message.content && (
-                            <span className={styles.deletedPreview}>
-                              {message.content.length > 80
-                                ? message.content.slice(0, 80) + "…"
-                                : message.content}
-                            </span>
-                          )}
-                        </>
-                      )}
-                      {groupCount > 1 && (
-                        <>
-                          <DateTimeBadgeComponent date={messages[groupIndices[0]].timestamp} mini />
-                          <span style={{ opacity: 0.5 }}>—</span>
-                          <DateTimeBadgeComponent date={messages[groupIndices[groupCount - 1]].timestamp} mini />
-                        </>
-                      )}
-                    </button>
-                    {groupCount === 1 && !readOnly && onRestore && (
-                      <div className={styles.deletedActions}>
-                        <IconButtonComponent
-                          icon={<Undo2 size={14} />}
-                          onClick={() => onRestore?.(i)}
-                          tooltip="Restore message"
-                          className={styles.actionBtn}
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              // -- Expanded: show all messages in the group --
-              return (
-                <div className={styles.deletedExpanded}>
-                  <div className={styles.deletedRow}>
-                    <button
-                      className={styles.deletedToggle}
-                      onClick={() => toggleDeletedExpanded(i)}
-                    >
-                      <ChevronDown size={13} />
-                      <span className={styles.deletedBadge}>
-                        Deleted{groupCount > 1 ? ` (${groupCount})` : ""}
-                      </span>
-                    </button>
-                  </div>
-                  {groupIndices.map((gi: any) => {
-                    const gMsg = messages[gi];
-                    const gRoleClass =
-                      gMsg.role === "user"
-                        ? styles.userNode
-                        : gMsg.role === "system"
-                          ? styles.systemNode
-                          : styles.aiNode;
-
-                    const gShowModelChange = swapBefore[gi];
-                    const gIsFadedSwap = gShowModelChange && gi > 0 && messages[gi - 1].deleted && messages[gi].deleted;
-                    const gSwapDividerClass = `${styles.modelChangeDivider} ${gIsFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
-                    const shouldRenderInnerSwap = gShowModelChange && gi !== groupIndices[0];
-
-                    return (
-                      <React.Fragment key={gi}>
-                        {shouldRenderInnerSwap && (
-                          <div className={gSwapDividerClass}>
-                            <span className={styles.modelChangeLine} />
-                            <span className={styles.modelChangeLabel}>
-                              <RefreshCw size={11} />
-                              Model Swap
-                            </span>
-                            <span className={styles.modelChangeLine} />
-                          </div>
-                        )}
-                        <div className={styles.deletedGroupItem}>
-                          <div className={styles.deletedGroupItemHeader}>
-                            <BadgeComponent variant="info" mini tooltip="Message role">
-                              {gMsg.role === "user" ? "User" : "Model"}
+                if (!isExpanded) {
+                  // -- Collapsed: single summary row --
+                  return (
+                    <div className={styles.deletedRow}>
+                      <button
+                        className={styles.deletedToggle}
+                        onClick={() => toggleDeletedExpanded(i)}
+                      >
+                        <ChevronRight size={13} />
+                        <span className={styles.deletedBadge}>
+                          Deleted{groupCount > 1 ? ` (${groupCount})` : ""}
+                        </span>
+                        {groupCount === 1 && (
+                          <>
+                            <BadgeComponent
+                              variant="info"
+                              mini
+                              tooltip="Message role"
+                            >
+                              {message.role === "user" ? "User" : "Model"}
                             </BadgeComponent>
-                          {gMsg.model && (
-                            <ModelBadgeComponent models={[gMsg.model]} mini />
-                          )}
-                          {gMsg.timestamp && (
-                            <DateTimeBadgeComponent date={gMsg.timestamp} mini />
-                          )}
-                          <div className={styles.deletedActions} style={{ opacity: 1 }}>
-                            {!readOnly && onRestore && (
-                              <IconButtonComponent
-                                icon={<Undo2 size={14} />}
-                                onClick={() => onRestore?.(gi)}
-                                tooltip="Restore message"
-                                className={styles.actionBtn}
+                            {message.model && (
+                              <ModelBadgeComponent
+                                models={[message.model]}
+                                mini
                               />
                             )}
-                            {gMsg.content && (
+                            {message.timestamp && (
+                              <DateTimeBadgeComponent
+                                date={message.timestamp}
+                                mini
+                              />
+                            )}
+                            {message.content && (
+                              <span className={styles.deletedPreview}>
+                                {message.content.length > 80
+                                  ? message.content.slice(0, 80) + "…"
+                                  : message.content}
+                              </span>
+                            )}
+                          </>
+                        )}
+                        {groupCount > 1 && (
+                          <>
+                            <DateTimeBadgeComponent
+                              date={messages[groupIndices[0]].timestamp}
+                              mini
+                            />
+                            <span style={{ opacity: 0.5 }}>—</span>
+                            <DateTimeBadgeComponent
+                              date={
+                                messages[groupIndices[groupCount - 1]].timestamp
+                              }
+                              mini
+                            />
+                          </>
+                        )}
+                      </button>
+                      {groupCount === 1 && !readOnly && onRestore && (
+                        <div className={styles.deletedActions}>
+                          <IconButtonComponent
+                            icon={<Undo2 size={14} />}
+                            onClick={() => onRestore?.(i)}
+                            tooltip="Restore message"
+                            className={styles.actionBtn}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                // -- Expanded: show all messages in the group --
+                return (
+                  <div className={styles.deletedExpanded}>
+                    <div className={styles.deletedRow}>
+                      <button
+                        className={styles.deletedToggle}
+                        onClick={() => toggleDeletedExpanded(i)}
+                      >
+                        <ChevronDown size={13} />
+                        <span className={styles.deletedBadge}>
+                          Deleted{groupCount > 1 ? ` (${groupCount})` : ""}
+                        </span>
+                      </button>
+                    </div>
+                    {groupIndices.map((gi: any) => {
+                      const gMsg = messages[gi];
+                      const gRoleClass =
+                        gMsg.role === "user"
+                          ? styles.userNode
+                          : gMsg.role === "system"
+                            ? styles.systemNode
+                            : styles.aiNode;
+
+                      const gShowModelChange = swapBefore[gi];
+                      const gIsFadedSwap =
+                        gShowModelChange &&
+                        gi > 0 &&
+                        messages[gi - 1].deleted &&
+                        messages[gi].deleted;
+                      const gSwapDividerClass =
+                        `${styles.modelChangeDivider} ${gIsFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
+                      const shouldRenderInnerSwap =
+                        gShowModelChange && gi !== groupIndices[0];
+
+                      return (
+                        <React.Fragment key={gi}>
+                          {shouldRenderInnerSwap && (
+                            <div className={gSwapDividerClass}>
+                              <span className={styles.modelChangeLine} />
+                              <span className={styles.modelChangeLabel}>
+                                <RefreshCw size={11} />
+                                Model Swap
+                              </span>
+                              <span className={styles.modelChangeLine} />
+                            </div>
+                          )}
+                          <div className={styles.deletedGroupItem}>
+                            <div className={styles.deletedGroupItemHeader}>
+                              <BadgeComponent
+                                variant="info"
+                                mini
+                                tooltip="Message role"
+                              >
+                                {gMsg.role === "user" ? "User" : "Model"}
+                              </BadgeComponent>
+                              {gMsg.model && (
+                                <ModelBadgeComponent
+                                  models={[gMsg.model]}
+                                  mini
+                                />
+                              )}
+                              {gMsg.timestamp && (
+                                <DateTimeBadgeComponent
+                                  date={gMsg.timestamp}
+                                  mini
+                                />
+                              )}
+                              <div
+                                className={styles.deletedActions}
+                                style={{ opacity: 1 }}
+                              >
+                                {!readOnly && onRestore && (
+                                  <IconButtonComponent
+                                    icon={<Undo2 size={14} />}
+                                    onClick={() => onRestore?.(gi)}
+                                    tooltip="Restore message"
+                                    className={styles.actionBtn}
+                                  />
+                                )}
+                                {gMsg.content && (
+                                  <CopyButtonComponent
+                                    text={gMsg.content}
+                                    tooltip="Copy raw text"
+                                    className={styles.actionBtn}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            <div className={styles.deletedMessageBody}>
+                              <div
+                                className={`${styles.message} ${gRoleClass}`}
+                              >
+                                <div
+                                  className={`${styles.avatar} ${styles.deletedAvatar}`}
+                                >
+                                  {gMsg.role === "user" ? (
+                                    <User size={16} />
+                                  ) : gMsg.role === "system" ? (
+                                    "S"
+                                  ) : (
+                                    <Bot size={16} />
+                                  )}
+                                </div>
+                                <div className={styles.content}>
+                                  {gMsg.thinking && (
+                                    <ThinkingBlock
+                                      thinking={gMsg.thinking}
+                                      isStreaming={false}
+                                    />
+                                  )}
+                                  {gMsg.toolCalls &&
+                                    gMsg.toolCalls.length > 0 && (
+                                      <ToolCallsBlock
+                                        toolCalls={gMsg.toolCalls}
+                                        workerToolActivity={workerToolActivity}
+                                      />
+                                    )}
+                                  {gMsg.images && gMsg.images.length > 0 && (
+                                    <div className={styles.imagePreviewRow}>
+                                      {gMsg.images.map(
+                                        (rawUrl: any, j: any) => (
+                                          <MediaPreview
+                                            key={j}
+                                            dataUrl={rawUrl}
+                                          />
+                                        ),
+                                      )}
+                                    </div>
+                                  )}
+                                  {gMsg.content ? (
+                                    <MarkdownContent content={gMsg.content} />
+                                  ) : null}
+                                  {gMsg.role === "assistant" &&
+                                    (gMsg.usage || gMsg.provider) && (
+                                      <div className={styles.metaBadges}>
+                                        {gMsg.provider && (
+                                          <ProvidersBadgeComponent
+                                            providers={[gMsg.provider]}
+                                            mini
+                                          />
+                                        )}
+                                        {gMsg.model && (
+                                          <ModelBadgeComponent
+                                            models={[gMsg.model]}
+                                            mini
+                                          />
+                                        )}
+                                      </div>
+                                    )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            {/* -- Normal (non-deleted) message -- */}
+            {!message.deleted &&
+              (() => {
+                // -- Task notification card (replaces user bubble for worker results) --
+                // Only renders for non-absorbed notifications (i.e. edge cases where
+                // the matching team_create tool call isn't in the visible window).
+                const taskNotif =
+                  message.role === "user"
+                    ? parseTaskNotification(message.content)
+                    : null;
+                if (taskNotif) {
+                  return (
+                    <WorkerNotificationComponent
+                      taskNotif={taskNotif}
+                      timestamp={message.timestamp}
+                      readOnly={readOnly}
+                      onDelete={() => onDelete?.(i)}
+                    />
+                  );
+                }
+                // -- Normal message rendering --
+                return (
+                  <div
+                    ref={
+                      i === lastUserMsgIndex && message.role === "user"
+                        ? lastUserMsgRef
+                        : undefined
+                    }
+                    className={`${styles.message} ${roleClass}${coalesce?.isContinuation ? ` ${styles.continuationMessage}` : ""}`}
+                  >
+                    {/* Avatar: hidden for continuation messages */}
+                    {!coalesce?.isContinuation && (
+                      <div
+                        className={`${styles.avatar}${message.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles.prismAvatar}` : ""}`}
+                      >
+                        {message.role === "user" ? (
+                          <User size={16} />
+                        ) : message.role === "system" ? (
+                          "S"
+                        ) : (
+                          <Bot size={16} />
+                        )}
+                      </div>
+                    )}
+                    <div className={styles.content}>
+                      {/* Header: hidden for continuation messages */}
+                      {!coalesce?.isContinuation && (
+                        <div className={styles.messageHeader}>
+                          <div className={styles.roleLabel}>
+                            {message.role === "user"
+                              ? "User"
+                              : message.role === "system"
+                                ? "System"
+                                : "Model"}
+                            {message.timestamp && (
+                              <DateTimeBadgeComponent
+                                date={message.timestamp}
+                                mini
+                              />
+                            )}
+                          </div>
+                          {!readOnly && (
+                            <div className={styles.messageActions}>
+                              {message.role === "user" && (
+                                <>
+                                  <IconButtonComponent
+                                    icon={<Pencil size={14} />}
+                                    onClick={() =>
+                                      setEditingIndex(
+                                        editingIndex === i ? null : i,
+                                      )
+                                    }
+                                    disabled={isGenerating}
+                                    tooltip="Edit message"
+                                    className={styles.actionBtn}
+                                  />
+                                  <IconButtonComponent
+                                    icon={<RotateCcw size={14} />}
+                                    onClick={() => onRerun?.(i)}
+                                    disabled={isGenerating}
+                                    tooltip="Rerun this turn"
+                                    className={styles.actionBtn}
+                                  />
+                                </>
+                              )}
+                              {message.role === "assistant" &&
+                                message.content && (
+                                  <IconButtonComponent
+                                    icon={<Pencil size={14} />}
+                                    onClick={() =>
+                                      setEditingIndex(
+                                        editingIndex === i ? null : i,
+                                      )
+                                    }
+                                    disabled={isGenerating}
+                                    tooltip="Edit response"
+                                    className={styles.actionBtn}
+                                  />
+                                )}
+                              {message.content && (
+                                <CopyButtonComponent
+                                  text={message.content}
+                                  tooltip="Copy raw text"
+                                  className={styles.actionBtn}
+                                />
+                              )}
+                              <IconButtonComponent
+                                icon={<Trash2 size={14} />}
+                                onClick={() => onDelete?.(i)}
+                                tooltip="Delete message"
+                                variant="destructive"
+                                className={styles.actionBtn}
+                              />
+                            </div>
+                          )}
+                          {readOnly && message.content && (
+                            <div className={styles.messageActions}>
                               <CopyButtonComponent
-                                text={gMsg.content}
+                                text={message.content}
                                 tooltip="Copy raw text"
                                 className={styles.actionBtn}
                               />
-                            )}
-                          </div>
-                        </div>
-                        <div className={styles.deletedMessageBody}>
-                          <div className={`${styles.message} ${gRoleClass}`}>
-                            <div className={`${styles.avatar} ${styles.deletedAvatar}`}>
-                              {gMsg.role === "user" ? <User size={16} /> : gMsg.role === "system" ? "S" : <Bot size={16} />}
                             </div>
-                            <div className={styles.content}>
-                              {gMsg.thinking && (
-                                <ThinkingBlock thinking={gMsg.thinking} isStreaming={false} />
-                              )}
-                              {gMsg.toolCalls && gMsg.toolCalls.length > 0 && (
-                                <ToolCallsBlock toolCalls={gMsg.toolCalls} workerToolActivity={workerToolActivity} />
-                              )}
-                              {gMsg.images && gMsg.images.length > 0 && (
-                                <div className={styles.imagePreviewRow}>
-                                  {gMsg.images.map((rawUrl: any, j: any) => (
-                                    <MediaPreview key={j} dataUrl={rawUrl} />
-                                  ))}
-                                </div>
-                              )}
-                              {gMsg.content ? (
-                                <MarkdownContent content={gMsg.content} />
-                              ) : null}
-                              {gMsg.role === "assistant" && (gMsg.usage || gMsg.provider) && (
-                                <div className={styles.metaBadges}>
-                                  {gMsg.provider && (
-                                    <ProvidersBadgeComponent providers={[gMsg.provider]} mini />
-                                  )}
-                                  {gMsg.model && (
-                                    <ModelBadgeComponent models={[gMsg.model]} mini />
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                          )}
                         </div>
-                      </div>
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            );
-          })()}
-            {/* -- Normal (non-deleted) message -- */}
-            {!message.deleted && (() => {
-              // -- Task notification card (replaces user bubble for worker results) --
-              // Only renders for non-absorbed notifications (i.e. edge cases where
-              // the matching team_create tool call isn't in the visible window).
-              const taskNotif = message.role === "user" ? parseTaskNotification(message.content) : null;
-              if (taskNotif) {
-                return (
-                  <WorkerNotificationComponent
-                    taskNotif={taskNotif}
-                    timestamp={message.timestamp}
-                    readOnly={readOnly}
-                    onDelete={() => onDelete?.(i)}
-                  />
-                );
-              }
-              // -- Normal message rendering --
-              return (
-            <div
-              ref={i === lastUserMsgIndex && message.role === "user" ? lastUserMsgRef : undefined}
-              className={`${styles.message} ${roleClass}${coalesce?.isContinuation ? ` ${styles.continuationMessage}` : ""}`}
-            >
-              {/* Avatar: hidden for continuation messages */}
-              {!coalesce?.isContinuation && (
-                <div
-                  className={`${styles.avatar}${message.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles.prismAvatar}` : ""}`}
-                >
-                  {message.role === "user" ? <User size={16} /> : message.role === "system" ? "S" : <Bot size={16} />}
-                </div>
-              )}
-              <div className={styles.content}>
-                {/* Header: hidden for continuation messages */}
-                {!coalesce?.isContinuation && (
-                <div className={styles.messageHeader}>
-                  <div className={styles.roleLabel}>
-                    {message.role === "user"
-                      ? "User"
-                      : message.role === "system"
-                        ? "System"
-                        : "Model"}
-                    {message.timestamp && (
-                      <DateTimeBadgeComponent date={message.timestamp} mini />
-                    )}
-                  </div>
-                  {!readOnly && (
-                    <div className={styles.messageActions}>
-                      {message.role === "user" && (
-                        <>
-                          <IconButtonComponent
-                            icon={<Pencil size={14} />}
-                            onClick={() =>
-                              setEditingIndex(editingIndex === i ? null : i)
+                      )}
+
+                      {/* -- Interleaved content: thinking + tool calls + text -- */}
+                      {message.contentSegments &&
+                      message.contentSegments.length > 0 ? (
+                        (() => {
+                          const segs = message.contentSegments;
+                          const hasThinking = segs.some(
+                            (s: any) => s.type === "thinking",
+                          );
+                          // Dedup guard: track tool IDs already rendered to prevent
+                          // the same tool call from appearing in multiple segments
+                          const renderedToolIds = new Set();
+
+                          // Helper: render a segment by type
+                          const renderSeg = (seg: any, si: any, opts = {}) => {
+                            if (seg.type === "thinking") {
+                              const fragment =
+                                message.thinkingFragments?.[
+                                  seg.fragmentIndex
+                                ]?.trim();
+                              if (!fragment) return null;
+                              return (
+                                <MarkdownContent
+                                  key={`seg-k-${si}`}
+                                  content={fragment}
+                                />
+                              );
                             }
-                            disabled={isGenerating}
-                            tooltip="Edit message"
-                            className={styles.actionBtn}
-                          />
-                          <IconButtonComponent
-                            icon={<RotateCcw size={14} />}
-                            onClick={() => onRerun?.(i)}
-                            disabled={isGenerating}
-                            tooltip="Rerun this turn"
-                            className={styles.actionBtn}
-                          />
+                            if (
+                              seg.type === "tools" &&
+                              message.toolCalls?.length > 0
+                            ) {
+                              const toolIdSet = new Set(seg.toolIds || []);
+                              const segmentTools = message.toolCalls.filter(
+                                (tc: any) => {
+                                  if (!toolIdSet.has(tc.id)) return false;
+                                  if (renderedToolIds.has(tc.id)) return false;
+                                  renderedToolIds.add(tc.id);
+                                  return true;
+                                },
+                              );
+                              if (segmentTools.length === 0) return null;
+                              return (
+                                <ToolCallsBlock
+                                  key={`seg-t-${si}`}
+                                  toolCalls={segmentTools}
+                                  streamingOutputs={streamingOutputs}
+                                  workerToolActivity={workerToolActivity}
+                                />
+                              );
+                            }
+                            if (seg.type === "text") {
+                              const fragmentText =
+                                message.textFragments?.[
+                                  seg.fragmentIndex
+                                ]?.trim();
+                              const isLastTextSeg = !!(opts as any).isLastText;
+                              const showCursor =
+                                !(opts as any).insideThinking &&
+                                !(opts as any).suppressCursor;
+                              if (fragmentText) {
+                                return (
+                                  <MarkdownContent
+                                    key={`seg-x-${si}`}
+                                    content={fragmentText}
+                                    className={
+                                      isStreaming && isLastTextSeg && showCursor
+                                        ? styles.streamingText
+                                        : ""
+                                    }
+                                  >
+                                    {isLastTextSeg && showCursor && (
+                                      <StreamingCursorComponent
+                                        active={isStreaming}
+                                      />
+                                    )}
+                                  </MarkdownContent>
+                                );
+                              }
+                              if (isStreaming && isLastTextSeg && showCursor) {
+                                return (
+                                  <StreamingCursorComponent
+                                    key={`seg-x-${si}`}
+                                    active
+                                    standalone
+                                  />
+                                );
+                              }
+                              return null;
+                            }
+                            if (seg.type === "plan" && planProposal) {
+                              return (
+                                <PlanCardComponent
+                                  key={`seg-p-${si}`}
+                                  planText={planProposal.plan}
+                                  steps={planProposal.steps}
+                                  status={planProposal.status}
+                                  onApprove={onPlanApprove}
+                                  onReject={onPlanReject}
+                                />
+                              );
+                            }
+                            return null;
+                          };
+
+                          // Edit mode: show reasoning then editable text
+                          if (
+                            message.role === "assistant" &&
+                            !readOnly &&
+                            editingIndex === i
+                          ) {
+                            const thinkingOnly = segs.filter(
+                              (s: any) => s.type === "thinking",
+                            );
+                            const nonThinking = segs.filter(
+                              (s: any) => s.type !== "thinking",
+                            );
+                            return (
+                              <>
+                                {hasThinking && thinkingOnly.length > 0 && (
+                                  <ThinkingBlock isStreaming={false}>
+                                    {thinkingOnly.map((seg: any, si: any) =>
+                                      renderSeg(seg, si, {
+                                        insideThinking: true,
+                                      }),
+                                    )}
+                                  </ThinkingBlock>
+                                )}
+                                {nonThinking.map((seg: any, si: any) =>
+                                  renderSeg(seg, si),
+                                )}
+                                <EditableMessage
+                                  key="seg-edit"
+                                  content={message.content}
+                                  index={i}
+                                  role="assistant"
+                                  onEdit={onEdit}
+                                  editing={true}
+                                  onCancelEdit={() => setEditingIndex(null)}
+                                  knownPaths={knownPaths}
+                                  onMentionFileOpen={onMentionFileOpen}
+                                />
+                              </>
+                            );
+                          }
+
+                          // -- Normal rendering --
+                          // Only thinking segments go inside the ThinkingBlock.
+                          // Tools and text segments render outside in their original
+                          // interleaved order — this matches the post-refresh layout.
+                          if (hasThinking) {
+                            const thinkingOnly = segs.filter(
+                              (s: any) => s.type === "thinking",
+                            );
+                            const visibleSegs = segs
+                              .map((s: any, index: any) => ({
+                                seg: s,
+                                origIdx: index,
+                              }))
+                              .filter(
+                                ({ seg }: any) => seg.type !== "thinking",
+                              );
+                            // ThinkingBlock is streaming when thinking is the current
+                            // activity (last segment is thinking)
+                            const lastSeg = segs[segs.length - 1];
+                            const thinkingIsStreaming =
+                              isStreaming && lastSeg?.type === "thinking";
+
+                            // Find the last text segment among visible segs for cursor
+                            const lastVisibleTextIdx = (() => {
+                              for (
+                                let k = visibleSegs.length - 1;
+                                k >= 0;
+                                k--
+                              ) {
+                                if (visibleSegs[k].seg.type === "text")
+                                  return k;
+                              }
+                              return -1;
+                            })();
+
+                            return (
+                              <>
+                                {thinkingOnly.length > 0 && (
+                                  <ThinkingBlock
+                                    isStreaming={thinkingIsStreaming}
+                                  >
+                                    {thinkingOnly.map((seg: any, si: any) =>
+                                      renderSeg(seg, si, {
+                                        insideThinking: true,
+                                      }),
+                                    )}
+                                  </ThinkingBlock>
+                                )}
+                                {/* Tools and text segments render outside in original order */}
+                                {visibleSegs.map(
+                                  ({ seg, origIdx }: any, vi: any) => {
+                                    const isLastText =
+                                      vi === lastVisibleTextIdx;
+                                    return (
+                                      <React.Fragment key={`vis-${vi}`}>
+                                        {renderSeg(seg, origIdx, {
+                                          isLastText,
+                                        })}
+                                      </React.Fragment>
+                                    );
+                                  },
+                                )}
+                                {/* Streaming cursor when no visible content yet */}
+                                {isStreaming && visibleSegs.length === 0 && (
+                                  <StreamingCursorComponent active standalone />
+                                )}
+                              </>
+                            );
+                          }
+
+                          // No thinking — render all segments inline (tools interleaved with text)
+                          // Find the last text segment to place streaming cursor
+                          const lastTextIdx = (() => {
+                            for (let k = segs.length - 1; k >= 0; k--) {
+                              if (segs[k].type === "text") return k;
+                            }
+                            return -1;
+                          })();
+                          return segs.map((seg: any, si: any) =>
+                            renderSeg(seg, si, {
+                              isLastText: si === lastTextIdx,
+                            }),
+                          );
+                        })()
+                      ) : (
+                        <>
+                          {/* Thinking block (persisted conversations without segments) */}
+                          {message.thinking && (
+                            <ThinkingBlock
+                              thinking={message.thinking}
+                              isStreaming={
+                                isStreaming &&
+                                !!message.thinking &&
+                                !message.content
+                              }
+                            />
+                          )}
+
+                          {/* Tool calls (persisted conversations without segments) */}
+                          {message.toolCalls &&
+                            message.toolCalls.length > 0 && (
+                              <ToolCallsBlock
+                                toolCalls={message.toolCalls}
+                                streamingOutputs={streamingOutputs}
+                                workerToolActivity={workerToolActivity}
+                              />
+                            )}
+
+                          {/* Text content */}
+                          {message.role === "user" && !readOnly ? (
+                            <EditableMessage
+                              content={message.content}
+                              index={i}
+                              role="user"
+                              onEdit={onEdit}
+                              editing={editingIndex === i}
+                              onCancelEdit={() => setEditingIndex(null)}
+                              knownPaths={knownPaths}
+                              onMentionFileOpen={onMentionFileOpen}
+                            />
+                          ) : message.role === "assistant" &&
+                            !readOnly &&
+                            editingIndex === i ? (
+                            <EditableMessage
+                              content={message.content}
+                              index={i}
+                              role="assistant"
+                              onEdit={onEdit}
+                              editing={true}
+                              onCancelEdit={() => setEditingIndex(null)}
+                              knownPaths={knownPaths}
+                              onMentionFileOpen={onMentionFileOpen}
+                            />
+                          ) : message.content ? (
+                            <MarkdownContent
+                              content={message.content}
+                              className={
+                                isStreaming ? styles.streamingText : ""
+                              }
+                            >
+                              <StreamingCursorComponent active={isStreaming} />
+                            </MarkdownContent>
+                          ) : isStreaming ? (
+                            <StreamingCursorComponent active standalone />
+                          ) : null}
                         </>
                       )}
-                      {message.role === "assistant" && message.content && (
-                        <IconButtonComponent
-                          icon={<Pencil size={14} />}
-                          onClick={() =>
-                            setEditingIndex(editingIndex === i ? null : i)
-                          }
-                          disabled={isGenerating}
-                          tooltip="Edit response"
-                          className={styles.actionBtn}
-                        />
-                      )}
-                      {message.content && (
-                        <CopyButtonComponent
-                          text={message.content}
-                          tooltip="Copy raw text"
-                          className={styles.actionBtn}
-                        />
-                      )}
-                      <IconButtonComponent
-                        icon={<Trash2 size={14} />}
-                        onClick={() => onDelete?.(i)}
-                        tooltip="Delete message"
-                        variant="destructive"
-                        className={styles.actionBtn}
-                      />
-                    </div>
-                  )}
-                  {readOnly && message.content && (
-                    <div className={styles.messageActions}>
-                      <CopyButtonComponent
-                        text={message.content}
-                        tooltip="Copy raw text"
-                        className={styles.actionBtn}
-                      />
-                    </div>
-                  )}
-                </div>
-                )}
 
-                {/* -- Interleaved content: thinking + tool calls + text -- */}
-                {message.contentSegments && message.contentSegments.length > 0 ? (
-                  (() => {
-                    const segs = message.contentSegments;
-                    const hasThinking = segs.some((s: any) => s.type === "thinking");
-                    // Dedup guard: track tool IDs already rendered to prevent
-                    // the same tool call from appearing in multiple segments
-                    const renderedToolIds = new Set();
+                      {/* Images / media */}
+                      {message.images && message.images.length > 0 && (
+                        <div className={styles.imagePreviewRow}>
+                          {message.images.map((rawUrl: any, j: any) => {
+                            const resolvedUrl = PrismService.getFileUrl(rawUrl);
+                            const cat = getMimeCategory(rawUrl);
+                            let clickHandler;
+                            if (cat === "image")
+                              clickHandler = () => onImageClick?.(resolvedUrl);
+                            else if (cat === "pdf" || cat === "text")
+                              clickHandler = () => onDocClick?.(resolvedUrl);
+                            return (
+                              <MediaPreview
+                                key={j}
+                                dataUrl={rawUrl}
+                                onClick={clickHandler}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
 
-                    // Helper: render a segment by type
-                    const renderSeg = (seg: any, si: any, opts = {}) => {
-                      if (seg.type === "thinking") {
-                        const fragment = message.thinkingFragments?.[seg.fragmentIndex]?.trim();
-                        if (!fragment) return null;
-                        return <MarkdownContent key={`seg-k-${si}`} content={fragment} />;
-                      }
-                      if (seg.type === "tools" && message.toolCalls?.length > 0) {
-                        const toolIdSet = new Set(seg.toolIds || []);
-                        const segmentTools = message.toolCalls.filter((tc: any) => {
-                          if (!toolIdSet.has(tc.id)) return false;
-                          if (renderedToolIds.has(tc.id)) return false;
-                          renderedToolIds.add(tc.id);
-                          return true;
-                        });
-                        if (segmentTools.length === 0) return null;
-                        return <ToolCallsBlock key={`seg-t-${si}`} toolCalls={segmentTools} streamingOutputs={streamingOutputs} workerToolActivity={workerToolActivity} />;
-                      }
-                      if (seg.type === "text") {
-                        const fragmentText = message.textFragments?.[seg.fragmentIndex]?.trim();
-                        const isLastTextSeg = !!(opts as any).isLastText;
-                        const showCursor = !(opts as any).insideThinking && !(opts as any).suppressCursor;
-                        if (fragmentText) {
-                          return (
-                            <MarkdownContent
-                              key={`seg-x-${si}`}
-                              content={fragmentText}
-                              className={isStreaming && isLastTextSeg && showCursor ? styles.streamingText : ""}
-                            >
-                              {isLastTextSeg && showCursor && <StreamingCursorComponent active={isStreaming} />}
-                            </MarkdownContent>
-                          );
-                        }
-                        if (isStreaming && isLastTextSeg && showCursor) {
-                          return <StreamingCursorComponent key={`seg-x-${si}`} active standalone />;
-                        }
-                        return null;
-                      }
-                      if (seg.type === "plan" && planProposal) {
-                        return (
+                      {/* Streaming audio (live session in progress) */}
+                      {!readOnly &&
+                        message.role === "assistant" &&
+                        message._liveStreaming &&
+                        !message.audio && (
+                          <div className={styles.audioCard}>
+                            <AudioPlayerRecorderComponent streaming compact />
+                          </div>
+                        )}
+
+                      {/* Audio */}
+                      {message.audio && (
+                        <div className={styles.imagePreviewRow}>
+                          {(Array.isArray(message.audio)
+                            ? message.audio
+                            : [message.audio]
+                          ).map((rawUrl: any, j: any) => (
+                            <MediaPreview key={`aud-${j}`} dataUrl={rawUrl} />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Video */}
+                      {message.video &&
+                        (Array.isArray(message.video)
+                          ? message.video
+                          : [message.video]
+                        ).length > 0 && (
+                          <div className={styles.imagePreviewRow}>
+                            {(Array.isArray(message.video)
+                              ? message.video
+                              : [message.video]
+                            ).map((rawUrl: any, j: any) => (
+                              <MediaPreview key={`vid-${j}`} dataUrl={rawUrl} />
+                            ))}
+                          </div>
+                        )}
+
+                      {/* PDF */}
+                      {message.pdf &&
+                        (Array.isArray(message.pdf)
+                          ? message.pdf
+                          : [message.pdf]
+                        ).length > 0 && (
+                          <div className={styles.imagePreviewRow}>
+                            {(Array.isArray(message.pdf)
+                              ? message.pdf
+                              : [message.pdf]
+                            ).map((rawUrl: any, j: any) => {
+                              const resolvedUrl =
+                                PrismService.getFileUrl(rawUrl);
+                              return (
+                                <MediaPreview
+                                  key={`pdf-${j}`}
+                                  dataUrl={rawUrl}
+                                  onClick={() => onDocClick?.(resolvedUrl)}
+                                />
+                              );
+                            })}
+                          </div>
+                        )}
+
+                      {/* Error block */}
+                      {message.error && (
+                        <div className={styles.errorBlock}>
+                          <AlertTriangle
+                            size={14}
+                            className={styles.errorIcon}
+                          />
+                          <span>{message.error}</span>
+                        </div>
+                      )}
+
+                      {/* User metadata */}
+                      {message.role === "user" && message.content && (
+                        <div className={styles.metaBadges}>
+                          <WordBadgeComponent
+                            count={
+                              message.content
+                                .trim()
+                                .split(/\s+/)
+                                .filter(Boolean).length
+                            }
+                            mini
+                          />
+                        </div>
+                      )}
+
+                      {/* Assistant metadata — only on the last message in a coalesced group */}
+                      {message.role === "assistant" &&
+                        coalesce?.isLastInGroup !== false &&
+                        (message.usage ||
+                          message.audio ||
+                          message.provider) && (
+                          <div className={styles.metaBadges}>
+                            {message.provider && (
+                              <ProvidersBadgeComponent
+                                providers={[message.provider]}
+                                mini
+                              />
+                            )}
+                            {message.model && (
+                              <ModelBadgeComponent
+                                models={[message.model]}
+                                mini
+                              />
+                            )}
+                            {message.voice && (
+                              <BadgeComponent
+                                variant="info"
+                                mini
+                                tooltip={`Voice: ${message.voice}`}
+                              >
+                                🔊 {message.voice}
+                              </BadgeComponent>
+                            )}
+                            {(() => {
+                              if (
+                                message.usage?.inputTokens != null &&
+                                message.usage?.outputTokens != null
+                              ) {
+                                const cacheRead =
+                                  message.usage.cacheReadInputTokens || 0;
+                                const cacheWrite =
+                                  message.usage.cacheCreationInputTokens || 0;
+                                const cached = cacheRead + cacheWrite;
+                                const totalIn = getTotalInputTokens(
+                                  message.usage,
+                                );
+                                let inLabel = "in";
+                                if (cached) {
+                                  const parts = [];
+                                  if (message.usage.inputTokens)
+                                    parts.push(
+                                      `${message.usage.inputTokens.toLocaleString()} new`,
+                                    );
+                                  if (cacheRead)
+                                    parts.push(
+                                      `${cacheRead.toLocaleString()} read`,
+                                    );
+                                  if (cacheWrite)
+                                    parts.push(
+                                      `${cacheWrite.toLocaleString()} write`,
+                                    );
+                                  inLabel = `in (${parts.join(" · ")})`;
+                                }
+                                const reasoning =
+                                  message.usage.reasoningOutputTokens || 0;
+                                let outLabel = "out";
+                                if (reasoning > 0) {
+                                  outLabel = `out (${reasoning.toLocaleString()} reasoning)`;
+                                }
+                                return (
+                                  <>
+                                    <TokenCountBadgeComponent
+                                      value={totalIn}
+                                      label={inLabel}
+                                      mini
+                                    />
+                                    <TokenCountBadgeComponent
+                                      value={message.usage.outputTokens}
+                                      label={outLabel}
+                                      mini
+                                    />
+                                  </>
+                                );
+                              }
+                              if (message.usage?.outputTokens != null) {
+                                return (
+                                  <TokenCountBadgeComponent
+                                    value={message.usage.outputTokens}
+                                    label="tokens"
+                                    mini
+                                  />
+                                );
+                              }
+                              return null;
+                            })()}
+                            {message.content && (
+                              <WordBadgeComponent
+                                count={
+                                  message.content
+                                    .trim()
+                                    .split(/\s+/)
+                                    .filter(Boolean).length
+                                }
+                                mini
+                              />
+                            )}
+                            {message.totalTime != null && (
+                              <StopwatchBadgeComponent
+                                seconds={message.totalTime}
+                                className={styles.metaMini}
+                              />
+                            )}
+                            {message.tokensPerSec && (
+                              <BadgeComponent
+                                variant="info"
+                                mini
+                                tooltip={`${message.tokensPerSec} tokens per second`}
+                              >
+                                {message.tokensPerSec} tok/s
+                              </BadgeComponent>
+                            )}
+                            {message.provider === "lm-studio" ||
+                            message.provider === "vllm" ? (
+                              <BadgeComponent
+                                variant="success"
+                                mini
+                                tooltip="Free (local model)"
+                              >
+                                $0
+                              </BadgeComponent>
+                            ) : message.estimatedCost ? (
+                              <CostBadgeComponent
+                                cost={message.estimatedCost}
+                                mini
+                              />
+                            ) : null}
+                            {message.timestamp && (
+                              <DateTimeBadgeComponent
+                                date={message.timestamp}
+                                mini
+                              />
+                            )}
+                          </div>
+                        )}
+
+                      {/* Plan proposal card — fallback for non-segmented messages */}
+                      {planProposal &&
+                        message.role === "assistant" &&
+                        i === messages.length - 1 &&
+                        !message.contentSegments?.some(
+                          (s: any) => s.type === "plan",
+                        ) && (
                           <PlanCardComponent
-                            key={`seg-p-${si}`}
                             planText={planProposal.plan}
                             steps={planProposal.steps}
                             status={planProposal.status}
                             onApprove={onPlanApprove}
                             onReject={onPlanReject}
                           />
-                        );
-                      }
-                      return null;
-                    };
-
-                    // Edit mode: show reasoning then editable text
-                    if (message.role === "assistant" && !readOnly && editingIndex === i) {
-                      const thinkingOnly = segs.filter((s: any) => s.type === "thinking");
-                      const nonThinking = segs.filter((s: any) => s.type !== "thinking");
-                      return (
-                        <>
-                          {hasThinking && thinkingOnly.length > 0 && (
-                            <ThinkingBlock isStreaming={false}>
-                              {thinkingOnly.map((seg: any, si: any) => renderSeg(seg, si, { insideThinking: true }))}
-                            </ThinkingBlock>
-                          )}
-                          {nonThinking.map((seg: any, si: any) => renderSeg(seg, si))}
-                          <EditableMessage
-                            key="seg-edit"
-                            content={message.content}
-                            index={i}
-                            role="assistant"
-                            onEdit={onEdit}
-                            editing={true}
-                            onCancelEdit={() => setEditingIndex(null)}
-                            knownPaths={knownPaths}
-                            onMentionFileOpen={onMentionFileOpen}
-                          />
-                        </>
-                      );
-                    }
-
-                    // -- Normal rendering --
-                    // Only thinking segments go inside the ThinkingBlock.
-                    // Tools and text segments render outside in their original
-                    // interleaved order — this matches the post-refresh layout.
-                    if (hasThinking) {
-                      const thinkingOnly = segs.filter((s: any) => s.type === "thinking");
-                      const visibleSegs = segs
-                        .map((s: any, index: any) => ({ seg: s, origIdx: index }))
-                        .filter(({ seg }: any) => seg.type !== "thinking");
-                      // ThinkingBlock is streaming when thinking is the current
-                      // activity (last segment is thinking)
-                      const lastSeg = segs[segs.length - 1];
-                      const thinkingIsStreaming = isStreaming && lastSeg?.type === "thinking";
-
-                      // Find the last text segment among visible segs for cursor
-                      const lastVisibleTextIdx = (() => {
-                        for (let k = visibleSegs.length - 1; k >= 0; k--) {
-                          if (visibleSegs[k].seg.type === "text") return k;
-                        }
-                        return -1;
-                      })();
-
-                      return (
-                        <>
-                          {thinkingOnly.length > 0 && (
-                            <ThinkingBlock isStreaming={thinkingIsStreaming}>
-                              {thinkingOnly.map((seg: any, si: any) =>
-                                renderSeg(seg, si, { insideThinking: true })
-                              )}
-                            </ThinkingBlock>
-                          )}
-                          {/* Tools and text segments render outside in original order */}
-                          {visibleSegs.map(({ seg, origIdx }: any, vi: any) => {
-                            const isLastText = vi === lastVisibleTextIdx;
-                            return (
-                              <React.Fragment key={`vis-${vi}`}>
-                                {renderSeg(seg, origIdx, { isLastText })}
-                              </React.Fragment>
-                            );
-                          })}
-                          {/* Streaming cursor when no visible content yet */}
-                          {isStreaming && visibleSegs.length === 0 && (
-                            <StreamingCursorComponent active standalone />
-                          )}
-                        </>
-                      );
-                    }
-
-                    // No thinking — render all segments inline (tools interleaved with text)
-                    // Find the last text segment to place streaming cursor
-                    const lastTextIdx = (() => {
-                      for (let k = segs.length - 1; k >= 0; k--) {
-                        if (segs[k].type === "text") return k;
-                      }
-                      return -1;
-                    })();
-                    return segs.map((seg: any, si: any) => renderSeg(seg, si, { isLastText: si === lastTextIdx }));
-                  })()
-                ) : (
-                  <>
-                    {/* Thinking block (persisted conversations without segments) */}
-                    {message.thinking && (
-                      <ThinkingBlock
-                        thinking={message.thinking}
-                        isStreaming={isStreaming && !!message.thinking && !message.content}
-                      />
-                    )}
-
-                    {/* Tool calls (persisted conversations without segments) */}
-                    {message.toolCalls && message.toolCalls.length > 0 && (
-                      <ToolCallsBlock toolCalls={message.toolCalls} streamingOutputs={streamingOutputs} workerToolActivity={workerToolActivity} />
-                    )}
-
-                    {/* Text content */}
-                    {message.role === "user" && !readOnly ? (
-                      <EditableMessage
-                        content={message.content}
-                        index={i}
-                        role="user"
-                        onEdit={onEdit}
-                        editing={editingIndex === i}
-                        onCancelEdit={() => setEditingIndex(null)}
-                        knownPaths={knownPaths}
-                        onMentionFileOpen={onMentionFileOpen}
-                      />
-                    ) : message.role === "assistant" && !readOnly && editingIndex === i ? (
-                      <EditableMessage
-                        content={message.content}
-                        index={i}
-                        role="assistant"
-                        onEdit={onEdit}
-                        editing={true}
-                        onCancelEdit={() => setEditingIndex(null)}
-                        knownPaths={knownPaths}
-                        onMentionFileOpen={onMentionFileOpen}
-                      />
-                    ) : message.content ? (
-                      <MarkdownContent
-                        content={message.content}
-                        className={isStreaming ? styles.streamingText : ""}
-                      >
-                        <StreamingCursorComponent active={isStreaming} />
-                      </MarkdownContent>
-                    ) : isStreaming ? (
-                      <StreamingCursorComponent active standalone />
-                    ) : null}
-                  </>
-                )}
-
-                {/* Images / media */}
-                {message.images && message.images.length > 0 && (
-                  <div className={styles.imagePreviewRow}>
-                    {message.images.map((rawUrl: any, j: any) => {
-                      const resolvedUrl = PrismService.getFileUrl(rawUrl);
-                      const cat = getMimeCategory(rawUrl);
-                      let clickHandler;
-                      if (cat === "image")
-                        clickHandler = () => onImageClick?.(resolvedUrl);
-                      else if (cat === "pdf" || cat === "text")
-                        clickHandler = () => onDocClick?.(resolvedUrl);
-                      return (
-                        <MediaPreview
-                          key={j}
-                          dataUrl={rawUrl}
-                          onClick={clickHandler}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Streaming audio (live session in progress) */}
-                {!readOnly &&
-                  message.role === "assistant" &&
-                  message._liveStreaming &&
-                  !message.audio && (
-                    <div className={styles.audioCard}>
-                      <AudioPlayerRecorderComponent streaming compact />
+                        )}
                     </div>
-                  )}
-
-                {/* Audio */}
-                {message.audio && (
-                  <div className={styles.imagePreviewRow}>
-                    {(Array.isArray(message.audio) ? message.audio : [message.audio]).map(
-                      (rawUrl: any, j: any) => (
-                        <MediaPreview key={`aud-${j}`} dataUrl={rawUrl} />
-                      ),
-                    )}
                   </div>
-                )}
-
-                {/* Video */}
-                {message.video &&
-                  (Array.isArray(message.video) ? message.video : [message.video]).length >
-                    0 && (
-                    <div className={styles.imagePreviewRow}>
-                      {(Array.isArray(message.video) ? message.video : [message.video]).map(
-                        (rawUrl: any, j: any) => (
-                          <MediaPreview key={`vid-${j}`} dataUrl={rawUrl} />
-                        ),
-                      )}
-                    </div>
-                  )}
-
-                {/* PDF */}
-                {message.pdf &&
-                  (Array.isArray(message.pdf) ? message.pdf : [message.pdf]).length > 0 && (
-                    <div className={styles.imagePreviewRow}>
-                      {(Array.isArray(message.pdf) ? message.pdf : [message.pdf]).map(
-                        (rawUrl: any, j: any) => {
-                          const resolvedUrl = PrismService.getFileUrl(rawUrl);
-                          return (
-                            <MediaPreview
-                              key={`pdf-${j}`}
-                              dataUrl={rawUrl}
-                              onClick={() => onDocClick?.(resolvedUrl)}
-                            />
-                          );
-                        },
-                      )}
-                    </div>
-                  )}
-
-                {/* Error block */}
-                {message.error && (
-                  <div className={styles.errorBlock}>
-                    <AlertTriangle size={14} className={styles.errorIcon} />
-                    <span>{message.error}</span>
-                  </div>
-                )}
-
-                {/* User metadata */}
-                {message.role === "user" && message.content && (
-                  <div className={styles.metaBadges}>
-                    <WordBadgeComponent count={message.content.trim().split(/\s+/).filter(Boolean).length} mini />
-                  </div>
-                )}
-
-                {/* Assistant metadata — only on the last message in a coalesced group */}
-                {message.role === "assistant" &&
-                  (coalesce?.isLastInGroup !== false) &&
-                  (message.usage || message.audio || message.provider) && (
-                    <div className={styles.metaBadges}>
-                      {message.provider && (
-                        <ProvidersBadgeComponent providers={[message.provider]} mini />
-                      )}
-                      {message.model && (
-                        <ModelBadgeComponent models={[message.model]} mini />
-                      )}
-                      {message.voice && (
-                        <BadgeComponent variant="info" mini tooltip={`Voice: ${message.voice}`}>🔊 {message.voice}</BadgeComponent>
-                      )}
-                      {(() => {
-                        if (message.usage?.inputTokens != null && message.usage?.outputTokens != null) {
-                          const cacheRead = message.usage.cacheReadInputTokens || 0;
-                          const cacheWrite = message.usage.cacheCreationInputTokens || 0;
-                          const cached = cacheRead + cacheWrite;
-                          const totalIn = getTotalInputTokens(message.usage);
-                          let inLabel = "in";
-                          if (cached) {
-                            const parts = [];
-                            if (message.usage.inputTokens) parts.push(`${message.usage.inputTokens.toLocaleString()} new`);
-                            if (cacheRead) parts.push(`${cacheRead.toLocaleString()} read`);
-                            if (cacheWrite) parts.push(`${cacheWrite.toLocaleString()} write`);
-                            inLabel = `in (${parts.join(" · ")})`;
-                          }
-                          const reasoning = message.usage.reasoningOutputTokens || 0;
-                          let outLabel = "out";
-                          if (reasoning > 0) {
-                            outLabel = `out (${reasoning.toLocaleString()} reasoning)`;
-                          }
-                          return (
-                            <>
-                              <TokenCountBadgeComponent value={totalIn} label={inLabel} mini />
-                              <TokenCountBadgeComponent value={message.usage.outputTokens} label={outLabel} mini />
-                            </>
-                          );
-                        }
-                        if (message.usage?.outputTokens != null) {
-                          return <TokenCountBadgeComponent value={message.usage.outputTokens} label="tokens" mini />;
-                        }
-                        return null;
-                      })()}
-                      {message.content && (
-                        <WordBadgeComponent count={message.content.trim().split(/\s+/).filter(Boolean).length} mini />
-                      )}
-                      {message.totalTime != null && (
-                        <StopwatchBadgeComponent seconds={message.totalTime} className={styles.metaMini} />
-                      )}
-                      {message.tokensPerSec && (
-                        <BadgeComponent variant="info" mini tooltip={`${message.tokensPerSec} tokens per second`}>{message.tokensPerSec} tok/s</BadgeComponent>
-                      )}
-                      {(message.provider === "lm-studio" || message.provider === "vllm")
-                        ? <BadgeComponent variant="success" mini tooltip="Free (local model)">$0</BadgeComponent>
-                        : message.estimatedCost
-                          ? <CostBadgeComponent cost={message.estimatedCost} mini />
-                          : null
-                      }
-                      {message.timestamp && (
-                        <DateTimeBadgeComponent date={message.timestamp} mini />
-                      )}
-                    </div>
-                  )}
-
-                {/* Plan proposal card — fallback for non-segmented messages */}
-                {planProposal && message.role === "assistant" && i === messages.length - 1 &&
-                  !(message.contentSegments?.some((s: any) => s.type === "plan")) && (
-                  <PlanCardComponent
-                    planText={planProposal.plan}
-                    steps={planProposal.steps}
-                    status={planProposal.status}
-                    onApprove={onPlanApprove}
-                    onReject={onPlanReject}
-                  />
-                )}
-              </div>
-            </div>
-            );
-            })()}
+                );
+              })()}
           </React.Fragment>
         );
       })}
-
     </div>
   );
 }

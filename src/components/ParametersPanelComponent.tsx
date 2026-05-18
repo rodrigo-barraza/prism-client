@@ -1,7 +1,10 @@
 "use client";
 
 import { Settings2 } from "lucide-react";
-import { SelectComponent, SliderComponent } from "@rodrigo-barraza/components-library";
+import {
+  SelectComponent,
+  SliderComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./SettingsPanelComponent.module.css";
 
 export default function ParametersPanelComponent({
@@ -64,16 +67,20 @@ export default function ParametersPanelComponent({
   const handleMaxTokensChange = (value: any) => onChange({ maxTokens: value });
   const handleTopPChange = (value: any) => onChange({ topP: value });
   const handleTopKChange = (value: any) => onChange({ topK: value });
-  const handleFreqPenaltyChange = (value: any) => onChange({ frequencyPenalty: value });
-  const handlePresPenaltyChange = (value: any) => onChange({ presencePenalty: value });
+  const handleFreqPenaltyChange = (value: any) =>
+    onChange({ frequencyPenalty: value });
+  const handlePresPenaltyChange = (value: any) =>
+    onChange({ presencePenalty: value });
   const handleMinPChange = (value: any) => onChange({ minP: value });
-  const handleRepeatPenaltyChange = (value: any) => onChange({ repeatPenalty: value });
+  const handleRepeatPenaltyChange = (value: any) =>
+    onChange({ repeatPenalty: value });
   const handleSeedChange = (e: any) => onChange({ seed: e.target.value });
   const handleStopSeqChange = (e: any) =>
     onChange({ stopSequences: e.target.value });
   const handleReasoningEffortChange = (value: any) =>
     onChange({ reasoningEffort: value });
-  const handleThinkingLevelChange = (value: any) => onChange({ thinkingLevel: value });
+  const handleThinkingLevelChange = (value: any) =>
+    onChange({ thinkingLevel: value });
   const handleThinkingBudgetChange = (e: any) =>
     onChange({ thinkingBudget: e.target.value });
   const handleVerbosityChange = (value: any) => onChange({ verbosity: value });
@@ -200,11 +207,18 @@ export default function ParametersPanelComponent({
       {/* Thinking sub-settings — shown when Thinking is toggled on */}
       {isReasoning &&
         !selectedModelDef?.responsesAPI &&
-        (settings.thinkingEnabled || (settings.provider === "lm-studio" && settings.thinkingEnabled !== false)) && (
+        (settings.thinkingEnabled ||
+          (settings.provider === "lm-studio" &&
+            settings.thinkingEnabled !== false)) && (
           <>
-            {["openai", "lm-studio", "vllm", "anthropic", "ollama", "llama-cpp"].includes(
-              settings.provider,
-            ) && (
+            {[
+              "openai",
+              "lm-studio",
+              "vllm",
+              "anthropic",
+              "ollama",
+              "llama-cpp",
+            ].includes(settings.provider) && (
               <div className={styles.formGroup}>
                 <label>Reasoning Effort</label>
                 <SelectComponent
@@ -225,10 +239,12 @@ export default function ParametersPanelComponent({
                   <label>Thinking Level</label>
                   <SelectComponent
                     value={settings.thinkingLevel || "high"}
-                    options={selectedModelDef.thinkingLevels.map((level: any) => ({
-                      value: level,
-                      label: level.charAt(0).toUpperCase() + level.slice(1),
-                    }))}
+                    options={selectedModelDef.thinkingLevels.map(
+                      (level: any) => ({
+                        value: level,
+                        label: level.charAt(0).toUpperCase() + level.slice(1),
+                      }),
+                    )}
                     onChange={handleThinkingLevelChange}
                   />
                 </div>
@@ -289,7 +305,9 @@ export default function ParametersPanelComponent({
             />
           </div>
 
-          {["anthropic", "google", "llama-cpp", "lm-studio", "vllm"].includes(settings.provider) && (
+          {["anthropic", "google", "llama-cpp", "lm-studio", "vllm"].includes(
+            settings.provider,
+          ) && (
             <div className={styles.formGroup}>
               <label>Top K ({settings.topK})</label>
               <SliderComponent
@@ -328,7 +346,9 @@ export default function ParametersPanelComponent({
             </div>
           )}
 
-          {["openai", "google", "llama-cpp", "lm-studio", "vllm"].includes(settings.provider) && (
+          {["openai", "google", "llama-cpp", "lm-studio", "vllm"].includes(
+            settings.provider,
+          ) && (
             <div className={styles.formGroup}>
               <label>Seed</label>
               <input
@@ -393,12 +413,12 @@ export default function ParametersPanelComponent({
                 options={[
                   { value: "", label: "Default" },
                   { value: "auto", label: "Auto" },
-                  ...(settings.provider === "openai" ? [
-                    { value: "default", label: "Standard" },
-                    { value: "priority", label: "Priority" },
-                  ] : [
-                    { value: "standard_only", label: "Standard Only" },
-                  ]),
+                  ...(settings.provider === "openai"
+                    ? [
+                        { value: "default", label: "Standard" },
+                        { value: "priority", label: "Priority" },
+                      ]
+                    : [{ value: "standard_only", label: "Standard Only" }]),
                 ]}
                 onChange={handleServiceTierChange}
               />

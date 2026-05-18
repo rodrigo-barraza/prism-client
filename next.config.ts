@@ -19,7 +19,10 @@ Object.assign(process.env, secrets);
 // Resolved tools-service URL for the rewrite proxy (server-side only).
 // Tools-service is internal (no public hostname) — the browser calls
 // /api/tools/* which Next.js rewrites to this destination.
-const TOOLS_SERVICE_URL = process.env.TOOLS_SERVICE_URL || secrets.TOOLS_SERVICE_URL || "http://localhost:1234";
+const TOOLS_SERVICE_URL =
+  process.env.TOOLS_SERVICE_URL ||
+  secrets.TOOLS_SERVICE_URL ||
+  "http://localhost:1234";
 
 if (!TOOLS_SERVICE_URL) {
   // throw new Error(
@@ -36,7 +39,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: PRISM_CLIENT_DOMAIN ? [PRISM_CLIENT_DOMAIN] : undefined,
   turbopack: {},
-  transpilePackages: ["@rodrigo-barraza/components-library", "@rodrigo-barraza/utilities-library"],
+  transpilePackages: [
+    "@rodrigo-barraza/components-library",
+    "@rodrigo-barraza/utilities-library",
+  ],
 
   // Expose resolved values to both server and client bundles.
   // config.ts applies environment-aware overrides for browser contexts
@@ -60,7 +66,8 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_PRISM_WS_PUBLIC_URL: secrets.PRISM_WS_PUBLIC_URL,
     NEXT_PUBLIC_TOOLS_SERVICE_URL: TOOLS_SERVICE_URL,
     NEXT_PUBLIC_MINIO_PUBLIC_URL: secrets.MINIO_PUBLIC_URL,
-    NEXT_PUBLIC_PRISM_SERVICE_MINIO_BUCKET_NAME: secrets.PRISM_SERVICE_MINIO_BUCKET_NAME,
+    NEXT_PUBLIC_PRISM_SERVICE_MINIO_BUCKET_NAME:
+      secrets.PRISM_SERVICE_MINIO_BUCKET_NAME,
   },
 
   // ── Rewrite Proxy ──────────────────────────────────────────

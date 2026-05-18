@@ -138,7 +138,8 @@ export default function BenchmarksTableComponent({
         const rKey = modelKey;
         const completedCount = resultCounters.get(rKey) || 0;
         const indices = targetCounters.get(rKey);
-        const isActiveInstance = indices && indices.indexOf(i) === completedCount;
+        const isActiveInstance =
+          indices && indices.indexOf(i) === completedCount;
 
         if (isActiveInstance) {
           rows.push({

@@ -87,7 +87,8 @@ export default class LiveSessionService {
     switch (data.type) {
       case "setupComplete":
         this.connected = true;
-        if ((this as any).callbacks.onSetupComplete) (this as any).callbacks.onSetupComplete();
+        if ((this as any).callbacks.onSetupComplete)
+          (this as any).callbacks.onSetupComplete();
         break;
 
       case "audio":
@@ -99,11 +100,13 @@ export default class LiveSessionService {
         break;
 
       case "text":
-        if ((this as any).callbacks.onText) (this as any).callbacks.onText(data.text);
+        if ((this as any).callbacks.onText)
+          (this as any).callbacks.onText(data.text);
         break;
 
       case "thinking":
-        if ((this as any).callbacks.onThinking) (this as any).callbacks.onThinking(data.content);
+        if ((this as any).callbacks.onThinking)
+          (this as any).callbacks.onThinking(data.content);
         break;
 
       case "toolCall":
@@ -142,20 +145,24 @@ export default class LiveSessionService {
         break;
 
       case "turnComplete":
-        if ((this as any).callbacks.onTurnComplete) (this as any).callbacks.onTurnComplete(data);
+        if ((this as any).callbacks.onTurnComplete)
+          (this as any).callbacks.onTurnComplete(data);
         break;
 
       case "interrupted":
         this.stopAudioPlayback();
-        if ((this as any).callbacks.onInterrupted) (this as any).callbacks.onInterrupted(data);
+        if ((this as any).callbacks.onInterrupted)
+          (this as any).callbacks.onInterrupted(data);
         break;
 
       case "usage":
-        if ((this as any).callbacks.onUsage) (this as any).callbacks.onUsage(data.usage);
+        if ((this as any).callbacks.onUsage)
+          (this as any).callbacks.onUsage(data.usage);
         break;
 
       case "error":
-        if ((this as any).callbacks.onError) (this as any).callbacks.onError(data.message);
+        if ((this as any).callbacks.onError)
+          (this as any).callbacks.onError(data.message);
         break;
 
       case "sessionClosed":
@@ -203,7 +210,9 @@ export default class LiveSessionService {
 
   sendToolResponse(responses: any) {
     if ((this as any).ws?.readyState === WebSocket.OPEN) {
-      (this as any).ws.send(JSON.stringify({ type: "toolResponse", responses }));
+      (this as any).ws.send(
+        JSON.stringify({ type: "toolResponse", responses }),
+      );
     }
   }
 
@@ -223,7 +232,9 @@ export default class LiveSessionService {
         )({
           sampleRate: 16000,
         });
-        await (this as any).audioContext.audioWorklet.addModule("/pcm-processor.js");
+        await (this as any).audioContext.audioWorklet.addModule(
+          "/pcm-processor.js",
+        );
       }
 
       if ((this as any).audioContext.state === "suspended") {
@@ -317,7 +328,9 @@ export default class LiveSessionService {
           (this as any).playbackContext,
           "playback-processor",
         );
-        (this as any).playbackWorkletNode.connect((this as any).playbackContext.destination);
+        (this as any).playbackWorkletNode.connect(
+          (this as any).playbackContext.destination,
+        );
       })();
     }
     return (this as any)._playbackInitPromise;

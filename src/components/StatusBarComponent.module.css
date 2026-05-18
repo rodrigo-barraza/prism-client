@@ -29,8 +29,10 @@
   min-height: 28px;
   opacity: 1;
   box-shadow:
-    0 0 8px -2px color-mix(in srgb, var(--phase-pulse, rgb(249, 115, 22)) 30%, transparent),
-    0 0 16px -4px color-mix(in srgb, var(--phase-pulse, rgb(245, 158, 11)) 15%, transparent);
+    0 0 8px -2px
+      color-mix(in srgb, var(--phase-pulse, rgb(249, 115, 22)) 30%, transparent),
+    0 0 16px -4px
+      color-mix(in srgb, var(--phase-pulse, rgb(245, 158, 11)) 15%, transparent);
 }
 
 .statusBarAwaiting {
@@ -89,8 +91,12 @@
 }
 
 @keyframes statusBarOverlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── Icon slots ── */
@@ -181,7 +187,8 @@
 }
 
 @keyframes statusBarPulseDot {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }

@@ -26,12 +26,15 @@ export default function RequestsTableComponent({
   getRowClassName,
 }: any) {
   const totalCost = useMemo(
-    () => requests.reduce((sum: any, r: any) => sum + (r.estimatedCost || 0), 0) || 1,
+    () =>
+      requests.reduce((sum: any, r: any) => sum + (r.estimatedCost || 0), 0) ||
+      1,
     [requests],
   );
 
   const totalDuration = useMemo(
-    () => requests.reduce((sum: any, r: any) => sum + (r.totalTime || 0), 0) || 1,
+    () =>
+      requests.reduce((sum: any, r: any) => sum + (r.totalTime || 0), 0) || 1,
     [requests],
   );
 

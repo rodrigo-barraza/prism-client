@@ -64,7 +64,10 @@
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-secondary);
-  transition: width 0.25s ease, min-width 0.25s ease, opacity 0.2s ease;
+  transition:
+    width 0.25s ease,
+    min-width 0.25s ease,
+    opacity 0.2s ease;
 }
 
 .leftPanel.panelHidden {
@@ -95,7 +98,10 @@
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-secondary);
-  transition: width 0.25s ease, min-width 0.25s ease, opacity 0.2s ease;
+  transition:
+    width 0.25s ease,
+    min-width 0.25s ease,
+    opacity 0.2s ease;
 }
 
 .rightPanel.panelHidden {

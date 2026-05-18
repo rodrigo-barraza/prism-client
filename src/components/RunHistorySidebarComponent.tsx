@@ -14,7 +14,11 @@ import {
 } from "lucide-react";
 import AgentCardComponent from "./AgentCardComponent";
 import ModelCardComponent from "./ModelCardComponent";
-import { BadgeComponent, TabBarComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
+import {
+  BadgeComponent,
+  TabBarComponent,
+  DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
 import CostBadgeComponent from "./CostBadgeComponent";
@@ -75,7 +79,12 @@ export default function RunHistorySidebarComponent({
   const assertions = useMemo(() => {
     if (benchmark?.assertions?.length > 0) return benchmark.assertions;
     if (benchmark?.expectedValue) {
-      return [{ expectedValue: benchmark.expectedValue, matchMode: benchmark.matchMode || "contains" }];
+      return [
+        {
+          expectedValue: benchmark.expectedValue,
+          matchMode: benchmark.matchMode || "contains",
+        },
+      ];
     }
     return [];
   }, [benchmark]);
@@ -94,7 +103,7 @@ export default function RunHistorySidebarComponent({
             icon: <Settings size={14} />,
             tooltip: "General",
             badge: selectedModels.length + agentInstances.length,
-            badgeDisabled: (selectedModels.length + agentInstances.length) === 0,
+            badgeDisabled: selectedModels.length + agentInstances.length === 0,
           },
           {
             key: "history",
@@ -133,7 +142,10 @@ export default function RunHistorySidebarComponent({
                     <BadgeComponent variant="accent">
                       {a.matchMode || "contains"}
                     </BadgeComponent>
-                    <span className={styles.assertionValue} title={a.expectedValue}>
+                    <span
+                      className={styles.assertionValue}
+                      title={a.expectedValue}
+                    >
                       {a.expectedValue}
                     </span>
                   </div>
@@ -147,9 +159,7 @@ export default function RunHistorySidebarComponent({
             <div className={styles.promptSection}>
               <ChatPreviewComponent
                 systemPrompt={benchmark.systemPrompt}
-                messages={[
-                  { role: "user", content: benchmark.prompt },
-                ]}
+                messages={[{ role: "user", content: benchmark.prompt }]}
                 mini
               />
             </div>
@@ -173,7 +183,7 @@ export default function RunHistorySidebarComponent({
                   const isTools = !!toolsMap[m.instanceId];
                   const supportsThinking = !!m.thinking;
                   const dupeCount = selectedModels.filter(
-                    (s: any) => s.provider === m.provider && s.name === m.name
+                    (s: any) => s.provider === m.provider && s.name === m.name,
                   ).length;
                   return (
                     <ModelCardComponent
@@ -206,9 +216,12 @@ export default function RunHistorySidebarComponent({
                     {agentInstances.map((a: any) => {
                       const isThinking = !!thinkingMap[a.instanceId];
                       const currentModelDef = allModels.find(
-                        (m: any) => m.provider === a.provider && m.name === a.modelName
+                        (m: any) =>
+                          m.provider === a.provider && m.name === a.modelName,
                       );
-                      const supportsThinking = currentModelDef?.thinking || (currentModelDef?.tools || []).includes("Thinking");
+                      const supportsThinking =
+                        currentModelDef?.thinking ||
+                        (currentModelDef?.tools || []).includes("Thinking");
                       return (
                         <AgentCardComponent
                           key={a.instanceId}
@@ -247,7 +260,8 @@ export default function RunHistorySidebarComponent({
           {running && (
             <div className={styles.runningBanner}>
               <Loader2 size={14} className={styles.spinIcon} />
-              Running… {streamingCompleted > 0 ? `${streamingCompleted} done` : ""}
+              Running…{" "}
+              {streamingCompleted > 0 ? `${streamingCompleted} done` : ""}
             </div>
           )}
 
@@ -263,7 +277,10 @@ export default function RunHistorySidebarComponent({
                 const isActive = activeRunId === run.id;
                 const totalCost =
                   run.summary.totalCost ??
-                  run.models?.reduce((s: any, r: any) => s + (r.estimatedCost || 0), 0) ??
+                  run.models?.reduce(
+                    (s: any, r: any) => s + (r.estimatedCost || 0),
+                    0,
+                  ) ??
                   0;
 
                 return (
@@ -276,9 +293,14 @@ export default function RunHistorySidebarComponent({
                     <div className={styles.runItemHeader}>
                       <DateTimeBadgeComponent date={run.completedAt} mini />
                       <CostBadgeComponent cost={totalCost} mini />
-                      <span className={styles.runIndex}>#{runHistory.length - index}</span>
+                      <span className={styles.runIndex}>
+                        #{runHistory.length - index}
+                      </span>
                       {run.aborted && (
-                        <AlertTriangle size={11} style={{ color: "var(--warning)", flexShrink: 0 }} />
+                        <AlertTriangle
+                          size={11}
+                          style={{ color: "var(--warning)", flexShrink: 0 }}
+                        />
                       )}
                     </div>
                     <div className={styles.runStats}>

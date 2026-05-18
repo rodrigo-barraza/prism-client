@@ -29,5 +29,11 @@ export default function AdminModelsPage() {
     };
   }, [setControls, setTitleBadge]);
 
-  return <ModelsPageComponent mode="admin" project={projectFilter} onCountChange={setTitleBadge} />;
+  return (
+    <ModelsPageComponent
+      mode="admin"
+      project={projectFilter}
+      onCountChange={setTitleBadge}
+    />
+  );
 }

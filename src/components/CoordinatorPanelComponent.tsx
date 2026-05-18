@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { GitBranch, RefreshCw, Play, Check, X, AlertTriangle, Loader } from "lucide-react";
+import {
+  GitBranch,
+  RefreshCw,
+  Play,
+  Check,
+  X,
+  AlertTriangle,
+  Loader,
+} from "lucide-react";
 import { TOAST_DURATION_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 import styles from "./CoordinatorPanelComponent.module.css";
@@ -119,9 +127,12 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
     setLoading(true);
     try {
-      const result = await PrismService._request(`/coordinator/approve-merge/${(plan as any).taskId}`, {
-        method: "POST",
-      });
+      const result = await PrismService._request(
+        `/coordinator/approve-merge/${(plan as any).taskId}`,
+        {
+          method: "POST",
+        },
+      );
 
       if (result.error) {
         showToast("error", result.error);
@@ -142,9 +153,12 @@ export default function CoordinatorPanel({ project: _project }: any) {
     if (!(plan as any)?.taskId) return;
 
     try {
-      await PrismService._request(`/coordinator/abort/${(plan as any).taskId}`, {
-        method: "POST",
-      });
+      await PrismService._request(
+        `/coordinator/abort/${(plan as any).taskId}`,
+        {
+          method: "POST",
+        },
+      );
       showToast("success", "Task aborted, worktrees cleaned up");
     } catch {
       // best-effort
@@ -169,9 +183,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <span className={styles.headerTitle}>
-          Coordinator Mode
-        </span>
+        <span className={styles.headerTitle}>Coordinator Mode</span>
         {phase !== "input" && (
           <button className={styles.actionBtn} onClick={handleReset}>
             <X size={11} /> Reset
@@ -180,7 +192,9 @@ export default function CoordinatorPanel({ project: _project }: any) {
       </div>
 
       {toast && (
-        <div className={`${styles.toast} ${styles[`toast${(toast as any).type.charAt(0).toUpperCase() + (toast as any).type.slice(1)}`]}`}>
+        <div
+          className={`${styles.toast} ${styles[`toast${(toast as any).type.charAt(0).toUpperCase() + (toast as any).type.slice(1)}`]}`}
+        >
           {(toast as any).text}
         </div>
       )}
@@ -222,15 +236,15 @@ export default function CoordinatorPanel({ project: _project }: any) {
       {/* -- Plan Review Phase -------------------------------- */}
       {phase === "plan" && plan && (
         <div className={styles.planSection}>
-          <div className={styles.planSummary}>
-            {(plan as any).summary}
-          </div>
+          <div className={styles.planSummary}>{(plan as any).summary}</div>
 
           {(plan as any).subTasks?.map((st: any) => (
             <div key={st.id} className={styles.subTaskCard}>
               <div className={styles.subTaskHeader}>
                 <span className={styles.subTaskId}>{st.id}</span>
-                <span className={`${styles.subTaskComplexity} ${styles[(COMPLEXITY_CLASSES as any)[st.complexity] || "complexityMedium"]}`}>
+                <span
+                  className={`${styles.subTaskComplexity} ${styles[(COMPLEXITY_CLASSES as any)[st.complexity] || "complexityMedium"]}`}
+                >
                   {st.complexity || "medium"}
                 </span>
               </div>
@@ -241,15 +255,18 @@ export default function CoordinatorPanel({ project: _project }: any) {
                   </span>
                 ))}
               </div>
-              <div className={styles.subTaskInstruction}>
-                {st.instruction}
-              </div>
+              <div className={styles.subTaskInstruction}>{st.instruction}</div>
             </div>
           ))}
 
           <div className={styles.planActions}>
-            <button className={styles.approveBtn} onClick={handleExecute} disabled={loading}>
-              <Play size={12} /> Execute ({(plan as any).subTasks?.length} workers)
+            <button
+              className={styles.approveBtn}
+              onClick={handleExecute}
+              disabled={loading}
+            >
+              <Play size={12} /> Execute ({(plan as any).subTasks?.length}{" "}
+              workers)
             </button>
             <button className={styles.rejectBtn} onClick={handleReset}>
               Cancel
@@ -273,7 +290,9 @@ export default function CoordinatorPanel({ project: _project }: any) {
             <div key={w.id} className={styles.workerCard}>
               <div className={styles.workerHeader}>
                 <span className={styles.workerName}>{w.id}</span>
-                <span className={`${styles.workerStatus} ${styles[(STATUS_CLASSES as any)[w.status] || "statusPending"]}`}>
+                <span
+                  className={`${styles.workerStatus} ${styles[(STATUS_CLASSES as any)[w.status] || "statusPending"]}`}
+                >
                   {w.status}
                 </span>
               </div>
@@ -287,20 +306,26 @@ export default function CoordinatorPanel({ project: _project }: any) {
                   <div className={styles.diffHeader}>
                     <span className={styles.diffTitle}>Changes</span>
                     <div className={styles.diffStats}>
-                      <span className={styles.diffAdditions}>+{w.diff.additions}</span>
-                      <span className={styles.diffDeletions}>-{w.diff.deletions}</span>
+                      <span className={styles.diffAdditions}>
+                        +{w.diff.additions}
+                      </span>
+                      <span className={styles.diffDeletions}>
+                        -{w.diff.deletions}
+                      </span>
                     </div>
                   </div>
-                  <pre className={styles.diffContent}>
-                    {w.diff.diff}
-                  </pre>
+                  <pre className={styles.diffContent}>{w.diff.diff}</pre>
                 </div>
               )}
             </div>
           ))}
 
           <div className={styles.planActions}>
-            <button className={styles.approveBtn} onClick={handleMerge} disabled={loading}>
+            <button
+              className={styles.approveBtn}
+              onClick={handleMerge}
+              disabled={loading}
+            >
               <Check size={12} /> Approve & Merge
             </button>
             <button className={styles.rejectBtn} onClick={handleAbort}>
@@ -318,7 +343,8 @@ export default function CoordinatorPanel({ project: _project }: any) {
           </div>
           <div className={styles.emptyTitle}>Merge Complete</div>
           <div className={styles.emptySubtitle}>
-            All worker branches have been merged. You can run another task or close this panel.
+            All worker branches have been merged. You can run another task or
+            close this panel.
           </div>
           <button className={styles.planBtn} onClick={handleReset}>
             <RefreshCw size={12} /> New Task
@@ -335,8 +361,8 @@ export default function CoordinatorPanel({ project: _project }: any) {
           <div className={styles.emptyTitle}>Multi-Agent Coordinator</div>
           <div className={styles.emptySubtitle}>
             Decompose complex tasks into parallel sub-tasks. Each worker
-            operates in an isolated git worktree, and results are merged
-            via unified diffs.
+            operates in an isolated git worktree, and results are merged via
+            unified diffs.
           </div>
         </div>
       )}

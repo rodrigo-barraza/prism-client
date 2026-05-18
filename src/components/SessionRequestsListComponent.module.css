@@ -76,8 +76,7 @@
 
 /* Worker rows get a left accent bar */
 .requestWorker {
-  border-left: 2px solid
-    color-mix(in srgb, var(--accent) 40%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
   padding-left: 8px;
 }
 

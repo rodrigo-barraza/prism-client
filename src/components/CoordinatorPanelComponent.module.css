@@ -3,18 +3,18 @@
    ============================================================ */
 
 .container {
-  composes: container from './PanelShared.module.css';
+  composes: container from "./PanelShared.module.css";
   gap: 10px;
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
 
 .header {
-  composes: header from './PanelShared.module.css';
+  composes: header from "./PanelShared.module.css";
 }
 
 .headerTitle {
-  composes: headerTitle from './PanelShared.module.css';
+  composes: headerTitle from "./PanelShared.module.css";
 }
 
 .actionBtn {
@@ -29,7 +29,10 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     color: var(--text-primary);
@@ -109,7 +112,10 @@
   border: 1px solid color-mix(in srgb, var(--color-violet) 30%, transparent);
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-violet) 18%, transparent);
@@ -153,7 +159,11 @@
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: color-mix(in srgb, var(--color-violet) 30%, var(--border-color));
+    border-color: color-mix(
+      in srgb,
+      var(--color-violet) 30%,
+      var(--border-color)
+    );
   }
 }
 
@@ -232,7 +242,9 @@
   border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 
   &:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-success) 18%, transparent);
@@ -254,7 +266,9 @@
   border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
 
   &:hover {
     color: var(--color-rose);
@@ -309,8 +323,13 @@
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .statusComplete {
@@ -383,25 +402,25 @@
 /* ── Empty State ───────────────────────────────────────────── */
 
 .emptyState {
-  composes: emptyState from './PanelShared.module.css';
+  composes: emptyState from "./PanelShared.module.css";
 }
 
 .emptyIcon {
-  composes: emptyIcon from './PanelShared.module.css';
+  composes: emptyIcon from "./PanelShared.module.css";
 }
 
 .emptyTitle {
-  composes: emptyTitle from './PanelShared.module.css';
+  composes: emptyTitle from "./PanelShared.module.css";
 }
 
 .emptySubtitle {
-  composes: emptySubtitle from './PanelShared.module.css';
+  composes: emptySubtitle from "./PanelShared.module.css";
 }
 
 /* ── Loading ───────────────────────────────────────────────── */
 
 .loading {
-  composes: loading from './PanelShared.module.css';
+  composes: loading from "./PanelShared.module.css";
 }
 
 .spin {
@@ -409,7 +428,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Toast ─────────────────────────────────────────────────── */
@@ -442,5 +463,6 @@
 .toastError {
   background: color-mix(in srgb, var(--color-danger-light) 12%, transparent);
   color: var(--color-danger-light);
-  border: 1px solid color-mix(in srgb, var(--color-danger-light) 25%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-danger-light) 25%, transparent);
 }

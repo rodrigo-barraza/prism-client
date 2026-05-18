@@ -16,16 +16,21 @@ import styles from "./StatsTabBarComponent.module.css";
  */
 
 const TABS = [
-  { key: "all",          label: "All",          icon: <Layers size={10} /> },
-  { key: "orchestrator", label: "Orchestrator",  icon: <Bot size={10} /> },
-  { key: "workers",      label: "Workers",       icon: <Users size={10} /> },
+  { key: "all", label: "All", icon: <Layers size={10} /> },
+  { key: "orchestrator", label: "Orchestrator", icon: <Bot size={10} /> },
+  { key: "workers", label: "Workers", icon: <Users size={10} /> },
 ];
 
 export default function StatsTabBarComponent({ activeTab, onChange }: any) {
   return (
     <div className={styles.statsTabBar}>
       {TABS.map((tab: any) => (
-        <TooltipComponent key={tab.key} label={tab.label} position="bottom" delay={200}>
+        <TooltipComponent
+          key={tab.key}
+          label={tab.label}
+          position="bottom"
+          delay={200}
+        >
           <button
             className={`${styles.statsTabBtn}${activeTab === tab.key ? ` ${styles.statsTabBtnActive}` : ""}`}
             onClick={() => onChange(tab.key)}

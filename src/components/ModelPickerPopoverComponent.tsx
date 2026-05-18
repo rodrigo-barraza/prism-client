@@ -41,7 +41,11 @@ function setSharedSearch(value: any) {
   _notify();
 }
 function useSharedModelSearch() {
-  const value = useSyncExternalStore(subscribeSearch, getSearchSnapshot, getSearchSnapshot);
+  const value = useSyncExternalStore(
+    subscribeSearch,
+    getSearchSnapshot,
+    getSearchSnapshot,
+  );
   return [value, setSharedSearch] as const;
 }
 
@@ -299,7 +303,11 @@ export default function ModelPickerPopoverComponent({
       const name = rawModel.name || rawModel.key;
 
       // Deselect: clicking the already-selected model clears the selection
-      if (allowDeselect && provider === settings?.provider && name === settings?.model) {
+      if (
+        allowDeselect &&
+        provider === settings?.provider &&
+        name === settings?.model
+      ) {
         onSelectModel("", "");
         setOpen(false);
         setHighlightIndex(-1);
@@ -321,7 +329,14 @@ export default function ModelPickerPopoverComponent({
       setHighlightIndex(-1);
       document.dispatchEvent(new CustomEvent("panel:dismiss-sidebars"));
     },
-    [onSelectModel, onLmStudioSelect, multiSelect, allowDeselect, settings?.provider, settings?.model],
+    [
+      onSelectModel,
+      onLmStudioSelect,
+      multiSelect,
+      allowDeselect,
+      settings?.provider,
+      settings?.model,
+    ],
   );
 
   // Keyboard navigation (Escape / ArrowUp / ArrowDown / Enter)
@@ -410,7 +425,11 @@ export default function ModelPickerPopoverComponent({
     }
 
     // Single-select: show current model name
-    const rawLabel = currentModel?.label || settings?.model || placeholderLabel || "Select Model";
+    const rawLabel =
+      currentModel?.label ||
+      settings?.model ||
+      placeholderLabel ||
+      "Select Model";
     const provider = currentModel?.provider || settings?.provider;
     if (!provider || LOCAL_PROVIDERS.has(provider)) return rawLabel;
     const providerName = resolveProviderLabel(provider);
@@ -420,8 +439,19 @@ export default function ModelPickerPopoverComponent({
   // Build modalities object for the currently selected model
   const triggerCapabilities = useMemo(() => {
     if (!currentModel || multiSelect) return null;
-    const INPUT_MAP = { text: "textIn", image: "imageIn", audio: "audioIn", video: "videoIn", pdf: "docIn" };
-    const OUTPUT_MAP = { text: "textOut", image: "imageOut", audio: "audioOut", embedding: "embeddingOut" };
+    const INPUT_MAP = {
+      text: "textIn",
+      image: "imageIn",
+      audio: "audioIn",
+      video: "videoIn",
+      pdf: "docIn",
+    };
+    const OUTPUT_MAP = {
+      text: "textOut",
+      image: "imageOut",
+      audio: "audioOut",
+      embedding: "embeddingOut",
+    };
     const TOOL_MAP = {
       Thinking: "thinking",
       "Tool Calling": "functionCalling",
@@ -477,10 +507,27 @@ export default function ModelPickerPopoverComponent({
         <button
           ref={triggerRef}
           className={`${styles.trigger} ${open ? styles.triggerOpen : ""} ${readOnly ? styles.triggerReadOnly : ""} ${loadingProgress != null ? styles.triggerLoading : ""} ${multiSelect && selectedKeys?.size > 0 ? styles.triggerActive : ""}`}
-          onMouseEnter={readOnly ? undefined : (e: any) => SoundService.playHoverButton({ event: e })}
-          onClick={readOnly ? undefined : (e: any) => { SoundService.playClickButton({ event: e }); togglePopover(); }}
+          onMouseEnter={
+            readOnly
+              ? undefined
+              : (e: any) => SoundService.playHoverButton({ event: e })
+          }
+          onClick={
+            readOnly
+              ? undefined
+              : (e: any) => {
+                  SoundService.playClickButton({ event: e });
+                  togglePopover();
+                }
+          }
           data-model-picker-trigger
-          title={readOnly ? displayLabel : multiSelect ? "Select models" : "Switch model"}
+          title={
+            readOnly
+              ? displayLabel
+              : multiSelect
+                ? "Select models"
+                : "Switch model"
+          }
           style={readOnly ? { cursor: "default" } : undefined}
         >
           <span className={styles.triggerContent}>
@@ -507,14 +554,8 @@ export default function ModelPickerPopoverComponent({
         </button>
         {triggerCapabilities && loadingProgress == null && (
           <div className={styles.triggerCapabilities}>
-            <ModalityIconComponent
-              modalities={triggerCapabilities}
-              size={10}
-            />
-            <ModelToolsRow
-              tools={triggerCapabilities}
-              variant="condensed"
-            />
+            <ModalityIconComponent modalities={triggerCapabilities} size={10} />
+            <ModelToolsRow tools={triggerCapabilities} variant="condensed" />
           </div>
         )}
       </div>
@@ -524,7 +565,7 @@ export default function ModelPickerPopoverComponent({
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className={`${styles.popover} ${flipped ? styles.popoverFlipped : ''}`}
+            className={`${styles.popover} ${flipped ? styles.popoverFlipped : ""}`}
             style={popoverStyle}
             data-model-picker-popover
           >
@@ -598,7 +639,7 @@ function buildAllModels(config: any, modelTypeFilter: any) {
   for (const { key, suffix } of sections) {
     const modelsMap = config[key]?.models || {};
     for (const [provider, models] of Object.entries(modelsMap)) {
-      for (const m of (models as any)) {
+      for (const m of models as any) {
         const id = `${provider}:${m.name}`;
         if (!seen.has(id)) {
           seen.set(id, {
@@ -658,7 +699,8 @@ const PROVIDER_ORG_MAP = {
 };
 
 function inferOrganization(modelName: any, provider: any) {
-  if ((PROVIDER_ORG_MAP as any)[provider]) return (PROVIDER_ORG_MAP as any)[provider];
+  if ((PROVIDER_ORG_MAP as any)[provider])
+    return (PROVIDER_ORG_MAP as any)[provider];
   for (const [pattern, org] of ORG_MAP) {
     if ((pattern as any).test(modelName)) return org;
   }

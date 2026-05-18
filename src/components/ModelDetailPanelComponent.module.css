@@ -20,8 +20,12 @@
 }
 
 @keyframes overlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .panel {
@@ -39,8 +43,12 @@
 }
 
 @keyframes panelSlideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 /* ── Header ─────────────────────────────────────────── */
@@ -124,8 +132,6 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-
-
 
 /* ── Section ────────────────────────────────────────── */
 
@@ -438,7 +444,9 @@
   border-radius: 8px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
 
   &:hover {
     border-color: var(--text-tertiary);
@@ -448,7 +456,11 @@
 
 .statsCardCost {
   background: color-mix(in srgb, var(--accent-color) 6%, var(--bg-tertiary));
-  border-color: color-mix(in srgb, var(--accent-color) 20%, var(--border-color));
+  border-color: color-mix(
+    in srgb,
+    var(--accent-color) 20%,
+    var(--border-color)
+  );
 }
 
 .statsCardIcon {
@@ -486,7 +498,11 @@
 .successRateBar {
   height: 6px;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--danger, var(--color-danger)) 20%, var(--bg-tertiary));
+  background: color-mix(
+    in srgb,
+    var(--danger, var(--color-danger)) 20%,
+    var(--bg-tertiary)
+  );
   overflow: hidden;
 }
 

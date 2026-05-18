@@ -80,7 +80,11 @@ export function flattenTree(nodes: any, prefix = ""): any[] {
 export function detectMentionToken(text: any, cursorOffset: any) {
   let i = cursorOffset - 1;
   while (i >= 0 && text[i] !== "@" && text[i] !== " " && text[i] !== "\n") i--;
-  if (i >= 0 && text[i] === "@" && (i === 0 || text[i - 1] === " " || text[i - 1] === "\n")) {
+  if (
+    i >= 0 &&
+    text[i] === "@" &&
+    (i === 0 || text[i - 1] === " " || text[i - 1] === "\n")
+  ) {
     return { query: text.slice(i + 1, cursorOffset), anchorOffset: i };
   }
   return null;
@@ -102,7 +106,10 @@ export function filterMentionResults(entries: any, query: any, limit = 20) {
   if (!query) return entries.slice(0, limit);
   const q = query.toLowerCase();
   return entries
-    .filter((e: any) => e.path.toLowerCase().includes(q) || e.name.toLowerCase().includes(q))
+    .filter(
+      (e: any) =>
+        e.path.toLowerCase().includes(q) || e.name.toLowerCase().includes(q),
+    )
     .slice(0, limit);
 }
 
@@ -123,7 +130,8 @@ export function parseMentionTokens(text: any) {
   // Match @path tokens — path must contain at least one `/` or `.` to
   // distinguish real file/dir mentions from casual "@someone" usage.
   // Optionally captures a trailing `#Lstart` or `#Lstart-end` suffix.
-  const mentionRe = /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+?)(?:#L(\d+)(?:-(\d+))?)?)(?=\s|$)/g;
+  const mentionRe =
+    /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+?)(?:#L(\d+)(?:-(\d+))?)?)(?=\s|$)/g;
 
   const segments = [];
   let lastIndex = 0;
@@ -132,7 +140,10 @@ export function parseMentionTokens(text: any) {
   while ((match = mentionRe.exec(text)) !== null) {
     // Text before this mention
     if (match.index > lastIndex) {
-      segments.push({ type: "text", value: text.slice(lastIndex, match.index) });
+      segments.push({
+        type: "text",
+        value: text.slice(lastIndex, match.index),
+      });
     }
     const segment = { type: "mention", value: match[1] };
     // Extract line range if present
@@ -177,24 +188,31 @@ export function createMentionBadge(path: any, name: any, type: any, opts = {}) {
   // Store line range in data attributes for serialization
   if ((opts as any).lineStart != null) {
     badge.dataset.mentionLineStart = String((opts as any).lineStart);
-    if ((opts as any).lineEnd != null && (opts as any).lineEnd !== (opts as any).lineStart) {
+    if (
+      (opts as any).lineEnd != null &&
+      (opts as any).lineEnd !== (opts as any).lineStart
+    ) {
       badge.dataset.mentionLineEnd = String((opts as any).lineEnd);
     }
   }
   // Build display name with line suffix (#L format — GitHub convention)
   let displayName = name;
   if ((opts as any).lineStart != null) {
-    displayName += (opts as any).lineEnd != null && (opts as any).lineEnd !== (opts as any).lineStart
-      ? `#L${(opts as any).lineStart}-${(opts as any).lineEnd}`
-      : `#L${(opts as any).lineStart}`;
+    displayName +=
+      (opts as any).lineEnd != null &&
+      (opts as any).lineEnd !== (opts as any).lineStart
+        ? `#L${(opts as any).lineStart}-${(opts as any).lineEnd}`
+        : `#L${(opts as any).lineStart}`;
   }
   // Native title attribute — used as tooltip fallback inside overflow-clipped
   // contentEditable containers where the ::after CSS tooltip gets cut off.
   let titleText = path;
   if ((opts as any).lineStart != null) {
-    titleText += (opts as any).lineEnd != null && (opts as any).lineEnd !== (opts as any).lineStart
-      ? `#L${(opts as any).lineStart}-${(opts as any).lineEnd}`
-      : `#L${(opts as any).lineStart}`;
+    titleText +=
+      (opts as any).lineEnd != null &&
+      (opts as any).lineEnd !== (opts as any).lineStart
+        ? `#L${(opts as any).lineStart}-${(opts as any).lineEnd}`
+        : `#L${(opts as any).lineStart}`;
   }
   badge.title = titleText;
   const icon = type === "directory" ? "📁" : "📄";
@@ -228,7 +246,12 @@ export function placeCaretAfter(node: any) {
  * @param {HTMLSpanElement} badge — the badge element to insert
  * @returns {Text} — the trailing space text node (for caret positioning)
  */
-export function applyMentionToTextNode(textNode: any, anchorOffset: any, cursorOffset: any, badge: any) {
+export function applyMentionToTextNode(
+  textNode: any,
+  anchorOffset: any,
+  cursorOffset: any,
+  badge: any,
+) {
   const before = textNode.textContent.slice(0, anchorOffset);
   const after = textNode.textContent.slice(cursorOffset);
   textNode.textContent = before;

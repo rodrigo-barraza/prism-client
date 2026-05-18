@@ -29,5 +29,12 @@ export default function AdminMediaPage() {
     };
   }, [setControls, setTitleBadge]);
 
-  return <MediaPageComponent mode="admin" project={projectFilter} dateRange={dateRange} onCountChange={setTitleBadge} />;
+  return (
+    <MediaPageComponent
+      mode="admin"
+      project={projectFilter}
+      dateRange={dateRange}
+      onCountChange={setTitleBadge}
+    />
+  );
 }

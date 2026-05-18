@@ -19,7 +19,6 @@ export function sanitizeToolName(name: any) {
     .slice(0, 128);
 }
 
-
 /**
  * Build a merged array of tool schemas from built-in and custom tools.
  * Used by AgentComponent.
@@ -29,8 +28,14 @@ export function sanitizeToolName(name: any) {
  * @param {Array}  customTools      — user-defined custom tools
  * @returns {Array} merged tool schema array
  */
-export function buildToolSchemas(builtInTools: any, disabledBuiltIns: any, customTools: any) {
-  const builtIn = builtInTools.filter((t: any) => !disabledBuiltIns.has(t.name));
+export function buildToolSchemas(
+  builtInTools: any,
+  disabledBuiltIns: any,
+  customTools: any,
+) {
+  const builtIn = builtInTools.filter(
+    (t: any) => !disabledBuiltIns.has(t.name),
+  );
   const custom = customTools
     .filter((t: any) => t.enabled)
     .map((t: any) => ({
@@ -55,4 +60,3 @@ export function buildToolSchemas(builtInTools: any, disabledBuiltIns: any, custo
     }));
   return [...builtIn, ...custom];
 }
-

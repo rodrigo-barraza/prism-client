@@ -1,7 +1,19 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Bot, ChevronDown, Wrench, Check, Plus, Skull, Sticker, Apple, Lightbulb, Hammer, MessageSquare } from "lucide-react";
+import {
+  Bot,
+  ChevronDown,
+  Wrench,
+  Check,
+  Plus,
+  Skull,
+  Sticker,
+  Apple,
+  Lightbulb,
+  Hammer,
+  MessageSquare,
+} from "lucide-react";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
@@ -33,7 +45,6 @@ export function renderAgentIcon(agent: any, size = 15) {
   return <BuiltIn size={size} />;
 }
 
-
 /**
  * AgentPickerComponent — Compact popover for selecting the active agent persona.
  *
@@ -57,7 +68,9 @@ export default function AgentPickerComponent({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<any>(null);
 
-  const activeAgent = addMode ? null : (agents.find((a: any) => a.id === activeAgentId) || agents[0]);
+  const activeAgent = addMode
+    ? null
+    : agents.find((a: any) => a.id === activeAgentId) || agents[0];
 
   const handleSelect = useCallback(
     (agentId: any) => {
@@ -90,11 +103,12 @@ export default function AgentPickerComponent({
   if (agents.length === 0) return null;
 
   // -- Add-mode trigger label ----------------------------------
-  const addLabel = addCount === 0
-    ? "Add Agent"
-    : addCount === 1
-      ? "1 Agent"
-      : `${addCount} Agents`;
+  const addLabel =
+    addCount === 0
+      ? "Add Agent"
+      : addCount === 1
+        ? "1 Agent"
+        : `${addCount} Agents`;
 
   return (
     <div style={{ position: "relative" }}>
@@ -164,9 +178,15 @@ export default function AgentPickerComponent({
                   key={agent.id}
                   className={styles.agentItem}
                   data-active={isActive}
-                  onClick={() => addMode ? handleAdd(agent) : handleSelect(agent.id)}
+                  onClick={() =>
+                    addMode ? handleAdd(agent) : handleSelect(agent.id)
+                  }
                   type="button"
-                  style={agent.color ? ({ "--agent-accent": agent.color } as any) : undefined}
+                  style={
+                    agent.color
+                      ? ({ "--agent-accent": agent.color } as any)
+                      : undefined
+                  }
                 >
                   <AgentBadgeComponent agent={agent} />
                   <div className={styles.agentInfo}>
@@ -175,10 +195,14 @@ export default function AgentPickerComponent({
                       {agent.id !== "NONE" && (
                         <span className={styles.toolBadge}>
                           <Wrench size={9} />
-                          {agent.toolCount === -1 ? "All tools" : `${agent.toolCount} tools`}
+                          {agent.toolCount === -1
+                            ? "All tools"
+                            : `${agent.toolCount} tools`}
                         </span>
                       )}
-                      {addMode && agent.description && <span>{agent.description}</span>}
+                      {addMode && agent.description && (
+                        <span>{agent.description}</span>
+                      )}
                       {agent.project && <span>{agent.project}</span>}
                     </div>
                   </div>
@@ -188,7 +212,11 @@ export default function AgentPickerComponent({
                       Add
                     </span>
                   ) : isActive ? (
-                    <Check size={14} className={styles.activeCheck} style={agent.color ? { color: agent.color } : undefined} />
+                    <Check
+                      size={14}
+                      className={styles.activeCheck}
+                      style={agent.color ? { color: agent.color } : undefined}
+                    />
                   ) : null}
                 </button>
               );

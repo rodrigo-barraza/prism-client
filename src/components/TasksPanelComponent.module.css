@@ -4,17 +4,17 @@
    ============================================================ */
 
 .container {
-  composes: container from './PanelShared.module.css';
+  composes: container from "./PanelShared.module.css";
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
 
 .header {
-  composes: header from './PanelShared.module.css';
+  composes: header from "./PanelShared.module.css";
 }
 
 .headerTitle {
-  composes: headerTitle from './PanelShared.module.css';
+  composes: headerTitle from "./PanelShared.module.css";
 }
 
 .headerBtn {
@@ -49,7 +49,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Summary badges ──────────────────────────────────────────── */
@@ -112,7 +114,8 @@
   gap: 6px;
   padding: 10px;
   background: var(--bg-card);
-  border: 1px solid color-mix(in srgb, var(--color-violet) 30%, var(--border-color));
+  border: 1px solid
+    color-mix(in srgb, var(--color-violet) 30%, var(--border-color));
   border-radius: 6px;
   animation: slideIn 0.15s ease-out;
 }
@@ -222,19 +225,19 @@
 /* ── Empty State ─────────────────────────────────────────────── */
 
 .emptyState {
-  composes: emptyState from './PanelShared.module.css';
+  composes: emptyState from "./PanelShared.module.css";
 }
 
 .emptyIcon {
-  composes: emptyIcon from './PanelShared.module.css';
+  composes: emptyIcon from "./PanelShared.module.css";
 }
 
 .emptyTitle {
-  composes: emptyTitle from './PanelShared.module.css';
+  composes: emptyTitle from "./PanelShared.module.css";
 }
 
 .emptySubtitle {
-  composes: emptySubtitle from './PanelShared.module.css';
+  composes: emptySubtitle from "./PanelShared.module.css";
 }
 
 /* ── Task Card ───────────────────────────────────────────────── */
@@ -250,14 +253,20 @@
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: color-mix(in srgb, var(--color-violet) 30%, var(--border-color));
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-violet) 6%, transparent);
+    border-color: color-mix(
+      in srgb,
+      var(--color-violet) 30%,
+      var(--border-color)
+    );
+    box-shadow: 0 2px 8px
+      color-mix(in srgb, var(--color-violet) 6%, transparent);
   }
 }
 
 /* Status-specific left accent via border-left */
 .statusPendingCard {
-  border-left: 2px solid color-mix(in srgb, var(--color-neutral) 40%, transparent);
+  border-left: 2px solid
+    color-mix(in srgb, var(--color-neutral) 40%, transparent);
 }
 
 .statusInProgressCard {
@@ -265,7 +274,8 @@
 }
 
 .statusCompletedCard {
-  border-left: 2px solid color-mix(in srgb, var(--color-success) 40%, transparent);
+  border-left: 2px solid
+    color-mix(in srgb, var(--color-success) 40%, transparent);
 }
 
 .taskCardHeader {
@@ -367,7 +377,8 @@
 }
 
 @keyframes activeFormPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -510,7 +521,7 @@
 }
 
 .confirmBtn {
-  composes: confirmBtn from './PanelShared.module.css';
+  composes: confirmBtn from "./PanelShared.module.css";
 }
 
 .confirmBtnYes {
@@ -535,7 +546,7 @@
 /* ── Loading & Error ─────────────────────────────────────────── */
 
 .loading {
-  composes: loading from './PanelShared.module.css';
+  composes: loading from "./PanelShared.module.css";
 }
 
 .error {

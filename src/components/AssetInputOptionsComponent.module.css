@@ -35,7 +35,10 @@
   cursor: pointer;
   padding: 6px 10px;
   font-size: 0.625rem;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   flex: 1;
   min-width: 0;
   white-space: nowrap;
@@ -64,7 +67,10 @@
   color: var(--text-muted, #666);
   font-size: 0.625rem;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   padding: 4px;
 
   &:hover {
@@ -107,7 +113,10 @@
   background: var(--color-danger);
   border: 3px solid #fff;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   flex-shrink: 0;
 
   &:hover {
@@ -124,7 +133,9 @@
   font-size: 0.625rem;
   padding: 4px 10px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 
   &:hover {
     color: var(--text-primary);

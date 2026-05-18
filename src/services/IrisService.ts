@@ -29,7 +29,6 @@ async function fetchJSON(path: any, options = {}, admin = true) {
   return response.json();
 }
 
-
 export default class IrisService {
   // -- Requests ----------------------------------------------
   static async getRequests(params = {}) {

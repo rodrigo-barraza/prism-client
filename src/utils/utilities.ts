@@ -40,10 +40,14 @@ export {
  */
 export function buildLmStudioLoadBody(model: any, options = {}) {
   const body = { model };
-  if ((options as any).contextLength != null) (body as any).context_length = (options as any).contextLength;
-  if ((options as any).flashAttention != null) (body as any).flash_attention = (options as any).flashAttention;
-  if ((options as any).offloadKvCache != null) (body as any).offload_kv_cache_to_gpu = (options as any).offloadKvCache;
-  if ((options as any).evalBatchSize != null) (body as any).eval_batch_size = (options as any).evalBatchSize;
+  if ((options as any).contextLength != null)
+    (body as any).context_length = (options as any).contextLength;
+  if ((options as any).flashAttention != null)
+    (body as any).flash_attention = (options as any).flashAttention;
+  if ((options as any).offloadKvCache != null)
+    (body as any).offload_kv_cache_to_gpu = (options as any).offloadKvCache;
+  if ((options as any).evalBatchSize != null)
+    (body as any).eval_batch_size = (options as any).evalBatchSize;
   return body;
 }
 
@@ -60,7 +64,6 @@ export function getTotalInputTokens(usage: any) {
     (usage.cacheCreationInputTokens || 0)
   );
 }
-
 
 /**
  * Build ISO date range params from a { from, to } object.
@@ -144,12 +147,12 @@ export function getSessionTokenStats(messages: any) {
   let liveStreamingBurstTokens = 0;
   let liveStreamingBurstElapsed = 0;
   let workerGenerationProgress = null;
-  let lastTimeToGeneration = null;     // retroactive TTFT from completed messages (seconds)
-  let liveProcessingStartTime = null;  // performance.now() when processing phase started
-  let liveProcessingPhase = null;      // current phase of in-flight message (processing/loading/generating)
-  let liveTtftSamples = null;          // server-computed TTFT samples (seconds[]) from generation_started events
-  let liveOutputCharacters = 0;         // real character count from streaming chunks
-  let liveGenProgress = null;          // backend-computed tok/s from SessionGenerationTracker
+  let lastTimeToGeneration = null; // retroactive TTFT from completed messages (seconds)
+  let liveProcessingStartTime = null; // performance.now() when processing phase started
+  let liveProcessingPhase = null; // current phase of in-flight message (processing/loading/generating)
+  let liveTtftSamples = null; // server-computed TTFT samples (seconds[]) from generation_started events
+  let liveOutputCharacters = 0; // real character count from streaming chunks
+  let liveGenProgress = null; // backend-computed tok/s from SessionGenerationTracker
   for (const m of messages) {
     if (m.role !== "assistant") continue;
     // Finalized messages have usage from the provider
@@ -198,7 +201,12 @@ export function getSessionTokenStats(messages: any) {
     // before provider-reported usage arrives). Expose streaming
     // timing metadata so the chunk-counting fallback in useTokenRate
     // (Priority 3) can compute live tok/s from burst counters.
-    else if (!m.usage && !m._intermediateUsage && m._streamingStartTime && m._streamingLastChunkTime) {
+    else if (
+      !m.usage &&
+      !m._intermediateUsage &&
+      m._streamingStartTime &&
+      m._streamingLastChunkTime
+    ) {
       liveStreamingStartTime = m._streamingStartTime;
       liveStreamingLastChunkTime = m._streamingLastChunkTime;
       liveStreamingBurstTokens = m._streamingBurstTokens || 0;
@@ -293,8 +301,14 @@ export function getUsedTools(messages: any) {
  * tool-call badges (read_file, grep_search, etc.) in the stats UI.
  */
 export const CAPABILITY_TOOL_NAMES = new Set([
-  "Thinking", "Tool Calling", "Web Search", "Google Search",
-  "Code Execution", "Computer Use", "File Search", "URL Context",
+  "Thinking",
+  "Tool Calling",
+  "Web Search",
+  "Google Search",
+  "Code Execution",
+  "Computer Use",
+  "File Search",
+  "URL Context",
   "Image Generation",
 ]);
 
@@ -330,9 +344,15 @@ export function toolCountsToUsedTools(toolCounts: any) {
  * @param {{ [workerId: string]: { toolNames?: { [name: string]: number } } }} [workerToolActivity]
  * @returns {Array<{name: string, count: number}>} sorted by count desc
  */
-export function mergeUsedToolsWithWorkers(clientTools: any, backendToolCounts: any, workerToolActivity: any) {
+export function mergeUsedToolsWithWorkers(
+  clientTools: any,
+  backendToolCounts: any,
+  workerToolActivity: any,
+) {
   // Separate capabilities from function-level tool calls
-  const capabilities = clientTools.filter((t: any) => CAPABILITY_TOOL_NAMES.has(t.name));
+  const capabilities = clientTools.filter((t: any) =>
+    CAPABILITY_TOOL_NAMES.has(t.name),
+  );
 
   // Start with authoritative source (backend if available, else client function-level)
   const merged = new Map();
@@ -351,7 +371,10 @@ export function mergeUsedToolsWithWorkers(clientTools: any, backendToolCounts: a
   if (workerToolActivity) {
     for (const w of Object.values(workerToolActivity) as any[]) {
       if (!w.toolNames) continue;
-      for (const [name, count] of Object.entries(w.toolNames) as [string, number][]) {
+      for (const [name, count] of Object.entries(w.toolNames) as [
+        string,
+        number,
+      ][]) {
         if (CAPABILITY_TOOL_NAMES.has(name)) continue;
         merged.set(name, Math.max(merged.get(name) || 0, count));
       }
@@ -415,7 +438,9 @@ export function getModalities(messages: any) {
           ref.endsWith(".txt");
         const isVideo =
           ref.startsWith("data:video/") ||
-          [".mp4", ".mov", ".avi", ".webm"].some((ext: any) => ref.endsWith(ext));
+          [".mp4", ".mov", ".avi", ".webm"].some((ext: any) =>
+            ref.endsWith(ext),
+          );
         if (isDoc) {
           modalities.docIn = true;
         } else if (isVideo) {

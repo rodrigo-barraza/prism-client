@@ -56,7 +56,13 @@ export default function JsonViewerComponent({
   );
 }
 
-function JsonNode({ keyName, value, depth, defaultCollapsed, isLast = true }: any) {
+function JsonNode({
+  keyName,
+  value,
+  depth,
+  defaultCollapsed,
+  isLast = true,
+}: any) {
   const type = getType(value);
   const isExpandable = type === "object" || type === "array";
   const [expanded, setExpanded] = useState(depth < defaultCollapsed);
@@ -84,11 +90,14 @@ function JsonNode({ keyName, value, depth, defaultCollapsed, isLast = true }: an
             </span>
           )}
           {keyName !== undefined && (
-            <span className={styles.key}>{JSON.stringify(String(keyName))}: </span>
+            <span className={styles.key}>
+              {JSON.stringify(String(keyName))}:{" "}
+            </span>
           )}
           {isEmpty ? (
             <span className={styles.bracket}>
-              {bracket[0]}{bracket[1]}
+              {bracket[0]}
+              {bracket[1]}
             </span>
           ) : expanded ? (
             <span className={styles.bracket}>{bracket[0]}</span>
@@ -132,7 +141,9 @@ function JsonNode({ keyName, value, depth, defaultCollapsed, isLast = true }: an
     <div className={styles.node}>
       <div className={styles.row}>
         {keyName !== undefined && (
-          <span className={styles.key}>{JSON.stringify(String(keyName))}: </span>
+          <span className={styles.key}>
+            {JSON.stringify(String(keyName))}:{" "}
+          </span>
         )}
         <span className={styles[`val_${type}`] || styles.val_null}>
           {formatValue(value, type)}

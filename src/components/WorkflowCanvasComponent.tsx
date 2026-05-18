@@ -180,14 +180,16 @@ export default function WorkflowCanvas({
       const isContainerOrSvg =
         element === containerRef.current || element === svgRef.current;
       const isGridBg =
-        element.classList?.contains?.(styles.starfield) || element.tagName === "CANVAS";
+        element.classList?.contains?.(styles.starfield) ||
+        element.tagName === "CANVAS";
       const isInsideInteractive = element.closest?.(
         "[data-workflow-node], [data-workflow-connection]",
       );
       if (
         isContainerOrSvg ||
         isGridBg ||
-        (!isInsideInteractive && (containerRef.current as any)?.contains(element))
+        (!isInsideInteractive &&
+          (containerRef.current as any)?.contains(element))
       ) {
         setIsPanning(true);
         panStart.current = {
@@ -295,15 +297,19 @@ export default function WorkflowCanvas({
               const push = overlapX * PUSH_FACTOR;
               const dir = bCx >= aCx ? 1 : -1;
               if (aIsDragged) {
-                if (!(updates as any)[nB.id]) (updates as any)[nB.id] = { ...nB.position };
+                if (!(updates as any)[nB.id])
+                  (updates as any)[nB.id] = { ...nB.position };
                 (updates as any)[nB.id].x += dir * push;
               } else if (bIsDragged) {
-                if (!(updates as any)[nA.id]) (updates as any)[nA.id] = { ...nA.position };
+                if (!(updates as any)[nA.id])
+                  (updates as any)[nA.id] = { ...nA.position };
                 (updates as any)[nA.id].x -= dir * push;
               } else {
                 const half = push / 2;
-                if (!(updates as any)[nA.id]) (updates as any)[nA.id] = { ...nA.position };
-                if (!(updates as any)[nB.id]) (updates as any)[nB.id] = { ...nB.position };
+                if (!(updates as any)[nA.id])
+                  (updates as any)[nA.id] = { ...nA.position };
+                if (!(updates as any)[nB.id])
+                  (updates as any)[nB.id] = { ...nB.position };
                 (updates as any)[nA.id].x -= dir * half;
                 (updates as any)[nB.id].x += dir * half;
               }
@@ -311,15 +317,19 @@ export default function WorkflowCanvas({
               const push = overlapY * PUSH_FACTOR;
               const dir = bCy >= aCy ? 1 : -1;
               if (aIsDragged) {
-                if (!(updates as any)[nB.id]) (updates as any)[nB.id] = { ...nB.position };
+                if (!(updates as any)[nB.id])
+                  (updates as any)[nB.id] = { ...nB.position };
                 (updates as any)[nB.id].y += dir * push;
               } else if (bIsDragged) {
-                if (!(updates as any)[nA.id]) (updates as any)[nA.id] = { ...nA.position };
+                if (!(updates as any)[nA.id])
+                  (updates as any)[nA.id] = { ...nA.position };
                 (updates as any)[nA.id].y -= dir * push;
               } else {
                 const half = push / 2;
-                if (!(updates as any)[nA.id]) (updates as any)[nA.id] = { ...nA.position };
-                if (!(updates as any)[nB.id]) (updates as any)[nB.id] = { ...nB.position };
+                if (!(updates as any)[nA.id])
+                  (updates as any)[nA.id] = { ...nA.position };
+                if (!(updates as any)[nB.id])
+                  (updates as any)[nB.id] = { ...nB.position };
                 (updates as any)[nA.id].y -= dir * half;
                 (updates as any)[nB.id].y += dir * half;
               }
@@ -416,7 +426,9 @@ export default function WorkflowCanvas({
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
     const container = containerRef.current;
-    (container as any)?.addEventListener("wheel", handleWheel, { passive: false });
+    (container as any)?.addEventListener("wheel", handleWheel, {
+      passive: false,
+    });
 
     // -- Touch handlers --
     const handleTouchStart = (e: any) => {
@@ -599,7 +611,8 @@ export default function WorkflowCanvas({
       if (!connecting) return;
 
       if (
-        getBaseModality((connecting as any).sourceModality) !== getBaseModality(modality)
+        getBaseModality((connecting as any).sourceModality) !==
+        getBaseModality(modality)
       )
         return;
       if ((connecting as any).sourceNodeId === nodeId) return;
@@ -805,7 +818,9 @@ export default function WorkflowCanvas({
   // Render the "in-progress" edge line
   const renderConnectingLine = () => {
     if (!connecting || !connectingMouse) return null;
-    const sourceNode = nodes.find((n: any) => n.id === (connecting as any).sourceNodeId);
+    const sourceNode = nodes.find(
+      (n: any) => n.id === (connecting as any).sourceNodeId,
+    );
     if (!sourceNode) return null;
 
     const sourceIndex = (sourceNode.outputTypes || []).indexOf(
@@ -820,7 +835,8 @@ export default function WorkflowCanvas({
       sourceIndex,
       srcOffset,
     );
-    const color = (MODALITY_COLORS as any)[(connecting as any).sourceModality] || "#888";
+    const color =
+      (MODALITY_COLORS as any)[(connecting as any).sourceModality] || "#888";
 
     return (
       <path

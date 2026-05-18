@@ -118,7 +118,13 @@ function metricUnit(metric: any) {
 /**
  * Builds distribution entries: an array of { name, value } per tab/metric.
  */
-function buildEntries(tab: any, metric: any, projectStats: any, providerStats: any, modelStats: any) {
+function buildEntries(
+  tab: any,
+  metric: any,
+  projectStats: any,
+  providerStats: any,
+  modelStats: any,
+) {
   let source;
   let nameKey;
 

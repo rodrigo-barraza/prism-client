@@ -55,7 +55,6 @@
   flex-shrink: 0;
 }
 
-
 /* ── Loading state ────────────────────────────────────────────────── */
 
 .loading {
@@ -109,7 +108,12 @@
 
 .agentStatusDot.connected {
   background: var(--success, var(--color-success-bright));
-  box-shadow: 0 0 6px color-mix(in srgb, var(--success, var(--color-success-bright)) 50%, transparent);
+  box-shadow: 0 0 6px
+    color-mix(
+      in srgb,
+      var(--success, var(--color-success-bright)) 50%,
+      transparent
+    );
   animation: statusPulse 2s ease-in-out infinite;
 }
 
@@ -119,8 +123,13 @@
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .agentStatusText {
@@ -392,7 +401,11 @@
 }
 
 .removeButton:hover {
-  background: color-mix(in srgb, var(--danger, var(--color-danger)) 12%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--danger, var(--color-danger)) 12%,
+    transparent
+  );
   color: var(--danger, var(--color-danger));
 }
 
@@ -568,15 +581,20 @@
 }
 
 .harnessCard:hover {
-  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-subtle));
+  border-color: color-mix(
+    in srgb,
+    var(--accent-color) 40%,
+    var(--border-subtle)
+  );
   background: color-mix(in srgb, var(--accent-color) 3%, var(--bg-primary));
 }
 
 .harnessCard.harnessActive {
   border-color: var(--accent-color);
   background: color-mix(in srgb, var(--accent-color) 6%, var(--bg-primary));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 15%, transparent),
-              0 2px 8px color-mix(in srgb, var(--accent-color) 8%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-color) 15%, transparent),
+    0 2px 8px color-mix(in srgb, var(--accent-color) 8%, transparent);
 }
 
 .harnessCardHeader {
@@ -754,7 +772,8 @@
 }
 
 .guideStep + .guideStep {
-  border-top: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+  border-top: 1px solid
+    color-mix(in srgb, var(--border-subtle) 50%, transparent);
   margin-top: 12px;
 }
 
@@ -879,7 +898,8 @@
 }
 
 .envRow + .envRow {
-  border-top: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+  border-top: 1px solid
+    color-mix(in srgb, var(--border-subtle) 50%, transparent);
 }
 
 .envKey {
@@ -914,7 +934,8 @@
 }
 
 .compareRow + .compareRow {
-  border-top: 1px solid color-mix(in srgb, var(--border-subtle) 50%, transparent);
+  border-top: 1px solid
+    color-mix(in srgb, var(--border-subtle) 50%, transparent);
 }
 
 .compareLabel {

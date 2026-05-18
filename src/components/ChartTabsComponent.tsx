@@ -11,7 +11,11 @@ import styles from "./ChartTabsComponent.module.css";
  *   activeTab — current active tab key
  *   onChange  — (key) => void
  */
-export default function ChartTabsComponent({ tabs = [], activeTab, onChange }: any) {
+export default function ChartTabsComponent({
+  tabs = [],
+  activeTab,
+  onChange,
+}: any) {
   return (
     <div className={styles.tabs}>
       {tabs.map((tab: any) => (

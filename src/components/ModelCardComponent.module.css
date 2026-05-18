@@ -10,12 +10,15 @@
   border-radius: var(--border-radius-sm);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   animation: fadeIn 0.15s ease-out;
 
   &:hover {
     border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
-    box-shadow: 0 1px 4px color-mix(in srgb, var(--accent-color) 8%, transparent);
+    box-shadow: 0 1px 4px
+      color-mix(in srgb, var(--accent-color) 8%, transparent);
   }
 }
 
@@ -91,8 +94,6 @@
   gap: 6px;
 }
 
-
-
 /* ── Toggles (right-aligned) ────────────────────────────── */
 
 .toggles {
@@ -103,6 +104,10 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

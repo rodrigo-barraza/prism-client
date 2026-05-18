@@ -17,7 +17,11 @@ import {
   Code2,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import { ButtonComponent, TextAreaComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
+import {
+  ButtonComponent,
+  TextAreaComponent,
+  ToggleComponent,
+} from "@rodrigo-barraza/components-library";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import styles from "./CustomToolsPanelComponent.module.css";
 
@@ -27,7 +31,6 @@ const PARAM_TYPES = [
   { value: "integer", label: "Integer" },
   { value: "boolean", label: "Boolean" },
 ];
-
 
 const EMPTY_PARAM = {
   name: "",
@@ -69,7 +72,6 @@ function resolveShorthands(entries: any, allTools: any) {
   }
   return resolved;
 }
-
 
 export default function CustomToolsPanel({
   tools = [] as any[],
@@ -236,87 +238,86 @@ export default function CustomToolsPanel({
    *  3. Raw parameters object: { type: "object", properties: { ... } }
    *  4. Array of tools:        [ { type: "function", function: ... }, ... ]  (uses first)
    */
-  const parseJsonDefinition = useCallback(
-    (raw: any) => {
-      setJsonError(null);
-      setJsonSuccess(null);
+  const parseJsonDefinition = useCallback((raw: any) => {
+    setJsonError(null);
+    setJsonSuccess(null);
 
-      let parsed;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        setJsonError("Invalid JSON — check syntax");
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      setJsonError("Invalid JSON — check syntax");
+      return;
+    }
+
+    // Unwrap array → first element
+    if (Array.isArray(parsed)) {
+      if (parsed.length === 0) {
+        setJsonError("Empty array — provide at least one tool definition");
         return;
       }
+      parsed = parsed[0];
+    }
 
-      // Unwrap array → first element
-      if (Array.isArray(parsed)) {
-        if (parsed.length === 0) {
-          setJsonError("Empty array — provide at least one tool definition");
-          return;
-        }
-        parsed = parsed[0];
+    let name = "";
+    let description = "";
+    let parametersObj = null;
+
+    // Shape 1: { type: "function", function: { ... } }
+    if (parsed.type === "function" && parsed.function) {
+      const fn = parsed.function;
+      name = fn.name || "";
+      description = fn.description || "";
+      parametersObj = fn.parameters || null;
+    }
+    // Shape 2: { name, parameters: { type: "object", properties } }
+    else if (parsed.name && parsed.parameters?.properties) {
+      name = parsed.name;
+      description = parsed.description || "";
+      parametersObj = parsed.parameters;
+    }
+    // Shape 3: Raw parameters { type: "object", properties }
+    else if (parsed.type === "object" && parsed.properties) {
+      parametersObj = parsed;
+    } else {
+      setJsonError(
+        'Unrecognized shape — expected an OpenAI tool definition, a {name, parameters} object, or a raw {type:"object", properties} schema',
+      );
+      return;
+    }
+
+    // Convert parametersObj → flat parameter list
+    const params: any[] = [];
+    if (parametersObj?.properties) {
+      const required = parametersObj.required || [];
+      for (const [pName, schema] of Object.entries(parametersObj.properties)) {
+        params.push({
+          name: pName,
+          type: (schema as any).type || "string",
+          description: (schema as any).description || "",
+          required: required.includes(pName),
+          enum: Array.isArray((schema as any).enum)
+            ? (schema as any).enum.join(", ")
+            : "",
+        });
       }
+    }
 
-      let name = "";
-      let description = "";
-      let parametersObj = null;
+    setEditingTool((t: any) => ({
+      ...t,
+      ...(name
+        ? { name: name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase() }
+        : {}),
+      ...(description ? { description } : {}),
+      parameters: params,
+    }));
 
-      // Shape 1: { type: "function", function: { ... } }
-      if (parsed.type === "function" && parsed.function) {
-        const fn = parsed.function;
-        name = fn.name || "";
-        description = fn.description || "";
-        parametersObj = fn.parameters || null;
-      }
-      // Shape 2: { name, parameters: { type: "object", properties } }
-      else if (parsed.name && parsed.parameters?.properties) {
-        name = parsed.name;
-        description = parsed.description || "";
-        parametersObj = parsed.parameters;
-      }
-      // Shape 3: Raw parameters { type: "object", properties }
-      else if (parsed.type === "object" && parsed.properties) {
-        parametersObj = parsed;
-      } else {
-        setJsonError(
-          'Unrecognized shape — expected an OpenAI tool definition, a {name, parameters} object, or a raw {type:"object", properties} schema',
-        );
-        return;
-      }
-
-      // Convert parametersObj → flat parameter list
-      const params: any[] = [];
-      if (parametersObj?.properties) {
-        const required = parametersObj.required || [];
-        for (const [pName, schema] of Object.entries(
-          parametersObj.properties,
-        )) {
-          params.push({
-            name: pName,
-            type: (schema as any).type || "string",
-            description: (schema as any).description || "",
-            required: required.includes(pName),
-            enum: Array.isArray((schema as any).enum) ? (schema as any).enum.join(", ") : "",
-          });
-        }
-      }
-
-      setEditingTool((t: any) => ({
-        ...t,
-        ...(name ? { name: name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase() } : {}),
-        ...(description ? { description } : {}),
-        parameters: params,
-      }));
-
-      const parts = [];
-      if (name) parts.push(name);
-      if (description) parts.push(description);
-      parts.push(`${params.length} parameter${params.length !== 1 ? "s" : ""}`);
-      setJsonSuccess(`Imported ${parts.join(", ")}`);
-    },
-    [],
-  );
+    const parts = [];
+    if (name) parts.push(name);
+    if (description) parts.push(description);
+    parts.push(`${params.length} parameter${params.length !== 1 ? "s" : ""}`);
+    setJsonSuccess(`Imported ${parts.join(", ")}`);
+  }, []);
 
   const handleJsonFileUpload = useCallback(
     (e: any) => {
@@ -397,7 +398,10 @@ export default function CustomToolsPanel({
               className={styles.textarea}
               value={(editingTool as any).description}
               onChange={(e: any) =>
-                setEditingTool((t: any) => ({ ...t, description: e.target.value }))
+                setEditingTool((t: any) => ({
+                  ...t,
+                  description: e.target.value,
+                }))
               }
               placeholder="Get current stock price for a given ticker symbol..."
               minRows={3}
@@ -422,7 +426,8 @@ export default function CustomToolsPanel({
               spellCheck={false}
             />
             <span className={styles.hint}>
-              Sandboxed JavaScript — access args via <code>args</code> object. Last expression is returned.
+              Sandboxed JavaScript — access args via <code>args</code> object.
+              Last expression is returned.
             </span>
           </div>
 
@@ -486,7 +491,10 @@ export default function CustomToolsPanel({
                             placeholder="symbol"
                           />
                         </div>
-                        <div className={styles.paramField} style={{ width: 100 }}>
+                        <div
+                          className={styles.paramField}
+                          style={{ width: 100 }}
+                        >
                           <label>Type</label>
                           <select
                             className={styles.selectSmall}
@@ -506,7 +514,9 @@ export default function CustomToolsPanel({
                           <label>Req</label>
                           <ToggleComponent
                             checked={param.required}
-                            onChange={(v: any) => updateParameter(i, "required", v)}
+                            onChange={(v: any) =>
+                              updateParameter(i, "required", v)
+                            }
                             size="mini"
                           />
                         </div>
@@ -551,9 +561,9 @@ export default function CustomToolsPanel({
             {inputMode === "json" && (
               <div className={styles.jsonImportSection}>
                 <div className={styles.jsonImportHint}>
-                  Paste an OpenAI-style tool definition, a function schema, or
-                  a raw parameters object. Name, description, and parameters
-                  will be auto-populated.
+                  Paste an OpenAI-style tool definition, a function schema, or a
+                  raw parameters object. Name, description, and parameters will
+                  be auto-populated.
                 </div>
                 <TextAreaComponent
                   className={`${styles.textarea} ${styles.jsonTextarea}`}
@@ -612,7 +622,9 @@ export default function CustomToolsPanel({
           <button
             className={styles.saveBtn}
             onClick={handleSave}
-            disabled={!(editingTool as any).name || !(editingTool as any).code || saving}
+            disabled={
+              !(editingTool as any).name || !(editingTool as any).code || saving
+            }
           >
             <Save size={14} />
             {saving ? "Saving..." : isNew ? "Create Tool" : "Save Changes"}
@@ -638,7 +650,8 @@ export default function CustomToolsPanel({
             const isDisabled = disabledBuiltIns.has(tool.name);
             const shouldBeEnabled = enabledSet.has(tool.name);
             if (isDisabled && shouldBeEnabled) onToggleBuiltIn?.(tool.name);
-            else if (!isDisabled && !shouldBeEnabled) onToggleBuiltIn?.(tool.name);
+            else if (!isDisabled && !shouldBeEnabled)
+              onToggleBuiltIn?.(tool.name);
           }
         }}
       />
@@ -690,11 +703,7 @@ export default function CustomToolsPanel({
               size="mini"
             />
           )}
-          <ButtonComponent
-            variant="primary"
-            icon={Plus}
-            onClick={handleCreate}
-          >
+          <ButtonComponent variant="primary" icon={Plus} onClick={handleCreate}>
             New Tool
           </ButtonComponent>
         </div>
@@ -826,4 +835,3 @@ export default function CustomToolsPanel({
     </div>
   );
 }
-

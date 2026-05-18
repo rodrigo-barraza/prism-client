@@ -116,11 +116,17 @@ export default function WorkflowInspector({
 
   // Find incoming / outgoing connections
   const incoming = useMemo(
-    () => (connections || []).filter((c: any) => node && c.targetNodeId === node.id),
+    () =>
+      (connections || []).filter(
+        (c: any) => node && c.targetNodeId === node.id,
+      ),
     [connections, node],
   );
   const outgoing = useMemo(
-    () => (connections || []).filter((c: any) => node && c.sourceNodeId === node.id),
+    () =>
+      (connections || []).filter(
+        (c: any) => node && c.sourceNodeId === node.id,
+      ),
     [connections, node],
   );
 
@@ -260,14 +266,16 @@ export default function WorkflowInspector({
                   ? node.customName || "Tools"
                   : isInput
                     ? node.customName ||
-                      ({
-                                              text: "Text",
-                                              image: "Image",
-                                              audio: "Audio",
-                                              video: "Video",
-                                              pdf: "PDF",
-                                              conversation: "Chat History",
-                                            } as any)[node.modality] ||
+                      (
+                        {
+                          text: "Text",
+                          image: "Image",
+                          audio: "Audio",
+                          video: "Video",
+                          pdf: "PDF",
+                          conversation: "Chat History",
+                        } as any
+                      )[node.modality] ||
                       "Media"
                     : node.customName || "Output"}
             </span>
@@ -443,7 +451,8 @@ export default function WorkflowInspector({
                     className={styles.connectionDot}
                     style={{
                       background:
-                        (MODALITY_ICONS as any)[c.targetModality]?.color || "#888",
+                        (MODALITY_ICONS as any)[c.targetModality]?.color ||
+                        "#888",
                     }}
                   />
                   <span className={styles.connectionFrom}>
@@ -487,7 +496,8 @@ export default function WorkflowInspector({
                     className={styles.connectionDot}
                     style={{
                       background:
-                        (MODALITY_ICONS as any)[c.sourceModality]?.color || "#888",
+                        (MODALITY_ICONS as any)[c.sourceModality]?.color ||
+                        "#888",
                     }}
                   />
                 </div>
@@ -594,7 +604,10 @@ export default function WorkflowInspector({
                   ? `${message.content}\n\n${sourceNode.content}`
                   : sourceNode.content;
               } else if (modality === "image") {
-                message.images = [...(message.images || []), "[image attached]"];
+                message.images = [
+                  ...(message.images || []),
+                  "[image attached]",
+                ];
               } else if (modality === "audio") {
                 message.audio = [...(message.audio || []), "[audio attached]"];
               } else if (modality === "video") {
@@ -613,16 +626,22 @@ export default function WorkflowInspector({
               return ref;
             };
             const messagesJson = JSON.stringify(
-              resolved.map(({ role, content, images, audio, video, pdf }: any) => ({
-                role,
-                content: content || "",
-                ...(images?.length > 0
-                  ? { images: images.map(resolveRef) }
-                  : {}),
-                ...(audio?.length > 0 ? { audio: audio.map(resolveRef) } : {}),
-                ...(video?.length > 0 ? { video: video.map(resolveRef) } : {}),
-                ...(pdf?.length > 0 ? { pdf: pdf.map(resolveRef) } : {}),
-              })),
+              resolved.map(
+                ({ role, content, images, audio, video, pdf }: any) => ({
+                  role,
+                  content: content || "",
+                  ...(images?.length > 0
+                    ? { images: images.map(resolveRef) }
+                    : {}),
+                  ...(audio?.length > 0
+                    ? { audio: audio.map(resolveRef) }
+                    : {}),
+                  ...(video?.length > 0
+                    ? { video: video.map(resolveRef) }
+                    : {}),
+                  ...(pdf?.length > 0 ? { pdf: pdf.map(resolveRef) } : {}),
+                }),
+              ),
               null,
               2,
             );
@@ -740,8 +759,11 @@ export default function WorkflowInspector({
                       )}
                       <span>
                         Built-in (
-                        {builtIn.filter((t: any) => !disabled.has(t.name)).length}/
-                        {builtIn.length})
+                        {
+                          builtIn.filter((t: any) => !disabled.has(t.name))
+                            .length
+                        }
+                        /{builtIn.length})
                       </span>
                     </button>
                     {toolBuiltInOpen && (
@@ -766,8 +788,9 @@ export default function WorkflowInspector({
                       <span>
                         Custom (
                         {
-                          custom.filter((t: any) => !disabled.has(t.name || t._id))
-                            .length
+                          custom.filter(
+                            (t: any) => !disabled.has(t.name || t._id),
+                          ).length
                         }
                         /{custom.length})
                       </span>

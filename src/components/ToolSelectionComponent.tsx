@@ -374,7 +374,8 @@ export default function ToolSelectionComponent({
   const groupedByLabel = useMemo(() => {
     const groups = new Map();
     for (const tool of filteredTools) {
-      const labels = tool.labels && tool.labels.length > 0 ? tool.labels : ["other"];
+      const labels =
+        tool.labels && tool.labels.length > 0 ? tool.labels : ["other"];
       for (const label of labels) {
         if (!groups.has(label)) groups.set(label, []);
         groups.get(label).push(tool);
@@ -414,10 +415,14 @@ export default function ToolSelectionComponent({
 
       if (hasGroupRef || allEnabled) {
         onEnabledToolsChange(
-          currentTools.filter((t: any) => t !== prefix && !groupNames.includes(t)),
+          currentTools.filter(
+            (t: any) => t !== prefix && !groupNames.includes(t),
+          ),
         );
       } else {
-        const cleaned = currentTools.filter((t: any) => !groupNames.includes(t));
+        const cleaned = currentTools.filter(
+          (t: any) => !groupNames.includes(t),
+        );
         onEnabledToolsChange([...cleaned, prefix]);
       }
     },
@@ -428,7 +433,14 @@ export default function ToolSelectionComponent({
   return (
     <div className={styles.toolsSection}>
       <div className={styles.toolsSectionHeader}>
-        <label style={{ margin: 0, fontSize: 12, fontWeight: 500, color: "var(--text-secondary)" }}>
+        <label
+          style={{
+            margin: 0,
+            fontSize: 12,
+            fontWeight: 500,
+            color: "var(--text-secondary)",
+          }}
+        >
           Tools
         </label>
         <div className={styles.toolsSectionHeaderRight}>
@@ -526,7 +538,12 @@ export default function ToolSelectionComponent({
 
                 {!collapsed &&
                   tools.map((tool: any) => (
-                    <TooltipComponent key={tool.name} label={tool.description} position="right" delay={400}>
+                    <TooltipComponent
+                      key={tool.name}
+                      label={tool.description}
+                      position="right"
+                      delay={400}
+                    >
                       <label className={styles.toolRow}>
                         <input
                           type="checkbox"

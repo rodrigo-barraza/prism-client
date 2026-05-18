@@ -21,13 +21,20 @@ import {
   Bot,
   Wrench,
 } from "lucide-react";
-import ProviderLogo, { PROVIDER_LABELS, resolveProviderLabel } from "./ProviderLogosComponent";
+import ProviderLogo, {
+  PROVIDER_LABELS,
+  resolveProviderLabel,
+} from "./ProviderLogosComponent";
 import {
   MODALITY_ICONS,
   MODALITY_COLORS,
   TOOL_COLORS,
 } from "./WorkflowNodeConstantsComponent";
-import { TableComponent, TooltipComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
+import {
+  TableComponent,
+  TooltipComponent,
+  SearchInputComponent,
+} from "@rodrigo-barraza/components-library";
 import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
 import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";
@@ -71,7 +78,6 @@ function formatPricingRate(n: any) {
   return `$${int}.${padded}`;
 }
 
-
 /**
  * Parse a size display string like "7.5 GB", "500 MB", "120 KB" back to bytes.
  */
@@ -86,7 +92,6 @@ function parseSize(str: any) {
   if (unit === "KB") return value * 1024;
   return 0;
 }
-
 
 const ARENA_COLUMNS = [
   { key: "arena_text", dataKey: "text", label: "Text" },
@@ -243,20 +248,26 @@ function buildRow(rawModel: any, favorites = []) {
   return row;
 }
 
-
 /* -- Stats mode helpers --------------------------------------- */
 
 /**
  * Build stats-mode columns from tableColumns.js factories.
  * Used when mode="stats" — the same columns the old ModelsTableComponent used.
  */
-function buildStatsColumns({ configModels, totalRequests, totalCost, compact }: any) {
+function buildStatsColumns({
+  configModels,
+  totalRequests,
+  totalCost,
+  compact,
+}: any) {
   const allColumns = [
     {
       key: "model",
       label: "Model",
       description: "The AI model identifier used for the request",
-      render: (row: any) => <ModelBadgeComponent models={row.model ? [row.model] : []} />,
+      render: (row: any) => (
+        <ModelBadgeComponent models={row.model ? [row.model] : []} />
+      ),
     },
     requestsColumn(),
     usageColumn(totalRequests, ""),
@@ -265,7 +276,9 @@ function buildStatsColumns({ configModels, totalRequests, totalCost, compact }: 
       label: "Provider",
       description: "The API provider hosting this model",
       render: (row: any) => (
-        <ProvidersBadgeComponent providers={row.provider ? [row.provider] : []} />
+        <ProvidersBadgeComponent
+          providers={row.provider ? [row.provider] : []}
+        />
       ),
     },
     statsModalitiesColumn(),
@@ -277,12 +290,17 @@ function buildStatsColumns({ configModels, totalRequests, totalCost, compact }: 
   ];
 
   if (compact) {
-    const COMPACT_KEYS = ["model", "totalRequests", "provider", "totalCost", "avgLatency"];
+    const COMPACT_KEYS = [
+      "model",
+      "totalRequests",
+      "provider",
+      "totalCost",
+      "avgLatency",
+    ];
     return allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key));
   }
   return allColumns;
 }
-
 
 /**
  * ModelsTableComponent — unified model table supporting four display modes:
@@ -334,12 +352,19 @@ export default function ModelsTableComponent({
   if (mode === "stats") {
     const totalRequests =
       (totalRequestsProp ??
-      models.reduce((s: any, m: any) => s + m.totalRequests, 0)) || 1;
+        models.reduce((s: any, m: any) => s + m.totalRequests, 0)) ||
+      1;
     const totalCost =
       (totalCostProp ??
-      models.reduce((s: any, m: any) => s + (m.totalCost || 0), 0)) || 1;
+        models.reduce((s: any, m: any) => s + (m.totalCost || 0), 0)) ||
+      1;
 
-    const columns = buildStatsColumns({ configModels, totalRequests, totalCost, compact });
+    const columns = buildStatsColumns({
+      configModels,
+      totalRequests,
+      totalCost,
+      compact,
+    });
 
     return (
       <TableComponent
@@ -381,7 +406,6 @@ export default function ModelsTableComponent({
     />
   );
 }
-
 
 /**
  * Inner component for model/full/benchmark modes — uses hooks so it must be a
@@ -478,7 +502,9 @@ function ModelsTableInner({
     : modalityFiltered;
 
   const providerFiltered = activeProvider
-    ? toolFiltered.filter((m: any) => normalizeModel(m).provider === activeProvider)
+    ? toolFiltered.filter(
+        (m: any) => normalizeModel(m).provider === activeProvider,
+      )
     : toolFiltered;
 
   const filtered = searchQuery.trim()
@@ -489,9 +515,7 @@ function ModelsTableInner({
           norm.key.toLowerCase().includes(q) ||
           norm.name.toLowerCase().includes(q) ||
           (norm.params || "").toLowerCase().includes(q) ||
-          resolveProviderLabel(norm.provider)
-            .toLowerCase()
-            .includes(q)
+          resolveProviderLabel(norm.provider).toLowerCase().includes(q)
         );
       })
     : providerFiltered;
@@ -508,7 +532,9 @@ function ModelsTableInner({
   const hasParams = filtered.some((m: any) => normalizeModel(m).params);
   const hasContext = filtered.some((m: any) => normalizeModel(m).contextLength);
   const hasQuant = filtered.some((m: any) => normalizeModel(m).quantization);
-  const hasBpw = filtered.some((m: any) => normalizeModel(m).bitsPerWeight != null);
+  const hasBpw = filtered.some(
+    (m: any) => normalizeModel(m).bitsPerWeight != null,
+  );
   const hasArch = filtered.some((m: any) => normalizeModel(m).architecture);
   const hasPublisher = filtered.some((m: any) => normalizeModel(m).publisher);
   const hasInputPrice = filtered.some(
@@ -523,7 +549,9 @@ function ModelsTableInner({
   const hasTools = filtered.some((m: any) => m.tools?.length > 0);
   const hasModelType = filtered.some((m: any) => normalizeModel(m).modelType);
   const hasUsage = filtered.some((m: any) => m.usageCount > 0);
-  const hasTokens = filtered.some((m: any) => (m.totalInputTokens || 0) + (m.totalOutputTokens || 0) > 0);
+  const hasTokens = filtered.some(
+    (m: any) => (m.totalInputTokens || 0) + (m.totalOutputTokens || 0) > 0,
+  );
   const hasActions = !!renderActions;
   const hasSelection = !!selectedKeys && !!onToggleSelect;
   const isFull = mode === "full";
@@ -538,10 +566,12 @@ function ModelsTableInner({
   const handleSelectAll = useCallback(() => {
     if (!onToggleSelect || !selectedKeys) return;
     // Check if all currently visible/filtered models are selected
-    const allSelected = filtered.length > 0 && filtered.every((m: any) => {
-      const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
-      return selectedKeys.has(key);
-    });
+    const allSelected =
+      filtered.length > 0 &&
+      filtered.every((m: any) => {
+        const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
+        return selectedKeys.has(key);
+      });
     // Toggle: if all selected, deselect all visible; otherwise select all visible
     for (const m of filtered) {
       const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
@@ -562,14 +592,18 @@ function ModelsTableInner({
 
     // 0. SELECTION — checkbox column (non-hideable, non-sortable)
     if (hasSelection) {
-      const allSelected = filtered.length > 0 && filtered.every((m: any) => {
-        const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
-        return selectedKeys.has(key);
-      });
-      const someSelected = !allSelected && filtered.some((m: any) => {
-        const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
-        return selectedKeys.has(key);
-      });
+      const allSelected =
+        filtered.length > 0 &&
+        filtered.every((m: any) => {
+          const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
+          return selectedKeys.has(key);
+        });
+      const someSelected =
+        !allSelected &&
+        filtered.some((m: any) => {
+          const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
+          return selectedKeys.has(key);
+        });
 
       cols.push({
         key: "_select",
@@ -581,15 +615,18 @@ function ModelsTableInner({
               handleSelectAll();
             }}
           >
-            {allSelected
-              ? <CheckSquare2 size={14} className={styles.selectCheck} />
-              : someSelected
-                ? <CheckSquare2 size={14} className={styles.selectPartial} />
-                : <Square size={14} className={styles.selectBox} />
-            }
+            {allSelected ? (
+              <CheckSquare2 size={14} className={styles.selectCheck} />
+            ) : someSelected ? (
+              <CheckSquare2 size={14} className={styles.selectPartial} />
+            ) : (
+              <Square size={14} className={styles.selectBox} />
+            )}
           </span>
         ),
-        description: allSelected ? "Deselect all visible models" : "Select all visible models",
+        description: allSelected
+          ? "Deselect all visible models"
+          : "Select all visible models",
         align: "center",
         sortable: false,
         hideable: false,
@@ -604,10 +641,11 @@ function ModelsTableInner({
                 onToggleSelect(row._raw);
               }}
             >
-              {isSelected
-                ? <CheckSquare2 size={14} className={styles.selectCheck} />
-                : <Square size={14} className={styles.selectBox} />
-              }
+              {isSelected ? (
+                <CheckSquare2 size={14} className={styles.selectCheck} />
+              ) : (
+                <Square size={14} className={styles.selectBox} />
+              )}
             </span>
           );
         },
@@ -626,7 +664,11 @@ function ModelsTableInner({
         render: (row: any) => {
           const pct = Math.round((row._raw._benchPassRate || 0) * 100);
           const color =
-            pct >= 80 ? "var(--success)" : pct >= 50 ? "var(--warning)" : "var(--danger)";
+            pct >= 80
+              ? "var(--success)"
+              : pct >= 50
+                ? "var(--warning)"
+                : "var(--danger)";
           return (
             <span className={styles.benchRateCell}>
               <span className={styles.benchRateBar}>
@@ -662,7 +704,8 @@ function ModelsTableInner({
         description: "Number of benchmark tests this model failed or errored",
         sortable: true,
         align: "right",
-        sortValue: (row: any) => (row._raw._benchFailed || 0) + (row._raw._benchErrored || 0),
+        sortValue: (row: any) =>
+          (row._raw._benchFailed || 0) + (row._raw._benchErrored || 0),
         render: (row: any) => (
           <span className={styles.benchFailedCell}>
             <XCircle size={12} />
@@ -705,7 +748,8 @@ function ModelsTableInner({
       cols.push({
         key: "benchType",
         label: "Type",
-        description: "Whether this entry is a direct model call or an agentic run",
+        description:
+          "Whether this entry is a direct model call or an agentic run",
         sortable: true,
         align: "center",
         sortValue: (row: any) => (row._benchAgent ? 1 : 0),
@@ -718,11 +762,7 @@ function ModelsTableInner({
               </span>
             );
           }
-          return (
-            <span className={styles.benchModelBadge}>
-              Model
-            </span>
-          );
+          return <span className={styles.benchModelBadge}>Model</span>;
         },
       });
     }
@@ -747,12 +787,14 @@ function ModelsTableInner({
                 Loaded
               </span>
             )}
-            {model.provider === "lm-studio" && !model.isLoaded && loadingModelKey === model.key && (
-              <span className={styles.loadingBadge}>
-                <Loader2 size={9} className={styles.loadingSpin} />
-                Loading
-              </span>
-            )}
+            {model.provider === "lm-studio" &&
+              !model.isLoaded &&
+              loadingModelKey === model.key && (
+                <span className={styles.loadingBadge}>
+                  <Loader2 size={9} className={styles.loadingSpin} />
+                  Loading
+                </span>
+              )}
             {hasActions && (
               <span
                 className={styles.inlineActions}
@@ -772,9 +814,7 @@ function ModelsTableInner({
       label: "Model",
       description: "Unique model identifier used in API calls",
       align: "left",
-      render: (row: any) => (
-        <ModelBadgeComponent models={[row._model.key]} />
-      ),
+      render: (row: any) => <ModelBadgeComponent models={[row._model.key]} />,
     });
 
     // 6. PROVIDER — provider badge
@@ -783,7 +823,8 @@ function ModelsTableInner({
       label: "Provider",
       description: "The API provider hosting this model",
       align: "left",
-      sortValue: (row: any) => resolveProviderLabel(row._model.provider).toLowerCase(),
+      sortValue: (row: any) =>
+        resolveProviderLabel(row._model.provider).toLowerCase(),
       render: (row: any) => (
         <ProvidersBadgeComponent providers={[row._model.provider]} />
       ),
@@ -794,7 +835,8 @@ function ModelsTableInner({
       cols.push({
         key: "modelType",
         label: "Type",
-        description: "Endpoint-based model category: conversation, audio, or embed",
+        description:
+          "Endpoint-based model category: conversation, audio, or embed",
         align: "left",
         render: (row: any) => (
           <ModelTypeBadgeComponent modelType={row._model.modelType} />
@@ -822,11 +864,14 @@ function ModelsTableInner({
         sortable: true,
         align: "center",
         sortValue: (row: any) => (row._benchThinking ? 1 : 0),
-        render: (row: any) => (
-          row._benchThinking
-            ? <span className={styles.benchThinkingOn}><Brain size={12} /> On</span>
-            : <span className={styles.benchFlagOff}>—</span>
-        ),
+        render: (row: any) =>
+          row._benchThinking ? (
+            <span className={styles.benchThinkingOn}>
+              <Brain size={12} /> On
+            </span>
+          ) : (
+            <span className={styles.benchFlagOff}>—</span>
+          ),
       });
       cols.push({
         key: "benchToolsEnabled",
@@ -835,11 +880,14 @@ function ModelsTableInner({
         sortable: true,
         align: "center",
         sortValue: (row: any) => (row._benchTools ? 1 : 0),
-        render: (row: any) => (
-          row._benchTools
-            ? <span className={styles.benchToolsOn}><Wrench size={12} /> On</span>
-            : <span className={styles.benchFlagOff}>—</span>
-        ),
+        render: (row: any) =>
+          row._benchTools ? (
+            <span className={styles.benchToolsOn}>
+              <Wrench size={12} /> On
+            </span>
+          ) : (
+            <span className={styles.benchFlagOff}>—</span>
+          ),
       });
     }
 
@@ -878,7 +926,8 @@ function ModelsTableInner({
       cols.push({
         key: "benchCost",
         label: "Cost",
-        description: "Total estimated cost across all benchmark tests for this model",
+        description:
+          "Total estimated cost across all benchmark tests for this model",
         sortable: true,
         align: "right",
         sortValue: (row: any) => row._raw._benchTotalCost || 0,
@@ -891,7 +940,8 @@ function ModelsTableInner({
 
     // -- Stats columns (full mode only) --
     if (isFull && hasUsage) {
-      const usageTotal = filtered.reduce((s: any, m: any) => s + (m.usageCount || 0), 0) || 1;
+      const usageTotal =
+        filtered.reduce((s: any, m: any) => s + (m.usageCount || 0), 0) || 1;
       cols.push({
         key: "requests",
         label: "Requests",
@@ -918,7 +968,8 @@ function ModelsTableInner({
     }
 
     if (hasUsage && !isFull) {
-      const usageTotal = filtered.reduce((s: any, m: any) => s + (m.usageCount || 0), 0) || 1;
+      const usageTotal =
+        filtered.reduce((s: any, m: any) => s + (m.usageCount || 0), 0) || 1;
       cols.push({
         key: "requests",
         label: "Requests",
@@ -952,7 +1003,11 @@ function ModelsTableInner({
         align: "right",
         render: (row: any) => {
           const v = row._raw.totalInputTokens || 0;
-          return v > 0 ? <TokenCountBadgeComponent value={v} label="in" mini /> : "—";
+          return v > 0 ? (
+            <TokenCountBadgeComponent value={v} label="in" mini />
+          ) : (
+            "—"
+          );
         },
       });
       cols.push({
@@ -962,7 +1017,11 @@ function ModelsTableInner({
         align: "right",
         render: (row: any) => {
           const v = row._raw.totalOutputTokens || 0;
-          return v > 0 ? <TokenCountBadgeComponent value={v} label="out" mini /> : "—";
+          return v > 0 ? (
+            <TokenCountBadgeComponent value={v} label="out" mini />
+          ) : (
+            "—"
+          );
         },
       });
       cols.push({
@@ -970,9 +1029,12 @@ function ModelsTableInner({
         label: "Tokens",
         description: "Combined input + output token count",
         align: "right",
-        sortValue: (row: any) => (row._raw.totalInputTokens || 0) + (row._raw.totalOutputTokens || 0),
+        sortValue: (row: any) =>
+          (row._raw.totalInputTokens || 0) + (row._raw.totalOutputTokens || 0),
         render: (row: any) => {
-          const total = (row._raw.totalInputTokens || 0) + (row._raw.totalOutputTokens || 0);
+          const total =
+            (row._raw.totalInputTokens || 0) +
+            (row._raw.totalOutputTokens || 0);
           return total > 0 ? formatTokenCount(total) : "—";
         },
       });
@@ -1096,9 +1158,16 @@ function ModelsTableInner({
         align: "right",
         ...benchmarkHide,
         render: (row: any) =>
-          row._raw.pricing?.inputPerMillion != null
-            ? <CostBadgeComponent cost={row._raw.pricing.inputPerMillion} mini showIcon={false} formatFn={formatPricingRate} />
-            : "—",
+          row._raw.pricing?.inputPerMillion != null ? (
+            <CostBadgeComponent
+              cost={row._raw.pricing.inputPerMillion}
+              mini
+              showIcon={false}
+              formatFn={formatPricingRate}
+            />
+          ) : (
+            "—"
+          ),
       });
     }
 
@@ -1110,9 +1179,16 @@ function ModelsTableInner({
         align: "right",
         ...benchmarkHide,
         render: (row: any) =>
-          row._raw.pricing?.outputPerMillion != null
-            ? <CostBadgeComponent cost={row._raw.pricing.outputPerMillion} mini showIcon={false} formatFn={formatPricingRate} />
-            : "—",
+          row._raw.pricing?.outputPerMillion != null ? (
+            <CostBadgeComponent
+              cost={row._raw.pricing.outputPerMillion}
+              mini
+              showIcon={false}
+              formatFn={formatPricingRate}
+            />
+          ) : (
+            "—"
+          ),
       });
     }
 
@@ -1210,7 +1286,14 @@ function ModelsTableInner({
               ? [
                   {
                     label: "Favorites",
-                    items: [{ key: "favorites", icon: Star, title: "Favorites Only", color: "#f59e0b" }],
+                    items: [
+                      {
+                        key: "favorites",
+                        icon: Star,
+                        title: "Favorites Only",
+                        color: "#f59e0b",
+                      },
+                    ],
                     activeKeys: showFavoritesOnly ? "favorites" : null,
                     isSingleSelect: true,
                     onToggle: () => setShowFavoritesOnly((prev: any) => !prev),
@@ -1224,7 +1307,14 @@ function ModelsTableInner({
                     items: allModalities
                       .map((t: any) => {
                         const m = (MODALITY_ICONS as any)[t];
-                        return m ? { key: t, icon: m.icon, color: (MODALITY_COLORS as any)[t], title: m.label } : null;
+                        return m
+                          ? {
+                              key: t,
+                              icon: m.icon,
+                              color: (MODALITY_COLORS as any)[t],
+                              title: m.label,
+                            }
+                          : null;
                       })
                       .filter(Boolean),
                     activeKeys: activeModality,
@@ -1240,7 +1330,14 @@ function ModelsTableInner({
                     items: allTools
                       .map((t: any) => {
                         const Icon = (TOOL_ICONS as any)[t];
-                        return Icon ? { key: t, icon: Icon, color: (TOOL_COLORS as any)[t], title: t } : null;
+                        return Icon
+                          ? {
+                              key: t,
+                              icon: Icon,
+                              color: (TOOL_COLORS as any)[t],
+                              title: t,
+                            }
+                          : null;
                       })
                       .filter(Boolean),
                     activeKeys: activeTool,
@@ -1283,9 +1380,15 @@ function ModelsTableInner({
           }
           return `${row._model.provider}-${row._model.key}`;
         }}
-        onRowClick={onSelect ? (row: any) => onSelect(isBenchmark ? row._raw._benchStat : row._raw) : undefined}
+        onRowClick={
+          onSelect
+            ? (row: any) =>
+                onSelect(isBenchmark ? row._raw._benchStat : row._raw)
+            : undefined
+        }
         emptyText={
-          emptyText || (searchQuery.trim() ? "No matching models" : "No models found")
+          emptyText ||
+          (searchQuery.trim() ? "No matching models" : "No models found")
         }
         activeRowKey={activeRowKey}
         highlightedRowKey={highlightedRowKey}
@@ -1293,7 +1396,8 @@ function ModelsTableInner({
         storageKey={isBenchmark ? "models-benchmark" : "models"}
         getRowClassName={
           getRowClassNameProp
-            ? (row: any) => getRowClassNameProp(isBenchmark ? row._raw._benchStat : row)
+            ? (row: any) =>
+                getRowClassNameProp(isBenchmark ? row._raw._benchStat : row)
             : hasSelection
               ? (row: any) => {
                   const key = `${row._model.provider}:${row._model.key}`;

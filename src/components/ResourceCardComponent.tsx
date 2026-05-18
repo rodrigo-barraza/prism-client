@@ -26,7 +26,9 @@ export default function ResourceCardComponent({
     <Link
       href={href}
       className={styles.card}
-      {...SoundService.interactive((e: any) => { onClick?.(e); })}
+      {...SoundService.interactive((e: any) => {
+        onClick?.(e);
+      })}
     >
       <Icon size={18} className={styles.icon} />
       <span className={styles.count}>{count}</span>

@@ -69,7 +69,10 @@ export default function SearchFilterComponent({
   useEffect(() => {
     if (!open) return;
     const handler = (e: any) => {
-      if (containerRef.current && !(containerRef.current as any).contains(e.target)) {
+      if (
+        containerRef.current &&
+        !(containerRef.current as any).contains(e.target)
+      ) {
         setOpen(false);
         setQuery("");
       }
@@ -137,9 +140,7 @@ export default function SearchFilterComponent({
                 onClick={() => handleSelect(opt)}
               >
                 <span>{opt}</span>
-                {opt === value && (
-                  <span className={styles.menuCheck}>✓</span>
-                )}
+                {opt === value && <span className={styles.menuCheck}>✓</span>}
               </button>
             ))}
           </div>

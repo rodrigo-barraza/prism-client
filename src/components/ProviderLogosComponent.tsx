@@ -69,11 +69,46 @@ const LOGOS = {
       </defs>
       <rect width="24" height="24" rx="5" fill="url(#lms-grad)" />
       {/* Stacked horizontal bars — LM Studio logo mark */}
-      <rect x="4.5" y="4"   width="15" height="2.2" rx="1.1" fill="rgba(255,255,255,0.95)" />
-      <rect x="6"   y="7.6" width="12" height="2.2" rx="1.1" fill="rgba(255,255,255,0.80)" />
-      <rect x="4.5" y="11.2" width="15" height="2.2" rx="1.1" fill="rgba(255,255,255,0.95)" />
-      <rect x="6"   y="14.8" width="12" height="2.2" rx="1.1" fill="rgba(255,255,255,0.70)" />
-      <rect x="4.5" y="18.4" width="15" height="2.2" rx="1.1" fill="rgba(255,255,255,0.55)" />
+      <rect
+        x="4.5"
+        y="4"
+        width="15"
+        height="2.2"
+        rx="1.1"
+        fill="rgba(255,255,255,0.95)"
+      />
+      <rect
+        x="6"
+        y="7.6"
+        width="12"
+        height="2.2"
+        rx="1.1"
+        fill="rgba(255,255,255,0.80)"
+      />
+      <rect
+        x="4.5"
+        y="11.2"
+        width="15"
+        height="2.2"
+        rx="1.1"
+        fill="rgba(255,255,255,0.95)"
+      />
+      <rect
+        x="6"
+        y="14.8"
+        width="12"
+        height="2.2"
+        rx="1.1"
+        fill="rgba(255,255,255,0.70)"
+      />
+      <rect
+        x="4.5"
+        y="18.4"
+        width="15"
+        height="2.2"
+        rx="1.1"
+        fill="rgba(255,255,255,0.55)"
+      />
     </svg>
   ),
   vllm: (size: any) => (
@@ -157,7 +192,13 @@ const LOGOS = {
       <circle cx="9.5" cy="10" r="1.2" fill="var(--bg-primary, #1a1a2e)" />
       <circle cx="14.5" cy="10" r="1.2" fill="var(--bg-primary, #1a1a2e)" />
       {/* Nose / snout */}
-      <ellipse cx="12" cy="13.5" rx="2.5" ry="2" fill="var(--bg-primary, #1a1a2e)" />
+      <ellipse
+        cx="12"
+        cy="13.5"
+        rx="2.5"
+        ry="2"
+        fill="var(--bg-primary, #1a1a2e)"
+      />
       <ellipse cx="12" cy="13.5" rx="1.8" ry="1.3" fill="currentColor" />
       <circle cx="11.2" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
       <circle cx="12.8" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
@@ -177,20 +218,48 @@ const LOGOS = {
       <path d="M6 8 C6 6.5, 7 5.5, 8 6 C9 5, 11 4.5, 12 4.5 C13 4.5, 15 5, 16 6 C17 5.5, 18 6.5, 18 8 C18 9, 18.5 10, 18.5 11 C18.5 13, 17 15, 15.5 16 C14.5 16.7, 13 17.5, 12 17.5 C11 17.5, 9.5 16.7, 8.5 16 C7 15, 5.5 13, 5.5 11 C5.5 10, 6 9, 6 8Z" />
       <circle cx="9.5" cy="10" r="1.2" fill="var(--bg-primary, #1a1a2e)" />
       <circle cx="14.5" cy="10" r="1.2" fill="var(--bg-primary, #1a1a2e)" />
-      <ellipse cx="12" cy="13.5" rx="2.5" ry="2" fill="var(--bg-primary, #1a1a2e)" />
+      <ellipse
+        cx="12"
+        cy="13.5"
+        rx="2.5"
+        ry="2"
+        fill="var(--bg-primary, #1a1a2e)"
+      />
       <ellipse cx="12" cy="13.5" rx="1.8" ry="1.3" fill="currentColor" />
       <circle cx="11.2" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
       <circle cx="12.8" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
       {/* C++ badge */}
-      <rect x="15" y="15" width="8" height="6" rx="1.5" fill="var(--bg-primary, #1a1a2e)" />
-      <text x="19" y="19.5" textAnchor="middle" fontSize="5" fontWeight="bold" fill="currentColor">C++</text>
+      <rect
+        x="15"
+        y="15"
+        width="8"
+        height="6"
+        rx="1.5"
+        fill="var(--bg-primary, #1a1a2e)"
+      />
+      <text
+        x="19"
+        y="19.5"
+        textAnchor="middle"
+        fontSize="5"
+        fontWeight="bold"
+        fill="currentColor"
+      >
+        C++
+      </text>
     </svg>
   ),
 };
 
-export default function ProviderLogo({ provider, size = 16, className = "" }: any) {
+export default function ProviderLogo({
+  provider,
+  size = 16,
+  className = "",
+}: any) {
   // Resolve multi-instance IDs (e.g. "lm-studio-2") to base type logo
-  const key = (LOGOS as any)[provider] ? provider : _resolveBaseTypeFromLogos(provider);
+  const key = (LOGOS as any)[provider]
+    ? provider
+    : _resolveBaseTypeFromLogos(provider);
   const render = (LOGOS as any)[key];
   if (!render) return null;
   return (
@@ -287,7 +356,8 @@ export function resolveProviderLabel(id: any) {
   // Direct match (base type or cloud)
   if ((PROVIDER_LABELS as any)[id]) {
     const meta = _localMeta.get(id);
-    if (meta?.nickname) return `${(PROVIDER_LABELS as any)[id]} (${meta.nickname})`;
+    if (meta?.nickname)
+      return `${(PROVIDER_LABELS as any)[id]} (${meta.nickname})`;
     return (PROVIDER_LABELS as any)[id];
   }
 

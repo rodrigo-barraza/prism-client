@@ -28,7 +28,8 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: any = {}) => [
   {
     key: "domain",
     label: "Domain",
-    description: "The functional domain this tool belongs to (e.g. Weather, Health, Compute)",
+    description:
+      "The functional domain this tool belongs to (e.g. Weather, Health, Compute)",
     sortable: true,
     render: (r: any) => (
       <BadgeComponent variant="info">{r.domain || "—"}</BadgeComponent>
@@ -48,7 +49,8 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: any = {}) => [
   {
     key: "callerAgent",
     label: "Agent",
-    description: "The agentic persona that triggered this tool call (e.g. CODING, LUPOS)",
+    description:
+      "The agentic persona that triggered this tool call (e.g. CODING, LUPOS)",
     sortable: true,
     render: (r: any) =>
       r.callerAgent ? (
@@ -102,9 +104,7 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: any = {}) => [
     sortable: true,
     align: "right",
     render: (r: any) =>
-      r.inBytes > 0
-        ? formatFileSize(r.inBytes)
-        : emptyDash(),
+      r.inBytes > 0 ? formatFileSize(r.inBytes) : emptyDash(),
   },
   {
     key: "outBytes",
@@ -113,9 +113,7 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: any = {}) => [
     sortable: true,
     align: "right",
     render: (r: any) =>
-      r.outBytes > 0
-        ? formatFileSize(r.outBytes)
-        : emptyDash(),
+      r.outBytes > 0 ? formatFileSize(r.outBytes) : emptyDash(),
   },
   {
     key: "callerIteration",

@@ -88,26 +88,26 @@ function buildToolAgentMap(agents: any) {
 // -- Domain → Icon mapping --------------------------------------
 const DOMAIN_ICONS = {
   "Weather & Environment": Cloud,
-  "Events": Zap,
-  "Sports": Gamepad2,
+  Events: Zap,
+  Sports: Gamepad2,
   "Markets & Commodities": Database,
-  "Trends": Globe,
-  "Products": Package,
-  "Finance": Database,
-  "Knowledge": Brain,
+  Trends: Globe,
+  Products: Package,
+  Finance: Database,
+  Knowledge: Brain,
   "Movies & TV": Palette,
-  "Health": Heart,
-  "Transit": Navigation,
-  "Utilities": Cog,
-  "Compute": Cpu,
-  "Maritime": Ship,
-  "Energy": Lightbulb,
-  "Communication": MessageCircle,
-  "Creative": Palette,
-  "Discord": MessageCircle,
+  Health: Heart,
+  Transit: Navigation,
+  Utilities: Cog,
+  Compute: Cpu,
+  Maritime: Ship,
+  Energy: Lightbulb,
+  Communication: MessageCircle,
+  Creative: Palette,
+  Discord: MessageCircle,
   "Smart Home": Lightbulb,
-  "Reasoning": Brain,
-  "Coordinator": Bot,
+  Reasoning: Brain,
+  Coordinator: Bot,
   "Agentic: File Operations": FolderOpen,
   "Agentic: Search & Discovery": FileSearch,
   "Agentic: Web": Globe,
@@ -172,7 +172,9 @@ function groupByDomain(tools: any) {
     return `0_${d}`;
   };
   return Object.fromEntries(
-    Object.entries(groups).sort((a: any, b: any) => sortKey(a[0]).localeCompare(sortKey(b[0]))),
+    Object.entries(groups).sort((a: any, b: any) =>
+      sortKey(a[0]).localeCompare(sortKey(b[0])),
+    ),
   );
 }
 
@@ -192,7 +194,6 @@ function getInputParams(tool: any) {
   const props = tool.parameters?.properties || {};
   return Object.entries(props).filter(([name]: any) => name !== "fields");
 }
-
 
 // -- Tool Detail Modal --------------------------------------------
 
@@ -222,12 +223,16 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
   }, [onClose]);
 
   const successRate = stats
-    ? ((stats.successCount / (stats.successCount + stats.failureCount)) * 100) || 0
+    ? (stats.successCount / (stats.successCount + stats.failureCount)) * 100 ||
+      0
     : 0;
 
   return (
     <div className={styles.detailOverlay} onClick={onClose}>
-      <div className={styles.detailPanel} onClick={(e: any) => e.stopPropagation()}>
+      <div
+        className={styles.detailPanel}
+        onClick={(e: any) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className={styles.detailHeader}>
           <div className={styles.detailTitleBlock}>
@@ -239,7 +244,9 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
               )}
               {tool.dataSource && (
                 <span className={styles.dataSourceBadge}>
-                  <span className={styles.dataSourceType}>{tool.dataSource.type}</span>
+                  <span className={styles.dataSourceType}>
+                    {tool.dataSource.type}
+                  </span>
                   {tool.dataSource.provider && (
                     <span className={styles.dataSourceProvider}>
                       {tool.dataSource.provider}
@@ -253,21 +260,28 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
                 </span>
               )}
               {tool.labels?.map((l: any) => (
-                <span key={l} className={styles.toolLabel}>{l}</span>
-              ))}
-              {agents?.length > 0 && agents.map((a: any) => (
-                <span
-                  key={a.id}
-                  className={styles.agentBadge}
-                  style={{ "--agent-color": getAgentColor(a.id) } as any}
-                >
-                  <Bot size={10} />
-                  {a.name}
+                <span key={l} className={styles.toolLabel}>
+                  {l}
                 </span>
               ))}
+              {agents?.length > 0 &&
+                agents.map((a: any) => (
+                  <span
+                    key={a.id}
+                    className={styles.agentBadge}
+                    style={{ "--agent-color": getAgentColor(a.id) } as any}
+                  >
+                    <Bot size={10} />
+                    {a.name}
+                  </span>
+                ))}
             </div>
           </div>
-          <button className={styles.detailClose} onClick={onClose} title="Close">
+          <button
+            className={styles.detailClose}
+            onClick={onClose}
+            title="Close"
+          >
             <X />
           </button>
         </div>
@@ -291,32 +305,46 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
                 <div className={styles.statsGrid}>
                   <div className={styles.statCell}>
                     <Hash size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>{formatCompact(stats.totalCalls)}</div>
+                    <div className={styles.statCellValue}>
+                      {formatCompact(stats.totalCalls)}
+                    </div>
                     <div className={styles.statCellLabel}>Total Calls</div>
                   </div>
                   <div className={styles.statCell}>
                     <Activity size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>{formatCompact(stats.totalRequests)}</div>
+                    <div className={styles.statCellValue}>
+                      {formatCompact(stats.totalRequests)}
+                    </div>
                     <div className={styles.statCellLabel}>Requests</div>
                   </div>
                   <div className={styles.statCell}>
                     <DollarSign size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>{formatCostAdaptive(stats.totalCost)}</div>
+                    <div className={styles.statCellValue}>
+                      {formatCostAdaptive(stats.totalCost)}
+                    </div>
                     <div className={styles.statCellLabel}>Total Cost</div>
                   </div>
                   <div className={styles.statCell}>
                     <TrendingUp size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>{formatLatencyMs(stats.avgLatency)}</div>
+                    <div className={styles.statCellValue}>
+                      {formatLatencyMs(stats.avgLatency)}
+                    </div>
                     <div className={styles.statCellLabel}>Avg Latency</div>
                   </div>
                   <div className={styles.statCell}>
                     <Zap size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>{formatCompact(stats.totalInputTokens + stats.totalOutputTokens)}</div>
+                    <div className={styles.statCellValue}>
+                      {formatCompact(
+                        stats.totalInputTokens + stats.totalOutputTokens,
+                      )}
+                    </div>
                     <div className={styles.statCellLabel}>Total Tokens</div>
                   </div>
                   <div className={styles.statCell}>
                     <CheckCircle2 size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>{successRate.toFixed(0)}%</div>
+                    <div className={styles.statCellValue}>
+                      {successRate.toFixed(0)}%
+                    </div>
                     <div className={styles.statCellLabel}>Success Rate</div>
                   </div>
                 </div>
@@ -326,43 +354,68 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
                   <div className={styles.statsTimeItem}>
                     <Calendar size={12} />
                     <span className={styles.statsTimeLabel}>First used</span>
-                    <span className={styles.statsTimeValue}>{formatTimeAgo(stats.firstUsed)}</span>
+                    <span className={styles.statsTimeValue}>
+                      {formatTimeAgo(stats.firstUsed)}
+                    </span>
                   </div>
                   <div className={styles.statsTimeItem}>
                     <Clock size={12} />
                     <span className={styles.statsTimeLabel}>Last used</span>
-                    <span className={styles.statsTimeValue}>{formatTimeAgo(stats.lastUsed)}</span>
+                    <span className={styles.statsTimeValue}>
+                      {formatTimeAgo(stats.lastUsed)}
+                    </span>
                   </div>
                   {stats.failureCount > 0 && (
                     <div className={styles.statsTimeItem}>
                       <XCircle size={12} />
                       <span className={styles.statsTimeLabel}>Failures</span>
-                      <span className={styles.statsTimeValueDanger}>{stats.failureCount}</span>
+                      <span className={styles.statsTimeValueDanger}>
+                        {stats.failureCount}
+                      </span>
                     </div>
                   )}
                 </div>
 
                 {/* Top Models / Agents */}
-                {(stats.topModels?.length > 0 || stats.topAgents?.length > 0) && (
+                {(stats.topModels?.length > 0 ||
+                  stats.topAgents?.length > 0) && (
                   <div className={styles.statsBreakdown}>
                     {stats.topModels?.length > 0 && (
                       <div className={styles.statsBreakdownCol}>
-                        <div className={styles.statsBreakdownTitle}>Top Models</div>
+                        <div className={styles.statsBreakdownTitle}>
+                          Top Models
+                        </div>
                         {stats.topModels.map((m: any) => (
-                          <div key={m.model} className={styles.statsBreakdownRow}>
-                            <span className={styles.statsBreakdownName}>{m.model}</span>
-                            <span className={styles.statsBreakdownCount}>{m.count}</span>
+                          <div
+                            key={m.model}
+                            className={styles.statsBreakdownRow}
+                          >
+                            <span className={styles.statsBreakdownName}>
+                              {m.model}
+                            </span>
+                            <span className={styles.statsBreakdownCount}>
+                              {m.count}
+                            </span>
                           </div>
                         ))}
                       </div>
                     )}
                     {stats.topAgents?.length > 0 && (
                       <div className={styles.statsBreakdownCol}>
-                        <div className={styles.statsBreakdownTitle}>Top Agents</div>
+                        <div className={styles.statsBreakdownTitle}>
+                          Top Agents
+                        </div>
                         {stats.topAgents.map((a: any) => (
-                          <div key={a.agent} className={styles.statsBreakdownRow}>
-                            <span className={styles.statsBreakdownName}>{a.agent}</span>
-                            <span className={styles.statsBreakdownCount}>{a.count}</span>
+                          <div
+                            key={a.agent}
+                            className={styles.statsBreakdownRow}
+                          >
+                            <span className={styles.statsBreakdownName}>
+                              {a.agent}
+                            </span>
+                            <span className={styles.statsBreakdownCount}>
+                              {a.count}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -408,7 +461,9 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
                         {schema.enum && (
                           <div className={styles.paramEnum}>
                             {schema.enum.map((v: any) => (
-                              <span key={v} className={styles.enumValue}>{String(v)}</span>
+                              <span key={v} className={styles.enumValue}>
+                                {String(v)}
+                              </span>
                             ))}
                           </div>
                         )}
@@ -429,7 +484,9 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
               </div>
               <div className={styles.outputFieldsGrid}>
                 {outputFields.map((f: any) => (
-                  <span key={f} className={styles.outputField}>{f}</span>
+                  <span key={f} className={styles.outputField}>
+                    {f}
+                  </span>
                 ))}
               </div>
             </div>
@@ -442,7 +499,9 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
               onClick={() => setShowRaw(!showRaw)}
             >
               <span className={styles.detailSectionTitle}>Raw Schema</span>
-              <span className={styles.rawChevron} data-open={showRaw}>▾</span>
+              <span className={styles.rawChevron} data-open={showRaw}>
+                ▾
+              </span>
             </button>
             {showRaw && (
               <pre className={styles.jsonBlock}>
@@ -486,7 +545,9 @@ function ToolCard({ tool, onClick, agents }: any) {
           </div>
         )}
         {tool.labels?.slice(0, 4).map((l: any) => (
-          <span key={l} className={styles.toolLabel}>{l}</span>
+          <span key={l} className={styles.toolLabel}>
+            {l}
+          </span>
         ))}
         {paramCount > 0 && (
           <span className={styles.paramCount}>
@@ -507,17 +568,18 @@ function ToolRow({ tool, onClick, agents }: any) {
       <span className={styles.toolRowName}>{tool.name}</span>
       <span className={styles.toolRowDesc}>{tool.description}</span>
       <div className={styles.toolRowMeta}>
-        {agents?.length > 0 && agents.map((a: any) => (
-          <span
-            key={a.id}
-            className={styles.agentBadge}
-            style={{ "--agent-color": getAgentColor(a.id) } as any}
-            title={`Used by ${a.name}`}
-          >
-            <Bot size={10} />
-            {a.name}
-          </span>
-        ))}
+        {agents?.length > 0 &&
+          agents.map((a: any) => (
+            <span
+              key={a.id}
+              className={styles.agentBadge}
+              style={{ "--agent-color": getAgentColor(a.id) } as any}
+              title={`Used by ${a.name}`}
+            >
+              <Bot size={10} />
+              {a.name}
+            </span>
+          ))}
         {tool.domain && (
           <span className={styles.toolDomain}>{tool.domain}</span>
         )}
@@ -610,20 +672,34 @@ export default function ToolsPageComponent() {
     const q = search.toLowerCase().trim();
     // Pre-compute agent filter set if active
     const agentToolSet = agentFilter
-      ? new Set(((agents.find((a: any) => a.id === agentFilter) as any)?.enabledToolNames) || [])
+      ? new Set(
+          (agents.find((a: any) => a.id === agentFilter) as any)
+            ?.enabledToolNames || [],
+        )
       : null;
     return tools.filter((t: any) => {
       if (domainFilter && t.domain !== domainFilter) return false;
       if (labelFilter && !t.labels?.includes(labelFilter)) return false;
       if (agentToolSet && !agentToolSet.has(t.name)) return false;
       if (q) {
-        const agentNames = ((toolAgentMap as any)[t.name] || []).map((a: any) => a.name).join(" ");
-        const haystack = `${t.name} ${t.description} ${t.domain || ""} ${(t.labels || []).join(" ")} ${agentNames}`.toLowerCase();
+        const agentNames = ((toolAgentMap as any)[t.name] || [])
+          .map((a: any) => a.name)
+          .join(" ");
+        const haystack =
+          `${t.name} ${t.description} ${t.domain || ""} ${(t.labels || []).join(" ")} ${agentNames}`.toLowerCase();
         return haystack.includes(q);
       }
       return true;
     });
-  }, [tools, search, domainFilter, labelFilter, agentFilter, agents, toolAgentMap]);
+  }, [
+    tools,
+    search,
+    domainFilter,
+    labelFilter,
+    agentFilter,
+    agents,
+    toolAgentMap,
+  ]);
 
   const grouped = useMemo(() => groupByDomain(filtered), [filtered]);
 
@@ -650,7 +726,8 @@ export default function ToolsPageComponent() {
             Tools
           </h1>
           <p className={styles.subtitle}>
-            All available tool schemas from the Tools API — used for agentic function calling.
+            All available tool schemas from the Tools API — used for agentic
+            function calling.
           </p>
         </div>
 
@@ -661,10 +738,12 @@ export default function ToolsPageComponent() {
               <span className={styles.statValue}>{tools.length}</span> tools
             </div>
             <div className={styles.statBadge}>
-              <span className={styles.statValue}>{allDomains.length}</span> domains
+              <span className={styles.statValue}>{allDomains.length}</span>{" "}
+              domains
             </div>
             <div className={styles.statBadge}>
-              <span className={styles.statValue}>{allLabels.length}</span> labels
+              <span className={styles.statValue}>{allLabels.length}</span>{" "}
+              labels
             </div>
           </div>
 
@@ -707,7 +786,9 @@ export default function ToolsPageComponent() {
         >
           <option value="">All Domains</option>
           {allDomains.map((d: any) => (
-            <option key={d} value={d}>{d}</option>
+            <option key={d} value={d}>
+              {d}
+            </option>
           ))}
         </select>
 
@@ -718,7 +799,9 @@ export default function ToolsPageComponent() {
         >
           <option value="">All Labels</option>
           {allLabels.map((l: any) => (
-            <option key={l} value={l}>{l}</option>
+            <option key={l} value={l}>
+              {l}
+            </option>
           ))}
         </select>
 
@@ -729,7 +812,9 @@ export default function ToolsPageComponent() {
         >
           <option value="">All Agents</option>
           {agents.map((a: any) => (
-            <option key={a.id} value={a.id}>{a.name} ({a.toolCount})</option>
+            <option key={a.id} value={a.id}>
+              {a.name} ({a.toolCount})
+            </option>
           ))}
         </select>
 

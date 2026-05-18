@@ -16,7 +16,7 @@ import { AGENT_ASSERTION_TYPES } from "./AgentAssertionsComponent";
 import styles from "./BenchmarkPreviewSidebarComponent.module.css";
 
 const ASSERTION_TYPE_MAP = Object.fromEntries(
-  AGENT_ASSERTION_TYPES.map((t: any) => [t.value, t])
+  AGENT_ASSERTION_TYPES.map((t: any) => [t.value, t]),
 );
 
 const MODE_ICONS = {
@@ -47,7 +47,9 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
   const mode = form.benchmarkMode || "model";
   const hasName = !!form.name?.trim();
   const hasPrompt = !!form.prompt?.trim();
-  const hasModelAssertion = assertions.some((a: any) => a.expectedValue?.trim());
+  const hasModelAssertion = assertions.some((a: any) =>
+    a.expectedValue?.trim(),
+  );
   const hasAgentAssertion = agentAssertions.length > 0;
 
   const showModelAssertions = mode === "model" || mode === "combined";
@@ -84,54 +86,71 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
           Checklist
         </div>
         <div className={styles.checklistItems}>
-          <div className={`${styles.checkItem} ${hasName ? styles.checkDone : ""}`}>
+          <div
+            className={`${styles.checkItem} ${hasName ? styles.checkDone : ""}`}
+          >
             {hasName ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
             <span>Name</span>
           </div>
-          <div className={`${styles.checkItem} ${hasPrompt ? styles.checkDone : ""}`}>
+          <div
+            className={`${styles.checkItem} ${hasPrompt ? styles.checkDone : ""}`}
+          >
             {hasPrompt ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
             <span>Prompt</span>
           </div>
-          <div className={`${styles.checkItem} ${hasRequiredAssertion ? styles.checkDone : ""}`}>
-            {hasRequiredAssertion ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+          <div
+            className={`${styles.checkItem} ${hasRequiredAssertion ? styles.checkDone : ""}`}
+          >
+            {hasRequiredAssertion ? (
+              <CheckCircle2 size={12} />
+            ) : (
+              <AlertCircle size={12} />
+            )}
             <span>At least one assertion</span>
           </div>
         </div>
       </div>
 
       {/* -- Model Assertions Preview --------------------------- */}
-      {showModelAssertions && assertions.length > 0 && assertions.some((a: any) => a.expectedValue?.trim()) && (
-        <div className={styles.assertionsSection}>
-          <div className={styles.sectionLabel}>
-            <ListChecks size={12} />
-            {mode === "combined" ? "Output Assertions" : "Assertions"}
-            <span className={styles.countBadge}>{assertions.filter((a: any) => a.expectedValue?.trim()).length}</span>
-          </div>
-          <div className={styles.assertionsList}>
-            {assertions.map((a: any, i: any) => {
-              if (!a.expectedValue?.trim()) return null;
-              return (
-                <div key={i} className={styles.assertionRow}>
-                  {i > 0 && (
-                    <BadgeComponent
-                      variant={operator === "OR" ? "warning" : "info"}
-                      mini
-                    >
-                      {operator}
+      {showModelAssertions &&
+        assertions.length > 0 &&
+        assertions.some((a: any) => a.expectedValue?.trim()) && (
+          <div className={styles.assertionsSection}>
+            <div className={styles.sectionLabel}>
+              <ListChecks size={12} />
+              {mode === "combined" ? "Output Assertions" : "Assertions"}
+              <span className={styles.countBadge}>
+                {assertions.filter((a: any) => a.expectedValue?.trim()).length}
+              </span>
+            </div>
+            <div className={styles.assertionsList}>
+              {assertions.map((a: any, i: any) => {
+                if (!a.expectedValue?.trim()) return null;
+                return (
+                  <div key={i} className={styles.assertionRow}>
+                    {i > 0 && (
+                      <BadgeComponent
+                        variant={operator === "OR" ? "warning" : "info"}
+                        mini
+                      >
+                        {operator}
+                      </BadgeComponent>
+                    )}
+                    <BadgeComponent variant="accent" mini>
+                      {a.matchMode || "contains"}
                     </BadgeComponent>
-                  )}
-                  <BadgeComponent variant="accent" mini>
-                    {a.matchMode || "contains"}
-                  </BadgeComponent>
-                  <span className={styles.assertionValue} title={a.expectedValue}>
-                    {a.expectedValue}
-                  </span>
-                </div>
-              );
-            })}
+                    <span
+                      className={styles.assertionValue}
+                      title={a.expectedValue}
+                    >
+                      {a.expectedValue}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* -- Agent Assertions Preview --------------------------- */}
       {showAgentAssertions && agentAssertions.length > 0 && (
@@ -162,7 +181,10 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
                   </BadgeComponent>
                   {typeDef.hasOperand && a.operand && (
                     <span className={styles.assertionValue}>
-                      {typeDef.operators?.find((op: any) => op.value === a.operator)?.label || "≥"} {a.operand}
+                      {typeDef.operators?.find(
+                        (op: any) => op.value === a.operator,
+                      )?.label || "≥"}{" "}
+                      {a.operand}
                     </span>
                   )}
                 </div>

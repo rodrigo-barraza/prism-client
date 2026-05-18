@@ -67,7 +67,9 @@
 }
 
 @keyframes loadingSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .inlineActions {
@@ -186,15 +188,25 @@
 
 .selectWrapActive {
   .selectCheck {
-    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-color) 40%, transparent));
+    filter: drop-shadow(
+      0 0 3px color-mix(in srgb, var(--accent-color) 40%, transparent)
+    );
   }
 }
 
 /* ── Selected row highlight ───────────────────────── */
 
 .selectedRow td {
-  background: color-mix(in srgb, var(--accent-color) 8%, transparent) !important;
-  border-bottom-color: color-mix(in srgb, var(--accent-color) 15%, var(--border-color)) !important;
+  background: color-mix(
+    in srgb,
+    var(--accent-color) 8%,
+    transparent
+  ) !important;
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--accent-color) 15%,
+    var(--border-color)
+  ) !important;
 }
 
 .selectedRow td:first-child {
@@ -202,7 +214,11 @@
 }
 
 .selectedRow:hover td {
-  background: color-mix(in srgb, var(--accent-color) 14%, transparent) !important;
+  background: color-mix(
+    in srgb,
+    var(--accent-color) 14%,
+    transparent
+  ) !important;
 }
 
 /* ── Animations ────────────────────────────────────── */

@@ -22,7 +22,6 @@ import * as THREE from "three";
 
 // --- Instance Registry ---------------------------------------------
 
-
 const instances = new Map();
 
 let nextId = 0;
@@ -205,7 +204,8 @@ const ThreeService = {
       Neutral: THREE.NeutralToneMapping,
     };
 
-    renderer.toneMapping = (toneMappingMap as any)[toneMapping] ?? THREE.ACESFilmicToneMapping;
+    renderer.toneMapping =
+      (toneMappingMap as any)[toneMapping] ?? THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = toneMappingExposure;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 

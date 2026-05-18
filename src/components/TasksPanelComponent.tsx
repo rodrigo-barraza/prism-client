@@ -3,19 +3,34 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 import {
-  ListChecks, RefreshCw, Trash2, Plus, Loader2,
-  CircleDot, Play, CheckCircle2, ChevronDown, ChevronRight,
+  ListChecks,
+  RefreshCw,
+  Trash2,
+  Plus,
+  Loader2,
+  CircleDot,
+  Play,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   X,
 } from "lucide-react";
 import ToolsApiService from "../services/ToolsApiService";
 
 import styles from "./TasksPanelComponent.module.css";
 
-
 const STATUS_CONFIG = {
   pending: { icon: CircleDot, label: "Pending", colorClass: "statusPending" },
-  in_progress: { icon: Play, label: "In Progress", colorClass: "statusInProgress" },
-  completed: { icon: CheckCircle2, label: "Done", colorClass: "statusCompleted" },
+  in_progress: {
+    icon: Play,
+    label: "In Progress",
+    colorClass: "statusInProgress",
+  },
+  completed: {
+    icon: CheckCircle2,
+    label: "Done",
+    colorClass: "statusCompleted",
+  },
 };
 
 const STATUS_CYCLE = ["pending", "in_progress", "completed"];
@@ -31,7 +46,12 @@ const STATUS_CYCLE = ["pending", "in_progress", "completed"];
  * @param {string} props.project - Project identifier
 
  */
-export default function TasksPanel({ project, refreshKey, agentSessionId, onCountChange }: any) {
+export default function TasksPanel({
+  project,
+  refreshKey,
+  agentSessionId,
+  onCountChange,
+}: any) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,64 +104,76 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
 
   // -- Create -------------------------------------------------
 
-  const handleCreate = useCallback(async (e: any) => {
-    e.preventDefault();
-    if (!newSubject.trim() || !newDescription.trim()) return;
-    setCreating(true);
-    try {
-      await ToolsApiService.createAgenticTask(project, {
-        subject: newSubject.trim(),
-        description: newDescription.trim(),
-      });
-      setNewSubject("");
-      setNewDescription("");
-      setShowNewForm(false);
-      loadTasks();
-    } catch (error: any) {
-      console.error("Failed to create task:", error);
-    } finally {
-      setCreating(false);
-    }
-  }, [project, newSubject, newDescription, loadTasks]);
+  const handleCreate = useCallback(
+    async (e: any) => {
+      e.preventDefault();
+      if (!newSubject.trim() || !newDescription.trim()) return;
+      setCreating(true);
+      try {
+        await ToolsApiService.createAgenticTask(project, {
+          subject: newSubject.trim(),
+          description: newDescription.trim(),
+        });
+        setNewSubject("");
+        setNewDescription("");
+        setShowNewForm(false);
+        loadTasks();
+      } catch (error: any) {
+        console.error("Failed to create task:", error);
+      } finally {
+        setCreating(false);
+      }
+    },
+    [project, newSubject, newDescription, loadTasks],
+  );
 
   // -- Status cycle -------------------------------------------
 
-  const handleCycleStatus = useCallback(async (task: any) => {
-    const index = STATUS_CYCLE.indexOf(task.status);
-    const nextStatus = STATUS_CYCLE[(index + 1) % STATUS_CYCLE.length];
-    try {
-      await ToolsApiService.updateAgenticTask(task.project, task.taskId, {
-        status: nextStatus,
-      });
-      // Optimistic
-      setTasks((prev: any) =>
-        prev.map((t: any) =>
-          t.project === task.project && t.taskId === task.taskId
-            ? { ...t, status: nextStatus }
-            : t,
-        ),
-      );
-      // Refresh summary
-      loadTasks();
-    } catch (error: any) {
-      console.error("Failed to update task:", error);
-    }
-  }, [loadTasks]);
+  const handleCycleStatus = useCallback(
+    async (task: any) => {
+      const index = STATUS_CYCLE.indexOf(task.status);
+      const nextStatus = STATUS_CYCLE[(index + 1) % STATUS_CYCLE.length];
+      try {
+        await ToolsApiService.updateAgenticTask(task.project, task.taskId, {
+          status: nextStatus,
+        });
+        // Optimistic
+        setTasks((prev: any) =>
+          prev.map((t: any) =>
+            t.project === task.project && t.taskId === task.taskId
+              ? { ...t, status: nextStatus }
+              : t,
+          ),
+        );
+        // Refresh summary
+        loadTasks();
+      } catch (error: any) {
+        console.error("Failed to update task:", error);
+      }
+    },
+    [loadTasks],
+  );
 
   // -- Delete -------------------------------------------------
 
-  const handleDelete = useCallback(async (task: any) => {
-    try {
-      await ToolsApiService.deleteAgenticTask(task.project, task.taskId);
-      setTasks((prev: any) =>
-        prev.filter((t: any) => !(t.project === task.project && t.taskId === task.taskId)),
-      );
-      setConfirmingDeleteId(null);
-      loadTasks();
-    } catch (error: any) {
-      console.error("Failed to delete task:", error);
-    }
-  }, [loadTasks]);
+  const handleDelete = useCallback(
+    async (task: any) => {
+      try {
+        await ToolsApiService.deleteAgenticTask(task.project, task.taskId);
+        setTasks((prev: any) =>
+          prev.filter(
+            (t: any) =>
+              !(t.project === task.project && t.taskId === task.taskId),
+          ),
+        );
+        setConfirmingDeleteId(null);
+        loadTasks();
+      } catch (error: any) {
+        console.error("Failed to delete task:", error);
+      }
+    },
+    [loadTasks],
+  );
 
   // -- Loading ------------------------------------------------
 
@@ -161,9 +193,7 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
   if (error) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>
-          Failed to load tasks: {error}
-        </div>
+        <div className={styles.error}>Failed to load tasks: {error}</div>
       </div>
     );
   }
@@ -238,9 +268,15 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
             <button
               type="submit"
               className={styles.newTaskSubmit}
-              disabled={creating || !newSubject.trim() || !newDescription.trim()}
+              disabled={
+                creating || !newSubject.trim() || !newDescription.trim()
+              }
             >
-              {creating ? <RefreshCw size={10} className={styles.spin} /> : <Plus size={10} />}
+              {creating ? (
+                <RefreshCw size={10} className={styles.spin} />
+              ) : (
+                <Plus size={10} />
+              )}
               Create
             </button>
             <button
@@ -275,13 +311,17 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
 
       {/* -- Task list --------------------------------------- */}
       {tasks.map((task: any) => {
-        const config = (STATUS_CONFIG as any)[task.status] || STATUS_CONFIG.pending;
+        const config =
+          (STATUS_CONFIG as any)[task.status] || STATUS_CONFIG.pending;
         const StatusIcon = config.icon;
         const isExpanded = expandedId === task.taskId;
         const isConfirming = confirmingDeleteId === task.taskId;
 
         return (
-          <div key={`${task.project}-${task.taskId}`} className={`${styles.taskCard} ${styles[config.colorClass + "Card"]}`}>
+          <div
+            key={`${task.project}-${task.taskId}`}
+            className={`${styles.taskCard} ${styles[config.colorClass + "Card"]}`}
+          >
             <div className={styles.taskCardHeader}>
               {/* Status cycle button */}
               <button
@@ -297,12 +337,16 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
                 className={styles.taskInfo}
                 onClick={() => setExpandedId(isExpanded ? null : task.taskId)}
               >
-                <div className={`${styles.taskSubject} ${task.status === "completed" ? styles.taskDone : ""}`}>
+                <div
+                  className={`${styles.taskSubject} ${task.status === "completed" ? styles.taskDone : ""}`}
+                >
                   <span className={styles.taskIdBadge}>#{task.taskId}</span>
                   {task.subject}
                 </div>
                 <div className={styles.taskMeta}>
-                  <span className={`${styles.taskStatusBadge} ${styles[config.colorClass]}`}>
+                  <span
+                    className={`${styles.taskStatusBadge} ${styles[config.colorClass]}`}
+                  >
                     {config.label}
                   </span>
                   {task.status === "in_progress" && task.activeForm && (
@@ -312,7 +356,9 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
                     </span>
                   )}
                   {task.project && (
-                    <span className={styles.taskProjectBadge}>{task.project}</span>
+                    <span className={styles.taskProjectBadge}>
+                      {task.project}
+                    </span>
                   )}
                   {task.createdAt && (
                     <DateTimeBadgeComponent date={task.createdAt} mini />
@@ -326,13 +372,19 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
                 onClick={() => setExpandedId(isExpanded ? null : task.taskId)}
                 title={isExpanded ? "Collapse" : "Expand"}
               >
-                {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                {isExpanded ? (
+                  <ChevronDown size={12} />
+                ) : (
+                  <ChevronRight size={12} />
+                )}
               </button>
 
               {/* Delete */}
               <button
                 className={styles.deleteBtn}
-                onClick={() => setConfirmingDeleteId(isConfirming ? null : task.taskId)}
+                onClick={() =>
+                  setConfirmingDeleteId(isConfirming ? null : task.taskId)
+                }
                 title="Delete task"
               >
                 <Trash2 size={12} />
@@ -342,9 +394,7 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
             {/* Expanded detail */}
             {isExpanded && (
               <div className={styles.taskDetail}>
-                <div className={styles.taskDescription}>
-                  {task.description}
-                </div>
+                <div className={styles.taskDescription}>{task.description}</div>
                 {task.metadata && Object.keys(task.metadata).length > 0 && (
                   <div className={styles.taskMetadata}>
                     {Object.entries(task.metadata).map(([k, v]: any) => (
@@ -366,7 +416,9 @@ export default function TasksPanel({ project, refreshKey, agentSessionId, onCoun
             {/* Delete confirm */}
             {isConfirming && (
               <div className={styles.confirmRow}>
-                <span className={styles.confirmLabel}>Delete task #{task.taskId}?</span>
+                <span className={styles.confirmLabel}>
+                  Delete task #{task.taskId}?
+                </span>
                 <button
                   className={`${styles.confirmBtn} ${styles.confirmBtnYes}`}
                   onClick={() => handleDelete(task)}

@@ -22,7 +22,12 @@ import SearchFilterComponent from "./SearchFilterComponent";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
-import { PageHeaderComponent, PaginationComponent, SearchInputComponent, TableComponent } from "@rodrigo-barraza/components-library";
+import {
+  PageHeaderComponent,
+  PaginationComponent,
+  SearchInputComponent,
+  TableComponent,
+} from "@rodrigo-barraza/components-library";
 
 import FilterDropdownComponent from "./FilterDropdownComponent";
 import { LoadingMessage, EmptyMessage } from "./StateMessageComponent";
@@ -114,7 +119,10 @@ export default function MediaPageComponent({
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
   const [lightboxSrc, setLightboxSrc] = useState(null);
-  const [internalDateRange, setInternalDateRange] = useState({ from: "", to: "" });
+  const [internalDateRange, setInternalDateRange] = useState({
+    from: "",
+    to: "",
+  });
   const dateRange = externalDateRange ?? internalDateRange;
   const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -405,17 +413,23 @@ export default function MediaPageComponent({
                 : []),
               {
                 label: "Favorites",
-                items: [{ key: "favorites", icon: Star, title: "Favorites Only" }],
+                items: [
+                  { key: "favorites", icon: Star, title: "Favorites Only" },
+                ],
                 activeKeys: showFavoritesOnly ? "favorites" : null,
                 isSingleSelect: true,
                 onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
               },
             ]}
             dateRange={!externalDateRange ? dateRange : undefined}
-            onDateChange={!externalDateRange ? (v: any) => {
-              setInternalDateRange(v);
-              setPage(1);
-            } : undefined}
+            onDateChange={
+              !externalDateRange
+                ? (v: any) => {
+                    setInternalDateRange(v);
+                    setPage(1);
+                  }
+                : undefined
+            }
             dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
           />
 

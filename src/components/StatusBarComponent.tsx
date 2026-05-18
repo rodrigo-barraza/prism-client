@@ -6,23 +6,23 @@ import styles from "./StatusBarComponent.module.css";
 
 // -- Shared phase vocabulary ------------------------------------------
 const PHASE_LABELS = {
-  starting:    "Starting...",
-  loading:     "Loading...",
-  processing:  "Processing...",
-  generating:  "Generating...",
-  thinking:    "Thinking...",
-  delegating:  "Awaiting Workers...",
-  awaiting:    "Awaiting For User Input...",
+  starting: "Starting...",
+  loading: "Loading...",
+  processing: "Processing...",
+  generating: "Generating...",
+  thinking: "Thinking...",
+  delegating: "Awaiting Workers...",
+  awaiting: "Awaiting For User Input...",
 };
 
 const PHASE_ICONS = {
-  starting:    "⚡",
-  loading:     "📦",
-  processing:  "⚙️",
-  generating:  "✨",
-  thinking:    "🧠",
-  delegating:  "👥",
-  awaiting:    "⏸️",
+  starting: "⚡",
+  loading: "📦",
+  processing: "⚙️",
+  generating: "✨",
+  thinking: "🧠",
+  delegating: "👥",
+  awaiting: "⏸️",
 };
 
 // -- Per-phase canvas palettes ----------------------------------------
@@ -30,31 +30,31 @@ const PHASE_ICONS = {
 // Phases without an entry use the default full-spectrum rainbow.
 const PHASE_PALETTES = {
   generating: [
-    [59, 130, 246],   // blue-500
-    [99, 102, 241],   // indigo-500
-    [139, 92, 246],   // violet-500
-    [168, 85, 247],   // purple-500
-    [192, 132, 252],  // purple-400
-    [139, 92, 246],   // violet-500
-    [99, 102, 241],   // indigo-500
+    [59, 130, 246], // blue-500
+    [99, 102, 241], // indigo-500
+    [139, 92, 246], // violet-500
+    [168, 85, 247], // purple-500
+    [192, 132, 252], // purple-400
+    [139, 92, 246], // violet-500
+    [99, 102, 241], // indigo-500
   ],
   thinking: [
-    [34, 197, 94],    // green-500
-    [74, 222, 128],   // green-400
-    [163, 230, 53],   // lime-400
-    [250, 204, 21],   // yellow-400
-    [234, 179, 8],    // yellow-500
-    [163, 230, 53],   // lime-400
-    [74, 222, 128],   // green-400
+    [34, 197, 94], // green-500
+    [74, 222, 128], // green-400
+    [163, 230, 53], // lime-400
+    [250, 204, 21], // yellow-400
+    [234, 179, 8], // yellow-500
+    [163, 230, 53], // lime-400
+    [74, 222, 128], // green-400
   ],
   delegating: [
-    [59, 130, 246],   // blue-500
-    [96, 165, 250],   // blue-400
-    [147, 197, 253],  // blue-300
-    [250, 204, 21],   // yellow-400
-    [234, 179, 8],    // yellow-500
-    [147, 197, 253],  // blue-300
-    [96, 165, 250],   // blue-400
+    [59, 130, 246], // blue-500
+    [96, 165, 250], // blue-400
+    [147, 197, 253], // blue-300
+    [250, 204, 21], // yellow-400
+    [234, 179, 8], // yellow-500
+    [147, 197, 253], // blue-300
+    [96, 165, 250], // blue-400
   ],
 };
 
@@ -153,39 +153,50 @@ export default function StatusBarComponent({
   }, [active, backendStuck]);
 
   // Use real backend progress when available, synthetic when stuck at 0
-  const effectiveProgress = (isProgressPhase && progress != null)
-    ? (progress > 0 ? progress : syntheticProgress)
-    : null;
+  const effectiveProgress =
+    isProgressPhase && progress != null
+      ? progress > 0
+        ? progress
+        : syntheticProgress
+      : null;
 
   // Strip trailing " 45%" / " done" from label when structured progress is shown via chip
   const rawLabel = label || (PHASE_LABELS as any)[phase] || "Starting...";
-  const hasEffectiveProgress = effectiveProgress != null && effectiveProgress >= 0;
+  const hasEffectiveProgress =
+    effectiveProgress != null && effectiveProgress >= 0;
   const resolvedLabel = hasEffectiveProgress
-    ? rawLabel.replace(/[\u2026.]+\s*\d+%$/, "\u2026").replace(/[\u2026.]+\s*done$/i, "\u2026")
+    ? rawLabel
+        .replace(/[\u2026.]+\s*\d+%$/, "\u2026")
+        .replace(/[\u2026.]+\s*done$/i, "\u2026")
     : rawLabel;
-  const resolvedIcon = icon !== undefined
-    ? icon
-    : ((PHASE_ICONS as any)[phase] || null);
+  const resolvedIcon =
+    icon !== undefined ? icon : (PHASE_ICONS as any)[phase] || null;
 
   // Rainbow visuals: colour when the model is actively producing tokens (text or reasoning)
-  const isColorPhase = phase === "generating" || phase === "thinking" || phase === "delegating";
+  const isColorPhase =
+    phase === "generating" || phase === "thinking" || phase === "delegating";
   // Awaiting phase: greyscale + frozen canvas (no animation)
   const isAwaitingPhase = phase === "awaiting";
   // Delegating phase: orchestrator waiting on workers — animated color but subdued glow
   const isDelegatingPhase = phase === "delegating";
 
   // Resolve per-phase canvas palette (null = default rainbow)
-  const activePalette = (active && isColorPhase) ? ((PHASE_PALETTES as any)[phase] || null) : null;
+  const activePalette =
+    active && isColorPhase ? (PHASE_PALETTES as any)[phase] || null : null;
 
   // Progress percentage
-  const progressPct = hasEffectiveProgress ? Math.round(effectiveProgress * 100) : null;
+  const progressPct = hasEffectiveProgress
+    ? Math.round(effectiveProgress * 100)
+    : null;
 
   return (
-    <div className={`${styles.statusBar}${isWorker ? ` ${styles.statusBarWorker}` : ""}${active ? ` ${styles.statusBarActive}` : ""}${isAwaitingPhase ? ` ${styles.statusBarAwaiting}` : ""}${isDelegatingPhase ? ` ${styles.statusBarDelegating}` : ""}`}>
+    <div
+      className={`${styles.statusBar}${isWorker ? ` ${styles.statusBarWorker}` : ""}${active ? ` ${styles.statusBarActive}` : ""}${isAwaitingPhase ? ` ${styles.statusBarAwaiting}` : ""}${isDelegatingPhase ? ` ${styles.statusBarDelegating}` : ""}`}
+    >
       <RainbowCanvasComponent
         turbo={active && !isAwaitingPhase}
         animate={!active || isAwaitingPhase ? false : true}
-        greyscale={active ? (!isColorPhase || isAwaitingPhase) : true}
+        greyscale={active ? !isColorPhase || isAwaitingPhase : true}
         palette={activePalette}
         className={styles.statusBarCanvas}
       />
@@ -196,7 +207,9 @@ export default function StatusBarComponent({
           style={{ width: `${progressPct}%` }}
         />
       )}
-      <div className={`${styles.statusBarOverlay}${phase ? ` ${styles[`phase_${phase}`] || ""}` : ""}`}>
+      <div
+        className={`${styles.statusBarOverlay}${phase ? ` ${styles[`phase_${phase}`] || ""}` : ""}`}
+      >
         {active ? (
           <>
             {resolvedIcon && (
@@ -205,9 +218,7 @@ export default function StatusBarComponent({
             <span className={styles.statusBarMessage}>
               {resolvedLabel}
               {hasEffectiveProgress && (
-                <span className={styles.statusBarProgress}>
-                  {progressPct}%
-                </span>
+                <span className={styles.statusBarProgress}>{progressPct}%</span>
               )}
               {tokPerSec != null && tokPerSec > 0 && (
                 <span className={styles.statusBarSpeed}>
@@ -216,11 +227,14 @@ export default function StatusBarComponent({
               )}
               {iteration > 0 && (
                 <span className={styles.statusBarIter}>
-                  Iteration {iteration}{maxIterations ? `/${maxIterations}` : ""}
+                  Iteration {iteration}
+                  {maxIterations ? `/${maxIterations}` : ""}
                 </span>
               )}
             </span>
-            {!isAwaitingPhase && !isDelegatingPhase && <span className={styles.statusBarPulse} />}
+            {!isAwaitingPhase && !isDelegatingPhase && (
+              <span className={styles.statusBarPulse} />
+            )}
           </>
         ) : (
           <>
@@ -232,7 +246,8 @@ export default function StatusBarComponent({
                 {idleLabel}
                 {iteration > 0 && (
                   <span className={styles.statusBarIter}>
-                    Iteration {iteration}{maxIterations ? `/${maxIterations}` : ""}
+                    Iteration {iteration}
+                    {maxIterations ? `/${maxIterations}` : ""}
                   </span>
                 )}
               </span>

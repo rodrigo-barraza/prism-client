@@ -94,7 +94,10 @@ export const TOOL_ICON_MAP = {
  */
 export function resolveToolVisuals(name: any) {
   if ((TOOL_ICON_MAP as any)[name]) {
-    return { Icon: (TOOL_ICON_MAP as any)[name], color: (TOOL_COLORS as any)[name] || "#f59e0b" };
+    return {
+      Icon: (TOOL_ICON_MAP as any)[name],
+      color: (TOOL_COLORS as any)[name] || "#f59e0b",
+    };
   }
   return {
     Icon: TOOL_ICON_MAP["Tool Calling"] || Wrench,
@@ -226,7 +229,12 @@ export function getNodeHeight(node: any, isExpanded = false) {
   return HEADER_HEIGHT + configHeight + portRows * PORT_SECTION_HEIGHT + 12;
 }
 
-export function getPortPosition(node: any, portType: any, portIndex: any, configOffset = 0) {
+export function getPortPosition(
+  node: any,
+  portType: any,
+  portIndex: any,
+  configOffset = 0,
+) {
   const width = getNodeWidth(node);
   const x = portType === "input" ? 0 : width;
   const startY = HEADER_HEIGHT + configOffset + 8;

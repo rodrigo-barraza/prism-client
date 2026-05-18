@@ -34,7 +34,9 @@
 
 .headerClickable {
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 
   &:hover {
     background: color-mix(in srgb, var(--accent-color) 6%, transparent);
@@ -264,7 +266,10 @@
   opacity: 0;
   cursor: pointer;
   pointer-events: none;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  transition:
+    opacity 0.15s,
+    color 0.15s,
+    background 0.15s;
   will-change: opacity;
 
   &:hover {
@@ -319,8 +324,13 @@
 }
 
 @keyframes unavailablePulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .unavailableTitle {

@@ -3,10 +3,12 @@
 import { Zap, Trash2 } from "lucide-react";
 import MarkdownContent from "./MarkdownContentComponent";
 
-
 import { formatLatency } from "../utils/utilities";
 import styles from "./WorkerNotificationComponent.module.css";
-import { IconButtonComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
+import {
+  IconButtonComponent,
+  DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 
 /**
  * WorkerNotificationComponent — renders a task-notification card
@@ -66,9 +68,7 @@ export default function WorkerNotificationComponent({
         {/* Summary line with duration + tool count badges */}
         <div className={styles.summary}>
           {taskNotif.summary}
-          {durationSec && (
-            <span className={styles.meta}>({durationSec})</span>
-          )}
+          {durationSec && <span className={styles.meta}>({durationSec})</span>}
           {taskNotif.toolUses && (
             <span className={styles.meta}>{taskNotif.toolUses} tools</span>
           )}

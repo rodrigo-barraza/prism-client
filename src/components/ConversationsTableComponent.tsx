@@ -50,31 +50,42 @@ export default function ConversationsTableComponent({
   const router = useRouter();
 
   const totalCost = useMemo(
-    () => conversations.reduce((sum: any, c: any) => sum + (c.totalCost || 0), 0) || 1,
+    () =>
+      conversations.reduce((sum: any, c: any) => sum + (c.totalCost || 0), 0) ||
+      1,
     [conversations],
   );
 
   const totalDuration = useMemo(
-    () => conversations.reduce((sum: any, c: any) => sum + getDurationMs(c), 0) || 1,
+    () =>
+      conversations.reduce((sum: any, c: any) => sum + getDurationMs(c), 0) ||
+      1,
     [conversations],
   );
 
-  const columns = useMemo(() => [
-    conversationTitleColumn({ mini }),
-    projectBadgeColumn({ mini }),
-    userBadgeColumn({ mini }),
-    modalitiesColumn({ mini }),
-    modelsListColumn({ mini }),
-    providersListColumn({ mini }),
-    toolsColumn({ mini }),
-    requestCountColumn(),
-    ...tokenColumns({ inputKey: "inputTokens", outputKey: "outputTokens", showDash: true }),
-    ...costColumns(totalCost, { mini }),
-    latencyColumn("totalLatency", "Latency"),
-    durationColumn({ useDurationMs: true }),
-    durationShareColumn(totalDuration, { mini }),
-    createdAtColumn(),
-  ], [mini, totalCost, totalDuration]);
+  const columns = useMemo(
+    () => [
+      conversationTitleColumn({ mini }),
+      projectBadgeColumn({ mini }),
+      userBadgeColumn({ mini }),
+      modalitiesColumn({ mini }),
+      modelsListColumn({ mini }),
+      providersListColumn({ mini }),
+      toolsColumn({ mini }),
+      requestCountColumn(),
+      ...tokenColumns({
+        inputKey: "inputTokens",
+        outputKey: "outputTokens",
+        showDash: true,
+      }),
+      ...costColumns(totalCost, { mini }),
+      latencyColumn("totalLatency", "Latency"),
+      durationColumn({ useDurationMs: true }),
+      durationShareColumn(totalDuration, { mini }),
+      createdAtColumn(),
+    ],
+    [mini, totalCost, totalDuration],
+  );
 
   return (
     <TableComponent

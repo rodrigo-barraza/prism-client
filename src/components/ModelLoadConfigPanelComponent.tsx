@@ -2,7 +2,11 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Cpu, HardDrive, Zap, Database, Loader2 } from "lucide-react";
-import { ModalComponent, SliderComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components-library";
+import {
+  ModalComponent,
+  SliderComponent,
+  ToggleComponent as ToggleSwitch,
+} from "@rodrigo-barraza/components-library";
 import ProviderLogo from "./ProviderLogosComponent";
 import { formatFileSize, formatContextTokens } from "../utils/utilities";
 import styles from "./ModelLoadConfigPanelComponent.module.css";
@@ -11,7 +15,13 @@ const LS_KEY_PREFIX = "lm-studio-load-config:";
 
 // Architecture params are resolved server-side by Prism (gguf-arch.js).
 // This fallback is used only if the API response doesn't include archParams.
-const DEFAULT_ARCH_PARAMS = { layers: 32, kvHeads: 8, headDim: 128, attnRatio: 1.0, isKnown: false };
+const DEFAULT_ARCH_PARAMS = {
+  layers: 32,
+  kvHeads: 8,
+  headDim: 128,
+  attnRatio: 1.0,
+  isKnown: false,
+};
 
 /**
  * Load persisted config for a model key from localStorage.
@@ -47,14 +57,22 @@ function savePersistedConfig(modelKey: any, config: any) {
  * @param {Function} onClose — Close the modal
  * @param {boolean} [loading] — Whether a load is in progress
  */
-export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, loading = false }: any) {
+export default function ModelLoadConfigPanel({
+  model,
+  onLoad,
+  onClose,
+  service,
+  loading = false,
+}: any) {
   const modelKey = model.key || model.name;
   const maxContext = model.max_context_length || model.contextLength || 131072;
   const sizeBytes = model.size_bytes || 0;
   const architecture = model.architecture || null;
   const params = model.params_string || model.params || null;
   const quantization =
-    (typeof model.quantization === "object" ? model.quantization?.name : model.quantization) || null;
+    (typeof model.quantization === "object"
+      ? model.quantization?.name
+      : model.quantization) || null;
 
   // Architecture params come from the Prism backend (gguf-arch.js)
   const archParams = model.archParams || DEFAULT_ARCH_PARAMS;
@@ -75,9 +93,7 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
   const [offloadKvCache, setOffloadKvCache] = useState(
     () => persisted?.offloadKvCache ?? true,
   );
-  const [rememberSettings, setRememberSettings] = useState(
-    () => !!persisted,
-  );
+  const [rememberSettings, setRememberSettings] = useState(() => !!persisted);
 
   // -- Memory Estimation (from backend) --------------------
   const [memory, setMemory] = useState({ gpuGiB: 0, totalGiB: 0 });
@@ -112,10 +128,18 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
     }, 100);
 
     return () => clearTimeout(debounceRef.current);
-  }, [service, modelKey, contextLength, gpuLayers, flashAttention, offloadKvCache, maxContext, totalLayers]);
+  }, [
+    service,
+    modelKey,
+    contextLength,
+    gpuLayers,
+    flashAttention,
+    offloadKvCache,
+    maxContext,
+    totalLayers,
+  ]);
 
   const barMax = Math.max(maxMemory.totalGiB, memory.totalGiB, 1);
-
 
   const handleLoad = useCallback(() => {
     if (rememberSettings) {
@@ -139,7 +163,15 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
       flashAttention,
       offloadKvCache,
     });
-  }, [modelKey, contextLength, gpuLayers, flashAttention, offloadKvCache, rememberSettings, onLoad]);
+  }, [
+    modelKey,
+    contextLength,
+    gpuLayers,
+    flashAttention,
+    offloadKvCache,
+    rememberSettings,
+    onLoad,
+  ]);
 
   // Keyboard shortcut: Ctrl+Enter to load
   useEffect(() => {
@@ -188,13 +220,24 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
       size="md"
       footer={
         <>
-          <button className={styles.cancelBtn} onClick={onClose} disabled={loading}>
+          <button
+            className={styles.cancelBtn}
+            onClick={onClose}
+            disabled={loading}
+          >
             Cancel
           </button>
-          <button className={styles.loadBtn} onClick={handleLoad} disabled={loading}>
+          <button
+            className={styles.loadBtn}
+            onClick={handleLoad}
+            disabled={loading}
+          >
             {loading ? (
               <>
-                <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                <Loader2
+                  size={14}
+                  style={{ animation: "spin 1s linear infinite" }}
+                />
                 Loading…
               </>
             ) : (
@@ -222,9 +265,7 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
           </span>
         )}
         {quantization && (
-          <span className={styles.infoBadge}>
-            {quantization}
-          </span>
+          <span className={styles.infoBadge}>{quantization}</span>
         )}
         {maxContext > 0 && (
           <span className={styles.infoBadge}>
@@ -258,11 +299,15 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
         <div className={styles.memoryBarWrap}>
           <div
             className={styles.memoryBarTotal}
-            style={{ width: `${Math.min((memory.totalGiB / barMax) * 100, 100)}%` }}
+            style={{
+              width: `${Math.min((memory.totalGiB / barMax) * 100, 100)}%`,
+            }}
           />
           <div
             className={styles.memoryBarGpu}
-            style={{ width: `${Math.min((memory.gpuGiB / barMax) * 100, 100)}%` }}
+            style={{
+              width: `${Math.min((memory.gpuGiB / barMax) * 100, 100)}%`,
+            }}
           />
         </div>
       </div>
@@ -316,7 +361,8 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
           />
         </div>
         <span className={styles.sliderHint}>
-          {gpuLayers} of {archParams.isKnown ? '' : '~'}{totalLayers} layers on GPU
+          {gpuLayers} of {archParams.isKnown ? "" : "~"}
+          {totalLayers} layers on GPU
         </span>
         <SliderComponent
           min={0}
@@ -334,7 +380,9 @@ export default function ModelLoadConfigPanel({ model, onLoad, onClose, service, 
         <span className={styles.toggleLabel}>
           <Zap size={14} />
           Flash Attention
-          <span className={styles.toggleHint}>— saves memory, improves speed</span>
+          <span className={styles.toggleHint}>
+            — saves memory, improves speed
+          </span>
         </span>
         <ToggleSwitch
           checked={flashAttention}

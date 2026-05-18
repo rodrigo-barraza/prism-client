@@ -10,7 +10,11 @@ import ModelLoadConfigPanel from "./ModelLoadConfigPanelComponent";
 import ModelDetailPanelComponent from "./ModelDetailPanelComponent";
 
 import { ErrorMessage } from "./StateMessageComponent";
-import { PageHeaderComponent, ToastComponent, useToast } from "@rodrigo-barraza/components-library";
+import {
+  PageHeaderComponent,
+  ToastComponent,
+  useToast,
+} from "@rodrigo-barraza/components-library";
 import styles from "./ModelsPageComponent.module.css";
 
 /**
@@ -52,7 +56,10 @@ function flattenConfigModels(config: any) {
   return [...modelsMap.values()];
 }
 
-export default function ModelsPageComponent({ mode = "user", onCountChange }: any) {
+export default function ModelsPageComponent({
+  mode = "user",
+  onCountChange,
+}: any) {
   const isAdmin = mode === "admin";
   const [allModels, setAllModels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,99 +72,125 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }: an
   const hasLoadedRef = useRef<any>(false);
 
   // Helper: merge config + LM data + stats into the allModels array
-  const buildMergedModels = useCallback((config: any, lmData: any, modelStats: any) => {
-    const flat = flattenConfigModels(config);
-    const lmApiModels = (lmData?.models || []).filter((m: any) => m.type === "llm");
-    const lmApiMap = new Map(lmApiModels.map((m: any) => [m.key, m]));
+  const buildMergedModels = useCallback(
+    (config: any, lmData: any, modelStats: any) => {
+      const flat = flattenConfigModels(config);
+      const lmApiModels = (lmData?.models || []).filter(
+        (m: any) => m.type === "llm",
+      );
+      const lmApiMap = new Map(lmApiModels.map((m: any) => [m.key, m]));
 
-    // Build usage map: "provider:model" → stats object
-    const usageMap = new Map();
-    let grandTotal = 0;
-    for (const s of modelStats) {
-      const key = `${s.provider}:${s.model}`;
-      const existing = usageMap.get(key);
-      if (existing) {
-        existing.totalRequests += s.totalRequests;
-        existing.totalInputTokens += s.totalInputTokens || 0;
-        existing.totalOutputTokens += s.totalOutputTokens || 0;
-        existing.totalTokens += s.totalTokens || 0;
-        existing.totalCost += s.totalCost || 0;
-        existing.successCount += s.successCount || 0;
-        existing.errorCount += s.errorCount || 0;
-        // Keep the extremes for first/last used
-        if (s.firstUsed && (!existing.firstUsed || s.firstUsed < existing.firstUsed)) {
-          existing.firstUsed = s.firstUsed;
+      // Build usage map: "provider:model" → stats object
+      const usageMap = new Map();
+      let grandTotal = 0;
+      for (const s of modelStats) {
+        const key = `${s.provider}:${s.model}`;
+        const existing = usageMap.get(key);
+        if (existing) {
+          existing.totalRequests += s.totalRequests;
+          existing.totalInputTokens += s.totalInputTokens || 0;
+          existing.totalOutputTokens += s.totalOutputTokens || 0;
+          existing.totalTokens += s.totalTokens || 0;
+          existing.totalCost += s.totalCost || 0;
+          existing.successCount += s.successCount || 0;
+          existing.errorCount += s.errorCount || 0;
+          // Keep the extremes for first/last used
+          if (
+            s.firstUsed &&
+            (!existing.firstUsed || s.firstUsed < existing.firstUsed)
+          ) {
+            existing.firstUsed = s.firstUsed;
+          }
+          if (
+            s.lastUsed &&
+            (!existing.lastUsed || s.lastUsed > existing.lastUsed)
+          ) {
+            existing.lastUsed = s.lastUsed;
+          }
+          // Re-average latency and tokens/sec
+          const totalReq = existing.totalRequests;
+          existing.avgLatency =
+            (existing.avgLatency * (totalReq - s.totalRequests) +
+              (s.avgLatency || 0) * s.totalRequests) /
+            totalReq;
+          existing.avgTokensPerSec =
+            (existing.avgTokensPerSec * (totalReq - s.totalRequests) +
+              (s.avgTokensPerSec || 0) * s.totalRequests) /
+            totalReq;
+        } else {
+          usageMap.set(key, {
+            totalRequests: s.totalRequests,
+            totalInputTokens: s.totalInputTokens || 0,
+            totalOutputTokens: s.totalOutputTokens || 0,
+            totalTokens: s.totalTokens || 0,
+            totalCost: s.totalCost || 0,
+            avgLatency: s.avgLatency || 0,
+            avgTokensPerSec: s.avgTokensPerSec || 0,
+            firstUsed: s.firstUsed || null,
+            lastUsed: s.lastUsed || null,
+            successCount: s.successCount || 0,
+            errorCount: s.errorCount || 0,
+          });
         }
-        if (s.lastUsed && (!existing.lastUsed || s.lastUsed > existing.lastUsed)) {
-          existing.lastUsed = s.lastUsed;
-        }
-        // Re-average latency and tokens/sec
-        const totalReq = existing.totalRequests;
-        existing.avgLatency = ((existing.avgLatency * (totalReq - s.totalRequests)) + (s.avgLatency || 0) * s.totalRequests) / totalReq;
-        existing.avgTokensPerSec = ((existing.avgTokensPerSec * (totalReq - s.totalRequests)) + (s.avgTokensPerSec || 0) * s.totalRequests) / totalReq;
-      } else {
-        usageMap.set(key, {
-          totalRequests: s.totalRequests,
-          totalInputTokens: s.totalInputTokens || 0,
-          totalOutputTokens: s.totalOutputTokens || 0,
-          totalTokens: s.totalTokens || 0,
-          totalCost: s.totalCost || 0,
-          avgLatency: s.avgLatency || 0,
-          avgTokensPerSec: s.avgTokensPerSec || 0,
-          firstUsed: s.firstUsed || null,
-          lastUsed: s.lastUsed || null,
-          successCount: s.successCount || 0,
-          errorCount: s.errorCount || 0,
-        });
+        grandTotal += s.totalRequests;
       }
-      grandTotal += s.totalRequests;
-    }
 
-    return flat.map((m: any) => {
-      const usageKey = `${m.provider}:${m.name}`;
-      const stats = usageMap.get(usageKey) || {
-        totalRequests: 0, totalInputTokens: 0, totalOutputTokens: 0, totalTokens: 0,
-        totalCost: 0, avgLatency: 0, avgTokensPerSec: 0,
-        firstUsed: null, lastUsed: null, successCount: 0, errorCount: 0,
-      };
-      const usageCount = stats.totalRequests;
-      let result = {
-        ...m,
-        usageCount,
-        usageTotal: grandTotal,
-        totalInputTokens: stats.totalInputTokens,
-        totalOutputTokens: stats.totalOutputTokens,
-        totalTokens: stats.totalTokens,
-        totalCost: stats.totalCost,
-        avgLatency: stats.avgLatency,
-        avgTokensPerSec: stats.avgTokensPerSec,
-        firstUsed: stats.firstUsed,
-        lastUsed: stats.lastUsed,
-        successCount: stats.successCount,
-        errorCount: stats.errorCount,
-      };
+      return flat.map((m: any) => {
+        const usageKey = `${m.provider}:${m.name}`;
+        const stats = usageMap.get(usageKey) || {
+          totalRequests: 0,
+          totalInputTokens: 0,
+          totalOutputTokens: 0,
+          totalTokens: 0,
+          totalCost: 0,
+          avgLatency: 0,
+          avgTokensPerSec: 0,
+          firstUsed: null,
+          lastUsed: null,
+          successCount: 0,
+          errorCount: 0,
+        };
+        const usageCount = stats.totalRequests;
+        let result = {
+          ...m,
+          usageCount,
+          usageTotal: grandTotal,
+          totalInputTokens: stats.totalInputTokens,
+          totalOutputTokens: stats.totalOutputTokens,
+          totalTokens: stats.totalTokens,
+          totalCost: stats.totalCost,
+          avgLatency: stats.avgLatency,
+          avgTokensPerSec: stats.avgTokensPerSec,
+          firstUsed: stats.firstUsed,
+          lastUsed: stats.lastUsed,
+          successCount: stats.successCount,
+          errorCount: stats.errorCount,
+        };
 
-      if (m.provider === "lm-studio") {
-        const apiModel = lmApiMap.get(m.name);
-        if (apiModel) {
-          result = {
-            ...result,
-            loaded_instances: (apiModel as any).loaded_instances,
-            loaded: (apiModel as any).loaded_instances?.length > 0,
-            key: (apiModel as any).key,
-            // Preserve raw API fields for ModelLoadConfigPanel
-            max_context_length: (apiModel as any).max_context_length,
-            size_bytes: (apiModel as any).size_bytes,
-            params_string: (apiModel as any).params_string,
-            architecture: (apiModel as any).architecture,
-            archParams: (apiModel as any).archParams,
-            display_name: (apiModel as any).display_name || result.display_name,
-          };
+        if (m.provider === "lm-studio") {
+          const apiModel = lmApiMap.get(m.name);
+          if (apiModel) {
+            result = {
+              ...result,
+              loaded_instances: (apiModel as any).loaded_instances,
+              loaded: (apiModel as any).loaded_instances?.length > 0,
+              key: (apiModel as any).key,
+              // Preserve raw API fields for ModelLoadConfigPanel
+              max_context_length: (apiModel as any).max_context_length,
+              size_bytes: (apiModel as any).size_bytes,
+              params_string: (apiModel as any).params_string,
+              architecture: (apiModel as any).architecture,
+              archParams: (apiModel as any).archParams,
+              display_name:
+                (apiModel as any).display_name || result.display_name,
+            };
+          }
         }
-      }
-      return result;
-    });
-  }, []);
+        return result;
+      });
+    },
+    [],
+  );
 
   const fetchModels = useCallback(async () => {
     try {
@@ -174,7 +207,11 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }: an
       // Show cloud models immediately — only on first load to avoid flash
       // on subsequent interval refreshes
       if (!hasLoadedRef.current) {
-        const cloudModels = buildMergedModels(config, { models: [] }, modelStats);
+        const cloudModels = buildMergedModels(
+          config,
+          { models: [] },
+          modelStats,
+        );
         setAllModels(cloudModels);
         setLoading(false);
       }
@@ -192,7 +229,10 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }: an
       ]);
 
       // Merge local models into config using shared utility
-      const mergedConfig = PrismService.mergeLocalModels(config, localResult?.models);
+      const mergedConfig = PrismService.mergeLocalModels(
+        config,
+        localResult?.models,
+      );
 
       // Rebuild with local models + LM Studio API data
       const fullModels = buildMergedModels(mergedConfig, lmData, modelStats);
@@ -238,7 +278,9 @@ export default function ModelsPageComponent({ mode = "user", onCountChange }: an
   const handleLoad = (modelKey: any) => {
     // Find the raw LM Studio API model data for this key
     const rawModel = allModels.find(
-      (m: any) => m.provider === "lm-studio" && (m.key === modelKey || m.name === modelKey),
+      (m: any) =>
+        m.provider === "lm-studio" &&
+        (m.key === modelKey || m.name === modelKey),
     );
     if (rawModel) {
       setLoadConfigModel(rawModel);

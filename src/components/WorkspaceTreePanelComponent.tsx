@@ -15,7 +15,16 @@ import WorkspaceService from "../services/WorkspaceService";
 import styles from "./WorkspaceTreePanelComponent.module.css";
 
 // ─── Recursive Directory Tree Node ──────────────────────────
-const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", expandedPaths, expandedTick, onToggleExpand, onMentionFile, onOpenFile }: any) {
+const TreeNode = memo(function TreeNode({
+  node,
+  depth = 0,
+  parentPath = "",
+  expandedPaths,
+  expandedTick,
+  onToggleExpand,
+  onMentionFile,
+  onOpenFile,
+}: any) {
   const isDir = node.type === "directory";
   const hasChildren = isDir && node.children?.length > 0;
   const nodePath = parentPath ? `${parentPath}/${node.name}` : node.name;
@@ -53,7 +62,11 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", expa
         ) : (
           <>
             <span className={styles.treeChevronSpacer} />
-            <FileTypeIconComponent filename={node.name} size={10} className={styles.treeFileIcon} />
+            <FileTypeIconComponent
+              filename={node.name}
+              size={10}
+              className={styles.treeFileIcon}
+            />
           </>
         )}
         <span className={styles.treeName}>{node.name}</span>
@@ -74,7 +87,17 @@ const TreeNode = memo(function TreeNode({ node, depth = 0, parentPath = "", expa
       {isDir && expanded && hasChildren && (
         <div className={styles.treeChildren}>
           {node.children.map((child: any) => (
-            <TreeNode key={child.name} node={child} depth={depth + 1} parentPath={nodePath} expandedPaths={expandedPaths} expandedTick={expandedTick} onToggleExpand={onToggleExpand} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
+            <TreeNode
+              key={child.name}
+              node={child}
+              depth={depth + 1}
+              parentPath={nodePath}
+              expandedPaths={expandedPaths}
+              expandedTick={expandedTick}
+              onToggleExpand={onToggleExpand}
+              onMentionFile={onMentionFile}
+              onOpenFile={onOpenFile}
+            />
           ))}
         </div>
       )}
@@ -124,7 +147,10 @@ export default function WorkspaceTreePanelComponent({
   useEffect(() => {
     if (!switcherOpen) return;
     const handleClickOutside = (e: any) => {
-      if (switcherRef.current && !(switcherRef.current as any).contains(e.target)) {
+      if (
+        switcherRef.current &&
+        !(switcherRef.current as any).contains(e.target)
+      ) {
         setSwitcherOpen(false);
       }
     };
@@ -196,7 +222,8 @@ export default function WorkspaceTreePanelComponent({
       silentRefresh();
     }, 1500);
     return () => {
-      if (treeRefreshTimerRef.current) clearTimeout(treeRefreshTimerRef.current);
+      if (treeRefreshTimerRef.current)
+        clearTimeout(treeRefreshTimerRef.current);
     };
   }, [workspaceTreeRefreshKey, silentRefresh]);
 
@@ -205,7 +232,9 @@ export default function WorkspaceTreePanelComponent({
   // ── Session workspace not currently connected ──
   if (unavailableWorkspace) {
     // Extract the last path segment for a friendlier label
-    const label = unavailableWorkspace.split("/").filter(Boolean).pop() || unavailableWorkspace;
+    const label =
+      unavailableWorkspace.split("/").filter(Boolean).pop() ||
+      unavailableWorkspace;
     return (
       <div className={styles.container}>
         <div className={styles.headerWrapper}>
@@ -217,10 +246,15 @@ export default function WorkspaceTreePanelComponent({
         <div className={styles.treeScroll}>
           <div className={styles.unavailableState}>
             <WifiOff size={20} className={styles.unavailableIcon} />
-            <span className={styles.unavailableTitle}>Workspace Unavailable</span>
-            <span className={styles.unavailablePath}>{unavailableWorkspace}</span>
+            <span className={styles.unavailableTitle}>
+              Workspace Unavailable
+            </span>
+            <span className={styles.unavailablePath}>
+              {unavailableWorkspace}
+            </span>
             <span className={styles.unavailableHint}>
-              This session&apos;s workspace is not currently connected. Connect the workspace or switch to an available one to browse files.
+              This session&apos;s workspace is not currently connected. Connect
+              the workspace or switch to an available one to browse files.
             </span>
           </div>
         </div>
@@ -237,22 +271,30 @@ export default function WorkspaceTreePanelComponent({
       <div className={styles.headerWrapper} ref={switcherRef}>
         <div
           className={`${styles.header} ${hasMultiple ? styles.headerClickable : ""}`}
-          onClick={hasMultiple ? () => setSwitcherOpen((v: any) => !v) : undefined}
+          onClick={
+            hasMultiple ? () => setSwitcherOpen((v: any) => !v) : undefined
+          }
           role={hasMultiple ? "button" : undefined}
           tabIndex={hasMultiple ? 0 : undefined}
-          title={hasMultiple ? `Switch workspace — ${currentWorkspace!.path}` : currentWorkspace!.path}
+          title={
+            hasMultiple
+              ? `Switch workspace — ${currentWorkspace!.path}`
+              : currentWorkspace!.path
+          }
         >
           <FolderOpen size={11} className={styles.headerIcon} />
           <span className={styles.headerLabel}>{currentWorkspace!.name}</span>
-          {locked && (
-            <Lock size={9} className={styles.headerLock} />
-          )}
+          {locked && <Lock size={9} className={styles.headerLock} />}
           {hasMultiple && (
-            <ChevronDown size={10} className={`${styles.headerChevron} ${switcherOpen ? styles.headerChevronOpen : ""}`} />
+            <ChevronDown
+              size={10}
+              className={`${styles.headerChevron} ${switcherOpen ? styles.headerChevronOpen : ""}`}
+            />
           )}
           {(treeData as any)?.totalEntries > 0 && (
             <span className={styles.headerCount}>
-              {(treeData as any).totalEntries}{(treeData as any).truncated ? "+" : ""}
+              {(treeData as any).totalEntries}
+              {(treeData as any).truncated ? "+" : ""}
             </span>
           )}
         </div>
@@ -275,7 +317,9 @@ export default function WorkspaceTreePanelComponent({
                 >
                   <FolderOpen size={10} className={styles.switcherItemIcon} />
                   <span className={styles.switcherItemName}>{w.name}</span>
-                  {isActive && <Check size={10} className={styles.switcherItemCheck} />}
+                  {isActive && (
+                    <Check size={10} className={styles.switcherItemCheck} />
+                  )}
                 </button>
               );
             })}
@@ -284,19 +328,29 @@ export default function WorkspaceTreePanelComponent({
       </div>
 
       <div className={styles.treeScroll}>
-        {treeLoading && (
-          <div className={styles.treeLoading}>Loading…</div>
-        )}
-        {!treeLoading && (treeData as any)?.tree && (treeData as any).tree.length > 0 && (
-          <div className={styles.treeRoot}>
-            {(treeData as any).tree.map((node: any) => (
-              <TreeNode key={node.name} node={node} expandedPaths={expandedPaths} expandedTick={expandedTick} onToggleExpand={onToggleExpand} onMentionFile={onMentionFile} onOpenFile={onOpenFile} />
-            ))}
-          </div>
-        )}
-        {!treeLoading && treeData && (!(treeData as any).tree || (treeData as any).tree.length === 0) && (
-          <div className={styles.treeLoading}>Empty directory</div>
-        )}
+        {treeLoading && <div className={styles.treeLoading}>Loading…</div>}
+        {!treeLoading &&
+          (treeData as any)?.tree &&
+          (treeData as any).tree.length > 0 && (
+            <div className={styles.treeRoot}>
+              {(treeData as any).tree.map((node: any) => (
+                <TreeNode
+                  key={node.name}
+                  node={node}
+                  expandedPaths={expandedPaths}
+                  expandedTick={expandedTick}
+                  onToggleExpand={onToggleExpand}
+                  onMentionFile={onMentionFile}
+                  onOpenFile={onOpenFile}
+                />
+              ))}
+            </div>
+          )}
+        {!treeLoading &&
+          treeData &&
+          (!(treeData as any).tree || (treeData as any).tree.length === 0) && (
+            <div className={styles.treeLoading}>Empty directory</div>
+          )}
         {!treeLoading && !treeData && (
           <div className={styles.treeLoading}>Unable to load tree</div>
         )}

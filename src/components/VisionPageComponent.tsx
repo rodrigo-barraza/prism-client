@@ -96,15 +96,18 @@ export default function VisionPageComponent() {
     const filteredModels = {};
 
     for (const [provider, models] of Object.entries(textModels) as any) {
-      const visionModels = models.filter(
-        (m: any) => m.inputTypes?.includes("image"),
+      const visionModels = models.filter((m: any) =>
+        m.inputTypes?.includes("image"),
       );
       if (visionModels.length > 0) {
         (filteredModels as any)[provider] = visionModels;
       }
     }
 
-    filtered.textToText = { ...(config as any).textToText, models: filteredModels };
+    filtered.textToText = {
+      ...(config as any).textToText,
+      models: filteredModels,
+    };
     // Clear other sections so only vision text models appear
     filtered.textToImage = { models: {} };
     filtered.textToSpeech = { models: {} };
@@ -145,11 +148,14 @@ export default function VisionPageComponent() {
     if (video) {
       (video as any).srcObject = stream;
       // play() returns a promise — only set streaming on success
-      (video as any).play().then(() => {
-        setIsStreaming(true);
-      }).catch((error: any) => {
-        console.warn("Video play() interrupted:", error.message);
-      });
+      (video as any)
+        .play()
+        .then(() => {
+          setIsStreaming(true);
+        })
+        .catch((error: any) => {
+          console.warn("Video play() interrupted:", error.message);
+        });
     }
 
     const track = stream.getVideoTracks()[0];
@@ -248,10 +254,18 @@ export default function VisionPageComponent() {
     const canvas = canvasRef.current;
     if (!video || !canvas || (video as any).readyState < 2) return null;
 
-    (canvas as any).width = (video as any).videoWidth || (video as any).clientWidth;
-    (canvas as any).height = (video as any).videoHeight || (video as any).clientHeight;
+    (canvas as any).width =
+      (video as any).videoWidth || (video as any).clientWidth;
+    (canvas as any).height =
+      (video as any).videoHeight || (video as any).clientHeight;
     const context = (canvas as any).getContext("2d");
-    context.drawImage(video, 0, 0, (canvas as any).width, (canvas as any).height);
+    context.drawImage(
+      video,
+      0,
+      0,
+      (canvas as any).width,
+      (canvas as any).height,
+    );
 
     // JPEG at 80% quality for bandwidth efficiency
     return (canvas as any).toDataURL("image/jpeg", 0.8);
@@ -307,9 +321,7 @@ export default function VisionPageComponent() {
           onChunk: (content: any) => {
             setResults((prev: any) =>
               prev.map((r: any) =>
-                r.id === resultId
-                  ? { ...r, text: r.text + content }
-                  : r,
+                r.id === resultId ? { ...r, text: r.text + content } : r,
               ),
             );
           },
@@ -326,10 +338,10 @@ export default function VisionPageComponent() {
               prev.map((r: any) =>
                 r.id === resultId
                   ? {
-                    ...r,
-                    text: r.text || `Error: ${error.message}`,
-                    streaming: false,
-                  }
+                      ...r,
+                      text: r.text || `Error: ${error.message}`,
+                      streaming: false,
+                    }
                   : r,
               ),
             );
@@ -487,7 +499,9 @@ export default function VisionPageComponent() {
             )}
 
             {/* Video preview — single persistent element to avoid ref-swapping race conditions */}
-            <div className={`${styles.videoContainer} ${!isStreaming ? styles.videoContainerHidden : ""}`}>
+            <div
+              className={`${styles.videoContainer} ${!isStreaming ? styles.videoContainerHidden : ""}`}
+            >
               <video
                 ref={videoRef}
                 className={styles.videoElement}
@@ -526,9 +540,7 @@ export default function VisionPageComponent() {
 
               {/* Snapshot counter */}
               {snapshotCount > 0 && (
-                <div className={styles.snapshotCounter}>
-                  #{snapshotCount}
-                </div>
+                <div className={styles.snapshotCounter}>#{snapshotCount}</div>
               )}
 
               {/* Progress ring */}
@@ -634,7 +646,9 @@ export default function VisionPageComponent() {
                 <button
                   className={styles.startBtn}
                   onClick={startAnalysis}
-                  disabled={!isStreaming || !settings.provider || !settings.model}
+                  disabled={
+                    !isStreaming || !settings.provider || !settings.model
+                  }
                   title={
                     !isStreaming
                       ? "Start a video source first"
@@ -685,10 +699,7 @@ export default function VisionPageComponent() {
                         {result.timestamp.toLocaleTimeString()}
                       </span>
                       <span className={styles.resultModel}>
-                        <ProviderLogo
-                          provider={result.provider}
-                          size={12}
-                        />{" "}
+                        <ProviderLogo provider={result.provider} size={12} />{" "}
                         {result.model.split("/").pop()}
                       </span>
                     </div>

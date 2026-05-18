@@ -18,7 +18,11 @@
   border: 1px solid var(--border-color);
   white-space: nowrap;
   line-height: 1;
-  transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 .badge:hover {
@@ -59,8 +63,13 @@
 }
 
 @keyframes toolCallPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 /* ── Usage count ── */

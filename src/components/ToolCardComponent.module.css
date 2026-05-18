@@ -7,7 +7,11 @@
   background: color-mix(in srgb, var(--tool-color) 6%, var(--bg-card));
   border: 1px solid color-mix(in srgb, var(--tool-color) 18%, transparent);
   border-left: 3px solid var(--tool-color);
-  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   animation: fadeIn 0.4s ease-out both;
   cursor: pointer;
   user-select: none;
@@ -33,10 +37,14 @@
 @keyframes cardGlowPulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--tool-color) 15%, transparent));
+    filter: drop-shadow(
+      0 0 8px color-mix(in srgb, var(--tool-color) 15%, transparent)
+    );
   }
   50% {
-    filter: drop-shadow(0 0 18px color-mix(in srgb, var(--tool-color) 30%, transparent));
+    filter: drop-shadow(
+      0 0 18px color-mix(in srgb, var(--tool-color) 30%, transparent)
+    );
   }
 }
 
@@ -94,7 +102,9 @@
   background: color-mix(in srgb, var(--tool-color) 12%, transparent);
   color: var(--tool-color);
   flex-shrink: 0;
-  transition: background 0.25s ease, color 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
 /* ── Info ──────────────────────────────────────────────────── */
@@ -129,7 +139,9 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--tool-color) 15%, transparent);
   color: var(--tool-color);
-  transition: background 0.25s ease, color 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
 .subtitle {
@@ -152,10 +164,14 @@
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-success-bright) 12%, transparent);
   color: var(--color-success-bright);
-  border: 1px solid color-mix(in srgb, var(--color-success-bright) 20%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-success-bright) 20%, transparent);
   flex-shrink: 0;
   white-space: nowrap;
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
   filter: hue-rotate(0deg);
   animation: rainbowHue 4s linear infinite;
   will-change: filter;

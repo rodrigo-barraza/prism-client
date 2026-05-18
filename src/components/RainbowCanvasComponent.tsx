@@ -9,7 +9,14 @@ const BASE_SPEED = 30; // degrees/sec
 const TURBO_ACCEL = 20; // quadratic coefficient — velocity = TURBO_ACCEL × t²
 const TURBO_RELEASE = 0.02; // per-frame smoothing toward zero (at 60fps ≈ 3s wind-down)
 
-export default function RainbowCanvasComponent({ turbo = false, animate = false, greyscale = false, palette, className, style }: any) {
+export default function RainbowCanvasComponent({
+  turbo = false,
+  animate = false,
+  greyscale = false,
+  palette,
+  className,
+  style,
+}: any) {
   const canvasRef = useRef<any>(null);
   const stateRef = useRef<any>({
     offset: 0,
@@ -46,7 +53,12 @@ export default function RainbowCanvasComponent({ turbo = false, animate = false,
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(colors, t + dither);
         context.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
-        context.fillRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+        context.fillRect(
+          x * PIXEL_SIZE,
+          y * PIXEL_SIZE,
+          PIXEL_SIZE,
+          PIXEL_SIZE,
+        );
       }
     }
   }, []);

@@ -4,18 +4,18 @@
    ============================================================ */
 
 .container {
-  composes: container from './PanelShared.module.css';
+  composes: container from "./PanelShared.module.css";
   --panel-accent: var(--color-cyan);
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
 
 .header {
-  composes: header from './PanelShared.module.css';
+  composes: header from "./PanelShared.module.css";
 }
 
 .headerTitle {
-  composes: headerTitle from './PanelShared.module.css';
+  composes: headerTitle from "./PanelShared.module.css";
 }
 
 .headerActions {
@@ -48,19 +48,19 @@
 /* ── Empty State ────────────────────────────────────────────── */
 
 .emptyState {
-  composes: emptyState from './PanelShared.module.css';
+  composes: emptyState from "./PanelShared.module.css";
 }
 
 .emptyIcon {
-  composes: emptyIcon from './PanelShared.module.css';
+  composes: emptyIcon from "./PanelShared.module.css";
 }
 
 .emptyTitle {
-  composes: emptyTitle from './PanelShared.module.css';
+  composes: emptyTitle from "./PanelShared.module.css";
 }
 
 .emptySubtitle {
-  composes: emptySubtitle from './PanelShared.module.css';
+  composes: emptySubtitle from "./PanelShared.module.css";
 }
 
 /* ── Server Card ────────────────────────────────────────────── */
@@ -76,7 +76,11 @@
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: color-mix(in srgb, var(--color-cyan) 30%, var(--border-color));
+    border-color: color-mix(
+      in srgb,
+      var(--color-cyan) 30%,
+      var(--border-color)
+    );
     box-shadow: 0 2px 8px color-mix(in srgb, var(--color-cyan) 8%, transparent);
   }
 }
@@ -103,8 +107,13 @@
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .serverInfo {
@@ -266,7 +275,7 @@
 }
 
 .confirmBtn {
-  composes: confirmBtn from './PanelShared.module.css';
+  composes: confirmBtn from "./PanelShared.module.css";
 }
 
 .confirmBtnYes {
@@ -436,7 +445,8 @@
   &:hover:not(:disabled) {
     background: #0891b2;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-cyan) 30%, transparent);
+    box-shadow: 0 4px 12px
+      color-mix(in srgb, var(--color-cyan) 30%, transparent);
   }
 
   &:disabled {

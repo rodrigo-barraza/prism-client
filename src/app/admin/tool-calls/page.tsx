@@ -9,7 +9,11 @@ import {
   Activity,
 } from "lucide-react";
 import ToolsApiService from "../../../services/ToolsApiService";
-import { BadgeComponent, TableComponent, LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
+import {
+  BadgeComponent,
+  TableComponent,
+  LoadingIndicatorComponent,
+} from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import {
@@ -85,9 +89,14 @@ function getToolColumns() {
       sortable: true,
       align: "right",
       render: (r: any) => {
-        if (r.errorRate === 0) return <span className={styles.zeroErrors}>0%</span>;
+        if (r.errorRate === 0)
+          return <span className={styles.zeroErrors}>0%</span>;
         return (
-          <span className={r.errorRate > 5 ? styles.highErrorRate : styles.errorCount}>
+          <span
+            className={
+              r.errorRate > 5 ? styles.highErrorRate : styles.errorCount
+            }
+          >
             {r.errorRate}%
           </span>
         );
@@ -224,7 +233,8 @@ export default function ToolCallsPage() {
       setError(null);
       const params = {};
       const dateParams = buildDateRangeParams(dateRange);
-      if ((dateParams as any).since) (params as any).since = (dateParams as any).since;
+      if ((dateParams as any).since)
+        (params as any).since = (dateParams as any).since;
       const data = await ToolsApiService.getToolCallStats(params);
       setStats(data);
     } catch (error: any) {
@@ -269,7 +279,8 @@ export default function ToolCallsPage() {
     const array = [...(stats as any).byTool];
     array.sort((a: any, b: any) => {
       const mult = toolOrder === "desc" ? -1 : 1;
-      if (toolSort === "toolName") return mult * a.toolName.localeCompare(b.toolName);
+      if (toolSort === "toolName")
+        return mult * a.toolName.localeCompare(b.toolName);
       return mult * ((a[toolSort] || 0) - (b[toolSort] || 0));
     });
     return array;
@@ -280,7 +291,8 @@ export default function ToolCallsPage() {
     const array = [...(stats as any).byDomain];
     array.sort((a: any, b: any) => {
       const mult = domainOrder === "desc" ? -1 : 1;
-      if (domainSort === "domain") return mult * (a.domain || "").localeCompare(b.domain || "");
+      if (domainSort === "domain")
+        return mult * (a.domain || "").localeCompare(b.domain || "");
       return mult * ((a[domainSort] || 0) - (b[domainSort] || 0));
     });
     return array;
@@ -289,7 +301,10 @@ export default function ToolCallsPage() {
   // -- Derived computed stats ---------------------------------
   const avgLatencyAll = useMemo(() => {
     if (!(stats as any)?.byTool?.length) return 0;
-    const totalMs = (stats as any).byTool.reduce((sum: any, t: any) => sum + t.avgMs * t.count, 0);
+    const totalMs = (stats as any).byTool.reduce(
+      (sum: any, t: any) => sum + t.avgMs * t.count,
+      0,
+    );
     return totalMs / (stats as any).totalCalls;
   }, [stats]);
 
@@ -302,7 +317,11 @@ export default function ToolCallsPage() {
     return (
       <div className={styles.page}>
         <div className={styles.loadingState}>
-          <LoadingIndicatorComponent size="small" color="inherit" label="Loading tool call statistics…" />
+          <LoadingIndicatorComponent
+            size="small"
+            color="inherit"
+            label="Loading tool call statistics…"
+          />
         </div>
       </div>
     );
@@ -416,7 +435,9 @@ export default function ToolCallsPage() {
             {stats.errorsByTool.map((error: any) => (
               <div key={error._id} className={styles.errorCard}>
                 <div className={styles.errorCardHeader}>
-                  <BadgeComponent variant="provider">{error._id}</BadgeComponent>
+                  <BadgeComponent variant="provider">
+                    {error._id}
+                  </BadgeComponent>
                   <span className={styles.errorCardCount}>
                     {error.errorCount} error{error.errorCount !== 1 ? "s" : ""}
                   </span>

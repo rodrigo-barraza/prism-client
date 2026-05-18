@@ -34,11 +34,7 @@ export default function DocumentViewer({ dataUrl, onClose }: any) {
       className={styles.viewer}
     >
       {isPdf ? (
-        <iframe
-          src={dataUrl}
-          className={styles.pdfFrame}
-          title="PDF Viewer"
-        />
+        <iframe src={dataUrl} className={styles.pdfFrame} title="PDF Viewer" />
       ) : (
         <pre className={styles.textContent}>{content}</pre>
       )}

@@ -4,18 +4,18 @@
    ============================================================ */
 
 .container {
-  composes: container from './PanelShared.module.css';
+  composes: container from "./PanelShared.module.css";
   --panel-accent: var(--color-purple);
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
 
 .header {
-  composes: header from './PanelShared.module.css';
+  composes: header from "./PanelShared.module.css";
 }
 
 .headerTitle {
-  composes: headerTitle from './PanelShared.module.css';
+  composes: headerTitle from "./PanelShared.module.css";
 }
 
 .headerActions {
@@ -27,19 +27,19 @@
 /* ── Empty State ────────────────────────────────────────────── */
 
 .emptyState {
-  composes: emptyState from './PanelShared.module.css';
+  composes: emptyState from "./PanelShared.module.css";
 }
 
 .emptyIcon {
-  composes: emptyIcon from './PanelShared.module.css';
+  composes: emptyIcon from "./PanelShared.module.css";
 }
 
 .emptyTitle {
-  composes: emptyTitle from './PanelShared.module.css';
+  composes: emptyTitle from "./PanelShared.module.css";
 }
 
 .emptySubtitle {
-  composes: emptySubtitle from './PanelShared.module.css';
+  composes: emptySubtitle from "./PanelShared.module.css";
 }
 
 /* ── Skill Card ─────────────────────────────────────────────── */
@@ -55,8 +55,13 @@
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: color-mix(in srgb, var(--color-purple) 30%, var(--border-color));
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-purple) 8%, transparent);
+    border-color: color-mix(
+      in srgb,
+      var(--color-purple) 30%,
+      var(--border-color)
+    );
+    box-shadow: 0 2px 8px
+      color-mix(in srgb, var(--color-purple) 8%, transparent);
   }
 }
 
@@ -175,7 +180,7 @@
 }
 
 .confirmBtn {
-  composes: confirmBtn from './PanelShared.module.css';
+  composes: confirmBtn from "./PanelShared.module.css";
 }
 
 .confirmBtnYes {
@@ -268,7 +273,8 @@
 
   &:focus {
     border-color: var(--color-purple);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-purple) 15%, transparent);
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--color-purple) 15%, transparent);
   }
 
   &::placeholder {
@@ -291,7 +297,8 @@
 
   &:focus {
     border-color: var(--color-purple);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-purple) 15%, transparent);
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--color-purple) 15%, transparent);
   }
 
   &::placeholder {
@@ -358,7 +365,8 @@
   &:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-purple) 90%, white);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-purple) 30%, transparent);
+    box-shadow: 0 4px 12px
+      color-mix(in srgb, var(--color-purple) 30%, transparent);
   }
 
   &:disabled {

@@ -188,7 +188,11 @@ export default function TracesPage() {
     return (
       <div className={styles.page}>
         <div className={styles.loading}>
-          <LoadingIndicatorComponent size="small" color="inherit" label="Loading traces…" />
+          <LoadingIndicatorComponent
+            size="small"
+            color="inherit"
+            label="Loading traces…"
+          />
         </div>
       </div>
     );
@@ -347,9 +351,7 @@ export default function TracesPage() {
                               updatedAt: s.updatedAt || s.createdAt,
                             }}
                             icon={FolderOpen}
-                            onClick={() =>
-                              router.push("/admin/traces")
-                            }
+                            onClick={() => router.push("/admin/traces")}
                           />
                         ))}
                       </div>

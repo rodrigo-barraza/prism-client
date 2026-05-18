@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  Users, RefreshCw, Wrench, Clock, GitBranch, FileCode,
+  Users,
+  RefreshCw,
+  Wrench,
+  Clock,
+  GitBranch,
+  FileCode,
 } from "lucide-react";
 import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
@@ -12,7 +17,6 @@ import CostBadgeComponent from "./CostBadgeComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
 import styles from "./WorkersPanelComponent.module.css";
-
 
 const STATUS_LABEL = {
   running: "Running",
@@ -37,7 +41,6 @@ const CARD_CLASS = {
   stopped: "workerCardStopped",
 };
 
-
 /**
  * Extract a short agent number from an agentId like "agent-1" → "1"
  */
@@ -56,7 +59,12 @@ function getAgentNumber(agentId: any) {
 
 
  */
-export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange, workerToolActivity = {} }: any) {
+export default function WorkersPanel({
+  agentSessionId,
+  refreshKey,
+  onCountChange,
+  workerToolActivity = {},
+}: any) {
   const [workers, setWorkers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -124,9 +132,7 @@ export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange
   if (error) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>
-          Failed to load workers: {error}
-        </div>
+        <div className={styles.error}>Failed to load workers: {error}</div>
       </div>
     );
   }
@@ -158,8 +164,8 @@ export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange
           </div>
           <div className={styles.emptyTitle}>No workers</div>
           <div className={styles.emptySubtitle}>
-            Workers are spawned by the coordinator when it
-            decomposes tasks into parallel sub-agents. Use the
+            Workers are spawned by the coordinator when it decomposes tasks into
+            parallel sub-agents. Use the
             <strong> team_create</strong> tool to create workers.
           </div>
         </div>
@@ -167,8 +173,10 @@ export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange
 
       {/* -- Worker list --------------------------------------- */}
       {workers.map((worker: any) => {
-        const statusLabel = (STATUS_LABEL as any)[worker.status] || worker.status;
-        const statusClass = (STATUS_CLASS as any)[worker.status] || "statusPending";
+        const statusLabel =
+          (STATUS_LABEL as any)[worker.status] || worker.status;
+        const statusClass =
+          (STATUS_CLASS as any)[worker.status] || "statusPending";
         const cardClass = (CARD_CLASS as any)[worker.status] || "";
         const isLive = worker.status === "running";
         const isComplete = worker.status === "complete";
@@ -201,16 +209,25 @@ export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange
             {/* -- Meta row (time, cost — HistoryItem-style) -- */}
             <div className={styles.meta}>
               {worker.durationMs > 0 && (
-                <span className={`${styles.metaItem} ${isLive ? styles.durationLive : ""}`}>
+                <span
+                  className={`${styles.metaItem} ${isLive ? styles.durationLive : ""}`}
+                >
                   <Clock size={10} />
                   {formatDuration(worker.durationMs)}
                 </span>
               )}
-              <CostBadgeComponent cost={worker.totalCost} mini showIcon={false} />
+              <CostBadgeComponent
+                cost={worker.totalCost}
+                mini
+                showIcon={false}
+              />
               {/* Live tool count from SSE (or fallback to API count) */}
               {(() => {
                 const liveActivity = workerToolActivity[worker.agentId];
-                const toolCount = Math.max(liveActivity?.toolCount || 0, worker.toolCallCount || 0);
+                const toolCount = Math.max(
+                  liveActivity?.toolCount || 0,
+                  worker.toolCallCount || 0,
+                );
                 return toolCount > 0 ? (
                   <span className={styles.metaItem}>
                     <Wrench size={10} />
@@ -247,7 +264,9 @@ export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange
                 <span className={styles.liveDot} />
                 <Wrench size={9} />
                 <span className={styles.liveToolName}>
-                  {renderToolName(workerToolActivity[worker.agentId].currentTool)}
+                  {renderToolName(
+                    workerToolActivity[worker.agentId].currentTool,
+                  )}
                 </span>
                 {workerToolActivity[worker.agentId].iteration > 0 && (
                   <span className={styles.liveIteration}>
@@ -262,7 +281,14 @@ export default function WorkersPanel({ agentSessionId, refreshKey, onCountChange
               <div className={styles.workerFiles}>
                 {worker.files.map((f: any, i: any) => (
                   <span key={i} className={styles.workerFile} title={f}>
-                    <FileCode size={9} style={{ display: "inline", verticalAlign: "middle", marginRight: 2 }} />
+                    <FileCode
+                      size={9}
+                      style={{
+                        display: "inline",
+                        verticalAlign: "middle",
+                        marginRight: 2,
+                      }}
+                    />
                     {f.split("/").pop()}
                   </span>
                 ))}

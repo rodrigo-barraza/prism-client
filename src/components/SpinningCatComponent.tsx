@@ -185,7 +185,12 @@ export default function SpinningCatComponent({
           const canvas = canvasRef.current;
           if (canvas) {
             const context = (canvas as any).getContext("2d");
-            context.clearRect(0, 0, (canvas as any).width, (canvas as any).height);
+            context.clearRect(
+              0,
+              0,
+              (canvas as any).width,
+              (canvas as any).height,
+            );
           }
         }
 

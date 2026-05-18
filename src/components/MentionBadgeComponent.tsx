@@ -20,14 +20,24 @@ import styles from "./MentionBadgeComponent.module.css";
  * @param {Set}     [props.knownPaths] — Set of currently known workspace paths for staleness detection
  * @param {Function} [props.onFileOpen] — (path) => void — Callback to open a file in the file viewer
  */
-function MentionBadge({ path, name, type, lineStart, lineEnd, stale, knownPaths, onFileOpen }: any) {
+function MentionBadge({
+  path,
+  name,
+  type,
+  lineStart,
+  lineEnd,
+  stale,
+  knownPaths,
+  onFileOpen,
+}: any) {
   const baseName = name || path.split("/").pop() || path;
   // Build display name with optional line suffix (#L format — GitHub convention)
   let displayName = baseName;
   if (lineStart != null) {
-    displayName += lineEnd != null && lineEnd !== lineStart
-      ? `#L${lineStart}-${lineEnd}`
-      : `#L${lineStart}`;
+    displayName +=
+      lineEnd != null && lineEnd !== lineStart
+        ? `#L${lineStart}-${lineEnd}`
+        : `#L${lineStart}`;
   }
   const resolvedType = type || (baseName.includes(".") ? "file" : "directory");
   const icon = resolvedType === "directory" ? "📁" : "📄";
@@ -36,24 +46,31 @@ function MentionBadge({ path, name, type, lineStart, lineEnd, stale, knownPaths,
   const isStale = stale ?? (knownPaths ? !knownPaths.has(path) : false);
 
   // Only file badges (not directories, not stale) are clickable
-  const isClickable = resolvedType === "file" && !isStale && typeof onFileOpen === "function";
+  const isClickable =
+    resolvedType === "file" && !isStale && typeof onFileOpen === "function";
 
   const className = [
     styles.mentionBadge,
     isStale && styles.mentionBadgeStale,
     isClickable && styles.mentionBadgeClickable,
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const handleClick = isClickable
-    ? (e: any) => { e.stopPropagation(); onFileOpen(path); }
+    ? (e: any) => {
+        e.stopPropagation();
+        onFileOpen(path);
+      }
     : undefined;
 
   // Build tooltip text with optional line range
   let tooltipPath = path;
   if (lineStart != null) {
-    tooltipPath += lineEnd != null && lineEnd !== lineStart
-      ? `#L${lineStart}-${lineEnd}`
-      : `#L${lineStart}`;
+    tooltipPath +=
+      lineEnd != null && lineEnd !== lineStart
+        ? `#L${lineStart}-${lineEnd}`
+        : `#L${lineStart}`;
   }
 
   return (

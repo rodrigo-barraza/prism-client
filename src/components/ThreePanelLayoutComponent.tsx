@@ -39,7 +39,8 @@ export default function ThreePanelLayout({
   fileViewerPanel = null,
   children,
 }: any) {
-  const resolvedRightTitle = rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
+  const resolvedRightTitle =
+    rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
   // Start with panels hidden to prevent FOUC on mobile; mount effect opens them on desktop
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(false);
@@ -153,7 +154,8 @@ export default function ThreePanelLayout({
   useEffect(() => {
     const handler = () => dismissSidebars();
     document.addEventListener("panel:dismiss-sidebars", handler);
-    return () => document.removeEventListener("panel:dismiss-sidebars", handler);
+    return () =>
+      document.removeEventListener("panel:dismiss-sidebars", handler);
   }, [dismissSidebars]);
 
   // Suppress the CSS transition on first paint so panels don't animate from open→closed
@@ -179,9 +181,7 @@ export default function ThreePanelLayout({
           <span className={styles.headerTitle}>{headerTitle}</span>
           {!isMobile && headerMeta}
           {headerCenter && (
-            <div className={styles.headerCenter}>
-              {headerCenter}
-            </div>
+            <div className={styles.headerCenter}>{headerCenter}</div>
           )}
           {headerControls}
           {rightPanel && (
@@ -232,7 +232,6 @@ export default function ThreePanelLayout({
           >
             {children}
           </section>
-
 
           {/* Right Sidebar */}
           {rightPanel && (

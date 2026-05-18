@@ -2,9 +2,21 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
-  Bot, Settings, Wrench, Brain, Plug, GitBranch, ListChecks,
-  BookOpen, Users, Info, Layers, PanelLeftClose, PanelLeft,
-  PanelRightClose, PanelRight,
+  Bot,
+  Settings,
+  Wrench,
+  Brain,
+  Plug,
+  GitBranch,
+  ListChecks,
+  BookOpen,
+  Users,
+  Info,
+  Layers,
+  PanelLeftClose,
+  PanelLeft,
+  PanelRightClose,
+  PanelRight,
 } from "lucide-react";
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
@@ -29,7 +41,10 @@ import useSessionStats from "../hooks/useSessionStats";
 import { PROJECT_AGENT } from "../constants";
 import chatStyles from "./ChatAreaComponent.module.css";
 import styles from "./AdminAgentViewerComponent.module.css";
-import { EmptyStateComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
+import {
+  EmptyStateComponent,
+  TabBarComponent,
+} from "@rodrigo-barraza/components-library";
 
 /**
  * AdminAgentViewerComponent — read-only admin viewer for agent sessions.
@@ -187,8 +202,14 @@ export default function AdminAgentViewerComponent() {
 
   // -- Session stats -------------------------------------------
   const {
-    uniqueModels, uniqueProviders, totalCost, totalTokens, requestCount,
-    usedTools, modalities, elapsedTime: completedElapsedTime,
+    uniqueModels,
+    uniqueProviders,
+    totalCost,
+    totalTokens,
+    requestCount,
+    usedTools,
+    modalities,
+    elapsedTime: completedElapsedTime,
   } = useSessionStats(messages);
 
   // Fetch backend stats when session changes
@@ -220,9 +241,13 @@ export default function AdminAgentViewerComponent() {
             ...prev,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
             ...(lastAssistant.model && { model: lastAssistant.model }),
-            ...(gs.temperature !== undefined && { temperature: gs.temperature }),
+            ...(gs.temperature !== undefined && {
+              temperature: gs.temperature,
+            }),
             ...(gs.maxTokens !== undefined && { maxTokens: gs.maxTokens }),
-            ...(gs.thinkingEnabled !== undefined && { thinkingEnabled: gs.thinkingEnabled }),
+            ...(gs.thinkingEnabled !== undefined && {
+              thinkingEnabled: gs.thinkingEnabled,
+            }),
             ...(gs.reasoningEffort && { reasoningEffort: gs.reasoningEffort }),
             ...(gs.thinkingBudget && { thinkingBudget: gs.thinkingBudget }),
           }));
@@ -233,7 +258,9 @@ export default function AdminAgentViewerComponent() {
 
         // Fetch tasks count for this session
         ToolsApiService.getAllAgenticTasks({ agentSessionId: conversation.id })
-          .then((r: any) => setTasksCount(r.summary?.total || (r.tasks || []).length))
+          .then((r: any) =>
+            setTasksCount(r.summary?.total || (r.tasks || []).length),
+          )
           .catch(() => {});
 
         // Fetch workers count
@@ -251,14 +278,21 @@ export default function AdminAgentViewerComponent() {
   const allToolCount = builtInTools.length + customTools.length;
 
   // -- Badge helper ---------------------------------------------
-  const badgeProps = (count: any) => ({ badge: count, badgeDisabled: count === 0 });
+  const badgeProps = (count: any) => ({
+    badge: count,
+    badgeDisabled: count === 0,
+  });
 
   // -- Left sidebar: tab bar + content --------------------------
   const leftPanel = (
     <>
       <TabBarComponent
         tabs={[
-          { key: "settings", icon: <Settings size={14} />, tooltip: "Settings" },
+          {
+            key: "settings",
+            icon: <Settings size={14} />,
+            tooltip: "Settings",
+          },
           { key: "info", icon: <Info size={14} />, tooltip: "Info" },
           {
             key: "tools",
@@ -319,10 +353,13 @@ export default function AdminAgentViewerComponent() {
               ? {
                   messageCount: messages.length,
                   deletedCount: 0,
-                  requestCount: (backendSessionStats as any)?.requestCount || requestCount,
-                  uniqueModels: ((backendSessionStats as any)?.models?.length || 0) > uniqueModels.length
-                    ? (backendSessionStats as any).models
-                    : uniqueModels,
+                  requestCount:
+                    (backendSessionStats as any)?.requestCount || requestCount,
+                  uniqueModels:
+                    ((backendSessionStats as any)?.models?.length || 0) >
+                    uniqueModels.length
+                      ? (backendSessionStats as any).models
+                      : uniqueModels,
                   uniqueProviders,
                   totalTokens: backendSessionStats
                     ? {
@@ -331,11 +368,15 @@ export default function AdminAgentViewerComponent() {
                         total: (backendSessionStats as any).totalTokens,
                       }
                     : totalTokens,
-                  totalCost: (backendSessionStats as any)?.totalCost ?? totalCost,
+                  totalCost:
+                    (backendSessionStats as any)?.totalCost ?? totalCost,
                   originalTotalCost: 0,
                   usedTools,
-                  modalities: (backendSessionStats as any)?.modalities || modalities,
-                  completedElapsedTime: (backendSessionStats as any)?.totalElapsedTime || completedElapsedTime,
+                  modalities:
+                    (backendSessionStats as any)?.modalities || modalities,
+                  completedElapsedTime:
+                    (backendSessionStats as any)?.totalElapsedTime ||
+                    completedElapsedTime,
                 }
               : null
           }
@@ -466,7 +507,10 @@ export default function AdminAgentViewerComponent() {
         </span>
 
         {activeId && settings.model && (
-          <ModelBadgeComponent models={[settings.model]} provider={settings.provider} />
+          <ModelBadgeComponent
+            models={[settings.model]}
+            provider={settings.provider}
+          />
         )}
 
         <div style={{ flex: 1 }} />
@@ -483,17 +527,19 @@ export default function AdminAgentViewerComponent() {
       {/* 3-column body */}
       <div className={styles.viewerBody}>
         {/* Left panel - settings/tools/info tabs */}
-        <aside className={`${styles.leftPanel} ${!showLeft ? styles.panelHidden : ""}`}>
+        <aside
+          className={`${styles.leftPanel} ${!showLeft ? styles.panelHidden : ""}`}
+        >
           {leftPanel}
         </aside>
 
         {/* Center - messages */}
-        <section className={styles.centerPanel}>
-          {chatContent}
-        </section>
+        <section className={styles.centerPanel}>{chatContent}</section>
 
         {/* Right panel - sessions list */}
-        <aside className={`${styles.rightPanel} ${!showRight ? styles.panelHidden : ""}`}>
+        <aside
+          className={`${styles.rightPanel} ${!showRight ? styles.panelHidden : ""}`}
+        >
           <HistoryPanel
             sessions={sessions}
             activeId={activeId}

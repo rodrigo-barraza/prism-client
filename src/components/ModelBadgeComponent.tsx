@@ -13,7 +13,13 @@ import styles from "./ModelBadgeComponent.module.css";
 
 
  */
-export default function ModelBadgeComponent({ models = [], provider, providers, className = "", mini = false }: any) {
+export default function ModelBadgeComponent({
+  models = [],
+  provider,
+  providers,
+  className = "",
+  mini = false,
+}: any) {
   if (!models || models.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
@@ -22,10 +28,11 @@ export default function ModelBadgeComponent({ models = [], provider, providers, 
   const cls = `${styles.badge} ${mini ? styles.mini : ""} ${className}`;
 
   /* Resolve a single provider key from explicit prop or providers array */
-  const resolvedProvider = provider || (providers?.length === 1 ? providers[0] : null);
-  const providerIcon = resolvedProvider
-    ? <ProviderLogo provider={resolvedProvider} size={iconSize} />
-    : null;
+  const resolvedProvider =
+    provider || (providers?.length === 1 ? providers[0] : null);
+  const providerIcon = resolvedProvider ? (
+    <ProviderLogo provider={resolvedProvider} size={iconSize} />
+  ) : null;
 
   if (models.length === 1) {
     return (

@@ -7,13 +7,13 @@ import styles from "./AgentBadgeComponent.module.css";
 
 // -- Agent gradient lookup ------------------------------------------
 const AGENT_GRADIENTS = {
-  NONE:     ["#64748b", "#94a3b8"],
-  CODING:   ["#6366f1", "#818cf8"],
-  LUPOS:    ["#ef4444", "#f97316"],
+  NONE: ["#64748b", "#94a3b8"],
+  CODING: ["#6366f1", "#818cf8"],
+  LUPOS: ["#ef4444", "#f97316"],
   STICKERS: ["#10b981", "#34d399"],
-  DIGEST:   ["#f59e0b", "#ef4444"],
-  LIGHTS:   ["#eab308", "#f59e0b"],
-  OOG:      ["#78716c", "#a8a29e"],
+  DIGEST: ["#f59e0b", "#ef4444"],
+  LIGHTS: ["#eab308", "#f59e0b"],
+  OOG: ["#78716c", "#a8a29e"],
 };
 const FALLBACK_GRADIENT = ["#8b5cf6", "#06b6d4"];
 
@@ -43,8 +43,14 @@ function loadSvgImage(svgMarkup: any) {
     const image = new Image();
     const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
-    image.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
     image.src = url;
   });
 }
@@ -68,39 +74,42 @@ function CoinStatic({ agent, size }: any) {
   const gradient = useMemo(() => resolveGradient(agent), [agent]);
 
   // -- Three.js scene setup — single flat plane --
-  const handleSetup = useCallback(({ scene, camera, THREE }: any) => {
-    // Orthographic-style: push camera back, use tight FOV so plane fills view
-    camera.position.set(0, 0, 20);
-    camera.lookAt(0, 0, 0);
+  const handleSetup = useCallback(
+    ({ scene, camera, THREE }: any) => {
+      // Orthographic-style: push camera back, use tight FOV so plane fills view
+      camera.position.set(0, 0, 20);
+      camera.lookAt(0, 0, 0);
 
-    // No lights needed — MeshBasicMaterial is unlit
+      // No lights needed — MeshBasicMaterial is unlit
 
-    // Build the texture canvas with gradient + rounded corners
-    const texCanvas = document.createElement("canvas");
-    texCanvas.width = TEX_SIZE;
-    texCanvas.height = TEX_SIZE;
-    const context = texCanvas.getContext("2d");
-    drawGradientBase(context, TEX_SIZE, gradient);
-    canvasRef.current = texCanvas;
+      // Build the texture canvas with gradient + rounded corners
+      const texCanvas = document.createElement("canvas");
+      texCanvas.width = TEX_SIZE;
+      texCanvas.height = TEX_SIZE;
+      const context = texCanvas.getContext("2d");
+      drawGradientBase(context, TEX_SIZE, gradient);
+      canvasRef.current = texCanvas;
 
-    const tex = new THREE.CanvasTexture(texCanvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    texRef.current = tex;
+      const tex = new THREE.CanvasTexture(texCanvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      texRef.current = tex;
 
-    // Flat plane — no cylinder, no depth, no metalness
-    const geo = new THREE.PlaneGeometry(1.2, 1.2);
-    const mat = new THREE.MeshBasicMaterial({
-      map: tex,
-      transparent: true,
-      side: THREE.DoubleSide,
-    });
+      // Flat plane — no cylinder, no depth, no metalness
+      const geo = new THREE.PlaneGeometry(1.2, 1.2);
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        side: THREE.DoubleSide,
+      });
 
-    const mesh = new THREE.Mesh(geo, mat);
-    meshRef.current = mesh;
-    scene.add(mesh);
+      const mesh = new THREE.Mesh(geo, mat);
+      meshRef.current = mesh;
+      scene.add(mesh);
 
-    hasPaintedRef.current = false;
-  }, [gradient]);
+      hasPaintedRef.current = false;
+    },
+    [gradient],
+  );
 
   // -- Capture SVG icon from the hidden rendered element --
   useEffect(() => {
@@ -184,7 +193,9 @@ export default function AgentBadgeComponent({
   const outerStyle = { width: size, height: size };
 
   const gradientStyle = agent?.color
-    ? { background: `linear-gradient(135deg, ${agent.color} 0%, color-mix(in srgb, ${agent.color} 70%, #fff) 100%)` }
+    ? {
+        background: `linear-gradient(135deg, ${agent.color} 0%, color-mix(in srgb, ${agent.color} 70%, #fff) 100%)`,
+      }
     : undefined;
 
   return (
@@ -193,7 +204,11 @@ export default function AgentBadgeComponent({
       data-agent={agentId}
       style={outerStyle}
     >
-      <span className={styles.badgeInner} data-agent={agentId} style={gradientStyle}>
+      <span
+        className={styles.badgeInner}
+        data-agent={agentId}
+        style={gradientStyle}
+      >
         {renderAgentIcon(agent, iconSize)}
       </span>
     </span>

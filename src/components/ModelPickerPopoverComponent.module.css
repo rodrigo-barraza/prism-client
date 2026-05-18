@@ -85,12 +85,22 @@
 }
 
 @keyframes triggerPulse {
-  0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 10%, transparent); }
-  50%      { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 30%, transparent), 0 0 12px color-mix(in srgb, var(--accent-color) 15%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--accent-color) 10%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--accent-color) 30%, transparent),
+      0 0 12px color-mix(in srgb, var(--accent-color) 15%, transparent);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .triggerContent {

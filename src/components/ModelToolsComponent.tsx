@@ -20,14 +20,54 @@ import styles from "./ModelToolsComponent.module.css";
  * lucide icon, tooltip label, and color.
  */
 const TOOL_DEFS = [
-  { key: "thinking", label: "Thinking", icon: Brain, color: MODALITY_COLORS.thinking },
-  { key: "functionCalling", label: "Function Calling", icon: Parentheses, color: (TOOL_COLORS as any)["Function Calling"] },
-  { key: "webSearch", label: "Web Search", icon: Globe, color: MODALITY_COLORS.webSearch },
-  { key: "codeExecution", label: "Code Execution", icon: Terminal, color: MODALITY_COLORS.codeExecution },
-  { key: "computerUse", label: "Computer Use", icon: Monitor, color: TOOL_COLORS["Computer Use"] },
-  { key: "fileSearch", label: "File Search", icon: SearchIcon, color: TOOL_COLORS["File Search"] },
-  { key: "urlContext", label: "URL Context", icon: Link, color: TOOL_COLORS["URL Context"] },
-  { key: "imageGeneration", label: "Image Generation", icon: ImagePlus, color: TOOL_COLORS["Image Generation"] },
+  {
+    key: "thinking",
+    label: "Thinking",
+    icon: Brain,
+    color: MODALITY_COLORS.thinking,
+  },
+  {
+    key: "functionCalling",
+    label: "Function Calling",
+    icon: Parentheses,
+    color: (TOOL_COLORS as any)["Function Calling"],
+  },
+  {
+    key: "webSearch",
+    label: "Web Search",
+    icon: Globe,
+    color: MODALITY_COLORS.webSearch,
+  },
+  {
+    key: "codeExecution",
+    label: "Code Execution",
+    icon: Terminal,
+    color: MODALITY_COLORS.codeExecution,
+  },
+  {
+    key: "computerUse",
+    label: "Computer Use",
+    icon: Monitor,
+    color: TOOL_COLORS["Computer Use"],
+  },
+  {
+    key: "fileSearch",
+    label: "File Search",
+    icon: SearchIcon,
+    color: TOOL_COLORS["File Search"],
+  },
+  {
+    key: "urlContext",
+    label: "URL Context",
+    icon: Link,
+    color: TOOL_COLORS["URL Context"],
+  },
+  {
+    key: "imageGeneration",
+    label: "Image Generation",
+    icon: ImagePlus,
+    color: TOOL_COLORS["Image Generation"],
+  },
 ];
 
 /**
@@ -69,9 +109,7 @@ export default function ModelToolsComponent({
               }}
             >
               <def.icon size={size} />
-              {count > 1 && (
-                <span className={styles.toolCount}>×{count}</span>
-              )}
+              {count > 1 && <span className={styles.toolCount}>×{count}</span>}
             </span>
           </TooltipComponent>
         );

@@ -20,7 +20,11 @@ import styles from "./MCPServersPanelComponent.module.css";
  * Shows configured MCP servers with live connection status. Users can
  * add/edit/delete servers, connect/disconnect, and see discovered tools.
  */
-export default function MCPServersPanel({ servers, onServersChange, project }: any) {
+export default function MCPServersPanel({
+  servers,
+  onServersChange,
+  project,
+}: any) {
   const [editingServer, setEditingServer] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -286,11 +290,7 @@ export default function MCPServersPanel({ servers, onServersChange, project }: a
               disabled={saving || !(editingServer as any).name?.trim()}
             >
               <Save size={14} />
-              {saving
-                ? "Saving..."
-                : isNew
-                  ? "Add Server"
-                  : "Save Changes"}
+              {saving ? "Saving..." : isNew ? "Add Server" : "Save Changes"}
             </button>
             <button className={styles.cancelFormBtn} onClick={handleCancel}>
               Cancel
@@ -328,8 +328,8 @@ export default function MCPServersPanel({ servers, onServersChange, project }: a
           </div>
           <div className={styles.emptyTitle}>No MCP servers</div>
           <div className={styles.emptySubtitle}>
-            Connect external tool providers via the Model Context Protocol.
-            Add servers to give the agent access to databases, APIs, and more.
+            Connect external tool providers via the Model Context Protocol. Add
+            servers to give the agent access to databases, APIs, and more.
           </div>
           <button className={styles.addBtn} onClick={handleCreate}>
             <Plus size={12} />

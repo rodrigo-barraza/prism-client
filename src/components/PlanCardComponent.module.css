@@ -8,7 +8,11 @@
 
   &.approved {
     border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
-    background: color-mix(in srgb, var(--color-success) 4%, var(--bg-secondary));
+    background: color-mix(
+      in srgb,
+      var(--color-success) 4%,
+      var(--bg-secondary)
+    );
   }
 
   &.rejected {
@@ -19,7 +23,11 @@
 
   &.executing {
     border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
-    background: color-mix(in srgb, var(--color-success) 5%, var(--bg-secondary));
+    background: color-mix(
+      in srgb,
+      var(--color-success) 5%,
+      var(--bg-secondary)
+    );
   }
 }
 
@@ -131,7 +139,8 @@
   &:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-success) 85%, white);
     border-color: color-mix(in srgb, var(--color-success) 85%, white);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--color-success) 35%, transparent);
+    box-shadow: 0 0 12px
+      color-mix(in srgb, var(--color-success) 35%, transparent);
   }
 }
 

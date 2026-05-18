@@ -104,7 +104,9 @@ function NodePorts({
         if (compound && isConversationNode) {
           const message = nodeMessages[compound.index];
           const roleLabel =
-            (ROLE_LABELS as any)[message?.role] || message?.role || `#${compound.index}`;
+            (ROLE_LABELS as any)[message?.role] ||
+            message?.role ||
+            `#${compound.index}`;
           const roleCount = nodeMessages
             .slice(0, compound.index)
             .filter((m: any) => m.role === message?.role).length;
@@ -737,7 +739,9 @@ function AssetNode(props: any) {
 
   const isConversation = node.modality === "conversation";
   const conversationModalities = isConversation
-    ? (node.supportedModalities || ["text"]).filter((t: any) => t !== "conversation")
+    ? (node.supportedModalities || ["text"]).filter(
+        (t: any) => t !== "conversation",
+      )
     : [];
   const modalityAreaWidth = conversationModalities.length * MODALITY_ICON_WIDTH;
 
@@ -963,7 +967,9 @@ function AssetNode(props: any) {
                   <textarea
                     className={styles.assetTextarea}
                     value={node.content || ""}
-                    onChange={(e: any) => onUpdateContent(node.id, e.target.value)}
+                    onChange={(e: any) =>
+                      onUpdateContent(node.id, e.target.value)
+                    }
                     placeholder="Enter text…"
                     onMouseDown={(e: any) => {
                       e.stopPropagation();

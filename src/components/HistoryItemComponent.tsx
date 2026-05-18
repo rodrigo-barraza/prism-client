@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Download,
-  Copy,
-  Star,
-  Trash2,
-  ExternalLink,
-} from "lucide-react";
+import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
 
 import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
@@ -15,7 +9,10 @@ import styles from "./HistoryItemComponent.module.css";
 import CostBadgeComponent from "./CostBadgeComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
 import SoundService from "@/services/SoundService";
-import { IconButtonComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
+import {
+  IconButtonComponent,
+  DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 
 /**
  * HistoryItemComponent — a single row within HistoryList or any list that
@@ -68,13 +65,17 @@ export default function HistoryItemComponent({
       className={`${styles.item} ${isActive ? styles.active : ""} ${className || ""}`}
       {...SoundService.interactive(() => onClick?.(item))}
       {...(dataPanelClose ? { "data-panel-close": true } : {})}
-      onContextMenu={onOpenInNewTab ? (e: any) => {
-        // Only show custom context on right-click of the main item area
-        // (not on action buttons which have their own handlers)
-        if (e.target.closest(`.${styles.actions}`)) return;
-        e.preventDefault();
-        onOpenInNewTab(item);
-      } : undefined}
+      onContextMenu={
+        onOpenInNewTab
+          ? (e: any) => {
+              // Only show custom context on right-click of the main item area
+              // (not on action buttons which have their own handlers)
+              if (e.target.closest(`.${styles.actions}`)) return;
+              e.preventDefault();
+              onOpenInNewTab(item);
+            }
+          : undefined
+      }
     >
       {onToggleFavorite && (
         <button
@@ -115,7 +116,9 @@ export default function HistoryItemComponent({
         {/* Row 3: model badge */}
         {hasModel && (
           <ModelBadgeComponent
-            models={item.modelNames?.length > 0 ? item.modelNames : [item.modelName]}
+            models={
+              item.modelNames?.length > 0 ? item.modelNames : [item.modelName]
+            }
             providers={item.providers}
             className={styles.modelBadge}
           />

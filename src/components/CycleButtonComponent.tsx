@@ -19,20 +19,104 @@ function easeOutCubic(t: any) {
 
 const SYMBOLS = "!@#$%^&*†‡§¶∆∇≈≠±×÷√∫∑∏⊗⊕⊘⊙◊♠♣♥♦★☆◈⬡⬢⟁⟐⧫⬟";
 const ZALGO_COMBINING = [
-  "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0305", "\u0306",
-  "\u0307", "\u0308", "\u0309", "\u030A", "\u030B", "\u030C", "\u030D",
-  "\u030E", "\u030F", "\u0310", "\u0311", "\u0312", "\u0313", "\u0314",
-  "\u0315", "\u0316", "\u0317", "\u0318", "\u0319", "\u031A", "\u031B",
-  "\u031C", "\u031D", "\u031E", "\u031F", "\u0320", "\u0321", "\u0322",
-  "\u0323", "\u0324", "\u0325", "\u0326", "\u0327", "\u0328", "\u0329",
-  "\u032A", "\u032B", "\u032C", "\u032D", "\u032E", "\u032F", "\u0330",
-  "\u0331", "\u0332", "\u0333", "\u0334", "\u0335", "\u0336", "\u0337",
-  "\u0338", "\u0339", "\u033A", "\u033B", "\u033C", "\u033D", "\u033E",
-  "\u033F", "\u0340", "\u0341", "\u0342", "\u0343", "\u0344", "\u0345",
-  "\u0346", "\u0347", "\u0348", "\u0349", "\u034A", "\u034B", "\u034C",
-  "\u034D", "\u034E", "\u034F", "\u0350", "\u0351", "\u0352", "\u0353",
-  "\u0354", "\u0355", "\u0356", "\u0357", "\u0358", "\u0359", "\u035A",
-  "\u035B", "\u035C", "\u035D", "\u035E", "\u035F", "\u0360", "\u0361",
+  "\u0300",
+  "\u0301",
+  "\u0302",
+  "\u0303",
+  "\u0304",
+  "\u0305",
+  "\u0306",
+  "\u0307",
+  "\u0308",
+  "\u0309",
+  "\u030A",
+  "\u030B",
+  "\u030C",
+  "\u030D",
+  "\u030E",
+  "\u030F",
+  "\u0310",
+  "\u0311",
+  "\u0312",
+  "\u0313",
+  "\u0314",
+  "\u0315",
+  "\u0316",
+  "\u0317",
+  "\u0318",
+  "\u0319",
+  "\u031A",
+  "\u031B",
+  "\u031C",
+  "\u031D",
+  "\u031E",
+  "\u031F",
+  "\u0320",
+  "\u0321",
+  "\u0322",
+  "\u0323",
+  "\u0324",
+  "\u0325",
+  "\u0326",
+  "\u0327",
+  "\u0328",
+  "\u0329",
+  "\u032A",
+  "\u032B",
+  "\u032C",
+  "\u032D",
+  "\u032E",
+  "\u032F",
+  "\u0330",
+  "\u0331",
+  "\u0332",
+  "\u0333",
+  "\u0334",
+  "\u0335",
+  "\u0336",
+  "\u0337",
+  "\u0338",
+  "\u0339",
+  "\u033A",
+  "\u033B",
+  "\u033C",
+  "\u033D",
+  "\u033E",
+  "\u033F",
+  "\u0340",
+  "\u0341",
+  "\u0342",
+  "\u0343",
+  "\u0344",
+  "\u0345",
+  "\u0346",
+  "\u0347",
+  "\u0348",
+  "\u0349",
+  "\u034A",
+  "\u034B",
+  "\u034C",
+  "\u034D",
+  "\u034E",
+  "\u034F",
+  "\u0350",
+  "\u0351",
+  "\u0352",
+  "\u0353",
+  "\u0354",
+  "\u0355",
+  "\u0356",
+  "\u0357",
+  "\u0358",
+  "\u0359",
+  "\u035A",
+  "\u035B",
+  "\u035C",
+  "\u035D",
+  "\u035E",
+  "\u035F",
+  "\u0360",
+  "\u0361",
 ];
 const GLITCH_CHARS = "ΣΩΨΞΘΔΛΠΦψξθδλπφ¿¡«»░▒▓█▄▀■□▪▫▬▲▼◆●○◎◇";
 
@@ -46,7 +130,8 @@ function glitchText() {
     // Add 1-3 zalgo combining marks
     const marks = 1 + Math.floor(Math.random() * 3);
     for (let j = 0; j < marks; j++) {
-      result += ZALGO_COMBINING[Math.floor(Math.random() * ZALGO_COMBINING.length)];
+      result +=
+        ZALGO_COMBINING[Math.floor(Math.random() * ZALGO_COMBINING.length)];
     }
   }
   return result;
@@ -119,8 +204,8 @@ export default function CycleButton({
     if (isToInfinity) {
       const startNum = isFromInfinity ? 0 : from;
       const targetNum = 999;
-      const countDuration = INFINITY_TWEEN_MS * 0.5;  // first 50% = counting
-      const glitchDuration = INFINITY_TWEEN_MS * 0.5;  // last 50% = chaos
+      const countDuration = INFINITY_TWEEN_MS * 0.5; // first 50% = counting
+      const glitchDuration = INFINITY_TWEEN_MS * 0.5; // last 50% = chaos
 
       setShowInfinity(false);
       setTweening(true);
@@ -250,7 +335,10 @@ export default function CycleButton({
     <button
       type="button"
       className={`${styles.cycleButton} ${isActive ? styles.cycleButtonActive : ""} ${tweening ? styles.tweening : ""} ${showInfinity ? styles.infinity : ""} ${glitching ? styles.glitching : ""}`}
-      onClick={(e: any) => { SoundService.playClickButton({ event: e }); onClick?.(); }}
+      onClick={(e: any) => {
+        SoundService.playClickButton({ event: e });
+        onClick?.();
+      }}
       onMouseEnter={(e: any) => SoundService.playHoverButton({ event: e })}
       title={title}
     >

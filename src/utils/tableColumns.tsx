@@ -34,7 +34,10 @@ import ProportionBarComponent from "../components/ProportionBarComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 
 import ToolIconComponent from "../components/ToolIconComponent";
-import { BadgeComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
+import {
+  BadgeComponent,
+  DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 import ProviderLogo from "../components/ProviderLogosComponent";
 import { resolveProviderLabel } from "../components/ProviderLogosComponent";
 import {
@@ -93,13 +96,19 @@ export const modelColumn = () => ({
   key: "model",
   label: "Model",
   description: "The AI model identifier used for the request",
-  render: (row: any) => <ModelBadgeComponent models={row.model ? [row.model] : []} provider={row.provider} />,
+  render: (row: any) => (
+    <ModelBadgeComponent
+      models={row.model ? [row.model] : []}
+      provider={row.provider}
+    />
+  ),
 });
 
 export const providerColumn = () => ({
   key: "provider",
   label: "Provider",
-  description: "The API provider hosting this model (e.g. OpenAI, Google, Anthropic)",
+  description:
+    "The API provider hosting this model (e.g. OpenAI, Google, Anthropic)",
   render: (row: any) => (
     <ProvidersBadgeComponent providers={row.provider ? [row.provider] : []} />
   ),
@@ -127,15 +136,23 @@ export const modelsListColumn = ({ mini = false }: any = {}) => ({
   label: "Models",
   description: "All distinct models used in this group",
   sortable: false,
-  render: (row: any) => <ModelBadgeComponent models={row.models} providers={row.providers} mini={mini} />,
+  render: (row: any) => (
+    <ModelBadgeComponent
+      models={row.models}
+      providers={row.providers}
+      mini={mini}
+    />
+  ),
 });
 
 export const modelCountColumn = () => ({
   key: "modelCount",
   label: "Models",
   description: "Number of distinct models used",
-  sortValue: (row: any) => (row.models?.length || row.modelCount || 0),
-  render: (row: any) => <ModelBadgeComponent models={row.models || []} providers={row.providers} />,
+  sortValue: (row: any) => row.models?.length || row.modelCount || 0,
+  render: (row: any) => (
+    <ModelBadgeComponent models={row.models || []} providers={row.providers} />
+  ),
 });
 
 export const providersListColumn = ({ mini = false }: any = {}) => ({
@@ -143,7 +160,9 @@ export const providersListColumn = ({ mini = false }: any = {}) => ({
   label: "Providers",
   description: "All distinct providers used in this group",
   sortable: false,
-  render: (row: any) => <ProvidersBadgeComponent providers={row.providers} mini={mini} />,
+  render: (row: any) => (
+    <ProvidersBadgeComponent providers={row.providers} mini={mini} />
+  ),
 });
 
 export const providerCountColumn = () => ({
@@ -151,7 +170,9 @@ export const providerCountColumn = () => ({
   label: "Providers",
   description: "Number of distinct API providers used",
   sortValue: (row: any) => (row.providers || []).length,
-  render: (row: any) => <ProvidersBadgeComponent providers={row.providers || []} />,
+  render: (row: any) => (
+    <ProvidersBadgeComponent providers={row.providers || []} />
+  ),
 });
 
 /* ·· Request / usage columns ·· */
@@ -197,7 +218,10 @@ export const usageColumn = (totalRequests: any, color: any) => ({
 
 /* ·· Modalities ·· */
 
-export const modalitiesColumn = ({ mini = false, fromConversations = false }: any = {}) => ({
+export const modalitiesColumn = ({
+  mini = false,
+  fromConversations = false,
+}: any = {}) => ({
   key: "modalities",
   label: "Modalities",
   description: "Input/output types supported (text, image, audio, video)",
@@ -229,9 +253,20 @@ export const toolsColumn = ({ mini = false, configModels }: any = {}) => ({
     if (configModels) {
       const tools = configModels[`${row.provider}:${row.model}`];
       if (!tools?.length) return emptyDash();
-      return <ToolIconComponent toolDisplayNames={tools} size={mini ? 10 : undefined} />;
+      return (
+        <ToolIconComponent
+          toolDisplayNames={tools}
+          size={mini ? 10 : undefined}
+        />
+      );
     }
-    return <ToolIconComponent toolDisplayNames={row.toolDisplayNames} toolApiNames={row.toolApiNames} size={mini ? 10 : undefined} />;
+    return (
+      <ToolIconComponent
+        toolDisplayNames={row.toolDisplayNames}
+        toolApiNames={row.toolApiNames}
+        size={mini ? 10 : undefined}
+      />
+    );
   },
 });
 
@@ -290,14 +325,19 @@ export const tokenColumns = ({
 /* ·· Cost columns ·· */
 
 /** Returns 2 columns: Cost, Cost % */
-export const costColumns = (totalCost: any, { costKey = "totalCost", mini = false }: any = {}) => [
+export const costColumns = (
+  totalCost: any,
+  { costKey = "totalCost", mini = false }: any = {},
+) => [
   {
     key: costKey,
     label: "Cost",
     description: "Total estimated cost in USD",
     sortable: true,
     align: "right",
-    render: (row: any) => <CostBadgeComponent cost={row[costKey]} mini={mini} />,
+    render: (row: any) => (
+      <CostBadgeComponent cost={row[costKey]} mini={mini} />
+    ),
   },
   {
     key: "costShare",
@@ -389,7 +429,8 @@ export const conversationCountColumn = () => ({
   sortable: true,
   align: "right",
   render: (row: any) => {
-    const count = row.conversationCount || (row.conversations || []).length || 0;
+    const count =
+      row.conversationCount || (row.conversations || []).length || 0;
     return (
       <span className={styles.countCell}>
         <MessageSquare size={10} />
@@ -407,22 +448,28 @@ export const durationColumn = ({ useDurationMs = false }: any = {}) => ({
   description: "Elapsed wall-clock time from start to finish",
   sortable: false,
   align: "right",
-  sortValue: (row: any) => useDurationMs ? getDurationMs(row) : 0,
+  sortValue: (row: any) => (useDurationMs ? getDurationMs(row) : 0),
   render: (row: any) => {
-    const ms = useDurationMs ? getDurationMs(row) : (() => {
-      // Session-style: startedAt / finishedAt
-      if (!row.startedAt || !row.finishedAt) return 0;
-      return new Date(row.finishedAt).getTime() - new Date(row.startedAt).getTime();
-    })();
+    const ms = useDurationMs
+      ? getDurationMs(row)
+      : (() => {
+          // Session-style: startedAt / finishedAt
+          if (!row.startedAt || !row.finishedAt) return 0;
+          return (
+            new Date(row.finishedAt).getTime() -
+            new Date(row.startedAt).getTime()
+          );
+        })();
     const dur = formatDuration(ms);
     if (!dur) return emptyDash();
-    return (
-      <StopwatchBadgeComponent seconds={ms / 1000} />
-    );
+    return <StopwatchBadgeComponent seconds={ms / 1000} />;
   },
 });
 
-export const durationShareColumn = (totalDuration: any, { mini = false }: any = {}) => ({
+export const durationShareColumn = (
+  totalDuration: any,
+  { mini = false }: any = {},
+) => ({
   key: "durationShare",
   label: "Duration %",
   description: "Proportional share of total duration",
@@ -440,13 +487,21 @@ export const durationShareColumn = (totalDuration: any, { mini = false }: any = 
 
 /* ·· Timestamps ·· */
 
-export const createdAtColumn = (key = "createdAt", { highlightNew = false }: any = {}) => ({
+export const createdAtColumn = (
+  key = "createdAt",
+  { highlightNew = false }: any = {},
+) => ({
   key,
   label: "Created",
   description: "When this record was first created",
   sortable: true,
   align: "right",
-  render: (row: any) => row[key] ? <DateTimeBadgeComponent date={row[key]} highlightNew={highlightNew} /> : emptyDash(),
+  render: (row: any) =>
+    row[key] ? (
+      <DateTimeBadgeComponent date={row[key]} highlightNew={highlightNew} />
+    ) : (
+      emptyDash()
+    ),
 });
 
 /* ·· Trace ID ·· */
@@ -477,7 +532,9 @@ export const conversationTitleColumn = ({ mini = false }: any = {}) => ({
   description: "Auto-generated conversation title",
   sortable: false,
   render: (c: any) => (
-    <span className={`${styles.conversationTitle} ${mini ? styles.conversationTitleMini : ""}`}>
+    <span
+      className={`${styles.conversationTitle} ${mini ? styles.conversationTitleMini : ""}`}
+    >
       <MessageSquare size={mini ? 9 : 12} />
       {c.title || "Untitled"}
     </span>
@@ -493,7 +550,9 @@ export const projectBadgeColumn = ({ mini = false }: any = {}) => ({
   sortable: false,
   render: (c: any) =>
     c.project ? (
-      <BadgeComponent variant="info" mini={mini}>{c.project}</BadgeComponent>
+      <BadgeComponent variant="info" mini={mini}>
+        {c.project}
+      </BadgeComponent>
     ) : (
       emptyDash()
     ),
@@ -506,7 +565,9 @@ export const userBadgeColumn = ({ mini = false }: any = {}) => ({
   sortable: false,
   render: (c: any) =>
     c.username && c.username !== "unknown" ? (
-      <BadgeComponent variant="provider" mini={mini}>{c.username}</BadgeComponent>
+      <BadgeComponent variant="provider" mini={mini}>
+        {c.username}
+      </BadgeComponent>
     ) : (
       emptyDash()
     ),
@@ -526,7 +587,8 @@ export const endpointColumn = () => ({
 export const operationColumn = () => ({
   key: "operation",
   label: "Operation",
-  description: "The semantic purpose of this LLM call (e.g. chat, agent:iteration, memory:extract)",
+  description:
+    "The semantic purpose of this LLM call (e.g. chat, agent:iteration, memory:extract)",
   render: (r: any) => (
     <BadgeComponent variant="info">{r.operation || "-"}</BadgeComponent>
   ),
@@ -537,7 +599,8 @@ export const operationColumn = () => ({
 export const agentColumn = () => ({
   key: "agent",
   label: "Agent",
-  description: "The originating agent that made this request (e.g. CODING, LUPOS)",
+  description:
+    "The originating agent that made this request (e.g. CODING, LUPOS)",
   sortable: false,
   render: (r: any) => {
     // Normalize: sessions expose `agents` (array), requests expose `agent` (string)
@@ -551,7 +614,8 @@ export const agentColumn = () => ({
 export const statusColumn = () => ({
   key: "success",
   label: "Status",
-  description: "Whether the request completed successfully (OK) or failed (ERR)",
+  description:
+    "Whether the request completed successfully (OK) or failed (ERR)",
   align: "right",
   render: (r: any) => (
     <BadgeComponent variant={r.success ? "success" : "error"}>
@@ -566,7 +630,8 @@ export const benchmarkStatusColumn = () => ({
   key: "status",
   label: "Status",
   description: "Whether the model passed, failed, or errored on this benchmark",
-  sortValue: (r: any) => (r._running ? -2 : r._pending ? -3 : r.error ? -1 : r.passed ? 1 : 0),
+  sortValue: (r: any) =>
+    r._running ? -2 : r._pending ? -3 : r.error ? -1 : r.passed ? 1 : 0,
   render: (r: any) => {
     if (r._pending) {
       return (
@@ -614,10 +679,14 @@ export const benchmarkModelColumn = () => ({
   label: "Model",
   description: "The model and provider tested",
   render: (r: any) => (
-    <span className={`${styles.benchmarkModelCell} ${r._pending ? styles.benchmarkModelPending : ""}`}>
+    <span
+      className={`${styles.benchmarkModelCell} ${r._pending ? styles.benchmarkModelPending : ""}`}
+    >
       <span className={styles.benchmarkModelName}>{r.label}</span>
       <span className={styles.benchmarkModelProviderRow}>
-        <span className={styles.benchmarkModelProvider}>{resolveProviderLabel(r.provider)}</span>
+        <span className={styles.benchmarkModelProvider}>
+          {resolveProviderLabel(r.provider)}
+        </span>
         {r._running && r._progress > 0 && (
           <span className={styles.benchmarkProgressPct}>
             {Math.round(r._progress * 100)}%
@@ -725,7 +794,9 @@ function highlightExpected(text: any, expected: any, matchMode: any) {
       return (
         <>
           {text.slice(0, index)}
-          <mark className={styles.benchmarkHighlight}>{text.slice(index, index + len)}</mark>
+          <mark className={styles.benchmarkHighlight}>
+            {text.slice(index, index + len)}
+          </mark>
           {text.slice(index + len)}
         </>
       );
@@ -756,7 +827,10 @@ function highlightExpected(text: any, expected: any, matchMode: any) {
   );
 }
 
-export const benchmarkResponseColumn = ({ expectedValue, matchMode }: any = {}) => ({
+export const benchmarkResponseColumn = ({
+  expectedValue,
+  matchMode,
+}: any = {}) => ({
   key: "response",
   label: "Response",
   description: "The model's output text (or error message)",
@@ -768,8 +842,12 @@ export const benchmarkResponseColumn = ({ expectedValue, matchMode }: any = {}) 
     return (
       <span className={styles.benchmarkResponseCell} title={r.response}>
         {expectedValue
-          ? highlightExpected(r.response, expectedValue, matchMode || r.matchMode)
-          : (r.response || "—")}
+          ? highlightExpected(
+              r.response,
+              expectedValue,
+              matchMode || r.matchMode,
+            )
+          : r.response || "—"}
       </span>
     );
   },
@@ -798,9 +876,7 @@ export const benchmarkDurationColumn = () => ({
   align: "right",
   render: (r: any) => {
     if (!r.latency) return emptyDash();
-    return (
-      <StopwatchBadgeComponent seconds={r.latency} />
-    );
+    return <StopwatchBadgeComponent seconds={r.latency} />;
   },
 });
 
@@ -813,7 +889,11 @@ export const benchmarkTokensInColumn = () => ({
   align: "right",
   render: (r: any) => {
     const v = getTotalInputTokens(r.usage);
-    return v > 0 ? <TokenCountBadgeComponent value={v} label="in" mini /> : emptyDash();
+    return v > 0 ? (
+      <TokenCountBadgeComponent value={v} label="in" mini />
+    ) : (
+      emptyDash()
+    );
   },
 });
 
@@ -826,7 +906,11 @@ export const benchmarkTokensOutColumn = () => ({
   align: "right",
   render: (r: any) => {
     const v = r.usage?.outputTokens || 0;
-    return v > 0 ? <TokenCountBadgeComponent value={v} label="out" mini /> : emptyDash();
+    return v > 0 ? (
+      <TokenCountBadgeComponent value={v} label="out" mini />
+    ) : (
+      emptyDash()
+    );
   },
 });
 
@@ -884,7 +968,8 @@ export const benchmarkDateColumn = () => ({
 export const benchmarkMatchModeColumn = () => ({
   key: "matchMode",
   label: "Match",
-  description: "Evaluation strategy used to compare response against expected value",
+  description:
+    "Evaluation strategy used to compare response against expected value",
   sortable: false,
   render: (r: any) => {
     const labels = {
@@ -932,9 +1017,7 @@ export const dashboardTestsColumn = () => ({
   description: "Total number of benchmark tests run for this model",
   sortable: true,
   align: "right",
-  render: (r: any) => (
-    <span className={styles.monoCell}>{r.total}</span>
-  ),
+  render: (r: any) => <span className={styles.monoCell}>{r.total}</span>,
 });
 
 export const dashboardPassedColumn = () => ({
@@ -975,7 +1058,11 @@ export const dashboardPassRateColumn = () => ({
   render: (r: any) => {
     const pct = Math.round(r.passRate * 100);
     const color =
-      pct >= 80 ? "var(--success)" : pct >= 50 ? "var(--warning)" : "var(--danger)";
+      pct >= 80
+        ? "var(--success)"
+        : pct >= 50
+          ? "var(--warning)"
+          : "var(--danger)";
     return (
       <span className={styles.dashboardRateCell}>
         <span className={styles.dashboardRateBar}>
@@ -998,9 +1085,7 @@ export const dashboardAvgLatencyColumn = () => ({
   description: "Average response latency across all benchmark tests",
   sortable: true,
   align: "right",
-  render: (r: any) => (
-    <StopwatchBadgeComponent seconds={r.avgLatency} />
-  ),
+  render: (r: any) => <StopwatchBadgeComponent seconds={r.avgLatency} />,
 });
 
 export const dashboardCostColumn = () => ({

@@ -21,12 +21,26 @@ import {
  */
 export default function useSessionStats(messages: any) {
   const uniqueModels = useMemo(() => getUniqueModels(messages), [messages]);
-  const uniqueProviders = useMemo(() => getUniqueProviders(messages), [messages]);
-  const totalCost = useMemo(() => getSessionCost(messages), [messages]);
-  const { totalTokens, requestCount, liveStreamingTokens, liveStreamingStartTime, liveStreamingLastChunkTime, liveStreamingBurstTokens, liveStreamingBurstElapsed, workerGenerationProgress, lastTimeToGeneration, liveProcessingStartTime, liveProcessingPhase, liveTtftSamples, liveGenProgress } = useMemo(
-    () => getSessionTokenStats(messages),
+  const uniqueProviders = useMemo(
+    () => getUniqueProviders(messages),
     [messages],
   );
+  const totalCost = useMemo(() => getSessionCost(messages), [messages]);
+  const {
+    totalTokens,
+    requestCount,
+    liveStreamingTokens,
+    liveStreamingStartTime,
+    liveStreamingLastChunkTime,
+    liveStreamingBurstTokens,
+    liveStreamingBurstElapsed,
+    workerGenerationProgress,
+    lastTimeToGeneration,
+    liveProcessingStartTime,
+    liveProcessingPhase,
+    liveTtftSamples,
+    liveGenProgress,
+  } = useMemo(() => getSessionTokenStats(messages), [messages]);
   const usedTools = useMemo(() => getUsedTools(messages), [messages]);
   const modalities = useMemo(() => getModalities(messages), [messages]);
   const elapsedTime = useMemo(

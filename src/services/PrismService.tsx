@@ -118,7 +118,11 @@ export default class PrismService {
 
    * @returns {Promise<object>} The initial cloud config
    */
-  static async getConfigWithLocalModels({ onConfig, onLocalMerge, service }: any = {}) {
+  static async getConfigWithLocalModels({
+    onConfig,
+    onLocalMerge,
+    service,
+  }: any = {}) {
     const svc = service || PrismService;
     const config = await svc.getConfig();
 
@@ -126,7 +130,8 @@ export default class PrismService {
 
     // Fire-and-forget local model fetch
     if (config?.localProviders?.length > 0) {
-      svc.getLocalConfig()
+      svc
+        .getLocalConfig()
         .then(({ models }: any) => {
           const merged = PrismService.mergeLocalModels(config, models);
           if (merged !== config && onLocalMerge) onLocalMerge(merged);
@@ -164,7 +169,6 @@ export default class PrismService {
     return PrismService._request("/config/agents", { method: "GET" });
   }
 
-
   // ---------------------------------------------------------------------------
   // Stats
   // ---------------------------------------------------------------------------
@@ -186,7 +190,6 @@ export default class PrismService {
     return PrismService._request("/admin/stats/tools", { method: "GET" });
   }
 
-
   // ---------------------------------------------------------------------------
   // Conversations
   // ---------------------------------------------------------------------------
@@ -202,7 +205,9 @@ export default class PrismService {
     if (limit) qs.set("limit", String(limit));
     if (cursor) qs.set("cursor", cursor);
     const query = qs.toString();
-    return PrismService._request(`/conversations${query ? `?${query}` : ""}`, { method: "GET" });
+    return PrismService._request(`/conversations${query ? `?${query}` : ""}`, {
+      method: "GET",
+    });
   }
 
   /**
@@ -239,10 +244,7 @@ export default class PrismService {
     qs.set("project", project);
     if (limit) qs.set("limit", String(limit));
     if (cursor) qs.set("cursor", cursor);
-    return PrismService._request(
-      `/agent-sessions?${qs}`,
-      { method: "GET" },
-    );
+    return PrismService._request(`/agent-sessions?${qs}`, { method: "GET" });
   }
 
   /**
@@ -274,7 +276,12 @@ export default class PrismService {
 
 
    */
-  static async appendMessages(id: any, messages: any, project: any, conversationMeta: any) {
+  static async appendMessages(
+    id: any,
+    messages: any,
+    project: any,
+    conversationMeta: any,
+  ) {
     const qs = project ? `?project=${encodeURIComponent(project)}` : "";
     const body = { messages };
     if (conversationMeta) (body as any).conversationMeta = conversationMeta;
@@ -506,7 +513,10 @@ export default class PrismService {
     const qs = new URLSearchParams();
     if (project) qs.set("project", project);
     if (limit) qs.set("limit", String(limit));
-    return PrismService._request(`/agent-memories/consolidation-history?${qs}`, { method: "GET" });
+    return PrismService._request(
+      `/agent-memories/consolidation-history?${qs}`,
+      { method: "GET" },
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -625,8 +635,12 @@ export default class PrismService {
    * @returns {Promise<{ workers: Array }>}
    */
   static async getCoordinatorWorkers(agentSessionId: any) {
-    const qs = agentSessionId ? `?agentSessionId=${encodeURIComponent(agentSessionId)}` : "";
-    return PrismService._request(`/coordinator/workers${qs}`, { method: "GET" });
+    const qs = agentSessionId
+      ? `?agentSessionId=${encodeURIComponent(agentSessionId)}`
+      : "";
+    return PrismService._request(`/coordinator/workers${qs}`, {
+      method: "GET",
+    });
   }
 
   /**
@@ -661,7 +675,9 @@ export default class PrismService {
 
    */
   static async generateAgentText(payload: any) {
-    return PrismService._request("/agent?stream=false", { body: { ...payload, agent: payload.agent || "CODING" } });
+    return PrismService._request("/agent?stream=false", {
+      body: { ...payload, agent: payload.agent || "CODING" },
+    });
   }
 
   /**
@@ -670,7 +686,11 @@ export default class PrismService {
 
    * @returns {Promise<{ ok: boolean, approved: boolean }>}
    */
-  static async sendApprovalResponse(agentSessionId: any, approved: any, { approveAll }: any = {}) {
+  static async sendApprovalResponse(
+    agentSessionId: any,
+    approved: any,
+    { approveAll }: any = {},
+  ) {
     return PrismService._request("/agent/approve", {
       body: { agentSessionId, approved, ...(approveAll && { approveAll }) },
     });
@@ -683,7 +703,10 @@ export default class PrismService {
    *   Simple string for single-question backward compat, or structured answers array.
    * @returns {Promise<{ ok: boolean }>}
    */
-  static async sendUserQuestionAnswer(agentSessionId: any, answerOrAnswers: any) {
+  static async sendUserQuestionAnswer(
+    agentSessionId: any,
+    answerOrAnswers: any,
+  ) {
     // Normalize: structured array vs simple string
     const body = { agentSessionId };
     if (Array.isArray(answerOrAnswers)) {
@@ -710,7 +733,11 @@ export default class PrismService {
    * @param {Function} callbacks.onError   - Required for error delivery
    * @returns {Function} abort — call to cancel the stream
    */
-  static _streamSSE(endpoint: any, { method = "POST", body }: any = {}, callbacks: any = {}) {
+  static _streamSSE(
+    endpoint: any,
+    { method = "POST", body }: any = {},
+    callbacks: any = {},
+  ) {
     const { onError } = callbacks;
     const controller = new AbortController();
 
@@ -725,7 +752,8 @@ export default class PrismService {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          if (onError) onError(new Error(error.message || `HTTP ${response.status}`));
+          if (onError)
+            onError(new Error(error.message || `HTTP ${response.status}`));
           return;
         }
 
@@ -778,15 +806,32 @@ export default class PrismService {
    */
   static _dispatchSSE(data: any, callbacks: any) {
     const {
-      onChunk, onThinking, onImage, onAudio,
-      onExecutableCode, onCodeExecutionResult, onWebSearchResult,
-      onToolCall, onToolExecution, onToolOutput,
-      onWorkerToolExecution, onWorkerToolOutput, onWorkerStatus,
-      onApprovalRequired, onPlanProposal,
-      onUserQuestion, onTodoUpdate, onBriefUpdate,
-      onRunInfo, onModelStart, onModelComplete, onRunComplete,
+      onChunk,
+      onThinking,
+      onImage,
+      onAudio,
+      onExecutableCode,
+      onCodeExecutionResult,
+      onWebSearchResult,
+      onToolCall,
+      onToolExecution,
+      onToolOutput,
+      onWorkerToolExecution,
+      onWorkerToolOutput,
+      onWorkerStatus,
+      onApprovalRequired,
+      onPlanProposal,
+      onUserQuestion,
+      onTodoUpdate,
+      onBriefUpdate,
+      onRunInfo,
+      onModelStart,
+      onModelComplete,
+      onRunComplete,
       onUsageUpdate,
-      onStatus, onDone, onError,
+      onStatus,
+      onDone,
+      onError,
     } = callbacks;
 
     switch (data.type) {
@@ -904,7 +949,11 @@ export default class PrismService {
    * @returns {Function} abort - Call to cancel the stream early
    */
   static streamAgentText(payload: any, callbacks: any) {
-    return PrismService._streamSSE("/agent", { body: { ...payload, agent: payload.agent || "CODING" } }, callbacks);
+    return PrismService._streamSSE(
+      "/agent",
+      { body: { ...payload, agent: payload.agent || "CODING" } },
+      callbacks,
+    );
   }
 
   /**
@@ -1017,7 +1066,9 @@ export default class PrismService {
 
    */
   static async getWorkflows() {
-    return PrismService._request("/workflows?source=prism-client", { method: "GET" });
+    return PrismService._request("/workflows?source=prism-client", {
+      method: "GET",
+    });
   }
 
   /**
@@ -1125,7 +1176,9 @@ export default class PrismService {
 
    */
   static async loadLmStudioModel(model: any, options = {}) {
-    return PrismService._request("/lm-studio/load", { body: buildLmStudioLoadBody(model, options) });
+    return PrismService._request("/lm-studio/load", {
+      body: buildLmStudioLoadBody(model, options),
+    });
   }
 
   /**
@@ -1158,7 +1211,11 @@ export default class PrismService {
    * @param {object} callbacks — { onProgress(0-1), onComplete(), onError(err) }
    * @returns {Function} abort — call to cancel
    */
-  static loadLmStudioModelStream(model: any, options = {}, callbacks: any = {}) {
+  static loadLmStudioModelStream(
+    model: any,
+    options = {},
+    callbacks: any = {},
+  ) {
     const { onProgress, onComplete, onError } = callbacks;
     const controller = new AbortController();
 
@@ -1170,7 +1227,10 @@ export default class PrismService {
       const startTime = Date.now();
       let lastPct = 0;
       const progressInterval = setInterval(() => {
-        if (controller.signal.aborted) { clearInterval(progressInterval); return; }
+        if (controller.signal.aborted) {
+          clearInterval(progressInterval);
+          return;
+        }
         const elapsed = Date.now() - startTime;
         const pct = Math.min(0.95, elapsed / (elapsed + EXPECTED_LOAD_MS));
         if (pct > lastPct + 0.005) {
@@ -1193,7 +1253,8 @@ export default class PrismService {
 
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
-          if (onError) onError(new Error(error.message || `HTTP ${response.status}`));
+          if (onError)
+            onError(new Error(error.message || `HTTP ${response.status}`));
           return;
         }
 
@@ -1254,7 +1315,6 @@ export default class PrismService {
   static async getBenchmark(id: any) {
     return PrismService._request(`/benchmark/${id}`, { method: "GET" });
   }
-
 
   /**
    * Delete a benchmark test and all its runs.

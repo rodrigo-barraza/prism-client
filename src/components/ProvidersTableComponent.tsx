@@ -31,10 +31,12 @@ export default function ProvidersTableComponent({
 }: any) {
   const totalRequests =
     (totalRequestsProp ??
-    providers.reduce((s: any, p: any) => s + p.totalRequests, 0)) || 1;
+      providers.reduce((s: any, p: any) => s + p.totalRequests, 0)) ||
+    1;
   const totalCost =
     (totalCostProp ??
-    providers.reduce((s: any, p: any) => s + (p.totalCost || 0), 0)) || 1;
+      providers.reduce((s: any, p: any) => s + (p.totalCost || 0), 0)) ||
+    1;
 
   const allColumns = [
     providerColumn(),

@@ -28,7 +28,10 @@ const INITIAL_FORM = {
   agentAssertionOperator: "AND",
 };
 
-export default function BenchmarkPageComponent({ navSidebar, rightSidebar }: any) {
+export default function BenchmarkPageComponent({
+  navSidebar,
+  rightSidebar,
+}: any) {
   const router = useRouter();
 
   // -- State --------------------------------------------------
@@ -52,7 +55,14 @@ export default function BenchmarkPageComponent({ navSidebar, rightSidebar }: any
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const { assertions, assertionOperator, agentAssertions, agentAssertionOperator, benchmarkMode, ...rest } = form;
+      const {
+        assertions,
+        assertionOperator,
+        agentAssertions,
+        agentAssertionOperator,
+        benchmarkMode,
+        ...rest
+      } = form;
       const payload = {
         ...rest,
         benchmarkMode,
@@ -102,7 +112,8 @@ export default function BenchmarkPageComponent({ navSidebar, rightSidebar }: any
             <div>
               <div className={styles.createFormTitle}>New Benchmark</div>
               <div className={styles.createFormSubtitle}>
-                Define a prompt, expected output, and match criteria to evaluate model accuracy.
+                Define a prompt, expected output, and match criteria to evaluate
+                model accuracy.
               </div>
             </div>
           </div>

@@ -11,7 +11,11 @@ import styles from "./ProvidersBadgeComponent.module.css";
 
 
  */
-export default function ProvidersBadgeComponent({ providers = [], className = "", mini = false }: any) {
+export default function ProvidersBadgeComponent({
+  providers = [],
+  className = "",
+  mini = false,
+}: any) {
   if (!providers || providers.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
@@ -26,7 +30,9 @@ export default function ProvidersBadgeComponent({ providers = [], className = ""
       <TooltipComponent label={displayLabel(providers[0])} position="top">
         <span className={cls}>
           <ProviderLogo provider={providers[0]} size={iconSize} />
-          <span className={styles.providerName}>{displayLabel(providers[0])}</span>
+          <span className={styles.providerName}>
+            {displayLabel(providers[0])}
+          </span>
         </span>
       </TooltipComponent>
     );

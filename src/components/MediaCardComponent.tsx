@@ -173,11 +173,13 @@ export default function MediaCardComponent({
           )}
           <div className={styles.meta}>
             {m.model && (
-              <ModelBadgeComponent models={[m.model.split("/").pop()]} provider={m.provider} mini />
+              <ModelBadgeComponent
+                models={[m.model.split("/").pop()]}
+                provider={m.provider}
+                mini
+              />
             )}
-            {m.timestamp && (
-              <DateTimeBadgeComponent date={m.timestamp} mini />
-            )}
+            {m.timestamp && <DateTimeBadgeComponent date={m.timestamp} mini />}
           </div>
         </div>
       )}

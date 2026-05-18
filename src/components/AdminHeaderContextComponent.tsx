@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { usePathname } from "next/navigation";
 import { LS_DATE_RANGE } from "../constants";
 
@@ -42,8 +48,10 @@ export function AdminHeaderProvider({ children }: any) {
   // controls or badge — eliminating the cross-page flicker entirely.
   // Compare only the top-level route segment so sub-route navigations
   // (e.g. /admin/conversations → /admin/conversations/[id]) don't wipe the badge.
-  const routeSegment = pathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
-  const prevRouteSegment = prevPathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
+  const routeSegment =
+    pathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
+  const prevRouteSegment =
+    prevPathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
   if (prevRouteSegment !== routeSegment) {
     setPrevPathname(pathname);
     if (controls !== null) setControlsState(null);
@@ -83,7 +91,18 @@ export function AdminHeaderProvider({ children }: any) {
   }, []);
 
   return (
-    <AdminHeaderContext.Provider value={{ controls, setControls, titleBadge, setTitleBadge, dateRange, setDateRange, sessionFilter, setSessionFilter }}>
+    <AdminHeaderContext.Provider
+      value={{
+        controls,
+        setControls,
+        titleBadge,
+        setTitleBadge,
+        dateRange,
+        setDateRange,
+        sessionFilter,
+        setSessionFilter,
+      }}
+    >
       {children}
     </AdminHeaderContext.Provider>
   );

@@ -79,7 +79,11 @@
 /* ── "Just now" row highlight ──────────────────────── */
 
 .newRow td {
-  background: color-mix(in srgb, var(--accent-color) 8%, transparent) !important;
+  background: color-mix(
+    in srgb,
+    var(--accent-color) 8%,
+    transparent
+  ) !important;
 }
 
 .newRow td:first-child {
@@ -92,7 +96,9 @@
 }
 
 .newRowFadeOut td:first-child {
-  animation: newRowFade 1s ease-out forwards, newRowBorderFade 1s ease-out forwards;
+  animation:
+    newRowFade 1s ease-out forwards,
+    newRowBorderFade 1s ease-out forwards;
 }
 
 @keyframes newRowFade {
@@ -112,4 +118,3 @@
     box-shadow: inset 3px 0 0 transparent;
   }
 }
-

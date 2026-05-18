@@ -5,11 +5,19 @@ import { useSearchParams } from "next/navigation";
 import IrisService from "../../../services/IrisService";
 import WorkflowComponent from "../../../components/WorkflowComponent";
 import WorkflowHeaderStatsComponent from "../../../components/WorkflowHeaderStatsComponent";
-import { SelectComponent, LoadingIndicatorComponent, ToastComponent, useToast } from "@rodrigo-barraza/components-library";
+import {
+  SelectComponent,
+  LoadingIndicatorComponent,
+  ToastComponent,
+  useToast,
+} from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
-import { copyToClipboard, buildDateRangeParams } from "../../../utils/utilities";
+import {
+  copyToClipboard,
+  buildDateRangeParams,
+} from "../../../utils/utilities";
 import styles from "./page.module.css";
 
 export default function AdminWorkflowsPage() {
@@ -112,7 +120,9 @@ function AdminWorkflowsPageInner() {
 
   const edgeCount = useMemo(() => {
     const edges =
-      (selectedWorkflow as any)?.edges || (selectedWorkflow as any)?.connections || [];
+      (selectedWorkflow as any)?.edges ||
+      (selectedWorkflow as any)?.connections ||
+      [];
     return edges.length;
   }, [selectedWorkflow]);
 
@@ -162,7 +172,6 @@ function AdminWorkflowsPageInner() {
     }
   }, []);
 
-
   // Inject controls into AdminShell header
   useEffect(() => {
     setControls(
@@ -209,7 +218,11 @@ function AdminWorkflowsPageInner() {
       <div className={styles.body}>
         {loadingDetail && !selectedWorkflow ? (
           <div className={styles.emptyCanvas}>
-            <LoadingIndicatorComponent size="small" color="inherit" label="Loading workflow…" />
+            <LoadingIndicatorComponent
+              size="small"
+              color="inherit"
+              label="Loading workflow…"
+            />
           </div>
         ) : (
           <WorkflowComponent
@@ -217,7 +230,9 @@ function AdminWorkflowsPageInner() {
             admin
             nodes={localNodes}
             connections={
-              (selectedWorkflow as any)?.edges || (selectedWorkflow as any)?.connections || []
+              (selectedWorkflow as any)?.edges ||
+              (selectedWorkflow as any)?.connections ||
+              []
             }
             selectedNodeId={selectedNodeId}
             onSelectNode={setSelectedNodeId}

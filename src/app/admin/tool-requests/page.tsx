@@ -4,7 +4,11 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Download } from "lucide-react";
 import ToolsApiService from "../../../services/ToolsApiService";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
-import { ButtonComponent, PaginationComponent, TableComponent } from "@rodrigo-barraza/components-library";
+import {
+  ButtonComponent,
+  PaginationComponent,
+  TableComponent,
+} from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import {
   FilterBarComponent,
@@ -78,8 +82,10 @@ export default function ToolRequestsPage() {
       });
       // Date range
       const dateParams = buildDateRangeParams(dateRange);
-      if ((dateParams as any).since) (params as any).since = (dateParams as any).since;
-      if ((dateParams as any).until) (params as any).until = (dateParams as any).until;
+      if ((dateParams as any).since)
+        (params as any).since = (dateParams as any).since;
+      if ((dateParams as any).until)
+        (params as any).until = (dateParams as any).until;
 
       const data = await ToolsApiService.getToolCalls(params);
       setToolCalls(data.toolCalls || []);
@@ -122,7 +128,9 @@ export default function ToolRequestsPage() {
 
   // -- Column definitions -----------------------------------------
   const totalDuration = useMemo(
-    () => toolCalls.reduce((sum: any, tc: any) => sum + (tc.elapsedMs || 0), 0) || 1,
+    () =>
+      toolCalls.reduce((sum: any, tc: any) => sum + (tc.elapsedMs || 0), 0) ||
+      1,
     [toolCalls],
   );
 
@@ -134,8 +142,15 @@ export default function ToolRequestsPage() {
   // -- CSV Export -------------------------------------------------
   const exportCSV = useCallback(() => {
     const headers = [
-      "Timestamp", "Tool", "Domain", "Method", "Agent", "User",
-      "Latency (ms)", "Status", "Error",
+      "Timestamp",
+      "Tool",
+      "Domain",
+      "Method",
+      "Agent",
+      "User",
+      "Latency (ms)",
+      "Status",
+      "Error",
     ].join(",");
     const rows = toolCalls.map((tc: any) =>
       [
@@ -188,9 +203,7 @@ export default function ToolRequestsPage() {
         items: [
           {
             label: "Latency",
-            value: tc.elapsedMs
-              ? formatLatencyMs(tc.elapsedMs)
-              : "—",
+            value: tc.elapsedMs ? formatLatencyMs(tc.elapsedMs) : "—",
           },
           {
             label: "Latency (raw)",
@@ -339,24 +352,26 @@ export default function ToolRequestsPage() {
       >
         {selectedCall && (
           <>
-            {(selectedCall as any).args && Object.keys((selectedCall as any).args).length > 0 && (
-              <div className={styles.detailSection}>
-                <JsonViewerComponent
-                  data={(selectedCall as any).args}
-                  label="Arguments"
-                  maxHeight="300px"
-                />
-              </div>
-            )}
-            {(selectedCall as any).result && Object.keys((selectedCall as any).result).length > 0 && (
-              <div className={styles.detailSection}>
-                <JsonViewerComponent
-                  data={(selectedCall as any).result}
-                  label="Result (Sanitized)"
-                  maxHeight="400px"
-                />
-              </div>
-            )}
+            {(selectedCall as any).args &&
+              Object.keys((selectedCall as any).args).length > 0 && (
+                <div className={styles.detailSection}>
+                  <JsonViewerComponent
+                    data={(selectedCall as any).args}
+                    label="Arguments"
+                    maxHeight="300px"
+                  />
+                </div>
+              )}
+            {(selectedCall as any).result &&
+              Object.keys((selectedCall as any).result).length > 0 && (
+                <div className={styles.detailSection}>
+                  <JsonViewerComponent
+                    data={(selectedCall as any).result}
+                    label="Result (Sanitized)"
+                    maxHeight="400px"
+                  />
+                </div>
+              )}
           </>
         )}
       </RequestDetailsComponent>

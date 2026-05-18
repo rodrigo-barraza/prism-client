@@ -52,17 +52,37 @@
 }
 
 @keyframes glitchHueBtn {
-  0%   { filter: hue-rotate(0deg) brightness(1.2); }
-  25%  { filter: hue-rotate(90deg) brightness(1.6); }
-  50%  { filter: hue-rotate(180deg) brightness(0.8); }
-  75%  { filter: hue-rotate(270deg) brightness(1.4); }
-  100% { filter: hue-rotate(360deg) brightness(1.2); }
+  0% {
+    filter: hue-rotate(0deg) brightness(1.2);
+  }
+  25% {
+    filter: hue-rotate(90deg) brightness(1.6);
+  }
+  50% {
+    filter: hue-rotate(180deg) brightness(0.8);
+  }
+  75% {
+    filter: hue-rotate(270deg) brightness(1.4);
+  }
+  100% {
+    filter: hue-rotate(360deg) brightness(1.2);
+  }
 }
 
 @keyframes glitchJitterBtn {
-  0%   { transform: translate(0, 0) scale(1); }
-  25%  { transform: translate(-1px, 1px) scale(1.03); }
-  50%  { transform: translate(1px, -1px) scale(0.97); }
-  75%  { transform: translate(1px, 0) scale(1.01); }
-  100% { transform: translate(-1px, 0) scale(0.99); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-1px, 1px) scale(1.03);
+  }
+  50% {
+    transform: translate(1px, -1px) scale(0.97);
+  }
+  75% {
+    transform: translate(1px, 0) scale(1.01);
+  }
+  100% {
+    transform: translate(-1px, 0) scale(0.99);
+  }
 }

@@ -16,7 +16,8 @@ export default class WorkspaceService {
       headers: getBaseHeaders(),
       cache: "no-store",
     });
-    if (!response.ok) throw new Error(`WorkspaceService.list failed: ${response.status}`);
+    if (!response.ok)
+      throw new Error(`WorkspaceService.list failed: ${response.status}`);
     return response.json();
   }
 
@@ -31,7 +32,8 @@ export default class WorkspaceService {
       headers: getBaseHeaders(),
       cache: "no-store",
     });
-    if (!response.ok) throw new Error(`WorkspaceService.listFull failed: ${response.status}`);
+    if (!response.ok)
+      throw new Error(`WorkspaceService.listFull failed: ${response.status}`);
     return response.json();
   }
 
@@ -46,7 +48,8 @@ export default class WorkspaceService {
       headers: { ...getBaseHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ roots }),
     });
-    if (!response.ok) throw new Error(`WorkspaceService.update failed: ${response.status}`);
+    if (!response.ok)
+      throw new Error(`WorkspaceService.update failed: ${response.status}`);
     return response.json();
   }
 
@@ -61,7 +64,8 @@ export default class WorkspaceService {
       headers: { ...getBaseHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ path }),
     });
-    if (!response.ok) throw new Error(`WorkspaceService.validate failed: ${response.status}`);
+    if (!response.ok)
+      throw new Error(`WorkspaceService.validate failed: ${response.status}`);
     return response.json();
   }
 
@@ -79,8 +83,8 @@ export default class WorkspaceService {
       headers: getBaseHeaders(),
       cache: "no-store",
     });
-    if (!response.ok) throw new Error(`WorkspaceService.tree failed: ${response.status}`);
+    if (!response.ok)
+      throw new Error(`WorkspaceService.tree failed: ${response.status}`);
     return response.json();
   }
 }
-

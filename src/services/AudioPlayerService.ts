@@ -111,7 +111,10 @@ export default class AudioPlayerService {
     if ((this as any).pcmChunks.length === 0) return null;
 
     // Concatenate all PCM bytes
-    const totalLength = (this as any).pcmChunks.reduce((sum: any, c: any) => sum + c.length, 0);
+    const totalLength = (this as any).pcmChunks.reduce(
+      (sum: any, c: any) => sum + c.length,
+      0,
+    );
     const pcmData = new Uint8Array(totalLength);
     let offset = 0;
     for (const chunk of (this as any).pcmChunks) {
@@ -122,7 +125,8 @@ export default class AudioPlayerService {
     // Build WAV header (44 bytes) + PCM data
     const numChannels = 1;
     const bitsPerSample = 16;
-    const byteRate = (this as any).sampleRate * numChannels * (bitsPerSample / 8);
+    const byteRate =
+      (this as any).sampleRate * numChannels * (bitsPerSample / 8);
     const blockAlign = numChannels * (bitsPerSample / 8);
     const dataSize = pcmData.length;
     const headerSize = 44;

@@ -18,7 +18,11 @@
   white-space: nowrap;
   line-height: 1;
   text-transform: none;
-  transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 .badge:hover {
@@ -44,7 +48,8 @@
 .badgeActive {
   border-color: var(--accent-color);
   background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-tertiary));
-  box-shadow: 0 0 6px -1px color-mix(in srgb, var(--accent-color) 40%, transparent);
+  box-shadow: 0 0 6px -1px
+    color-mix(in srgb, var(--accent-color) 40%, transparent);
 }
 
 .badgeActive svg {
@@ -52,8 +57,13 @@
 }
 
 @keyframes toolBadgePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* ── Usage count ── */

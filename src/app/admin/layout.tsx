@@ -8,5 +8,9 @@ export const metadata = {
 };
 
 export default function AdminLayout({ children }: any) {
-  return <AdminShell><Suspense>{children}</Suspense></AdminShell>;
+  return (
+    <AdminShell>
+      <Suspense>{children}</Suspense>
+    </AdminShell>
+  );
 }

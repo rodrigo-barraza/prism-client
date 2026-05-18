@@ -29,5 +29,12 @@ export default function AdminTextPage() {
     };
   }, [setControls, setTitleBadge]);
 
-  return <TextPageComponent mode="admin" project={projectFilter} dateRange={dateRange} onCountChange={setTitleBadge} />;
+  return (
+    <TextPageComponent
+      mode="admin"
+      project={projectFilter}
+      dateRange={dateRange}
+      onCountChange={setTitleBadge}
+    />
+  );
 }

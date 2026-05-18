@@ -9,7 +9,6 @@ import {
   modelsListColumn,
   providersListColumn,
   toolsColumn,
-
   requestCountColumn,
   tokenColumns,
   costColumns,
@@ -62,8 +61,13 @@ export default function TracesTableComponent({
   const allColumns = SESSION_COLUMNS.filter((c: any) => c.key !== "costShare");
 
   const COMPACT_KEYS = [
-    "id", "project", "username",
-    "requestCount", "totalCost", "createdAt", "duration",
+    "id",
+    "project",
+    "username",
+    "requestCount",
+    "totalCost",
+    "createdAt",
+    "duration",
   ];
   const columns = compact
     ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))

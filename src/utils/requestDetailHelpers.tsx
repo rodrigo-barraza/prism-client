@@ -7,12 +7,11 @@
  * aren't copy-pasted across pages.
  */
 
+import { formatNumber, formatLatency, formatTokensPerSec } from "./utilities";
 import {
-  formatNumber,
-  formatLatency,
-  formatTokensPerSec,
-} from "./utilities";
-import { BadgeComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
+  BadgeComponent,
+  DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 import ModelBadgeComponent from "../components/ModelBadgeComponent";
 import ProvidersBadgeComponent from "../components/ProvidersBadgeComponent";
 import TokenCountBadgeComponent from "../components/TokenCountBadgeComponent";
@@ -50,7 +49,21 @@ export function extractMediaAssets(object: any) {
       } else if (node.startsWith("http://") || node.startsWith("https://")) {
         const ext = node.split("?")[0].split(".").pop()?.toLowerCase();
         if (
-          ["png", "jpg", "jpeg", "gif", "webp", "mp3", "wav", "ogg", "webm", "mp4", "mov", "avi", "pdf"].includes(ext as string)
+          [
+            "png",
+            "jpg",
+            "jpeg",
+            "gif",
+            "webp",
+            "mp3",
+            "wav",
+            "ogg",
+            "webm",
+            "mp4",
+            "mov",
+            "avi",
+            "pdf",
+          ].includes(ext as string)
         ) {
           seen.add(node);
           assets.push({ url: node, origin });
@@ -108,15 +121,19 @@ export function buildRequestDetailSections(req: any) {
         },
         {
           label: "Timestamp",
-          value: req.timestamp
-            ? <DateTimeBadgeComponent date={req.timestamp} />
-            : "-",
+          value: req.timestamp ? (
+            <DateTimeBadgeComponent date={req.timestamp} />
+          ) : (
+            "-"
+          ),
         },
         {
           label: "Project",
           value: req.project ? (
             <BadgeComponent variant="info">{req.project}</BadgeComponent>
-          ) : "-",
+          ) : (
+            "-"
+          ),
         },
         {
           label: "Endpoint",
@@ -135,34 +152,43 @@ export function buildRequestDetailSections(req: any) {
           ),
         },
         ...(req.agent
-          ? [{
-              label: "Agent",
-              value: (
-                <BadgeComponent variant="accent">
-                  {req.agent}
-                </BadgeComponent>
-              ),
-            }]
+          ? [
+              {
+                label: "Agent",
+                value: (
+                  <BadgeComponent variant="accent">{req.agent}</BadgeComponent>
+                ),
+              },
+            ]
           : []),
         {
           label: "Provider",
           value: req.provider ? (
             <ProvidersBadgeComponent providers={[req.provider]} />
-          ) : "-",
+          ) : (
+            "-"
+          ),
         },
-        { label: "Model", value: req.model ? <ModelBadgeComponent models={[req.model]} provider={req.provider} /> : "-" },
+        {
+          label: "Model",
+          value: req.model ? (
+            <ModelBadgeComponent models={[req.model]} provider={req.provider} />
+          ) : (
+            "-"
+          ),
+        },
         {
           label: "Modalities",
           value: req.modalities ? (
             <ModalityIconComponent modalities={req.modalities} size={14} />
-          ) : "-",
+          ) : (
+            "-"
+          ),
         },
         {
           label: "Status",
           value: (
-            <BadgeComponent
-              variant={req.success ? "success" : "error"}
-            >
+            <BadgeComponent variant={req.success ? "success" : "error"}>
               {req.success ? "Success" : "Error"}
             </BadgeComponent>
           ),
@@ -213,33 +239,60 @@ export function buildRequestDetailSections(req: any) {
       items: [
         {
           label: "Input Tokens",
-          value: req.inputTokens > 0
-            ? <TokenCountBadgeComponent value={req.inputTokens} label="in" />
-            : formatNumber(req.inputTokens),
+          value:
+            req.inputTokens > 0 ? (
+              <TokenCountBadgeComponent value={req.inputTokens} label="in" />
+            ) : (
+              formatNumber(req.inputTokens)
+            ),
         },
         {
           label: "Output Tokens",
-          value: req.outputTokens > 0
-            ? <TokenCountBadgeComponent value={req.outputTokens} label="out" />
-            : formatNumber(req.outputTokens),
+          value:
+            req.outputTokens > 0 ? (
+              <TokenCountBadgeComponent value={req.outputTokens} label="out" />
+            ) : (
+              formatNumber(req.outputTokens)
+            ),
         },
         ...(req.cacheReadInputTokens > 0
-          ? [{
-              label: "Cache Read Tokens",
-              value: <TokenCountBadgeComponent value={req.cacheReadInputTokens} label="cached read" />,
-            }]
+          ? [
+              {
+                label: "Cache Read Tokens",
+                value: (
+                  <TokenCountBadgeComponent
+                    value={req.cacheReadInputTokens}
+                    label="cached read"
+                  />
+                ),
+              },
+            ]
           : []),
         ...(req.cacheCreationInputTokens > 0
-          ? [{
-              label: "Cache Write Tokens",
-              value: <TokenCountBadgeComponent value={req.cacheCreationInputTokens} label="cached write" />,
-            }]
+          ? [
+              {
+                label: "Cache Write Tokens",
+                value: (
+                  <TokenCountBadgeComponent
+                    value={req.cacheCreationInputTokens}
+                    label="cached write"
+                  />
+                ),
+              },
+            ]
           : []),
         ...(req.reasoningOutputTokens > 0
-          ? [{
-              label: "Reasoning Tokens",
-              value: <TokenCountBadgeComponent value={req.reasoningOutputTokens} label="reasoning" />,
-            }]
+          ? [
+              {
+                label: "Reasoning Tokens",
+                value: (
+                  <TokenCountBadgeComponent
+                    value={req.reasoningOutputTokens}
+                    label="reasoning"
+                  />
+                ),
+              },
+            ]
           : []),
         {
           label: "Estimated Cost",
@@ -247,9 +300,14 @@ export function buildRequestDetailSections(req: any) {
         },
         {
           label: "Tokens/sec",
-          value: req.tokensPerSec > 0
-            ? <BadgeComponent variant="accent">{formatTokensPerSec(req.tokensPerSec)}</BadgeComponent>
-            : formatTokensPerSec(req.tokensPerSec),
+          value:
+            req.tokensPerSec > 0 ? (
+              <BadgeComponent variant="accent">
+                {formatTokensPerSec(req.tokensPerSec)}
+              </BadgeComponent>
+            ) : (
+              formatTokensPerSec(req.tokensPerSec)
+            ),
         },
         {
           label: "Input Chars",
@@ -270,21 +328,30 @@ export function buildRequestDetailSections(req: any) {
       items: [
         {
           label: "Time to Generation",
-          value: req.timeToGeneration > 0
-            ? <StopwatchBadgeComponent seconds={req.timeToGeneration} />
-            : formatLatency(req.timeToGeneration),
+          value:
+            req.timeToGeneration > 0 ? (
+              <StopwatchBadgeComponent seconds={req.timeToGeneration} />
+            ) : (
+              formatLatency(req.timeToGeneration)
+            ),
         },
         {
           label: "Generation Time",
-          value: req.generationTime > 0
-            ? <StopwatchBadgeComponent seconds={req.generationTime} />
-            : formatLatency(req.generationTime),
+          value:
+            req.generationTime > 0 ? (
+              <StopwatchBadgeComponent seconds={req.generationTime} />
+            ) : (
+              formatLatency(req.generationTime)
+            ),
         },
         {
           label: "Total Time",
-          value: req.totalTime > 0
-            ? <StopwatchBadgeComponent seconds={req.totalTime} />
-            : formatLatency(req.totalTime),
+          value:
+            req.totalTime > 0 ? (
+              <StopwatchBadgeComponent seconds={req.totalTime} />
+            ) : (
+              formatLatency(req.totalTime)
+            ),
         },
       ],
     },
@@ -360,8 +427,7 @@ export function reconstructChatMessages(selectedRequest: any) {
 
     // Extract tool calls if present
     const toolCalls =
-      resPayload.choices?.[0]?.message?.tool_calls ||
-      resPayload.toolCalls;
+      resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls;
     if (toolCalls?.length) {
       (assistantMsg as any).toolCalls = toolCalls.map((tc: any) => ({
         id: tc.id,
@@ -383,13 +449,19 @@ export function reconstructChatMessages(selectedRequest: any) {
       (assistantMsg as any).thinking = resPayload.thinking;
     }
 
-    if (assistantMsg.content || (assistantMsg as any).toolCalls?.length || (assistantMsg as any).images?.length) {
+    if (
+      assistantMsg.content ||
+      (assistantMsg as any).toolCalls?.length ||
+      (assistantMsg as any).images?.length
+    ) {
       chatMessages.push(assistantMsg);
     }
   }
 
   const messages = prepareDisplayMessages(chatMessages);
-  const systemPrompt = chatMessages.find((m: any) => m.role === "system")?.content;
+  const systemPrompt = chatMessages.find(
+    (m: any) => m.role === "system",
+  )?.content;
   if (!messages.length) return null;
 
   return { messages, systemPrompt };

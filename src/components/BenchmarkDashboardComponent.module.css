@@ -20,11 +20,12 @@
   z-index: 5;
   margin: 0 -20px;
   padding: 0 20px;
-  background:
-    linear-gradient(to bottom,
-      var(--bg-primary) 0%,
-      var(--bg-primary) 85%,
-      transparent 100%);
+  background: linear-gradient(
+    to bottom,
+    var(--bg-primary) 0%,
+    var(--bg-primary) 85%,
+    transparent 100%
+  );
   padding-bottom: 8px;
 }
 
@@ -54,7 +55,10 @@
   border: none;
   border-radius: calc(var(--border-radius-sm) - 2px);
   cursor: pointer;
-  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
@@ -86,7 +90,9 @@
   min-width: 18px;
   text-align: center;
   line-height: 1.4;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
 }
 
 .segmentedBtnActive .segmentedCount {
@@ -112,8 +118,12 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Detail Cards (sidebar + inline grid) ───────────────── */
@@ -226,7 +236,11 @@
 /* ── Selected Row Highlight ─────────────────────────────── */
 
 .selectedRow td {
-  background: color-mix(in srgb, var(--accent-color) 8%, transparent) !important;
+  background: color-mix(
+    in srgb,
+    var(--accent-color) 8%,
+    transparent
+  ) !important;
 }
 
 .selectedRow td:first-child {
@@ -234,5 +248,9 @@
 }
 
 .selectedRow:hover td {
-  background: color-mix(in srgb, var(--accent-color) 12%, transparent) !important;
+  background: color-mix(
+    in srgb,
+    var(--accent-color) 12%,
+    transparent
+  ) !important;
 }

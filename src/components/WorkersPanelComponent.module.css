@@ -4,17 +4,17 @@
    ============================================================ */
 
 .container {
-  composes: container from './PanelShared.module.css';
+  composes: container from "./PanelShared.module.css";
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
 
 .header {
-  composes: header from './PanelShared.module.css';
+  composes: header from "./PanelShared.module.css";
 }
 
 .headerTitle {
-  composes: headerTitle from './PanelShared.module.css';
+  composes: headerTitle from "./PanelShared.module.css";
 }
 
 .headerBtn {
@@ -68,7 +68,8 @@
 .workerCardRunning {
   border-left-color: var(--color-info);
   background: rgba(96, 165, 250, 0.06);
-  box-shadow: 0 0 8px -2px color-mix(in srgb, var(--color-info) 15%, transparent);
+  box-shadow: 0 0 8px -2px
+    color-mix(in srgb, var(--color-info) 15%, transparent);
 
   &:hover {
     background: rgba(96, 165, 250, 0.1);
@@ -132,8 +133,13 @@
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .statusComplete {
@@ -221,25 +227,25 @@
 /* ── Empty State ──────────────────────────────────────────── */
 
 .emptyState {
-  composes: emptyState from './PanelShared.module.css';
+  composes: emptyState from "./PanelShared.module.css";
 }
 
 .emptyIcon {
-  composes: emptyIcon from './PanelShared.module.css';
+  composes: emptyIcon from "./PanelShared.module.css";
 }
 
 .emptyTitle {
-  composes: emptyTitle from './PanelShared.module.css';
+  composes: emptyTitle from "./PanelShared.module.css";
 }
 
 .emptySubtitle {
-  composes: emptySubtitle from './PanelShared.module.css';
+  composes: emptySubtitle from "./PanelShared.module.css";
 }
 
 /* ── Loading / Error ──────────────────────────────────────── */
 
 .loading {
-  composes: loading from './PanelShared.module.css';
+  composes: loading from "./PanelShared.module.css";
 }
 
 .spin {
@@ -247,7 +253,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error {
@@ -303,8 +311,15 @@
 }
 
 @keyframes liveDotPulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
-  50% { opacity: 0.7; box-shadow: 0 0 4px 2px rgba(52, 211, 153, 0.15); }
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 4px 2px rgba(52, 211, 153, 0.15);
+  }
 }
 
 .liveToolName {

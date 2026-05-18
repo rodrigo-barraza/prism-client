@@ -71,11 +71,13 @@ import {
   Heart,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import { ButtonComponent, ToggleComponent } from "@rodrigo-barraza/components-library";
+import {
+  ButtonComponent,
+  ToggleComponent,
+} from "@rodrigo-barraza/components-library";
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import styles from "./CustomAgentsPanelComponent.module.css";
-
 
 const EMPTY_AGENT = {
   name: "",
@@ -185,7 +187,6 @@ export function resolveIconComponent(name: any) {
   return found?.icon || Bot;
 }
 
-
 /**
  * CustomAgentsPanel — CRUD interface for user-defined agent personas.
  *
@@ -239,10 +240,7 @@ export default function CustomAgentsPanel({
       if (isNew) {
         await PrismService.createCustomAgent(editingAgent);
       } else {
-        await PrismService.updateCustomAgent(
-          editingAgent._id,
-          editingAgent,
-        );
+        await PrismService.updateCustomAgent(editingAgent._id, editingAgent);
       }
       setEditingAgent(null);
       setIsNew(false);
@@ -270,7 +268,6 @@ export default function CustomAgentsPanel({
     },
     [onAgentsChange],
   );
-
 
   // -- Form field updaters --------------------------------------
 
@@ -303,8 +300,12 @@ export default function CustomAgentsPanel({
                 placeholder="My Agent"
               />
               <span className={styles.hint}>
-                Display name — will generate ID: CUSTOM_{(editingAgent as any).name
-                  ? (editingAgent as any).name.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "")
+                Display name — will generate ID: CUSTOM_
+                {(editingAgent as any).name
+                  ? (editingAgent as any).name
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]+/g, "_")
+                      .replace(/^_+|_+$/g, "")
                   : "..."}
               </span>
             </div>
@@ -317,9 +318,7 @@ export default function CustomAgentsPanel({
                 onChange={(e: any) => updateField("project", e.target.value)}
                 placeholder="coding"
               />
-              <span className={styles.hint}>
-                Project scope for sessions
-              </span>
+              <span className={styles.hint}>Project scope for sessions</span>
             </div>
           </div>
 
@@ -347,21 +346,32 @@ export default function CustomAgentsPanel({
                   data-selected={(editingAgent as any).icon === name}
                   onClick={() => updateField("icon", name)}
                   title={name}
-                  style={(editingAgent as any).color ? ({ "--agent-color": (editingAgent as any).color } as React.CSSProperties) : undefined}
+                  style={
+                    (editingAgent as any).color
+                      ? ({
+                          "--agent-color": (editingAgent as any).color,
+                        } as React.CSSProperties)
+                      : undefined
+                  }
                 >
                   <IconComp size={16} />
                 </button>
               ))}
             </div>
             <span className={styles.hint}>
-              {(editingAgent as any).icon ? `Selected: ${(editingAgent as any).icon}` : "Click an icon — defaults to Bot"}
+              {(editingAgent as any).icon
+                ? `Selected: ${(editingAgent as any).icon}`
+                : "Click an icon — defaults to Bot"}
             </span>
           </div>
 
           {/* Color Picker */}
           <div className={styles.formGroup}>
             <label>
-              <Palette size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+              <Palette
+                size={12}
+                style={{ marginRight: 4, verticalAlign: -1 }}
+              />
               Accent Color
             </label>
             <div className={styles.colorGrid}>
@@ -371,38 +381,56 @@ export default function CustomAgentsPanel({
                   type="button"
                   className={styles.colorSwatch}
                   data-selected={(editingAgent as any).color === hex}
-                  onClick={() => updateField("color", (editingAgent as any).color === hex ? "" : hex)}
+                  onClick={() =>
+                    updateField(
+                      "color",
+                      (editingAgent as any).color === hex ? "" : hex,
+                    )
+                  }
                   title={name}
                   style={{ "--swatch-color": hex } as React.CSSProperties}
                 />
               ))}
             </div>
             <span className={styles.hint}>
-              {(editingAgent as any).color
-                ? <>
-                    Selected: <span className={styles.colorPreviewDot} style={{ background: (editingAgent as any).color }} />{" "}
-                    {COLOR_PALETTE.find((c: any) => c.hex === (editingAgent as any).color)?.name || (editingAgent as any).color}
-                  </>
-                : "Click a color to brand your agent — used for icon backgrounds and UI accents"
-              }
+              {(editingAgent as any).color ? (
+                <>
+                  Selected:{" "}
+                  <span
+                    className={styles.colorPreviewDot}
+                    style={{ background: (editingAgent as any).color }}
+                  />{" "}
+                  {COLOR_PALETTE.find(
+                    (c: any) => c.hex === (editingAgent as any).color,
+                  )?.name || (editingAgent as any).color}
+                </>
+              ) : (
+                "Click a color to brand your agent — used for icon backgrounds and UI accents"
+              )}
             </span>
           </div>
 
           {/* Background Image */}
           <div className={styles.formGroup}>
             <label>
-              <ImageIcon size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+              <ImageIcon
+                size={12}
+                style={{ marginRight: 4, verticalAlign: -1 }}
+              />
               Background Image
             </label>
             <input
               type="text"
               className={styles.input}
               value={(editingAgent as any).backgroundImage || ""}
-              onChange={(e: any) => updateField("backgroundImage", e.target.value)}
+              onChange={(e: any) =>
+                updateField("backgroundImage", e.target.value)
+              }
               placeholder="https://example.com/background.jpg"
             />
             <span className={styles.hint}>
-              URL to a background image displayed behind the chat messages — use a subtle, dark image for best results
+              URL to a background image displayed behind the chat messages — use
+              a subtle, dark image for best results
             </span>
             {(editingAgent as any).backgroundImage && (
               <div className={styles.bgPreview}>
@@ -411,7 +439,9 @@ export default function CustomAgentsPanel({
                   src={(editingAgent as any).backgroundImage}
                   alt="Background preview"
                   className={styles.bgPreviewImg}
-                  onError={(e: any) => { e.target.style.display = "none"; }}
+                  onError={(e: any) => {
+                    e.target.style.display = "none";
+                  }}
                 />
                 <button
                   type="button"
@@ -436,7 +466,8 @@ export default function CustomAgentsPanel({
               rows={5}
             />
             <span className={styles.hint}>
-              Core personality and role — injected at the top of the system prompt
+              Core personality and role — injected at the top of the system
+              prompt
             </span>
           </div>
 
@@ -451,7 +482,8 @@ export default function CustomAgentsPanel({
               rows={4}
             />
             <span className={styles.hint}>
-              Always injected into the system prompt — behavioral instructions for how the agent should respond
+              Always injected into the system prompt — behavioral instructions
+              for how the agent should respond
             </span>
           </div>
 
@@ -476,7 +508,10 @@ export default function CustomAgentsPanel({
             <div className={styles.toggleRow}>
               <div className={styles.toggleLabel}>
                 <span className={styles.toggleTitle}>
-                  <FolderTree size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+                  <FolderTree
+                    size={12}
+                    style={{ marginRight: 4, verticalAlign: -1 }}
+                  />
                   Directory Tree
                 </span>
                 <span className={styles.toggleHint}>
@@ -486,18 +521,25 @@ export default function CustomAgentsPanel({
               <ToggleComponent
                 checked={(editingAgent as any).usesDirectoryTree}
                 onChange={() =>
-                  updateField("usesDirectoryTree", !(editingAgent as any).usesDirectoryTree)
+                  updateField(
+                    "usesDirectoryTree",
+                    !(editingAgent as any).usesDirectoryTree,
+                  )
                 }
               />
             </div>
             <div className={styles.toggleRow}>
               <div className={styles.toggleLabel}>
                 <span className={styles.toggleTitle}>
-                  <BookOpen size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+                  <BookOpen
+                    size={12}
+                    style={{ marginRight: 4, verticalAlign: -1 }}
+                  />
                   Coding Defaults
                 </span>
                 <span className={styles.toggleHint}>
-                  Inject generic coding conventions and coordinator orchestration mode
+                  Inject generic coding conventions and coordinator
+                  orchestration mode
                 </span>
               </div>
               <ToggleComponent
@@ -516,12 +558,22 @@ export default function CustomAgentsPanel({
           <ToolSelectionComponent
             availableTools={availableTools}
             enabledTools={(editingAgent as any).enabledTools}
-            onEnabledToolsChange={(tools: any) => updateField("enabledTools", tools)}
+            onEnabledToolsChange={(tools: any) =>
+              updateField("enabledTools", tools)
+            }
           />
 
           {/* Error */}
           {error && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--error)", fontSize: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                color: "var(--error)",
+                fontSize: 12,
+              }}
+            >
               <AlertCircle size={14} />
               {error}
             </div>
@@ -530,10 +582,7 @@ export default function CustomAgentsPanel({
 
         {/* Footer */}
         <div className={styles.formFooter}>
-          <ButtonComponent
-            variant="disabled"
-            onClick={handleCancel}
-          >
+          <ButtonComponent variant="disabled" onClick={handleCancel}>
             Cancel
           </ButtonComponent>
           <ButtonComponent
@@ -575,11 +624,7 @@ export default function CustomAgentsPanel({
             Create your own agent persona with a custom system prompt and
             hand-picked tools from the full tool suite.
           </span>
-          <ButtonComponent
-            variant="primary"
-            icon={Plus}
-            onClick={handleCreate}
-          >
+          <ButtonComponent variant="primary" icon={Plus} onClick={handleCreate}>
             Create Agent
           </ButtonComponent>
         </div>
@@ -591,7 +636,11 @@ export default function CustomAgentsPanel({
             return (
               <div key={agent._id} className={styles.agentCard}>
                 <AgentBadgeComponent
-                  agent={{ id: agent.agentId, icon: agent.icon, color: agent.color }}
+                  agent={{
+                    id: agent.agentId,
+                    icon: agent.icon,
+                    color: agent.color,
+                  }}
                 />
                 <div className={styles.agentInfo}>
                   <span className={styles.agentName}>{agent.name}</span>
@@ -605,9 +654,7 @@ export default function CustomAgentsPanel({
                       <Wrench size={9} />
                       {agent.enabledTools?.length || 0} tools
                     </span>
-                    <span className={styles.agentBadge}>
-                      {agent.agentId}
-                    </span>
+                    <span className={styles.agentBadge}>{agent.agentId}</span>
                   </div>
                 </div>
 

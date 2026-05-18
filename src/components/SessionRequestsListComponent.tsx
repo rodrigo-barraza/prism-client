@@ -18,7 +18,10 @@ import styles from "./SessionRequestsListComponent.module.css";
 
 
  */
-export default function SessionRequestsListComponent({ agentSessionId, refreshKey = 0 }: any) {
+export default function SessionRequestsListComponent({
+  agentSessionId,
+  refreshKey = 0,
+}: any) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -69,13 +72,17 @@ export default function SessionRequestsListComponent({ agentSessionId, refreshKe
   // Flat list, newest first — each request tagged with isWorker
   const rootSessionId = (data as any).rootSessionId;
   const requests = [...(data as any).requests]
-    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    )
     .map((req: any) => ({
       ...req,
       isWorker: req.agentSessionId !== rootSessionId,
-      workerShortId: req.agentSessionId !== rootSessionId
-        ? req.agentSessionId.slice(0, 8)
-        : null,
+      workerShortId:
+        req.agentSessionId !== rootSessionId
+          ? req.agentSessionId.slice(0, 8)
+          : null,
     }));
 
   return (
@@ -97,30 +104,56 @@ export default function SessionRequestsListComponent({ agentSessionId, refreshKe
               >
                 <div className={styles.requestMeta}>
                   {req.isWorker && (
-                    <span className={styles.workerTag} title={`Worker ${req.workerShortId}`}>
+                    <span
+                      className={styles.workerTag}
+                      title={`Worker ${req.workerShortId}`}
+                    >
                       <Users size={8} />
                     </span>
                   )}
                   <ProviderLogo provider={req.provider} size={12} />
                   <span className={styles.requestModel} title={req.model}>
-                    {req.model ? req.model.replace(/^models\//, "").split("/").pop() : "—"}
+                    {req.model
+                      ? req.model
+                          .replace(/^models\//, "")
+                          .split("/")
+                          .pop()
+                      : "—"}
                   </span>
                   {req.operation && (
-                    <span className={styles.requestOperation}>{req.operation}</span>
+                    <span className={styles.requestOperation}>
+                      {req.operation}
+                    </span>
                   )}
                 </div>
                 <div className={styles.requestStats}>
                   {req.inputTokens > 0 && (
-                    <TokenCountBadgeComponent value={req.inputTokens} label="in" mini />
+                    <TokenCountBadgeComponent
+                      value={req.inputTokens}
+                      label="in"
+                      mini
+                    />
                   )}
                   {req.outputTokens > 0 && (
-                    <TokenCountBadgeComponent value={req.outputTokens} label="out" mini />
+                    <TokenCountBadgeComponent
+                      value={req.outputTokens}
+                      label="out"
+                      mini
+                    />
                   )}
                   {req.cacheReadInputTokens > 0 && (
-                    <TokenCountBadgeComponent value={req.cacheReadInputTokens} label="cached" mini />
+                    <TokenCountBadgeComponent
+                      value={req.cacheReadInputTokens}
+                      label="cached"
+                      mini
+                    />
                   )}
                   {req.reasoningOutputTokens > 0 && (
-                    <TokenCountBadgeComponent value={req.reasoningOutputTokens} label="reasoning" mini />
+                    <TokenCountBadgeComponent
+                      value={req.reasoningOutputTokens}
+                      label="reasoning"
+                      mini
+                    />
                   )}
                   {req.totalTime > 0 && (
                     <StopwatchBadgeComponent seconds={req.totalTime} />

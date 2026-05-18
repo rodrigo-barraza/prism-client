@@ -11,7 +11,10 @@ import {
   Layers,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
-import { SelectComponent, ToggleComponent as ToggleSwitch } from "@rodrigo-barraza/components-library";
+import {
+  SelectComponent,
+  ToggleComponent as ToggleSwitch,
+} from "@rodrigo-barraza/components-library";
 import CycleButton from "./CycleButtonComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
 import SystemPromptModal from "./SystemPromptModalComponent";
@@ -30,7 +33,6 @@ import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
 import ThroughputBadgeComponent from "./ThroughputBadgeComponent";
 import useTokenRate from "../hooks/useTokenRate";
 import useTtft from "../hooks/useTtft";
-
 
 export default function SettingsPanel({
   config,
@@ -124,7 +126,6 @@ export default function SettingsPanel({
 
   // -- Stats tab (All / Orchestrator / Workers) --------------
   const [statsTab, setStatsTab] = useState("all");
-
 
   const showStatsTabBar =
     canSpawnWorkers && !!(sessionStats?.orchestrator || sessionStats?.workers);
@@ -329,7 +330,6 @@ export default function SettingsPanel({
             </div>
           )}
         </div>
-
 
         {workflows.length > 0 && (
           <div className={styles.section} style={{ marginBottom: 12 }}>
@@ -630,8 +630,10 @@ export default function SettingsPanel({
                 ? { "Web Search": "Web Fetch" }
                 : {},
             };
-            const providerToolLabels = (TOOL_LABELS as any)[settings.provider] || {};
-            const getToolLabel = (tool: any) => providerToolLabels[tool] || tool;
+            const providerToolLabels =
+              (TOOL_LABELS as any)[settings.provider] || {};
+            const getToolLabel = (tool: any) =>
+              providerToolLabels[tool] || tool;
 
             const getToolToggle = (tool: any) => {
               switch (tool) {
@@ -665,7 +667,9 @@ export default function SettingsPanel({
                           : settings.thinkingEnabled || false,
                     onChange: isLive
                       ? (value: any) =>
-                          onChange({ liveThinkingLevel: value ? "low" : "none" })
+                          onChange({
+                            liveThinkingLevel: value ? "low" : "none",
+                          })
                       : lmLocked || alwaysOn
                         ? () => {}
                         : (value: any) => onChange({ thinkingEnabled: value }),
@@ -677,7 +681,8 @@ export default function SettingsPanel({
                 case "Web Fetch":
                   return {
                     checked: settings.webSearchEnabled || false,
-                    onChange: (value: any) => onChange({ webSearchEnabled: value }),
+                    onChange: (value: any) =>
+                      onChange({ webSearchEnabled: value }),
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Code Execution":
@@ -696,7 +701,8 @@ export default function SettingsPanel({
                 case "URL Context":
                   return {
                     checked: settings.urlContextEnabled || false,
-                    onChange: (value: any) => onChange({ urlContextEnabled: value }),
+                    onChange: (value: any) =>
+                      onChange({ urlContextEnabled: value }),
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Tool Calling":
@@ -707,13 +713,15 @@ export default function SettingsPanel({
                       false,
                     onChange: lockedTools?.has("Tool Calling")
                       ? () => {}
-                      : (value: any) => onChange({ functionCallingEnabled: value }),
+                      : (value: any) =>
+                          onChange({ functionCallingEnabled: value }),
                     disabled: !!lockedTools?.has("Tool Calling"),
                   };
                 case "Image Generation":
                   return {
                     checked: settings.forceImageGeneration || false,
-                    onChange: (value: any) => onChange({ forceImageGeneration: value }),
+                    onChange: (value: any) =>
+                      onChange({ forceImageGeneration: value }),
                     disabled: false,
                   };
                 default:

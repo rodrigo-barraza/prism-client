@@ -1,13 +1,13 @@
-const execSync = require('child_process').execSync;
+const execSync = require("child_process").execSync;
 
-let out = '';
+let out = "";
 try {
-  out = execSync('npx tsc --noEmit', { stdio: 'pipe' }).toString();
+  out = execSync("npx tsc --noEmit", { stdio: "pipe" }).toString();
 } catch (e) {
   out = e.stdout.toString() + e.stderr.toString();
 }
 
-const lines = out.split('\n');
+const lines = out.split("\n");
 const errCounts = new Map();
 
 for (const line of lines) {
@@ -19,6 +19,8 @@ for (const line of lines) {
 }
 
 console.log("Remaining Errors by TS code:");
-for (const [code, count] of [...errCounts.entries()].sort((a,b) => b[1] - a[1])) {
+for (const [code, count] of [...errCounts.entries()].sort(
+  (a, b) => b[1] - a[1],
+)) {
   console.log(`${code}: ${count}`);
 }

@@ -23,14 +23,14 @@ import BenchmarkBarComponent from "./BenchmarkBarComponent";
  * @property {number}        [barPassed] — Actual passed count for the tooltip
  * @property {number}        [barTotal]  — Actual total count for the tooltip
  */
-export default function SummaryBarComponent({ items, live = false, className }: any) {
+export default function SummaryBarComponent({
+  items,
+  live = false,
+  className,
+}: any) {
   if (!items || items.length === 0) return null;
 
-  const wrapperClass = [
-    styles.bar,
-    live ? styles.live : "",
-    className || "",
-  ]
+  const wrapperClass = [styles.bar, live ? styles.live : "", className || ""]
     .filter(Boolean)
     .join(" ");
 
@@ -43,7 +43,10 @@ export default function SummaryBarComponent({ items, live = false, className }: 
             {item.bar != null ? (
               <>
                 <BenchmarkBarComponent
-                  passed={item.barPassed ?? Math.round((Math.min(item.bar, 100) / 100) * 100)}
+                  passed={
+                    item.barPassed ??
+                    Math.round((Math.min(item.bar, 100) / 100) * 100)
+                  }
                   total={item.barTotal ?? 100}
                 />
                 {item.label && (
@@ -53,7 +56,9 @@ export default function SummaryBarComponent({ items, live = false, className }: 
             ) : (
               <>
                 <div className={`${costBadgeStyles.badge} ${styles.valueRow}`}>
-                  {item.icon && <span className={styles.icon}>{item.icon}</span>}
+                  {item.icon && (
+                    <span className={styles.icon}>{item.icon}</span>
+                  )}
                   <span
                     className={styles.value}
                     style={item.color ? { color: item.color } : undefined}

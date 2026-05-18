@@ -38,20 +38,20 @@ export default function PixelTransitionComponent({
   const filterCacheRef = useRef<any>(new Map());
 
   // Latest props always available inside the rAF closure
-  const propsRef = useRef<any>({ phase, duration, maxBlockSize, onComplete, targetRef });
+  const propsRef = useRef<any>({
+    phase,
+    duration,
+    maxBlockSize,
+    onComplete,
+    targetRef,
+  });
   propsRef.current = { phase, duration, maxBlockSize, onComplete, targetRef };
 
   /** Ease-out cubic — fast initial ramp, decelerates toward end */
-  const easeOut = useCallback(
-    (t: any) => 1 - Math.pow(1 - t, 3),
-    [],
-  );
+  const easeOut = useCallback((t: any) => 1 - Math.pow(1 - t, 3), []);
 
   /** Ease-in cubic — slow start, accelerates toward end */
-  const easeIn = useCallback(
-    (t: any) => t * t * t,
-    [],
-  );
+  const easeIn = useCallback((t: any) => t * t * t, []);
 
   /**
    * Build (or retrieve from cache) a CSS `filter: url(...)` value for a given
@@ -127,7 +127,6 @@ export default function PixelTransitionComponent({
       if (p.phase === "in" && element) {
         element.style.filter = "";
         element.style.willChange = "";
-
       }
       lastBlockRef.current = 0;
       p.onComplete?.();
@@ -141,7 +140,6 @@ export default function PixelTransitionComponent({
       if (element) {
         element.style.filter = "";
         element.style.willChange = "";
-
       }
       lastBlockRef.current = 0;
       return;
@@ -151,7 +149,6 @@ export default function PixelTransitionComponent({
     const element = targetRef?.current;
     if (element) {
       element.style.willChange = "filter";
-
     }
 
     startTimeRef.current = null;

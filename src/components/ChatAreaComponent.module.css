@@ -97,19 +97,39 @@
 }
 
 @keyframes chatGlitchHue {
-  0%   { filter: hue-rotate(0deg) brightness(1.2); }
-  25%  { filter: hue-rotate(90deg) brightness(1.6); }
-  50%  { filter: hue-rotate(180deg) brightness(0.8); }
-  75%  { filter: hue-rotate(270deg) brightness(1.4); }
-  100% { filter: hue-rotate(360deg) brightness(1.2); }
+  0% {
+    filter: hue-rotate(0deg) brightness(1.2);
+  }
+  25% {
+    filter: hue-rotate(90deg) brightness(1.6);
+  }
+  50% {
+    filter: hue-rotate(180deg) brightness(0.8);
+  }
+  75% {
+    filter: hue-rotate(270deg) brightness(1.4);
+  }
+  100% {
+    filter: hue-rotate(360deg) brightness(1.2);
+  }
 }
 
 @keyframes chatGlitchJitter {
-  0%   { transform: translate(0, 0) scale(1); }
-  25%  { transform: translate(-1px, 1px) scale(1.03); }
-  50%  { transform: translate(1px, -1px) scale(0.97); }
-  75%  { transform: translate(1px, 0) scale(1.01); }
-  100% { transform: translate(-1px, 0) scale(0.99); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-1px, 1px) scale(1.03);
+  }
+  50% {
+    transform: translate(1px, -1px) scale(0.97);
+  }
+  75% {
+    transform: translate(1px, 0) scale(1.01);
+  }
+  100% {
+    transform: translate(-1px, 0) scale(0.99);
+  }
 }
 
 .messagesList {
@@ -227,7 +247,6 @@
   white-space: nowrap;
   font-weight: 500;
 }
-
 
 .inputBox {
   max-width: 800px;
@@ -368,7 +387,9 @@
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
   white-space: nowrap;
   overflow: hidden;
 
@@ -418,8 +439,6 @@
   margin-bottom: 4px;
   border-bottom: 1px solid var(--border-color);
 }
-
-
 
 .pendingFileThumb {
   position: relative;
@@ -548,7 +567,8 @@
   padding: 10px 14px;
   margin-bottom: 8px;
   background: color-mix(in srgb, var(--accent-color) 4%, var(--bg-tertiary));
-  border: 1px dashed color-mix(in srgb, var(--accent-color) 30%, var(--border-color));
+  border: 1px dashed
+    color-mix(in srgb, var(--accent-color) 30%, var(--border-color));
   border-radius: var(--border-radius-sm);
   animation: fadeIn 0.2s ease-out;
 }
@@ -774,7 +794,12 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   white-space: nowrap;
 
   &:hover {
@@ -847,7 +872,9 @@
 .liveMicReady {
   background: var(--accent-color) !important;
   color: #fff !important;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .liveMicReady:hover {
@@ -873,7 +900,8 @@
 }
 
 @keyframes liveMicRing {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(0.7);
     opacity: 0.6;
   }
@@ -893,7 +921,9 @@
   padding: 5px 16px;
   background: transparent;
   border-top: 1px solid var(--border-color);
-  transition: background 0.3s ease, border-color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .statusBarActive {
@@ -903,7 +933,11 @@
     color-mix(in srgb, var(--accent-color) 12%, transparent),
     color-mix(in srgb, var(--accent-color) 6%, transparent)
   );
-  border-top-color: color-mix(in srgb, var(--accent-color) 18%, var(--border-color));
+  border-top-color: color-mix(
+    in srgb,
+    var(--accent-color) 18%,
+    var(--border-color)
+  );
 }
 
 .statusBarIcon {
@@ -934,7 +968,8 @@
 }
 
 @keyframes statusBarPulseDot {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }

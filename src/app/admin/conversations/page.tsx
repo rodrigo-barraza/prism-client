@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  Suspense,
+} from "react";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import useSessionStats from "../../../hooks/useSessionStats";
 import { useSearchParams } from "next/navigation";
@@ -23,7 +30,10 @@ import ParametersPanelComponent from "../../../components/ParametersPanelCompone
 import HistoryPanel from "../../../components/HistoryPanelComponent";
 
 import ThreePanelLayout from "../../../components/ThreePanelLayoutComponent";
-import { SelectComponent, TabBarComponent } from "@rodrigo-barraza/components-library";
+import {
+  SelectComponent,
+  TabBarComponent,
+} from "@rodrigo-barraza/components-library";
 
 import ModelPickerPopoverComponent from "../../../components/ModelPickerPopoverComponent";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
@@ -52,7 +62,13 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
   const providerFilter = searchParams.get("provider") || null;
   const modelFilter = searchParams.get("model") || null;
   const traceParam = searchParams.get("trace") || traceId;
-  const { setControls, setTitleBadge, dateRange, sessionFilter, setSessionFilter } = useAdminHeader();
+  const {
+    setControls,
+    setTitleBadge,
+    dateRange,
+    sessionFilter,
+    setSessionFilter,
+  } = useAdminHeader();
   const [conversations, setConversations] = useState<any[]>([]);
   const [conversationsHasMore, setConversationsHasMore] = useState(false);
   const [conversationsLoading, setConversationsLoading] = useState(false);
@@ -104,19 +120,22 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
   }, []);
 
   // -- Favorites -------------------------------------------------
-  const handleToggleFavorite = useCallback(async (key: any) => {
-    if (favoriteKeys.includes(key)) {
-      setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
-      PrismService.removeFavorite("model", key).catch(() => {});
-    } else {
-      setFavoriteKeys((prev: any) => [...prev, key]);
-      const [provider, ...rest] = key.split(":");
-      PrismService.addFavorite("model", key, {
-        provider,
-        name: rest.join(":"),
-      }).catch(() => {});
-    }
-  }, [favoriteKeys]);
+  const handleToggleFavorite = useCallback(
+    async (key: any) => {
+      if (favoriteKeys.includes(key)) {
+        setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
+        PrismService.removeFavorite("model", key).catch(() => {});
+      } else {
+        setFavoriteKeys((prev: any) => [...prev, key]);
+        const [provider, ...rest] = key.split(":");
+        PrismService.addFavorite("model", key, {
+          provider,
+          name: rest.join(":"),
+        }).catch(() => {});
+      }
+    },
+    [favoriteKeys],
+  );
 
   // If initialId is set, load that conversation immediately
   useEffect(() => {
@@ -223,14 +242,23 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
       conversationsPageRef.current = nextPage;
       setConversations((prev: any) => [...prev, ...list]);
       setConversationsHasMore(
-        (conversations.length + list.length) < (data.total || 0),
+        conversations.length + list.length < (data.total || 0),
       );
     } catch (error: any) {
       console.error("Failed to load more conversations:", error);
     } finally {
       setConversationsLoading(false);
     }
-  }, [conversationsLoading, conversationsHasMore, activeSession, dateRange, projectFilter, providerFilter, modelFilter, conversations.length]);
+  }, [
+    conversationsLoading,
+    conversationsHasMore,
+    activeSession,
+    dateRange,
+    projectFilter,
+    providerFilter,
+    modelFilter,
+    conversations.length,
+  ]);
 
   // Initial stats fetch (SSE subscription for generating count is handled
   // globally by AdminShell to avoid duplicate SSE connections).
@@ -398,12 +426,20 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
     : "Select a conversation";
 
   const {
-    uniqueModels, uniqueProviders, totalCost, totalTokens, requestCount,
-    usedTools, modalities,
+    uniqueModels,
+    uniqueProviders,
+    totalCost,
+    totalTokens,
+    requestCount,
+    usedTools,
+    modalities,
   } = useSessionStats((selectedConv as any)?.messages || []);
 
   const settingsWithDefaults = useMemo(
-    () => ({ ...SETTINGS_DEFAULTS, ...((selectedConv as any)?.settings || {}) }),
+    () => ({
+      ...SETTINGS_DEFAULTS,
+      ...((selectedConv as any)?.settings || {}),
+    }),
     [selectedConv],
   );
 
@@ -490,18 +526,22 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
                     sessionStats={
                       (selectedConv as any)?.messages?.length > 0
                         ? (() => {
-                            const displayMessages = prepareDisplayMessages((selectedConv as any).messages);
+                            const displayMessages = prepareDisplayMessages(
+                              (selectedConv as any).messages,
+                            );
                             return {
                               messageCount: displayMessages.length,
                               deletedCount:
-                                ((selectedConv as any).messageCount || (selectedConv as any).messages.length) -
+                                ((selectedConv as any).messageCount ||
+                                  (selectedConv as any).messages.length) -
                                 (selectedConv as any).messages.length,
                               requestCount,
                               uniqueModels,
                               uniqueProviders,
                               totalTokens,
                               totalCost,
-                              originalTotalCost: (selectedConv as any).totalCost || 0,
+                              originalTotalCost:
+                                (selectedConv as any).totalCost || 0,
                               usedTools,
                               modalities,
                             };
@@ -535,7 +575,9 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
             <HistoryPanel
               sessions={conversations}
               activeId={selectedId}
-              onSelect={(conversation: any) => selectConversation(conversation.id)}
+              onSelect={(conversation: any) =>
+                selectConversation(conversation.id)
+              }
               readOnly
               showProject
               showUsername
@@ -553,7 +595,9 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
           headerMeta={
             selectedConv && (
               <div className={styles.headerMeta}>
-                <ProjectBadgeComponent project={(selectedConv as any).project} />
+                <ProjectBadgeComponent
+                  project={(selectedConv as any).project}
+                />
                 <UserBadgeComponent username={(selectedConv as any).username} />
                 {(selectedConv as any).isGenerating && (
                   <span className={styles.generatingBadge}>

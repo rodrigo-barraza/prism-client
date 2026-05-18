@@ -48,7 +48,9 @@ export default function ChatPreviewComponent({
   if (!hasSystem && !hasUser) return null;
 
   return (
-    <div className={`${styles.promptPreview} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}>
+    <div
+      className={`${styles.promptPreview} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
+    >
       {hasSystem && (
         <div className={`${styles.promptBlock} ${styles.promptBlockSystem}`}>
           <span className={`${styles.promptLabel} ${styles.promptLabelSystem}`}>

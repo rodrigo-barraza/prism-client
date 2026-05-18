@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { ChevronDown, X, Filter, Calendar } from "lucide-react";
 import {
-  ChevronDown,
-  X,
-  Filter,
-  Calendar,
-} from "lucide-react";
-import { DatePickerComponent, DATE_PRESETS, formatDateDisplay, getActiveDatePreset } from "@rodrigo-barraza/components-library";
+  DatePickerComponent,
+  DATE_PRESETS,
+  formatDateDisplay,
+  getActiveDatePreset,
+} from "@rodrigo-barraza/components-library";
 import SoundService from "@/services/SoundService";
 import styles from "./FilterDropdownComponent.module.css";
 
@@ -49,7 +49,9 @@ export default function FilterDropdownComponent({
         const parsed = JSON.parse(stored);
         if (parsed.from || parsed.to) onDateChange(parsed);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [dateStorageKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist date range to localStorage
@@ -61,14 +63,19 @@ export default function FilterDropdownComponent({
       } else {
         localStorage.removeItem(dateStorageKey);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [dateStorageKey, dateRange]);
 
   // Close on outside click
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: any) => {
-      if (dropdownRef.current && !(dropdownRef.current as any).contains(e.target)) {
+      if (
+        dropdownRef.current &&
+        !(dropdownRef.current as any).contains(e.target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -98,7 +105,9 @@ export default function FilterDropdownComponent({
     for (const item of items) {
       const isActive = isSingleSelect
         ? activeKeys === item.key
-        : activeKeys instanceof Set ? activeKeys.has(item.key) : false;
+        : activeKeys instanceof Set
+          ? activeKeys.has(item.key)
+          : false;
       if (isActive) {
         badges.push({
           key: `${group.label}-${item.key}`,
@@ -124,14 +133,30 @@ export default function FilterDropdownComponent({
   }
 
   return (
-    <div className={styles.filterSection} style={fullWidth ? { width: "100%", boxSizing: "border-box", padding: "0 12px" } : undefined}>
-      <div className={styles.filterRow} style={fullWidth ? { flexDirection: "column" } : undefined}>
+    <div
+      className={styles.filterSection}
+      style={
+        fullWidth
+          ? { width: "100%", boxSizing: "border-box", padding: "0 12px" }
+          : undefined
+      }
+    >
+      <div
+        className={styles.filterRow}
+        style={fullWidth ? { flexDirection: "column" } : undefined}
+      >
         {/* -- Dropdown trigger -- */}
-        <div className={styles.dropdownWrapper} ref={dropdownRef} style={fullWidth ? { width: "100%" } : undefined}>
+        <div
+          className={styles.dropdownWrapper}
+          ref={dropdownRef}
+          style={fullWidth ? { width: "100%" } : undefined}
+        >
           <button
             type="button"
             className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
-            {...(SoundService.interactive(() => setIsOpen((v: any) => !v)) as any)}
+            {...(SoundService.interactive(() =>
+              setIsOpen((v: any) => !v),
+            ) as any)}
             style={fullWidth ? { width: "100%" } : undefined}
           >
             <span className={styles.triggerContent}>
@@ -157,13 +182,16 @@ export default function FilterDropdownComponent({
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
                   {DATE_PRESETS.map((preset: any) => {
-                    const isActive = getActiveDatePreset(dateFrom, dateTo) === preset.label;
+                    const isActive =
+                      getActiveDatePreset(dateFrom, dateTo) === preset.label;
                     return (
                       <button
                         key={preset.label}
                         type="button"
                         className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
-                        {...(SoundService.interactive(() => onDateChange(preset.getValue())) as any)}
+                        {...(SoundService.interactive(() =>
+                          onDateChange(preset.getValue()),
+                        ) as any)}
                       >
                         <Calendar size={13} style={{ color: "#6366f1" }} />
                         <span>{preset.label}</span>
@@ -183,16 +211,23 @@ export default function FilterDropdownComponent({
                   >
                     <Calendar size={13} style={{ color: "#6366f1" }} />
                     <span>Custom…</span>
-                    {!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) && (
-                      <span className={styles.menuCheck}>✓</span>
-                    )}
+                    {!getActiveDatePreset(dateFrom, dateTo) &&
+                      (dateFrom || dateTo) && (
+                        <span className={styles.menuCheck}>✓</span>
+                      )}
                   </button>
                 </div>
               )}
 
               {/* -- Dynamic filter groups -- */}
               {groups.map((group: any) => {
-                const { label, items = [], activeKeys, isSingleSelect, onToggle } = group;
+                const {
+                  label,
+                  items = [],
+                  activeKeys,
+                  isSingleSelect,
+                  onToggle,
+                } = group;
                 if (items.length === 0) return null;
                 return (
                   <div key={label} className={styles.menuGroup}>
@@ -201,18 +236,26 @@ export default function FilterDropdownComponent({
                       const Icon = item.icon;
                       const isActive = isSingleSelect
                         ? activeKeys === item.key
-                        : activeKeys instanceof Set ? activeKeys.has(item.key) : false;
+                        : activeKeys instanceof Set
+                          ? activeKeys.has(item.key)
+                          : false;
                       return (
                         <button
                           key={item.key}
                           type="button"
                           className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
-                          {...(SoundService.interactive(() => onToggle(isSingleSelect && isActive ? null : item.key)) as any)}
+                          {...(SoundService.interactive(() =>
+                            onToggle(
+                              isSingleSelect && isActive ? null : item.key,
+                            ),
+                          ) as any)}
                         >
                           {Icon && (
                             <Icon
                               size={13}
-                              style={item.color ? { color: item.color } : undefined}
+                              style={
+                                item.color ? { color: item.color } : undefined
+                              }
                             />
                           )}
                           <span>{item.title}</span>

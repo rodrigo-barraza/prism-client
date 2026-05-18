@@ -12,7 +12,11 @@ import {
 } from "lucide-react";
 import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
-import { ButtonComponent, SearchInputComponent, DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
+import {
+  ButtonComponent,
+  SearchInputComponent,
+  DateTimeBadgeComponent,
+} from "@rodrigo-barraza/components-library";
 import CostBadgeComponent from "./CostBadgeComponent";
 
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
@@ -71,7 +75,9 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
           clearInterval(interval);
           interval = null;
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     };
 
     // Re-check when a run starts elsewhere on the page
@@ -95,7 +101,9 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
         b.name.toLowerCase().includes(q) ||
         b.prompt?.toLowerCase().includes(q) ||
         b.expectedValue?.toLowerCase().includes(q) ||
-        b.assertions?.some((a: any) => a.expectedValue?.toLowerCase().includes(q)),
+        b.assertions?.some((a: any) =>
+          a.expectedValue?.toLowerCase().includes(q),
+        ),
     );
   }, [benchmarks, search]);
 

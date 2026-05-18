@@ -26,8 +26,9 @@
   background: var(--accent-subtle);
   border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
   border-radius: calc(var(--border-radius-sm) - 2px);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
   pointer-events: none;
   z-index: 0;

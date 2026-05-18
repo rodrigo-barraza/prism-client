@@ -29,9 +29,6 @@
   background: color-mix(in srgb, var(--accent-color) 3%, var(--bg-secondary));
 }
 
-
-
-
 .agentInfo {
   flex: 1;
   min-width: 0;
@@ -330,8 +327,6 @@
   color: var(--text-tertiary);
 }
 
-
-
 /* ── Form footer ──────────────────────────────────────────────── */
 
 .formFooter {
@@ -372,15 +367,24 @@
 }
 
 .iconOption:hover {
-  background: color-mix(in srgb, var(--agent-color, var(--accent-color)) 8%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--agent-color, var(--accent-color)) 8%,
+    transparent
+  );
   color: var(--text-primary);
 }
 
 .iconOption[data-selected="true"] {
-  background: color-mix(in srgb, var(--agent-color, var(--accent-color)) 15%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--agent-color, var(--accent-color)) 15%,
+    transparent
+  );
   color: var(--agent-color, var(--accent-color));
   border-color: var(--agent-color, var(--accent-color));
-  box-shadow: 0 0 8px color-mix(in srgb, var(--agent-color, var(--accent-color)) 20%, transparent);
+  box-shadow: 0 0 8px
+    color-mix(in srgb, var(--agent-color, var(--accent-color)) 20%, transparent);
 }
 
 /* ── Color Picker Grid ────────────────────────────────────────── */
@@ -474,6 +478,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

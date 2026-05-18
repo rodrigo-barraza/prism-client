@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  Fragment,
+} from "react";
 
 import {
   Cpu,
@@ -32,7 +39,12 @@ import {
   FilterBarComponent,
   FilterSelectComponent,
 } from "./FilterBarComponent";
-import { PageHeaderComponent, SelectComponent, StatsCardComponent as StatsCard, TabBarComponent } from "@rodrigo-barraza/components-library";
+import {
+  PageHeaderComponent,
+  SelectComponent,
+  StatsCardComponent as StatsCard,
+  TabBarComponent,
+} from "@rodrigo-barraza/components-library";
 import { LoadingMessage, ErrorMessage } from "./StateMessageComponent";
 import styles from "./VramBenchmarkComponent.module.css";
 
@@ -87,7 +99,10 @@ function getQuantColor(q: any) {
 
 function getGPUColor(gpuName: any) {
   return (
-    (GPU_COLORS as any)[gpuName] || { bg: "rgba(107,114,128,0.5)", border: "#6b7280" }
+    (GPU_COLORS as any)[gpuName] || {
+      bg: "rgba(107,114,128,0.5)",
+      border: "#6b7280",
+    }
   );
 }
 
@@ -161,7 +176,14 @@ const LEGEND_STYLE: any = {
 // Draws model name labels directly on chart data points.
 // Works per-chart without global registration issues.
 
-function makeDatalabelsPlugin({ getLabel, anchor = "end", align = "top", offset = 4, filterFn, maxLabels = 60 }: any) {
+function makeDatalabelsPlugin({
+  getLabel,
+  anchor = "end",
+  align = "top",
+  offset = 4,
+  filterFn,
+  maxLabels = 60,
+}: any) {
   return {
     id: "customDatalabels",
     afterDatasetsDraw(chart: any) {
@@ -214,7 +236,10 @@ function makeConnectorHighlightPlugin() {
     afterEvent(chart: any, args: any) {
       const event = args.event;
       const elements = chart.getElementsAtEventForMode(
-        event, "nearest", { intersect: true }, false,
+        event,
+        "nearest",
+        { intersect: true },
+        false,
       );
       let hoveredModel = null;
 
@@ -307,32 +332,59 @@ function makeConnectorHighlightPlugin() {
 
 const SETTINGS_INFO = {
   "no-flash-attn": {
-    flash: false, kv: "GPU", batch: 512, parallel: 4,
-    purpose: "Worst-case VRAM. FP32 KV cache (~2× size) + 4 concurrent slots. Stress test ceiling.",
+    flash: false,
+    kv: "GPU",
+    batch: 512,
+    parallel: 4,
+    purpose:
+      "Worst-case VRAM. FP32 KV cache (~2× size) + 4 concurrent slots. Stress test ceiling.",
   },
   "max-quality": {
-    flash: false, kv: "GPU", batch: 512, parallel: 1,
-    purpose: "Maximum precision, single user. FP32 KV cache, all VRAM for one request.",
+    flash: false,
+    kv: "GPU",
+    batch: 512,
+    parallel: 1,
+    purpose:
+      "Maximum precision, single user. FP32 KV cache, all VRAM for one request.",
   },
-  "default": {
-    flash: true, kv: "GPU", batch: 512, parallel: 4,
-    purpose: "Standard config. Flash attention (Q8 KV, ~50% savings). What most people use.",
+  default: {
+    flash: true,
+    kv: "GPU",
+    batch: 512,
+    parallel: 4,
+    purpose:
+      "Standard config. Flash attention (Q8 KV, ~50% savings). What most people use.",
   },
   "small-batch": {
-    flash: true, kv: "GPU", batch: 128, parallel: 4,
-    purpose: "Lower peak VRAM during prefill. Slightly slower TTFT but gentler on memory spikes.",
+    flash: true,
+    kv: "GPU",
+    batch: 128,
+    parallel: 4,
+    purpose:
+      "Lower peak VRAM during prefill. Slightly slower TTFT but gentler on memory spikes.",
   },
   "single-slot": {
-    flash: true, kv: "GPU", batch: 512, parallel: 1,
+    flash: true,
+    kv: "GPU",
+    batch: 512,
+    parallel: 1,
     purpose: "Default quality, single user. Shows per-slot KV cache overhead.",
   },
   "kv-on-cpu": {
-    flash: true, kv: "CPU", batch: 512, parallel: 4,
-    purpose: "KV cache in system RAM. Massive VRAM savings but attention crosses PCIe — hurts latency.",
+    flash: true,
+    kv: "CPU",
+    batch: 512,
+    parallel: 4,
+    purpose:
+      "KV cache in system RAM. Massive VRAM savings but attention crosses PCIe — hurts latency.",
   },
   "min-vram": {
-    flash: true, kv: "CPU", batch: 128, parallel: 1,
-    purpose: "Everything minimized. Absolute floor for running a model — \"can it even load?\" testing.",
+    flash: true,
+    kv: "CPU",
+    batch: 128,
+    parallel: 1,
+    purpose:
+      'Everything minimized. Absolute floor for running a model — "can it even load?" testing.',
   },
 };
 
@@ -340,14 +392,43 @@ function SettingsTooltipContent({ settingsKey }: any) {
   const info = (SETTINGS_INFO as any)[settingsKey];
   if (!info) return settingsKey;
   return (
-    <span style={{ display: "block", whiteSpace: "normal", maxWidth: 320, lineHeight: 1.5 }}>
-      <span style={{ fontWeight: 700, fontSize: 12, marginBottom: 4, display: "block" }}>
+    <span
+      style={{
+        display: "block",
+        whiteSpace: "normal",
+        maxWidth: 320,
+        lineHeight: 1.5,
+      }}
+    >
+      <span
+        style={{
+          fontWeight: 700,
+          fontSize: 12,
+          marginBottom: 4,
+          display: "block",
+        }}
+      >
         {settingsKey}
       </span>
-      <span style={{ display: "block", fontSize: 11, opacity: 0.7, marginBottom: 6 }}>
+      <span
+        style={{
+          display: "block",
+          fontSize: 11,
+          opacity: 0.7,
+          marginBottom: 6,
+        }}
+      >
         {info.purpose}
       </span>
-      <span style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 12px", fontSize: 10.5, opacity: 0.55 }}>
+      <span
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "2px 12px",
+          fontSize: 10.5,
+          opacity: 0.55,
+        }}
+      >
         <span>Flash Attn: {info.flash ? "✓" : "✗"}</span>
         <span>KV Cache: {info.kv}</span>
         <span>Batch: {info.batch}</span>
@@ -360,7 +441,7 @@ function SettingsTooltipContent({ settingsKey }: any) {
 const SETTINGS_EMOJI = {
   "no-flash-attn": "🔥",
   "max-quality": "💎",
-  "default": "⚡",
+  default: "⚡",
   "small-batch": "📦",
   "single-slot": "🎯",
   "kv-on-cpu": "🧊",
@@ -370,11 +451,33 @@ const SETTINGS_EMOJI = {
 function SettingsMatrixTooltip() {
   const rows = Object.entries(SETTINGS_INFO);
   return (
-    <span style={{ display: "block", whiteSpace: "normal", maxWidth: 420, lineHeight: 1.6 }}>
-      <span style={{ fontWeight: 700, fontSize: 12, marginBottom: 6, display: "block" }}>
+    <span
+      style={{
+        display: "block",
+        whiteSpace: "normal",
+        maxWidth: 420,
+        lineHeight: 1.6,
+      }}
+    >
+      <span
+        style={{
+          fontWeight: 700,
+          fontSize: 12,
+          marginBottom: 6,
+          display: "block",
+        }}
+      >
         Settings Configuration Matrix
       </span>
-      <span style={{ display: "grid", gridTemplateColumns: "auto auto auto auto auto", gap: "2px 10px", fontSize: 10, opacity: 0.8 }}>
+      <span
+        style={{
+          display: "grid",
+          gridTemplateColumns: "auto auto auto auto auto",
+          gap: "2px 10px",
+          fontSize: 10,
+          opacity: 0.8,
+        }}
+      >
         <span style={{ fontWeight: 700, opacity: 0.5 }}>Setting</span>
         <span style={{ fontWeight: 700, opacity: 0.5 }}>Flash</span>
         <span style={{ fontWeight: 700, opacity: 0.5 }}>KV</span>
@@ -382,7 +485,9 @@ function SettingsMatrixTooltip() {
         <span style={{ fontWeight: 700, opacity: 0.5 }}>Parallel</span>
         {rows.map(([key, info]: any) => (
           <Fragment key={key}>
-            <span>{(SETTINGS_EMOJI as any)[key] || "⚙️"} {key}</span>
+            <span>
+              {(SETTINGS_EMOJI as any)[key] || "⚙️"} {key}
+            </span>
             <span>{info.flash ? "✓" : "✗"}</span>
             <span>{info.kv}</span>
             <span>{info.batch}</span>
@@ -415,7 +520,8 @@ const SCATTER_MODES = [
     label: "VRAM vs Efficiency",
     desc: "How many tokens each GiB of VRAM produces — higher is better.",
     getX: (m: any) => m.modelVramGiB,
-    getY: (m: any) => m.modelVramGiB > 0 ? m.tokensPerSecond / m.modelVramGiB : 0,
+    getY: (m: any) =>
+      m.modelVramGiB > 0 ? m.tokensPerSecond / m.modelVramGiB : 0,
     xLabel: "VRAM Usage (GiB)",
     yLabel: "Efficiency (TPS / GiB)",
     xMin: 0,
@@ -449,7 +555,7 @@ const SCATTER_MODES = [
     label: "VRAM vs Load Time",
     desc: "Model load time — important for cold-start and multi-model switching.",
     getX: (m: any) => m.modelVramGiB,
-    getY: (m: any) => m.loadTimeMs ? m.loadTimeMs / 1000 : null,
+    getY: (m: any) => (m.loadTimeMs ? m.loadTimeMs / 1000 : null),
     xLabel: "VRAM Usage (GiB)",
     yLabel: "Load Time (sec)",
     xMin: 0,
@@ -551,7 +657,9 @@ export default function VramBenchmarkComponent() {
 
   // Distinct parallel and batch options from SETTINGS_INFO
   const parallelOptions = useMemo(() => {
-    const set = new Set(Object.values(SETTINGS_INFO).map((s: any) => s.parallel));
+    const set = new Set(
+      Object.values(SETTINGS_INFO).map((s: any) => s.parallel),
+    );
     return [...set].sort((a: any, b: any) => a - b);
   }, []);
   const batchOptions = useMemo(() => {
@@ -561,15 +669,19 @@ export default function VramBenchmarkComponent() {
 
   // Active scatter mode config
   const activeScatterMode = useMemo(
-    () => SCATTER_MODES.find((m: any) => m.key === scatterMode) || SCATTER_MODES[0],
+    () =>
+      SCATTER_MODES.find((m: any) => m.key === scatterMode) || SCATTER_MODES[0],
     [scatterMode],
   );
 
   // Dynamic tab labels — scatter tab reflects current axis mode
   const viewTabs = useMemo(
-    () => VIEW_TABS.map((tab: any) =>
-      tab.key === "scatter" ? { ...tab, label: activeScatterMode.label } : tab,
-    ),
+    () =>
+      VIEW_TABS.map((tab: any) =>
+        tab.key === "scatter"
+          ? { ...tab, label: activeScatterMode.label }
+          : tab,
+      ),
     [activeScatterMode],
   );
 
@@ -621,9 +733,7 @@ export default function VramBenchmarkComponent() {
   // -- Process data -----------------------------------------
 
   const models = useMemo(() => {
-    let filtered = rawData.filter(
-      (d: any) => d.modelVramGiB > 0,
-    );
+    let filtered = rawData.filter((d: any) => d.modelVramGiB > 0);
 
     if (machineFilter !== "all") {
       filtered = filtered.filter(
@@ -687,7 +797,10 @@ export default function VramBenchmarkComponent() {
     const byModel: Record<string, any> = {};
     for (const d of Object.values(byKey)) {
       const mKey = d.displayName;
-      if (!(byModel as any)[mKey] || d.contextLength > (byModel as any)[mKey].contextLength) {
+      if (
+        !(byModel as any)[mKey] ||
+        d.contextLength > (byModel as any)[mKey].contextLength
+      ) {
         (byModel as any)[mKey] = d;
       }
     }
@@ -709,32 +822,44 @@ export default function VramBenchmarkComponent() {
         result.sort((a: any, b: any) => a.fileSizeGB - b.fileSizeGB);
         break;
       case "ttft":
-        result.sort((a: any, b: any) => (a.ttft?.ms || Infinity) - (b.ttft?.ms || Infinity));
+        result.sort(
+          (a: any, b: any) =>
+            (a.ttft?.ms || Infinity) - (b.ttft?.ms || Infinity),
+        );
         break;
       case "loadTime":
-        result.sort((a: any, b: any) => (a.loadTimeMs || Infinity) - (b.loadTimeMs || Infinity));
+        result.sort(
+          (a: any, b: any) =>
+            (a.loadTimeMs || Infinity) - (b.loadTimeMs || Infinity),
+        );
         break;
       default:
         result.sort((a: any, b: any) => a.modelVramGiB - b.modelVramGiB);
     }
 
     return result;
-  }, [rawData, machineFilter, providerFilter, ctxMinVal, ctxMaxVal, parallelFilter, batchFilter, sortBy]);
+  }, [
+    rawData,
+    machineFilter,
+    providerFilter,
+    ctxMinVal,
+    ctxMaxVal,
+    parallelFilter,
+    batchFilter,
+    sortBy,
+  ]);
 
   // -- All filtered data (including all context per model for context chart) -
 
   const allFilteredData = useMemo(() => {
-    let filtered = rawData.filter(
-      (d: any) => d.modelVramGiB > 0,
-    );
+    let filtered = rawData.filter((d: any) => d.modelVramGiB > 0);
     if (machineFilter !== "all") {
       filtered = filtered.filter(
         (d: any) => (d.system?.hostname || "unknown") === machineFilter,
       );
     }
     if (providerFilter !== "all") {
-      filtered = filtered.filter((d: any) => d.provider === providerFilter,
-      );
+      filtered = filtered.filter((d: any) => d.provider === providerFilter);
     }
     // Context range filter
     if (ctxMinVal !== undefined) {
@@ -760,7 +885,15 @@ export default function VramBenchmarkComponent() {
       });
     }
     return filtered;
-  }, [rawData, machineFilter, providerFilter, ctxMinVal, ctxMaxVal, parallelFilter, batchFilter]);
+  }, [
+    rawData,
+    machineFilter,
+    providerFilter,
+    ctxMinVal,
+    ctxMaxVal,
+    parallelFilter,
+    batchFilter,
+  ]);
 
   // -- Stats ------------------------------------------------
 
@@ -782,11 +915,14 @@ export default function VramBenchmarkComponent() {
     const ttftModels = models.filter((m: any) => m.ttft?.ms > 0);
     let medianTtft = null;
     if (ttftModels.length > 0) {
-      const sorted = ttftModels.map((m: any) => m.ttft.ms).sort((a: any, b: any) => a - b);
+      const sorted = ttftModels
+        .map((m: any) => m.ttft.ms)
+        .sort((a: any, b: any) => a - b);
       const mid = Math.floor(sorted.length / 2);
-      medianTtft = sorted.length % 2 !== 0
-        ? sorted[mid].toFixed(0)
-        : ((sorted[mid - 1] + sorted[mid]) / 2).toFixed(0);
+      medianTtft =
+        sorted.length % 2 !== 0
+          ? sorted[mid].toFixed(0)
+          : ((sorted[mid - 1] + sorted[mid]) / 2).toFixed(0);
     }
 
     // Estimation accuracy — mean absolute error between measured and estimated VRAM
@@ -801,36 +937,44 @@ export default function VramBenchmarkComponent() {
     const oomCount = models.filter((m: any) => m.fitsInVram === false).length;
 
     // Scope stats — distinct quant formats & providers
-    const quantCount = new Set(models.map((m: any) => m.quantization).filter(Boolean)).size;
-    const providerCount = new Set(models.map((m: any) => m.provider).filter(Boolean)).size;
+    const quantCount = new Set(
+      models.map((m: any) => m.quantization).filter(Boolean),
+    ).size;
+    const providerCount = new Set(
+      models.map((m: any) => m.provider).filter(Boolean),
+    ).size;
 
     // -- Best Model cards for practical LLM usage --
 
     // 1. Fastest Response — lowest TTFT (critical for interactive chat)
-    const fastestResponse = ttftModels.length > 0
-      ? ttftModels.reduce((best: any, m: any) =>
-          m.ttft.ms < best.ttft.ms ? m : best,
-        )
-      : null;
+    const fastestResponse =
+      ttftModels.length > 0
+        ? ttftModels.reduce((best: any, m: any) =>
+            m.ttft.ms < best.ttft.ms ? m : best,
+          )
+        : null;
 
     // 2. Best for Chat — largest model (by VRAM) that still runs ≥30 TPS
     const CHAT_TPS_THRESHOLD = 30;
     const chatCandidates = models.filter(
-      (m: any) => m.tokensPerSecond >= CHAT_TPS_THRESHOLD && m.fitsInVram !== false,
+      (m: any) =>
+        m.tokensPerSecond >= CHAT_TPS_THRESHOLD && m.fitsInVram !== false,
     );
-    const bestForChat = chatCandidates.length > 0
-      ? chatCandidates.reduce((best: any, m: any) =>
-          m.modelVramGiB > best.modelVramGiB ? m : best,
-        )
-      : null;
+    const bestForChat =
+      chatCandidates.length > 0
+        ? chatCandidates.reduce((best: any, m: any) =>
+            m.modelVramGiB > best.modelVramGiB ? m : best,
+          )
+        : null;
 
     // 3. Largest Runnable — biggest model by VRAM that fits in GPU
     const fittingModels = models.filter((m: any) => m.fitsInVram !== false);
-    const largestRunnable = fittingModels.length > 0
-      ? fittingModels.reduce((best: any, m: any) =>
-          m.modelVramGiB > best.modelVramGiB ? m : best,
-        )
-      : null;
+    const largestRunnable =
+      fittingModels.length > 0
+        ? fittingModels.reduce((best: any, m: any) =>
+            m.modelVramGiB > best.modelVramGiB ? m : best,
+          )
+        : null;
 
     // 4. Lowest Footprint — smallest VRAM model (multi-model serving / sidecar)
     const lowestFootprint = models.reduce((best: any, m: any) =>
@@ -838,23 +982,28 @@ export default function VramBenchmarkComponent() {
     );
 
     // 5. Best Prefill — highest prefill tokens/sec (prompt processing for RAG)
-    const prefillModels = models.filter((m: any) => m.ttft?.prefillTokPerSec > 0);
-    const bestPrefill = prefillModels.length > 0
-      ? prefillModels.reduce((best: any, m: any) =>
-          m.ttft.prefillTokPerSec > best.ttft.prefillTokPerSec ? m : best,
-        )
-      : null;
+    const prefillModels = models.filter(
+      (m: any) => m.ttft?.prefillTokPerSec > 0,
+    );
+    const bestPrefill =
+      prefillModels.length > 0
+        ? prefillModels.reduce((best: any, m: any) =>
+            m.ttft.prefillTokPerSec > best.ttft.prefillTokPerSec ? m : best,
+          )
+        : null;
 
     // 6. Best Large Model — highest TPS among models ≥8 GiB VRAM
     const LARGE_VRAM_THRESHOLD = 8;
     const largeModels = models.filter(
-      (m: any) => m.modelVramGiB >= LARGE_VRAM_THRESHOLD && m.fitsInVram !== false,
+      (m: any) =>
+        m.modelVramGiB >= LARGE_VRAM_THRESHOLD && m.fitsInVram !== false,
     );
-    const bestLargeModel = largeModels.length > 0
-      ? largeModels.reduce((best: any, m: any) =>
-          m.tokensPerSecond > best.tokensPerSecond ? m : best,
-        )
-      : null;
+    const bestLargeModel =
+      largeModels.length > 0
+        ? largeModels.reduce((best: any, m: any) =>
+            m.tokensPerSecond > best.tokensPerSecond ? m : best,
+          )
+        : null;
 
     // -- Worst Model cards (counterparts) --
 
@@ -864,25 +1013,28 @@ export default function VramBenchmarkComponent() {
     );
 
     // W2. Slowest Response — highest TTFT
-    const slowestResponse = ttftModels.length > 0
-      ? ttftModels.reduce((worst: any, m: any) =>
-          m.ttft.ms > worst.ttft.ms ? m : worst,
-        )
-      : null;
+    const slowestResponse =
+      ttftModels.length > 0
+        ? ttftModels.reduce((worst: any, m: any) =>
+            m.ttft.ms > worst.ttft.ms ? m : worst,
+          )
+        : null;
 
     // W3. Worst for Chat — smallest model that still meets ≥30 TPS threshold
-    const worstForChat = chatCandidates.length > 0
-      ? chatCandidates.reduce((worst: any, m: any) =>
-          m.modelVramGiB < worst.modelVramGiB ? m : worst,
-        )
-      : null;
+    const worstForChat =
+      chatCandidates.length > 0
+        ? chatCandidates.reduce((worst: any, m: any) =>
+            m.modelVramGiB < worst.modelVramGiB ? m : worst,
+          )
+        : null;
 
     // W4. Smallest Runnable — smallest fitting model (lowest capability that runs)
-    const smallestRunnable = fittingModels.length > 0
-      ? fittingModels.reduce((worst: any, m: any) =>
-          m.modelVramGiB < worst.modelVramGiB ? m : worst,
-        )
-      : null;
+    const smallestRunnable =
+      fittingModels.length > 0
+        ? fittingModels.reduce((worst: any, m: any) =>
+            m.modelVramGiB < worst.modelVramGiB ? m : worst,
+          )
+        : null;
 
     // W5. Heaviest Footprint — largest VRAM consumer
     const heaviestFootprint = models.reduce((worst: any, m: any) =>
@@ -890,18 +1042,21 @@ export default function VramBenchmarkComponent() {
     );
 
     // W6. Worst Large Model — slowest TPS among models ≥8 GiB
-    const worstLargeModel = largeModels.length > 0
-      ? largeModels.reduce((worst: any, m: any) =>
-          m.tokensPerSecond < worst.tokensPerSecond ? m : worst,
-        )
-      : null;
+    const worstLargeModel =
+      largeModels.length > 0
+        ? largeModels.reduce((worst: any, m: any) =>
+            m.tokensPerSecond < worst.tokensPerSecond ? m : worst,
+          )
+        : null;
 
     // -- Build sorted card arrays by model name --
 
     // Helper — short settings tag for card subtitles
-    const stag = (m: any) => m.settings?.label ? ` · ⚙ ${m.settings.label}` : "";
+    const stag = (m: any) =>
+      m.settings?.label ? ` · ⚙ ${m.settings.label}` : "";
     // Helper — context length tag for card subtitles
-    const ctag = (m: any) => m.contextLength ? ` · ${(m.contextLength / 1024).toFixed(0)}K ctx` : "";
+    const ctag = (m: any) =>
+      m.contextLength ? ` · ${(m.contextLength / 1024).toFixed(0)}K ctx` : "";
 
     const bestCards = [
       fastest && {
@@ -1027,13 +1182,20 @@ export default function VramBenchmarkComponent() {
     ].filter(Boolean);
 
     // Merge best + worst and sort all 12 cards together by model name
-    const modelCards = [...bestCards, ...worstCards]
-      .sort((a: any, b: any) => a.sortName.localeCompare(b.sortName));
+    const modelCards = [...bestCards, ...worstCards].sort((a: any, b: any) =>
+      a.sortName.localeCompare(b.sortName),
+    );
 
     return {
-      n, minVram, maxVram,
-      fastest, medianTtft, avgDelta, oomCount,
-      quantCount, providerCount,
+      n,
+      minVram,
+      maxVram,
+      fastest,
+      medianTtft,
+      avgDelta,
+      oomCount,
+      quantCount,
+      providerCount,
       modelCards,
     };
   }, [models]);
@@ -1047,7 +1209,9 @@ export default function VramBenchmarkComponent() {
         .join(" · ");
     }
     const m = machines.find((x: any) => x.hostname === machineFilter);
-    return m ? `${shortGPU((m as any).gpu)} ${(m as any).gpuVramGB} GB` : "Unknown";
+    return m
+      ? `${shortGPU((m as any).gpu)} ${(m as any).gpuVramGB} GB`
+      : "Unknown";
   }, [machines, machineFilter]);
 
   // -- Chart render helpers ---------------------------------
@@ -1063,85 +1227,91 @@ export default function VramBenchmarkComponent() {
   // Uses Chart.js's setActiveElements API to emulate a hover
   // on the data point(s) that match `displayName`.
 
-  const highlightModelInChart = useCallback((displayName: any) => {
-    const chart = (chartInstances.current as any)[activeView];
-    if (!chart) return;
+  const highlightModelInChart = useCallback(
+    (displayName: any) => {
+      const chart = (chartInstances.current as any)[activeView];
+      if (!chart) return;
 
-    if (!displayName) {
-      // Clear highlight
-      chart.setActiveElements([]);
-      chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
+      if (!displayName) {
+        // Clear highlight
+        chart.setActiveElements([]);
+        chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
+        chart.update("none");
+        return;
+      }
+
+      const activeEls = [];
+
+      for (let di = 0; di < chart.data.datasets.length; di++) {
+        const ds = chart.data.datasets[di];
+        const data = ds.data;
+
+        for (let index = 0; index < data.length; index++) {
+          let match = false;
+
+          // Scatter / bubble: raw has .model.displayName
+          if (data[index]?.model?.displayName === displayName) {
+            match = true;
+          }
+
+          // Scatter overlay entries on bar/efficiency charts: raw has .entry.displayName
+          if (data[index]?.entry?.displayName === displayName) {
+            match = true;
+          }
+
+          // Context scaling: raw has .ctx.displayName
+          if (data[index]?.ctx?.displayName === displayName) {
+            match = true;
+          }
+
+          // Index-axis bar charts (bar, efficiency, ctxLeaderboard):
+          // match against chart labels — check if displayName starts with (or equals) the label
+          if (!match && chart.data.labels?.[index]) {
+            const label = chart.data.labels[index];
+            if (
+              displayName === label ||
+              displayName.startsWith(label.replace("…", ""))
+            ) {
+              match = true;
+            }
+          }
+
+          // Context scaling: dataset label contains model name
+          if (!match && activeView === "context" && ds.label) {
+            const dsLabel = ds.label.replace("…", "").split(" · ")[0];
+            if (
+              displayName.startsWith(dsLabel) ||
+              dsLabel.startsWith(displayName.slice(0, 20))
+            ) {
+              match = true;
+            }
+          }
+
+          if (match) {
+            activeEls.push({ datasetIndex: di, index: index });
+          }
+        }
+      }
+
+      if (activeEls.length > 0) {
+        chart.setActiveElements(activeEls);
+        // Position tooltip near the first highlighted element
+        const meta = chart.getDatasetMeta(activeEls[0].datasetIndex);
+        const element = meta.data[activeEls[0].index];
+        if (element) {
+          chart.tooltip?.setActiveElements(activeEls, {
+            x: element.x,
+            y: element.y,
+          });
+        }
+      } else {
+        chart.setActiveElements([]);
+        chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
+      }
       chart.update("none");
-      return;
-    }
-
-    const activeEls = [];
-
-    for (let di = 0; di < chart.data.datasets.length; di++) {
-      const ds = chart.data.datasets[di];
-      const data = ds.data;
-
-      for (let index = 0; index < data.length; index++) {
-        let match = false;
-
-        // Scatter / bubble: raw has .model.displayName
-        if (data[index]?.model?.displayName === displayName) {
-          match = true;
-        }
-
-        // Scatter overlay entries on bar/efficiency charts: raw has .entry.displayName
-        if (data[index]?.entry?.displayName === displayName) {
-          match = true;
-        }
-
-        // Context scaling: raw has .ctx.displayName
-        if (data[index]?.ctx?.displayName === displayName) {
-          match = true;
-        }
-
-        // Index-axis bar charts (bar, efficiency, ctxLeaderboard):
-        // match against chart labels — check if displayName starts with (or equals) the label
-        if (!match && chart.data.labels?.[index]) {
-          const label = chart.data.labels[index];
-          if (
-            displayName === label ||
-            displayName.startsWith(label.replace("…", ""))
-          ) {
-            match = true;
-          }
-        }
-
-        // Context scaling: dataset label contains model name
-        if (!match && activeView === "context" && ds.label) {
-          const dsLabel = ds.label.replace("…", "").split(" · ")[0];
-          if (displayName.startsWith(dsLabel) || dsLabel.startsWith(displayName.slice(0, 20))) {
-            match = true;
-          }
-        }
-
-        if (match) {
-          activeEls.push({ datasetIndex: di, index: index });
-        }
-      }
-    }
-
-    if (activeEls.length > 0) {
-      chart.setActiveElements(activeEls);
-      // Position tooltip near the first highlighted element
-      const meta = chart.getDatasetMeta(activeEls[0].datasetIndex);
-      const element = meta.data[activeEls[0].index];
-      if (element) {
-        chart.tooltip?.setActiveElements(activeEls, {
-          x: element.x,
-          y: element.y,
-        });
-      }
-    } else {
-      chart.setActiveElements([]);
-      chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
-    }
-    chart.update("none");
-  }, [activeView]);
+    },
+    [activeView],
+  );
 
   // -- Scatter (dynamic axes) -------------------------------
 
@@ -1159,7 +1329,9 @@ export default function VramBenchmarkComponent() {
     const context = (canvas as any).getContext("2d");
     const mode = activeScatterMode;
     // With range-based context filter, check if multiple distinct contexts exist
-    const distinctCtx = new Set(allFilteredData.map((d: any) => d.contextLength));
+    const distinctCtx = new Set(
+      allFilteredData.map((d: any) => d.contextLength),
+    );
     const showAllCtx = distinctCtx.size > 1;
     let datasets: any[] = [];
 
@@ -1193,13 +1365,18 @@ export default function VramBenchmarkComponent() {
       const bestByGroup: Record<string, any> = {};
       for (const m of entries) {
         const gk = groupKeyFn(m);
-        if (!(bestByGroup as any)[gk] || m.tokensPerSecond > (bestByGroup as any)[gk].tokensPerSecond) {
+        if (
+          !(bestByGroup as any)[gk] ||
+          m.tokensPerSecond > (bestByGroup as any)[gk].tokensPerSecond
+        ) {
           (bestByGroup as any)[gk] = m;
         }
       }
       const set = new Set();
       for (const m of Object.values(bestByGroup)) {
-        set.add(`${m.displayName}__${m.system?.gpu?.name || "Unknown"}__${m.contextLength}`);
+        set.add(
+          `${m.displayName}__${m.system?.gpu?.name || "Unknown"}__${m.contextLength}`,
+        );
       }
       return set;
     };
@@ -1220,7 +1397,10 @@ export default function VramBenchmarkComponent() {
         const key = showAllCtx
           ? `${(d as any).displayName}__${gpu}__${(d as any).contextLength}`
           : `${(d as any).displayName}__${gpu}`;
-        if (!(byKey as any)[key] || (d as any).createdAt > (byKey as any)[key].createdAt) {
+        if (
+          !(byKey as any)[key] ||
+          (d as any).createdAt > (byKey as any)[key].createdAt
+        ) {
           (byKey as any)[key] = d;
         }
       }
@@ -1253,7 +1433,9 @@ export default function VramBenchmarkComponent() {
               bestKeys.has(entryKey(p.model)) ? color.bg : fadeBg(color.bg),
             ),
             borderColor: points.map((p: any) =>
-              bestKeys.has(entryKey(p.model)) ? color.border : fadeBorder(color.border),
+              bestKeys.has(entryKey(p.model))
+                ? color.border
+                : fadeBorder(color.border),
             ),
             borderWidth: points.map((p: any) =>
               bestKeys.has(entryKey(p.model)) ? 1.5 : 0.5,
@@ -1283,7 +1465,8 @@ export default function VramBenchmarkComponent() {
         if (bestKeys && !bestKeys.has(entryKey(m))) continue;
         const pt = toPoint(m);
         if (!pt) continue;
-        if (!(modelToPoints as any)[m.displayName]) (modelToPoints as any)[m.displayName] = [];
+        if (!(modelToPoints as any)[m.displayName])
+          (modelToPoints as any)[m.displayName] = [];
         (modelToPoints as any)[m.displayName].push(pt);
       }
 
@@ -1323,16 +1506,16 @@ export default function VramBenchmarkComponent() {
         const key = showAllCtx
           ? `${d.displayName}__${d.contextLength}`
           : d.displayName;
-        if (!(byKey as any)[key] || d.createdAt > (byKey as any)[key].createdAt) {
+        if (
+          !(byKey as any)[key] ||
+          d.createdAt > (byKey as any)[key].createdAt
+        ) {
           (byKey as any)[key] = d;
         }
       }
       const scatterData = Object.values(byKey);
 
-      const bestKeys = computeBestKeys(
-        scatterData,
-        (m: any) => m.displayName,
-      );
+      const bestKeys = computeBestKeys(scatterData, (m: any) => m.displayName);
 
       const quantGroups: Record<string, any[]> = {};
       for (const m of scatterData) {
@@ -1352,7 +1535,9 @@ export default function VramBenchmarkComponent() {
               bestKeys.has(entryKey(p.model)) ? color.bg : fadeBg(color.bg),
             ),
             borderColor: points.map((p: any) =>
-              bestKeys.has(entryKey(p.model)) ? color.border : fadeBorder(color.border),
+              bestKeys.has(entryKey(p.model))
+                ? color.border
+                : fadeBorder(color.border),
             ),
             borderWidth: points.map((p: any) =>
               bestKeys.has(entryKey(p.model)) ? 1.5 : 0.5,
@@ -1381,9 +1566,13 @@ export default function VramBenchmarkComponent() {
       currentChart.data.datasets = datasets;
       currentChart.options.scales.x.title.text = mode.xLabel;
       currentChart.options.scales.y.title.text = mode.yLabel;
-      currentChart.options.scales.x.min = scatterClipXMinVal ?? (mode.xMin ?? 0);
+      currentChart.options.scales.x.min = scatterClipXMinVal ?? mode.xMin ?? 0;
       currentChart.options.scales.y.min = mode.yMin ?? 0;
-      if (scatterClipXMaxVal !== undefined) { currentChart.options.scales.x.max = scatterClipXMaxVal; } else { delete currentChart.options.scales.x.max; }
+      if (scatterClipXMaxVal !== undefined) {
+        currentChart.options.scales.x.max = scatterClipXMaxVal;
+      } else {
+        delete currentChart.options.scales.x.max;
+      }
       currentChart.update("none");
     } else {
       (chartInstances.current as any).scatter = new Chart(context, {
@@ -1395,7 +1584,8 @@ export default function VramBenchmarkComponent() {
             anchor: "end",
             align: "top",
             offset: 4,
-            filterFn: (di: any, chart: any) => chart.data.datasets[di]?.type !== "line",
+            filterFn: (di: any, chart: any) =>
+              chart.data.datasets[di]?.type !== "line",
           }),
           makeConnectorHighlightPlugin(),
         ],
@@ -1413,13 +1603,15 @@ export default function VramBenchmarkComponent() {
               title: { ...AXIS_TITLE_STYLE, text: mode.xLabel },
               grid: GRID_STYLE,
               ticks: TICK_STYLE,
-              min: scatterClipXMinVal ?? (mode.xMin ?? 0),
-              ...(scatterClipXMaxVal !== undefined ? { max: scatterClipXMaxVal } : {}),
+              min: scatterClipXMinVal ?? mode.xMin ?? 0,
+              ...(scatterClipXMaxVal !== undefined
+                ? { max: scatterClipXMaxVal }
+                : {}),
             },
             y: {
               title: { ...AXIS_TITLE_STYLE, text: mode.yLabel },
               grid: GRID_STYLE,
-              ticks: { ...TICK_STYLE, callback: (v: any) => v < 0 ? "" : v },
+              ticks: { ...TICK_STYLE, callback: (v: any) => (v < 0 ? "" : v) },
               min: mode.yMin ?? 0,
             },
           },
@@ -1442,22 +1634,31 @@ export default function VramBenchmarkComponent() {
                   const lines = [
                     `GPU: ${shortGPU(m.system?.gpu?.name)}`,
                     `VRAM: ${m.modelVramGiB.toFixed(2)} GiB (est: ${m.estimatedGiB.toFixed(2)})`,
-                    `Parallel: ${sInfo?.parallel ?? '?'}`,
-                    `Batch: ${sInfo?.batch ?? '?'}`,
+                    `Parallel: ${sInfo?.parallel ?? "?"}`,
+                    `Batch: ${sInfo?.batch ?? "?"}`,
                     `Context: ${(m.contextLength / 1024).toFixed(0)}K`,
-                    `Speed: ${m.tokensPerSecond?.toFixed(1) || '0'} tok/s`,
-                    `File: ${m.fileSizeGB.toFixed(1)} GB · ${m.quantization} (${m.bitsPerWeight || '?'} bpw)`,
+                    `Speed: ${m.tokensPerSecond?.toFixed(1) || "0"} tok/s`,
+                    `File: ${m.fileSizeGB.toFixed(1)} GB · ${m.quantization} (${m.bitsPerWeight || "?"} bpw)`,
                     `Efficiency: ${(m.tokensPerSecond / m.modelVramGiB).toFixed(1)} TPS/GiB`,
                   ];
-                  if (m.vramDuringGen?.peakGiB) lines.push(`Peak VRAM (gen): ${m.vramDuringGen.peakGiB.toFixed(2)} GiB`);
+                  if (m.vramDuringGen?.peakGiB)
+                    lines.push(
+                      `Peak VRAM (gen): ${m.vramDuringGen.peakGiB.toFixed(2)} GiB`,
+                    );
                   if (m.ttft?.ms) {
                     let ttftLine = `TTFT: ${m.ttft.ms.toFixed(0)} ms`;
-                    if (m.ttft.prefillTokPerSec) ttftLine += ` (prefill: ${m.ttft.prefillTokPerSec.toFixed(0)} t/s)`;
+                    if (m.ttft.prefillTokPerSec)
+                      ttftLine += ` (prefill: ${m.ttft.prefillTokPerSec.toFixed(0)} t/s)`;
                     lines.push(ttftLine);
                   }
-                  if (m.loadTimeMs) lines.push(`Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
-                  if (m.gpu?.temp) lines.push(`GPU: ${m.gpu.temp}°C · ${m.gpu.power || '?'}W · ${m.gpu.utilization || '?'}%`);
-                  if (m.fitsInVram === false) lines.push(`⚠ Does NOT fit in VRAM`);
+                  if (m.loadTimeMs)
+                    lines.push(`Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
+                  if (m.gpu?.temp)
+                    lines.push(
+                      `GPU: ${m.gpu.temp}°C · ${m.gpu.power || "?"}W · ${m.gpu.utilization || "?"}%`,
+                    );
+                  if (m.fitsInVram === false)
+                    lines.push(`⚠ Does NOT fit in VRAM`);
                   if (m.settings?.label && m.settings.label !== "default") {
                     lines.push(`Settings: ${m.settings.label}`);
                   }
@@ -1477,7 +1678,10 @@ export default function VramBenchmarkComponent() {
     const vram = {};
     const tps = {};
     const ctxR = {};
-    const source = allFilteredData.length > 0 ? allFilteredData : rawData.filter((d: any) => d.modelVramGiB > 0);
+    const source =
+      allFilteredData.length > 0
+        ? allFilteredData
+        : rawData.filter((d: any) => d.modelVramGiB > 0);
     for (const d of source) {
       const name = (d as any).displayName;
       const v = (d as any).modelVramGiB;
@@ -1485,7 +1689,13 @@ export default function VramBenchmarkComponent() {
       const c = (d as any).contextLength || 0;
       // VRAM ranges (store full entries for per-dot tooltips)
       if (!(vram as any)[name]) {
-        (vram as any)[name] = { min: v, max: v, count: 1, values: [v], entries: [d] };
+        (vram as any)[name] = {
+          min: v,
+          max: v,
+          count: 1,
+          values: [v],
+          entries: [d],
+        };
       } else {
         (vram as any)[name].min = Math.min((vram as any)[name].min, v);
         (vram as any)[name].max = Math.max((vram as any)[name].max, v);
@@ -1496,7 +1706,13 @@ export default function VramBenchmarkComponent() {
       // TPS ranges (store full entries for per-dot tooltips)
       if (t > 0) {
         if (!(tps as any)[name]) {
-          (tps as any)[name] = { min: t, max: t, count: 1, values: [t], entries: [d] };
+          (tps as any)[name] = {
+            min: t,
+            max: t,
+            count: 1,
+            values: [t],
+            entries: [d],
+          };
         } else {
           (tps as any)[name].min = Math.min((tps as any)[name].min, t);
           (tps as any)[name].max = Math.max((tps as any)[name].max, t);
@@ -1509,7 +1725,13 @@ export default function VramBenchmarkComponent() {
       if (c > 0) {
         const cK = c / 1024;
         if (!(ctxR as any)[name]) {
-          (ctxR as any)[name] = { min: cK, max: cK, count: 1, values: [cK], entries: [d] };
+          (ctxR as any)[name] = {
+            min: cK,
+            max: cK,
+            count: 1,
+            values: [cK],
+            entries: [d],
+          };
         } else {
           (ctxR as any)[name].min = Math.min((ctxR as any)[name].min, cK);
           (ctxR as any)[name].max = Math.max((ctxR as any)[name].max, cK);
@@ -1528,8 +1750,12 @@ export default function VramBenchmarkComponent() {
     if (!chart) return;
     const xScale = chart.options.scales.x;
     const mode = activeScatterMode;
-    xScale.min = scatterClipXMinVal ?? (mode.xMin ?? 0);
-    if (scatterClipXMaxVal !== undefined) { xScale.max = scatterClipXMaxVal; } else { delete xScale.max; }
+    xScale.min = scatterClipXMinVal ?? mode.xMin ?? 0;
+    if (scatterClipXMaxVal !== undefined) {
+      xScale.max = scatterClipXMaxVal;
+    } else {
+      delete xScale.max;
+    }
     chart.update("zoom");
   }, [scatterClipXMinVal, scatterClipXMaxVal, activeScatterMode]);
 
@@ -1538,8 +1764,16 @@ export default function VramBenchmarkComponent() {
     if (!chart) return;
     const xScale = chart.options.scales.x;
     // Apply or clear min/max
-    if (clipMin !== undefined) { xScale.min = clipMin; } else { delete xScale.min; }
-    if (clipMax !== undefined) { xScale.max = clipMax; } else { delete xScale.max; }
+    if (clipMin !== undefined) {
+      xScale.min = clipMin;
+    } else {
+      delete xScale.min;
+    }
+    if (clipMax !== undefined) {
+      xScale.max = clipMax;
+    } else {
+      delete xScale.max;
+    }
     chart.update("zoom");
   }, [clipMin, clipMax]);
 
@@ -1606,9 +1840,13 @@ export default function VramBenchmarkComponent() {
           {
             label: "VRAM Range (GiB)",
             data: rangeData,
-            backgroundColor: models.map((m: any) => vramColor(m.modelVramGiB, 0.45).bg),
+            backgroundColor: models.map(
+              (m: any) => vramColor(m.modelVramGiB, 0.45).bg,
+            ),
             borderColor: models.map((m: any) =>
-              m.fitsInVram === false ? "#f43f5e" : vramColor(m.modelVramGiB, 1).border,
+              m.fitsInVram === false
+                ? "#f43f5e"
+                : vramColor(m.modelVramGiB, 1).border,
             ),
             borderWidth: 1.5,
             borderSkipped: false,
@@ -1718,33 +1956,49 @@ export default function VramBenchmarkComponent() {
                 const item = items[0];
                 if (!item) return "";
                 // Use entry-specific data for scatter dots
-                const m = item.datasetIndex === 1
-                  ? item.raw?.entry
-                  : models[item.dataIndex];
+                const m =
+                  item.datasetIndex === 1
+                    ? item.raw?.entry
+                    : models[item.dataIndex];
                 if (!m) return "";
                 const sInfo = (SETTINGS_INFO as any)[m.settings?.label];
                 const lines = [
                   "",
-                  `Parallel: ${sInfo?.parallel ?? '?'}`,
-                  `Batch: ${sInfo?.batch ?? '?'}`,
+                  `Parallel: ${sInfo?.parallel ?? "?"}`,
+                  `Batch: ${sInfo?.batch ?? "?"}`,
                   `Context: ${(m.contextLength / 1024).toFixed(0)}K`,
-                  `Speed: ${m.tokensPerSecond?.toFixed(1) || '0'} tok/s`,
-                  `File: ${m.fileSizeGB.toFixed(1)} GB · ${m.bitsPerWeight || '?'} bpw`,
+                  `Speed: ${m.tokensPerSecond?.toFixed(1) || "0"} tok/s`,
+                  `File: ${m.fileSizeGB.toFixed(1)} GB · ${m.bitsPerWeight || "?"} bpw`,
                   `Efficiency: ${(m.tokensPerSecond / m.modelVramGiB).toFixed(1)} TPS/GiB`,
                 ];
-                if (m.vramDuringGen?.peakGiB) lines.push(`Peak VRAM (gen): ${m.vramDuringGen.peakGiB.toFixed(2)} GiB`);
+                if (m.vramDuringGen?.peakGiB)
+                  lines.push(
+                    `Peak VRAM (gen): ${m.vramDuringGen.peakGiB.toFixed(2)} GiB`,
+                  );
                 if (m.ttft?.ms) {
                   let ttftLine = `TTFT: ${m.ttft.ms.toFixed(0)} ms`;
-                  if (m.ttft.prefillTokPerSec) ttftLine += ` (prefill: ${m.ttft.prefillTokPerSec.toFixed(0)} t/s)`;
+                  if (m.ttft.prefillTokPerSec)
+                    ttftLine += ` (prefill: ${m.ttft.prefillTokPerSec.toFixed(0)} t/s)`;
                   lines.push(ttftLine);
                 }
-                if (m.loadTimeMs) lines.push(`Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
-                if (m.cpuRam?.deltaMiB) lines.push(`CPU RAM Δ: ${(m.cpuRam.deltaMiB / 1024).toFixed(2)} GiB`);
-                if (m.gpu?.temp) lines.push(`GPU: ${m.gpu.temp}°C · ${m.gpu.power || '?'}W`);
-                if (m.hysteresis?.leakedMiB > 0) lines.push(`⚠ VRAM leak: ${m.hysteresis.leakedMiB} MiB`);
-                if (m.fitsInVram === false) lines.push(`⚠ Does NOT fit in VRAM`);
-                if (m.generation?.outputTokens) lines.push(`Gen: ${m.generation.outputTokens} tokens in ${(m.generation.totalTimeMs / 1000).toFixed(1)}s`);
-                if (m.settings?.label && m.settings.label !== "default") lines.push(`Settings: ${m.settings.label}`);
+                if (m.loadTimeMs)
+                  lines.push(`Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
+                if (m.cpuRam?.deltaMiB)
+                  lines.push(
+                    `CPU RAM Δ: ${(m.cpuRam.deltaMiB / 1024).toFixed(2)} GiB`,
+                  );
+                if (m.gpu?.temp)
+                  lines.push(`GPU: ${m.gpu.temp}°C · ${m.gpu.power || "?"}W`);
+                if (m.hysteresis?.leakedMiB > 0)
+                  lines.push(`⚠ VRAM leak: ${m.hysteresis.leakedMiB} MiB`);
+                if (m.fitsInVram === false)
+                  lines.push(`⚠ Does NOT fit in VRAM`);
+                if (m.generation?.outputTokens)
+                  lines.push(
+                    `Gen: ${m.generation.outputTokens} tokens in ${(m.generation.totalTimeMs / 1000).toFixed(1)}s`,
+                  );
+                if (m.settings?.label && m.settings.label !== "default")
+                  lines.push(`Settings: ${m.settings.label}`);
                 return lines;
               },
             },
@@ -1812,7 +2066,11 @@ export default function VramBenchmarkComponent() {
       const range = (tpsRanges as any)[m.displayName];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
-        scatterData.push({ x: entry.tokensPerSecond || 0, y: labels[i], entry });
+        scatterData.push({
+          x: entry.tokensPerSecond || 0,
+          y: labels[i],
+          entry,
+        });
       }
     }
 
@@ -1824,8 +2082,12 @@ export default function VramBenchmarkComponent() {
           {
             label: "Tokens/sec Range",
             data: rangeData,
-            backgroundColor: sorted.map((m: any) => tpsColor(m.tokensPerSecond, 0.45).bg),
-            borderColor: sorted.map((m: any) => tpsColor(m.tokensPerSecond, 1).border),
+            backgroundColor: sorted.map(
+              (m: any) => tpsColor(m.tokensPerSecond, 0.45).bg,
+            ),
+            borderColor: sorted.map(
+              (m: any) => tpsColor(m.tokensPerSecond, 1).border,
+            ),
             borderWidth: 1.5,
             borderSkipped: false,
             borderRadius: 2,
@@ -1926,29 +2188,33 @@ export default function VramBenchmarkComponent() {
                 if (range && range.count > 1) {
                   return ` Speed: ${range.min.toFixed(1)}–${range.max.toFixed(1)} tok/s (${range.count} runs)`;
                 }
-                return ` Speed: ${m.tokensPerSecond?.toFixed(1) || '0'} tok/s`;
+                return ` Speed: ${m.tokensPerSecond?.toFixed(1) || "0"} tok/s`;
               },
               afterBody: (items: any) => {
                 const item = items[0];
                 if (!item) return "";
-                const m = item.datasetIndex === 1
-                  ? item.raw?.entry
-                  : sorted[item.dataIndex];
+                const m =
+                  item.datasetIndex === 1
+                    ? item.raw?.entry
+                    : sorted[item.dataIndex];
                 if (!m) return "";
                 const sInfo = (SETTINGS_INFO as any)[m.settings?.label];
                 const lines = [
                   "",
                   ` VRAM: ${m.modelVramGiB.toFixed(2)} GiB`,
-                  ` Parallel: ${sInfo?.parallel ?? '?'}`,
-                  ` Batch: ${sInfo?.batch ?? '?'}`,
+                  ` Parallel: ${sInfo?.parallel ?? "?"}`,
+                  ` Batch: ${sInfo?.batch ?? "?"}`,
                   ` Context: ${(m.contextLength / 1024).toFixed(0)}K`,
                   ` Efficiency: ${(m.tokensPerSecond / m.modelVramGiB).toFixed(1)} TPS/GiB`,
-                  ` Quant: ${m.quantization} (${m.bitsPerWeight || '?'} bpw)`,
+                  ` Quant: ${m.quantization} (${m.bitsPerWeight || "?"} bpw)`,
                 ];
                 if (m.ttft?.ms) lines.push(` TTFT: ${m.ttft.ms.toFixed(0)} ms`);
-                if (m.loadTimeMs) lines.push(` Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
-                if (m.gpu?.temp) lines.push(` GPU: ${m.gpu.temp}°C · ${m.gpu.power || '?'}W`);
-                if (m.settings?.label && m.settings.label !== "default") lines.push(` Settings: ${m.settings.label}`);
+                if (m.loadTimeMs)
+                  lines.push(` Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
+                if (m.gpu?.temp)
+                  lines.push(` GPU: ${m.gpu.temp}°C · ${m.gpu.power || "?"}W`);
+                if (m.settings?.label && m.settings.label !== "default")
+                  lines.push(` Settings: ${m.settings.label}`);
                 return lines;
               },
             },
@@ -1963,8 +2229,16 @@ export default function VramBenchmarkComponent() {
     const chart = (chartInstances.current as any).efficiency;
     if (!chart) return;
     const xScale = chart.options.scales.x;
-    if (tpsClipMinVal !== undefined) { xScale.min = tpsClipMinVal; } else { delete xScale.min; }
-    if (tpsClipMaxVal !== undefined) { xScale.max = tpsClipMaxVal; } else { delete xScale.max; }
+    if (tpsClipMinVal !== undefined) {
+      xScale.min = tpsClipMinVal;
+    } else {
+      delete xScale.min;
+    }
+    if (tpsClipMaxVal !== undefined) {
+      xScale.max = tpsClipMaxVal;
+    } else {
+      delete xScale.max;
+    }
     chart.update("zoom");
   }, [tpsClipMinVal, tpsClipMaxVal]);
 
@@ -1983,9 +2257,14 @@ export default function VramBenchmarkComponent() {
       const q = m.quantization || "unknown";
       if (!(quantGroups as any)[q]) {
         (quantGroups as any)[q] = {
-          count: 0, totalVram: 0, totalTps: 0, totalBpw: 0,
-          minVram: Infinity, maxVram: -Infinity,
-          minTps: Infinity, maxTps: -Infinity,
+          count: 0,
+          totalVram: 0,
+          totalTps: 0,
+          totalBpw: 0,
+          minVram: Infinity,
+          maxVram: -Infinity,
+          minTps: Infinity,
+          maxTps: -Infinity,
         };
       }
       const tps = m.tokensPerSecond || 0;
@@ -1993,29 +2272,59 @@ export default function VramBenchmarkComponent() {
       (quantGroups as any)[q].totalVram += m.modelVramGiB;
       (quantGroups as any)[q].totalTps += tps;
       (quantGroups as any)[q].totalBpw += m.bitsPerWeight || 0;
-      if (m.modelVramGiB < (quantGroups as any)[q].minVram) (quantGroups as any)[q].minVram = m.modelVramGiB;
-      if (m.modelVramGiB > (quantGroups as any)[q].maxVram) (quantGroups as any)[q].maxVram = m.modelVramGiB;
-      if (tps < (quantGroups as any)[q].minTps) (quantGroups as any)[q].minTps = tps;
-      if (tps > (quantGroups as any)[q].maxTps) (quantGroups as any)[q].maxTps = tps;
+      if (m.modelVramGiB < (quantGroups as any)[q].minVram)
+        (quantGroups as any)[q].minVram = m.modelVramGiB;
+      if (m.modelVramGiB > (quantGroups as any)[q].maxVram)
+        (quantGroups as any)[q].maxVram = m.modelVramGiB;
+      if (tps < (quantGroups as any)[q].minTps)
+        (quantGroups as any)[q].minTps = tps;
+      if (tps > (quantGroups as any)[q].maxTps)
+        (quantGroups as any)[q].maxTps = tps;
     }
 
     // Sort quant labels by bits-per-weight rank (lowest → highest)
     const QUANT_RANK = {
-      IQ1_S: 1, IQ1_M: 2, IQ2_XXS: 3, IQ2_XS: 4, IQ2_S: 5, IQ2_M: 6,
-      Q2_K: 7, Q2_K_S: 8,
-      IQ3_XXS: 9, IQ3_XS: 10, IQ3_S: 11, IQ3_M: 12,
-      Q3_K_S: 13, Q3_K_M: 14, Q3_K_L: 15,
-      IQ4_XS: 16, IQ4_NL: 17,
-      Q4_0: 18, Q4_1: 19, Q4_K_S: 20, Q4_K_M: 21,
-      Q5_0: 22, Q5_1: 23, Q5_K_S: 24, Q5_K_M: 25,
-      Q6_K: 26, Q6_K_L: 27,
-      Q8_0: 28, Q8_1: 29,
-      F16: 90, FP16: 91, BF16: 92, F32: 99, FP32: 100,
+      IQ1_S: 1,
+      IQ1_M: 2,
+      IQ2_XXS: 3,
+      IQ2_XS: 4,
+      IQ2_S: 5,
+      IQ2_M: 6,
+      Q2_K: 7,
+      Q2_K_S: 8,
+      IQ3_XXS: 9,
+      IQ3_XS: 10,
+      IQ3_S: 11,
+      IQ3_M: 12,
+      Q3_K_S: 13,
+      Q3_K_M: 14,
+      Q3_K_L: 15,
+      IQ4_XS: 16,
+      IQ4_NL: 17,
+      Q4_0: 18,
+      Q4_1: 19,
+      Q4_K_S: 20,
+      Q4_K_M: 21,
+      Q5_0: 22,
+      Q5_1: 23,
+      Q5_K_S: 24,
+      Q5_K_M: 25,
+      Q6_K: 26,
+      Q6_K_L: 27,
+      Q8_0: 28,
+      Q8_1: 29,
+      F16: 90,
+      FP16: 91,
+      BF16: 92,
+      F32: 99,
+      FP32: 100,
       unknown: 999,
     };
     const quantLabels = Object.keys(quantGroups).sort((a: any, b: any) => {
-      const ra = (QUANT_RANK as any)[a] ?? (50 + ((quantGroups as any)[a].avgBpw || 50));
-      const rb = (QUANT_RANK as any)[b] ?? (50 + ((quantGroups as any)[b].avgBpw || 50));
+      const ra =
+        (QUANT_RANK as any)[a] ?? 50 + ((quantGroups as any)[a].avgBpw || 50);
+      const rb =
+        (QUANT_RANK as any)[b] ?? 50 + ((quantGroups as any)[b].avgBpw || 50);
       return ra - rb || a.localeCompare(b);
     });
     for (const q of quantLabels) {
@@ -2078,8 +2387,8 @@ export default function VramBenchmarkComponent() {
           }
         };
 
-        drawAvgTick(0, "y", (g: any) => g.avgVram);   // VRAM bars
-        drawAvgTick(1, "y1", (g: any) => g.avgTps);    // TPS bars
+        drawAvgTick(0, "y", (g: any) => g.avgVram); // VRAM bars
+        drawAvgTick(1, "y1", (g: any) => g.avgTps); // TPS bars
 
         c.restore();
       },
@@ -2092,7 +2401,10 @@ export default function VramBenchmarkComponent() {
         datasets: [
           {
             label: "VRAM Range (GiB)",
-            data: quantLabels.map((q: any) => [(quantGroups as any)[q].minVram, (quantGroups as any)[q].maxVram]),
+            data: quantLabels.map((q: any) => [
+              (quantGroups as any)[q].minVram,
+              (quantGroups as any)[q].maxVram,
+            ]),
             backgroundColor: quantLabels.map((q: any) => getQuantColor(q).bg),
             borderColor: quantLabels.map((q: any) => getQuantColor(q).border),
             borderWidth: 1.5,
@@ -2102,7 +2414,10 @@ export default function VramBenchmarkComponent() {
           },
           {
             label: "TPS Range",
-            data: quantLabels.map((q: any) => [(quantGroups as any)[q].minTps, (quantGroups as any)[q].maxTps]),
+            data: quantLabels.map((q: any) => [
+              (quantGroups as any)[q].minTps,
+              (quantGroups as any)[q].maxTps,
+            ]),
             backgroundColor: "rgba(128,128,128,0.15)",
             borderColor: "rgba(100,100,100,0.5)",
             borderWidth: 1.5,
@@ -2141,7 +2456,8 @@ export default function VramBenchmarkComponent() {
           tooltip: {
             ...TOOLTIP_STYLE,
             callbacks: {
-              title: (items: any) => `${quantLabels[items[0]?.dataIndex]} Quantization`,
+              title: (items: any) =>
+                `${quantLabels[items[0]?.dataIndex]} Quantization`,
               afterTitle: (items: any) => {
                 const q = quantLabels[items[0]?.dataIndex];
                 return `${(quantGroups as any)[q].count} model${(quantGroups as any)[q].count > 1 ? "s" : ""}`;
@@ -2165,9 +2481,12 @@ export default function VramBenchmarkComponent() {
                 if (!q) return "";
                 const g = (quantGroups as any)[q];
                 const lines = [];
-                if (g.avgBpw > 0) lines.push(`Avg bits/weight: ${g.avgBpw.toFixed(1)} bpw`);
+                if (g.avgBpw > 0)
+                  lines.push(`Avg bits/weight: ${g.avgBpw.toFixed(1)} bpw`);
                 if (g.avgTps > 0 && g.avgVram > 0) {
-                  lines.push(`Avg efficiency: ${(g.avgTps / g.avgVram).toFixed(1)} TPS/GiB`);
+                  lines.push(
+                    `Avg efficiency: ${(g.avgTps / g.avgVram).toFixed(1)} TPS/GiB`,
+                  );
                 }
                 return lines;
               },
@@ -2191,8 +2510,10 @@ export default function VramBenchmarkComponent() {
 
     // Sort by max context descending, then TPS within same tier
     const sorted = [...models].sort((a: any, b: any) => {
-      const cA = (ctxRanges as any)[a.displayName]?.max || a.contextLength / 1024 || 0;
-      const cB = (ctxRanges as any)[b.displayName]?.max || b.contextLength / 1024 || 0;
+      const cA =
+        (ctxRanges as any)[a.displayName]?.max || a.contextLength / 1024 || 0;
+      const cB =
+        (ctxRanges as any)[b.displayName]?.max || b.contextLength / 1024 || 0;
       return cB - cA || b.tokensPerSecond - a.tokensPerSecond;
     });
 
@@ -2226,7 +2547,10 @@ export default function VramBenchmarkComponent() {
     });
 
     // Color gradient for context bars: cyan → emerald → teal by context magnitude
-    const allCtx = sorted.map((m: any) => (ctxRanges as any)[m.displayName]?.max || (m.contextLength || 0) / 1024);
+    const allCtx = sorted.map(
+      (m: any) =>
+        (ctxRanges as any)[m.displayName]?.max || (m.contextLength || 0) / 1024,
+    );
     const cMin = Math.min(...allCtx);
     const cMax = Math.max(...allCtx);
     const cSpan = cMax - cMin || 1;
@@ -2281,13 +2605,22 @@ export default function VramBenchmarkComponent() {
           {
             label: "Context Range (K)",
             data: ctxRangeData,
-            backgroundColor: sorted.map((m: any) =>
-              ctxColor((ctxRanges as any)[m.displayName]?.max || (m.contextLength || 0) / 1024, 0.45).bg,
+            backgroundColor: sorted.map(
+              (m: any) =>
+                ctxColor(
+                  (ctxRanges as any)[m.displayName]?.max ||
+                    (m.contextLength || 0) / 1024,
+                  0.45,
+                ).bg,
             ),
             borderColor: sorted.map((m: any) =>
               m.fitsInVram === false
                 ? "#f43f5e"
-                : ctxColor((ctxRanges as any)[m.displayName]?.max || (m.contextLength || 0) / 1024, 1).border,
+                : ctxColor(
+                    (ctxRanges as any)[m.displayName]?.max ||
+                      (m.contextLength || 0) / 1024,
+                    1,
+                  ).border,
             ),
             borderWidth: 1.5,
             borderSkipped: false,
@@ -2351,12 +2684,19 @@ export default function VramBenchmarkComponent() {
             const cRange = (ctxRanges as any)[(m as any).displayName];
             let ctxLabel;
             if (cRange && cRange.count > 1) {
-              const minL = cRange.min >= 1024 ? `${(cRange.min / 1024).toFixed(0)}M` : `${cRange.min.toFixed(0)}K`;
-              const maxL = cRange.max >= 1024 ? `${(cRange.max / 1024).toFixed(0)}M` : `${cRange.max.toFixed(0)}K`;
+              const minL =
+                cRange.min >= 1024
+                  ? `${(cRange.min / 1024).toFixed(0)}M`
+                  : `${cRange.min.toFixed(0)}K`;
+              const maxL =
+                cRange.max >= 1024
+                  ? `${(cRange.max / 1024).toFixed(0)}M`
+                  : `${cRange.max.toFixed(0)}K`;
               ctxLabel = `${minL}–${maxL}`;
             } else {
               const k = ((m as any).contextLength || 0) / 1024;
-              ctxLabel = k >= 1024 ? `${(k / 1024).toFixed(0)}M` : `${k.toFixed(0)}K`;
+              ctxLabel =
+                k >= 1024 ? `${(k / 1024).toFixed(0)}M` : `${k.toFixed(0)}K`;
             }
             // TPS label
             const tRange = (tpsRanges as any)[(m as any).displayName];
@@ -2387,7 +2727,8 @@ export default function VramBenchmarkComponent() {
             grid: GRID_STYLE,
             ticks: {
               ...TICK_STYLE,
-              callback: (v: any) => v >= 1024 ? `${(v / 1024).toFixed(0)}M` : `${v}K`,
+              callback: (v: any) =>
+                v >= 1024 ? `${(v / 1024).toFixed(0)}M` : `${v}K`,
             },
           },
           x1: {
@@ -2444,8 +2785,14 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex === 0) {
                   const range = (ctxRanges as any)[(m as any).displayName];
                   if (range && range.count > 1) {
-                    const minL = range.min >= 1024 ? `${(range.min / 1024).toFixed(0)}M` : `${range.min.toFixed(0)}K`;
-                    const maxL = range.max >= 1024 ? `${(range.max / 1024).toFixed(0)}M` : `${range.max.toFixed(0)}K`;
+                    const minL =
+                      range.min >= 1024
+                        ? `${(range.min / 1024).toFixed(0)}M`
+                        : `${range.min.toFixed(0)}K`;
+                    const maxL =
+                      range.max >= 1024
+                        ? `${(range.max / 1024).toFixed(0)}M`
+                        : `${range.max.toFixed(0)}K`;
                     return ` Context: ${minL}–${maxL} (${range.count} runs)`;
                   }
                   return ` Context: ${(((m as any).contextLength || 0) / 1024).toFixed(0)}K`;
@@ -2460,25 +2807,30 @@ export default function VramBenchmarkComponent() {
               afterBody: (items: any) => {
                 const item = items[0];
                 if (!item) return "";
-                const m = item.datasetIndex >= 2
-                  ? item.raw?.entry
-                  : sorted[item.dataIndex];
+                const m =
+                  item.datasetIndex >= 2
+                    ? item.raw?.entry
+                    : sorted[item.dataIndex];
                 if (!m) return "";
                 const sInfo = (SETTINGS_INFO as any)[m.settings?.label];
                 const lines = [
                   "",
                   `VRAM: ${m.modelVramGiB.toFixed(2)} GiB`,
-                  `Parallel: ${sInfo?.parallel ?? '?'}`,
-                  `Batch: ${sInfo?.batch ?? '?'}`,
+                  `Parallel: ${sInfo?.parallel ?? "?"}`,
+                  `Batch: ${sInfo?.batch ?? "?"}`,
                   `Context: ${(m.contextLength / 1024).toFixed(0)}K`,
                   `Efficiency: ${(m.tokensPerSecond / m.modelVramGiB).toFixed(1)} TPS/GiB`,
                   `Quant: ${m.quantization} (${m.bitsPerWeight || "?"} bpw)`,
                 ];
                 if (m.ttft?.ms) lines.push(`TTFT: ${m.ttft.ms.toFixed(0)} ms`);
-                if (m.loadTimeMs) lines.push(`Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
-                if (m.gpu?.temp) lines.push(`GPU: ${m.gpu.temp}°C · ${m.gpu.power || "?"}W`);
-                if (m.fitsInVram === false) lines.push(`⚠ Does NOT fit in VRAM`);
-                if (m.settings?.label && m.settings.label !== "default") lines.push(`Settings: ${m.settings.label}`);
+                if (m.loadTimeMs)
+                  lines.push(`Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
+                if (m.gpu?.temp)
+                  lines.push(`GPU: ${m.gpu.temp}°C · ${m.gpu.power || "?"}W`);
+                if (m.fitsInVram === false)
+                  lines.push(`⚠ Does NOT fit in VRAM`);
+                if (m.settings?.label && m.settings.label !== "default")
+                  lines.push(`Settings: ${m.settings.label}`);
                 return lines;
               },
             },
@@ -2513,7 +2865,11 @@ export default function VramBenchmarkComponent() {
         (groups as any)[groupKey] = { modelName, hostname, ctxMap: {} };
       }
       const ctxKey = (d as any).contextLength;
-      if (!(groups as any)[groupKey].ctxMap[ctxKey] || (d as any).createdAt > (groups as any)[groupKey].ctxMap[ctxKey].createdAt) {
+      if (
+        !(groups as any)[groupKey].ctxMap[ctxKey] ||
+        (d as any).createdAt >
+          (groups as any)[groupKey].ctxMap[ctxKey].createdAt
+      ) {
         (groups as any)[groupKey].ctxMap[ctxKey] = d;
       }
     }
@@ -2524,16 +2880,24 @@ export default function VramBenchmarkComponent() {
         key,
         modelName,
         hostname,
-        items: Object.values(ctxMap).sort((a: any, b: any) => a.contextLength - b.contextLength),
+        items: Object.values(ctxMap).sort(
+          (a: any, b: any) => a.contextLength - b.contextLength,
+        ),
         ctxCount: Object.keys(ctxMap).length,
       }))
-      .sort((a: any, b: any) => b.ctxCount - a.ctxCount || a.items[0].modelVramGiB - b.items[0].modelVramGiB)
+      .sort(
+        (a: any, b: any) =>
+          b.ctxCount - a.ctxCount ||
+          a.items[0].modelVramGiB - b.items[0].modelVramGiB,
+      )
       .slice(0, 20);
 
     if (sortedGroups.length === 0) return;
 
     // -- Assign stable color per model name --
-    const uniqueModels = [...new Set(sortedGroups.map((g: any) => g.modelName))];
+    const uniqueModels = [
+      ...new Set(sortedGroups.map((g: any) => g.modelName)),
+    ];
     const modelColorMap = {};
     uniqueModels.forEach((name: any, i: any) => {
       (modelColorMap as any)[name] = PALETTE[i % PALETTE.length];
@@ -2556,7 +2920,9 @@ export default function VramBenchmarkComponent() {
         : "";
       const label = showAllMachines
         ? `${modelName.length > 22 ? modelName.slice(0, 20) + "…" : modelName} · ${gpuLabel}`
-        : modelName.length > 25 ? modelName.slice(0, 23) + "…" : modelName;
+        : modelName.length > 25
+          ? modelName.slice(0, 23) + "…"
+          : modelName;
 
       return {
         label,
@@ -2620,16 +2986,24 @@ export default function VramBenchmarkComponent() {
                 const sInfo = (SETTINGS_INFO as any)[d?.settings?.label];
                 const lines = [
                   ` VRAM: ${item.raw.y.toFixed(2)} GiB`,
-                  ` Parallel: ${sInfo?.parallel ?? '?'}`,
-                  ` Batch: ${sInfo?.batch ?? '?'}`,
+                  ` Parallel: ${sInfo?.parallel ?? "?"}`,
+                  ` Batch: ${sInfo?.batch ?? "?"}`,
                   ` Context: ${item.raw.x}K`,
                 ];
-                if (d?.system?.gpu?.name) lines.push(` GPU: ${shortGPU(d.system.gpu.name)}`);
-                if (d?.tokensPerSecond) lines.push(` Speed: ${d.tokensPerSecond.toFixed(1)} tok/s`);
-                if (d?.quantization) lines.push(` Quant: ${d.quantization} (${d.bitsPerWeight || "?"} bpw)`);
-                if (d?.ttft?.ms) lines.push(` TTFT: ${d.ttft.ms.toFixed(0)} ms`);
-                if (d?.settings?.label) lines.push(` Settings: ${d.settings.label}`);
-                if (d?.fitsInVram === false) lines.push(` ⚠ Does NOT fit in VRAM`);
+                if (d?.system?.gpu?.name)
+                  lines.push(` GPU: ${shortGPU(d.system.gpu.name)}`);
+                if (d?.tokensPerSecond)
+                  lines.push(` Speed: ${d.tokensPerSecond.toFixed(1)} tok/s`);
+                if (d?.quantization)
+                  lines.push(
+                    ` Quant: ${d.quantization} (${d.bitsPerWeight || "?"} bpw)`,
+                  );
+                if (d?.ttft?.ms)
+                  lines.push(` TTFT: ${d.ttft.ms.toFixed(0)} ms`);
+                if (d?.settings?.label)
+                  lines.push(` Settings: ${d.settings.label}`);
+                if (d?.fitsInVram === false)
+                  lines.push(` ⚠ Does NOT fit in VRAM`);
                 return lines;
               },
             },
@@ -2687,127 +3061,136 @@ export default function VramBenchmarkComponent() {
 
   // -- Search highlight — dims non-matching chart elements --
 
-  const applySearchHighlight = useCallback((term: any) => {
-    const chart = (chartInstances.current as any)[activeView];
-    if (!chart) return;
+  const applySearchHighlight = useCallback(
+    (term: any) => {
+      const chart = (chartInstances.current as any)[activeView];
+      if (!chart) return;
 
-    // -- Color utility helpers --
-    function dimColor(color: any, targetAlpha: any) {
-      if (!color || typeof color !== "string") return color;
-      // rgba(r, g, b, a)
-      const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
-      if (rgbaMatch) {
-        return `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${targetAlpha})`;
-      }
-      // hsla(h, s%, l%, a) or hsl(...)
-      const hslaMatch = color.match(/hsla?\(([^)]+)\)/);
-      if (hslaMatch) {
-        const parts = hslaMatch[1].split(",").map((s: any) => s.trim());
-        if (parts.length >= 3) {
-          return `hsla(${parts[0]}, ${parts[1]}, ${parts[2]}, ${targetAlpha})`;
+      // -- Color utility helpers --
+      function dimColor(color: any, targetAlpha: any) {
+        if (!color || typeof color !== "string") return color;
+        // rgba(r, g, b, a)
+        const rgbaMatch = color.match(
+          /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/,
+        );
+        if (rgbaMatch) {
+          return `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${targetAlpha})`;
         }
-      }
-      // #hex
-      if (color.startsWith("#")) {
-        const h = color.replace("#", "");
-        const r = parseInt(h.substring(0, 2), 16);
-        const g = parseInt(h.substring(2, 4), 16);
-        const b = parseInt(h.substring(4, 6), 16);
-        return `rgba(${r}, ${g}, ${b}, ${targetAlpha})`;
-      }
-      return color;
-    }
-
-    // Extract searchable model name from various chart data shapes
-    function getSearchableName(raw: any, label: any, dsLabel: any) {
-      if (raw?.model?.displayName) return raw.model.displayName;
-      if (raw?.entry?.displayName) return raw.entry.displayName;
-      if (raw?.ctx?.displayName) return raw.ctx.displayName;
-      if (label) return String(label);
-      if (dsLabel) return String(dsLabel);
-      return "";
-    }
-
-    const datasets = chart.data.datasets;
-    const cacheKey = activeView;
-
-    // -- Restore originals if search is cleared --
-    if (!term) {
-      const cache = (searchOrigColors.current as any)[cacheKey];
-      if (cache) {
-        for (let di = 0; di < datasets.length; di++) {
-          if (cache[di]) {
-            datasets[di].backgroundColor = cache[di].bg;
-            datasets[di].borderColor = cache[di].border;
+        // hsla(h, s%, l%, a) or hsl(...)
+        const hslaMatch = color.match(/hsla?\(([^)]+)\)/);
+        if (hslaMatch) {
+          const parts = hslaMatch[1].split(",").map((s: any) => s.trim());
+          if (parts.length >= 3) {
+            return `hsla(${parts[0]}, ${parts[1]}, ${parts[2]}, ${targetAlpha})`;
           }
         }
-        delete (searchOrigColors.current as any)[cacheKey];
+        // #hex
+        if (color.startsWith("#")) {
+          const h = color.replace("#", "");
+          const r = parseInt(h.substring(0, 2), 16);
+          const g = parseInt(h.substring(2, 4), 16);
+          const b = parseInt(h.substring(4, 6), 16);
+          return `rgba(${r}, ${g}, ${b}, ${targetAlpha})`;
+        }
+        return color;
       }
-      chart.update("none");
-      return;
-    }
 
-    const needle = term.toLowerCase();
+      // Extract searchable model name from various chart data shapes
+      function getSearchableName(raw: any, label: any, dsLabel: any) {
+        if (raw?.model?.displayName) return raw.model.displayName;
+        if (raw?.entry?.displayName) return raw.entry.displayName;
+        if (raw?.ctx?.displayName) return raw.ctx.displayName;
+        if (label) return String(label);
+        if (dsLabel) return String(dsLabel);
+        return "";
+      }
 
-    // -- Snapshot original colors on first search --
-    if (!(searchOrigColors.current as any)[cacheKey]) {
-      const snapshot = {};
+      const datasets = chart.data.datasets;
+      const cacheKey = activeView;
+
+      // -- Restore originals if search is cleared --
+      if (!term) {
+        const cache = (searchOrigColors.current as any)[cacheKey];
+        if (cache) {
+          for (let di = 0; di < datasets.length; di++) {
+            if (cache[di]) {
+              datasets[di].backgroundColor = cache[di].bg;
+              datasets[di].borderColor = cache[di].border;
+            }
+          }
+          delete (searchOrigColors.current as any)[cacheKey];
+        }
+        chart.update("none");
+        return;
+      }
+
+      const needle = term.toLowerCase();
+
+      // -- Snapshot original colors on first search --
+      if (!(searchOrigColors.current as any)[cacheKey]) {
+        const snapshot = {};
+        for (let di = 0; di < datasets.length; di++) {
+          const ds = datasets[di];
+          (snapshot as any)[di] = {
+            bg: Array.isArray(ds.backgroundColor)
+              ? [...ds.backgroundColor]
+              : ds.backgroundColor,
+            border: Array.isArray(ds.borderColor)
+              ? [...ds.borderColor]
+              : ds.borderColor,
+          };
+        }
+        (searchOrigColors.current as any)[cacheKey] = snapshot;
+      }
+
+      const cache = (searchOrigColors.current as any)[cacheKey];
+
+      // -- Apply per-element dimming --
       for (let di = 0; di < datasets.length; di++) {
         const ds = datasets[di];
-        (snapshot as any)[di] = {
-          bg: Array.isArray(ds.backgroundColor)
-            ? [...ds.backgroundColor]
-            : ds.backgroundColor,
-          border: Array.isArray(ds.borderColor)
-            ? [...ds.borderColor]
-            : ds.borderColor,
-        };
-      }
-      (searchOrigColors.current as any)[cacheKey] = snapshot;
-    }
+        // Skip connector lines
+        if (
+          ds.label === "_connector" ||
+          (ds.type === "line" && ds.label === "_connector")
+        )
+          continue;
 
-    const cache = (searchOrigColors.current as any)[cacheKey];
+        const orig = cache[di];
+        if (!orig) continue;
 
-    // -- Apply per-element dimming --
-    for (let di = 0; di < datasets.length; di++) {
-      const ds = datasets[di];
-      // Skip connector lines
-      if (ds.label === "_connector" || (ds.type === "line" && ds.label === "_connector")) continue;
+        const data = ds.data;
+        const labels = chart.data.labels;
+        const origBg = orig.bg;
+        const origBorder = orig.border;
 
-      const orig = cache[di];
-      if (!orig) continue;
+        const newBg = [];
+        const newBorder = [];
 
-      const data = ds.data;
-      const labels = chart.data.labels;
-      const origBg = orig.bg;
-      const origBorder = orig.border;
+        for (let i = 0; i < data.length; i++) {
+          const raw = data[i];
+          const name = getSearchableName(raw, labels?.[i], ds.label);
+          const matches = name.toLowerCase().includes(needle);
 
-      const newBg = [];
-      const newBorder = [];
+          const bg = Array.isArray(origBg) ? origBg[i] : origBg;
+          const border = Array.isArray(origBorder) ? origBorder[i] : origBorder;
 
-      for (let i = 0; i < data.length; i++) {
-        const raw = data[i];
-        const name = getSearchableName(raw, labels?.[i], ds.label);
-        const matches = name.toLowerCase().includes(needle);
-
-        const bg = Array.isArray(origBg) ? origBg[i] : origBg;
-        const border = Array.isArray(origBorder) ? origBorder[i] : origBorder;
-
-        if (matches) {
-          newBg.push(bg);
-          newBorder.push(border);
-        } else {
-          newBg.push(dimColor(bg, 0.06));
-          newBorder.push(dimColor(border, 0.1));
+          if (matches) {
+            newBg.push(bg);
+            newBorder.push(border);
+          } else {
+            newBg.push(dimColor(bg, 0.06));
+            newBorder.push(dimColor(border, 0.1));
+          }
         }
+
+        ds.backgroundColor = newBg;
+        ds.borderColor = newBorder;
       }
 
-      ds.backgroundColor = newBg;
-      ds.borderColor = newBorder;
-    }
-
-    chart.update("none");
-  }, [activeView]);
+      chart.update("none");
+    },
+    [activeView],
+  );
 
   // Re-apply search highlight after chart renders or search term changes
   useEffect(() => {
@@ -2815,14 +3198,23 @@ export default function VramBenchmarkComponent() {
     // Small delay to ensure chart render completed first
     const timer = setTimeout(() => applySearchHighlight(chartSearch), 50);
     return () => clearTimeout(timer);
-  }, [chartSearch, activeView, loading, error, applySearchHighlight,
-    renderScatter, renderBar, renderEfficiency, renderQuantDist,
-    renderCtxLeaderboard, renderContext,
+  }, [
+    chartSearch,
+    activeView,
+    loading,
+    error,
+    applySearchHighlight,
+    renderScatter,
+    renderBar,
+    renderEfficiency,
+    renderQuantDist,
+    renderCtxLeaderboard,
+    renderContext,
   ]);
 
   // -- Subtitle for header ----------------------------------
 
-   const subtitle = useMemo(() => {
+  const subtitle = useMemo(() => {
     const parts = [
       `${rawData.length} benchmarks`,
       `${machines.length} machine${machines.length !== 1 ? "s" : ""}`,
@@ -2834,9 +3226,10 @@ export default function VramBenchmarkComponent() {
 
   // -- Chart descriptions per view --------------------------
 
-  const settingsDesc = settingsFilter !== "all" && settingsFilter !== "default"
-    ? ` (${settingsFilter} settings)`
-    : "";
+  const settingsDesc =
+    settingsFilter !== "all" && settingsFilter !== "default"
+      ? ` (${settingsFilter} settings)`
+      : "";
 
   const chartDescriptions = {
     scatter: `Each bubble represents a model — size indicates file weight. ${activeScatterMode.desc}${settingsDesc}`,
@@ -2844,7 +3237,8 @@ export default function VramBenchmarkComponent() {
     efficiency: `Each bar spans the min→max tokens/sec across all benchmark runs${settingsDesc || " — default settings"}. Sorted by peak throughput.`,
     quantDist: `Average VRAM and speed grouped by quantization format${settingsDesc}.`,
     ctxLeaderboard: `Each model shows two bars: context length range (bottom axis, colored by max context) and TPS range (top axis, gray). Scatter dots show individual runs${settingsDesc || " — default settings"}.`,
-    context: "How VRAM consumption scales as context window size increases per model.",
+    context:
+      "How VRAM consumption scales as context window size increases per model.",
   };
 
   // -- Loading / Error --------------------------------------
@@ -2875,10 +3269,7 @@ export default function VramBenchmarkComponent() {
 
   return (
     <>
-      <PageHeaderComponent
-        title="VRAM Benchmark"
-        subtitle={subtitle}
-      >
+      <PageHeaderComponent title="VRAM Benchmark" subtitle={subtitle}>
         <button
           className={styles.refreshBtn}
           onClick={() => {
@@ -3094,7 +3485,9 @@ export default function VramBenchmarkComponent() {
             )}
             {activeView === "scatter" && (
               <div className={styles.vramClipGroup}>
-                <label className={styles.vramClipLabel}>{activeScatterMode.xLabel.split(' (')[0]} Range</label>
+                <label className={styles.vramClipLabel}>
+                  {activeScatterMode.xLabel.split(" (")[0]} Range
+                </label>
                 <div className={styles.vramClipInputs}>
                   <input
                     type="number"
@@ -3115,7 +3508,9 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="0.5"
                   />
-                  <span className={styles.vramClipUnit}>{activeScatterMode.xLabel.match(/\(([^)]+)\)/)?.[1] || ''}</span>
+                  <span className={styles.vramClipUnit}>
+                    {activeScatterMode.xLabel.match(/\(([^)]+)\)/)?.[1] || ""}
+                  </span>
                 </div>
               </div>
             )}
@@ -3199,9 +3594,12 @@ export default function VramBenchmarkComponent() {
                 className={styles.chartWrapper}
                 style={{
                   display: activeView === tab.key ? "block" : "none",
-                  height: tab.key === "bar" || tab.key === "efficiency" || tab.key === "ctxLeaderboard"
-                    ? undefined
-                    : 460,
+                  height:
+                    tab.key === "bar" ||
+                    tab.key === "efficiency" ||
+                    tab.key === "ctxLeaderboard"
+                      ? undefined
+                      : 460,
                 }}
               >
                 <canvas ref={(chartRefs as any)[tab.key]} />

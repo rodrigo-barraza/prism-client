@@ -61,10 +61,13 @@ export default function AgentCardComponent({
   }, [config]);
 
   // Build settings-like object for the trigger display
-  const pickerSettings = useMemo(() => ({
-    provider: agent.provider || "",
-    model: agent.modelName || "",
-  }), [agent.provider, agent.modelName]);
+  const pickerSettings = useMemo(
+    () => ({
+      provider: agent.provider || "",
+      model: agent.modelName || "",
+    }),
+    [agent.provider, agent.modelName],
+  );
 
   const handlePickerSelect = (provider: any, name: any) => {
     onChangeModel?.(agent.instanceId, provider, name);
@@ -98,9 +101,7 @@ export default function AgentCardComponent({
       />
 
       <div className={styles.footer}>
-        <span className={styles.description}>
-          {agent.description}
-        </span>
+        <span className={styles.description}>{agent.description}</span>
         <div className={styles.toggles}>
           {supportsThinking && (
             <ToggleButtonComponent

@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import WorkspaceService from "../services/WorkspaceService";
 import { LS_WORKSPACE_ROOT } from "../constants";
 
@@ -71,14 +77,28 @@ export function WorkspaceProvider({ children }: any) {
 
   if (!mounted) {
     return (
-      <WorkspaceContext.Provider value={{ workspaces: [], currentWorkspace: null, setCurrentWorkspace, refreshWorkspaces }}>
+      <WorkspaceContext.Provider
+        value={{
+          workspaces: [],
+          currentWorkspace: null,
+          setCurrentWorkspace,
+          refreshWorkspaces,
+        }}
+      >
         {children}
       </WorkspaceContext.Provider>
     );
   }
 
   return (
-    <WorkspaceContext.Provider value={{ workspaces, currentWorkspace, setCurrentWorkspace, refreshWorkspaces }}>
+    <WorkspaceContext.Provider
+      value={{
+        workspaces,
+        currentWorkspace,
+        setCurrentWorkspace,
+        refreshWorkspaces,
+      }}
+    >
       {children}
     </WorkspaceContext.Provider>
   );

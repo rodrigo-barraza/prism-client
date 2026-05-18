@@ -13,7 +13,8 @@
 }
 
 .wrapper.noTransition {
-  &, & * {
+  &,
+  & * {
     transition-duration: 0s !important;
   }
 }
@@ -214,7 +215,9 @@
   text-decoration: none;
   font-size: 0.8125rem;
   font-weight: 500;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
   position: relative;
   white-space: nowrap;
   cursor: pointer;
@@ -249,8 +252,6 @@
     will-change: filter;
   }
 }
-
-
 
 .themeToggle {
   :global([data-theme="light"]) & {
@@ -355,8 +356,13 @@
 }
 
 @keyframes attentionPulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ── Badge ── */
@@ -411,8 +417,13 @@
 }
 
 @keyframes statusDotPulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .statusDot.offline {
@@ -511,8 +522,12 @@
 }
 
 @keyframes scrimFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Compact popover card — floats above the circle FAB */
@@ -667,7 +682,9 @@
   color: var(--text-muted);
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 
   &:hover {
     background: var(--accent-subtle);

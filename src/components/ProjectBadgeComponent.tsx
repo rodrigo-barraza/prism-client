@@ -8,7 +8,10 @@ import styles from "./ProjectBadgeComponent.module.css";
  * @param {string} project — project name to display
 
  */
-export default function ProjectBadgeComponent({ project, className = "" }: any) {
+export default function ProjectBadgeComponent({
+  project,
+  className = "",
+}: any) {
   if (!project) return null;
   return (
     <TooltipComponent label={`Project: ${project}`} position="top">

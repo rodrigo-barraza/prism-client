@@ -35,14 +35,9 @@ export default function BenchmarkBarComponent({
         className={`${styles.wrapper} ${mini ? styles.mini : ""} ${className}`}
       >
         <div className={`${styles.bar} ${hasRuns ? styles.barHasRuns : ""}`}>
-          <div
-            className={styles.fill}
-            style={{ width: `${passRate}%` }}
-          />
+          <div className={styles.fill} style={{ width: `${passRate}%` }} />
         </div>
-        {label && !mini && (
-          <span className={styles.label}>{label}</span>
-        )}
+        {label && !mini && <span className={styles.label}>{label}</span>}
       </div>
     </TooltipComponent>
   );

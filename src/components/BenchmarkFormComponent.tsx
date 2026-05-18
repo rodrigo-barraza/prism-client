@@ -2,7 +2,13 @@
 
 import { Plus, Trash2 } from "lucide-react";
 
-import { BadgeComponent, ButtonComponent, FormGroupComponent, IconButtonComponent, TextAreaComponent } from "@rodrigo-barraza/components-library";
+import {
+  BadgeComponent,
+  ButtonComponent,
+  FormGroupComponent,
+  IconButtonComponent,
+  TextAreaComponent,
+} from "@rodrigo-barraza/components-library";
 
 import BenchmarkModeSelector from "./BenchmarkModeSelectorComponent";
 import AgentAssertionsComponent from "./AgentAssertionsComponent";
@@ -24,7 +30,11 @@ import styles from "./BenchmarkFormComponent.module.css";
  * @param {Function} onChange   — (updater) => void — receives a state updater fn
  * @param {Array}    matchModes — Array of { value, label } for match mode dropdown
  */
-export default function BenchmarkFormComponent({ form, onChange, matchModes }: any) {
+export default function BenchmarkFormComponent({
+  form,
+  onChange,
+  matchModes,
+}: any) {
   const update = (field: any) => (e: any) =>
     onChange((f: any) => ({ ...f, [field]: e.target.value }));
 
@@ -58,13 +68,24 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }: a
 
   // -- Model Assertion helpers ---------------------------------
   const assertions = form.assertions || [
-    { expectedValue: form.expectedValue || "", matchMode: form.matchMode || "contains" },
+    {
+      expectedValue: form.expectedValue || "",
+      matchMode: form.matchMode || "contains",
+    },
   ];
 
   const addAssertion = () => {
     onChange((f: any) => ({
       ...f,
-      assertions: [...(f.assertions || [{ expectedValue: f.expectedValue || "", matchMode: f.matchMode || "contains" }]), { expectedValue: "", matchMode: "contains" }],
+      assertions: [
+        ...(f.assertions || [
+          {
+            expectedValue: f.expectedValue || "",
+            matchMode: f.matchMode || "contains",
+          },
+        ]),
+        { expectedValue: "", matchMode: "contains" },
+      ],
     }));
   };
 
@@ -72,13 +93,26 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }: a
     onChange((f: any) => {
       const next = [...(f.assertions || [])];
       next.splice(index, 1);
-      return { ...f, assertions: next.length > 0 ? next : [{ expectedValue: "", matchMode: "contains" }] };
+      return {
+        ...f,
+        assertions:
+          next.length > 0
+            ? next
+            : [{ expectedValue: "", matchMode: "contains" }],
+      };
     });
   };
 
   const updateAssertion = (index: any, field: any) => (e: any) => {
     onChange((f: any) => {
-      const next = [...(f.assertions || [{ expectedValue: f.expectedValue || "", matchMode: f.matchMode || "contains" }])];
+      const next = [
+        ...(f.assertions || [
+          {
+            expectedValue: f.expectedValue || "",
+            matchMode: f.matchMode || "contains",
+          },
+        ]),
+      ];
       next[index] = { ...next[index], [field]: e.target.value };
       return { ...f, assertions: next };
     });
@@ -112,15 +146,14 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }: a
   return (
     <>
       {/* -- Benchmark Mode -- */}
-      <BenchmarkModeSelector
-        value={mode}
-        onChange={handleModeChange}
-      />
+      <BenchmarkModeSelector value={mode} onChange={handleModeChange} />
 
       {mode !== "agent" && (
         <FormGroupComponent label="Load Preset (Optional)">
           <select onChange={handlePresetChange} defaultValue="">
-            <option value="" disabled>-- Select an industry standard benchmark --</option>
+            <option value="" disabled>
+              -- Select an industry standard benchmark --
+            </option>
             {benchmarkPresets.map((p: any, index: any) => (
               <option key={index} value={index}>
                 {p.name}
@@ -194,14 +227,21 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }: a
                 {i > 0 && (
                   <div className={styles.operatorDivider}>
                     <span className={styles.operatorDividerLine} />
-                    <BadgeComponent variant={operator === "OR" ? "warning" : "accent"} mini>
+                    <BadgeComponent
+                      variant={operator === "OR" ? "warning" : "accent"}
+                      mini
+                    >
                       {operator}
                     </BadgeComponent>
                     <span className={styles.operatorDividerLine} />
                   </div>
                 )}
                 <div className={styles.assertionFields}>
-                  <FormGroupComponent label={i === 0 ? "Expected Value" : `Expected Value ${i + 1}`}>
+                  <FormGroupComponent
+                    label={
+                      i === 0 ? "Expected Value" : `Expected Value ${i + 1}`
+                    }
+                  >
                     <input
                       type="text"
                       value={a.expectedValue}
@@ -211,7 +251,10 @@ export default function BenchmarkFormComponent({ form, onChange, matchModes }: a
                   </FormGroupComponent>
 
                   <FormGroupComponent label="Match Mode">
-                    <select value={a.matchMode} onChange={updateAssertion(i, "matchMode")}>
+                    <select
+                      value={a.matchMode}
+                      onChange={updateAssertion(i, "matchMode")}
+                    >
                       {matchModes.map((m: any) => (
                         <option key={m.value} value={m.value}>
                           {m.label}
