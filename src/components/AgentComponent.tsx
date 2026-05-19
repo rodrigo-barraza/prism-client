@@ -691,6 +691,24 @@ export default function AgentComponent({
 
     const fcFallback = (config: any) => {
       const textModels = config.textToText?.models || {};
+
+      // OMNI agent defaults to Anthropic Haiku — cheap, fast, FC-capable
+      if (agentId === "OMNI") {
+        const anthropicModels = textModels["anthropic"] || [];
+        const haiku = anthropicModels.find((m: any) =>
+          m.name?.includes("haiku") && m.tools?.includes("Tool Calling"),
+        );
+        if (haiku) {
+          setSettings((s: any) => ({
+            ...s,
+            provider: "anthropic",
+            model: haiku.name,
+            temperature: haiku.defaultTemperature ?? 1.0,
+          }));
+          return;
+        }
+      }
+
       for (const provider of config.providerList || []) {
         const models = textModels[provider] || [];
         // Direct Chat: pick first model; agents: pick first FC-capable model
