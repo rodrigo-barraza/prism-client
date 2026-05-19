@@ -233,6 +233,15 @@ const NONE_EMPTY_STATE = {
   placeholder: "Send a message...",
 };
 
+export interface AgentComponentProps {
+  agentId?: string;
+  agents?: any[];
+  initialFcEnabled?: boolean;
+  initialThinkingEnabled?: boolean;
+  initialModel?: string | null;
+  initialSessionId?: string | null;
+}
+
 export default function AgentComponent({
   agentId: propAgentId = "CODING",
   agents = [],
@@ -240,7 +249,7 @@ export default function AgentComponent({
   initialThinkingEnabled = false,
   initialModel = null,
   initialSessionId = null,
-}: any) {
+}: AgentComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<any>(false);
   // Track whether the URL session param has been consumed
@@ -257,7 +266,7 @@ export default function AgentComponent({
   const agentBackgroundImage = activeAgentData?.backgroundImage || "";
   const rawEmptyState = isNoAgent
     ? NONE_EMPTY_STATE
-    : (AGENT_EMPTY_STATE as any)[agentId] ||
+    : (AGENT_EMPTY_STATE as Record<string, any>)[agentId] ||
       (activeAgentData?.name
         ? {
             title: activeAgentData.name,
@@ -379,7 +388,14 @@ export default function AgentComponent({
 
   // -- Model memory (persist last-used model per agent) ----------
   const { saveModel, restoreModel } = useModelMemory(modelMemoryKey);
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<{
+    maxTokens: number;
+    functionCallingEnabled: boolean;
+    thinkingEnabled: boolean;
+    codeExecutionEnabled?: boolean;
+    urlContextEnabled?: boolean;
+    [key: string]: any;
+  }>({
     ...SETTINGS_DEFAULTS,
     maxTokens: 64000,
     // Agents always need FC for tool orchestration; Direct Chat defaults off
@@ -458,12 +474,12 @@ export default function AgentComponent({
     localStorage.setItem(PIXEL_LS_KEY, String(Math.round(next)));
   }, []);
 
-  const textareaRef = useRef<any>(null);
-  const endRef = useRef<any>(null);
-  const abortRef = useRef<any>(null);
-  const scrollBehaviorRef = useRef<any>("smooth"); // "smooth" for streaming, "instant" for history loads
-  const fileInputRef = useRef<any>(null);
-  const messagesListRef = useRef<any>(null);
+  const textareaRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<(() => void) | null>(null);
+  const scrollBehaviorRef = useRef<ScrollBehavior>("smooth"); // "smooth" for streaming, "instant" for history loads
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesListRef = useRef<HTMLDivElement>(null);
 
   // -- Sticky auto-scroll -------------------------------------
   // Only auto-scroll when the user is near the bottom of the messages container.
@@ -558,7 +574,7 @@ export default function AgentComponent({
       };
     }
 
-    const textModelsMap = (config as any).textToText?.models || {};
+    const textModelsMap = config.textToText?.models || {};
     const filteredTextModels = {};
 
     for (const [provider, models] of Object.entries(
@@ -570,7 +586,7 @@ export default function AgentComponent({
       if (fcModels.length > 0) (filteredTextModels as any)[provider] = fcModels;
     }
 
-    const filteredProviderList = ((config as any).providerList || []).filter(
+    const filteredProviderList = (config.providerList || []).filter(
       (p: any) => (filteredTextModels as any)[p],
     );
 
@@ -578,7 +594,7 @@ export default function AgentComponent({
       ...(config as any),
       providerList: filteredProviderList,
       textToText: {
-        ...(config as any).textToText,
+        ...config.textToText,
         models: filteredTextModels,
       },
       textToImage: { models: {} },
@@ -617,13 +633,13 @@ export default function AgentComponent({
       isUserNearBottomRef.current =
         scrollHeight - scrollTop - clientHeight <= SCROLL_BOTTOM_THRESHOLD;
     };
-    (element as any).addEventListener("scroll", onScroll, { passive: true });
-    return () => (element as any).removeEventListener("scroll", onScroll);
+    element.addEventListener("scroll", onScroll, { passive: true });
+    return () => element.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
     if (!isUserNearBottomRef.current) return;
-    (endRef.current as any)?.scrollIntoView({
+    endRef.current?.scrollIntoView({
       behavior: scrollBehaviorRef.current,
     });
     // Reset to smooth after each scroll so streaming remains animated
@@ -633,7 +649,7 @@ export default function AgentComponent({
   // Auto-resize is handled inline in handleInputChange (no effect needed)
 
   useEffect(() => {
-    (textareaRef.current as any)?.focus();
+    textareaRef.current?.focus();
   }, []);
 
   // Load favorite models
@@ -953,11 +969,11 @@ export default function AgentComponent({
       if (index === -1) return prev;
       const existing = prev[index];
       // Only patch if something actually changed to avoid churn
-      const resolvedCost = (backendSessionStats as any)?.totalCost ?? totalCost;
+      const resolvedCost = backendSessionStats?.totalCost ?? totalCost;
       const resolvedModalities =
-        (backendSessionStats as any)?.modalities ?? modalities;
+        backendSessionStats?.modalities ?? modalities;
       const resolvedToolCounts =
-        (backendSessionStats as any)?.toolCounts ?? undefined;
+        backendSessionStats?.toolCounts ?? undefined;
       const resolvedProviders =
         uniqueProviders.length > 0 ? uniqueProviders : existing.providers;
       const resolvedModels =
@@ -1099,7 +1115,7 @@ export default function AgentComponent({
     inputValueRef.current = text;
     setHasInput(text.trim().length > 0);
     if (textareaRef.current) {
-      (textareaRef.current as any).textContent = text;
+      textareaRef.current.textContent = text;
     }
   }, []);
 
@@ -1138,7 +1154,7 @@ export default function AgentComponent({
       const space = document.createTextNode(" ");
       const sel = window.getSelection();
       const range =
-        sel && sel.rangeCount && (element as any).contains(sel.anchorNode)
+        sel && sel.rangeCount && element.contains(sel.anchorNode)
           ? sel.getRangeAt(0)
           : null;
       if (range) {
@@ -1155,15 +1171,15 @@ export default function AgentComponent({
         range.insertNode(space);
         range.insertNode(badge);
       } else {
-        if ((element as any).textContent.length > 0)
-          (element as any).appendChild(document.createTextNode(" "));
-        (element as any).appendChild(badge);
-        (element as any).appendChild(space);
+        if ((element.textContent || "").length > 0)
+          element.appendChild(document.createTextNode(" "));
+        element.appendChild(badge);
+        element.appendChild(space);
       }
       placeCaretAfter(space);
       inputValueRef.current = serializeEditable(element);
       setHasInput(true);
-      (element as any).focus();
+      element.focus();
     },
     [createMentionBadge],
   );
@@ -1182,7 +1198,7 @@ export default function AgentComponent({
       const space = document.createTextNode(" ");
       const sel = window.getSelection();
       const range =
-        sel && sel.rangeCount && (element as any).contains(sel.anchorNode)
+        sel && sel.rangeCount && element.contains(sel.anchorNode)
           ? sel.getRangeAt(0)
           : null;
       if (range) {
@@ -1199,15 +1215,15 @@ export default function AgentComponent({
         range.insertNode(space);
         range.insertNode(badge);
       } else {
-        if ((element as any).textContent.length > 0)
-          (element as any).appendChild(document.createTextNode(" "));
-        (element as any).appendChild(badge);
-        (element as any).appendChild(space);
+        if ((element.textContent || "").length > 0)
+          element.appendChild(document.createTextNode(" "));
+        element.appendChild(badge);
+        element.appendChild(space);
       }
       placeCaretAfter(space);
       inputValueRef.current = serializeEditable(element);
       setHasInput(true);
-      (element as any).focus();
+      element.focus();
     },
     [createMentionBadge],
   );
@@ -1223,7 +1239,7 @@ export default function AgentComponent({
   // Set of known workspace paths — used for mention badge staleness detection
   const [knownPaths, setKnownPaths] = useState<any>(null);
 
-  const currentWorkspacePath = (currentWorkspace as any)?.path;
+  const currentWorkspacePath = currentWorkspace?.path;
   const ensureMentionCache = useCallback(async () => {
     if (mentionCacheRef.current || mentionLoadingRef.current) return;
     if (!currentWorkspacePath) return;
@@ -1314,7 +1330,7 @@ export default function AgentComponent({
       inputValueRef.current = serializeEditable(element);
       setHasInput(inputValueRef.current.trim().length > 0);
       setMentionOpen(false);
-      (element as any).focus();
+      element.focus();
     },
     [createMentionBadge],
   );
@@ -1446,10 +1462,10 @@ export default function AgentComponent({
               }),
               // Provider-native capabilities
               ...(settings.webSearchEnabled ? { webSearch: true } : {}),
-              ...((settings as any).codeExecutionEnabled
+              ...(settings.codeExecutionEnabled
                 ? { codeExecution: true }
                 : {}),
-              ...((settings as any).urlContextEnabled
+              ...(settings.urlContextEnabled
                 ? { urlContext: true }
                 : {}),
               // Persistence — use agentSessionId as conversationId for /chat
@@ -1800,9 +1816,9 @@ export default function AgentComponent({
                         (f: any) => f.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: any) => {
-                        if (activeId !== (deleted as any).id) return activeId;
+                        if (activeId !== deleted.id) return activeId;
                         const closedIdx = prev.findIndex(
-                          (f: any) => f.id === (deleted as any).id,
+                          (f: any) => f.id === deleted.id,
                         );
                         const newActive =
                           next[Math.min(closedIdx, next.length - 1)];
@@ -1937,9 +1953,9 @@ export default function AgentComponent({
                         (f: any) => f.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: any) => {
-                        if (activeId !== (deleted as any).id) return activeId;
+                        if (activeId !== deleted.id) return activeId;
                         const closedIdx = prev.findIndex(
-                          (f: any) => f.id === (deleted as any).id,
+                          (f: any) => f.id === deleted.id,
                         );
                         const newActive =
                           next[Math.min(closedIdx, next.length - 1)];
@@ -2537,8 +2553,8 @@ export default function AgentComponent({
       settings.systemPrompt,
       settings.functionCallingEnabled,
       settings.webSearchEnabled,
-      (settings as any).codeExecutionEnabled,
-      (settings as any).urlContextEnabled,
+      settings.codeExecutionEnabled,
+      settings.urlContextEnabled,
       agentSessionId,
       traceId,
       disabledBuiltIns,
@@ -2817,7 +2833,7 @@ export default function AgentComponent({
     setUnavailableWorkspace(null);
     tokenHwmRef.current = { input: 0, output: 0, total: 0 };
     isUserNearBottomRef.current = true;
-    (textareaRef.current as any)?.focus();
+    textareaRef.current?.focus();
     // Clear session from URL
     window.dispatchEvent(
       new CustomEvent("conversation:change", {
@@ -2842,7 +2858,7 @@ export default function AgentComponent({
         agenticProgress,
         settings: { ...settings },
         backendSessionStats,
-        workspaceRoot: (currentWorkspace as any)?.path || null,
+        workspaceRoot: currentWorkspace?.path || null,
       });
       setIsGenerating(false);
     }
@@ -2868,7 +2884,7 @@ export default function AgentComponent({
     backendSessionStats,
     activeId,
     resetSessionState,
-    (currentWorkspace as any)?.path,
+    currentWorkspace?.path,
   ]);
 
   /* ── Chat header "New Session" glitch effect ────────────────── */
@@ -2880,9 +2896,9 @@ export default function AgentComponent({
   const handleNewChatGlitch = useCallback(() => {
     const element = chatNewBtnRef.current;
     if (element) {
-      (element as any).classList.remove(chatStyles.chatHeaderNewBtnRainbow);
-      void (element as any).offsetWidth;
-      (element as any).classList.add(chatStyles.chatHeaderNewBtnRainbow);
+      element.classList.remove(chatStyles.chatHeaderNewBtnRainbow);
+      void element.offsetWidth;
+      element.classList.add(chatStyles.chatHeaderNewBtnRainbow);
 
       setChatGlitchLabel(glitchText());
       clearInterval(chatGlitchInterval.current);
@@ -2892,7 +2908,7 @@ export default function AgentComponent({
 
       clearTimeout(chatRainbowTimer.current);
       chatRainbowTimer.current = setTimeout(() => {
-        (element as any).classList.remove(chatStyles.chatHeaderNewBtnRainbow);
+        element.classList.remove(chatStyles.chatHeaderNewBtnRainbow);
         clearInterval(chatGlitchInterval.current);
         chatGlitchInterval.current = null;
         setChatGlitchLabel(null);
@@ -2914,8 +2930,8 @@ export default function AgentComponent({
           (w: any) => w.path === full.workspaceRoot,
         );
         if (match) {
-          if ((match as any).path !== (currentWorkspace as any)?.path) {
-            (setCurrentWorkspace as any)(match);
+          if (match.path !== currentWorkspace?.path) {
+            setCurrentWorkspace(match);
           }
           setUnavailableWorkspace(null);
         } else {
@@ -3003,7 +3019,7 @@ export default function AgentComponent({
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
       }
     },
-    [workspaces, (currentWorkspace as any)?.path, setCurrentWorkspace],
+    [workspaces, currentWorkspace?.path, setCurrentWorkspace],
   );
 
   const handleSelectSession = useCallback(
@@ -3023,13 +3039,13 @@ export default function AgentComponent({
           agenticProgress,
           settings: { ...settings },
           backendSessionStats,
-          workspaceRoot: (currentWorkspace as any)?.path || null,
+          workspaceRoot: currentWorkspace?.path || null,
         });
         setIsGenerating(false);
       }
       // Already viewing this session — just scroll to bottom instantly
       if (conversation.id === activeId) {
-        (endRef.current as any)?.scrollIntoView({ behavior: "instant" });
+        endRef.current?.scrollIntoView({ behavior: "instant" });
         return;
       }
 
@@ -3098,7 +3114,7 @@ export default function AgentComponent({
       generatingSessionIds,
       applySessionData,
       recordPixelLoadTime,
-      (currentWorkspace as any)?.path,
+      currentWorkspace?.path,
     ],
   );
 
@@ -3242,7 +3258,7 @@ export default function AgentComponent({
             key: "requests",
             icon: <Activity size={14} />,
             ...badgeProps(
-              (backendSessionStats as any)?.requestCount || 0,
+              backendSessionStats?.requestCount || 0,
               "requests",
             ),
             tooltip: "Requests",
@@ -3390,12 +3406,12 @@ export default function AgentComponent({
                     // When done, use backendSessionStats which includes everything.
                     const lastMsg = messages[messages.length - 1];
                     const liveGP =
-                      (lastMsg as any)?.role === "assistant"
-                        ? (lastMsg as any)._liveGenProgress
+                      lastMsg?.role === "assistant"
+                        ? lastMsg._liveGenProgress
                         : null;
                     const bgUsage =
-                      (lastMsg as any)?.role === "assistant"
-                        ? (lastMsg as any)._backgroundUsage
+                      lastMsg?.role === "assistant"
+                        ? lastMsg._backgroundUsage
                         : null;
                     const bgInput = bgUsage?.inputTokens || 0;
                     const bgOutput = bgUsage?.outputTokens || 0;
@@ -3406,15 +3422,15 @@ export default function AgentComponent({
                     // Use the larger of backend stats or live progress to prevent
                     // dips during the gap between stream end and backend refresh.
                     const tokenOutput = Math.max(
-                      (backendSessionStats as any).totalOutputTokens,
+                      backendSessionStats.totalOutputTokens,
                       liveOutput,
                     );
                     const tokenInput = Math.max(
-                      (backendSessionStats as any).totalInputTokens,
+                      backendSessionStats.totalInputTokens,
                       liveInput,
                     );
                     const tokenTotal = Math.max(
-                      (backendSessionStats as any).totalTokens,
+                      backendSessionStats.totalTokens,
                       liveTotal,
                     );
 
@@ -3423,9 +3439,9 @@ export default function AgentComponent({
                       messageCount: messages.length,
                       deletedCount: 0,
                       requestCount:
-                        ((backendSessionStats as any).requestCount || 0) +
+                        (backendSessionStats.requestCount || 0) +
                         (bgUsage?.requests || 0),
-                      uniqueModels: (backendSessionStats as any).models,
+                      uniqueModels: backendSessionStats.models,
                       uniqueProviders,
                       totalTokens: (() => {
                         const hwm = tokenHwmRef.current;
@@ -3451,20 +3467,20 @@ export default function AgentComponent({
                         return t;
                       })(),
                       totalCost:
-                        ((backendSessionStats as any).totalCost || 0) +
+                        (backendSessionStats.totalCost || 0) +
                         (bgUsage?.cost || 0),
                       originalTotalCost: 0,
                       // Merge backend toolCounts, client capabilities, and live
                       // worker tool counts into a single usedTools array
                       usedTools: mergeUsedToolsWithWorkers(
                         usedTools,
-                        (backendSessionStats as any).toolCounts,
+                        backendSessionStats.toolCounts,
                         workerToolActivity,
                       ),
                       modalities:
-                        (backendSessionStats as any).modalities || modalities,
+                        backendSessionStats.modalities || modalities,
                       completedElapsedTime:
-                        (backendSessionStats as any).totalElapsedTime ||
+                        backendSessionStats.totalElapsedTime ||
                         completedElapsedTime,
                       currentTurnStart,
                       liveStreamingTokens,
@@ -3479,15 +3495,15 @@ export default function AgentComponent({
                       liveTtftSamples,
                       liveGenProgress,
                       avgTokensPerSec:
-                        (backendSessionStats as any).avgTokensPerSec || null,
+                        backendSessionStats.avgTokensPerSec || null,
                       avgTimeToGeneration:
-                        (backendSessionStats as any).avgTimeToGeneration ||
+                        backendSessionStats.avgTimeToGeneration ||
                         null,
                       orchestrator: mapSubStats(
-                        (backendSessionStats as any).orchestrator,
+                        backendSessionStats.orchestrator,
                       ),
                       workers: mapSubStats(
-                        (backendSessionStats as any).workers,
+                        backendSessionStats.workers,
                       ),
                     };
                   })()
@@ -3498,12 +3514,12 @@ export default function AgentComponent({
                     // Include _backgroundUsage from fire-and-forget LLM calls.
                     const lastMsg = messages[messages.length - 1];
                     const gp =
-                      (lastMsg as any)?.role === "assistant"
-                        ? (lastMsg as any)._liveGenProgress
+                      lastMsg?.role === "assistant"
+                        ? lastMsg._liveGenProgress
                         : null;
                     const bgUsage =
-                      (lastMsg as any)?.role === "assistant"
-                        ? (lastMsg as any)._backgroundUsage
+                      lastMsg?.role === "assistant"
+                        ? lastMsg._backgroundUsage
                         : null;
                     const bgIn = bgUsage?.inputTokens || 0;
                     const bgOut = bgUsage?.outputTokens || 0;
@@ -3582,7 +3598,7 @@ export default function AgentComponent({
           unavailableWorkspace={unavailableWorkspace}
           onOpenFile={(relativePath: any) => {
             // Build absolute path from workspace root + relative path
-            const absPath = (currentWorkspace as any)?.path
+            const absPath = currentWorkspace?.path
               ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
             handleOpenFileInViewer(absPath);
@@ -3756,7 +3772,7 @@ export default function AgentComponent({
           workerToolActivity={workerToolActivity}
           knownPaths={knownPaths}
           onMentionFileOpen={(relativePath: any) => {
-            const absPath = (currentWorkspace as any)?.path
+            const absPath = currentWorkspace?.path
               ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
             handleOpenFileInViewer(absPath);
@@ -3847,7 +3863,7 @@ export default function AgentComponent({
       {(() => {
         const lastMsg = messages[messages.length - 1];
         const rawPhase = isGenerating
-          ? (lastMsg as any)?.statusPhase || "starting"
+          ? lastMsg?.statusPhase || "starting"
           : null;
         const hasActiveTools = toolActivity.some(
           (t: any) => t.status === "calling",
@@ -3913,12 +3929,12 @@ export default function AgentComponent({
               ? workerDerivedLabel
               : hasActiveTools
                 ? "Thinking..."
-                : (lastMsg as any)?.status || undefined
+                : lastMsg?.status || undefined
           : undefined;
         // Structured progress (0-1) from LM Studio prompt processing / model loading
         const progress =
           phase === "processing" || phase === "loading"
-            ? ((lastMsg as any)?._statusProgress ?? null)
+            ? (lastMsg?._statusProgress ?? null)
             : null;
 
         // Orchestrator tok/s from burst-scoped generation metrics.

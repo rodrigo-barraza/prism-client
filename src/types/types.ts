@@ -671,13 +671,23 @@ export interface BenchmarkModelStats {
 export interface VramBenchmarkEntry {
   _id: ObjectId;
   model: string;
+  displayName?: string;
+  provider?: string;
   quantization?: string;
+  bitsPerWeight?: number;
+  fileSizeGB?: number;
   contextLength: number;
   vramUsageGiB: number;
-  hostname: string;
-  gpu: string;
-  gpuVramGB: number;
-  settings?: string;
+  modelVramGiB?: number;
+  tokensPerSecond?: number;
+  ttft?: { ms: number; prefillTokPerSec?: number; [key: string]: unknown };
+  loadTimeMs?: number;
+  hostname?: string;
+  gpu?: string;
+  gpuVramGB?: number;
+  system?: { hostname: string; gpu?: { name?: string; [key: string]: unknown }; [key: string]: unknown };
+  settings?: { label: string; [key: string]: unknown };
+  createdAt?: string;
   [key: string]: unknown;
 }
 
