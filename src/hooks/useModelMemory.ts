@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, type Dispatch, type SetStateAction } from "react";
 import StorageService from "../services/StorageService";
 import { LOCAL_PROVIDERS } from "../constants";
 
@@ -17,10 +17,10 @@ import { LOCAL_PROVIDERS } from "../constants";
  * @param {string} storageKey — one of the SK_MODEL_MEMORY_* constants
  * @returns {{ saveModel, restoreModel }}
  */
-export default function useModelMemory(storageKey: any) {
+export default function useModelMemory(storageKey: string) {
   // Track whether we've already restored so progressive config loads
   // don't keep overwriting user's live selection.
-  const restoredRef = useRef<any>(false);
+  const restoredRef = useRef<boolean>(false);
 
   /**
    * Save the current model selection to localStorage.
@@ -30,7 +30,7 @@ export default function useModelMemory(storageKey: any) {
 
    */
   const saveModel = useCallback(
-    (provider: any, model: any) => {
+    (provider: string, model: string) => {
       if (!provider || !model) return;
       StorageService.set(storageKey, {
         provider,
@@ -52,11 +52,11 @@ export default function useModelMemory(storageKey: any) {
    * @param {Function} [options.fallback] — called with (config) if no saved model found; lets the caller apply default selection
    */
   const restoreModel = useCallback(
-    (config: any, setSettings: any, { fcOnly = false, fallback }: any = {}) => {
+    (config: Record<string, unknown>, setSettings: Dispatch<SetStateAction<Record<string, unknown>>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: Record<string, unknown>) => void } = {}) => {
       if (!config) return;
       if (restoredRef.current) return;
 
-      const saved = StorageService.get(storageKey);
+      const saved = StorageService.get<{ provider: string; model: string; isLocal: boolean }>(storageKey);
       if (!saved?.provider || !saved?.model) {
         // No saved preference — let the caller apply its own default.
         if (fallback) fallback(config);
@@ -65,8 +65,11 @@ export default function useModelMemory(storageKey: any) {
       }
 
       // If the saved model is local but local models aren't merged yet, wait.
+      const textToText = config.textToText as Record<string, unknown> | undefined;
+      const models = (textToText?.models ?? {}) as Record<string, Array<Record<string, unknown>>>;
+
       if (saved.isLocal) {
-        const localModels = config.textToText?.models?.[saved.provider] || [];
+        const localModels = models[saved.provider] || [];
         if (localModels.length === 0) {
           // Local models haven't arrived yet — don't mark as restored,
           // so the next call (after onLocalMerge) can try again.
@@ -75,8 +78,8 @@ export default function useModelMemory(storageKey: any) {
       }
 
       // Check the model exists in current config
-      const providerModels = config.textToText?.models?.[saved.provider] || [];
-      const modelDef = providerModels.find((m: any) => m.name === saved.model);
+      const providerModels = models[saved.provider] || [];
+      const modelDef = providerModels.find((m) => m.name === saved.model);
 
       if (!modelDef) {
         // Model no longer available — fall back to default
@@ -86,14 +89,14 @@ export default function useModelMemory(storageKey: any) {
       }
 
       // FC-only gate
-      if (fcOnly && !modelDef.tools?.includes("Tool Calling")) {
+      if (fcOnly && !(modelDef.tools as string[] | undefined)?.includes("Tool Calling")) {
         if (fallback) fallback(config);
         restoredRef.current = true;
         return;
       }
 
-      const temp = modelDef.defaultTemperature ?? 1.0;
-      setSettings((s: any) => ({
+      const temp = (modelDef.defaultTemperature as number) ?? 1.0;
+      setSettings((s) => ({
         ...s,
         provider: saved.provider,
         model: saved.model,

@@ -11,17 +11,21 @@
  * the underlying connection is closed.
  */
 
-/** @type {Map<string, { es: EventSource, listeners: Set<Function> }>} */
-const pools = new Map();
+type SSEListener = (data: unknown) => void;
+
+interface PoolEntry {
+  es: EventSource;
+  listeners: Set<SSEListener>;
+}
+
+const pools = new Map<string, PoolEntry>();
 
 /**
  * Subscribe to an SSE endpoint. Returns an unsubscribe function.
  *
-
-
- * @returns {{ unsubscribe: Function }} — call unsubscribe() to detach
+ * @returns {{ unsubscribe: () => void }} — call unsubscribe() to detach
  */
-export function subscribe(url: any, onMessage: any) {
+export function subscribe(url: string, onMessage: SSEListener): { unsubscribe: () => void } {
   let entry = pools.get(url);
 
   if (!entry) {
@@ -30,15 +34,15 @@ export function subscribe(url: any, onMessage: any) {
     entry = { es, listeners: new Set() };
     pools.set(url, entry);
 
-    es.onmessage = (event: any) => {
-      let data;
+    es.onmessage = (event: MessageEvent) => {
+      let data: unknown;
       try {
         data = JSON.parse(event.data);
       } catch {
         return; // ignore parse errors
       }
       // Fan out to all listeners (copy the set to avoid mutation during iteration)
-      for (const listener of entry.listeners) {
+      for (const listener of entry!.listeners) {
         try {
           listener(data);
         } catch {

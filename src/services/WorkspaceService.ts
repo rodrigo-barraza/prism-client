@@ -3,6 +3,50 @@ import { getBaseHeaders } from "./serviceHeaders";
 
 const API_BASE = PRISM_SERVICE_URL;
 
+// ─── Response Interfaces ────────────────────────────────────
+
+export interface WorkspaceRoot {
+  path: string;
+  label?: string;
+  isWsl?: boolean;
+  exists?: boolean;
+  [key: string]: unknown;
+}
+
+export interface WorkspaceListResponse {
+  workspaceRoots: string[];
+  [key: string]: unknown;
+}
+
+export interface WorkspaceFullResponse {
+  workspaces: WorkspaceRoot[];
+  agents: Array<Record<string, unknown>>;
+  staticRoots: string[];
+  [key: string]: unknown;
+}
+
+export interface WorkspaceUpdateResponse {
+  workspaceRoots: string[];
+  staticRoots: string[];
+  userRoots: string[];
+  [key: string]: unknown;
+}
+
+export interface WorkspaceValidateResponse {
+  resolvedPath: string;
+  isWsl: boolean;
+  exists: boolean;
+  [key: string]: unknown;
+}
+
+export interface WorkspaceTreeResponse {
+  path: string;
+  tree: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+// ─── Service ────────────────────────────────────────────────
+
 /**
  * WorkspaceService — fetches and manages configured workspace roots via Prism.
  *
@@ -10,7 +54,7 @@ const API_BASE = PRISM_SERVICE_URL;
  * and user-configured roots). Operations: list, update, validate.
  */
 export default class WorkspaceService {
-  static async list() {
+  static async list(): Promise<WorkspaceListResponse> {
     const response = await fetch(`${API_BASE}/workspaces`, {
       method: "GET",
       headers: getBaseHeaders(),
@@ -24,9 +68,8 @@ export default class WorkspaceService {
   /**
    * Full workspace config including connected workspace-service agent metadata.
    * Used by the Settings page for the richer workspace management UI.
-   * @returns {Promise<{ workspaces: object[], agents: object[], staticRoots: string[] }>}
    */
-  static async listFull() {
+  static async listFull(): Promise<WorkspaceFullResponse> {
     const response = await fetch(`${API_BASE}/workspaces/full`, {
       method: "GET",
       headers: getBaseHeaders(),
@@ -39,10 +82,10 @@ export default class WorkspaceService {
 
   /**
    * Update user-configured workspace roots.
-
-   * @returns {Promise<object>} Updated workspace config with workspaceRoots, staticRoots, userRoots
+   *
+   * @returns Updated workspace config with workspaceRoots, staticRoots, userRoots
    */
-  static async update(roots: any) {
+  static async update(roots: string[]): Promise<WorkspaceUpdateResponse> {
     const response = await fetch(`${API_BASE}/workspaces`, {
       method: "PUT",
       headers: { ...getBaseHeaders(), "Content-Type": "application/json" },
@@ -55,10 +98,10 @@ export default class WorkspaceService {
 
   /**
    * Validate a single workspace path without persisting.
-
-   * @returns {Promise<object>} Validation result with resolvedPath, isWsl, exists, etc.
+   *
+   * @returns Validation result with resolvedPath, isWsl, exists, etc.
    */
-  static async validate(path: any) {
+  static async validate(path: string): Promise<WorkspaceValidateResponse> {
     const response = await fetch(`${API_BASE}/workspaces/validate`, {
       method: "POST",
       headers: { ...getBaseHeaders(), "Content-Type": "application/json" },
@@ -71,11 +114,10 @@ export default class WorkspaceService {
 
   /**
    * Fetch the directory tree for a workspace path.
-
-
-   * @returns {Promise<object>} Project summary with tree structure
+   *
+   * @returns Project summary with tree structure
    */
-  static async tree(path: any, maxDepth = 3) {
+  static async tree(path: string, maxDepth = 3): Promise<WorkspaceTreeResponse> {
     const params = new URLSearchParams({ path });
     if (maxDepth !== 3) params.set("maxDepth", String(maxDepth));
     const response = await fetch(`${API_BASE}/workspaces/tree?${params}`, {

@@ -1,4 +1,22 @@
 import { useReducer, useMemo } from "react";
+import type { SessionTokenStats } from "../utils/utilities";
+
+// ─── Types ──────────────────────────────────────────────────
+
+interface TtftState {
+  value: number | null;
+  live: boolean;
+  prevPhase: string | null;
+  seenCount: number;
+}
+
+interface TtftAction {
+  phase: string | null;
+  startTime: number | null;
+  perfNow: number;
+  active: boolean;
+  samples: number[] | null;
+}
 
 /**
  * TTFT reducer — running-average pattern for Time-To-First-Token.
@@ -12,10 +30,7 @@ import { useReducer, useMemo } from "react";
  * For the client-side fallback (LM Studio native path), it live-counts
  * during the "processing" phase and latches on phase transition.
  */
-function ttftReducer(
-  prev: any,
-  { phase, startTime, perfNow, active, samples }: any,
-) {
+function ttftReducer(prev: TtftState, { phase, startTime, perfNow, active, samples }: TtftAction): TtftState {
   // Turn ended → clear
   if (!active) {
     if (prev.value === null && !prev.live && prev.seenCount === 0) return prev;
@@ -27,7 +42,7 @@ function ttftReducer(
     const newSamples = samples.slice(prev.seenCount);
     // Compute new running average incorporating all new samples
     const prevTotal = (prev.value || 0) * prev.seenCount;
-    const newTotal = newSamples.reduce((a: any, b: any) => a + b, 0);
+    const newTotal = newSamples.reduce((a, b) => a + b, 0);
     const avg = (prevTotal + newTotal) / samples.length;
     return {
       value: avg,
@@ -70,7 +85,7 @@ function ttftReducer(
   return prev;
 }
 
-const TTFT_INITIAL = {
+const TTFT_INITIAL: TtftState = {
   value: null,
   live: false,
   prevPhase: null,
@@ -90,17 +105,12 @@ const TTFT_INITIAL = {
  *
  * After the turn completes, the consumer falls back to the static
  * `avgTimeToGeneration` from backend session stats.
- *
- * @param {object|null} sessionStats — the sessionStats prop
- * @param {number} perfNow — current performance.now() snapshot (from useTokenRate ticker)
- * @param {boolean} needsTicker — whether a turn is active (from useTokenRate)
- * @returns {{ liveTtft: number|null, isLiveTtft: boolean }}
  */
 export default function useTtft(
-  sessionStats: any,
-  perfNow: any,
-  needsTicker: any,
-) {
+  sessionStats: SessionTokenStats | null,
+  perfNow: number,
+  needsTicker: boolean,
+): { liveTtft: number | null; isLiveTtft: boolean } {
   const phase = sessionStats?.liveProcessingPhase || null;
   const startTime = sessionStats?.liveProcessingStartTime || null;
   const samples = sessionStats?.liveTtftSamples || null;

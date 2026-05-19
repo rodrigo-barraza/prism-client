@@ -1,13 +1,13 @@
 "use client";
 
 import PrismService from "./PrismService";
+import type { Workflow } from "../types/types";
 
 const WorkflowService = {
   /**
    * Get all saved workflows (metadata only).
-
    */
-  async getWorkflows() {
+  async getWorkflows(): Promise<Workflow[]> {
     try {
       return await PrismService.getWorkflows();
     } catch {
@@ -17,10 +17,8 @@ const WorkflowService = {
 
   /**
    * Get a single workflow by ID (full document).
-
-
    */
-  async getWorkflow(id: any) {
+  async getWorkflow(id: string): Promise<Workflow | null> {
     try {
       return await PrismService.getWorkflow(id);
     } catch {
@@ -30,15 +28,15 @@ const WorkflowService = {
 
   /**
    * Save or update a workflow.
-
-   * @returns {Promise<object>} The saved workflow with id
+   *
+   * @returns The saved workflow with id
    */
-  async saveWorkflow(workflow: any) {
+  async saveWorkflow(workflow: Workflow & { id?: string }): Promise<Workflow & { id: string }> {
     if (workflow.id) {
       // Update existing
       const { id, ...data } = workflow;
       await PrismService.updateWorkflow(id, data);
-      return workflow;
+      return workflow as Workflow & { id: string };
     }
     // Create new
     const result = await PrismService.saveWorkflow(workflow);
@@ -47,9 +45,8 @@ const WorkflowService = {
 
   /**
    * Delete a workflow by ID.
-
    */
-  async deleteWorkflow(id: any) {
+  async deleteWorkflow(id: string): Promise<void> {
     await PrismService.deleteWorkflow(id);
   },
 };

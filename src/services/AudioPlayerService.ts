@@ -12,44 +12,35 @@
 const DEFAULT_SAMPLE_RATE = 24000; // Gemini Live API outputs 24kHz
 
 export default class AudioPlayerService {
-  audioContext: any = null;
-  nextStartTime: number = 0;
-  isPlaying: boolean = false;
-  pcmChunks: any[] = [];
-  sampleRate: number = DEFAULT_SAMPLE_RATE;
-
-  constructor() {
-    this.audioContext = null;
-    this.nextStartTime = 0;
-    this.isPlaying = false;
-    /** @type {Uint8Array[]} accumulated raw PCM bytes for WAV export */
-    this.pcmChunks = [];
-    this.sampleRate = DEFAULT_SAMPLE_RATE;
-  }
+  private audioContext: AudioContext | null = null;
+  private nextStartTime: number = 0;
+  private isPlaying: boolean = false;
+  private pcmChunks: Uint8Array[] = [];
+  private sampleRate: number = DEFAULT_SAMPLE_RATE;
 
   /**
    * Initialize the AudioContext (must be called from a user gesture context).
    */
-  init() {
-    if (!(this as any).audioContext) {
-      (this as any).audioContext = new (
-        window.AudioContext || window.webkitAudioContext
+  init(): void {
+    if (!this.audioContext) {
+      this.audioContext = new (
+        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
       )({
         sampleRate: DEFAULT_SAMPLE_RATE,
       });
     }
-    if ((this as any).audioContext.state === "suspended") {
-      (this as any).audioContext.resume();
+    if (this.audioContext.state === "suspended") {
+      this.audioContext.resume();
     }
-    (this as any).nextStartTime = 0;
-    (this as any).isPlaying = true;
-    (this as any).pcmChunks = [];
+    this.nextStartTime = 0;
+    this.isPlaying = true;
+    this.pcmChunks = [];
   }
 
   /**
    * Parse the sample rate from a mimeType string like "audio/pcm;rate=24000".
    */
-  parseSampleRate(mimeType: any) {
+  parseSampleRate(mimeType: string | null | undefined): number {
     if (!mimeType) return DEFAULT_SAMPLE_RATE;
     const match = mimeType.match(/rate=(\d+)/);
     return match ? parseInt(match[1], 10) : DEFAULT_SAMPLE_RATE;
@@ -57,14 +48,12 @@ export default class AudioPlayerService {
 
   /**
    * Enqueue a base64-encoded PCM audio chunk for playback.
-
-
    */
-  enqueue(base64Data: any, mimeType: any) {
-    if (!(this as any).audioContext || !(this as any).isPlaying) return;
+  enqueue(base64Data: string, mimeType: string | null | undefined): void {
+    if (!this.audioContext || !this.isPlaying) return;
     if (!base64Data || base64Data.length < 4) return;
 
-    (this as any).sampleRate = this.parseSampleRate(mimeType);
+    this.sampleRate = this.parseSampleRate(mimeType);
 
     // Decode base64 → binary → Uint8Array
     const binaryString = atob(base64Data);
@@ -74,7 +63,7 @@ export default class AudioPlayerService {
     }
 
     // Accumulate for WAV export
-    (this as any).pcmChunks.push(bytes);
+    this.pcmChunks.push(bytes);
 
     // Convert Int16 → Float32 for Web Audio
     const int16 = new Int16Array(bytes.buffer);
@@ -86,38 +75,38 @@ export default class AudioPlayerService {
     if (float32.length === 0) return;
 
     // Create AudioBuffer and schedule
-    const buffer = (this as any).audioContext.createBuffer(
+    const buffer = this.audioContext.createBuffer(
       1,
       float32.length,
-      (this as any).sampleRate,
+      this.sampleRate,
     );
     buffer.copyToChannel(float32, 0);
 
-    const source = (this as any).audioContext.createBufferSource();
+    const source = this.audioContext.createBufferSource();
     source.buffer = buffer;
-    source.connect((this as any).audioContext.destination);
+    source.connect(this.audioContext.destination);
 
-    const now = (this as any).audioContext.currentTime;
-    const startTime = Math.max(now, (this as any).nextStartTime);
+    const now = this.audioContext.currentTime;
+    const startTime = Math.max(now, this.nextStartTime);
     source.start(startTime);
-    (this as any).nextStartTime = startTime + buffer.duration;
+    this.nextStartTime = startTime + buffer.duration;
   }
 
   /**
    * Build a WAV Blob from all accumulated PCM chunks.
-   * @returns {Blob|null} WAV blob or null if no data
+   * @returns WAV blob or null if no data
    */
-  buildWavBlob() {
-    if ((this as any).pcmChunks.length === 0) return null;
+  buildWavBlob(): Blob | null {
+    if (this.pcmChunks.length === 0) return null;
 
     // Concatenate all PCM bytes
-    const totalLength = (this as any).pcmChunks.reduce(
-      (sum: any, c: any) => sum + c.length,
+    const totalLength = this.pcmChunks.reduce(
+      (sum, c) => sum + c.length,
       0,
     );
     const pcmData = new Uint8Array(totalLength);
     let offset = 0;
-    for (const chunk of (this as any).pcmChunks) {
+    for (const chunk of this.pcmChunks) {
       pcmData.set(chunk, offset);
       offset += chunk.length;
     }
@@ -126,7 +115,7 @@ export default class AudioPlayerService {
     const numChannels = 1;
     const bitsPerSample = 16;
     const byteRate =
-      (this as any).sampleRate * numChannels * (bitsPerSample / 8);
+      this.sampleRate * numChannels * (bitsPerSample / 8);
     const blockAlign = numChannels * (bitsPerSample / 8);
     const dataSize = pcmData.length;
     const headerSize = 44;
@@ -143,7 +132,7 @@ export default class AudioPlayerService {
     view.setUint32(16, 16, true); // PCM
     view.setUint16(20, 1, true); // AudioFormat = PCM
     view.setUint16(22, numChannels, true);
-    view.setUint32(24, (this as any).sampleRate, true);
+    view.setUint32(24, this.sampleRate, true);
     view.setUint32(28, byteRate, true);
     view.setUint16(32, blockAlign, true);
     view.setUint16(34, bitsPerSample, true);
@@ -159,15 +148,14 @@ export default class AudioPlayerService {
 
   /**
    * Build a WAV Blob URL. Returns null if no data.
-
    */
-  buildWavUrl() {
+  buildWavUrl(): string | null {
     const blob = this.buildWavBlob();
     return blob ? URL.createObjectURL(blob) : null;
   }
 
   /** Write a string into a DataView at a given offset. */
-  writeString(view: any, offset: any, str: any) {
+  writeString(view: DataView, offset: number, str: string): void {
     for (let i = 0; i < str.length; i++) {
       view.setUint8(offset + i, str.charCodeAt(i));
     }
@@ -176,21 +164,21 @@ export default class AudioPlayerService {
   /**
    * Stop playback and reset.
    */
-  stop() {
-    (this as any).isPlaying = false;
-    (this as any).nextStartTime = 0;
-    (this as any).pcmChunks = [];
-    if ((this as any).audioContext) {
-      (this as any).audioContext.close().catch(() => {});
-      (this as any).audioContext = null;
+  stop(): void {
+    this.isPlaying = false;
+    this.nextStartTime = 0;
+    this.pcmChunks = [];
+    if (this.audioContext) {
+      this.audioContext.close().catch(() => {});
+      this.audioContext = null;
     }
   }
 
   /**
    * Reset the scheduler for a new turn (keeps AudioContext alive).
    */
-  reset() {
-    (this as any).nextStartTime = 0;
-    (this as any).pcmChunks = [];
+  reset(): void {
+    this.nextStartTime = 0;
+    this.pcmChunks = [];
   }
 }

@@ -9,17 +9,16 @@ import {
   getSessionElapsedTime,
 } from "../utils/utilities";
 
+import type { Message } from "../types/types";
+
 /**
  * useSessionStats — memoised session statistics from a messages array.
  *
  * Replaces the 5–6 line `useMemo` block that was copy-pasted across
  * AgentComponent, AdminAgentViewerComponent, and
  * admin/conversations/page.
- *
- * @param {Array} messages — the messages array to derive stats from
- * @returns {{ uniqueModels, totalCost, totalTokens, requestCount, usedTools, modalities, elapsedTime }}
  */
-export default function useSessionStats(messages: any) {
+export default function useSessionStats(messages: Message[]) {
   const uniqueModels = useMemo(() => getUniqueModels(messages), [messages]);
   const uniqueProviders = useMemo(
     () => getUniqueProviders(messages),

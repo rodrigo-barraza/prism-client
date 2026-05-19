@@ -7,12 +7,14 @@
  * logic to avoid duplication.
  */
 
+import type { ToolSchema, CustomTool } from "../types/types";
+
 /**
  * Sanitize a tool name for LLM function calling APIs.
  * Google's function calling API requires names to be alphanumeric + _ . : -
  * starting with a letter or underscore, max 128 chars.
  */
-export function sanitizeToolName(name: any) {
+export function sanitizeToolName(name: string): string {
   return name
     .replace(/[^a-zA-Z0-9_.:/-]/g, "_")
     .replace(/^[^a-zA-Z_]/, "_$&")
@@ -23,28 +25,28 @@ export function sanitizeToolName(name: any) {
  * Build a merged array of tool schemas from built-in and custom tools.
  * Used by AgentComponent.
  *
- * @param {Array}  builtInTools     — server-provided built-in tool schemas
- * @param {Set}    disabledBuiltIns — names of disabled built-in tools
- * @param {Array}  customTools      — user-defined custom tools
- * @returns {Array} merged tool schema array
+ * @param builtInTools     — server-provided built-in tool schemas
+ * @param disabledBuiltIns — names of disabled built-in tools
+ * @param customTools      — user-defined custom tools
+ * @returns merged tool schema array
  */
 export function buildToolSchemas(
-  builtInTools: any,
-  disabledBuiltIns: any,
-  customTools: any,
-) {
+  builtInTools: ToolSchema[],
+  disabledBuiltIns: Set<string>,
+  customTools: CustomTool[],
+): ToolSchema[] {
   const builtIn = builtInTools.filter(
-    (t: any) => !disabledBuiltIns.has(t.name),
+    (t) => !disabledBuiltIns.has(t.name),
   );
-  const custom = customTools
-    .filter((t: any) => t.enabled)
-    .map((t: any) => ({
+  const custom: ToolSchema[] = customTools
+    .filter((t) => t.enabled)
+    .map((t) => ({
       name: sanitizeToolName(t.name),
       description: t.description,
       parameters: {
-        type: "object",
+        type: "object" as const,
         properties: Object.fromEntries(
-          (t.parameters || []).map((p: any) => [
+          (t.parameters || []).map((p) => [
             p.name,
             {
               type: p.type || "string",
@@ -54,8 +56,8 @@ export function buildToolSchemas(
           ]),
         ),
         required: (t.parameters || [])
-          .filter((p: any) => p.required)
-          .map((p: any) => p.name),
+          .filter((p) => p.required)
+          .map((p) => p.name),
       },
     }));
   return [...builtIn, ...custom];

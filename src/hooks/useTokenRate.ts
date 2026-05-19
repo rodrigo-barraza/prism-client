@@ -1,4 +1,5 @@
 import { useState, useEffect, useReducer, useMemo } from "react";
+import type { SessionTokenStats } from "../utils/utilities";
 
 /**
  * Staleness threshold: if the most recent backend-emitted
@@ -13,6 +14,41 @@ const PROGRESS_STALE_MS = 3000;
  */
 const CHUNK_STALE_MS = 2000;
 
+// ─── Types ──────────────────────────────────────────────────
+
+interface TokPerSecState {
+  current: number | null;
+  lastComputed: number | null;
+}
+
+interface TokPerSecAction {
+  computed: number | null;
+  active: boolean;
+}
+
+export interface TokenRateResult {
+  nowMs: number;
+  perfNow: number;
+  isStreaming: boolean;
+  needsTicker: boolean;
+  turnActive: boolean;
+  totalElapsedTime: number;
+  liveTokensPerSec: number | null;
+  computedTokPerSec: number | null;
+  hasActiveWorkers: boolean;
+}
+
+/**
+ * Extended session stats that may include client-side turn tracking.
+ * The base SessionTokenStats from utilities covers server-derived fields,
+ * but the hook may also receive currentTurnStart and completedElapsedTime
+ * from the component layer.
+ */
+interface ExtendedSessionStats extends SessionTokenStats {
+  currentTurnStart?: number | null;
+  completedElapsedTime?: number;
+}
+
 /**
  * Last-value-hold reducer for tok/s display.
  *
@@ -21,7 +57,7 @@ const CHUNK_STALE_MS = 2000;
  * burst's final rate so the badge doesn't flicker to zero during
  * tool calls. Clears when the turn fully ends.
  */
-function tokPerSecReducer(prev: any, { computed, active }: any) {
+function tokPerSecReducer(prev: TokPerSecState, { computed, active }: TokPerSecAction): TokPerSecState {
   // Turn ended → clear everything
   if (!active) {
     return { current: null, lastComputed: null };
@@ -38,7 +74,7 @@ function tokPerSecReducer(prev: any, { computed, active }: any) {
   return prev;
 }
 
-const TOK_PER_SEC_INITIAL = { current: null, lastComputed: null };
+const TOK_PER_SEC_INITIAL: TokPerSecState = { current: null, lastComputed: null };
 
 /**
  * Sum per-worker tok/s from workerGenerationProgress.
@@ -49,21 +85,14 @@ const TOK_PER_SEC_INITIAL = { current: null, lastComputed: null };
  *
  * The aggregate shown in the SettingsPanel should be the **additive sum**
  * of all concurrent workers (e.g. 3 × 40 = 120 tok/s), not the average.
- *
- * This replaces the broken SessionGenerationTracker aggregate which has
- * outputTokens=0 during streaming (tokens only set at stream end), causing
- * it to fall back to the last completed request's rate.
- *
- * @param {Object|null} workerGenerationProgress — { [workerId]: { tokPerSec, status, ... } }
- * @returns {{ sum: number, count: number }}
  */
-function sumWorkerThroughput(workerGenerationProgress: any) {
+function sumWorkerThroughput(workerGenerationProgress: Record<string, unknown> | null): { sum: number; count: number } {
   let sum = 0;
   let count = 0;
   if (!workerGenerationProgress) return { sum: 0, count: 0 };
-  for (const wp of Object.values(workerGenerationProgress) as any) {
-    if (wp.tokPerSec != null && wp.tokPerSec > 0) {
-      sum += wp.tokPerSec;
+  for (const wp of Object.values(workerGenerationProgress) as Array<Record<string, unknown>>) {
+    if (wp.tokPerSec != null && (wp.tokPerSec as number) > 0) {
+      sum += wp.tokPerSec as number;
       count++;
     }
   }
@@ -90,21 +119,8 @@ function sumWorkerThroughput(workerGenerationProgress: any) {
  *      sessions (regular conversations) that don't emit
  *      generation_progress events. Computes rates from SSE chunk
  *      inter-arrival timing.
- *
- * @param {object|null} sessionStats — the stats object from SettingsPanel props
- * @returns {{
- *   nowMs: number,
- *   perfNow: number,
- *   isStreaming: boolean,
- *   needsTicker: boolean,
- *   turnActive: boolean,
- *   totalElapsedTime: number,
- *   liveTokensPerSec: number|null,
- *   computedTokPerSec: number|null,
- *   hasActiveWorkers: boolean,
- * }}
  */
-export default function useTokenRate(sessionStats: any) {
+export default function useTokenRate(sessionStats: ExtendedSessionStats | null): TokenRateResult {
   // -- Live ticker -----------------------------------------------
   // Stores current wall-clock and performance timestamps so render
   // stays pure (no Date.now() calls in the render body).
@@ -141,14 +157,14 @@ export default function useTokenRate(sessionStats: any) {
   const totalElapsedTime = completedTime + liveExtra;
 
   // -- Live tok/s computation ------------------------------------
-  let computedTokPerSec = null;
+  let computedTokPerSec: number | null = null;
   let hasActiveWorkers = false;
 
   // Priority 1: Sum per-worker tok/s from workerGenerationProgress.
   // These come from CoordinatorService's buildProgress() which uses
   // burst-scoped chunk counters — accurate and independent per worker.
   const { sum: workerSum, count: activeWorkerCount } = sumWorkerThroughput(
-    sessionStats?.workerGenerationProgress,
+    sessionStats?.workerGenerationProgress ?? null,
   );
 
   if (activeWorkerCount > 0) {
@@ -173,15 +189,15 @@ export default function useTokenRate(sessionStats: any) {
   } else {
     // Priority 2: Backend-sourced generation_progress from
     // SessionGenerationTracker (for solo orchestrator sessions).
-    const genProgress = sessionStats?.liveGenProgress;
+    const genProgress = sessionStats?.liveGenProgress as Record<string, unknown> | null;
     const genProgressFresh =
       genProgress &&
       genProgress.timestamp &&
-      perfNow - genProgress.timestamp < PROGRESS_STALE_MS;
+      perfNow - (genProgress.timestamp as number) < PROGRESS_STALE_MS;
 
     if (genProgressFresh && genProgress.tokPerSec != null) {
-      computedTokPerSec = genProgress.tokPerSec;
-      hasActiveWorkers = (genProgress.activeRequests || 0) > 1;
+      computedTokPerSec = genProgress.tokPerSec as number;
+      hasActiveWorkers = ((genProgress.activeRequests as number) || 0) > 1;
     } else {
       // Priority 3: Frontend chunk-counting fallback for non-agentic
       // sessions (Direct Chat) that don't go through the agentic loop.

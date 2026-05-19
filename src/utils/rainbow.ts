@@ -8,7 +8,9 @@
 // @rodrigo-barraza/utilities-library/color.
 // ─────────────────────────────────────────────────────────────
 
-export const RAINBOW = [
+export type RgbTriplet = [number, number, number];
+
+export const RAINBOW: RgbTriplet[] = [
   [255, 0, 0],
   [255, 127, 0],
   [255, 255, 0],
@@ -20,11 +22,10 @@ export const RAINBOW = [
 
 /**
  * Linearly interpolate between two RGB triplets.
-
-
- * @returns {number[]} Interpolated [r, g, b]
+ *
+ * @returns Interpolated [r, g, b]
  */
-export function lerpRgb(a: any, b: any, t: any) {
+export function lerpRgb(a: RgbTriplet, b: RgbTriplet, t: number): RgbTriplet {
   return [
     a[0] + (b[0] - a[0]) * t,
     a[1] + (b[1] - a[1]) * t,
@@ -34,11 +35,10 @@ export function lerpRgb(a: any, b: any, t: any) {
 
 /**
  * Sample the rainbow palette at a normalized position.
-
-
- * @returns {number[]} Interpolated [r, g, b]
+ *
+ * @returns Interpolated [r, g, b]
  */
-export function paletteAt(colors: any, t: any) {
+export function paletteAt(colors: RgbTriplet[], t: number): RgbTriplet {
   const scaled = (((t % 1) + 1) % 1) * colors.length;
   const i = Math.floor(scaled);
   const f = scaled - i;

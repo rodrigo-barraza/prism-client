@@ -30,6 +30,8 @@ export {
   formatDateTime,
 } from "@rodrigo-barraza/utilities-library";
 
+import type { Message } from "../types/types";
+
 // -- Prism-specific utilities ---------------------------------
 
 /**
@@ -38,16 +40,24 @@ export {
  * Used by PrismService.loadLmStudioModel, loadLmStudioModelStream,
  * and IrisService.loadLmStudioModel.
  */
-export function buildLmStudioLoadBody(model: any, options = {}) {
-  const body = { model };
-  if ((options as any).contextLength != null)
-    (body as any).context_length = (options as any).contextLength;
-  if ((options as any).flashAttention != null)
-    (body as any).flash_attention = (options as any).flashAttention;
-  if ((options as any).offloadKvCache != null)
-    (body as any).offload_kv_cache_to_gpu = (options as any).offloadKvCache;
-  if ((options as any).evalBatchSize != null)
-    (body as any).eval_batch_size = (options as any).evalBatchSize;
+export function buildLmStudioLoadBody(
+  model: string,
+  options: {
+    contextLength?: number;
+    flashAttention?: boolean;
+    offloadKvCache?: boolean;
+    evalBatchSize?: number;
+  } = {},
+): Record<string, unknown> {
+  const body: Record<string, unknown> = { model };
+  if (options.contextLength != null)
+    body.context_length = options.contextLength;
+  if (options.flashAttention != null)
+    body.flash_attention = options.flashAttention;
+  if (options.offloadKvCache != null)
+    body.offload_kv_cache_to_gpu = options.offloadKvCache;
+  if (options.evalBatchSize != null)
+    body.eval_batch_size = options.evalBatchSize;
   return body;
 }
 
@@ -56,7 +66,7 @@ export function buildLmStudioLoadBody(model: any, options = {}) {
  * Providers like Anthropic and Google split prompt tokens into
  * new + cache_read + cache_write. This aggregates all three.
  */
-export function getTotalInputTokens(usage: any) {
+export function getTotalInputTokens(usage: { inputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number; [key: string]: unknown } | null | undefined): number {
   if (!usage) return 0;
   return (
     (usage.inputTokens || 0) +
@@ -69,16 +79,16 @@ export function getTotalInputTokens(usage: any) {
  * Build ISO date range params from a { from, to } object.
  * Returns an object with optional `from` and `to` keys.
  */
-export function buildDateRangeParams(dateRange: any) {
-  const params = {};
+export function buildDateRangeParams(dateRange: { from?: string; to?: string } | null | undefined): Record<string, string> {
+  const params: Record<string, string> = {};
   if (dateRange?.from) {
     // ISO datetime (sub-day presets) passes through; day-only gets midnight
-    (params as any).from = dateRange.from.includes("T")
+    params.from = dateRange.from.includes("T")
       ? dateRange.from
       : new Date(dateRange.from).toISOString();
   }
   if (dateRange?.to) {
-    (params as any).to = dateRange.to.includes("T")
+    params.to = dateRange.to.includes("T")
       ? dateRange.to
       : new Date(dateRange.to + "T23:59:59").toISOString();
   }
@@ -89,7 +99,7 @@ export function buildDateRangeParams(dateRange: any) {
  * Copy text to clipboard with error handling.
  * Returns true on success, false on failure.
  */
-export async function copyToClipboard(text: any) {
+export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
     return true;
@@ -102,12 +112,12 @@ export async function copyToClipboard(text: any) {
  * Get unique model names from assistant messages.
  * Shared between AgentComponent and admin/conversations.
  */
-export function getUniqueModels(messages: any) {
+export function getUniqueModels(messages: Message[]): string[] {
   return [
     ...new Set(
       messages
-        .filter((m: any) => m.role === "assistant" && m.model)
-        .map((m: any) => m.model),
+        .filter((m) => m.role === "assistant" && m.model)
+        .map((m) => m.model!),
     ),
   ];
 }
@@ -116,12 +126,12 @@ export function getUniqueModels(messages: any) {
  * Get unique provider keys from assistant messages.
  * Shared between useSessionStats and SettingsPanel.
  */
-export function getUniqueProviders(messages: any) {
+export function getUniqueProviders(messages: Message[]): string[] {
   return [
     ...new Set(
       messages
-        .filter((m: any) => m.role === "assistant" && m.provider)
-        .map((m: any) => m.provider),
+        .filter((m) => m.role === "assistant" && m.provider)
+        .map((m) => m.provider!),
     ),
   ];
 }
@@ -129,15 +139,32 @@ export function getUniqueProviders(messages: any) {
 /**
  * Sum estimatedCost across all messages.
  */
-export function getSessionCost(messages: any) {
-  return messages.reduce((sum: any, m: any) => sum + (m.estimatedCost || 0), 0);
+export function getSessionCost(messages: Message[]): number {
+  return messages.reduce((sum, m) => sum + (m.estimatedCost || 0), 0);
 }
 
 /**
  * Aggregate input/output tokens and request count from assistant messages.
  * Returns { totalTokens: { input, output, total }, requestCount }.
  */
-export function getSessionTokenStats(messages: any) {
+export interface SessionTokenStats {
+  totalTokens: { input: number; output: number; total: number };
+  requestCount: number;
+  liveStreamingTokens: number;
+  liveStreamingStartTime: number | null;
+  liveStreamingLastChunkTime: number | null;
+  liveStreamingBurstTokens: number;
+  liveStreamingBurstElapsed: number;
+  liveOutputCharacters: number;
+  workerGenerationProgress: Record<string, unknown> | null;
+  lastTimeToGeneration: number | null;
+  liveProcessingStartTime: number | null;
+  liveProcessingPhase: string | null;
+  liveTtftSamples: number[] | null;
+  liveGenProgress: Record<string, unknown> | null;
+}
+
+export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
   let input = 0;
   let output = 0;
   let requests = 0;
@@ -189,9 +216,9 @@ export function getSessionTokenStats(messages: any) {
     }
     // In-flight streaming messages: use tracker's real token count
     // (fed exclusively by provider-reported usage, never per-chunk estimates)
-    else if (!m.usage && m._liveGenProgress?.outputTokens > 0) {
-      output += m._liveGenProgress.outputTokens;
-      liveStreamingTokens = m._liveGenProgress.outputTokens;
+    else if (!m.usage && m._liveGenProgress && (m._liveGenProgress.outputTokens ?? 0) > 0) {
+      output += m._liveGenProgress.outputTokens ?? 0;
+      liveStreamingTokens = m._liveGenProgress.outputTokens ?? 0;
       liveStreamingStartTime = m._streamingStartTime || null;
       liveStreamingLastChunkTime = m._streamingLastChunkTime || null;
       liveStreamingBurstTokens = m._streamingBurstTokens || 0;
@@ -213,8 +240,8 @@ export function getSessionTokenStats(messages: any) {
       liveStreamingBurstElapsed = m._streamingBurstElapsed || 0;
     }
     // Track live output characters (real data, always increasing during streaming)
-    if (m._streamingOutputCharacters > 0) {
-      liveOutputCharacters = m._streamingOutputCharacters;
+    if ((m._streamingOutputCharacters ?? 0) > 0) {
+      liveOutputCharacters = m._streamingOutputCharacters!;
     }
     // Track live processing phase and start time for TTFT estimation
     if (m._processingStartTime) {
@@ -234,8 +261,8 @@ export function getSessionTokenStats(messages: any) {
       // in real-time during worker generation (before completion).
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
       // so the count doesn't reset when workers transition between phases.
-      for (const wp of Object.values(m._workerGenerationProgress) as any[]) {
-        const count = wp.totalOutputTokens || wp.outputTokens || 0;
+      for (const wp of Object.values(m._workerGenerationProgress) as Record<string, unknown>[]) {
+        const count = (wp.totalOutputTokens || wp.outputTokens || 0) as number;
         if (count > 0) {
           output += count;
         }
@@ -279,19 +306,19 @@ export function getSessionTokenStats(messages: any) {
  * Count tool invocations across all messages.
  * Returns [{ name, count }] sorted by count.
  */
-export function getUsedTools(messages: any) {
-  const counts = new Map();
+export function getUsedTools(messages: Message[]): Array<{ name: string; count: number }> {
+  const counts = new Map<string, number>();
   for (const m of messages) {
     if (m.role !== "assistant") continue;
     if (m.thinking) counts.set("Thinking", (counts.get("Thinking") || 0) + 1);
-    if (m.toolCalls?.length > 0) {
+    if (m.toolCalls && m.toolCalls.length > 0) {
       counts.set("Tool Calling", (counts.get("Tool Calling") || 0) + 1);
       for (const tc of m.toolCalls) {
         if (tc.name) counts.set(tc.name, (counts.get(tc.name) || 0) + 1);
       }
     }
   }
-  return [...counts.entries()].map(([name, count]: any) => ({ name, count }));
+  return [...counts.entries()].map(([name, count]) => ({ name, count }));
 }
 
 /**
@@ -316,11 +343,11 @@ export const CAPABILITY_TOOL_NAMES = new Set([
  * Convert a backend toolCounts map ({ name: count }) into the
  * usedTools array format ([{ name, count }]) sorted by count desc.
  */
-export function toolCountsToUsedTools(toolCounts: any) {
+export function toolCountsToUsedTools(toolCounts: Record<string, number> | null | undefined): Array<{ name: string; count: number }> {
   if (!toolCounts || Object.keys(toolCounts).length === 0) return [];
   return Object.entries(toolCounts)
-    .map(([name, count]: any) => ({ name, count }))
-    .sort((a: any, b: any) => b.count - a.count);
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 /**
@@ -345,17 +372,17 @@ export function toolCountsToUsedTools(toolCounts: any) {
  * @returns {Array<{name: string, count: number}>} sorted by count desc
  */
 export function mergeUsedToolsWithWorkers(
-  clientTools: any,
-  backendToolCounts: any,
-  workerToolActivity: any,
-) {
+  clientTools: Array<{ name: string; count: number }>,
+  backendToolCounts: Record<string, number> | null | undefined,
+  workerToolActivity: Record<string, { toolNames?: Record<string, number> }> | null | undefined,
+): Array<{ name: string; count: number }> {
   // Separate capabilities from function-level tool calls
-  const capabilities = clientTools.filter((t: any) =>
+  const capabilities = clientTools.filter((t) =>
     CAPABILITY_TOOL_NAMES.has(t.name),
   );
 
   // Start with authoritative source (backend if available, else client function-level)
-  const merged = new Map();
+  const merged = new Map<string, number>();
   if (backendToolCounts) {
     for (const t of toolCountsToUsedTools(backendToolCounts)) {
       merged.set(t.name, t.count);
@@ -369,12 +396,9 @@ export function mergeUsedToolsWithWorkers(
 
   // Overlay live worker tool counts (real-time during generation)
   if (workerToolActivity) {
-    for (const w of Object.values(workerToolActivity) as any[]) {
+    for (const w of Object.values(workerToolActivity)) {
       if (!w.toolNames) continue;
-      for (const [name, count] of Object.entries(w.toolNames) as [
-        string,
-        number,
-      ][]) {
+      for (const [name, count] of Object.entries(w.toolNames)) {
         if (CAPABILITY_TOOL_NAMES.has(name)) continue;
         merged.set(name, Math.max(merged.get(name) || 0, count));
       }
@@ -382,8 +406,8 @@ export function mergeUsedToolsWithWorkers(
   }
 
   const mergedTools = [...merged.entries()]
-    .map(([name, count]: any) => ({ name, count }))
-    .sort((a: any, b: any) => b.count - a.count);
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 
   return [...capabilities, ...mergedTools];
 }
@@ -394,7 +418,7 @@ export function mergeUsedToolsWithWorkers(
  * (textIn, textOut, imageIn, imageOut, audioIn, audioOut,
  * videoIn, docIn, webSearch, codeExecution, functionCalling, thinking).
  */
-export function getModalities(messages: any) {
+export function getModalities(messages: Message[]) {
   const modalities = {
     textIn: false,
     textOut: false,
@@ -421,14 +445,14 @@ export function getModalities(messages: any) {
       if (isAssistant) modalities.textOut = true;
     }
     // Tool calls are structured text output
-    if (isAssistant && m.toolCalls?.length > 0) {
+    if (isAssistant && m.toolCalls && m.toolCalls.length > 0) {
       modalities.textOut = true;
     }
     if (m.audio) {
       if (isUser) modalities.audioIn = true;
       if (isAssistant) modalities.audioOut = true;
     }
-    if (m.images?.length > 0) {
+    if (m.images && m.images.length > 0) {
       for (const ref of m.images) {
         if (typeof ref !== "string") continue;
         const isDoc =
@@ -438,7 +462,7 @@ export function getModalities(messages: any) {
           ref.endsWith(".txt");
         const isVideo =
           ref.startsWith("data:video/") ||
-          [".mp4", ".mov", ".avi", ".webm"].some((ext: any) =>
+          [".mp4", ".mov", ".avi", ".webm"].some((ext) =>
             ref.endsWith(ext),
           );
         if (isDoc) {
@@ -457,12 +481,12 @@ export function getModalities(messages: any) {
       if (isUser) modalities.imageIn = true;
       if (isAssistant) modalities.imageOut = true;
     }
-    if (m.documents?.length > 0) {
+    if (m.documents && m.documents.length > 0) {
       modalities.docIn = true;
     }
 
     // Classify tool calls by type
-    if (m.toolCalls?.length > 0) {
+    if (m.toolCalls && m.toolCalls.length > 0) {
       for (const tc of m.toolCalls) {
         const name = (tc.name || "").toLowerCase();
         if (WEB_SEARCH_NAMES.has(name)) {
@@ -514,7 +538,7 @@ export function getModalities(messages: any) {
  * sessions from the DB (server-side `timestamp` on assistant messages).
  * Returns total elapsed seconds.
  */
-export function getSessionElapsedTime(messages: any) {
+export function getSessionElapsedTime(messages: Message[]): number {
   let total = 0;
   for (let i = 0; i < messages.length; i++) {
     const userMessage = messages[i];

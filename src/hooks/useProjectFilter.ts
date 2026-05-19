@@ -17,10 +17,10 @@ export default function useProjectFilter() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const hasRestoredRef = useRef<any>(false);
+  const hasRestoredRef = useRef<boolean>(false);
 
   const urlProject = searchParams.get("project") || null;
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<string[]>([]);
 
   // On mount, restore from localStorage if no URL param is present
   useEffect(() => {
@@ -43,20 +43,20 @@ export default function useProjectFilter() {
 
   useEffect(() => {
     IrisService.getConversationFilters()
-      .then((data: any) => setProjects(data.projects || []))
+      .then((data) => setProjects((data as Record<string, unknown>).projects as string[] || []))
       .catch(() => {});
   }, []);
 
   const projectOptions = useMemo(
     () => [
       { value: "", label: "All Projects" },
-      ...projects.map((p: any) => ({ value: p, label: p })),
+      ...projects.map((p) => ({ value: p, label: p })),
     ],
     [projects],
   );
 
   const handleProjectChange = useCallback(
-    (value: any) => {
+    (value: string) => {
       // Persist to localStorage
       try {
         if (value) {

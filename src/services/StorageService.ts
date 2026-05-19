@@ -6,11 +6,11 @@
  */
 const NAMESPACE = "prism";
 
-function makeKey(key: any) {
+function makeKey(key: string): string {
   return `${NAMESPACE}:${key}`;
 }
 
-function isAvailable() {
+function isAvailable(): boolean {
   try {
     const test = "__storage_test__";
     localStorage.setItem(test, test);
@@ -25,12 +25,12 @@ const StorageService = {
   /**
    * Get a value from localStorage (returns parsed JSON or the fallback).
    */
-  get(key: any, fallback = null) {
+  get<T = unknown>(key: string, fallback: T | null = null): T | null {
     if (!isAvailable()) return fallback;
     try {
       const raw = localStorage.getItem(makeKey(key));
       if (raw === null) return fallback;
-      return JSON.parse(raw);
+      return JSON.parse(raw) as T;
     } catch {
       return fallback;
     }
@@ -39,7 +39,7 @@ const StorageService = {
   /**
    * Set a value in localStorage (JSON-serialized).
    */
-  set(key: any, value: any) {
+  set(key: string, value: unknown): void {
     if (!isAvailable()) return;
     try {
       localStorage.setItem(makeKey(key), JSON.stringify(value));
@@ -51,7 +51,7 @@ const StorageService = {
   /**
    * Remove a key from localStorage.
    */
-  remove(key: any) {
+  remove(key: string): void {
     if (!isAvailable()) return;
     localStorage.removeItem(makeKey(key));
   },
@@ -59,15 +59,15 @@ const StorageService = {
   /**
    * Clear all namespaced keys.
    */
-  clear() {
+  clear(): void {
     if (!isAvailable()) return;
     const prefix = `${NAMESPACE}:`;
-    const keysToRemove = [];
+    const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k?.startsWith(prefix)) keysToRemove.push(k);
     }
-    keysToRemove.forEach((k: any) => localStorage.removeItem(k));
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
   },
 };
 

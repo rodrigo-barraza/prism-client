@@ -10,27 +10,42 @@
  * GainNode → ChannelMerger topology.
  */
 
+// ─── Types ──────────────────────────────────────────────────
+
+interface StereoOptions {
+  event?: Event;
+  left?: number;
+  right?: number;
+}
+
+interface SpatialResult {
+  left: number;
+  right: number;
+}
+
+// ─── State ──────────────────────────────────────────────────
+
 let context: AudioContext | null = null;
 
-/** @type {AudioBuffer|null} Cached hover noise buffer */
+/** Cached hover noise buffer */
 let hoverBuffer: AudioBuffer | null = null;
 
-/** @type {AudioBuffer|null} Cached click buffer */
+/** Cached click buffer */
 let clickBuffer: AudioBuffer | null = null;
 
-/** @type {AudioBuffer|null} Cached button hover buffer */
+/** Cached button hover buffer */
 let buttonHoverBuffer: AudioBuffer | null = null;
 
-/** @type {AudioBuffer|null} Cached button click buffer */
+/** Cached button click buffer */
 let buttonClickBuffer: AudioBuffer | null = null;
 
 /**
  * Lazily initialise the shared AudioContext.
  * Must be called from a user-gesture context on first invocation.
  */
-function ensureContext() {
+function ensureContext(): AudioContext {
   if (!context) {
-    context = new (window.AudioContext || window.webkitAudioContext)();
+    context = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
   }
   if (context.state === "suspended") {
     context.resume();
@@ -48,7 +63,7 @@ function ensureContext() {
  * Duration ~12 ms — imperceptibly brief, but enough for a
  * satisfying tactile "tick".
  */
-function getHoverBuffer() {
+function getHoverBuffer(): AudioBuffer {
   if (hoverBuffer) return hoverBuffer;
 
   const audio = ensureContext();
@@ -78,7 +93,7 @@ function getHoverBuffer() {
  * that feels tactile and premium. Slightly louder than the hover tick.
  * Duration ~25 ms.
  */
-function getClickBuffer() {
+function getClickBuffer(): AudioBuffer {
   if (clickBuffer) return clickBuffer;
 
   const audio = ensureContext();
@@ -125,7 +140,7 @@ function getClickBuffer() {
  * more tonal than the general-purpose noise tick.
  * Duration ~15 ms.
  */
-function getButtonHoverBuffer() {
+function getButtonHoverBuffer(): AudioBuffer {
   if (buttonHoverBuffer) return buttonHoverBuffer;
 
   const audio = ensureContext();
@@ -155,7 +170,7 @@ function getButtonHoverBuffer() {
  * rich "snap" that feels intentional and premium.
  * Duration ~30 ms.
  */
-function getButtonClickBuffer() {
+function getButtonClickBuffer(): AudioBuffer {
   if (buttonClickBuffer) return buttonClickBuffer;
 
   const audio = ensureContext();
@@ -211,12 +226,8 @@ function getButtonClickBuffer() {
  * Because the buffers are mono, the splitter outputs the same
  * signal on both channels. Each GainNode then scales independently
  * according to the caller's 0–100 value.
- *
-
- * @param {number} left  — 0-100 left speaker volume
- * @param {number} right — 0-100 right speaker volume
  */
-function connectStereo(source: any, left: any, right: any) {
+function connectStereo(source: AudioBufferSourceNode, left: number, right: number): void {
   const audio = ensureContext();
 
   // Up-mix mono to stereo so the splitter has two channels
@@ -252,15 +263,13 @@ function connectStereo(source: any, left: any, right: any) {
  * Element at left edge  → { left: 100, right: 0 }
  * Element at center     → { left: 50,  right: 50 }
  * Element at right edge → { left: 0,   right: 100 }
- *
- * @param {Event} event — any DOM event whose currentTarget has getBoundingClientRect
- * @returns {{ left: number, right: number }}
  */
-function spatialFromEvent(event: any) {
-  const element = event?.currentTarget;
-  if (!element?.getBoundingClientRect) return { left: 50, right: 50 };
+function spatialFromEvent(event: Event | undefined): SpatialResult {
+  const element = (event as UIEvent | undefined)?.target as HTMLElement | null;
+  const el = element ?? ((event as UIEvent | undefined)?.currentTarget as HTMLElement | null);
+  if (!el?.getBoundingClientRect) return { left: 50, right: 50 };
 
-  const rect = element.getBoundingClientRect();
+  const rect = el.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
   const ratio = Math.max(0, Math.min(1, centerX / window.innerWidth));
 
@@ -278,13 +287,8 @@ const SoundService = {
    *
    * By default, stereo is calculated from the event target's
    * position in the viewport. Pass explicit left/right to override.
-   *
-
-   * @param {Event}   [options.event] — DOM event for spatial stereo
-   * @param {number}  [options.left]  — Left speaker volume 0-100 (override)
-   * @param {number}  [options.right] — Right speaker volume 0-100 (override)
    */
-  playHover({ event, left, right }: any = {}) {
+  playHover({ event, left, right }: StereoOptions = {}): void {
     const audio = ensureContext();
     const buffer = getHoverBuffer();
     const spatial = spatialFromEvent(event);
@@ -303,13 +307,8 @@ const SoundService = {
    *
    * By default, stereo is calculated from the event target's
    * position in the viewport. Pass explicit left/right to override.
-   *
-
-   * @param {Event}   [options.event] — DOM event for spatial stereo
-   * @param {number}  [options.left]  — Left speaker volume 0-100 (override)
-   * @param {number}  [options.right] — Right speaker volume 0-100 (override)
    */
-  playClick({ event, left, right }: any = {}) {
+  playClick({ event, left, right }: StereoOptions = {}): void {
     const audio = ensureContext();
     const buffer = getClickBuffer();
     const spatial = spatialFromEvent(event);
@@ -323,13 +322,8 @@ const SoundService = {
 
   /**
    * Play the button hover sound — soft sine ping.
-   *
-
-   * @param {Event}   [options.event] — DOM event for spatial stereo
-   * @param {number}  [options.left]  — Left speaker volume 0-100 (override)
-   * @param {number}  [options.right] — Right speaker volume 0-100 (override)
    */
-  playHoverButton({ event, left, right }: any = {}) {
+  playHoverButton({ event, left, right }: StereoOptions = {}): void {
     const audio = ensureContext();
     const buffer = getButtonHoverBuffer();
     const spatial = spatialFromEvent(event);
@@ -344,13 +338,8 @@ const SoundService = {
 
   /**
    * Play the button click sound — two-tone chord snap.
-   *
-
-   * @param {Event}   [options.event] — DOM event for spatial stereo
-   * @param {number}  [options.left]  — Left speaker volume 0-100 (override)
-   * @param {number}  [options.right] — Right speaker volume 0-100 (override)
    */
-  playClickButton({ event, left, right }: any = {}) {
+  playClickButton({ event, left, right }: StereoOptions = {}): void {
     const audio = ensureContext();
     const buffer = getButtonClickBuffer();
     const spatial = spatialFromEvent(event);
@@ -369,19 +358,18 @@ const SoundService = {
    *
    * Usage:
    *   <div {...SoundService.interactive(() => navigate(id))}>
-   *
-   * @param {Function} [onClick]      — callback invoked after click sound
-   * @param {Function} [onMouseEnter] — callback invoked after hover sound
-   * @returns {{ onClick: Function, onMouseEnter: Function }}
    */
-  interactive(onClick?: any, onMouseEnter?: any) {
+  interactive(
+    onClick?: (e: React.MouseEvent) => void,
+    onMouseEnter?: (e: React.MouseEvent) => void,
+  ): { onClick: (e: React.MouseEvent) => void; onMouseEnter: (e: React.MouseEvent) => void } {
     return {
-      onMouseEnter: (e: any) => {
-        this.playHover({ event: e });
+      onMouseEnter: (e: React.MouseEvent) => {
+        SoundService.playHover({ event: e.nativeEvent });
         onMouseEnter?.(e);
       },
-      onClick: (e: any) => {
-        this.playClick({ event: e });
+      onClick: (e: React.MouseEvent) => {
+        SoundService.playClick({ event: e.nativeEvent });
         onClick?.(e);
       },
     };
@@ -390,7 +378,7 @@ const SoundService = {
   /**
    * Tear down the AudioContext (e.g. on unmount / navigation).
    */
-  dispose() {
+  dispose(): void {
     if (context) {
       context.close().catch(() => {});
       context = null;

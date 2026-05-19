@@ -6,8 +6,8 @@
 
 import { PROJECT_NAME } from "@/config";
 
-export function getBaseHeaders() {
-  const headers = {
+export function getBaseHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "x-project": PROJECT_NAME,
   };
@@ -16,7 +16,7 @@ export function getBaseHeaders() {
   if (typeof window !== "undefined") {
     const workspaceRoot = localStorage.getItem("prism:workspace");
     if (workspaceRoot) {
-      (headers as any)["x-workspace-root"] = workspaceRoot;
+      headers["x-workspace-root"] = workspaceRoot;
     }
   }
 

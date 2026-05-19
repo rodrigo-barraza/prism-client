@@ -20,30 +20,101 @@
 
 import * as THREE from "three";
 
+// ─── Types ──────────────────────────────────────────────────
+
+// Three.js v0.184+ ships its own types. Extract class instance types from the namespace.
+type Scene = InstanceType<typeof THREE.Scene>;
+type PerspectiveCamera = InstanceType<typeof THREE.PerspectiveCamera>;
+type WebGLRenderer = InstanceType<typeof THREE.WebGLRenderer>;
+type Timer = InstanceType<typeof THREE.Timer>;
+type AmbientLight = InstanceType<typeof THREE.AmbientLight>;
+type DirectionalLight = InstanceType<typeof THREE.DirectionalLight>;
+type PointLight = InstanceType<typeof THREE.PointLight>;
+type Object3D = InstanceType<typeof THREE.Object3D>;
+type Mesh = InstanceType<typeof THREE.Mesh>;
+type BufferGeometry = InstanceType<typeof THREE.BufferGeometry>;
+type Material = InstanceType<typeof THREE.Material>;
+type Texture = InstanceType<typeof THREE.Texture>;
+
+export interface ThreeCreateOptions {
+  cameraFov?: number;
+  cameraNear?: number;
+  cameraFar?: number;
+  cameraPosition?: [number, number, number];
+  antialias?: boolean;
+  alpha?: boolean;
+  toneMapping?: keyof typeof TONE_MAPPING_MAP;
+  toneMappingExposure?: number;
+  shadowMap?: boolean;
+}
+
+export interface TickState {
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer;
+  timer: Timer;
+  dt: number;
+  elapsed: number;
+  width: number;
+  height: number;
+}
+
+export type TickCallback = (state: TickState) => void;
+
+export interface LightingRigOptions {
+  ambientIntensity?: number;
+  keyIntensity?: number;
+  fillIntensity?: number;
+  rimIntensity?: number;
+  ambientColor?: string;
+  keyColor?: string;
+  fillColor?: string;
+  rimColor?: string;
+}
+
+export interface LightingRig {
+  ambient: AmbientLight;
+  key: DirectionalLight;
+  fill: DirectionalLight;
+  rim: PointLight;
+}
+
+interface ThreeInstance {
+  id: string;
+  canvas: HTMLCanvasElement;
+  renderer: WebGLRenderer;
+  scene: Scene;
+  camera: PerspectiveCamera;
+  timer: Timer;
+  tick: TickCallback | null;
+  resizeObserver: ResizeObserver | null;
+  width: number;
+  height: number;
+  paused: boolean;
+}
+
+// ─── Constants ──────────────────────────────────────────────
+
+const TONE_MAPPING_MAP = {
+  None: THREE.NoToneMapping,
+  Linear: THREE.LinearToneMapping,
+  Reinhard: THREE.ReinhardToneMapping,
+  Cineon: THREE.CineonToneMapping,
+  ACESFilmic: THREE.ACESFilmicToneMapping,
+  AgX: THREE.AgXToneMapping,
+  Neutral: THREE.NeutralToneMapping,
+} as const;
+
 // --- Instance Registry ---------------------------------------------
 
-const instances = new Map();
+const instances = new Map<string, ThreeInstance>();
 
 let nextId = 0;
 let rafId: number | null = null;
 
-/**
- * @typedef {object} ThreeInstance
- * @property {string}                   id
- * @property {HTMLCanvasElement}        canvas
- * @property {THREE.WebGLRenderer}      renderer
- * @property {THREE.Scene}              scene
- * @property {THREE.PerspectiveCamera}  camera
- * @property {Function|null}            tick      — per-frame callback (state) => void
- * @property {ResizeObserver|null}      resizeObserver
- * @property {number}                   width     — CSS width
- * @property {number}                   height    — CSS height
- * @property {boolean}                  paused
- */
-
 // --- RAF Loop ------------------------------------------------------
 
-function loop(timestamp: any) {
+function loop(timestamp: number): void {
   for (const inst of instances.values()) {
     if (inst.paused) continue;
 
@@ -68,13 +139,13 @@ function loop(timestamp: any) {
   rafId = requestAnimationFrame(loop);
 }
 
-function ensureLoop() {
+function ensureLoop(): void {
   if (rafId === null && instances.size > 0) {
     rafId = requestAnimationFrame(loop);
   }
 }
 
-function stopLoopIfEmpty() {
+function stopLoopIfEmpty(): void {
   if (instances.size === 0 && rafId !== null) {
     cancelAnimationFrame(rafId);
     rafId = null;
@@ -83,7 +154,7 @@ function stopLoopIfEmpty() {
 
 // --- Resize Handling -----------------------------------------------
 
-function handleResize(inst: any) {
+function handleResize(inst: ThreeInstance): void {
   const canvas = inst.canvas;
   const parent = canvas.parentElement;
   if (!parent) return;
@@ -114,7 +185,7 @@ function handleResize(inst: any) {
  * Recursively dispose geometries, materials, and textures in a scene
  * graph. This is critical to avoid GPU memory leaks.
  */
-function disposeSceneGraph(object: any) {
+function disposeSceneGraph(object: Object3D): void {
   if (!object) return;
 
   // Traverse children first
@@ -124,24 +195,26 @@ function disposeSceneGraph(object: any) {
     }
   }
 
-  if (object.geometry) {
-    object.geometry.dispose();
+  const mesh = object as Mesh;
+
+  if (mesh.geometry) {
+    mesh.geometry.dispose();
   }
 
-  if (object.material) {
-    const materials = Array.isArray(object.material)
-      ? object.material
-      : [object.material];
+  if (mesh.material) {
+    const materials = Array.isArray(mesh.material)
+      ? mesh.material
+      : [mesh.material];
 
     for (const mat of materials) {
       // Dispose all texture properties
       for (const key of Object.keys(mat)) {
-        const value = mat[key];
+        const value = (mat as Record<string, unknown>)[key];
         if (value && value instanceof THREE.Texture) {
-          value.dispose();
+          (value as Texture).dispose();
         }
       }
-      mat.dispose();
+      (mat as Material).dispose();
     }
   }
 }
@@ -158,20 +231,9 @@ const ThreeService = {
   /**
    * Create a new Three.js instance bound to the given canvas element.
    *
-
-
-   * @param {number}  [options.cameraFov=60]       — Perspective camera FOV
-   * @param {number}  [options.cameraNear=0.1]     — Near clipping plane
-   * @param {number}  [options.cameraFar=1000]     — Far clipping plane
-   * @param {Array}   [options.cameraPosition=[0,0,5]] — Initial camera position
-   * @param {boolean} [options.antialias=true]      — WebGL antialiasing
-   * @param {boolean} [options.alpha=true]          — Transparent background
-   * @param {string}  [options.toneMapping="ACESFilmic"] — Tone mapping preset
-
-   * @param {boolean} [options.shadowMap=false]     — Enable shadow maps
-   * @returns {string} Instance ID
+   * @returns Instance ID
    */
-  create(canvas: any, options: any = {}) {
+  create(canvas: HTMLCanvasElement, options: ThreeCreateOptions = {}): string {
     const {
       cameraFov = 60,
       cameraNear = 0.1,
@@ -194,18 +256,8 @@ const ThreeService = {
       powerPreference: "high-performance",
     });
 
-    const toneMappingMap = {
-      None: THREE.NoToneMapping,
-      Linear: THREE.LinearToneMapping,
-      Reinhard: THREE.ReinhardToneMapping,
-      Cineon: THREE.CineonToneMapping,
-      ACESFilmic: THREE.ACESFilmicToneMapping,
-      AgX: THREE.AgXToneMapping,
-      Neutral: THREE.NeutralToneMapping,
-    };
-
     renderer.toneMapping =
-      (toneMappingMap as any)[toneMapping] ?? THREE.ACESFilmicToneMapping;
+      TONE_MAPPING_MAP[toneMapping] ?? THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = toneMappingExposure;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -231,7 +283,7 @@ const ThreeService = {
     if (typeof document !== "undefined") timer.connect(document);
 
     // -- Instance --
-    const inst = {
+    const inst: ThreeInstance = {
       id,
       canvas,
       renderer,
@@ -239,7 +291,7 @@ const ThreeService = {
       camera,
       timer,
       tick: null,
-      resizeObserver: null as ResizeObserver | null,
+      resizeObserver: null,
       width: 0,
       height: 0,
       paused: false,
@@ -264,30 +316,25 @@ const ThreeService = {
   /**
    * Register a per-frame tick callback for an instance.
    *
-
-   * @param {Function} fn — (state: TickState) => void
-   *
    * TickState: { scene, camera, renderer, timer, dt, elapsed, width, height }
    */
-  setTick(id: any, fn: any) {
+  setTick(id: string, fn: TickCallback): void {
     const inst = instances.get(id);
     if (inst) inst.tick = fn;
   },
 
   /**
    * Pause rendering for an instance (e.g. when off-screen).
-
    */
-  pause(id: any) {
+  pause(id: string): void {
     const inst = instances.get(id);
     if (inst) inst.paused = true;
   },
 
   /**
    * Resume rendering for a paused instance.
-
    */
-  resume(id: any) {
+  resume(id: string): void {
     const inst = instances.get(id);
     if (inst) inst.paused = false;
   },
@@ -295,11 +342,8 @@ const ThreeService = {
   /**
    * Get the scene, camera, and renderer for an instance.
    * Useful for imperative setup (adding meshes, lights, etc.).
-   *
-
-   * @returns {{ scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer } | null}
    */
-  getInstance(id: any) {
+  getInstance(id: string): Pick<ThreeInstance, "scene" | "camera" | "renderer" | "timer"> | null {
     const inst = instances.get(id);
     if (!inst) return null;
     return {
@@ -314,12 +358,8 @@ const ThreeService = {
 
   /**
    * Create a standard three-point lighting rig and add it to a scene.
-   *
-
-
-   * @returns {{ ambient: THREE.AmbientLight, key: THREE.DirectionalLight, fill: THREE.DirectionalLight, rim: THREE.PointLight }}
    */
-  addLightingRig(scene: any, options: any = {}) {
+  addLightingRig(scene: Scene, options: LightingRigOptions = {}): LightingRig {
     const {
       ambientIntensity = 0.4,
       keyIntensity = 1.0,
@@ -351,13 +391,12 @@ const ThreeService = {
 
   /**
    * Create a mesh with geometry and material, optionally adding it to a scene.
-   *
-
-
-   * @param {THREE.Scene}         [scene] — if provided, the mesh is added to the scene
-
    */
-  createMesh(geometry: any, material: any, scene: any) {
+  createMesh(
+    geometry: BufferGeometry,
+    material: Material | Material[],
+    scene?: Scene,
+  ): Mesh {
     const mesh = new THREE.Mesh(geometry, material);
     if (scene) scene.add(mesh);
     return mesh;
@@ -365,23 +404,15 @@ const ThreeService = {
 
   /**
    * Create a fog configuration on a scene.
-   *
-
-   * @param {string}      color — Hex color
-
-
    */
-  addFog(scene: any, color: any, near = 5, far = 30) {
+  addFog(scene: Scene, color: string, near = 5, far = 30): void {
     scene.fog = new THREE.Fog(color, near, far);
   },
 
   /**
    * Set the scene background color.
-   *
-
-   * @param {string|null}      color — Hex color string or null for transparent
    */
-  setBackground(scene: any, color: any) {
+  setBackground(scene: Scene, color: string | null): void {
     scene.background = color ? new THREE.Color(color) : null;
   },
 
@@ -390,11 +421,8 @@ const ThreeService = {
   /**
    * Placeholder for future EffectComposer integration.
    * Returns null until post-processing passes are needed.
-   *
-
-
    */
-  getComposer(_id: any) {
+  getComposer(_id: string): null {
     return null;
   },
 
@@ -403,10 +431,8 @@ const ThreeService = {
   /**
    * Destroy a Three.js instance — disposes all GPU resources,
    * removes from the loop, and disconnects the ResizeObserver.
-   *
-
    */
-  destroy(id: any) {
+  destroy(id: string): void {
     const inst = instances.get(id);
     if (!inst) return;
 
@@ -427,17 +453,16 @@ const ThreeService = {
   /**
    * Destroy all instances. Nuclear option for route transitions.
    */
-  destroyAll() {
+  destroyAll(): void {
     for (const id of [...instances.keys()]) {
-      this.destroy(id);
+      ThreeService.destroy(id);
     }
   },
 
   /**
    * Get the count of active instances (for debugging).
-
    */
-  get activeCount() {
+  get activeCount(): number {
     return instances.size;
   },
 };
