@@ -294,9 +294,10 @@ export default class PrismService {
 
    * @returns {Promise<{ items: Array, nextCursor: string|null, hasMore: boolean }>}
    */
-  static async getAgentSessions(project: string, { limit, cursor }: { limit?: number; cursor?: string } = {}): Promise<AgentSessionListResponse> {
+  static async getAgentSessions(project: string, { limit, cursor, agent }: { limit?: number; cursor?: string; agent?: string } = {}): Promise<AgentSessionListResponse> {
     const qs = new URLSearchParams();
     qs.set("project", project);
+    if (agent) qs.set("agent", agent);
     if (limit) qs.set("limit", String(limit));
     if (cursor) qs.set("cursor", cursor);
     return PrismService._request<AgentSessionListResponse>(`/agent-sessions?${qs}`, { method: "GET" });

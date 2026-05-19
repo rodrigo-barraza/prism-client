@@ -757,7 +757,7 @@ export default function AgentComponent({
       setSessionsLoading(true);
       const result = isNoAgent
         ? await PrismService.getConversations()
-        : await PrismService.getAgentSessions(agentProject);
+        : await PrismService.getAgentSessions(agentProject, { agent: agentId });
       setSessions(result.items);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
@@ -766,13 +766,13 @@ export default function AgentComponent({
     } finally {
       setSessionsLoading(false);
     }
-  }, [agentProject, isNoAgent]);
+  }, [agentProject, agentId, isNoAgent]);
 
   const loadMoreSessions = useCallback(async () => {
     if (!sessionsCursorRef.current || sessionsLoading) return;
     try {
       setSessionsLoading(true);
-      const opts = { cursor: sessionsCursorRef.current };
+      const opts = { cursor: sessionsCursorRef.current, agent: agentId };
       const result = isNoAgent
         ? await PrismService.getConversations(opts)
         : await PrismService.getAgentSessions(agentProject, opts);
