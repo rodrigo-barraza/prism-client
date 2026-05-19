@@ -850,6 +850,14 @@ export interface ToolUsageStat {
 
 // ─── Chat Payloads ──────────────────────────────────────────
 
+export interface ChatGenerationResult {
+  text?: string;
+  content?: string;
+  images?: string[];
+  messages?: Message[];
+  [key: string]: unknown;
+}
+
 export interface ChatPayload {
   messages: Message[];
   model: string;
@@ -871,6 +879,15 @@ export interface ChatPayload {
   thinkingLevel?: string;
   thinkingBudget?: string | number;
   webSearchEnabled?: boolean;
+  [key: string]: unknown;
+}
+
+export interface ImageGenerationResult {
+  images?: string[];
+  imageData?: string;
+  mimeType?: string;
+  minioRef?: string;
+  text?: string;
   [key: string]: unknown;
 }
 
@@ -917,7 +934,10 @@ export interface TranscriptionResponse {
 // ─── Embeddings ─────────────────────────────────────────────
 
 export interface EmbeddingPayload {
-  input: string | string[];
+  input?: string | string[];
+  text?: string;
+  images?: string[];
+  audio?: string;
   model?: string;
   provider?: string;
   [key: string]: unknown;

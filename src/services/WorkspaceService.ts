@@ -39,9 +39,18 @@ export interface WorkspaceValidateResponse {
   [key: string]: unknown;
 }
 
+export interface WorkspaceTreeNode {
+  name: string;
+  type: "file" | "directory";
+  children?: WorkspaceTreeNode[];
+  [key: string]: unknown;
+}
+
 export interface WorkspaceTreeResponse {
   path: string;
-  tree: Record<string, unknown>;
+  tree: WorkspaceTreeNode[];
+  totalEntries?: number;
+  truncated?: boolean;
   [key: string]: unknown;
 }
 

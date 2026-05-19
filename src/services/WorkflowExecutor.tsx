@@ -237,9 +237,9 @@ async function executeModelNode(
         const returned = currentResult.messages[i];
         if (!returned) continue;
         for (const field of ["images", "audio", "video", "pdf"]) {
-          const sentArr = sent[field];
-          const retArr = returned[field];
-          if (!sentArr || !retArr) continue;
+          const sentArr = sent[field as keyof typeof sent] as string[];
+          const retArr = returned[field as keyof typeof returned] as string[];
+          if (!Array.isArray(sentArr) || !Array.isArray(retArr)) continue;
           for (let j = 0; j < sentArr.length; j++) {
             if (
               sentArr[j]?.startsWith("data:") &&
@@ -399,7 +399,7 @@ async function executeModelNode(
       .map((d: any) => d.data);
     const audioPart = inputData.find((d: any) => d.type === "audio")?.data;
 
-    const payload = {
+    const payload: any = {
       provider: node.provider,
       model: node.modelName,
     };
@@ -411,9 +411,9 @@ async function executeModelNode(
         ? `${node.userPrompt}\n\n${pipedText}`
         : node.userPrompt
       : pipedText;
-    if (combinedText) (payload as any).text = combinedText;
-    if (imageParts.length > 0) (payload as any).images = imageParts;
-    if (audioPart) (payload as any).audio = audioPart;
+    if (combinedText) payload.text = combinedText;
+    if (imageParts.length > 0) payload.images = imageParts;
+    if (audioPart) payload.audio = audioPart;
 
     const result = await PrismService.generateEmbedding(payload);
     (outputs as any).embedding = result.embedding;

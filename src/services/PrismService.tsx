@@ -38,7 +38,9 @@ import type {
   ModelUsageStat,
   ToolUsageStat,
   ChatPayload,
+  ChatGenerationResult,
   ImageGenerationPayload,
+  ImageGenerationResult,
   TTSPayload,
   TTSResponse,
   TranscriptionPayload,
@@ -716,8 +718,8 @@ export default class PrismService {
 
 
    */
-  static async generateText(payload: ChatPayload): Promise<Record<string, unknown>> {
-    return PrismService._request<Record<string, unknown>>("/chat?stream=false", { body: payload });
+  static async generateText(payload: ChatPayload): Promise<ChatGenerationResult> {
+    return PrismService._request<ChatGenerationResult>("/chat?stream=false", { body: payload });
   }
 
   /**
@@ -727,8 +729,8 @@ export default class PrismService {
 
 
    */
-  static async generateAgentText(payload: ChatPayload): Promise<Record<string, unknown>> {
-    return PrismService._request<Record<string, unknown>>("/agent?stream=false", {
+  static async generateAgentText(payload: ChatPayload): Promise<ChatGenerationResult> {
+    return PrismService._request<ChatGenerationResult>("/agent?stream=false", {
       body: { ...payload, agent: payload.agent || "CODING" },
     });
   }
@@ -1014,7 +1016,7 @@ export default class PrismService {
 
    * @returns {Promise<{ images: string[], text?: string }>}
    */
-  static async generateImage(payload: ImageGenerationPayload): Promise<Record<string, unknown>> {
+  static async generateImage(payload: ImageGenerationPayload): Promise<ImageGenerationResult> {
     const {
       prompt,
       images,

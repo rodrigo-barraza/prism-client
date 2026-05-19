@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import FileTypeIconComponent from "./FileTypeIconComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
-import WorkspaceService from "../services/WorkspaceService";
+import WorkspaceService, { WorkspaceTreeResponse } from "../services/WorkspaceService";
 import styles from "./WorkspaceTreePanelComponent.module.css";
 
 // ─── Recursive Directory Tree Node ──────────────────────────
@@ -120,7 +120,7 @@ export default function WorkspaceTreePanelComponent({
   unavailableWorkspace = null,
 }: any) {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
-  const [treeData, setTreeData] = useState(null);
+  const [treeData, setTreeData] = useState<WorkspaceTreeResponse | null>(null);
   const [treeLoading, setTreeLoading] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const switcherRef = useRef<any>(null);
@@ -291,10 +291,10 @@ export default function WorkspaceTreePanelComponent({
               className={`${styles.headerChevron} ${switcherOpen ? styles.headerChevronOpen : ""}`}
             />
           )}
-          {(treeData as any)?.totalEntries > 0 && (
+          {treeData?.totalEntries !== undefined && treeData.totalEntries > 0 && (
             <span className={styles.headerCount}>
-              {(treeData as any).totalEntries}
-              {(treeData as any).truncated ? "+" : ""}
+              {treeData.totalEntries}
+              {treeData.truncated ? "+" : ""}
             </span>
           )}
         </div>
@@ -330,10 +330,10 @@ export default function WorkspaceTreePanelComponent({
       <div className={styles.treeScroll}>
         {treeLoading && <div className={styles.treeLoading}>Loading…</div>}
         {!treeLoading &&
-          (treeData as any)?.tree &&
-          (treeData as any).tree.length > 0 && (
+          treeData?.tree &&
+          treeData.tree.length > 0 && (
             <div className={styles.treeRoot}>
-              {(treeData as any).tree.map((node: any) => (
+              {treeData.tree.map((node: any) => (
                 <TreeNode
                   key={node.name}
                   node={node}
@@ -348,7 +348,7 @@ export default function WorkspaceTreePanelComponent({
           )}
         {!treeLoading &&
           treeData &&
-          (!(treeData as any).tree || (treeData as any).tree.length === 0) && (
+          (!treeData.tree || treeData.tree.length === 0) && (
             <div className={styles.treeLoading}>Empty directory</div>
           )}
         {!treeLoading && !treeData && (
