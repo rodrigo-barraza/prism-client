@@ -6,9 +6,10 @@ import ThreeCanvasComponent from "./ThreeCanvasComponent";
 import styles from "./AgentBadgeComponent.module.css";
 
 // -- Agent gradient lookup ------------------------------------------
-const AGENT_GRADIENTS = {
+const AGENT_GRADIENTS: Record<string, string[]> = {
   NONE: ["#64748b", "#94a3b8"],
   CODING: ["#6366f1", "#818cf8"],
+  OMNI: ["#b91c1c", "#dc2626"],
   LUPOS: ["#ef4444", "#f97316"],
   STICKERS: ["#10b981", "#34d399"],
   DIGEST: ["#f59e0b", "#ef4444"],
@@ -111,23 +112,40 @@ function CoinStatic({ agent, size }: any) {
     [gradient],
   );
 
-  // -- Capture SVG icon from the hidden rendered element --
+  // -- Capture icon from the hidden rendered element (SVG or IMG) --
   useEffect(() => {
     if (!iconRef.current) return;
 
     const raf = requestAnimationFrame(() => {
+      if (!canvasRef.current) return;
+      const iconSz = TEX_SIZE * 0.55;
+      const off = (TEX_SIZE - iconSz) / 2;
+      const context = (canvasRef.current as any).getContext("2d");
+
+      // Try <img> first (image-based agent logos like OMNI)
+      const img = (iconRef.current as any)?.querySelector("img");
+      if (img) {
+        const drawImg = () => {
+          context.drawImage(img, off, off, iconSz, iconSz);
+          if (texRef.current) (texRef.current as any).needsUpdate = true;
+        };
+        if (img.complete && img.naturalWidth > 0) {
+          drawImg();
+        } else {
+          img.onload = drawImg;
+        }
+        return;
+      }
+
+      // Fall back to SVG icons (Lucide components)
       const svg = (iconRef.current as any)?.querySelector("svg");
-      if (!svg || !canvasRef.current) return;
+      if (!svg) return;
 
       svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       const markup = svg.outerHTML.replace(/currentColor/g, "#ffffff");
 
       loadSvgImage(markup).then((image: any) => {
         if (!image || !canvasRef.current) return;
-        const iconSz = TEX_SIZE * 0.55;
-        const off = (TEX_SIZE - iconSz) / 2;
-
-        const context = (canvasRef.current as any).getContext("2d");
         context.drawImage(image, off, off, iconSz, iconSz);
         if (texRef.current) (texRef.current as any).needsUpdate = true;
       });

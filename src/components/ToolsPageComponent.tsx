@@ -60,6 +60,7 @@ import {
 // -- Agent color mapping (stable hues per built-in agent) -------
 const AGENT_COLORS = {
   CODING: "#3b82f6",
+  OMNI: "#dc2626",
   OOG: "#a78bfa",
   LUPOS: "#ef4444",
   STICKERS: "#f59e0b",
@@ -74,11 +75,15 @@ function getAgentColor(agentId: any) {
 /**
  * Build a reverse map: toolName → [{ id, name }] from agents list.
  * Each agent has enabledToolNames (resolved array of tool name strings).
+ * Agents with enabledToolNames: ["*"] are omitted from the per-tool map
+ * since they apply to ALL tools (avoids noise in every tool card).
  */
 function buildToolAgentMap(agents: any) {
   const map = {};
   for (const agent of agents) {
     if (!agent.enabledToolNames) continue;
+    // Skip wildcard agents — they apply to all tools
+    if (agent.enabledToolNames.includes("*")) continue;
     for (const toolName of agent.enabledToolNames) {
       if (!(map as any)[toolName]) (map as any)[toolName] = [];
       (map as any)[toolName].push({ id: agent.id, name: agent.name });
@@ -674,12 +679,15 @@ export default function ToolsPageComponent() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     // Pre-compute agent filter set if active
-    const agentToolSet = agentFilter
-      ? new Set(
-          (agents.find((a: any) => a.id === agentFilter) as any)
-            ?.enabledToolNames || [],
-        )
+    // Wildcard ("*") means all tools — treat as no filter
+    const agentData = agentFilter
+      ? agents.find((a: any) => a.id === agentFilter)
       : null;
+    const isWildcard = agentData?.enabledToolNames?.includes("*");
+    const agentToolSet =
+      agentData && !isWildcard
+        ? new Set(agentData.enabledToolNames || [])
+        : null;
     return tools.filter((t: any) => {
       if (domainFilter && t.domain !== domainFilter) return false;
       if (labelFilter && !t.labels?.includes(labelFilter)) return false;

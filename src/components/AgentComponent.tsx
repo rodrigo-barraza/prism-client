@@ -104,6 +104,12 @@ const AGENT_EMPTY_STATE = {
       "Read, edit, search, and browse your codebase with AI-powered tools.",
     placeholder: "Ask me to read, edit, search, or explore your codebase...",
   },
+  OMNI: {
+    title: "Omni Agent",
+    subtitle:
+      "Universal agent with access to every tool — coding, web, health, finance, smart home, and more.",
+    placeholder: "Ask me anything — I have access to all tools...",
+  },
   LUPOS: {
     title: "Lupos",
     subtitle:

@@ -13,19 +13,26 @@ import {
   Lightbulb,
   Hammer,
   MessageSquare,
+  Infinity,
 } from "lucide-react";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import styles from "./AgentPickerComponent.module.css";
 
+/** Image-based agent icons (rendered as <img> instead of SVG). */
+const AGENT_IMAGES: Record<string, string> = {
+  OMNI: "/omni-agent-logo.png",
+};
+
 /**
  * Icon mapping per agent ID — built-in agents only.
  * Custom agents use the `icon` field stored in their data.
  */
-const AGENT_ICONS = {
+const AGENT_ICONS: Record<string, any> = {
   NONE: MessageSquare,
   CODING: Bot,
+  OMNI: Infinity,
   LUPOS: Skull,
   STICKERS: Sticker,
   DIGEST: Apple,
@@ -33,15 +40,28 @@ const AGENT_ICONS = {
   OOG: Hammer,
 };
 
-/** Render the correct icon for an agent — custom icon field takes priority. */
+/** Render the correct icon for an agent — image logo > custom icon field > built-in map. */
 export function renderAgentIcon(agent: any, size = 15) {
+  // Image-based agent logos (e.g. OMNI)
+  const imageSrc = AGENT_IMAGES[agent?.id];
+  if (imageSrc) {
+    return (
+      <img
+        src={imageSrc}
+        alt={agent?.name || agent?.id}
+        width={size}
+        height={size}
+        style={{ objectFit: "contain", borderRadius: 2 }}
+      />
+    );
+  }
   // Custom agents store an icon name string
   if (typeof agent?.icon === "string" && agent.icon) {
     const Resolved = resolveIconComponent(agent.icon);
     return <Resolved size={size} />;
   }
   // Built-in agents use the hardcoded map
-  const BuiltIn = (AGENT_ICONS as any)[agent?.id] || Bot;
+  const BuiltIn = AGENT_ICONS[agent?.id] || Bot;
   return <BuiltIn size={size} />;
 }
 
