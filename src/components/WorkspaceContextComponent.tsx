@@ -43,7 +43,7 @@ export function WorkspaceProvider({ children }: any) {
 
   const refreshWorkspaces = useCallback(async () => {
     try {
-      const list = await WorkspaceService.list();
+      const list: any = await WorkspaceService.list();
       setWorkspaces(list);
 
       // If the persisted workspace is in the list, restore it
