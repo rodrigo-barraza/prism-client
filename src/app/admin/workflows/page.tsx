@@ -40,7 +40,7 @@ function AdminWorkflowsPageInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(initialId);
-  const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const { toasts, addToast, removeToast } = useToast();

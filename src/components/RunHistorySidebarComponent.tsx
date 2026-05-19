@@ -291,7 +291,7 @@ export default function RunHistorySidebarComponent({
                     data-panel-close
                   >
                     <div className={styles.runItemHeader}>
-                      <DateTimeBadgeComponent date={run.completedAt} mini />
+                      <DateTimeBadgeComponent date={run.completedAt} />
                       <CostBadgeComponent cost={totalCost} mini />
                       <span className={styles.runIndex}>
                         #{runHistory.length - index}

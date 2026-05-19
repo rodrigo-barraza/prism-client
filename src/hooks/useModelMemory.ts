@@ -52,7 +52,7 @@ export default function useModelMemory(storageKey: string) {
    * @param {Function} [options.fallback] — called with (config) if no saved model found; lets the caller apply default selection
    */
   const restoreModel = useCallback(
-    (config: Record<string, unknown>, setSettings: Dispatch<SetStateAction<Record<string, unknown>>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: Record<string, unknown>) => void } = {}) => {
+    (config: Record<string, unknown>, setSettings: Dispatch<SetStateAction<any>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: Record<string, unknown>) => void } = {}) => {
       if (!config) return;
       if (restoredRef.current) return;
 
@@ -96,7 +96,7 @@ export default function useModelMemory(storageKey: string) {
       }
 
       const temp = (modelDef.defaultTemperature as number) ?? 1.0;
-      setSettings((s) => ({
+      setSettings((s: any) => ({
         ...s,
         provider: saved.provider,
         model: saved.model,

@@ -1188,8 +1188,10 @@ export default class PrismService {
 
    * @returns {Promise<{ data, total, page, limit, providers, models }>}
    */
-  static async getMedia(params: Record<string, string> = {}): Promise<MediaListResponse> {
-    const query = new URLSearchParams(params).toString();
+  static async getMedia(params: Record<string, string | number | boolean> = {}): Promise<MediaListResponse> {
+    const stringParams: Record<string, string> = {};
+    for (const [k, v] of Object.entries(params)) stringParams[k] = String(v);
+    const query = new URLSearchParams(stringParams).toString();
     return PrismService._request<MediaListResponse>(`/media${query ? `?${query}` : ""}`, {
       method: "GET",
     });
@@ -1204,8 +1206,10 @@ export default class PrismService {
 
    * @returns {Promise<{ data, total, page, limit, providers, models }>}
    */
-  static async getText(params: Record<string, string> = {}): Promise<TextListResponse> {
-    const query = new URLSearchParams(params).toString();
+  static async getText(params: Record<string, string | number | boolean> = {}): Promise<TextListResponse> {
+    const stringParams: Record<string, string> = {};
+    for (const [k, v] of Object.entries(params)) stringParams[k] = String(v);
+    const query = new URLSearchParams(stringParams).toString();
     return PrismService._request<TextListResponse>(`/text${query ? `?${query}` : ""}`, {
       method: "GET",
     });

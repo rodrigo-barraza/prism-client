@@ -198,7 +198,7 @@ export default function MemoriesPanel({
     setConsolidating(true);
     setToast(null);
     try {
-      const result = await PrismService.consolidateMemories(project, agent);
+      const result: any = await PrismService.consolidateMemories(project, agent);
       if (result.skipped) {
         const message =
           result.reason === "daily_limit_reached"
@@ -494,7 +494,7 @@ export default function MemoriesPanel({
                     {type}
                   </span>
                   {memory.createdAt && (
-                    <DateTimeBadgeComponent date={memory.createdAt} mini />
+                    <DateTimeBadgeComponent date={memory.createdAt} />
                   )}
                 </div>
               </div>

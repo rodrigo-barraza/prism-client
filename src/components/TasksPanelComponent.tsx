@@ -53,7 +53,7 @@ export default function TasksPanel({
   onCountChange,
 }: any) {
   const [tasks, setTasks] = useState<any[]>([]);
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
@@ -361,7 +361,7 @@ export default function TasksPanel({
                     </span>
                   )}
                   {task.createdAt && (
-                    <DateTimeBadgeComponent date={task.createdAt} mini />
+                    <DateTimeBadgeComponent date={task.createdAt} />
                   )}
                 </div>
               </div>

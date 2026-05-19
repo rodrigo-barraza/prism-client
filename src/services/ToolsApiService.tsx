@@ -77,8 +77,9 @@ export default class ToolsApiService {
    *
    * @returns {Promise<{ total, count, toolCalls }>}
    */
-  static async getToolCalls(params: Record<string, string> = {}): Promise<ToolCallListResponse> {
-    const query = new URLSearchParams(params).toString();
+  static async getToolCalls(params: Record<string, string | number | boolean> = {}): Promise<ToolCallListResponse> {
+    const entries = Object.entries(params).map(([k, v]) => [k, String(v)]);
+    const query = new URLSearchParams(entries).toString();
     return ToolsApiService._fetch<ToolCallListResponse>(
       `/admin/tool-calls${query ? `?${query}` : ""}`,
     );
@@ -87,8 +88,9 @@ export default class ToolsApiService {
   /**
    * Get aggregated tool-call statistics.
    */
-  static async getToolCallStats(params: Record<string, string> = {}): Promise<ToolCallStatsResponse> {
-    const query = new URLSearchParams(params).toString();
+  static async getToolCallStats(params: Record<string, string | number | boolean> = {}): Promise<ToolCallStatsResponse> {
+    const entries = Object.entries(params).map(([k, v]) => [k, String(v)]);
+    const query = new URLSearchParams(entries).toString();
     return ToolsApiService._fetch<ToolCallStatsResponse>(
       `/admin/tool-calls/stats${query ? `?${query}` : ""}`,
     );

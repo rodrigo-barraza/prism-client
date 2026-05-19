@@ -73,7 +73,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
     setLoading(true);
 
     try {
-      const result = await PrismService._request("/coordinator/plan", {
+      const result: any = await PrismService._request("/coordinator/plan", {
         body: { task, files },
       });
 
@@ -101,7 +101,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
     setLoading(true);
 
     try {
-      const result = await PrismService._request("/coordinator/execute", {
+      const result: any = await PrismService._request("/coordinator/execute", {
         body: { plan },
       });
 
@@ -127,7 +127,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
     setLoading(true);
     try {
-      const result = await PrismService._request(
+      const result: any = await PrismService._request(
         `/coordinator/approve-merge/${(plan as any).taskId}`,
         {
           method: "POST",

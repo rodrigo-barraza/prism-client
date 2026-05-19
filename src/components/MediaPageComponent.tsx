@@ -118,7 +118,7 @@ export default function MediaPageComponent({
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
-  const [lightboxSrc, setLightboxSrc] = useState(null);
+  const [lightboxSrc, setLightboxSrc] = useState<any>(null);
   const [internalDateRange, setInternalDateRange] = useState({
     from: "",
     to: "",
@@ -145,7 +145,7 @@ export default function MediaPageComponent({
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result = await service.getMedia(params);
+      const result: any = await service.getMedia(params);
       setMedia(result.data || []);
       setTotal(result.total || 0);
       if (result.projects) setProjects(result.projects);

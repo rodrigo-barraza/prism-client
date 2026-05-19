@@ -179,7 +179,7 @@ export default function MediaCardComponent({
                 mini
               />
             )}
-            {m.timestamp && <DateTimeBadgeComponent date={m.timestamp} mini />}
+            {m.timestamp && <DateTimeBadgeComponent date={m.timestamp} />}
           </div>
         </div>
       )}

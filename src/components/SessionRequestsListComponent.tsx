@@ -22,7 +22,7 @@ export default function SessionRequestsListComponent({
   agentSessionId,
   refreshKey = 0,
 }: any) {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -163,7 +163,7 @@ export default function SessionRequestsListComponent({
                       {formatCost(req.estimatedCost)}
                     </span>
                   )}
-                  <DateTimeBadgeComponent date={req.timestamp} mini />
+                  <DateTimeBadgeComponent date={req.timestamp} />
                 </div>
               </div>
             );

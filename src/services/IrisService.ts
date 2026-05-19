@@ -27,7 +27,7 @@ export interface IrisRequestEntry {
 }
 
 export interface IrisRequestListResponse {
-  requests: IrisRequestEntry[];
+  data: IrisRequestEntry[];
   total: number;
   count: number;
   [key: string]: unknown;
@@ -38,14 +38,23 @@ export interface IrisStatsResponse {
 }
 
 export interface IrisConversationListResponse {
-  conversations: Array<Record<string, unknown>>;
+  data: any[];
   total: number;
   count: number;
   [key: string]: unknown;
 }
 
 export interface IrisTimelineResponse {
-  points: Array<Record<string, unknown>>;
+  data: any[];
+  [key: string]: unknown;
+}
+
+/**
+ * Generic paginated list response — shared by traces, media, text, agent-sessions, workflows.
+ */
+export interface IrisPaginatedResponse {
+  data: any[];
+  total: number;
   [key: string]: unknown;
 }
 
@@ -64,6 +73,7 @@ export interface IrisCollectionChangeEvent {
 
 export interface IrisHealthResponse {
   status: string;
+  mongo?: string;
   uptime?: number;
   version?: string;
   [key: string]: unknown;
@@ -118,19 +128,19 @@ export default class IrisService {
     return fetchJSON<IrisStatsResponse>(`/stats${query ? `?${query}` : ""}`);
   }
 
-  static async getProjectStats(params: QueryParams = {}): Promise<IrisStatsResponse> {
+  static async getProjectStats(params: QueryParams = {}): Promise<Array<Record<string, unknown>>> {
     const query = toSearchParams(params);
-    return fetchJSON<IrisStatsResponse>(`/stats/projects${query ? `?${query}` : ""}`);
+    return fetchJSON<Array<Record<string, unknown>>>(`/stats/projects${query ? `?${query}` : ""}`);
   }
 
-  static async getModelStats(params: QueryParams = {}): Promise<IrisStatsResponse> {
+  static async getModelStats(params: QueryParams = {}): Promise<Array<Record<string, unknown>>> {
     const query = toSearchParams(params);
-    return fetchJSON<IrisStatsResponse>(`/stats/models${query ? `?${query}` : ""}`);
+    return fetchJSON<Array<Record<string, unknown>>>(`/stats/models${query ? `?${query}` : ""}`);
   }
 
-  static async getEndpointStats(params: QueryParams = {}): Promise<IrisStatsResponse> {
+  static async getEndpointStats(params: QueryParams = {}): Promise<Array<Record<string, unknown>>> {
     const query = toSearchParams(params);
-    return fetchJSON<IrisStatsResponse>(`/stats/endpoints${query ? `?${query}` : ""}`);
+    return fetchJSON<Array<Record<string, unknown>>>(`/stats/endpoints${query ? `?${query}` : ""}`);
   }
 
   static async getTimeline(hours = 24, params: QueryParams = {}): Promise<IrisTimelineResponse> {
@@ -158,8 +168,8 @@ export default class IrisService {
     return fetchJSON<Record<string, unknown>>("/conversations/filters");
   }
 
-  static async getConversationWorkflows(id: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/conversations/${id}/workflows`, {}, false);
+  static async getConversationWorkflows(id: string): Promise<Array<Record<string, unknown>>> {
+    return fetchJSON<Array<Record<string, unknown>>>(`/conversations/${id}/workflows`, {}, false);
   }
 
   // -- Live --------------------------------------------------
@@ -252,9 +262,9 @@ export default class IrisService {
   }
 
   // -- Workflows ---------------------------------------------
-  static async getWorkflows(params: QueryParams = {}): Promise<Record<string, unknown>> {
+  static async getWorkflows(params: QueryParams = {}): Promise<IrisPaginatedResponse> {
     const query = toSearchParams(params);
-    return fetchJSON<Record<string, unknown>>(`/workflows${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisPaginatedResponse>(`/workflows${query ? `?${query}` : ""}`);
   }
 
   static async getWorkflow(id: string): Promise<Record<string, unknown>> {
@@ -262,9 +272,9 @@ export default class IrisService {
   }
 
   // -- Traces ----------------------------------------------
-  static async getTraces(params: QueryParams = {}): Promise<Record<string, unknown>> {
+  static async getTraces(params: QueryParams = {}): Promise<IrisPaginatedResponse> {
     const query = toSearchParams(params);
-    return fetchJSON<Record<string, unknown>>(`/traces${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisPaginatedResponse>(`/traces${query ? `?${query}` : ""}`);
   }
 
   static async getTrace(id: string): Promise<Record<string, unknown>> {
@@ -280,9 +290,9 @@ export default class IrisService {
   }
 
   // -- Agent Sessions (admin) --------------------------------
-  static async getAgentSessions(params: QueryParams = {}): Promise<Record<string, unknown>> {
+  static async getAgentSessions(params: QueryParams = {}): Promise<IrisPaginatedResponse> {
     const query = toSearchParams(params);
-    return fetchJSON<Record<string, unknown>>(`/agent-sessions${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisPaginatedResponse>(`/agent-sessions${query ? `?${query}` : ""}`);
   }
 
   static async getAgentSession(id: string): Promise<Record<string, unknown>> {
@@ -290,15 +300,15 @@ export default class IrisService {
   }
 
   // -- Media -------------------------------------------------
-  static async getMedia(params: QueryParams = {}): Promise<Record<string, unknown>> {
+  static async getMedia(params: QueryParams = {}): Promise<IrisPaginatedResponse> {
     const query = toSearchParams(params);
-    return fetchJSON<Record<string, unknown>>(`/media${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisPaginatedResponse>(`/media${query ? `?${query}` : ""}`);
   }
 
   // -- Text --------------------------------------------------
-  static async getText(params: QueryParams = {}): Promise<Record<string, unknown>> {
+  static async getText(params: QueryParams = {}): Promise<IrisPaginatedResponse> {
     const query = toSearchParams(params);
-    return fetchJSON<Record<string, unknown>>(`/text${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisPaginatedResponse>(`/text${query ? `?${query}` : ""}`);
   }
 
   // -- Config (user route, admin identity) -------------------

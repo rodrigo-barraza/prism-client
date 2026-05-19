@@ -45,7 +45,7 @@ const DEFAULT_PROMPT =
  */
 export default function VisionPageComponent() {
   // ── Config state ────────────────────────────────────────────────
-  const [config, setConfig] = useState(null);
+  const [config, setConfig] = useState<any>(null);
   const [settings, setSettings] = useState({ provider: "", model: "" });
   const [favorites, setFavorites] = useState<any[]>([]);
 

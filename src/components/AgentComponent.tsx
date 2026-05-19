@@ -779,7 +779,7 @@ export default function AgentComponent({
           .reverse()
           .find((m: any) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
-          const gs = lastAssistant.generationSettings || {};
+          const gs: any = lastAssistant.generationSettings || {};
           setSettings((prev: any) => ({
             ...prev,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),

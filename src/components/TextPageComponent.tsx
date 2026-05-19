@@ -70,7 +70,7 @@ export default function TextPageComponent({
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result = await service.getText(params);
+      const result: any = await service.getText(params);
       setTexts(result.data || []);
       setTotal(result.total || 0);
       if (result.providers) setProviders(result.providers);

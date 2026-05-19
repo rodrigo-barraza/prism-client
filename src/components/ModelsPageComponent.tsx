@@ -222,7 +222,7 @@ export default function ModelsPageComponent({
 
       // Fire both in parallel, each with their own error handling
       const [localResult, lmData] = await Promise.all([
-        config?.localProviders?.length > 0
+        (config as any)?.localProviders?.length > 0
           ? localService.getLocalConfig().catch(() => ({ models: {} }))
           : { models: {} },
         lmService.getLmStudioModels().catch(() => ({ models: [] })),
@@ -230,8 +230,8 @@ export default function ModelsPageComponent({
 
       // Merge local models into config using shared utility
       const mergedConfig = PrismService.mergeLocalModels(
-        config,
-        localResult?.models,
+        config!,
+        (localResult as any)?.models,
       );
 
       // Rebuild with local models + LM Studio API data

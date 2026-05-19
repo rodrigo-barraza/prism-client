@@ -148,7 +148,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
   };
 
   // Current workflow state
-  const [workflowId, setWorkflowId] = useState(null);
+  const [workflowId, setWorkflowId] = useState<any>(null);
   const [workflowName, setWorkflowName] = useState("Untitled Workflow");
   const [nodes, setNodes] = useState<any[]>([]);
   const [edges, setEdges] = useState<any[]>([]);
@@ -830,7 +830,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
   const handleSaveWorkflow = useCallback(async () => {
     try {
       const workflow = {
-        id: workflowId,
+        id: workflowId ?? undefined,
         name: workflowName || "Untitled Workflow",
         nodes,
         edges,

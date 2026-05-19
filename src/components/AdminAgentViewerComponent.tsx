@@ -224,7 +224,7 @@ export default function AdminAgentViewerComponent() {
   const handleSelectSession = useCallback(
     async (conversation: any) => {
       try {
-        const full = await IrisService.getAgentSession(conversation.id);
+        const full: any = await IrisService.getAgentSession(conversation.id);
         const displayMessages = prepareDisplayMessages(full.messages || []);
         setMessages(displayMessages);
         setAgentSessionId(conversation.id);

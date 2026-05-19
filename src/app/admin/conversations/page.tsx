@@ -280,7 +280,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
   const refreshSelectedConv = useCallback(async (id: any) => {
     if (!id) return;
     try {
-      const full = await IrisService.getConversation(id);
+      const full: any = await IrisService.getConversation(id);
       setSelectedConv((prev: any) => {
         const oldMsgs = prev?.messages || [];
         const newMsgs = full?.messages || [];

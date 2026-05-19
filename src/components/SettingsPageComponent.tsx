@@ -109,7 +109,7 @@ export default function SettingsPageComponent() {
     PrismService.getCustomAgents().then(setCustomAgents).catch(console.error);
 
     // Fetch all available tools (unfiltered) for the tool picker
-    PrismService.getBuiltInToolSchemas(true)
+    PrismService.getBuiltInToolSchemas()
       .then(setAvailableTools)
       .catch(console.error);
 

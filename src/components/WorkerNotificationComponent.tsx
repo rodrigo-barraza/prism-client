@@ -50,7 +50,7 @@ export default function WorkerNotificationComponent({
           <div className={styles.roleLabel} style={{ color: statusColor }}>
             <span className={styles.statusIcon}>{statusIcon}</span>
             Worker
-            {timestamp && <DateTimeBadgeComponent date={timestamp} mini />}
+            {timestamp && <DateTimeBadgeComponent date={timestamp} />}
           </div>
           {!readOnly && onDelete && (
             <div className={styles.actions}>

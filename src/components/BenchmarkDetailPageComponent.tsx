@@ -116,9 +116,9 @@ export default function BenchmarkDetailPageComponent({
 
   // Model selection — instance-based: each entry has a unique instanceId
   // so the same model can be selected multiple times with different settings.
-  const [prismConfig, setPrismConfig] = useState(null);
+  const [prismConfig, setPrismConfig] = useState<any>(null);
   const [selectedInstances, setSelectedInstances] = useState(() => {
-    const saved = StorageService.get(SK_MODEL_MEMORY_BENCHMARKS);
+    const saved = StorageService.get<any>(SK_MODEL_MEMORY_BENCHMARKS);
     // Migration: if saved data uses the old Set-based selectedKeys format,
     // convert each key into an instance object.
     if (saved?.selectedKeys && Array.isArray(saved.selectedKeys)) {
@@ -143,13 +143,13 @@ export default function BenchmarkDetailPageComponent({
 
   // Per-model thinking toggle: Map<instanceId, boolean>
   const [thinkingMap, setThinkingMap] = useState(() => {
-    const saved = StorageService.get(SK_MODEL_MEMORY_BENCHMARKS);
+    const saved = StorageService.get<any>(SK_MODEL_MEMORY_BENCHMARKS);
     return saved?.thinkingMap && typeof saved.thinkingMap === "object"
       ? saved.thinkingMap
       : {};
   });
   const [toolsMap, setToolsMap] = useState(() => {
-    const saved = StorageService.get(SK_MODEL_MEMORY_BENCHMARKS);
+    const saved = StorageService.get<any>(SK_MODEL_MEMORY_BENCHMARKS);
     return saved?.toolsMap && typeof saved.toolsMap === "object"
       ? saved.toolsMap
       : {};
@@ -157,7 +157,7 @@ export default function BenchmarkDetailPageComponent({
 
   // Agent instances — same instance-based pattern as models
   const [agentInstances, setAgentInstances] = useState(() => {
-    const saved = StorageService.get(SK_MODEL_MEMORY_BENCHMARKS);
+    const saved = StorageService.get<any>(SK_MODEL_MEMORY_BENCHMARKS);
     if (saved?.agents && Array.isArray(saved.agents)) {
       return saved.agents;
     }

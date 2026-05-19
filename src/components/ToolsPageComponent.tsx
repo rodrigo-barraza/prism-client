@@ -1,5 +1,7 @@
 "use client";
 
+import { ToolCardComponent as ToolSchemaCard } from "@rodrigo-barraza/components-library";
+
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import PrismService from "../services/PrismService";
@@ -236,7 +238,10 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
         {/* Header */}
         <div className={styles.detailHeader}>
           <div className={styles.detailTitleBlock}>
-            <div className={styles.detailCleanName}>{cleanName}</div>
+            <div className={styles.detailCleanName}>
+              {tool.emoji && <span className={styles.detailEmoji}>{tool.emoji}</span>}
+              {cleanName}
+            </div>
             <div className={styles.detailTitle}>{tool.name}</div>
             <div className={styles.detailDomainRow}>
               {tool.domain && (
@@ -520,42 +525,39 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
 function ToolCard({ tool, onClick, agents }: any) {
   const paramCount = countParams(tool);
   return (
-    <div className={styles.toolCard} onClick={onClick}>
-      <div className={styles.toolCardHeader}>
-        <span className={styles.toolName}>{tool.name}</span>
-        {tool.domain && (
-          <span className={styles.toolDomain}>{tool.domain}</span>
-        )}
-      </div>
-      <div className={styles.toolDescription}>{tool.description}</div>
-      <div className={styles.toolMeta}>
-        {agents?.length > 0 && (
-          <div className={styles.agentBadges}>
-            {agents.map((a: any) => (
-              <span
-                key={a.id}
-                className={styles.agentBadge}
-                style={{ "--agent-color": getAgentColor(a.id) } as any}
-                title={`Used by ${a.name}`}
-              >
-                <Bot size={10} />
-                {a.name}
-              </span>
-            ))}
-          </div>
-        )}
-        {tool.labels?.slice(0, 4).map((l: any) => (
-          <span key={l} className={styles.toolLabel}>
-            {l}
-          </span>
-        ))}
-        {paramCount > 0 && (
-          <span className={styles.paramCount}>
-            <Braces /> {paramCount} param{paramCount !== 1 ? "s" : ""}
-          </span>
-        )}
-      </div>
-    </div>
+    <ToolSchemaCard
+      name={tool.name}
+      description={tool.description}
+      emoji={tool.emoji}
+      domain={tool.domain}
+      onClick={onClick}
+    >
+      {agents?.length > 0 && (
+        <div className={styles.agentBadges}>
+          {agents.map((a: any) => (
+            <span
+              key={a.id}
+              className={styles.agentBadge}
+              style={{ "--agent-color": getAgentColor(a.id) } as any}
+              title={`Used by ${a.name}`}
+            >
+              <Bot size={10} />
+              {a.name}
+            </span>
+          ))}
+        </div>
+      )}
+      {tool.labels?.slice(0, 4).map((l: any) => (
+        <span key={l} className={styles.toolLabel}>
+          {l}
+        </span>
+      ))}
+      {paramCount > 0 && (
+        <span className={styles.paramCount}>
+          <Braces /> {paramCount} param{paramCount !== 1 ? "s" : ""}
+        </span>
+      )}
+    </ToolSchemaCard>
   );
 }
 
@@ -565,6 +567,7 @@ function ToolRow({ tool, onClick, agents }: any) {
   const paramCount = countParams(tool);
   return (
     <div className={styles.toolRow} onClick={onClick}>
+      {tool.emoji && <span className={styles.toolRowEmoji}>{tool.emoji}</span>}
       <span className={styles.toolRowName}>{tool.name}</span>
       <span className={styles.toolRowDesc}>{tool.description}</span>
       <div className={styles.toolRowMeta}>
@@ -619,7 +622,7 @@ export default function ToolsPageComponent() {
       setLoading(true);
       setError(null);
       const [schemas, agentList] = await Promise.all([
-        PrismService.getBuiltInToolSchemas(null),
+        PrismService.getBuiltInToolSchemas(undefined),
         PrismService.getAgentPersonas().catch(() => []),
       ]);
       setTools(schemas || []);

@@ -109,6 +109,10 @@ export interface ConversationMeta {
   agent?: string;
   model?: string;
   provider?: string;
+  systemPrompt?: string;
+  synthetic?: boolean;
+  settings?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export interface Message {
@@ -187,18 +191,28 @@ export interface Message {
     output?: number;
     requests?: number;
   };
+  /** Server-side generation parameters snapshot */
+  generationSettings?: Record<string, unknown>;
+  /** Incremental background usage (memory extraction, embedding) */
+  _backgroundUsage?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export interface Conversation {
   _id: ObjectId;
+  id?: string;
   title?: string;
   messages: Message[];
   project?: string;
   agent?: string;
   model?: string;
   provider?: string;
+  traceId?: string;
+  systemPrompt?: string;
+  stats?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
+  [key: string]: unknown;
 }
 
 export interface ConversationListResponse {
@@ -211,14 +225,20 @@ export interface ConversationListResponse {
 
 export interface AgentSession {
   _id: ObjectId;
+  id?: string;
   project: string;
   agent?: string;
   model?: string;
   provider?: string;
   status?: string;
   messages: Message[];
+  title?: string;
+  traceId?: string;
+  systemPrompt?: string;
+  stats?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
+  [key: string]: unknown;
 }
 
 export interface AgentSessionListResponse {
@@ -478,25 +498,30 @@ export interface AgentPersona {
 
 export interface Skill {
   _id?: ObjectId;
+  id?: string;
   name: string;
   description?: string;
   project?: string;
   template: string;
   variables?: Record<string, string>;
+  enabled?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  [key: string]: unknown;
 }
 
 // ─── Agent Memories ─────────────────────────────────────────
 
 export interface AgentMemory {
   _id: ObjectId;
+  id?: string;
   content: string;
   project?: string;
   agent?: string;
   source?: string;
   createdAt: string;
   updatedAt?: string;
+  [key: string]: unknown;
 }
 
 export interface AgentMemoryListResponse {
@@ -595,6 +620,7 @@ export interface BenchmarkPrompt {
 
 export interface Benchmark {
   _id: ObjectId;
+  id?: string;
   name: string;
   description?: string;
   prompts: BenchmarkPrompt[];
@@ -602,6 +628,7 @@ export interface Benchmark {
   latestRun?: BenchmarkRun;
   createdAt: string;
   updatedAt?: string;
+  [key: string]: unknown;
 }
 
 export interface BenchmarkRunResult {
@@ -619,11 +646,13 @@ export interface BenchmarkRunResult {
 
 export interface BenchmarkRun {
   _id: ObjectId;
+  id?: string;
   benchmarkId: ObjectId;
   results: BenchmarkRunResult[];
   status: "pending" | "running" | "completed" | "failed" | "aborted";
   startedAt: string;
   completedAt?: string;
+  [key: string]: unknown;
 }
 
 export interface BenchmarkListResponse {
@@ -685,22 +714,38 @@ export interface WorkflowEdge {
 
 export interface Workflow {
   _id?: ObjectId;
+  id?: string;
   name: string;
+  title?: string;
   description?: string;
   source?: string;
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
+  connections?: WorkflowEdge[];
   conversationIds?: string[];
+  nodeResults?: Record<string, unknown>;
+  nodeStatuses?: Record<string, unknown>;
+  userContent?: string;
   createdAt?: string;
   updatedAt?: string;
+  [key: string]: unknown;
 }
 
 // ─── Synthesis ──────────────────────────────────────────────
 
 export interface SynthesisRun {
   _id: ObjectId;
+  id?: string;
   name?: string;
+  title?: string;
   prompt: string;
+  systemPrompt?: string;
+  userPersona?: string;
+  category?: string;
+  targetTurns?: number;
+  seedMessages?: Array<{ role: string; content: string }>;
+  settings?: Record<string, unknown>;
+  conversationId?: string;
   models: Array<{ provider: string; model: string }>;
   results?: Array<{
     provider: string;
@@ -714,6 +759,7 @@ export interface SynthesisRun {
   synthesis?: string;
   status?: string;
   createdAt: string;
+  [key: string]: unknown;
 }
 
 // ─── Media ──────────────────────────────────────────────────
@@ -739,6 +785,9 @@ export interface MediaListResponse {
   limit: number;
   providers: string[];
   models: string[];
+  projects?: string[];
+  usernames?: string[];
+  [key: string]: unknown;
 }
 
 // ─── Text Content ───────────────────────────────────────────

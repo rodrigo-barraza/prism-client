@@ -86,7 +86,7 @@ export default function BenchmarkDashboardComponent({
   rightSidebar,
 }: any) {
   const router = useRouter();
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedModel, setSelectedModel] = useState(null);
   const [configLookup, setConfigLookup] = useState(new Map());
@@ -106,11 +106,11 @@ export default function BenchmarkDashboardComponent({
       // Merge local models (LM Studio, Ollama, etc.) into config
       // so we get display_name for local models too
       let mergedConfig = config;
-      if (config?.localProviders?.length > 0) {
+      if ((config as any)?.localProviders?.length > 0) {
         try {
           const localResult = await PrismService.getLocalConfig();
           mergedConfig = PrismService.mergeLocalModels(
-            config,
+            config!,
             localResult?.models,
           );
         } catch {
