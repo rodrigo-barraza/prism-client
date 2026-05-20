@@ -1479,6 +1479,9 @@ export default function AgentComponent({
               ...(settings.thinkingBudget && {
                 thinkingBudget: settings.thinkingBudget,
               }),
+              ...(settings.thinkingLevel && {
+                thinkingLevel: settings.thinkingLevel,
+              }),
               // Native provider FC (Google code exec, LM Studio MCP, etc.)
               functionCallingEnabled: settings.functionCallingEnabled ?? false,
               ...(settings.functionCallingEnabled && {
@@ -1527,6 +1530,9 @@ export default function AgentComponent({
               }),
               ...(settings.thinkingBudget && {
                 thinkingBudget: settings.thinkingBudget,
+              }),
+              ...(settings.thinkingLevel && {
+                thinkingLevel: settings.thinkingLevel,
               }),
               // Local models need enough context for MCP tool schemas + session
               minContextLength: 65_000,
