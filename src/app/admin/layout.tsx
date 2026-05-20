@@ -7,7 +7,7 @@ export const metadata = {
     "Analytics, activity monitoring, and administration for Prism AI Gateway",
 };
 
-export default function AdminLayout({ children }: any) {
+export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <AdminShell>
       <Suspense>{children}</Suspense>

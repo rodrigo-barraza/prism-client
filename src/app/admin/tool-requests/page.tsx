@@ -26,7 +26,7 @@ import {
   formatFileSize,
   buildDateRangeParams,
 } from "../../../utils/utilities";
-import { getToolRequestsColumns } from "./toolRequestsColumns";
+import { getToolRequestsColumns, ToolCallRecord } from "./toolRequestsColumns";
 import styles from "./page.module.css";
 
 // -- Domain options (from ToolSchemaService TOOL_DOMAINS) ---------
@@ -57,14 +57,14 @@ const DOMAIN_OPTIONS = [
 
 export default function ToolRequestsPage() {
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [toolCalls, setToolCalls] = useState<any[]>([]);
+  const [toolCalls, setToolCalls] = useState<ToolCallRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
-  const [selectedCall, setSelectedCall] = useState(null);
+  const [selectedCall, setSelectedCall] = useState<ToolCallRecord | null>(null);
   const [filters, setFilters] = useState({
     toolName: "",
     domain: "",
@@ -77,21 +77,21 @@ export default function ToolRequestsPage() {
   const loadToolCalls = useCallback(async () => {
     try {
       const params = { limit: LIMIT, skip: (page - 1) * LIMIT };
-      Object.entries(filters).forEach(([k, v]: any) => {
-        if (v) (params as any)[k] = v;
+      Object.entries(filters).forEach(([k, v]) => {
+        if (v) (params as Record<string, unknown>)[k] = v;
       });
       // Date range
       const dateParams = buildDateRangeParams(dateRange);
-      if ((dateParams as any).since)
-        (params as any).since = (dateParams as any).since;
-      if ((dateParams as any).until)
-        (params as any).until = (dateParams as any).until;
+      if ((dateParams as Record<string, string>).since)
+        (params as Record<string, unknown>).since = (dateParams as Record<string, string>).since;
+      if ((dateParams as Record<string, string>).until)
+        (params as Record<string, unknown>).until = (dateParams as Record<string, string>).until;
 
       const data = await ToolsApiService.getToolCalls(params);
       setToolCalls(data.toolCalls || []);
       setTotal(data.total || 0);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }
@@ -105,14 +105,14 @@ export default function ToolRequestsPage() {
     loadToolCalls();
   }, [loadToolCalls]);
 
-  function handleSort(key: any, dir: any) {
+  function handleSort(key: string, dir: "asc" | "desc" | string) {
     setSort(key);
     setOrder(dir);
     setPage(1);
   }
 
-  const handleFilterChange = useCallback((key: any, value: any) => {
-    setFilters((prev: any) => ({ ...prev, [key]: value }));
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(1);
   }, []);
 
@@ -129,7 +129,7 @@ export default function ToolRequestsPage() {
   // -- Column definitions -----------------------------------------
   const totalDuration = useMemo(
     () =>
-      toolCalls.reduce((sum: any, tc: any) => sum + (tc.elapsedMs || 0), 0) ||
+      toolCalls.reduce((sum: number, tc: ToolCallRecord) => sum + (tc.elapsedMs || 0), 0) ||
       1,
     [toolCalls],
   );
@@ -152,7 +152,7 @@ export default function ToolRequestsPage() {
       "Status",
       "Error",
     ].join(",");
-    const rows = toolCalls.map((tc: any) =>
+    const rows = toolCalls.map((tc: ToolCallRecord) =>
       [
         tc.timestamp || "",
         tc.toolName || "",
@@ -178,7 +178,7 @@ export default function ToolRequestsPage() {
   const totalPages = Math.ceil(total / LIMIT);
 
   // -- Build detail sections for the drawer ----------------------
-  function buildDetailSections(tc: any) {
+  function buildDetailSections(tc: ToolCallRecord | null) {
     if (!tc) return [];
     return [
       {
@@ -212,11 +212,11 @@ export default function ToolRequestsPage() {
           },
           {
             label: "Request Size",
-            value: tc.inBytes > 0 ? formatFileSize(tc.inBytes) : "—",
+            value: (tc.inBytes || 0) > 0 ? formatFileSize(tc.inBytes || 0) : "—",
           },
           {
             label: "Response Size",
-            value: tc.outBytes > 0 ? formatFileSize(tc.outBytes) : "—",
+            value: (tc.outBytes || 0) > 0 ? formatFileSize(tc.outBytes || 0) : "—",
           },
         ],
       },
@@ -279,13 +279,13 @@ export default function ToolRequestsPage() {
           <FilterInputComponent
             placeholder="Filter by tool name..."
             value={filters.toolName}
-            onChange={(value: any) => handleFilterChange("toolName", value)}
+            onChange={(value: string) => handleFilterChange("toolName", value)}
           />
         </FilterGroupComponent>
         <FilterGroupComponent label="Domain">
           <FilterSelectComponent
             value={filters.domain}
-            onChange={(value: any) => handleFilterChange("domain", value)}
+            onChange={(value: string) => handleFilterChange("domain", value)}
             options={DOMAIN_OPTIONS}
           />
         </FilterGroupComponent>
@@ -293,13 +293,13 @@ export default function ToolRequestsPage() {
           <FilterInputComponent
             placeholder="Filter by agent..."
             value={filters.callerAgent}
-            onChange={(value: any) => handleFilterChange("callerAgent", value)}
+            onChange={(value: string) => handleFilterChange("callerAgent", value)}
           />
         </FilterGroupComponent>
         <FilterGroupComponent label="Status">
           <FilterSelectComponent
             value={filters.success}
-            onChange={(value: any) => handleFilterChange("success", value)}
+            onChange={(value: string) => handleFilterChange("success", value)}
             options={[
               { value: "", label: "All" },
               { value: "true", label: "Success" },
@@ -326,8 +326,8 @@ export default function ToolRequestsPage() {
           sortKey={sort}
           sortDir={order}
           onSort={handleSort}
-          onRowClick={(tc: any) => setSelectedCall(tc)}
-          getRowKey={(tc: any, i: any) => tc._id || `tc-${i}`}
+          onRowClick={(tc: ToolCallRecord) => setSelectedCall(tc)}
+          getRowKey={(tc: ToolCallRecord, i: number) => tc._id || `tc-${i}`}
           emptyText={loading ? "Loading..." : "No tool calls found"}
           maxHeight={null}
           storageKey="tool-requests"
@@ -352,21 +352,21 @@ export default function ToolRequestsPage() {
       >
         {selectedCall && (
           <>
-            {(selectedCall as any).args &&
-              Object.keys((selectedCall as any).args).length > 0 && (
+            {selectedCall.args &&
+              Object.keys(selectedCall.args).length > 0 && (
                 <div className={styles.detailSection}>
                   <JsonViewerComponent
-                    data={(selectedCall as any).args}
+                    data={selectedCall.args}
                     label="Arguments"
                     maxHeight="300px"
                   />
                 </div>
               )}
-            {(selectedCall as any).result &&
-              Object.keys((selectedCall as any).result).length > 0 && (
+            {selectedCall.result &&
+              Object.keys(selectedCall.result).length > 0 && (
                 <div className={styles.detailSection}>
                   <JsonViewerComponent
-                    data={(selectedCall as any).result}
+                    data={selectedCall.result}
                     label="Result (Sanitized)"
                     maxHeight="400px"
                   />

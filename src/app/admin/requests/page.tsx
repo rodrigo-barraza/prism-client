@@ -47,15 +47,15 @@ export default function RequestsPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<Record<string, any>[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [associations, setAssociations] = useState<any>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Record<string, any> | null>(null);
+  const [associations, setAssociations] = useState<Record<string, any> | null>(null);
   const [loadingAssociations, setLoadingAssociations] = useState(false);
   const [filters, setFilters] = useState<any>({
     provider: "",
@@ -66,25 +66,25 @@ export default function RequestsPage() {
   });
 
   const [hoveredConversationId, setHoveredConversationId] = useState(null);
-  const initialLoadDone = useRef<any>(false);
-  const fetchGenRef = useRef<any>(0);
+  const initialLoadDone = useRef<boolean>(false);
+  const fetchGenRef = useRef<number>(0);
 
   // "Just now" row highlighting — track fresh rows and fade-outs
-  const prevJustNowIds = useRef<any>(new Set());
-  const [fadingIds, setFadingIds] = useState(new Set());
-  const fadingTimers = useRef<any>(new Map());
+  const prevJustNowIds = useRef<Set<string>>(new Set());
+  const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
+  const fadingTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const [justNowTick, setJustNowTick] = useState(0);
 
   // Compute which rows are "just now" (< 5s old) on every render/tick
-  const justNowIds = useMemo(() => {
+  const justNowIds = useMemo<Set<string>>(() => {
     const now = Date.now();
-    const ids = new Set();
+    const ids = new Set<string>();
     for (const r of requests) {
-      if (!(r as any).timestamp) continue;
-      const age = now - new Date((r as any).timestamp).getTime();
+      if (!(r as Record<string, any>).timestamp) continue;
+      const age = now - new Date((r as Record<string, any>).timestamp).getTime();
       // Treat timestamps up to 10s in the future (clock skew) or < 5s old
       if (age < 5000 && age > -10000)
-        ids.add((r as any).requestId || (r as any)._id);
+        ids.add((r as Record<string, any>).requestId || (r as Record<string, any>)._id);
     }
     return ids;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,7 +93,7 @@ export default function RequestsPage() {
   // Tick every 1s while there are "just now" rows so they age out naturally
   useEffect(() => {
     if (justNowIds.size === 0) return;
-    const timer = setInterval(() => setJustNowTick((t: any) => t + 1), 1000);
+    const timer = setInterval(() => setJustNowTick((t: number) => t + 1), 1000);
     return () => clearInterval(timer);
   }, [justNowIds.size]);
 
@@ -102,13 +102,13 @@ export default function RequestsPage() {
     const prev = prevJustNowIds.current;
     for (const id of prev) {
       if (!justNowIds.has(id) && !fadingTimers.current.has(id)) {
-        setFadingIds((s: any) => {
+        setFadingIds((s: Set<string>) => {
           const n = new Set(s);
           n.add(id);
           return n;
         });
         const timer = setTimeout(() => {
-          setFadingIds((s: any) => {
+          setFadingIds((s: Set<string>) => {
             const n = new Set(s);
             n.delete(id);
             return n;
@@ -135,9 +135,9 @@ export default function RequestsPage() {
     const gen = fetchGenRef.current;
     try {
       const params = { page, limit: LIMIT, sort, order };
-      if (projectFilter) (params as any).project = projectFilter;
-      Object.entries(filters).forEach(([k, v]: any) => {
-        if (v) (params as any)[k] = v;
+      if (projectFilter) (params as Record<string, any>).project = projectFilter;
+      Object.entries(filters).forEach(([k, v]) => {
+        if (v) (params as Record<string, any>)[k] = v;
       });
       Object.assign(params, buildDateRangeParams(dateRange));
 
@@ -145,9 +145,9 @@ export default function RequestsPage() {
       if (gen !== fetchGenRef.current) return;
       setRequests(data.data || []);
       setTotal(data.total || 0);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (gen !== fetchGenRef.current) return;
-      setError(error.message);
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       if (gen !== fetchGenRef.current) return;
       if (!initialLoadDone.current) {
@@ -167,14 +167,14 @@ export default function RequestsPage() {
     loadRequests();
 
     // Subscribe to change stream SSE for real-time updates
-    let pollInterval: any = null;
-    let debounceTimer: any = null;
+    let pollInterval: NodeJS.Timeout | null = null;
+    let debounceTimer: NodeJS.Timeout | null = null;
     const debouncedLoad = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(loadRequests, 800);
     };
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: any) => {
+      onStatus: (data: Record<string, any>) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
           if (!pollInterval) {
@@ -182,7 +182,7 @@ export default function RequestsPage() {
           }
         }
       },
-      onChange: (event: any) => {
+      onChange: (event: Record<string, any>) => {
         if (event.collection === "requests") {
           debouncedLoad();
         }
@@ -198,14 +198,14 @@ export default function RequestsPage() {
 
   // Fetch associations when a request is selected
   useEffect(() => {
-    if (!(selectedRequest as any)?.requestId) {
+    if (!(selectedRequest as Record<string, any>)?.requestId) {
       setAssociations(null);
       return;
     }
     let cancelled = false;
     setLoadingAssociations(true);
-    IrisService.getRequestAssociations((selectedRequest as any).requestId)
-      .then((data: any) => {
+    IrisService.getRequestAssociations((selectedRequest as Record<string, any>).requestId)
+      .then((data: Record<string, any>) => {
         if (!cancelled) setAssociations(data);
       })
       .catch(() => {
@@ -218,16 +218,16 @@ export default function RequestsPage() {
     return () => {
       cancelled = true;
     };
-  }, [(selectedRequest as any)?.requestId]);
+  }, [(selectedRequest as Record<string, any>)?.requestId]);
 
-  function handleSort(key: any, dir: any) {
+  function handleSort(key: string, dir: string) {
     setSort(key);
     setOrder(dir);
     setPage(1);
   }
 
-  const handleFilterChange = useCallback((key: any, value: any) => {
-    setFilters((prev: any) => ({ ...prev, [key]: value }));
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setFilters((prev: Record<string, string>) => ({ ...prev, [key]: value }));
     setPage(1);
   }, []);
 
@@ -257,7 +257,7 @@ export default function RequestsPage() {
       "Latency",
       "Status",
     ].join(",");
-    const rows = requests.map((r: any) =>
+    const rows = requests.map((r: Record<string, any>) =>
       [
         r.timestamp || "",
         r.project || "",
@@ -327,7 +327,7 @@ export default function RequestsPage() {
         <FilterGroupComponent label="Provider">
           <FilterSelectComponent
             value={filters.provider}
-            onChange={(value: any) => handleFilterChange("provider", value)}
+            onChange={(value: string) => handleFilterChange("provider", value)}
             options={[
               { value: "", label: "All" },
               { value: "openai", label: "OpenAI" },
@@ -341,13 +341,13 @@ export default function RequestsPage() {
           <FilterInputComponent
             placeholder="Filter by model..."
             value={filters.model}
-            onChange={(value: any) => handleFilterChange("model", value)}
+            onChange={(value: string) => handleFilterChange("model", value)}
           />
         </FilterGroupComponent>
         <FilterGroupComponent label="Endpoint">
           <FilterSelectComponent
             value={filters.endpoint}
-            onChange={(value: any) => handleFilterChange("endpoint", value)}
+            onChange={(value: string) => handleFilterChange("endpoint", value)}
             options={[
               { value: "", label: "All" },
               { value: "/chat", label: "/chat" },
@@ -360,7 +360,7 @@ export default function RequestsPage() {
         <FilterGroupComponent label="Operation">
           <FilterSelectComponent
             value={filters.operation}
-            onChange={(value: any) => handleFilterChange("operation", value)}
+            onChange={(value: string) => handleFilterChange("operation", value)}
             options={[
               { value: "", label: "All" },
               { value: "chat", label: "Chat" },
@@ -386,7 +386,7 @@ export default function RequestsPage() {
         <FilterGroupComponent label="Status">
           <FilterSelectComponent
             value={filters.success}
-            onChange={(value: any) => handleFilterChange("success", value)}
+            onChange={(value: string) => handleFilterChange("success", value)}
             options={[
               { value: "", label: "All" },
               { value: "true", label: "Success" },
@@ -413,12 +413,12 @@ export default function RequestsPage() {
           sortDir={order}
           onSort={handleSort}
           maxHeight={null}
-          onRowMouseEnter={(row: any) => {
+          onRowMouseEnter={(row: Record<string, any>) => {
             if (row.conversationId)
               setHoveredConversationId(row.conversationId);
           }}
           onRowMouseLeave={() => setHoveredConversationId(null)}
-          getRowClassName={(row: any) => {
+          getRowClassName={(row: Record<string, any>) => {
             const id = row.requestId || row._id;
             const classes = [];
             if (
@@ -431,7 +431,7 @@ export default function RequestsPage() {
             else if (fadingIds.has(id)) classes.push(styles.newRowFadeOut);
             return classes.join(" ");
           }}
-          onRowClick={async (req: any) => {
+          onRowClick={async (req: Record<string, any>) => {
             setSelectedRequest(req);
             try {
               const full = await IrisService.getRequest(req.requestId);
@@ -471,9 +471,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <MessageSquare size={12} /> Conversations
                     </span>
-                    {(associations as any)?.conversations?.length > 0 ? (
+                    {(associations as Record<string, any>)?.conversations?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations.conversations.map((c: any) => (
+                        {associations?.conversations?.map((c: Record<string, any>) => (
                           <HistoryItemComponent
                             key={c.id}
                             item={{
@@ -513,9 +513,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <GitBranch size={12} /> Workflows
                     </span>
-                    {(associations as any)?.workflows?.length > 0 ? (
+                    {(associations as Record<string, any>)?.workflows?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations.workflows.map((w: any) => (
+                        {associations?.workflows?.map((w: Record<string, any>) => (
                           <HistoryItemComponent
                             key={w.id}
                             item={{
@@ -547,9 +547,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <FolderOpen size={12} /> Sessions
                     </span>
-                    {(associations as any)?.sessions?.length > 0 ? (
+                    {(associations as Record<string, any>)?.sessions?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations.sessions.map((s: any) => (
+                        {associations?.sessions?.map((s: Record<string, any>) => (
                           <HistoryItemComponent
                             key={s.id}
                             item={{
@@ -585,7 +585,7 @@ export default function RequestsPage() {
                 <div className={styles.detailSection}>
                   <div className={styles.detailSectionTitle}>Media Assets</div>
                   <div className={styles.mediaGrid}>
-                    {mediaAssets.map((asset: any, index: any) => (
+                    {mediaAssets.map((asset: Record<string, any>, index: number) => (
                       <MediaCardComponent
                         key={index}
                         media={{
@@ -616,19 +616,19 @@ export default function RequestsPage() {
                 </div>
               );
             })()}
-            {(selectedRequest as any).requestPayload && (
+            {(selectedRequest as Record<string, any>).requestPayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as any).requestPayload}
+                  data={(selectedRequest as Record<string, any>).requestPayload}
                   label="Request Payload"
                   maxHeight="400px"
                 />
               </div>
             )}
-            {(selectedRequest as any).responsePayload && (
+            {(selectedRequest as Record<string, any>).responsePayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as any).responsePayload}
+                  data={(selectedRequest as Record<string, any>).responsePayload}
                   label="Response Payload"
                   maxHeight="400px"
                 />

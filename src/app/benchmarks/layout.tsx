@@ -4,6 +4,6 @@ export const metadata = {
     "Create custom LLM accuracy tests and benchmark models with pass/fail evaluation.",
 };
 
-export default function BenchmarksLayout({ children }: any) {
+export default function BenchmarksLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

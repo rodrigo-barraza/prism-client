@@ -4,6 +4,6 @@ export const metadata = {
     "Generate, convert, and manage text-to-speech and speech-to-text content with multi-provider AI models.",
 };
 
-export default function TextLayout({ children }: any) {
+export default function TextLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

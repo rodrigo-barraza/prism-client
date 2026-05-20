@@ -560,7 +560,7 @@ export default function DashboardPage() {
 
       {/* -- Recent Traces -- */}
       <TracesTableComponent
-        sessions={recentTraces}
+        traces={recentTraces}
         compact
         maxHeight={420}
         title={

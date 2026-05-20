@@ -31,11 +31,11 @@ export default function ProvidersPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [modelStats, setModelStats] = useState<any[]>([]);
+  const [modelStats, setModelStats] = useState<Record<string, any>[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [expandedProvider, setExpandedProvider] = useState(null);
-  const [rateLimits, setRateLimits] = useState<any>({});
+  const [rateLimits, setRateLimits] = useState<Record<string, any>>({});
 
   useEffect(() => {
     // Immediately enter loading state and clear stale data when filters change
@@ -46,7 +46,7 @@ export default function ProvidersPage() {
     async function load() {
       try {
         const params = {};
-        if (projectFilter) (params as any).project = projectFilter;
+        if (projectFilter) (params as Record<string, any>).project = projectFilter;
         Object.assign(params, buildDateRangeParams(dateRange));
         const [models, limits] = await Promise.all([
           IrisService.getModelStats(params),
@@ -56,8 +56,8 @@ export default function ProvidersPage() {
         ]);
         setModelStats(models);
         setRateLimits(limits);
-      } catch (error: any) {
-        setError(error.message);
+      } catch (error: unknown) {
+        setError(error instanceof Error ? error.message : String(error));
       } finally {
         setLoading(false);
       }
@@ -68,9 +68,9 @@ export default function ProvidersPage() {
   // Aggregate by provider
   const providers = useMemo(() => {
     const map = {};
-    modelStats.forEach((m: any) => {
-      if (!(map as any)[m.provider]) {
-        (map as any)[m.provider] = {
+    modelStats.forEach((m: Record<string, any>) => {
+      if (!(map as Record<string, any>)[m.provider]) {
+        (map as Record<string, any>)[m.provider] = {
           provider: m.provider,
           totalRequests: 0,
           totalCost: 0,
@@ -81,7 +81,7 @@ export default function ProvidersPage() {
           _latencyCount: 0,
         };
       }
-      const p = (map as any)[m.provider];
+      const p = (map as Record<string, any>)[m.provider];
       p.totalRequests += m.totalRequests;
       p.totalCost += m.totalCost;
       p.totalTokens += m.totalTokens;
@@ -90,26 +90,26 @@ export default function ProvidersPage() {
       p.models.push(m);
     });
 
-    return Object.values(map)
-      .map((p: any) => ({
+    return (Object.values(map) as Record<string, any>[])
+      .map((p: Record<string, any>) => ({
         ...p,
         avgLatency: p._latencyCount ? p._latencySum / p._latencyCount : 0,
         models: p.models.sort(
-          (a: any, b: any) => b.totalRequests - a.totalRequests,
+          (a: Record<string, any>, b: Record<string, any>) => b.totalRequests - a.totalRequests,
         ),
       }))
-      .sort((a: any, b: any) => b.totalRequests - a.totalRequests);
+      .sort((a: Record<string, any>, b: Record<string, any>) => b.totalRequests - a.totalRequests);
   }, [modelStats]);
 
   const totalRequests =
-    providers.reduce((s: any, p: any) => s + p.totalRequests, 0) || 1;
+    providers.reduce((s: number, p: Record<string, any>) => s + p.totalRequests, 0) || 1;
 
   const modelColumns = useMemo(
     () => [
       {
         key: "model",
         label: "Model",
-        render: (m: any) => (
+        render: (m: Record<string, any>) => (
           <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
             {m.model}
           </span>
@@ -118,31 +118,31 @@ export default function ProvidersPage() {
       {
         key: "totalRequests",
         label: "Requests",
-        render: (m: any) => formatNumber(m.totalRequests),
+        render: (m: Record<string, any>) => formatNumber(m.totalRequests),
         align: "right",
       },
       {
         key: "totalTokens",
         label: "Tokens",
-        render: (m: any) => formatNumber(m.totalTokens),
+        render: (m: Record<string, any>) => formatNumber(m.totalTokens),
         align: "right",
       },
       {
         key: "avgTokensPerSec",
         label: "Tok/s",
-        render: (m: any) => formatTokensPerSec(m.avgTokensPerSec),
+        render: (m: Record<string, any>) => formatTokensPerSec(m.avgTokensPerSec),
         align: "right",
       },
       {
         key: "totalCost",
         label: "Cost",
-        render: (m: any) => formatCost(m.totalCost),
+        render: (m: Record<string, any>) => formatCost(m.totalCost),
         align: "right",
       },
       {
         key: "avgLatency",
         label: "Avg Latency",
-        render: (m: any) => formatLatency(m.avgLatency),
+        render: (m: Record<string, any>) => formatLatency(m.avgLatency),
         align: "right",
       },
     ],
@@ -180,11 +180,11 @@ export default function ProvidersPage() {
       {loading && <LoadingMessage message="Loading provider data..." />}
 
       <div className={styles.providerList}>
-        {providers.map((p: any, i: any) => {
+        {providers.map((p: Record<string, any>, i: number) => {
           const color = PROVIDER_COLORS[i % PROVIDER_COLORS.length];
           const share = ((p.totalRequests / totalRequests) * 100).toFixed(1);
           const isExpanded = expandedProvider === p.provider;
-          const providerLimits = (rateLimits as any)[p.provider];
+          const providerLimits = (rateLimits as Record<string, any>)[p.provider];
 
           return (
             <div key={p.provider} className={styles.providerCard}>
@@ -249,7 +249,7 @@ export default function ProvidersPage() {
                   <TableComponent
                     columns={modelColumns}
                     data={p.models}
-                    getRowKey={(m: any, i: any) => `${m.model}-${i}`}
+                    getRowKey={(m: Record<string, any>, i: number) => `${m.model}-${i}`}
                   />
                 </div>
               )}
@@ -263,7 +263,7 @@ export default function ProvidersPage() {
 
 // -- Rate Limit Panel ------------------------------------------
 
-function RateLimitPanel({ data }: any) {
+function RateLimitPanel({ data }: { data: Record<string, any> }) {
   const { dynamic, models, note } = data;
 
   if (!models || Object.keys(models).length === 0) return null;
@@ -275,7 +275,7 @@ function RateLimitPanel({ data }: any) {
         {note && <span className={styles.rateLimitMeta}>{note}</span>}
       </div>
       <div className={styles.rateLimitModels}>
-        {Object.entries(models).map(([modelName, modelData]: any) => (
+        {Object.entries(models).map(([modelName, modelData]: [string, any]) => (
           <ModelRateLimitCard
             key={modelName}
             modelName={modelName}
@@ -293,7 +293,7 @@ function RateLimitPanel({ data }: any) {
  * - Dynamic (OpenAI/Anthropic): shows remaining/limit progress bars per window (RPM, TPM).
  * - Static (Google): shows fixed RPM/TPM/RPD values.
  */
-function ModelRateLimitCard({ modelName, modelData, dynamic }: any) {
+function ModelRateLimitCard({ modelName, modelData, dynamic }: { modelName: string; modelData: Record<string, any>; dynamic?: boolean }) {
   // Static model (Google) — simple metric display
   if (!dynamic) {
     return (
@@ -367,7 +367,7 @@ function ModelRateLimitCard({ modelName, modelData, dynamic }: any) {
 /**
  * Compact progress bar with label, remaining/limit, and optional reset timer.
  */
-function LimitBar({ label, remaining, limit, reset }: any) {
+function LimitBar({ label, remaining, limit, reset }: { label: string; remaining: number; limit: number; reset?: string }) {
   if (limit == null || limit === 0) return null;
 
   const rem = remaining ?? 0;
@@ -397,7 +397,7 @@ function LimitBar({ label, remaining, limit, reset }: any) {
   );
 }
 
-function RateLimitMetric({ label, value }: any) {
+function RateLimitMetric({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <span className={styles.rateLimitMetric}>
       <span className={styles.rateLimitMetricValue}>

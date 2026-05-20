@@ -4,6 +4,6 @@ export const metadata = {
     "Monitor and inspect all AI conversations across projects. View messages, token usage, and generation status in real time.",
 };
 
-export default function AdminConversationsLayout({ children }: any) {
+export default function AdminConversationsLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

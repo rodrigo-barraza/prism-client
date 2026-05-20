@@ -47,7 +47,7 @@ import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000; // 5s
 
-export default function ConversationsPage(props: any) {
+export default function ConversationsPage(props: { searchParams?: Record<string, string>; params?: Record<string, string>; initialId?: string | null; traceId?: string | null }) {
   return (
     <Suspense>
       <ConversationsPageInner {...props} />
@@ -55,7 +55,7 @@ export default function ConversationsPage(props: any) {
   );
 }
 
-function ConversationsPageInner({ initialId = null, traceId = null }: any) {
+function ConversationsPageInner({ initialId = null, traceId = null }: { initialId?: string | null; traceId?: string | null }) {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const searchParams = useSearchParams();
@@ -69,29 +69,29 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
     sessionFilter,
     setSessionFilter,
   } = useAdminHeader();
-  const [conversations, setConversations] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<Record<string, any>[]>([]);
   const [conversationsHasMore, setConversationsHasMore] = useState(false);
   const [conversationsLoading, setConversationsLoading] = useState(false);
-  const conversationsPageRef = useRef<any>(1);
-  const conversationsTotalRef = useRef<any>(0);
+  const conversationsPageRef = useRef<number>(1);
+  const conversationsTotalRef = useRef<number>(0);
 
-  const [error, setError] = useState<any>(null);
-  const [selectedId, setSelectedId] = useState<any>(initialId);
-  const [selectedConv, setSelectedConv] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialId);
+  const [selectedConv, setSelectedConv] = useState<Record<string, any> | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<Record<string, any> | null>(null);
 
-  const [newIds, setNewIds] = useState<any>(new Set());
+  const [newIds, setNewIds] = useState<Set<string>>(new Set());
   const [generatingCount, setGeneratingCount] = useState(0);
   const [changeStreamsActive, setChangeStreamsActive] = useState(false);
 
-  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [workflows, setWorkflows] = useState<Record<string, any>[]>([]);
   const [leftTab, setLeftTab] = useState("settings");
-  const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
+  const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   const knownIdsRef = useRef<any>(null); // null = not yet initialized
-  const lastFingerprintRef = useRef<any>("");
-  const autoSelectedRef = useRef<any>(!!initialId);
+  const lastFingerprintRef = useRef<string>("");
+  const autoSelectedRef = useRef<boolean>(!!initialId);
   const viewerBodyRef = useRef<any>(null);
 
   // Sync the session parameter into the admin header context
@@ -115,18 +115,18 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
 
     // Load favorites
     PrismService.getFavorites("model")
-      .then((favs: any) => setFavoriteKeys(favs.map((f: any) => f.key)))
+      .then((favs: Record<string, any>[]) => setFavoriteKeys(favs.map((f: Record<string, any>) => f.key as string)))
       .catch(() => {});
   }, []);
 
   // -- Favorites -------------------------------------------------
   const handleToggleFavorite = useCallback(
-    async (key: any) => {
+    async (key: string) => {
       if (favoriteKeys.includes(key)) {
-        setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
+        setFavoriteKeys((prev) => prev.filter((k: string) => k !== key));
         PrismService.removeFavorite("model", key).catch(() => {});
       } else {
-        setFavoriteKeys((prev: any) => [...prev, key]);
+        setFavoriteKeys((prev) => [...prev, key]);
         const [provider, ...rest] = key.split(":");
         PrismService.addFavorite("model", key, {
           provider,
@@ -158,19 +158,19 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
       };
       // When filtering by session, skip date/project filters
       if (activeSession) {
-        (params as any).trace = activeSession;
+        (params as Record<string, any>).trace = activeSession;
       } else {
         Object.assign(params, buildDateRangeParams(dateRange));
-        if (projectFilter) (params as any).project = projectFilter;
+        if (projectFilter) (params as Record<string, any>).project = projectFilter;
       }
-      if (providerFilter) (params as any).provider = providerFilter;
-      if (modelFilter) (params as any).model = modelFilter;
+      if (providerFilter) (params as Record<string, any>).provider = providerFilter;
+      if (modelFilter) (params as Record<string, any>).model = modelFilter;
       const data = await IrisService.getConversations(params);
       const list = data.data || [];
 
       // Build fingerprint from meaningful fields
       const fp = list
-        .map((c: any) => `${c.id}:${c.messages?.length || c.messageCount || 0}`)
+        .map((c: Record<string, any>) => `${c.id}:${c.messages?.length || c.messageCount || 0}`)
         .join("|");
 
       if (fp !== lastFingerprintRef.current) {
@@ -185,7 +185,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
       setConversationsHasMore(list.length < (data.total || 0));
 
       // Track new IDs
-      const currentIds = new Set(list.map((c: any) => c.id));
+      const currentIds = new Set(list.map((c: Record<string, any>) => c.id));
       if (knownIdsRef.current === null) {
         // First load — mark everything as known
         knownIdsRef.current = currentIds;
@@ -193,12 +193,12 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
         // Find new IDs that weren't known before
         const freshIds = new Set();
         for (const id of currentIds) {
-          if (!(knownIdsRef.current as any).has(id)) freshIds.add(id);
+          if (!(knownIdsRef.current as Set<string>).has(id)) freshIds.add(id);
         }
         if (freshIds.size > 0) {
-          setNewIds((prev: any) => {
+          setNewIds((prev) => {
             const merged = new Set(prev);
-            for (const id of freshIds) merged.add(id);
+            for (const id of Array.from(freshIds)) merged.add(id as string);
             return merged;
           });
           // Update known IDs
@@ -212,9 +212,9 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
         selectConversation(list[0].id);
       }
 
-      setError((prev: any) => (prev !== null ? null : prev));
-    } catch (error: any) {
-      setError(error.message);
+      setError((prev) => (prev !== null ? null : prev));
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error));
     }
   }, [projectFilter, providerFilter, modelFilter, dateRange, activeSession]);
 
@@ -230,21 +230,21 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
         order: "desc",
       };
       if (activeSession) {
-        (params as any).trace = activeSession;
+        (params as Record<string, any>).trace = activeSession;
       } else {
         Object.assign(params, buildDateRangeParams(dateRange));
-        if (projectFilter) (params as any).project = projectFilter;
+        if (projectFilter) (params as Record<string, any>).project = projectFilter;
       }
-      if (providerFilter) (params as any).provider = providerFilter;
-      if (modelFilter) (params as any).model = modelFilter;
+      if (providerFilter) (params as Record<string, any>).provider = providerFilter;
+      if (modelFilter) (params as Record<string, any>).model = modelFilter;
       const data = await IrisService.getConversations(params);
       const list = data.data || [];
       conversationsPageRef.current = nextPage;
-      setConversations((prev: any) => [...prev, ...list]);
+      setConversations((prev) => [...prev, ...list]);
       setConversationsHasMore(
         conversations.length + list.length < (data.total || 0),
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load more conversations:", error);
     } finally {
       setConversationsLoading(false);
@@ -264,24 +264,24 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
   // globally by AdminShell to avoid duplicate SSE connections).
   useEffect(() => {
     IrisService.getConversationStats(projectFilter)
-      .then((data: any) => {
+      .then((data: Record<string, any>) => {
         setGeneratingCount(data.generatingCount || 0);
       })
       .catch(() => {});
   }, [projectFilter]);
 
   // Live conversation detail — re-fetch when Change Streams detect updates
-  const fingerprintRef = useRef<any>("");
+  const fingerprintRef = useRef<string>("");
   const [fingerprint, setFingerprint] = useState("");
   const selectedIdRef = useRef<any>(selectedId);
   selectedIdRef.current = selectedId;
 
   // Refresh the selected conversation detail
-  const refreshSelectedConv = useCallback(async (id: any) => {
+  const refreshSelectedConv = useCallback(async (id: string) => {
     if (!id) return;
     try {
       const full: any = await IrisService.getConversation(id);
-      setSelectedConv((prev: any) => {
+      setSelectedConv((prev) => {
         const oldMsgs = prev?.messages || [];
         const newMsgs = full?.messages || [];
         if (oldMsgs.length !== newMsgs.length) return full;
@@ -292,7 +292,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
         if (prev?.isGenerating !== full?.isGenerating) return full;
         return prev;
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to refresh selected conversation:", error);
     }
   }, []);
@@ -301,7 +301,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
   useEffect(() => {
     if (!changeStreamsActive) return;
 
-    const onEvent = (event: any) => {
+    const onEvent = (event: Record<string, any>) => {
       if (
         event.collection === "conversations" &&
         selectedIdRef.current &&
@@ -342,7 +342,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
     // Subscribe to change stream SSE for real-time updates
     let pollInterval: NodeJS.Timeout | null = null;
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: any) => {
+      onStatus: (data: Record<string, any>) => {
         setChangeStreamsActive(!!data.changeStreams);
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
@@ -351,7 +351,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
           }
         }
       },
-      onChange: (event: any) => {
+      onChange: (event: Record<string, any>) => {
         if (event.collection === "conversations") {
           loadConversations();
         }
@@ -380,7 +380,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
     if (!loadingDetail && selectedConv && viewerBodyRef.current) {
       const element = viewerBodyRef.current;
       requestAnimationFrame(() => {
-        (element as any).scrollTop = (element as any).scrollHeight;
+        (element as HTMLElement).scrollTop = (element as HTMLElement).scrollHeight;
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -388,7 +388,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
 
   const generatingDisplay = useMemo(() => generatingCount, [generatingCount]);
 
-  async function selectConversation(id: any) {
+  async function selectConversation(id: string) {
     if (id === selectedId) return;
     setSelectedId(id);
     // Update URL for deep-linking (preserve all filter params)
@@ -404,7 +404,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
       `/admin/conversations/${id}${qs ? `?${qs}` : ""}`,
     );
     // Remove NEW badge when clicking into a conversation
-    setNewIds((prev: any) => {
+    setNewIds((prev) => {
       if (!prev.has(id)) return prev;
       const next = new Set(prev);
       next.delete(id);
@@ -422,7 +422,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
   }
 
   const convTitle = selectedConv
-    ? (selectedConv as any).title || "Untitled Conversation"
+    ? (selectedConv as Record<string, any>).title || "Untitled Conversation"
     : "Select a conversation";
 
   const {
@@ -433,12 +433,12 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
     requestCount,
     usedTools,
     modalities,
-  } = useSessionStats((selectedConv as any)?.messages || []);
+  } = useSessionStats((selectedConv as Record<string, any>)?.messages || []);
 
   const settingsWithDefaults = useMemo(
     () => ({
       ...SETTINGS_DEFAULTS,
-      ...((selectedConv as any)?.settings || {}),
+      ...((selectedConv as Record<string, any>)?.settings || {}),
     }),
     [selectedConv],
   );
@@ -493,7 +493,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
       <div className={styles.chatContainer}>
         <ThreePanelLayout
           leftPanel={
-            (selectedConv as any)?.settings ? (
+            (selectedConv as Record<string, any>)?.settings ? (
               <>
                 <TabBarComponent
                   tabs={[
@@ -524,24 +524,24 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
                     hideProviderModel
                     workflows={workflows}
                     sessionStats={
-                      (selectedConv as any)?.messages?.length > 0
+                      (selectedConv as Record<string, any>)?.messages?.length > 0
                         ? (() => {
                             const displayMessages = prepareDisplayMessages(
-                              (selectedConv as any).messages,
+                              (selectedConv as Record<string, any>).messages,
                             );
                             return {
                               messageCount: displayMessages.length,
                               deletedCount:
-                                ((selectedConv as any).messageCount ||
-                                  (selectedConv as any).messages.length) -
-                                (selectedConv as any).messages.length,
+                                ((selectedConv as Record<string, any>).messageCount ||
+                                  (selectedConv as Record<string, any>).messages.length) -
+                                (selectedConv as Record<string, any>).messages.length,
                               requestCount,
                               uniqueModels,
                               uniqueProviders,
                               totalTokens,
                               totalCost,
                               originalTotalCost:
-                                (selectedConv as any).totalCost || 0,
+                                (selectedConv as Record<string, any>).totalCost || 0,
                               usedTools,
                               modalities,
                             };
@@ -575,7 +575,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
             <HistoryPanel
               sessions={conversations}
               activeId={selectedId}
-              onSelect={(conversation: any) =>
+              onSelect={(conversation: Record<string, any>) =>
                 selectConversation(conversation.id)
               }
               readOnly
@@ -596,10 +596,10 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
             selectedConv && (
               <div className={styles.headerMeta}>
                 <ProjectBadgeComponent
-                  project={(selectedConv as any).project}
+                  project={(selectedConv as Record<string, any>).project}
                 />
-                <UserBadgeComponent username={(selectedConv as any).username} />
-                {(selectedConv as any).isGenerating && (
+                <UserBadgeComponent username={(selectedConv as Record<string, any>).username} />
+                {(selectedConv as Record<string, any>).isGenerating && (
                   <span className={styles.generatingBadge}>
                     <Loader size={12} className={styles.spinning} />
                     Generating
@@ -609,7 +609,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
             )
           }
           headerCenter={
-            (selectedConv as any)?.settings?.provider ? (
+            (selectedConv as Record<string, any>)?.settings?.provider ? (
               <ModelPickerPopoverComponent
                 config={config}
                 settings={settingsWithDefaults}
@@ -634,9 +634,9 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
               <div className={styles.emptyViewer}>Loading conversation...</div>
             ) : (
               <MessageList
-                messages={prepareDisplayMessages(selectedConv.messages || [])}
+                messages={prepareDisplayMessages((selectedConv as Record<string, any>).messages || [])}
                 readOnly
-                systemPrompt={selectedConv.systemPrompt}
+                systemPrompt={(selectedConv as Record<string, any>).systemPrompt}
               />
             )}
           </div>

@@ -4,6 +4,6 @@ export const metadata = {
     "Browse all available tools from the Tools API — organized by domain, with live parameter schemas and search.",
 };
 
-export default function ToolsLayout({ children }: any) {
+export default function ToolsLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

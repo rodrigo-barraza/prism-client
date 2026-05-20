@@ -30,24 +30,24 @@ import { prepareDisplayMessages } from "../components/MessageListComponent";
  * (minio://, data:image/…, https://…jpg, etc.) with their origin
  * ("user" for request, "ai" for response).
  */
-export function extractMediaAssets(object: any) {
+export function extractMediaAssets(object: Record<string, any>) {
   const seen = new Set();
-  const assets: any[] = [];
-  const search = (node: any, origin: any) => {
+  const assets: Record<string, any>[] = [];
+  const search = (node: string | Record<string, any> | Record<string, any>[], origin: string) => {
     if (!node) return;
     if (typeof node === "string") {
       if (seen.has(node)) return;
       if (
-        node.startsWith("minio://") ||
-        node.startsWith("data:image/") ||
-        node.startsWith("data:audio/") ||
-        node.startsWith("data:video/") ||
-        node.startsWith("data:application/pdf")
+        (typeof node === "string" && node.startsWith("minio://")) ||
+        (typeof node === "string" && node.startsWith("data:image/")) ||
+        (typeof node === "string" && node.startsWith("data:audio/")) ||
+        (typeof node === "string" && node.startsWith("data:video/")) ||
+        (typeof node === "string" && node.startsWith("data:application/pdf"))
       ) {
         seen.add(node);
         assets.push({ url: node, origin });
-      } else if (node.startsWith("http://") || node.startsWith("https://")) {
-        const ext = node.split("?")[0].split(".").pop()?.toLowerCase();
+      } else if ((typeof node === "string" && node.startsWith("http://")) || (typeof node === "string" && node.startsWith("https://"))) {
+        const ext = (node as string).split("?")[0].split(".").pop()?.toLowerCase();
         if (
           [
             "png",
@@ -70,9 +70,9 @@ export function extractMediaAssets(object: any) {
         }
       }
     } else if (Array.isArray(node)) {
-      node.forEach((n: any) => search(n, origin));
+      node.forEach((n: Record<string, any>) => search(n, origin));
     } else if (typeof node === "object") {
-      Object.values(node).forEach((n: any) => search(n, origin));
+      Object.values(node).forEach((n: Record<string, any>) => search(n, origin));
     }
   };
   search(object?.requestPayload, "user");
@@ -83,7 +83,7 @@ export function extractMediaAssets(object: any) {
 /**
  * Classify a media reference string into a type for MediaCardComponent.
  */
-export function getMediaTypeFromRef(ref: any) {
+export function getMediaTypeFromRef(ref: string) {
   if (!ref) return "image";
   const isData = ref.startsWith("data:");
   if (isData) {
@@ -93,8 +93,8 @@ export function getMediaTypeFromRef(ref: any) {
     return "image";
   }
   const ext = ref.split("?")[0].split(".").pop()?.toLowerCase();
-  if (["mp3", "wav", "ogg", "webm"].includes(ext)) return "audio";
-  if (["mp4", "avi", "mov"].includes(ext)) return "video";
+  if (["mp3", "wav", "ogg", "webm"].includes(ext as string)) return "audio";
+  if (["mp4", "avi", "mov"].includes(ext as string)) return "video";
   if (ext === "pdf") return "pdf";
   return "image";
 }
@@ -108,7 +108,7 @@ export function getMediaTypeFromRef(ref: any) {
  * Both /admin/requests and /admin/traces pass the exact same
  * section definitions — this function is the single source of truth.
  */
-export function buildRequestDetailSections(req: any) {
+export function buildRequestDetailSections(req: Record<string, any> | null) {
   if (!req) return [];
   return [
     {
@@ -390,7 +390,7 @@ export function buildRequestDetailSections(req: any) {
  * Returns { messages, systemPrompt } or null if there's nothing
  * to display.
  */
-export function reconstructChatMessages(selectedRequest: any) {
+export function reconstructChatMessages(selectedRequest: Record<string, any>) {
   const reqPayload = selectedRequest?.requestPayload;
   const resPayload = selectedRequest?.responsePayload;
   if (!reqPayload?.messages?.length) return null;
@@ -416,7 +416,7 @@ export function reconstructChatMessages(selectedRequest: any) {
     } else if (resPayload.candidates?.[0]?.content?.parts) {
       // Google format
       assistantMsg.content = resPayload.candidates[0].content.parts
-        .map((p: any) => p.text || "")
+        .map((p: Record<string, any>) => p.text || "")
         .join("");
     } else if (resPayload.choices?.[0]?.message?.content) {
       // OpenAI format
@@ -429,7 +429,7 @@ export function reconstructChatMessages(selectedRequest: any) {
     const toolCalls =
       resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls;
     if (toolCalls?.length) {
-      (assistantMsg as any).toolCalls = toolCalls.map((tc: any) => ({
+      (assistantMsg as Record<string, any>).toolCalls = toolCalls.map((tc: Record<string, any>) => ({
         id: tc.id,
         name: tc.function?.name || tc.name,
         args:
@@ -441,18 +441,18 @@ export function reconstructChatMessages(selectedRequest: any) {
 
     // Extract generated images
     if (resPayload.images?.length) {
-      (assistantMsg as any).images = resPayload.images;
+      (assistantMsg as Record<string, any>).images = resPayload.images;
     }
 
     // Extract thinking content
     if (resPayload.thinking) {
-      (assistantMsg as any).thinking = resPayload.thinking;
+      (assistantMsg as Record<string, any>).thinking = resPayload.thinking;
     }
 
     if (
       assistantMsg.content ||
-      (assistantMsg as any).toolCalls?.length ||
-      (assistantMsg as any).images?.length
+      (assistantMsg as Record<string, any>).toolCalls?.length ||
+      (assistantMsg as Record<string, any>).images?.length
     ) {
       chatMessages.push(assistantMsg);
     }
@@ -460,7 +460,7 @@ export function reconstructChatMessages(selectedRequest: any) {
 
   const messages = prepareDisplayMessages(chatMessages);
   const systemPrompt = chatMessages.find(
-    (m: any) => m.role === "system",
+    (m: Record<string, any>) => m.role === "system",
   )?.content;
   if (!messages.length) return null;
 

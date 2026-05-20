@@ -4,6 +4,6 @@ export const metadata = {
     "Browse and manage all AI-generated images, audio, and media assets across the Prism AI Gateway.",
 };
 
-export default function AdminMediaLayout({ children }: any) {
+export default function AdminMediaLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

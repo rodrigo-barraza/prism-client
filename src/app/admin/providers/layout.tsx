@@ -4,6 +4,6 @@ export const metadata = {
     "Manage and monitor connected AI providers, their endpoints, health status, and available models.",
 };
 
-export default function AdminProvidersLayout({ children }: any) {
+export default function AdminProvidersLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

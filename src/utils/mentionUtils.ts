@@ -19,21 +19,21 @@ import badgeStyles from "../components/MentionBadgeComponent.module.css";
  * @param {HTMLElement} element — root contentEditable element
 
  */
-export function serializeEditable(element: any) {
+export function serializeEditable(element: Node) {
   let text = "";
   for (const node of element.childNodes) {
     if (node.nodeType === Node.TEXT_NODE) {
       text += node.textContent;
-    } else if (node.dataset?.mentionPath) {
+    } else if ((node as HTMLElement).dataset?.mentionPath) {
       // Include line range suffix if present (e.g. @path#L10 or @path#L10-25)
-      let ref = `@${node.dataset.mentionPath}`;
-      const ls = node.dataset.mentionLineStart;
-      const le = node.dataset.mentionLineEnd;
+      let ref = `@${(node as HTMLElement).dataset.mentionPath}`;
+      const ls = (node as HTMLElement).dataset.mentionLineStart;
+      const le = (node as HTMLElement).dataset.mentionLineEnd;
       if (ls) {
         ref += le && le !== ls ? `#L${ls}-${le}` : `#L${ls}`;
       }
       text += ref;
-    } else if (node.tagName === "BR") {
+    } else if ((node as HTMLElement).tagName === "BR") {
       text += "\n";
     } else {
       // Block wrappers created by Enter in contentEditable (div, p)
@@ -54,7 +54,7 @@ export function serializeEditable(element: any) {
  * @param {string} prefix — accumulated path prefix
  * @returns {{ path: string, name: string, type: string }[]}
  */
-export function flattenTree(nodes: any, prefix = ""): any[] {
+export function flattenTree(nodes: Record<string, any>[], prefix = ""): Record<string, any>[] {
   const out = [];
   for (const n of nodes) {
     const p = prefix ? `${prefix}/${n.name}` : n.name;
@@ -77,7 +77,7 @@ export function flattenTree(nodes: any, prefix = ""): any[] {
  * @param {number} cursorOffset — cursor position within the text
  * @returns {{ query: string, anchorOffset: number } | null}
  */
-export function detectMentionToken(text: any, cursorOffset: any) {
+export function detectMentionToken(text: string, cursorOffset: number) {
   let i = cursorOffset - 1;
   while (i >= 0 && text[i] !== "@" && text[i] !== " " && text[i] !== "\n") i--;
   if (
@@ -101,13 +101,13 @@ export function detectMentionToken(text: any, cursorOffset: any) {
  * @param {number} limit — max results to return
 
  */
-export function filterMentionResults(entries: any, query: any, limit = 20) {
+export function filterMentionResults(entries: Record<string, any>[] | null, query: string, limit = 20) {
   if (!entries || !entries.length) return [];
   if (!query) return entries.slice(0, limit);
   const q = query.toLowerCase();
   return entries
     .filter(
-      (e: any) =>
+      (e: Record<string, any>) =>
         e.path.toLowerCase().includes(q) || e.name.toLowerCase().includes(q),
     )
     .slice(0, limit);
@@ -124,7 +124,7 @@ export function filterMentionResults(entries: any, query: any, limit = 20) {
  * @param {string} text — serialized message content
  * @returns {{ type: "text" | "mention", value: string }[]}
  */
-export function parseMentionTokens(text: any) {
+export function parseMentionTokens(text: string) {
   if (!text) return [{ type: "text", value: "" }];
 
   // Match @path tokens — path must contain at least one `/` or `.` to
@@ -148,8 +148,8 @@ export function parseMentionTokens(text: any) {
     const segment = { type: "mention", value: match[1] };
     // Extract line range if present
     if (match[2]) {
-      (segment as any).lineStart = parseInt(match[2], 10);
-      if (match[3]) (segment as any).lineEnd = parseInt(match[3], 10);
+      (segment as Record<string, any>).lineStart = parseInt(match[2], 10);
+      if (match[3]) (segment as Record<string, any>).lineEnd = parseInt(match[3], 10);
     }
     segments.push(segment);
     lastIndex = mentionRe.lastIndex;
@@ -177,42 +177,42 @@ export function parseMentionTokens(text: any) {
  * @param {boolean} [opts.stale] — true if the path no longer exists
 
  */
-export function createMentionBadge(path: any, name: any, type: any, opts = {}) {
+export function createMentionBadge(path: string, name: string, type: string | undefined, opts: Record<string, any> = {}) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
   const classes = [badgeStyles.mentionBadge];
-  if ((opts as any).stale) classes.push(badgeStyles.mentionBadgeStale);
+  if ((opts as Record<string, any>).stale) classes.push(badgeStyles.mentionBadgeStale);
   badge.className = classes.join(" ");
   badge.dataset.mentionPath = path;
   badge.dataset.mentionType = type || "file";
   // Store line range in data attributes for serialization
-  if ((opts as any).lineStart != null) {
-    badge.dataset.mentionLineStart = String((opts as any).lineStart);
+  if ((opts as Record<string, any>).lineStart != null) {
+    badge.dataset.mentionLineStart = String((opts as Record<string, any>).lineStart);
     if (
-      (opts as any).lineEnd != null &&
-      (opts as any).lineEnd !== (opts as any).lineStart
+      (opts as Record<string, any>).lineEnd != null &&
+      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
     ) {
-      badge.dataset.mentionLineEnd = String((opts as any).lineEnd);
+      badge.dataset.mentionLineEnd = String((opts as Record<string, any>).lineEnd);
     }
   }
   // Build display name with line suffix (#L format — GitHub convention)
   let displayName = name;
-  if ((opts as any).lineStart != null) {
+  if ((opts as Record<string, any>).lineStart != null) {
     displayName +=
-      (opts as any).lineEnd != null &&
-      (opts as any).lineEnd !== (opts as any).lineStart
-        ? `#L${(opts as any).lineStart}-${(opts as any).lineEnd}`
-        : `#L${(opts as any).lineStart}`;
+      (opts as Record<string, any>).lineEnd != null &&
+      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
+        ? `#L${(opts as Record<string, any>).lineStart}-${(opts as Record<string, any>).lineEnd}`
+        : `#L${(opts as Record<string, any>).lineStart}`;
   }
   // Native title attribute — used as tooltip fallback inside overflow-clipped
   // contentEditable containers where the ::after CSS tooltip gets cut off.
   let titleText = path;
-  if ((opts as any).lineStart != null) {
+  if ((opts as Record<string, any>).lineStart != null) {
     titleText +=
-      (opts as any).lineEnd != null &&
-      (opts as any).lineEnd !== (opts as any).lineStart
-        ? `#L${(opts as any).lineStart}-${(opts as any).lineEnd}`
-        : `#L${(opts as any).lineStart}`;
+      (opts as Record<string, any>).lineEnd != null &&
+      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
+        ? `#L${(opts as Record<string, any>).lineStart}-${(opts as Record<string, any>).lineEnd}`
+        : `#L${(opts as Record<string, any>).lineStart}`;
   }
   badge.title = titleText;
   const icon = type === "directory" ? "📁" : "📄";
@@ -248,9 +248,9 @@ export function placeCaretAfter(node: any) {
  */
 export function applyMentionToTextNode(
   textNode: any,
-  anchorOffset: any,
-  cursorOffset: any,
-  badge: any,
+  anchorOffset: number,
+  cursorOffset: number,
+  badge: HTMLElement,
 ) {
   const before = textNode.textContent.slice(0, anchorOffset);
   const after = textNode.textContent.slice(cursorOffset);

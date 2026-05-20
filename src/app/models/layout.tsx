@@ -4,6 +4,6 @@ export const metadata = {
     "Browse, compare, and filter AI models across all connected providers. View capabilities, modalities, and context windows.",
 };
 
-export default function ModelsLayout({ children }: any) {
+export default function ModelsLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

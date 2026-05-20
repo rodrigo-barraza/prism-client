@@ -38,7 +38,7 @@ export default function TracesTableComponent({
   sortDir,
   onSort,
   onRequestRowClick,
-}: any) {
+}: { traces?: Record<string, unknown>[]; emptyText?: string; compact?: boolean; mini?: boolean; title?: React.ReactNode; maxHeight?: number | string | null; sortKey?: string; sortDir?: string; onSort?: (key: string, dir: string) => void; onRequestRowClick?: (row: Record<string, unknown>) => void; }) {
   const SESSION_COLUMNS = [
     traceIdColumn(),
     projectColumn(),
@@ -58,7 +58,7 @@ export default function TracesTableComponent({
   ];
 
   // Remove costShare for traces — not useful without a global total
-  const allColumns = SESSION_COLUMNS.filter((c: any) => c.key !== "costShare");
+  const allColumns = SESSION_COLUMNS.filter((c: Record<string, any>) => c.key !== "costShare");
 
   const COMPACT_KEYS = [
     "id",
@@ -70,18 +70,18 @@ export default function TracesTableComponent({
     "duration",
   ];
   const columns = compact
-    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c: Record<string, any>) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (
     <TableComponent
       columns={columns}
       data={traces}
-      getRowKey={(s: any, i: any) => s.id || `trace-${i}`}
+      getRowKey={(s: Record<string, any>, i: number) => s.id || `trace-${i}`}
       sortKey={sortKey}
       sortDir={sortDir}
       onSort={onSort}
-      renderExpandedContent={(trace: any) => (
+      renderExpandedContent={(trace: Record<string, any>) => (
         <div className={styles.expandedPanels}>
           <RequestsTableComponent
             requests={trace.requests || []}

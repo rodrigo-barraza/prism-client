@@ -6,7 +6,7 @@ import { useEffect } from "react";
  * Root-level error boundary — catches errors in the root layout itself.
  * Must include its own <html> and <body> since the root layout has failed.
  */
-export default function GlobalError({ error, reset }: any) {
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error("[Prism] Root layout error:", error);
   }, [error]);
