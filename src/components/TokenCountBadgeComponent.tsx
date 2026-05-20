@@ -16,12 +16,6 @@ function easeOutCubic(t: any) {
  * When the value updates upward, the displayed number tweens (counting animation)
  * from the previous value to the new value, with a rainbow hue-rotate effect
  * on the text while the tween is active.
- *
- * @param {number} value — token count
- * @param {string} label — suffix label (e.g. "tokens in", "tokens out", "tokens total")
- * @param {boolean} [showIcon=true] — show Hash icon
-
-
  */
 export default function TokenCountBadgeComponent({
   value,

@@ -4,11 +4,6 @@ import { getRequestsColumns } from "../app/admin/requestsColumns";
 
 /**
  * RequestsTableComponent — reusable admin table for displaying request logs.
- *
-
- * @param {Array}    props.requests          - Array of request objects
-
-
  */
 export default function RequestsTableComponent({
   requests = [],

@@ -385,8 +385,6 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
 
 /**
  * Returns 3 columns with CountLinkComponent: Sessions, Conversations, Workflows.
- * @param entityKey — query-param key (e.g. "model", "provider", "project")
- * @param entityValue — (row) => value for the query param
  */
 export const countLinkColumns = (entityKey: string, entityValue: (row: TableRow) => string) => [
   {
@@ -751,7 +749,6 @@ export const benchmarkThinkingColumn = () => ({
 /**
  * Model file size column for benchmarks.
  * Shows the GGUF/weight file size for local models (e.g. "4.3 GB").
- * @param {Object} modelConfigMap  Map of "provider:modelName" → model config object
  */
 export const benchmarkSizeColumn = ({ modelConfigMap = {} }: { modelConfigMap?: Record<string, { size?: string }> } = {}) => ({
   key: "size",

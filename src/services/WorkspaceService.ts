@@ -91,8 +91,6 @@ export default class WorkspaceService {
 
   /**
    * Update user-configured workspace roots.
-   *
-   * @returns Updated workspace config with workspaceRoots, staticRoots, userRoots
    */
   static async update(roots: string[]): Promise<WorkspaceUpdateResponse> {
     const response = await fetch(`${API_BASE}/workspaces`, {
@@ -107,8 +105,6 @@ export default class WorkspaceService {
 
   /**
    * Validate a single workspace path without persisting.
-   *
-   * @returns Validation result with resolvedPath, isWsl, exists, etc.
    */
   static async validate(path: string): Promise<WorkspaceValidateResponse> {
     const response = await fetch(`${API_BASE}/workspaces/validate`, {
@@ -123,8 +119,6 @@ export default class WorkspaceService {
 
   /**
    * Fetch the directory tree for a workspace path.
-   *
-   * @returns Project summary with tree structure
    */
   static async tree(path: string, maxDepth = 3): Promise<WorkspaceTreeResponse> {
     const params = new URLSearchParams({ path });

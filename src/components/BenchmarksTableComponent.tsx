@@ -31,11 +31,6 @@ import styles from "./BenchmarksTableComponent.module.css";
  * Supports concurrent model execution: `activeModels` is a Map keyed
  * by "provider:model" → { model, progress, phase }. Multiple models
  * from different provider buckets can run simultaneously.
- *
-
- * @param {Array}    props.results           - Array of per-model result objects from a benchmark run
-
-
  */
 export default function BenchmarksTableComponent({
   results = [],

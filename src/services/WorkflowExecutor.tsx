@@ -120,8 +120,6 @@ async function resolveToDataUrl(ref: unknown): Promise<string | null> {
 /**
  * Execute a single model node.
 
- * @param {Array<{type: string, data: string}>} inputData - Collected inputs from edges
- * @returns {Promise<Object>} - { [modality]: data }
  */
 async function executeModelNode(
   node: WorkflowModelNode,

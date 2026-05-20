@@ -14,11 +14,6 @@ import {
 /**
  * ProjectsTableComponent — reusable admin table for displaying project-level
  * aggregated stats (requests, tokens, cost, latency, etc.).
- *
-
- * @param {Array}   props.projects          - Array of project stat objects
-
-
  */
 export default function ProjectsTableComponent({
   projects = [],

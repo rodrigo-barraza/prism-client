@@ -94,7 +94,6 @@ export default class AudioPlayerService {
 
   /**
    * Build a WAV Blob from all accumulated PCM chunks.
-   * @returns WAV blob or null if no data
    */
   buildWavBlob(): Blob | null {
     if (this.pcmChunks.length === 0) return null;

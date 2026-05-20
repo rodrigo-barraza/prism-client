@@ -324,8 +324,6 @@ export default function BenchmarkDetailPageComponent({
   /**
    * Build the unified SSE callbacks object shared by both `streamBenchmarkRun`
    * and `followBenchmarkRun`. Identical event handling — no duplication.
-   *
-
    */
   const buildBenchmarkSSECallbacks = useCallback(
     (overrides = {}) => ({

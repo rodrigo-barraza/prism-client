@@ -35,10 +35,6 @@ export interface ToolCallRecord {
 
 /**
  * getToolRequestsColumns — column definitions for the tool-call telemetry table.
- *
-
- * @param {number} [opts.totalDuration=1] — Total elapsed ms across all visible calls
- *                                          (used for Duration % proportion bar)
  */
 export const getToolRequestsColumns = ({ totalDuration = 1 }: { totalDuration?: number } = {}) => [
   createdAtColumn("timestamp"),

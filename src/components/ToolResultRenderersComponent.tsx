@@ -1621,9 +1621,6 @@ const TOOL_RESULT_REGISTRY = {
 
 /**
  * Resolve the appropriate result renderer for a tool call.
- *
-
- * @returns {{ Renderer: React.Component, language?: string }}
  */
 export function resolveToolResultRenderer(toolName: any) {
   return (
@@ -1633,11 +1630,6 @@ export function resolveToolResultRenderer(toolName: any) {
 
 /**
  * Render a tool call's result using the registry.
- *
-
- * @param {object} props.toolCall - The tool call object { name, args, result, id }
-
-
  */
 export function ToolResultView({
   toolCall,

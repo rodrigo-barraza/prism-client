@@ -57,16 +57,6 @@ function OriginBadge({ origin }: any) {
 
 /**
  * MediaCardComponent — a reusable card for rendering media previews.
- *
- * @param {object}   media           — the media item ({ url, mediaType, origin, convId, convTitle, model, timestamp })
- * @param {string}   [convBasePath]  — base path for conversation links (default: "/admin/conversations")
- * @param {boolean}  [compact]       — smaller variant for drawers / side panels
- * @param {boolean}  [showInfo]      — show the footer with conv link, model, and date (default: true)
- * @param {boolean}  [showOrigin]    — show the origin badge overlay (default: true)
- * @param {boolean}  [showFavorite]  — show the favorite button (default: false)
- * @param {boolean}  [isFavorite]    — whether the item is currently favorited
- * @param {Function} [onFavorite]    — callback when the favorite button is clicked
- * @param {Function} [onImageClick]  — callback when an image is clicked (for lightbox)
  */
 export default function MediaCardComponent({
   media,

@@ -8,13 +8,6 @@ import styles from "./TextContentComponent.module.css";
 
 /**
  * Reusable text content block with Raw / Preview toggle.
- *
- * @param {string}   label       – Section heading (e.g. "Text Content")
- * @param {string}   value       – The text to display / edit
- * @param {function} [onChange]  – If provided, the textarea is editable
- * @param {boolean}  [readOnly]  – Force read-only even when onChange is provided
- * @param {string}   [placeholder] – Textarea placeholder
- * @param {string}   [className] – Extra wrapper class
  */
 export default function TextContentComponent({
   label,

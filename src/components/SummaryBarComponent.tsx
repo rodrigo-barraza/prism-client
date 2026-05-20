@@ -10,11 +10,7 @@ import BenchmarkBarComponent from "./BenchmarkBarComponent";
  * Each item can be a simple value/label pair, or include an icon, color, or
  * a progress bar visualization.
  *
- * @param {Array<SummaryItem>} items — Stat items to display
- * @param {boolean} [live=false]     — Accent-bordered "live" variant (during active runs)
- * @param {string}  [className]      — Additional class on the wrapper
  *
- * @typedef {object} SummaryItem
  * @property {string|number} value    — Display value
  * @property {string}        [label]  — Label text below the value
  * @property {string}        [color]  — CSS color for the value

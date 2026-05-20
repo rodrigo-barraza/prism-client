@@ -88,11 +88,6 @@ const ASSERTION_TYPE_MAP = Object.fromEntries(
  *
  * Renders a list of behavioral assertions (replied, tool calls, thought, max turns)
  * with AND/OR combinators between them.
- *
- * @param {Array}    assertions       — Array of { type, operator?, operand? }
- * @param {string}   assertionOperator — "AND" | "OR"
- * @param {Function} onAssertionsChange   — (nextAssertions) => void
- * @param {Function} onOperatorChange     — (nextOperator) => void
  */
 export default function AgentAssertionsComponent({
   assertions,

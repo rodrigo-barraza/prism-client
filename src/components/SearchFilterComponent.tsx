@@ -9,9 +9,6 @@ import styles from "./SearchFilterComponent.module.css";
  *
  * When a value is selected, it renders as a removable badge chip below the trigger,
  * matching the badge pattern from FilterDropdownComponent.
- *
-
-
  */
 export default function SearchFilterComponent({
   options = [],

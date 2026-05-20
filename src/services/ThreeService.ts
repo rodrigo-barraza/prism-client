@@ -230,8 +230,6 @@ const ThreeService = {
 
   /**
    * Create a new Three.js instance bound to the given canvas element.
-   *
-   * @returns Instance ID
    */
   create(canvas: HTMLCanvasElement, options: ThreeCreateOptions = {}): string {
     const {

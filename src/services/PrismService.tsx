@@ -124,7 +124,6 @@ export default class PrismService {
   /**
    * Fetch local/self-hosted provider models (LM Studio, vLLM, Ollama).
    * Returns { models: { [provider]: [...] } } to merge into the main config.
-   * @returns {Promise<{ models: object }>}
    */
   static async getLocalConfig(): Promise<{ models: ModelsMap }> {
     return PrismService._request<{ models: ModelsMap }>("/config-local", { method: "GET" });
@@ -135,7 +134,6 @@ export default class PrismService {
    * Returns a new config with local models merged into textToText.models.
 
 
-   * @returns {object} Updated config
    */
   static mergeLocalModels(config: PrismConfig, localModels: ModelsMap): PrismConfig {
     if (!config || !localModels || Object.keys(localModels).length === 0) {
@@ -162,12 +160,6 @@ export default class PrismService {
    * Progressive config loading: fetches cloud config immediately, then
    * lazily fetches local provider models and calls onLocalMerge with the
    * updated config when they arrive.
-   *
-
-   * @param {Function} options.onConfig - Called immediately with cloud-only config
-   * @param {Function} options.onLocalMerge - Called when local models arrive, with merged config
-
-   * @returns {Promise<object>} The initial cloud config
    */
   static async getConfigWithLocalModels({
     onConfig,
@@ -210,7 +202,6 @@ export default class PrismService {
 
   /**
    * Trigger Prism to re-fetch tool schemas from tools-api.
-   * @returns {Promise<{ ok: boolean, count: number }>}
    */
   static async refreshBuiltInToolSchemas(): Promise<{ ok: boolean; count: number }> {
     return PrismService._request<{ ok: boolean; count: number }>("/config/tools/refresh", { method: "POST" });
@@ -218,7 +209,6 @@ export default class PrismService {
 
   /**
    * Fetch the list of registered agent personas from Prism.
-   * @returns {Promise<Array<{ id: string, name: string, project: string, toolCount: number }>>}
    */
   static async getAgentPersonas(): Promise<AgentPersona[]> {
     return PrismService._request<AgentPersona[]>("/config/agents", { method: "GET" });
@@ -230,7 +220,6 @@ export default class PrismService {
 
   /**
    * Fetch per-model usage stats for the current user.
-   * @returns {Promise<Array<{ model, provider, totalRequests }>>}
    */
   static async getModelStats(): Promise<ModelUsageStat[]> {
     return PrismService._request<ModelUsageStat[]>("/stats/models", { method: "GET" });
@@ -253,7 +242,6 @@ export default class PrismService {
    * List conversations with cursor-based pagination.
 
 
-   * @returns {Promise<{ items: Array, nextCursor: string|null, hasMore: boolean }>}
    */
   static async getConversations({ limit, cursor }: { limit?: number; cursor?: string } = {}): Promise<ConversationListResponse> {
     const qs = new URLSearchParams();
@@ -292,7 +280,6 @@ export default class PrismService {
    * List agent sessions for a specific project with cursor-based pagination.
 
 
-   * @returns {Promise<{ items: Array, nextCursor: string|null, hasMore: boolean }>}
    */
   static async getAgentSessions(project: string, { limit, cursor, agent }: { limit?: number; cursor?: string; agent?: string } = {}): Promise<AgentSessionListResponse> {
     const qs = new URLSearchParams();
@@ -528,7 +515,6 @@ export default class PrismService {
    * List all agent memories for a project (read-only).
 
 
-   * @returns {Promise<{ memories: Array, total: number }>}
    */
   static async getAgentMemories(project?: string, limit = 100, agent?: string): Promise<AgentMemoryListResponse> {
     const qs = new URLSearchParams();
@@ -541,7 +527,6 @@ export default class PrismService {
   /**
    * Delete a specific agent memory.
 
-   * @returns {Promise<{ success: boolean }>}
    */
   static async deleteAgentMemory(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/agent-memories/${id}`, { method: "DELETE" });
@@ -550,7 +535,6 @@ export default class PrismService {
   /**
    * Trigger memory consolidation for a project.
 
-   * @returns {Promise<object>} Consolidation results
    */
   static async consolidateMemories(project: string, agent?: string): Promise<Record<string, unknown>> {
     return PrismService._request<Record<string, unknown>>("/agent-memories/consolidate", {
@@ -563,7 +547,6 @@ export default class PrismService {
    * Get consolidation run history for a project.
 
 
-   * @returns {Promise<{ history: Array }>}
    */
   static async getConsolidationHistory(project?: string, limit = 10): Promise<{ history: Record<string, unknown>[] }> {
     const qs = new URLSearchParams();
@@ -590,7 +573,6 @@ export default class PrismService {
   /**
    * Update server-side settings (deep merge).
 
-   * @returns {Promise<object>} Updated settings
    */
   static async updateSettings(data: Partial<PrismSettings>): Promise<PrismSettings> {
     return PrismService._request<PrismSettings>("/settings", { method: "PUT", body: data });
@@ -606,7 +588,6 @@ export default class PrismService {
 
   /**
    * Fetch available agentic harnesses from the server.
-   * @returns {Promise<Array<{ id: string, label: string, description: string }>>}
    */
   static async getHarnesses(): Promise<AgenticHarness[]> {
     return PrismService._request<AgenticHarness[]>("/settings/harnesses", { method: "GET" });
@@ -662,7 +643,6 @@ export default class PrismService {
   /**
    * Connect to an MCP server.
 
-   * @returns {Promise<{ success, serverName, toolCount, tools }>}
    */
   static async connectMCPServer(id: string): Promise<{ success: boolean; serverName: string; toolCount: number; tools: Array<{ name: string; description?: string }> }> {
     return PrismService._request<{ success: boolean; serverName: string; toolCount: number; tools: Array<{ name: string; description?: string }> }>(`/mcp-servers/${id}/connect`, {
@@ -673,7 +653,6 @@ export default class PrismService {
   /**
    * Disconnect from an MCP server.
 
-   * @returns {Promise<{ success }>}
    */
   static async disconnectMCPServer(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/mcp-servers/${id}/disconnect`, {
@@ -688,7 +667,6 @@ export default class PrismService {
   /**
    * List coordinator workers, optionally filtered by session.
 
-   * @returns {Promise<{ workers: Array }>}
    */
   static async getCoordinatorWorkers(agentSessionId?: string): Promise<{ workers: CoordinatorWorker[] }> {
     const qs = agentSessionId
@@ -702,7 +680,6 @@ export default class PrismService {
   /**
    * Abort all running workers for a given agent session.
 
-   * @returns {Promise<{ stopped: string[], alreadyStopped: string[] }>}
    */
   static async stopCoordinatorWorkers(agentSessionId: string): Promise<{ stopped: string[]; alreadyStopped: string[] }> {
     return PrismService._request<{ stopped: string[]; alreadyStopped: string[] }>("/coordinator/workers/stop", {
@@ -740,7 +717,6 @@ export default class PrismService {
    * Send an approval/rejection response for a pending agentic tool or plan.
 
 
-   * @returns {Promise<{ ok: boolean, approved: boolean }>}
    */
   static async sendApprovalResponse(
     agentSessionId: string,
@@ -755,9 +731,6 @@ export default class PrismService {
   /**
    * Submit answer(s) to a pending ask_user_question tool call.
 
-   * @param {string|Array<{ answer: string|string[], annotations?: string }>} answerOrAnswers
-   *   Simple string for single-question backward compat, or structured answers array.
-   * @returns {Promise<{ ok: boolean }>}
    */
   static async sendUserQuestionAnswer(
     agentSessionId: string,
@@ -777,17 +750,11 @@ export default class PrismService {
    * Stream text generation via SSE (Server-Sent Events).
 
 
-   * @returns {Function} abort - Call to cancel the stream early
    */
   /**
    * Generic SSE stream helper — handles fetch, ReadableStream parsing, and
    * callback dispatch for any SSE endpoint.  All public stream* methods
    * delegate here so the protocol logic lives in exactly one place.
-   *
-
-
-   * @param {Function} callbacks.onError   - Required for error delivery
-   * @returns {Function} abort — call to cancel the stream
    */
   static _streamSSE(
     endpoint: string,
@@ -989,7 +956,6 @@ export default class PrismService {
    * Stream text generation via SSE (Server-Sent Events).
 
 
-   * @returns {Function} abort - Call to cancel the stream early
    */
   static streamText(payload: ChatPayload, callbacks: SSECallbacks): () => void {
     return PrismService._streamSSE("/chat", { body: payload }, callbacks);
@@ -999,10 +965,6 @@ export default class PrismService {
    * Stream agentic text generation via SSE — hits the /agent endpoint
    * which enables the AgenticLoopService (tool orchestration, planning,
    * approval gates, etc.). Identical callback interface to streamText().
-   *
-
-
-   * @returns {Function} abort - Call to cancel the stream early
    */
   static streamAgentText(payload: ChatPayload, callbacks: SSECallbacks): () => void {
     return PrismService._streamSSE(
@@ -1015,7 +977,6 @@ export default class PrismService {
   /**
    * Generate an image from text.
 
-   * @returns {Promise<{ images: string[], text?: string }>}
    */
   static async generateImage(payload: ImageGenerationPayload): Promise<ImageGenerationResult> {
     const {
@@ -1052,7 +1013,6 @@ export default class PrismService {
   /**
    * Caption / describe an image (image-to-text).
 
-   * @returns {Promise<{ text: string }>}
    */
   static async captionImage(payload: ChatPayload): Promise<Record<string, unknown>> {
     return PrismService._request<Record<string, unknown>>("/chat?stream=false", { body: payload });
@@ -1061,7 +1021,6 @@ export default class PrismService {
   /**
    * Transcribe an audio file to text.
 
-   * @returns {Promise<{ text, usage?, estimatedCost?, totalTime? }>}
    */
   static async transcribeAudio(payload: TranscriptionPayload): Promise<TranscriptionResponse> {
     return PrismService._request<TranscriptionResponse>("/audio-to-text", { body: payload });
@@ -1076,7 +1035,6 @@ export default class PrismService {
    * Uses ?format=dataUrl so the backend returns the audio as a base64 data URL
    * directly, eliminating client-side ArrayBuffer→Base64 conversion.
 
-   * @returns {Promise<{ audioDataUrl: string, contentType: string }>}
    */
   static async generateSpeech(payload: TTSPayload): Promise<TTSResponse> {
     const response = await fetch(`${API_BASE}/text-to-audio?format=dataUrl`, {
@@ -1107,7 +1065,6 @@ export default class PrismService {
   /**
    * Generate embeddings from any modality.
 
-   * @returns {Promise<{ embedding: number[], dimensions: number, provider: string, model: string }>}
    */
   static async generateEmbedding(payload: EmbeddingPayload): Promise<EmbeddingResponse> {
     return PrismService._request<EmbeddingResponse>("/embed", { body: payload });
@@ -1139,7 +1096,6 @@ export default class PrismService {
   /**
    * Create a new workflow.
 
-   * @returns {Promise<{ success: boolean, id: string }>}
    */
   static async saveWorkflow(workflow: Omit<Workflow, "_id">): Promise<{ success: boolean; id: string }> {
     return PrismService._request<{ success: boolean; id: string }>("/workflows", {
@@ -1151,7 +1107,6 @@ export default class PrismService {
    * Update an existing workflow.
 
 
-   * @returns {Promise<{ success: boolean }>}
    */
   static async updateWorkflow(id: string, workflow: Partial<Workflow>): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/workflows/${id}`, {
@@ -1163,7 +1118,6 @@ export default class PrismService {
   /**
    * Delete a workflow.
 
-   * @returns {Promise<{ success: boolean }>}
    */
   static async deleteWorkflow(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/workflows/${id}`, { method: "DELETE" });
@@ -1173,7 +1127,6 @@ export default class PrismService {
    * Append conversation IDs to a workflow (generated during execution).
 
 
-   * @returns {Promise<{ success: boolean }>}
    */
   static async patchWorkflowConversations(id: string, conversationIds: string[]): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/workflows/${id}/conversations`, {
@@ -1189,7 +1142,6 @@ export default class PrismService {
   /**
    * List media items from the caller's project conversations.
 
-   * @returns {Promise<{ data, total, page, limit, providers, models }>}
    */
   static async getMedia(params: Record<string, string | number | boolean> = {}): Promise<MediaListResponse> {
     const stringParams: Record<string, string> = {};
@@ -1207,7 +1159,6 @@ export default class PrismService {
   /**
    * List text content from the caller's project conversations.
 
-   * @returns {Promise<{ data, total, page, limit, providers, models }>}
    */
   static async getText(params: Record<string, string | number | boolean> = {}): Promise<TextListResponse> {
     const stringParams: Record<string, string> = {};
@@ -1224,7 +1175,6 @@ export default class PrismService {
 
   /**
    * List all LM Studio models (loaded + downloaded).
-   * @returns {Promise<{ models: Array }>}
    */
   static async getLmStudioModels(): Promise<{ models: LmStudioModel[] }> {
     return PrismService._request<{ models: LmStudioModel[] }>("/lm-studio/models", { method: "GET" });
@@ -1254,9 +1204,6 @@ export default class PrismService {
 
   /**
    * Estimate VRAM usage for an LM Studio model.
-   * @param {string} model — model key/path
-   * @param {object} config — { contextLength, gpuLayers, flashAttention, offloadKvCache }
-   * @returns {Promise<{ gpuGiB: number, totalGiB: number, archParams: object, totalLayers: number }>}
    */
   static async estimateLmStudioMemory(model: string, config: Record<string, unknown> = {}): Promise<LmStudioVramEstimate> {
     return PrismService._request<LmStudioVramEstimate>("/lm-studio/estimate", {
@@ -1266,10 +1213,6 @@ export default class PrismService {
 
   /**
    * Load an LM Studio model with streaming progress via SSE.
-   * @param {string} model — model key/path
-   * @param {object} options — { contextLength, flashAttention, offloadKvCache }
-   * @param {object} callbacks — { onProgress(0-1), onComplete(), onError(err) }
-   * @returns {Function} abort — call to cancel
    */
   static loadLmStudioModelStream(
     model: string,
@@ -1336,7 +1279,6 @@ export default class PrismService {
 
   /**
    * List all benchmark tests.
-   * @returns {Promise<{ benchmarks: Array, count: number }>}
    */
   static async getBenchmarks(): Promise<BenchmarkListResponse> {
     return PrismService._request<BenchmarkListResponse>("/benchmark", { method: "GET" });
@@ -1344,7 +1286,6 @@ export default class PrismService {
 
   /**
    * Get aggregated model performance stats across all benchmark runs.
-   * @returns {Promise<{ models: Array, totalModels: number, totalBenchmarks: number }>}
    */
   static async getBenchmarkStats(): Promise<BenchmarkModelStats> {
     return PrismService._request<BenchmarkModelStats>("/benchmark/stats", { method: "GET" });
@@ -1352,7 +1293,6 @@ export default class PrismService {
 
   /**
    * Get available conversation models for benchmarking.
-   * @returns {Promise<{ models: Array, count: number }>}
    */
   static async getBenchmarkModels(): Promise<{ models: ModelOption[]; count: number }> {
     return PrismService._request<{ models: ModelOption[]; count: number }>("/benchmark/models", { method: "GET" });
@@ -1389,7 +1329,6 @@ export default class PrismService {
    * Run a benchmark against selected models (or all).
 
 
-   * @returns {Promise<object>} The run result
    */
   static async runBenchmark(id: string, models?: string[]): Promise<BenchmarkRun> {
     return PrismService._request<BenchmarkRun>(`/benchmark/${id}/run`, {
@@ -1401,7 +1340,6 @@ export default class PrismService {
    * Stream a benchmark run via SSE, receiving per-model progress events.
 
 
-   * @returns {Function} abort — call to cancel the stream
    */
   static streamBenchmarkRun(id: string, models?: string[], callbacks: SSECallbacks = {}): () => void {
     return PrismService._streamSSE(
@@ -1414,7 +1352,6 @@ export default class PrismService {
   /**
    * Get all past runs for a benchmark.
 
-   * @returns {Promise<{ runs: Array, count: number }>}
    */
   static async getBenchmarkRuns(id: string): Promise<{ runs: BenchmarkRun[]; count: number }> {
     return PrismService._request<{ runs: BenchmarkRun[]; count: number }>(`/benchmark/${id}/runs`, { method: "GET" });
@@ -1435,7 +1372,6 @@ export default class PrismService {
   /**
    * Explicitly abort a running benchmark.
 
-   * @returns {Promise<{ aborted: boolean }>}
    */
   static async abortBenchmarkRun(benchmarkId: string): Promise<{ aborted: boolean }> {
     return PrismService._request<{ aborted: boolean }>(`/benchmark/${benchmarkId}/abort`, {
@@ -1445,7 +1381,6 @@ export default class PrismService {
 
   /**
    * Fetch all benchmark IDs that currently have active (in-progress) runs.
-   * @returns {Promise<{ activeIds: string[] }>}
    */
   static async getActiveBenchmarks(): Promise<{ activeIds: string[] }> {
     return PrismService._request<{ activeIds: string[] }>("/benchmark/active-list", { method: "GET" });
@@ -1454,7 +1389,6 @@ export default class PrismService {
   /**
    * Check if a benchmark has an active (in-progress) run.
 
-   * @returns {Promise<{ active: boolean, completedResults?, activeModel?, startedAt? }>}
    */
   static async getBenchmarkActive(id: string): Promise<Record<string, unknown>> {
     return PrismService._request<Record<string, unknown>>(`/benchmark/${id}/active`, { method: "GET" });
@@ -1465,7 +1399,6 @@ export default class PrismService {
    * Replays completed results first, then streams live events.
 
 
-   * @returns {Function} abort — call to disconnect
    */
   static followBenchmarkRun(id: string, callbacks: SSECallbacks = {}): () => void {
     return PrismService._streamSSE(
@@ -1521,7 +1454,6 @@ export default class PrismService {
   /**
    * Fetch VRAM benchmark entries with optional filters.
 
-   * @returns {Promise<{ count: number, data: Array }>}
    */
   static async getVramBenchmarks(params: Record<string, string> = {}): Promise<{ count: number; data: VramBenchmarkEntry[] }> {
     const query = new URLSearchParams(params).toString();
@@ -1533,7 +1465,6 @@ export default class PrismService {
 
   /**
    * Fetch distinct machines that have run VRAM benchmarks.
-   * @returns {Promise<Array<{ hostname, gpu, gpuVramGB, gpuVendor, cpu, ramGiB, platform, benchmarkCount, lastRun }>>}
    */
   static async getVramBenchmarkMachines(): Promise<VramBenchmarkMachine[]> {
     return PrismService._request<VramBenchmarkMachine[]>("/vram-benchmarks/machines", {

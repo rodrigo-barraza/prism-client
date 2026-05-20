@@ -76,9 +76,6 @@ export default class LiveSessionService {
 
   /**
    * Connect to Prism's /ws/live and set up a Live API session.
-   *
-   * @param params.model - e.g. "gemini-3.1-flash-live-preview"
-   * @param params.callbacks - event handlers for session lifecycle
    */
   connect({ model, config = {}, callbacks = {} }: LiveConnectParams) {
     this.callbacks = callbacks;

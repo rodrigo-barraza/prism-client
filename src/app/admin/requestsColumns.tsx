@@ -20,13 +20,6 @@ import ProportionBarComponent from "../../components/ProportionBarComponent";
 
 /**
  * getRequestsColumns — shared column definitions for the requests table.
- *
-
- * @param {number} [opts.totalCost=1] — Total cost across all visible requests
- *                                       (used for the Cost % proportion bar)
- * @param {number} [opts.totalDuration=1] — Total duration across all visible requests
- *                                          (used for Duration % proportion bar)
- * @param {boolean} [opts.mini=false] — Mini density mode
  */
 export const getRequestsColumns = ({
   totalCost = 1,

@@ -185,8 +185,6 @@ export default class IrisService {
   /**
    * Subscribe to real-time conversation stats via SSE.
    * Uses a shared singleton connection per URL (SSEManager).
-   *
-   * @returns {{ close: () => void }} — call .close() to unsubscribe
    */
   static subscribeConversationStats(
     onStats: (data: unknown) => void,
@@ -202,8 +200,6 @@ export default class IrisService {
    * Subscribe to real-time collection change events via SSE.
    * Powered by MongoDB Change Streams on the backend.
    * Uses a shared singleton connection (SSEManager).
-   *
-   * @returns {{ close: () => void }} — call .close() to unsubscribe
    */
   static subscribeCollectionChanges(
     { onChange, onStatus }: {

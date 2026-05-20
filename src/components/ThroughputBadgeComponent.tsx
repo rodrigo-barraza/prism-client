@@ -11,11 +11,6 @@ import styles from "./ThroughputBadgeComponent.module.css";
  * During coordinator sessions with active workers, `liveTokPerSec`
  * should be the **additive sum** of all concurrent worker throughputs
  * (e.g. 3 workers × 40 tok/s = 120 tok/s), not the average.
- *
- * @param {number|null} liveTokPerSec — real-time tok/s (null when not streaming)
- * @param {number|null} avgTokPerSec — historical average from backend stats
- * @param {boolean} isActivelyGenerating — true when any model is producing tokens
- * @param {boolean} turnActive — true when a turn is in progress (even during tool calls)
  */
 export default function ThroughputBadgeComponent({
   liveTokPerSec,

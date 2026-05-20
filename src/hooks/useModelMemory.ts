@@ -13,9 +13,6 @@ import { LOCAL_PROVIDERS } from "../constants";
  * progressive loading is used (once for cloud, once for merged local) —
  * the hook automatically defers local model restoration until local models
  * are available.
- *
- * @param {string} storageKey — one of the SK_MODEL_MEMORY_* constants
- * @returns {{ saveModel, restoreModel }}
  */
 export default function useModelMemory(storageKey: string) {
   // Track whether we've already restored so progressive config loads
@@ -25,9 +22,6 @@ export default function useModelMemory(storageKey: string) {
   /**
    * Save the current model selection to localStorage.
    * Call this whenever the user picks a model.
-   *
-
-
    */
   const saveModel = useCallback(
     (provider: string, model: string) => {
@@ -44,12 +38,6 @@ export default function useModelMemory(storageKey: string) {
   /**
    * Attempt to restore the remembered model from localStorage.
    * Safe to call multiple times (idempotent after first successful restore).
-   *
-   * @param {object} config — Prism config (may or may not include local models yet)
-   * @param {Function} setSettings — React setState for the settings object
-
-   * @param {boolean} [options.fcOnly] — if true, only restore if the model supports Function Calling
-   * @param {Function} [options.fallback] — called with (config) if no saved model found; lets the caller apply default selection
    */
   const restoreModel = useCallback(
     (config: Record<string, unknown>, setSettings: Dispatch<SetStateAction<any>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: Record<string, unknown>) => void } = {}) => {

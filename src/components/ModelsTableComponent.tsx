@@ -429,11 +429,6 @@ function buildStatsColumns({
  *                       Model, Provider, Type, Modalities) + benchmark-specific
  *                       columns (Tests, Passed, Failed, Pass Rate, Avg Latency, Cost).
  *                       Other model columns are hidden by default but toggleable.
- *
-
- * @param {Array}    props.models            - Model data array (raw models or stat objects)
-
-
  */
 export interface ModelsTableComponentProps {
   models?: Record<string, any>[];

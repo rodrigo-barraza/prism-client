@@ -4,9 +4,6 @@ import styles from "./ProjectBadgeComponent.module.css";
 
 /**
  * ProjectBadgeComponent — cyan-colored project badge with icon.
- *
- * @param {string} project — project name to display
-
  */
 export default function ProjectBadgeComponent({
   project,

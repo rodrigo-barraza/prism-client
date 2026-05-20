@@ -16,11 +16,6 @@ function easeOutCubic(t: any) {
  * When the count updates upward, the displayed number tweens (counting animation)
  * from the previous value to the new value, with a rainbow hue-rotate effect
  * on the text while the tween is active.
- *
- * @param {number} count — request count
- * @param {boolean} [showIcon=true] — show Zap icon
-
-
  */
 export default function RequestCountBadgeComponent({
   count,

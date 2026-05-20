@@ -6,12 +6,6 @@ import styles from "./ModelBadgeComponent.module.css";
 /**
  * ModelBadgeComponent — displays a single model name or a "N models" badge
  * with a tooltip listing all model names.
- *
- * @param {string[]} models — array of model name strings
- * @param {string} [provider] — provider key for single-model icon (e.g. "openai", "google")
- * @param {string[]} [providers] — provider keys; when a single unique provider exists, its logo is shown
-
-
  */
 export default function ModelBadgeComponent({
   models = [],

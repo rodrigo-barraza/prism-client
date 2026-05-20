@@ -9,9 +9,6 @@ import styles from "./ToolCountBadgeComponent.module.css";
  * available to a given agent. Designed to sit below the AgentPickerComponent
  * trigger, mirroring how ModelPickerPopoverComponent stacks
  * triggerCapabilities under its trigger button.
- *
-
-
  */
 export default function ToolCountBadgeComponent({ count, color }: any) {
   if (count == null || count === 0) return null;

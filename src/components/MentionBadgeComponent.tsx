@@ -9,16 +9,6 @@ import styles from "./MentionBadgeComponent.module.css";
  * Used in:
  * - MessageListComponent (read-only rendered messages)
  * - ChatAreaComponent input (via createMentionBadgeElement for contentEditable)
- *
-
- * @param {string}  props.path       — Full file/directory path
- * @param {string}  [props.name]     — Display name (defaults to basename of path)
- * @param {string}  [props.type]     — "file" or "directory" (auto-detected from name if omitted)
- * @param {number}  [props.lineStart] — Start line for file-line mentions
- * @param {number}  [props.lineEnd]   — End line for file-line range mentions
- * @param {boolean} [props.stale]    — True when the file/directory no longer exists
- * @param {Set}     [props.knownPaths] — Set of currently known workspace paths for staleness detection
- * @param {Function} [props.onFileOpen] — (path) => void — Callback to open a file in the file viewer
  */
 function MentionBadge({
   path,

@@ -21,11 +21,6 @@ import styles from "./TracesTableComponent.module.css";
 /**
  * TracesTableComponent — reusable traces table with expandable rows
  * showing both a conversations table and a requests table side by side.
- *
-
- * @param {Array}   props.traces       - Array of trace objects
-
-
  */
 export default function TracesTableComponent({
   traces = [],

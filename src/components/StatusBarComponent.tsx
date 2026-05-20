@@ -92,19 +92,6 @@ const SYNTHETIC_TICK_MS = 200;
  *   idleLabel="3 tools used"
  * />
  * ```
- *
-
- * @param {boolean} props.active          – Whether the bar is expanded (28px) or collapsed (4px).
- * @param {"orchestrator"|"worker"} [props.variant="orchestrator"] – Bar variant. "orchestrator" collapses to 4px when inactive; "worker" maintains 28px height.
- * @param {string}  [props.phase]         – Current lifecycle phase key.
- * @param {string}  [props.label]         – Text label override. Falls back to `PHASE_LABELS[phase]`.
- * @param {string|null} [props.icon]      – Emoji override. `null` = no icon. Undefined = auto from phase.
- * @param {number|null} [props.progress]  – Progress value 0-1 (LM Studio prompt processing / model loading).
- * @param {number|null} [props.tokPerSec] – Live tokens/second for this specific agent.
- * @param {number}  [props.iteration]     – Current iteration number (worker bar).
- * @param {number}  [props.maxIterations] – Max iterations (worker bar).
- * @param {React.ReactNode} [props.idleIcon]  – Icon shown when bar is inactive (worker idle state).
- * @param {string}  [props.idleLabel]     – Label shown when bar is inactive.
  */
 export default function StatusBarComponent({
   active = false,

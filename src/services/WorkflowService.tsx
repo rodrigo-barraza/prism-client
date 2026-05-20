@@ -28,8 +28,6 @@ const WorkflowService = {
 
   /**
    * Save or update a workflow.
-   *
-   * @returns The saved workflow with id
    */
   async saveWorkflow(workflow: Workflow & { id?: string }): Promise<Workflow & { id: string }> {
     if (workflow.id) {

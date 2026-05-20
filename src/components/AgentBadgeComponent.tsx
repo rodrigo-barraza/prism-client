@@ -185,10 +185,6 @@ function CoinStatic({ agent, size }: any) {
 
 /**
  * AgentBadgeComponent — Reusable rounded-square icon badge for an agent persona.
- *
- * @param {{ id?: string, icon?: string, color?: string }} agent
-
-
  */
 export default function AgentBadgeComponent({
   agent,

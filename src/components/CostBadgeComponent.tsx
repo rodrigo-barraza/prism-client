@@ -17,12 +17,6 @@ function easeOutCubic(t: any) {
  * When cost updates upward, the displayed number tweens (counting animation)
  * from the previous value to the new value, with a rainbow hue-rotate effect
  * on the text while the tween is active.
- *
- * @param {number} cost — dollar amount
- * @param {boolean} [showIcon=true] — show Coins icon
-
-
- * @param {Function} [formatFn=formatCost] — custom display formatter
  */
 export default function CostBadgeComponent({
   cost,

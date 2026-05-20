@@ -18,11 +18,6 @@ import {
  * Uses the shared TableComponent base with column definitions from
  * tableColumns.js, following the same pattern as BenchmarksTableComponent,
  * ConversationsTableComponent, etc.
- *
-
- * @param {Array}    props.models           - Array of aggregated model stats
-
-
  */
 export default function BenchmarkDashboardTableComponent({
   models = [],

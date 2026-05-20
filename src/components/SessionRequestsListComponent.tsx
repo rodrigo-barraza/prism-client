@@ -14,9 +14,6 @@ import styles from "./SessionRequestsListComponent.module.css";
 /**
  * SessionRequestsListComponent — displays all requests for an agent session
  * and its associated worker sessions as a flat chronological timeline (newest first).
- *
-
-
  */
 export default function SessionRequestsListComponent({
   agentSessionId,

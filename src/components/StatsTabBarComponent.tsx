@@ -9,10 +9,6 @@ import styles from "./StatsTabBarComponent.module.css";
  * Only rendered when the active agent can spawn worker sub-agents;
  * the parent is responsible for gating visibility via the `visible` prop
  * (or simply not rendering the component).
- *
-
- * @param {string}   props.activeTab  - Current tab key ("all" | "orchestrator" | "workers")
- * @param {Function} props.onChange   - Called with the new tab key on click
  */
 
 const TABS = [

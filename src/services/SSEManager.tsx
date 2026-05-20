@@ -22,8 +22,6 @@ const pools = new Map<string, PoolEntry>();
 
 /**
  * Subscribe to an SSE endpoint. Returns an unsubscribe function.
- *
- * @returns {{ unsubscribe: () => void }} — call unsubscribe() to detach
  */
 export function subscribe(url: string, onMessage: SSEListener): { unsubscribe: () => void } {
   let entry = pools.get(url);

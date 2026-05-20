@@ -38,7 +38,7 @@ function AdminWorkflowsPageInner() {
   const modelFilter = searchParams.get("model") || null;
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState(initialId);
   const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -63,8 +63,8 @@ function AdminWorkflowsPageInner() {
       if (list.length > 0 && !selectedId && !initialId) {
         selectWorkflow(list[0]._id);
       }
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ function AdminWorkflowsPageInner() {
     loadWorkflows();
   }, [loadWorkflows]);
 
-  async function selectWorkflow(id: any) {
+  async function selectWorkflow(id: string) {
     if (id === selectedId) return;
     setSelectedId(id);
     setSelectedNodeId(null);
@@ -136,12 +136,12 @@ function AdminWorkflowsPageInner() {
 
   const handleUpdateNodePosition = useCallback((nodeId: any, position: any) => {
     setLocalNodes((prev: any) =>
-      prev.map((n: any) => (n.id === nodeId ? { ...n, position } : n)),
+      prev.map((n: { id: string; [key: string]: unknown }) => (n.id === nodeId ? { ...n, position } : n)),
     );
   }, []);
 
   // Download workflow as JSON file
-  const handleDownloadWorkflow = useCallback(async (id: any) => {
+  const handleDownloadWorkflow = useCallback(async (id: string) => {
     try {
       const wf = await IrisService.getWorkflow(id);
       if (!wf) return;
@@ -154,21 +154,21 @@ function AdminWorkflowsPageInner() {
       a.click();
       URL.revokeObjectURL(url);
       addToast("Workflow downloaded");
-    } catch (error: any) {
-      addToast(`Download failed: ${error.message}`, "error");
+    } catch (error: unknown) {
+      addToast(`Download failed: ${(error as Error).message}`, "error");
     }
   }, []);
 
   // Copy workflow JSON to clipboard
-  const handleCopyWorkflow = useCallback(async (id: any) => {
+  const handleCopyWorkflow = useCallback(async (id: string) => {
     try {
       const wf = await IrisService.getWorkflow(id);
       if (!wf) return;
       const data = JSON.stringify(wf, null, 2);
       await copyToClipboard(data);
       addToast("Workflow copied to clipboard");
-    } catch (error: any) {
-      addToast(`Copy failed: ${error.message}`, "error");
+    } catch (error: unknown) {
+      addToast(`Copy failed: ${(error as Error).message}`, "error");
     }
   }, []);
 

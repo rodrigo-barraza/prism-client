@@ -44,7 +44,6 @@ const TOOL_SHORT_NAMES = {
 
 /**
  * Resolve any tool name to a human-readable display label.
- * @param {string} name  — raw tool function name or canonical name
 
  */
 function resolveDisplayName(name: any, variant = "default") {

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import AgentComponent from "../../components/AgentComponent";
 import PrismService from "../../services/PrismService";
+import { AgentPersona } from "../../types/types";
 import styles from "./page.module.css";
 
 const LS_ACTIVE_AGENT = "prism:activeAgent";
@@ -33,13 +34,13 @@ export default function AgentsPage() {
  * apply a set of updates, and return the URL string.
  * Keys with null/undefined values are removed.
  */
-function buildUrl(currentParams: any, updates: any) {
+function buildUrl(currentParams: URLSearchParams, updates: Record<string, string | null>) {
   const params = new URLSearchParams(currentParams.toString());
   for (const [key, value] of Object.entries(updates)) {
     if (value == null || value === "") {
       params.delete(key);
     } else {
-      params.set(key, value as any);
+      params.set(key, value as string);
     }
   }
   const qs = params.toString();
@@ -77,7 +78,7 @@ function AgentsPageInner() {
   // Fetch agent personas on mount — prepend "No Agent" synthetic entry
   useEffect(() => {
     PrismService.getAgentPersonas()
-      .then((list: any) => setAgents([NONE_AGENT, ...list]))
+      .then((list: AgentPersona[]) => setAgents([NONE_AGENT, ...list]))
       .catch(console.error);
   }, []);
 
@@ -98,8 +99,9 @@ function AgentsPageInner() {
 
   // Listen for agent:switch events from AgentComponent
   const handleAgentSwitch = useCallback(
-    (e: any) => {
-      const newId = e.detail?.agentId;
+    (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const newId = customEvent.detail?.agentId;
       if (newId && newId !== activeAgentId) {
         setLocalAgentId(newId);
         localStorage.setItem(LS_ACTIVE_AGENT, newId);
@@ -114,8 +116,9 @@ function AgentsPageInner() {
 
   // Listen for model:change events from AgentComponent — sync URL
   const handleModelChange = useCallback(
-    (e: any) => {
-      const { provider, model } = e.detail || {};
+    (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { provider, model } = customEvent.detail || {};
       if (!provider || !model) return;
       const modelKey = `${provider}:${model}`;
       const current = searchParams.get("model");
@@ -131,8 +134,9 @@ function AgentsPageInner() {
   // When a session is active, strip model & agent from URL — the
   // session data is the source of truth for those values.
   const handleConversationChange = useCallback(
-    (e: any) => {
-      const { conversationId } = e.detail || {};
+    (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { conversationId } = customEvent.detail || {};
       const current = searchParams.get("session");
       if (current === (conversationId || null)) return;
       if (conversationId) {

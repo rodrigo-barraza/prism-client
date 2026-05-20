@@ -13,14 +13,6 @@ import styles from "./FilterDropdownComponent.module.css";
 
 /**
  * FilterDropdownComponent — generic dropdown + badge (chip) filter.
- *
- * @param {Object[]} groups — array of filter groups:
- *   { label: string, items: [{ key, icon, title, color?, providerLogo? }], activeKeys: Set|string, onToggle: fn, isSingleSelect?: boolean }
- *
- * @param {Object} dateRange — { from, to } or undefined if no date filtering
- * @param {Function} onDateChange — setter for dateRange
- * @param {string} dateStorageKey — localStorage key for date persistence
- * @param {React.ReactNode} renderIcon — optional custom icon renderer for provider logos etc.
  */
 export default function FilterDropdownComponent({
   groups = [],

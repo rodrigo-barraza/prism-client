@@ -67,11 +67,6 @@ const TRIGGER_LABELS = {
  * Displays memories extracted from past coding sessions, organized by type
  * (user, feedback, project, reference). These are extracted automatically
  * by the SessionSummarizer and stored via AgentMemoryService.
- *
-
- * @param {string} props.project - Project identifier
- * @param {number} props.refreshKey - External refresh trigger
-
  */
 export default function MemoriesPanel({
   project,

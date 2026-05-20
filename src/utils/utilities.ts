@@ -365,11 +365,6 @@ export function toolCountsToUsedTools(toolCounts: Record<string, number> | null 
  * When both backend and live worker counts exist for the same tool,
  * the higher count wins (prevents badges from appearing to decrease
  * as backend catches up).
- *
- * @param {Array<{name: string, count: number}>} clientTools
- * @param {{ [name: string]: number }} [backendToolCounts]
- * @param {{ [workerId: string]: { toolNames?: { [name: string]: number } } }} [workerToolActivity]
- * @returns {Array<{name: string, count: number}>} sorted by count desc
  */
 export function mergeUsedToolsWithWorkers(
   clientTools: Array<{ name: string; count: number }>,

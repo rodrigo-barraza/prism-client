@@ -4,9 +4,6 @@ import styles from "./UserBadgeComponent.module.css";
 
 /**
  * UserBadgeComponent — amber-colored user/username badge with icon.
- *
- * @param {string} username — username to display
-
  */
 export default function UserBadgeComponent({ username, className = "" }: any) {
   if (!username || username === "unknown") return null;

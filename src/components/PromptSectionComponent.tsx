@@ -8,15 +8,6 @@ import styles from "./PromptSectionComponent.module.css";
  *
  * Encapsulates the repeated pattern of icon + label + optional badge + textarea
  * used for system prompts, personas, and other multi-line text inputs.
- *
- * @param {React.ReactNode} icon        — Lucide icon or element for the header
- * @param {string}          label       — Header label text
- * @param {string}          [badge]     — Optional badge text (e.g. "Optional")
- * @param {string}          value       — Textarea value
- * @param {Function}        onChange     — (newValue) => void
- * @param {string}          [placeholder] — Textarea placeholder
- * @param {number}          [rows=2]    — Textarea rows
- * @param {string}          [className] — Additional class on the wrapper
  */
 export default function PromptSectionComponent({
   icon,

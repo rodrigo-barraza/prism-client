@@ -10,8 +10,6 @@ import { LS_ADMIN_PROJECT_FILTER } from "../constants";
  * Fetches available projects, builds dropdown options, and manages the
  * `?project=` URL search param. Persists the selection in localStorage
  * so it survives page navigations and reloads.
- *
- * @returns {{ projectFilter: string|null, projectOptions: Array, handleProjectChange: Function }}
  */
 export default function useProjectFilter() {
   const searchParams = useSearchParams();

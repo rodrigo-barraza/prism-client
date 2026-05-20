@@ -15,9 +15,6 @@ import badgeStyles from "../components/MentionBadgeComponent.module.css";
 /**
  * Serialize a contentEditable element's DOM to plain text.
  * Mention badges (spans with data-mention-path) become `@full/path`.
- *
- * @param {HTMLElement} element — root contentEditable element
-
  */
 export function serializeEditable(element: Node) {
   let text = "";
@@ -49,10 +46,6 @@ export function serializeEditable(element: Node) {
 /**
  * Flatten a workspace tree node array into a flat list of entries.
  * Each entry has { path, name, type }.
- *
- * @param {Array} nodes — tree children (from WorkspaceService.tree)
- * @param {string} prefix — accumulated path prefix
- * @returns {{ path: string, name: string, type: string }[]}
  */
 export function flattenTree(nodes: Record<string, any>[], prefix = ""): Record<string, any>[] {
   const out = [];
@@ -72,10 +65,6 @@ export function flattenTree(nodes: Record<string, any>[], prefix = ""): Record<s
  * Given a text string and a cursor position, detect if the cursor is
  * inside a `@query` token. Returns the query and the anchor offset,
  * or null if not in a mention.
- *
- * @param {string} text — the text content of the text node
- * @param {number} cursorOffset — cursor position within the text
- * @returns {{ query: string, anchorOffset: number } | null}
  */
 export function detectMentionToken(text: string, cursorOffset: number) {
   let i = cursorOffset - 1;
@@ -95,11 +84,6 @@ export function detectMentionToken(text: string, cursorOffset: number) {
 /**
  * Filter a flat entries list by a query string.
  * Matches against both path and name (case-insensitive).
- *
- * @param {Array} entries — flat list from flattenTree
- * @param {string} query — search string (may be empty)
- * @param {number} limit — max results to return
-
  */
 export function filterMentionResults(entries: Record<string, any>[] | null, query: string, limit = 20) {
   if (!entries || !entries.length) return [];
@@ -120,9 +104,6 @@ export function filterMentionResults(entries: Record<string, any>[] | null, quer
 /**
  * Parse a text string into segments of plain text and @-mention tokens.
  * Mention tokens match `@non-whitespace` sequences at word boundaries.
- *
- * @param {string} text — serialized message content
- * @returns {{ type: "text" | "mention", value: string }[]}
  */
 export function parseMentionTokens(text: string) {
   if (!text) return [{ type: "text", value: "" }];
@@ -169,13 +150,6 @@ export function parseMentionTokens(text: string) {
 
 /**
  * Create a mention badge DOM element for use in contentEditable.
- *
- * @param {string} path — full file/directory path
- * @param {string} name — display name (basename)
- * @param {string} type — "file" or "directory"
- * @param {object} [opts] — options
- * @param {boolean} [opts.stale] — true if the path no longer exists
-
  */
 export function createMentionBadge(path: string, name: string, type: string | undefined, opts: Record<string, any> = {}) {
   const badge = document.createElement("span");
@@ -224,8 +198,6 @@ export function createMentionBadge(path: string, name: string, type: string | un
 
 /**
  * Place the caret (cursor) immediately after a given DOM node.
- *
- * @param {Node} node — the node to place the caret after
  */
 export function placeCaretAfter(node: any) {
   const sel = window.getSelection()!;
@@ -239,12 +211,6 @@ export function placeCaretAfter(node: any) {
 /**
  * Apply a mention by replacing the @query text in a text node with
  * a badge span element + trailing space.
- *
- * @param {Text} textNode — the text node containing the @query
- * @param {number} anchorOffset — offset of the `@` character in the text node
- * @param {number} cursorOffset — current cursor offset in the text node
- * @param {HTMLSpanElement} badge — the badge element to insert
- * @returns {Text} — the trailing space text node (for caret positioning)
  */
 export function applyMentionToTextNode(
   textNode: any,

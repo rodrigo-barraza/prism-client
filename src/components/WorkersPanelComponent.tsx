@@ -55,9 +55,6 @@ function getAgentNumber(agentId: any) {
  * Polls the coordinator /workers endpoint filtered by the current agentSessionId.
  * Workers represent parallel sub-agents spawned via the `team_create` tool
  * during agentic coding sessions.
- *
-
-
  */
 export default function WorkersPanel({
   agentSessionId,

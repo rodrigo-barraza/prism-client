@@ -51,11 +51,6 @@ function savePersistedConfig(modelKey: any, config: any) {
  *
  * Shows context length slider, GPU offload slider (estimation),
  * flash attention toggle, and estimated VRAM/RAM usage bar.
- *
- * @param {object} model — The raw model object from LM Studio API
- * @param {Function} onLoad — (modelKey, options) => Promise<void>
- * @param {Function} onClose — Close the modal
- * @param {boolean} [loading] — Whether a load is in progress
  */
 export default function ModelLoadConfigPanel({
   model,

@@ -34,9 +34,6 @@ export const BENCHMARK_MODES = [
 
 /**
  * BenchmarkModeSelector — Segmented control for picking the benchmark mode.
- *
- * @param {string}   value    — Current mode ("model" | "agent" | "combined")
- * @param {Function} onChange — (mode) => void
  */
 export default function BenchmarkModeSelector({ value, onChange }: any) {
   const containerRef = useRef<any>(null);

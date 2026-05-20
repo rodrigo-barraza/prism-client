@@ -24,11 +24,6 @@ export function sanitizeToolName(name: string): string {
 /**
  * Build a merged array of tool schemas from built-in and custom tools.
  * Used by AgentComponent.
- *
- * @param builtInTools     — server-provided built-in tool schemas
- * @param disabledBuiltIns — names of disabled built-in tools
- * @param customTools      — user-defined custom tools
- * @returns merged tool schema array
  */
 export function buildToolSchemas(
   builtInTools: ToolSchema[],

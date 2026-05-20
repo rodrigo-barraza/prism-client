@@ -307,7 +307,6 @@ const _localMeta = new Map();
 /**
  * Register local provider metadata from the Prism config response.
  * Call once after fetching `/config` to enable nickname + numbering.
- * @param {Array<{ id: string, type: string, instanceNumber: number, nickname?: string }>} providers
  */
 export function setLocalProviderMeta(providers: any) {
   _localMeta.clear();
@@ -348,9 +347,6 @@ function _resolveBaseType(id: any) {
  *   2. Numbered instance    → "LM Studio #2"
  *   3. Base type label      → "LM Studio"
  *   4. Raw ID fallback      → "lm-studio-2"
- *
-
- * @returns {string} Human-readable label
  */
 export function resolveProviderLabel(id: any) {
   // Direct match (base type or cloud)
@@ -381,7 +377,6 @@ export function resolveProviderLabel(id: any) {
  * Resolve the logo key for a provider ID.
  * Multi-instance IDs (e.g. "lm-studio-2") map to the base type logo.
 
- * @returns {string} Logo key for the LOGOS map
  */
 export function resolveProviderLogoKey(id: any) {
   if ((LOGOS as any)[id]) return id;

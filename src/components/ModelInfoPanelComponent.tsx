@@ -18,9 +18,6 @@ import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
  * token limits, pricing, and arena scores.
  *
  * Extracted from SettingsPanel to live in its own "Info" tab.
- *
- * @param {object} config    — Full Prism config (used to resolve model definitions)
- * @param {object} settings  — Current settings (provider, model)
  */
 export default function ModelInfoPanel({ config, settings }: any) {
   const { textToText = {} } = config || {};

@@ -14,11 +14,6 @@ import {
 /**
  * ProvidersTableComponent — reusable admin table for displaying provider-level
  * aggregated stats (requests, tokens, cost, latency, etc.).
- *
-
- * @param {Array}   props.providers         - Array of provider stat objects
-
-
  */
 export default function ProvidersTableComponent({
   providers = [],

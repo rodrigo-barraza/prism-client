@@ -656,11 +656,6 @@ function EditableMessage({
 
 /**
  * Shared message list component.
- *
-
- * @param {Array}  props.messages          - array of message objects
-
-
  */
 export default function MessageList({
   messages = [],

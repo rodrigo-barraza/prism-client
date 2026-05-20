@@ -7,17 +7,6 @@ import SoundService from "@/services/SoundService";
 /**
  * ToolCardComponent — A compact card showing a tool's icon, name, and description.
  * Used in the empty state to display which tools are actively enabled.
- *
- * @param {React.ReactNode} icon — Lucide icon element
- * @param {string} title — Tool name
- * @param {string} subtitle — Short description
- * @param {string} color — Accent color (hex or CSS var)
- * @param {number} [count] — Optional count badge (e.g. number of functions)
- * @param {boolean} [enabled=true] — Whether the tool is currently enabled
- * @param {Function} [onClick] — Click handler to toggle the tool
- * @param {boolean} [glowing=false] — Whether to show a cross-component glow effect
- * @param {Function} [onHover] — (hovering: boolean) => void
- * @param {boolean} [locked=false] — Whether the tool is locked on (always enabled, non-toggleable)
  */
 export default function ToolCardComponent({
   icon,

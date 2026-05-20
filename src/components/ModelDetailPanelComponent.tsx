@@ -91,10 +91,6 @@ const PRICING_LABELS = {
 /**
  * ModelDetailPanelComponent — a slide-in right panel showing comprehensive
  * model card information when a model row is clicked in the ModelsTable.
- *
-
- * @param {Object}   props.model    — Raw model object from the table
- * @param {Function} props.onClose  — Called when the panel should close
  */
 export default function ModelDetailPanelComponent({ model, onClose }: any) {
   const router = useRouter();

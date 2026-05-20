@@ -482,10 +482,6 @@ export function getFileIconData(filename: any) {
 /**
  * FileTypeIconComponent — renders a filetype-aware Lucide icon with
  * language-specific coloring.
- *
- * @param {string} filename  — file basename (e.g. "index.ts", "Dockerfile")
- * @param {number} [size=11] — icon pixel size
- * @param {string} [className] — additional CSS class(es) to merge
  */
 const FileTypeIconComponent = memo(function FileTypeIconComponent({
   filename,

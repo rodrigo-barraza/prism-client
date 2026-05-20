@@ -24,16 +24,6 @@ import {
 /**
  * ConversationsTableComponent — reusable admin table for displaying
  * conversation lists (used in sessions, request associations, etc.).
- *
-
- * @param {Array} props.conversations — Array of conversation objects
- * @param {string} [props.emptyText] — Text when empty
- * @param {string} [props.sortKey] — Current sort key
- * @param {string} [props.sortDir] — Current sort direction
- * @param {Function} [props.onSort] — (key, dir) => void (server-side sort)
- * @param {boolean} [props.compact] — Slightly reduced padding
- * @param {boolean} [props.mini] — Mini density mode
- * @param {string} [props.maxHeight] — CSS max-height for scrollable tables
  */
 export default function ConversationsTableComponent({
   conversations = [],

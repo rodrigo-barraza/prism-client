@@ -17,10 +17,6 @@ const MODEL_TYPE_META = {
 /**
  * ModelTypeBadgeComponent — renders a colour-coded pill for a model's
  * endpoint-based type (conversation | audio | embed).
- *
- * @param {string}  modelType — "conversation" | "audio" | "embed"
-
-
  */
 export default function ModelTypeBadgeComponent({
   modelType,

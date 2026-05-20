@@ -25,10 +25,6 @@ import styles from "./BenchmarkFormComponent.module.css";
  *
  * Used by both BenchmarkPageComponent (New) and BenchmarkDetailPageComponent (Clone)
  * to eliminate the duplicated form field markup.
- *
- * @param {object}   form       — { name, systemPrompt, prompt, benchmarkMode, assertions, assertionOperator, agentAssertions, agentAssertionOperator }
- * @param {Function} onChange   — (updater) => void — receives a state updater fn
- * @param {Array}    matchModes — Array of { value, label } for match mode dropdown
  */
 export default function BenchmarkFormComponent({
   form,

@@ -721,18 +721,32 @@ export interface VramBenchmarkMachine {
 
 export interface WorkflowNode {
   id: string;
-  type: string;
+  type?: string;
   label?: string;
   config?: Record<string, unknown>;
   position?: { x: number; y: number };
+  inputTypes?: string[];
+  outputTypes?: string[];
+  supportedModalities?: string[];
+  builtInTools?: string[];
+  customTools?: string[];
+  disabledTools?: string[];
+  receivedOutputs?: Record<string, unknown>;
+  nodeType?: string;
+  provider?: string;
+  modelName?: string;
   [key: string]: unknown;
 }
 
 export interface WorkflowEdge {
   id: string;
-  source: string;
-  target: string;
+  source?: string;
+  target?: string;
   label?: string;
+  sourceNodeId?: string;
+  targetNodeId?: string;
+  sourceModality?: string;
+  targetModality?: string;
   [key: string]: unknown;
 }
 

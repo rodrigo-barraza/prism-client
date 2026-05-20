@@ -74,8 +74,6 @@ export default class ToolsApiService {
 
   /**
    * Query tool-call logs with optional filters.
-   *
-   * @returns {Promise<{ total, count, toolCalls }>}
    */
   static async getToolCalls(params: Record<string, string | number | boolean> = {}): Promise<ToolCallListResponse> {
     const entries = Object.entries(params).map(([k, v]) => [k, String(v)]);
@@ -115,8 +113,6 @@ export default class ToolsApiService {
 
   /**
    * List tasks for a project, optionally filtered by status.
-   *
-   * @returns {Promise<{ project, tasks, summary }>}
    */
   static async getAgenticTasks(
     project: string,
@@ -131,8 +127,6 @@ export default class ToolsApiService {
 
   /**
    * List all tasks, optionally scoped to an agent session.
-   *
-   * @returns {Promise<{ tasks, summary }>}
    */
   static async getAllAgenticTasks(
     { status, agentSessionId }: { status?: string; agentSessionId?: string } = {},
@@ -148,8 +142,6 @@ export default class ToolsApiService {
 
   /**
    * Create a new task.
-   *
-   * @returns {Promise<{ task, message }>}
    */
   static async createAgenticTask(
     project: string,
@@ -160,8 +152,6 @@ export default class ToolsApiService {
 
   /**
    * Update a task.
-   *
-   * @returns {Promise<{ task, message }>}
    */
   static async updateAgenticTask(
     project: string,
@@ -177,8 +167,6 @@ export default class ToolsApiService {
 
   /**
    * Delete a task.
-   *
-   * @returns {Promise<{ deleted, taskId, message }>}
    */
   static async deleteAgenticTask(
     project: string,
@@ -193,8 +181,6 @@ export default class ToolsApiService {
 
   /**
    * Read a file's contents via the agentic file service.
-   *
-   * @returns {Promise<{ path, content, totalLines, language?, truncated? }>}
    */
   static async readFile(
     path: string,

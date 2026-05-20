@@ -269,9 +269,6 @@ function DomainCheckbox({ domainEnabled, totalCount, onToggle }: any) {
  *   - "tool_name"   → exact tool match
  *   - "label:X"     → all tools carrying label X
  *   - "domain:X"    → all tools in domain X
- *
-
-
  */
 export default function ToolSelectionComponent({
   availableTools = [],

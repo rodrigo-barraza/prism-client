@@ -72,10 +72,6 @@ export function renderAgentIcon(agent: any, size = 15) {
  * Supports two modes:
  *   - **default**: Select a single active agent (radio-style). Shows the active agent in the trigger.
  *   - **addMode**: Add agents to a list (benchmark page). Shows "Add Agent" / "N Agents" trigger pill.
- *
- * @param {Array<{ id, name, project, toolCount, icon?, color? }>} agents - Available agent personas
-
-
  */
 export default function AgentPickerComponent({
   agents = [],

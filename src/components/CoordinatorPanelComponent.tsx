@@ -36,9 +36,6 @@ const COMPLEXITY_CLASSES = {
  * unified diffs, and merging results.
  *
  * Lifecycle: Input → Plan → Execute → Review → Merge
- *
-
- * @param {string} props.project - Project identifier
  */
 export default function CoordinatorPanel({ project: _project }: any) {
   // -- State -------------------------------------------------

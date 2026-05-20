@@ -16,12 +16,6 @@ function easeOutCubic(t: any) {
  * When the count updates upward, the displayed number tweens (counting animation)
  * from the previous value to the new value, with a rainbow hue-rotate effect
  * on the text while the tween is active.
- *
- * @param {number} count — message count
- * @param {number} [deletedCount=0] — number of deleted messages
- * @param {boolean} [showIcon=true] — show MessageSquare icon
-
-
  */
 export default function MessageCountBadgeComponent({
   count,

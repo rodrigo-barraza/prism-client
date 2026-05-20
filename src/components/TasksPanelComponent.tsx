@@ -41,10 +41,6 @@ const STATUS_CYCLE = ["pending", "in_progress", "completed"];
  * Displayed in the agent sidebar alongside Memories. Tasks are created
  * by the agent (via task_create tool) and persist across conversations.
  * Users can also create tasks manually from this panel.
- *
-
- * @param {string} props.project - Project identifier
-
  */
 export default function TasksPanel({
   project,

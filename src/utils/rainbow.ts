@@ -22,8 +22,6 @@ export const RAINBOW: RgbTriplet[] = [
 
 /**
  * Linearly interpolate between two RGB triplets.
- *
- * @returns Interpolated [r, g, b]
  */
 export function lerpRgb(a: RgbTriplet, b: RgbTriplet, t: number): RgbTriplet {
   return [
@@ -35,8 +33,6 @@ export function lerpRgb(a: RgbTriplet, b: RgbTriplet, t: number): RgbTriplet {
 
 /**
  * Sample the rainbow palette at a normalized position.
- *
- * @returns Interpolated [r, g, b]
  */
 export function paletteAt(colors: RgbTriplet[], t: number): RgbTriplet {
   const scaled = (((t % 1) + 1) % 1) * colors.length;

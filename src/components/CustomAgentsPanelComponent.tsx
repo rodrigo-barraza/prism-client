@@ -189,9 +189,6 @@ export function resolveIconComponent(name: any) {
 
 /**
  * CustomAgentsPanel — CRUD interface for user-defined agent personas.
- *
-
-
  */
 export default function CustomAgentsPanel({
   agents = [],

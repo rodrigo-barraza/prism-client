@@ -6,10 +6,6 @@ import styles from "./ProvidersBadgeComponent.module.css";
 /**
  * ProvidersBadgeComponent — displays a single provider name with its logo,
  * or a "N providers" badge with the Layers icon and a tooltip listing all names.
- *
- * @param {string[]} providers — array of provider key strings (e.g. "openai", "google")
-
-
  */
 export default function ProvidersBadgeComponent({
   providers = [],
