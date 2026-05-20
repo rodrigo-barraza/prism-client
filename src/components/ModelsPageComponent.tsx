@@ -56,10 +56,16 @@ function flattenConfigModels(config) {
   return [...modelsMap.values()];
 }
 
+interface ModelsPageComponentProps {
+  mode?: string;
+  project?: string | null;
+  onCountChange?: (value: string | number | null) => void;
+}
+
 export default function ModelsPageComponent({
   mode = "user",
   onCountChange,
-}: unknown) {
+}: ModelsPageComponentProps) {
   const isAdmin = mode === "admin";
   const [allModels, setAllModels] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
