@@ -18,7 +18,7 @@ import {
 } from "./AdminHeaderContextComponent";
 import styles from "./AdminShellComponent.module.css";
 
-function AdminShellInner({ children }: unknown) {
+function AdminShellInner({ children }: { children: React.ReactNode }) {
   const [newCount, setNewCount] = useState(0);
   const [newTracesCount, setNewTracesCount] = useState(0);
   const [newRequestsCount, setNewRequestsCount] = useState(0);
@@ -359,7 +359,7 @@ function AdminShellInner({ children }: unknown) {
   );
 }
 
-export default function AdminShell({ children }: unknown) {
+export default function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <AdminHeaderProvider>
       <AdminShellInner>{children}</AdminShellInner>

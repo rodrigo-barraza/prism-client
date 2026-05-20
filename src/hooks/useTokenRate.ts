@@ -44,8 +44,8 @@ export interface TokenRateResult {
  * but the hook may also receive currentTurnStart and completedElapsedTime
  * from the component layer.
  */
-interface ExtendedSessionStats extends SessionTokenStats {
-  currentTurnStart?: number | null;
+interface ExtendedSessionStats extends Partial<SessionTokenStats> {
+  currentTurnStart?: string | number | null;
   completedElapsedTime?: number;
 }
 
@@ -151,8 +151,13 @@ export default function useTokenRate(sessionStats: ExtendedSessionStats | null):
 
   // -- Elapsed time ----------------------------------------------
   const completedTime = sessionStats?.completedElapsedTime || 0;
-  const liveExtra = sessionStats?.currentTurnStart
-    ? Math.max(0, (nowMs - sessionStats.currentTurnStart) / 1000)
+  const turnStartVal = sessionStats?.currentTurnStart
+    ? (typeof sessionStats.currentTurnStart === "number"
+        ? sessionStats.currentTurnStart
+        : new Date(sessionStats.currentTurnStart).getTime())
+    : null;
+  const liveExtra = turnStartVal
+    ? Math.max(0, (nowMs - turnStartVal) / 1000)
     : 0;
   const totalElapsedTime = completedTime + liveExtra;
 

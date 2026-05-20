@@ -25,18 +25,18 @@ import { CloseButtonComponent, TooltipComponent } from "@rodrigo-barraza/compone
 // Module-scoped so every ModelPickerPopoverComponent instance shares the
 // same search term. Uses useSyncExternalStore for tear-free reads.
 let _sharedSearch = "";
-const _listeners = new Set<unknown>();
+const _listeners = new Set<() => void>();
 function _notify() {
   for (const fn of _listeners) fn();
 }
-function subscribeSearch(callback: unknown) {
+function subscribeSearch(callback: () => void) {
   _listeners.add(callback);
   return () => _listeners.delete(callback);
 }
 function getSearchSnapshot() {
   return _sharedSearch;
 }
-function setSharedSearch(value) {
+function setSharedSearch(value: string) {
   _sharedSearch = value;
   _notify();
 }
@@ -88,6 +88,47 @@ function useSharedModelSearch() {
  *   allowDeselect   — boolean — if true, clicking the selected model clears it
  *   placeholderLabel — string — overrides "Select Model" when no model is selected
  */
+import type { PrismConfig, ModelOption } from "../types/types";
+
+export interface ExtendedModelOption extends ModelOption {
+  provider: string;
+  label: string;
+  organization?: string;
+  usageCount?: number;
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  key?: string;
+  modelType?: string;
+  inputTypes?: string[];
+  outputTypes?: string[];
+  tools?: string[];
+  [key: string]: unknown;
+}
+
+
+export interface ModelPickerPopoverProps {
+  config: PrismConfig | null;
+  settings?: {
+    provider?: string;
+    model?: string;
+    [key: string]: unknown;
+  } | null;
+  onSelectModel?: ((provider: string, model: string) => void) | ((model: unknown) => void);
+  onLmStudioSelect?: (model: unknown) => void;
+  loadingProgress?: number | null;
+  favorites?: string[];
+  onToggleFavorite?: (key: string) => void;
+  disabled?: boolean;
+  multiSelect?: boolean;
+  selectedKeys?: Set<string>;
+  renderActions?: (model: unknown) => React.ReactNode;
+  triggerLabel?: string;
+  triggerIcon?: React.ReactNode;
+  modelTypeFilter?: string;
+  allowDeselect?: boolean;
+  placeholderLabel?: string;
+}
+
 export default function ModelPickerPopoverComponent({
   config,
   settings,
@@ -105,16 +146,16 @@ export default function ModelPickerPopoverComponent({
   modelTypeFilter,
   allowDeselect = false,
   placeholderLabel,
-}: unknown) {
+}: ModelPickerPopoverProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useSharedModelSearch();
   const [popoverStyle, setPopoverStyle] = useState<Record<string, unknown>>({});
   const [flipped, setFlipped] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
-  const triggerRef = useRef<unknown>(null);
-  const bodyRef = useRef<unknown>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
-  const highlightedRowRef = useCallback((element: unknown) => {
+  const highlightedRowRef = useCallback((element: HTMLElement | null) => {
     if (element) {
       element.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
@@ -124,7 +165,7 @@ export default function ModelPickerPopoverComponent({
   const baseModels = buildAllModels(config, modelTypeFilter);
 
   // -- Fetch usage stats and enrich models ------------------------------
-  const [usageMap, setUsageMap] = useState<unknown>(null);
+  const [usageMap, setUsageMap] = useState<Map<string, { totalRequests: number; totalInputTokens: number; totalOutputTokens: number; }> | null>(null);
   const usageFetchedRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -132,19 +173,19 @@ export default function ModelPickerPopoverComponent({
     usageFetchedRef.current = true;
     PrismService.getModelStats()
       .then((stats) => {
-        const map = new Map();
+        const map = new Map<string, { totalRequests: number; totalInputTokens: number; totalOutputTokens: number; }>();
         for (const s of stats) {
           const key = `${s.provider}:${s.model}`;
           const existing = map.get(key);
           if (existing) {
             existing.totalRequests += s.totalRequests;
-            existing.totalInputTokens += s.totalInputTokens || 0;
-            existing.totalOutputTokens += s.totalOutputTokens || 0;
+            existing.totalInputTokens += (s.totalInputTokens as number) || 0;
+            existing.totalOutputTokens += (s.totalOutputTokens as number) || 0;
           } else {
             map.set(key, {
               totalRequests: s.totalRequests,
-              totalInputTokens: s.totalInputTokens || 0,
-              totalOutputTokens: s.totalOutputTokens || 0,
+              totalInputTokens: (s.totalInputTokens as number) || 0,
+              totalOutputTokens: (s.totalOutputTokens as number) || 0,
             });
           }
         }
@@ -156,7 +197,7 @@ export default function ModelPickerPopoverComponent({
   const allModels = useMemo(() => {
     if (!usageMap) return baseModels;
     return baseModels.map((m) => {
-      const stats = (usageMap as unknown).get(`${m.provider}:${m.name}`);
+      const stats = usageMap.get(`${m.provider}:${m.name}`);
       if (!stats) return m;
       return {
         ...m,
@@ -168,9 +209,9 @@ export default function ModelPickerPopoverComponent({
   }, [baseModels, usageMap]);
 
   // -- Filter by search -------------------------------------------------
-  const filteredModels = (search as unknown).trim()
+  const filteredModels = search.trim()
     ? allModels.filter((m) => {
-        const q = (search as unknown).toLowerCase();
+        const q = search.toLowerCase();
         return (
           (m.name || "").toLowerCase().includes(q) ||
           (m.label || "").toLowerCase().includes(q) ||
@@ -178,7 +219,7 @@ export default function ModelPickerPopoverComponent({
             .toLowerCase()
             .includes(q) ||
           (m.organization || "").toLowerCase().includes(q) ||
-          (m.params || "").toLowerCase().includes(q)
+          ((m.params as string) || "").toLowerCase().includes(q)
         );
       })
     : allModels;
@@ -638,29 +679,28 @@ export default function ModelPickerPopoverComponent({
 
 // -- Helpers ------------------------------------------------------------
 
-function buildAllModels(config: unknown, modelTypeFilter: unknown) {
+function buildAllModels(config: PrismConfig | null, modelTypeFilter?: string): ExtendedModelOption[] {
   if (!config) return [];
-  const seen = new Map();
+  const seen = new Map<string, ExtendedModelOption>();
 
   const sections = [
-    { key: "textToText", suffix: "" },
-    { key: "textToImage", suffix: " (Image)" },
-    { key: "audioToText", suffix: " (Transcribe)" },
-    { key: "textToSpeech", suffix: " (TTS)" },
-    { key: "embedding", suffix: " (Embed)" },
+    { key: "textToText" as const, suffix: "" },
+    { key: "textToImage" as const, suffix: " (Image)" },
+    { key: "audioToText" as const, suffix: " (Transcribe)" },
+    { key: "textToSpeech" as const, suffix: " (TTS)" },
+    { key: "embedding" as const, suffix: " (Embed)" },
   ];
 
   for (const { key, suffix } of sections) {
     const modelsMap = config[key]?.models || {};
     for (const [provider, models] of Object.entries(modelsMap)) {
-      for (const m of models as unknown[]) {
+      for (const m of models as ModelOption[]) {
         const id = `${provider}:${m.name}`;
         if (!seen.has(id)) {
           seen.set(id, {
             ...m,
             provider,
-            label:
-              m.label + (suffix && !m.label.endsWith(suffix) ? suffix : ""),
+            label: (m.label || m.name) + (suffix && !(m.label || m.name).endsWith(suffix) ? suffix : ""),
             organization: inferOrganization(m.name, provider),
           });
         }

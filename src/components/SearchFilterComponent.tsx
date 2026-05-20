@@ -10,6 +10,18 @@ import styles from "./SearchFilterComponent.module.css";
  * When a value is selected, it renders as a removable badge chip below the trigger,
  * matching the badge pattern from FilterDropdownComponent.
  */
+import { LucideIcon } from "lucide-react";
+
+export interface SearchFilterComponentProps {
+  options?: string[];
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  allLabel?: string;
+  badgeColor?: string;
+  icon?: LucideIcon;
+}
+
 export default function SearchFilterComponent({
   options = [],
   value = "",
@@ -18,11 +30,11 @@ export default function SearchFilterComponent({
   allLabel = "All",
   badgeColor,
   icon: Icon = Search,
-}: unknown) {
+}: SearchFilterComponentProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const filtered = query
     ? options.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
@@ -65,10 +77,10 @@ onChange(value);
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => {
+    const handler = (e: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current!.contains(e.target)
+        !containerRef.current.contains(e.target as Node)
       ) {
         setOpen(false);
         setQuery("");
@@ -81,7 +93,7 @@ onChange(value);
   // Close on Escape
   useEffect(() => {
     if (!open) return;
-    const handler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", handler);

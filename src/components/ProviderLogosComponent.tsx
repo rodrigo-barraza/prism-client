@@ -251,11 +251,18 @@ const LOGOS = {
   ),
 };
 
+export interface ProviderLogoProps {
+  provider?: string;
+  size?: number;
+  className?: string;
+}
+
 export default function ProviderLogo({
   provider,
   size = 16,
   className = "",
-}: unknown) {
+}: ProviderLogoProps) {
+  if (!provider) return null;
   // Resolve multi-instance IDs (e.g. "lm-studio-2") to base type logo
   const key = (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[provider]
     ? provider
@@ -277,6 +284,7 @@ export default function ProviderLogo({
  * Inline helper so ProviderLogo works before setLocalProviderMeta is called.
  */
 function _resolveBaseTypeFromLogos(id: string) {
+  if (!id) return "";
   const match = id.match(/^(.+)-(\d+)$/);
   if (match && (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[match[1]]) return match[1];
   return id;
@@ -322,7 +330,8 @@ export function setLocalProviderMeta(providers: Array<{id: string; nickname?: st
  * Resolve the base provider type from a potentially numbered instance ID.
  * e.g. "lm-studio-2" → "lm-studio", "ollama" → "ollama"
  */
-function _resolveBaseType(id: string) {
+function _resolveBaseType(id?: string) {
+  if (!id) return "";
   if ((PROVIDER_LABELS as Record<string, string | undefined>)[id]) return id;
   // Check meta first (authoritative)
   const meta = _localMeta.get(id);
@@ -347,7 +356,8 @@ function _resolveBaseType(id: string) {
  *   3. Base type label      → "LM Studio"
  *   4. Raw ID fallback      → "lm-studio-2"
  */
-export function resolveProviderLabel(id: string) {
+export function resolveProviderLabel(id?: string) {
+  if (!id) return "";
   // Direct match (base type or cloud)
   if ((PROVIDER_LABELS as Record<string, string | undefined>)[id]) {
     const meta = _localMeta.get(id);
@@ -377,7 +387,8 @@ export function resolveProviderLabel(id: string) {
  * Multi-instance IDs (e.g. "lm-studio-2") map to the base type logo.
 
  */
-export function resolveProviderLogoKey(id: string) {
+export function resolveProviderLogoKey(id?: string) {
+  if (!id) return "";
   if ((LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[id]) return id;
   return _resolveBaseType(id);
 }

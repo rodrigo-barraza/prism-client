@@ -17,7 +17,12 @@ const TABS = [
   { key: "workers", label: "Workers", icon: <Users size={10} /> },
 ];
 
-export default function StatsTabBarComponent({ activeTab, onChange }: unknown) {
+export interface StatsTabBarProps {
+  activeTab: string;
+  onChange: (tab: string) => void;
+}
+
+export default function StatsTabBarComponent({ activeTab, onChange }: StatsTabBarProps) {
   return (
     <div className={styles.statsTabBar}>
       {TABS.map((tab) => (

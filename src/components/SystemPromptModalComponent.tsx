@@ -11,16 +11,28 @@ import {
 import styles from "./SystemPromptModalComponent.module.css";
 import { LS_SYSTEM_INSTRUCTIONS } from "../constants";
 
-function loadInstructions() {
+export interface SystemInstructionItem {
+  id: string;
+  title: string;
+  body: string;
+}
+
+export interface SystemPromptModalProps {
+  activePrompt?: string;
+  onApply: (text: string) => void;
+  onClose: () => void;
+}
+
+function loadInstructions(): SystemInstructionItem[] {
   try {
     const raw = localStorage.getItem(LS_SYSTEM_INSTRUCTIONS);
-    return raw ? JSON.parse(raw) : [];
+    return raw ? (JSON.parse(raw) as SystemInstructionItem[]) : [];
   } catch {
     return [];
   }
 }
 
-function saveInstructions(list) {
+function saveInstructions(list: SystemInstructionItem[]): void {
   localStorage.setItem(LS_SYSTEM_INSTRUCTIONS, JSON.stringify(list));
 }
 
@@ -28,24 +40,24 @@ export default function SystemPromptModal({
   activePrompt,
   onApply,
   onClose,
-}: unknown) {
-  const [instructions, setInstructions] = useState(() => loadInstructions());
-  const [selectedId, setSelectedId] = useState(() => {
+}: SystemPromptModalProps) {
+  const [instructions, setInstructions] = useState<SystemInstructionItem[]>(() => loadInstructions());
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
     const list = loadInstructions();
     const match = list.find((i) => i.body === activePrompt);
     return match ? match.id : null;
   });
-  const [title, setTitle] = useState(() => {
+  const [title, setTitle] = useState<string>(() => {
     const list = loadInstructions();
     const match = list.find((i) => i.body === activePrompt);
     return match ? match.title : "";
   });
-  const [body, setBody] = useState(activePrompt || "");
+  const [body, setBody] = useState<string>(activePrompt || "");
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounced auto-save
   const persistInstruction = useCallback(
-    (id: unknown, newTitle: unknown, newBody: unknown) => {
+    (id: string, newTitle: string, newBody: string) => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
         setInstructions((prev) => {
@@ -61,11 +73,11 @@ export default function SystemPromptModal({
     [onApply],
   );
 
-  const handleSelectInstruction = (value) => {
+  const handleSelectInstruction = (value: string) => {
     if (value === "__new__") {
       // Create new
       const newId = Date.now().toString();
-      const newInstruction = { id: newId, title: "", body: "" };
+      const newInstruction: SystemInstructionItem = { id: newId, title: "", body: "" };
       setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
@@ -94,7 +106,7 @@ export default function SystemPromptModal({
     } else {
       // Auto-create instruction
       const newId = Date.now().toString();
-      const newInstruction = { id: newId, title: value, body };
+      const newInstruction: SystemInstructionItem = { id: newId, title: value, body };
       setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
@@ -104,7 +116,7 @@ export default function SystemPromptModal({
     }
   };
 
-  const handleBodyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBodyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setBody(value);
     if (selectedId) {
@@ -112,7 +124,7 @@ export default function SystemPromptModal({
     } else {
       // Auto-create instruction
       const newId = Date.now().toString();
-      const newInstruction = { id: newId, title, body: value };
+      const newInstruction: SystemInstructionItem = { id: newId, title, body: value };
       setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);

@@ -54,15 +54,29 @@ import SoundService from "@/services/SoundService";
 import { getTotalInputTokens, renderToolName } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
 import MentionBadge from "./MentionBadgeComponent";
+import type { Message, ToolCallEvent, ContentSegment } from "../types/types";
+
+export interface WorkerToolActivityItem {
+  toolNames?: Record<string, number>;
+  currentTool?: string | null;
+  description?: string;
+  tokPerSec?: number | null;
+  phase?: string;
+  phaseLabel?: string;
+  phaseProgress?: number | null;
+  toolCount?: number;
+  iteration?: number;
+  maxIterations?: number;
+}
 
 /* -- Task notification detection (Claude Code pattern) -------
  * Worker results arrive as user-role messages containing
  * <task-notification> XML. Detect by content so it works for
  * both live messages and already-persisted history.            */
 
-function parseTaskNotification(content: unknown) {
+function parseTaskNotification(content: string | undefined | null) {
   if (!content || !content.includes("<task-notification>")) return null;
-  const tag = (name) => {
+  const tag = (name: string) => {
     const re = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
     const m = content.match(re);
     return m ? m[1].trim() : null;
@@ -72,7 +86,7 @@ function parseTaskNotification(content: unknown) {
     status: tag("status"),
     summary: tag("summary"),
     result: tag("result"),
-    toolUses: tag("tool_uses"),
+    toolUses: tag("tool_uses") ? parseInt(tag("tool_uses") || "0", 10) : 0,
     durationMs: tag("duration_ms"),
   };
 }
@@ -84,13 +98,13 @@ function parseTaskNotification(content: unknown) {
  * for display in the message list.                             */
 
 function renderContentWithMentions(
-  text: unknown,
-  knownPaths: unknown,
-  onMentionFileOpen: unknown,
+  text: string | undefined | null,
+  knownPaths: Set<string> | null | undefined,
+  onMentionFileOpen: ((path: string) => void) | undefined,
 ) {
-  const segments = parseMentionTokens(text);
+  const segments = parseMentionTokens(text || "");
   // Fast path: no mentions found, return plain string
-  if (segments.length === 1 && segments[0].type === "text") return text;
+  if (segments.length === 1 && segments[0].type === "text") return text || "";
 
   return segments.map((seg, i) => {
     if (seg.type === "text") return seg.value;
@@ -109,14 +123,14 @@ function renderContentWithMentions(
   });
 }
 
-function getMimeCategory(ref: unknown) {
+function getMimeCategory(ref: string | undefined | null) {
   if (!ref) return "file";
   if (ref.startsWith("minio://")) {
     const ext = ref.split(".").pop()?.toLowerCase();
-    if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
+    if (ext && ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
       return "image";
-    if (["wav", "mp3", "webm", "ogg"].includes(ext)) return "audio";
-    if (["mp4", "mov", "avi"].includes(ext)) return "video";
+    if (ext && ["wav", "mp3", "webm", "ogg"].includes(ext)) return "audio";
+    if (ext && ["mp4", "mov", "avi"].includes(ext)) return "video";
     if (ext === "pdf") return "pdf";
     if (ext === "txt") return "text";
     return "file";
@@ -126,10 +140,10 @@ function getMimeCategory(ref: unknown) {
     try {
       const pathname = new URL(ref).pathname;
       const ext = pathname.split(".").pop()?.toLowerCase();
-      if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext as string))
+      if (ext && ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
         return "image";
-      if (["wav", "mp3", "webm", "ogg"].includes(ext as string)) return "audio";
-      if (["mp4", "mov", "avi"].includes(ext as string)) return "video";
+      if (ext && ["wav", "mp3", "webm", "ogg"].includes(ext)) return "audio";
+      if (ext && ["mp4", "mov", "avi"].includes(ext)) return "video";
       if (ext === "pdf") return "pdf";
       if (ext === "txt") return "text";
     } catch {
@@ -147,12 +161,18 @@ function getMimeCategory(ref: unknown) {
 
 /* -- Sub-components -------------------------------------------- */
 
-function ThinkingBlock({ thinking, isStreaming, children }: unknown) {
+interface ThinkingBlockProps {
+  thinking?: string;
+  isStreaming?: boolean;
+  children?: React.ReactNode;
+}
+
+function ThinkingBlock({ thinking, isStreaming, children }: ThinkingBlockProps) {
   // User can manually toggle after streaming has finished
   const [manualOpen, setManualOpen] = useState(false);
   // User can temporarily close during streaming
   const [streamClosed, setStreamClosed] = useState(false);
-  const contentRef = useRef<unknown>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   // Derive collapsed state:
   // - Streaming: expanded unless user explicitly closed it
@@ -164,10 +184,12 @@ function ThinkingBlock({ thinking, isStreaming, children }: unknown) {
     if (isStreaming && !streamClosed && contentRef.current) {
       const element = contentRef.current;
       requestAnimationFrame(() => {
-        (element as HTMLElement).scrollTo({
-          top: (element as HTMLElement).scrollHeight,
-          behavior: "smooth",
-        });
+        if (element) {
+          element.scrollTo({
+            top: element.scrollHeight,
+            behavior: "smooth",
+          });
+        }
       });
     }
   }, [thinking, isStreaming, streamClosed]);
@@ -201,17 +223,23 @@ function ThinkingBlock({ thinking, isStreaming, children }: unknown) {
   );
 }
 
+interface ToolCallsBlockProps {
+  toolCalls?: ToolCallEvent[];
+  streamingOutputs?: Map<string, string> | null;
+  workerToolActivity?: Record<string, WorkerToolActivityItem> | null;
+}
+
 function ToolCallsBlock({
   toolCalls,
   streamingOutputs,
   workerToolActivity,
-}: unknown) {
+}: ToolCallsBlockProps) {
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   if (!toolCalls || toolCalls.length === 0) return null;
 
   const hasActiveCalls = toolCalls.some((tc) => tc.status === "calling");
   const doneCount = toolCalls.filter(
-    (tc: unknown) => tc.status === "done" || tc.status === "error",
+    (tc: ToolCallEvent) => tc.status === "done" || tc.status === "error",
   ).length;
 
   // Build header text with active tense awareness
@@ -297,10 +325,10 @@ function ToolCallsBlock({
                           })()
                         : tc.result
                       : null;
-                    const members = parsed?.members || [];
+                    const members = (parsed as { members?: Array<{ agent_id?: string; toolUses?: number }> })?.members || [];
                     // Aggregate tool activity from all team members
-                    const allToolNames = {};
-                    let activeTool = null;
+                    const allToolNames: Record<string, number> = {};
+                    let activeTool: string | null = null;
                     for (const member of members) {
                       const activity =
                         member.agent_id && workerToolActivity
@@ -310,8 +338,8 @@ function ToolCallsBlock({
                         for (const [name, count] of Object.entries(
                           activity.toolNames,
                         )) {
-                          (allToolNames as Record<string, unknown>)[name] =
-                            ((allToolNames as Record<string, unknown>)[name] || 0) + count;
+                          allToolNames[name] =
+                            (allToolNames[name] || 0) + count;
                         }
                         if (activity.currentTool)
                           activeTool = activity.currentTool;
@@ -319,26 +347,28 @@ function ToolCallsBlock({
                     }
                     // Fallback: match by description during calling state (before result arrives)
                     // createTeam prefixes descriptions as "[teamName] description"
+                    const tcArgs = tc.args as { members?: Array<{ description?: string }> };
                     if (
                       Object.keys(allToolNames).length === 0 &&
                       workerToolActivity &&
-                      Array.isArray(tc.args?.members)
+                      Array.isArray(tcArgs?.members)
                     ) {
-                      for (const argMember of tc.args.members) {
+                      for (const argMember of tcArgs.members) {
                         const match = Object.values(workerToolActivity).find(
                           (v) =>
                             v.description &&
+                            argMember.description &&
                             v.description.includes(argMember.description),
                         );
-                        if ((match as unknown)?.toolNames) {
+                        if (match?.toolNames) {
                           for (const [name, count] of Object.entries(
-                            (match as unknown).toolNames,
+                            match.toolNames,
                           )) {
-                            (allToolNames as Record<string, unknown>)[name] =
-                              ((allToolNames as Record<string, unknown>)[name] || 0) + count;
+                            allToolNames[name] =
+                              (allToolNames[name] || 0) + count;
                           }
-                          if ((match as unknown).currentTool)
-                            activeTool = (match as unknown).currentTool;
+                          if (match.currentTool)
+                            activeTool = match.currentTool;
                         }
                       }
                     }
@@ -385,16 +415,16 @@ function ToolCallsBlock({
  * so they render in-place as ghostly apparitions.
  * Use this in both /chat and /admin/conversations for consistency.
  */
-export function prepareDisplayMessages(rawMessages: unknown) {
+export function prepareDisplayMessages(rawMessages: Message[] | undefined | null): Message[] {
   if (!rawMessages || rawMessages.length === 0) return [];
 
   // First pass: collect tool results keyed by tool_call_id
   // Support both snake_case (API) and camelCase (normalized) property names
-  const toolResults = {};
+  const toolResults: Record<string, string> = {};
   for (const m of rawMessages) {
     if (m.role === "tool") {
       const id = m.tool_call_id || m.toolCallId;
-      if (id) (toolResults as Record<string, unknown>)[id] = m.content;
+      if (id) toolResults[id] = m.content || "";
     }
   }
 
@@ -415,13 +445,13 @@ export function prepareDisplayMessages(rawMessages: unknown) {
     )
     .map((m) => {
       // Merge tool results into toolCalls
-      if (m.toolCalls?.length > 0 && Object.keys(toolResults).length > 0) {
+      if (m.toolCalls && m.toolCalls.length > 0 && Object.keys(toolResults).length > 0) {
         const enrichedCalls = m.toolCalls.map((tc) => ({
           ...tc,
           result:
             tc.result ||
-            (toolResults as Record<string, unknown>)[tc.id] ||
-            (toolResults as Record<string, unknown>)[tc.tool_call_id] ||
+            toolResults[tc.id] ||
+            toolResults[tc.tool_call_id || ""] ||
             null,
         }));
         return { ...m, toolCalls: enrichedCalls };
@@ -431,7 +461,12 @@ export function prepareDisplayMessages(rawMessages: unknown) {
   return filtered;
 }
 
-function MediaPreview({ dataUrl: rawUrl, onClick }: unknown) {
+interface MediaPreviewProps {
+  dataUrl: string;
+  onClick?: () => void;
+}
+
+function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
   const src = PrismService.getFileUrl(rawUrl);
   const cat = getMimeCategory(rawUrl);
 
@@ -506,6 +541,17 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: unknown) {
 
 /* -- Inline edit for messages ---------------------------------- */
 
+interface EditableMessageProps {
+  content: string;
+  index: number;
+  role: Message["role"];
+  onEdit: (index: number, content: string) => void;
+  editing: boolean;
+  onCancelEdit: () => void;
+  knownPaths?: Set<string> | null;
+  onMentionFileOpen?: (path: string) => void;
+}
+
 function EditableMessage({
   content,
   index,
@@ -515,7 +561,7 @@ function EditableMessage({
   onCancelEdit,
   knownPaths,
   onMentionFileOpen,
-}: unknown) {
+}: EditableMessageProps) {
   const [editValue, setEditValue] = useState(content);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isAssistant = role === "assistant";
@@ -524,9 +570,9 @@ function EditableMessage({
   useEffect(() => {
     if (editing && textareaRef.current) {
       const element = textareaRef.current;
-      (element as HTMLElement).style.height = "auto";
-      (element as HTMLElement).style.height =
-        Math.min((element as HTMLElement).scrollHeight, 600) + "px";
+      element.style.height = "auto";
+      element.style.height =
+        Math.min(element.scrollHeight, 600) + "px";
     }
   }, [editing]);
 
@@ -538,7 +584,7 @@ function EditableMessage({
     if (editValue.trim() && editValue !== content) onEdit(index, editValue);
     onCancelEdit();
   };
-  const handleKey = (e: KeyboardEvent) => {
+  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Escape") cancel();
     // Only user messages submit on plain Enter; assistant messages
     // always use Shift+Enter or the Save button (since content is long)
@@ -562,7 +608,7 @@ function EditableMessage({
           ref={textareaRef}
           autoFocus
           value={editValue}
-          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
             setEditValue(e.target.value);
             // Auto-resize as content changes
             const element = e.target;
@@ -654,6 +700,29 @@ function EditableMessage({
 
 /* -- Main export ----------------------------------------------- */
 
+export interface MessageListProps {
+  messages?: Message[];
+  readOnly?: boolean;
+  isGenerating?: boolean;
+  streamingOutputs?: Map<string, string> | null;
+  workerToolActivity?: Record<string, WorkerToolActivityItem> | null;
+  headerContent?: React.ReactNode;
+  systemPrompt?: string | null;
+  onSystemPromptEdit?: (val: string) => void;
+  planProposal?: { plan: string; steps?: string[]; status?: string } | null;
+  onPlanApprove?: () => void;
+  onPlanReject?: () => void;
+  knownPaths?: string[];
+
+  onDelete?: (index: number) => void;
+  onRestore?: (index: number) => void;
+  onEdit?: (index: number, content: string) => void;
+  onRerun?: (index: number) => void;
+  onImageClick?: (url: string) => void;
+  onDocClick?: (url: string) => void;
+  onMentionFileOpen?: (path: string) => void;
+}
+
 /**
  * Shared message list component.
  */
@@ -678,15 +747,15 @@ export default function MessageList({
   onImageClick,
   onDocClick,
   onMentionFileOpen,
-}: unknown) {
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [expandedDeletedSet, setExpandedDeletedSet] = useState(new Set());
+}: MessageListProps) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [expandedDeletedSet, setExpandedDeletedSet] = useState<Set<number>>(new Set());
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
   // -- Sticky last user message (pinned header) -------------
   const [isUserMsgScrolledPast, setIsUserMsgScrolledPast] = useState(false);
-  const lastUserMsgRef = useRef<unknown>(null);
-  const lastUserMsgIndexRef = useRef<unknown>(-1);
+  const lastUserMsgRef = useRef<HTMLDivElement | null>(null);
+  const lastUserMsgIndexRef = useRef<number>(-1);
   const scrollingToUserMsgRef = useRef<boolean>(false);
 
   // Find the last user message
@@ -711,7 +780,7 @@ export default function MessageList({
     }
 
     // Find the scroll container — walk up to the nearest overflow-y ancestor
-    let scrollParent = (node as unknown).parentElement;
+    let scrollParent = node.parentElement;
     while (scrollParent) {
       const overflow = getComputedStyle(scrollParent).overflowY;
       if (overflow === "auto" || overflow === "scroll") break;
@@ -720,14 +789,15 @@ export default function MessageList({
     if (!scrollParent) return;
 
     const observer = new IntersectionObserver(
-      ([entry]: unknown) => {
+      ([entry]: IntersectionObserverEntry[]) => {
         // Suppress during programmatic scroll-to to prevent stutter
         if (scrollingToUserMsgRef.current) return;
         // Show sticky when user message is NOT intersecting
         // AND the element is above the viewport (scrolled past)
+        const rootTop = entry.rootBounds ? entry.rootBounds.top : 0;
         const scrolledPast =
           !entry.isIntersecting &&
-          entry.boundingClientRect.bottom < entry.rootBounds.top + 20;
+          entry.boundingClientRect.bottom < rootTop + 20;
         setIsUserMsgScrolledPast(scrolledPast);
       },
       {
@@ -760,7 +830,7 @@ export default function MessageList({
     const node = lastUserMsgRef.current;
     if (!node) return;
     // Walk up to the nearest scrollable ancestor
-    let scrollParent = (node as unknown).parentElement;
+    let scrollParent = node.parentElement;
     while (scrollParent) {
       const overflow = getComputedStyle(scrollParent).overflowY;
       if (overflow === "auto" || overflow === "scroll") break;
@@ -771,7 +841,7 @@ export default function MessageList({
     // Suppress observer during scroll to prevent stutter from layout shifts
     scrollingToUserMsgRef.current = true;
 
-    const nodeRect = (node as unknown).getBoundingClientRect();
+    const nodeRect = node.getBoundingClientRect();
     const parentRect = scrollParent.getBoundingClientRect();
     const offset = nodeRect.top - parentRect.top + scrollParent.scrollTop - 50;
     scrollParent.scrollTo({ top: offset, behavior: "smooth" });
@@ -781,7 +851,7 @@ export default function MessageList({
     setTimeout(() => {
       scrollingToUserMsgRef.current = false;
       // Manually check if element is now visible and dismiss sticky
-      const rect = (node as unknown).getBoundingClientRect();
+      const rect = node.getBoundingClientRect();
       const pRect = scrollParent.getBoundingClientRect();
       if (rect.top >= pRect.top) {
         setIsUserMsgScrolledPast(false);
@@ -789,7 +859,7 @@ export default function MessageList({
     }, 600);
   }, []);
 
-  const toggleDeletedExpanded = (index) => {
+  const toggleDeletedExpanded = (index: number) => {
     setExpandedDeletedSet((prev) => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
@@ -1199,7 +1269,7 @@ export default function MessageList({
                                   {gMsg.images && gMsg.images.length > 0 && (
                                     <div className={styles.imagePreviewRow}>
                                       {gMsg.images.map(
-                                        (rawUrl: unknown, j: unknown) => (
+                                        (rawUrl: string, j: number) => (
                                           <MediaPreview
                                             key={j}
                                             dataUrl={rawUrl}
@@ -1378,7 +1448,15 @@ export default function MessageList({
                           const renderedToolIds = new Set();
 
                           // Helper: render a segment by type
-                          const renderSeg = (seg: unknown, si: unknown, opts = {}) => {
+                          const renderSeg = (
+                            seg: ContentSegment,
+                            si: number,
+                            opts: {
+                              isLastText?: boolean;
+                              insideThinking?: boolean;
+                              suppressCursor?: boolean;
+                            } = {},
+                          ) => {
                             if (seg.type === "thinking") {
                               const fragment =
                                 message.thinkingFragments?.[
@@ -1394,11 +1472,12 @@ export default function MessageList({
                             }
                             if (
                               seg.type === "tools" &&
-                              message.toolCalls?.length > 0
+                              message.toolCalls &&
+                              message.toolCalls.length > 0
                             ) {
                               const toolIdSet = new Set(seg.toolIds || []);
                               const segmentTools = message.toolCalls.filter(
-                                (tc: unknown) => {
+                                (tc: ToolCallEvent) => {
                                   if (!toolIdSet.has(tc.id)) return false;
                                   if (renderedToolIds.has(tc.id)) return false;
                                   renderedToolIds.add(tc.id);
@@ -1420,10 +1499,10 @@ export default function MessageList({
                                 message.textFragments?.[
                                   seg.fragmentIndex
                                 ]?.trim();
-                              const isLastTextSeg = !!(opts as unknown).isLastText;
+                              const isLastTextSeg = !!opts.isLastText;
                               const showCursor =
-                                !(opts as unknown).insideThinking &&
-                                !(opts as unknown).suppressCursor;
+                                !opts.insideThinking &&
+                                !opts.suppressCursor;
                               if (fragmentText) {
                                 return (
                                   <MarkdownContent
@@ -1524,7 +1603,7 @@ export default function MessageList({
                                 origIdx: index,
                               }))
                               .filter(
-                                ({ seg }: unknown) => seg.type !== "thinking",
+                                ({ seg }: { seg: ContentSegment }) => seg.type !== "thinking",
                               );
                             // ThinkingBlock is streaming when thinking is the current
                             // activity (last segment is thinking)
@@ -1560,7 +1639,7 @@ export default function MessageList({
                                 )}
                                 {/* Tools and text segments render outside in original order */}
                                 {visibleSegs.map(
-                                  ({ seg, origIdx }: unknown, vi: unknown) => {
+                                  ({ seg, origIdx }: { seg: ContentSegment; origIdx: number }, vi: number) => {
                                     const isLastText =
                                       vi === lastVisibleTextIdx;
                                     return (

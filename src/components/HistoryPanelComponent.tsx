@@ -88,6 +88,35 @@ function glitchText(len = 6) {
   return result;
 }
 
+import type { Conversation } from "../types/types";
+
+export interface HistoryPanelProps {
+  sessions?: Conversation[];
+  activeId?: string | null;
+  onSelect?: (session: Conversation) => void | Promise<void>;
+  onNew?: () => void;
+  onDelete?: (id: string) => void;
+  readOnly?: boolean;
+  showProject?: boolean;
+  showUsername?: boolean;
+  newIds?: Set<string>;
+  favorites?: string[];
+  onToggleFavorite?: (key: string) => void;
+  initialProviders?: string[];
+  initialSearch?: string;
+  disableNew?: boolean;
+  newLabel?: string;
+  emptyText?: string;
+  searchText?: string;
+  itemIcon?: React.ReactNode;
+  countLabel?: string;
+  onOpenInNewTab?: (id: string) => void;
+  generatingSessionIds?: Set<string>;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => Promise<void> | void;
+}
+
 export default function HistoryPanel({
   sessions = [],
   activeId,
@@ -103,7 +132,6 @@ export default function HistoryPanel({
   initialProviders,
   initialSearch = "",
   disableNew,
-  // Customisable labels — defaults match conversation-session context
   newLabel = "New Conversation",
   emptyText = "No recent chats",
   searchText = "Search conversations...",
@@ -111,14 +139,13 @@ export default function HistoryPanel({
   countLabel,
   onOpenInNewTab,
   generatingSessionIds,
-  // Pagination
   hasMore,
   loadingMore,
   onLoadMore,
-}: unknown) {
+}: HistoryPanelProps) {
   const newBtnRef = useRef<HTMLButtonElement | null>(null);
-  const rainbowTimer = useRef<HTMLButtonElement | null>(null);
-  const glitchInterval = useRef<HTMLButtonElement | null>(null);
+  const rainbowTimer = useRef<NodeJS.Timeout | null>(null);
+  const glitchInterval = useRef<NodeJS.Timeout | null>(null);
   const [glitchLabel, setGlitchLabel] = useState<string | null>(null);
 
   const handleNew = useCallback(() => {

@@ -6,6 +6,15 @@ import MarkdownContent from "./MarkdownContentComponent";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import styles from "./PlanCardComponent.module.css";
 
+export interface PlanCardProps {
+  planText: string;
+  steps?: string[];
+  completedSteps?: number[];
+  onApprove?: () => void;
+  onReject?: () => void;
+  status?: "pending" | "approved" | "rejected" | "executing";
+}
+
 /**
  * Plan approval card — shows the structured plan output with
  * approve/reject actions and step progress tracking.
@@ -17,7 +26,7 @@ export default function PlanCardComponent({
   onApprove,
   onReject,
   status = "pending", // "pending" | "approved" | "rejected" | "executing"
-}: unknown) {
+}: PlanCardProps) {
   const [expanded, setExpanded] = useState(true);
 
   const statusLabel = useMemo(() => {

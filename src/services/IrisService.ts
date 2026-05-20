@@ -3,7 +3,7 @@ import { getBaseHeaders } from "./serviceHeaders";
 import { subscribe as sseSubscribe } from "./SSEManager";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
-import type { PrismConfig, LmStudioModel, LmStudioVramEstimate } from "../types/types";
+import type { PrismConfig, LmStudioModel, LmStudioVramEstimate, Conversation, Workflow } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
 
@@ -59,6 +59,7 @@ export interface IrisPaginatedResponse {
 }
 
 export interface IrisConversationStatsResponse {
+  generatingCount?: number;
   [key: string]: unknown;
 }
 
@@ -160,16 +161,16 @@ export default class IrisService {
     return fetchJSON<IrisConversationListResponse>(`/conversations${query ? `?${query}` : ""}`);
   }
 
-  static async getConversation(id: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/conversations/${id}`);
+  static async getConversation(id: string): Promise<Conversation> {
+    return fetchJSON<Conversation>(`/conversations/${id}`);
   }
 
   static async getConversationFilters(): Promise<Record<string, unknown>> {
     return fetchJSON<Record<string, unknown>>("/conversations/filters");
   }
 
-  static async getConversationWorkflows(id: string): Promise<Array<Record<string, unknown>>> {
-    return fetchJSON<Array<Record<string, unknown>>>(`/conversations/${id}/workflows`, {}, false);
+  static async getConversationWorkflows(id: string): Promise<Workflow[]> {
+    return fetchJSON<Workflow[]>(`/conversations/${id}/workflows`, {}, false);
   }
 
   // -- Live --------------------------------------------------

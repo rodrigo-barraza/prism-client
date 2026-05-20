@@ -92,6 +92,15 @@ async function decodePeaks(src: unknown, numPeaks = 200) {
  * - Playback: pass `src` → custom waveform player
  * - Recorder: pass `onRecordingComplete` → mic button / recording UI
  */
+export interface AudioPlayerRecorderProps {
+  src?: string | null;
+  onRecordingComplete?: (data: string | ArrayBuffer | null) => void;
+  onRemove?: () => void;
+  compact?: boolean;
+  square?: boolean;
+  streaming?: boolean;
+}
+
 export default function AudioPlayerRecorderComponent({
   src,
   onRecordingComplete,
@@ -99,7 +108,7 @@ export default function AudioPlayerRecorderComponent({
   compact = false,
   square = false,
   streaming = false,
-}: unknown) {
+}: AudioPlayerRecorderProps) {
   // --- Recorder state ---
   const [isRecording, setIsRecording] = useState(false);
   const [recSeconds, setRecSeconds] = useState(0);

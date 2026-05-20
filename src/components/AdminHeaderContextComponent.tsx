@@ -10,23 +10,49 @@ import {
 import { usePathname } from "next/navigation";
 import { LS_DATE_RANGE } from "../constants";
 
-const AdminHeaderContext = createContext({
-  controls: null as React.ReactNode,
-  setControls: (_node: unknown) => {},
-  titleBadge: null as React.ReactNode,
-  setTitleBadge: (_value: unknown) => {},
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
+import { usePathname } from "next/navigation";
+import { LS_DATE_RANGE } from "../constants";
+
+export interface DateRange {
+  from: string;
+  to: string;
+}
+
+export interface AdminHeaderContextType {
+  controls: React.ReactNode;
+  setControls: (node: React.ReactNode) => void;
+  titleBadge: string | number | null;
+  setTitleBadge: (value: string | number | null) => void;
+  dateRange: DateRange;
+  setDateRange: (value: DateRange) => void;
+  sessionFilter: string | null;
+  setSessionFilter: (value: string | null) => void;
+}
+
+const AdminHeaderContext = createContext<AdminHeaderContextType>({
+  controls: null,
+  setControls: () => {},
+  titleBadge: null,
+  setTitleBadge: () => {},
   dateRange: { from: "", to: "" },
-  setDateRange: (_value: unknown) => {},
-  sessionFilter: null as React.ReactNode,
-  setSessionFilter: (_value: unknown) => {},
+  setDateRange: () => {},
+  sessionFilter: null,
+  setSessionFilter: () => {},
 });
 
-export function AdminHeaderProvider({ children }: unknown) {
+export function AdminHeaderProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [controls, setControlsState] = useState(null);
-  const [titleBadge, setTitleBadgeState] = useState(null);
-  const [dateRange, setDateRangeState] = useState({ from: "", to: "" });
-  const [sessionFilter, setSessionFilterState] = useState(null);
+  const [controls, setControlsState] = useState<React.ReactNode>(null);
+  const [titleBadge, setTitleBadgeState] = useState<string | number | null>(null);
+  const [dateRange, setDateRangeState] = useState<DateRange>({ from: "", to: "" });
+  const [sessionFilter, setSessionFilterState] = useState<string | null>(null);
 
   // Hydrate dateRange from localStorage after mount to avoid SSR mismatch
   useEffect(() => {
@@ -74,19 +100,19 @@ export function AdminHeaderProvider({ children }: unknown) {
     }
   }, [dateRange]);
 
-  const setControls = useCallback((node) => {
+  const setControls = useCallback((node: React.ReactNode) => {
     setControlsState(node);
   }, []);
 
-  const setTitleBadge = useCallback((value) => {
+  const setTitleBadge = useCallback((value: string | number | null) => {
     setTitleBadgeState(value);
   }, []);
 
-  const setDateRange = useCallback((value) => {
+  const setDateRange = useCallback((value: DateRange) => {
     setDateRangeState(value);
   }, []);
 
-  const setSessionFilter = useCallback((value) => {
+  const setSessionFilter = useCallback((value: string | null) => {
     setSessionFilterState(value);
   }, []);
 

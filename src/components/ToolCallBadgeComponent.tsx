@@ -10,7 +10,7 @@ import styles from "./ToolCallBadgeComponent.module.css";
 // Canonical display names — maps raw tool function names to short labels.
 // ═══════════════════════════════════════════════════════════════════════
 
-const TOOL_CALL_DISPLAY_NAMES = {
+const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   read_file: "Read",
   write_file: "Write",
   str_replace: "Replace",
@@ -55,9 +55,10 @@ const TOOL_CALL_DISPLAY_NAMES = {
 /**
  * Resolve a raw tool function name to a human-readable display label.
  */
-function resolveDisplayName(name) {
-  if ((TOOL_CALL_DISPLAY_NAMES as Record<string, unknown>)[name])
-    return (TOOL_CALL_DISPLAY_NAMES as Record<string, unknown>)[name];
+function resolveDisplayName(name: string): string {
+  if (TOOL_CALL_DISPLAY_NAMES[name]) {
+    return TOOL_CALL_DISPLAY_NAMES[name];
+  }
   // Fallback: title-case via shared utility
   return renderToolName(name);
 }
@@ -68,6 +69,14 @@ function resolveDisplayName(name) {
 // Tool Calling *capability*. This component renders badges for the
 // actual function-level tool calls (read_file, write_file, etc.).
 // ═══════════════════════════════════════════════════════════════════════
+
+export interface ToolCallBadgeProps {
+  name: string;
+  count?: number;
+  active?: boolean;
+  size?: number;
+  tooltip?: string;
+}
 
 /**
  * ToolCallBadgeComponent — renders a badge for an individual tool call invocation.
@@ -85,7 +94,7 @@ export default function ToolCallBadgeComponent({
   active,
   size = 11,
   tooltip,
-}: unknown) {
+}: ToolCallBadgeProps) {
   const displayName = resolveDisplayName(name);
   const { Icon, color } = resolveToolVisuals(name);
   const tooltipLabel = tooltip || name;
@@ -119,11 +128,16 @@ export default function ToolCallBadgeComponent({
   return badge;
 }
 
+export interface ToolCallBadgeRowProps {
+  tools?: Record<string, number>;
+  activeTool?: string | null;
+}
+
 /**
  * ToolCallBadgeRow — renders a row of individual tool call badges
  * from a { toolName: count } map.
  */
-export function ToolCallBadgeRow({ tools, activeTool }: unknown) {
+export function ToolCallBadgeRow({ tools, activeTool }: ToolCallBadgeRowProps) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (

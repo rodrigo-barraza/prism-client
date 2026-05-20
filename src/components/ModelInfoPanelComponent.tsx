@@ -12,6 +12,13 @@ import {
 import styles from "./SettingsPanelComponent.module.css";
 import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";
 import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
+import type { PrismConfig, PrismSettings } from "../types/types";
+
+export interface ModelInfoPanelProps {
+  config: PrismConfig | null;
+  settings: PrismSettings;
+  readOnly?: boolean;
+}
 
 /**
  * ModelInfoPanel — Displays model metadata: type badge,
@@ -19,7 +26,7 @@ import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
  *
  * Extracted from SettingsPanel to live in its own "Info" tab.
  */
-export default function ModelInfoPanel({ config, settings }: unknown) {
+export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps) {
   const { textToText = {} } = config || {};
   const textModelsMap = textToText.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};

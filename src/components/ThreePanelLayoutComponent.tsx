@@ -25,6 +25,21 @@ import { LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
  *   headerCenter   — React node absolutely centered in the header (over the chat area)
  *   children       — Main content area (chat, viewer, etc.)
  */
+export interface ThreePanelLayoutProps {
+  navSidebar?: React.ReactNode;
+  leftPanel: React.ReactNode;
+  leftTitle?: string;
+  rightPanel?: React.ReactNode;
+  rightTitle?: string;
+  sessionType?: string;
+  headerTitle?: string | React.ReactNode;
+  headerMeta?: React.ReactNode;
+  headerControls?: React.ReactNode;
+  headerCenter?: React.ReactNode;
+  fileViewerPanel?: React.ReactNode;
+  children: React.ReactNode;
+}
+
 export default function ThreePanelLayout({
   navSidebar = null,
   leftPanel,
@@ -38,7 +53,7 @@ export default function ThreePanelLayout({
   headerCenter = null,
   fileViewerPanel = null,
   children,
-}: unknown) {
+}: ThreePanelLayoutProps) {
   const resolvedRightTitle =
     rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
   // Start with panels hidden to prevent FOUC on mobile; mount effect opens them on desktop
@@ -125,9 +140,10 @@ export default function ThreePanelLayout({
 
   /* -- Mobile: auto-close sidebar when a [data-panel-close] element is clicked -- */
   const handleSidebarClick = useCallback(
-    (closeFn: (e: MouseEvent) => void) => (e: MouseEvent) => {
+    (closeFn: () => void) => (e: React.MouseEvent<HTMLElement>) => {
       if (!isMobile) return;
-      if (e.target.closest("[data-panel-close]")) {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest("[data-panel-close]")) {
         closeFn();
       }
     },

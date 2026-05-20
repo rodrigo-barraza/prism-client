@@ -18,6 +18,7 @@ import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
 import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import styles from "./MediaCardComponent.module.css";
+import type { MediaItem } from "./MediaPageComponent";
 
 /* -- Helpers -- */
 
@@ -29,15 +30,15 @@ function resolveUrl(url: unknown) {
   return url;
 }
 
-function MediaTypeIcon({ type, size = 32 }: unknown) {
-  const color = (MODALITY_COLORS as Record<string, unknown>)[type] || MODALITY_COLORS.image;
+function MediaTypeIcon({ type, size = 32 }: { type: string; size?: number }) {
+  const color = (MODALITY_COLORS as Record<string, string>)[type] || MODALITY_COLORS.image;
   if (type === "audio") return <Music size={size} style={{ color }} />;
   if (type === "video") return <Film size={size} style={{ color }} />;
   if (type === "pdf") return <FileText size={size} style={{ color }} />;
   return <ImageIcon size={size} style={{ color }} />;
 }
 
-function OriginBadge({ origin }: unknown) {
+function OriginBadge({ origin }: { origin: string }) {
   return (
     <span
       className={`${styles.originBadge} ${origin === "ai" ? styles.originAi : styles.originUser}`}
@@ -55,6 +56,18 @@ function OriginBadge({ origin }: unknown) {
   );
 }
 
+export interface MediaCardProps {
+  media: MediaItem;
+  convBasePath?: string;
+  compact?: boolean;
+  showInfo?: boolean;
+  showOrigin?: boolean;
+  showFavorite?: boolean;
+  isFavorite?: boolean;
+  onFavorite?: () => void;
+  onImageClick?: (url: string) => void;
+}
+
 /**
  * MediaCardComponent — a reusable card for rendering media previews.
  */
@@ -68,7 +81,7 @@ export default function MediaCardComponent({
   isFavorite = false,
   onFavorite,
   onImageClick,
-}: unknown) {
+}: MediaCardProps) {
   const resolvedUrl = resolveUrl(media.url);
   const m = media;
 
@@ -104,14 +117,17 @@ export default function MediaCardComponent({
             className={styles.previewImage}
             loading="lazy"
             onClick={() => onImageClick?.(resolvedUrl)}
-            onError={(e: React.SyntheticEvent) => {
-              e.target.style.display = "none";
-              e.target.parentElement.classList.add(styles.placeholder);
-              const icon = document.createElement("span");
-              icon.textContent = "🖼";
-              icon.style.fontSize = "32px";
-              icon.style.opacity = "0.3";
-              e.target.parentElement.appendChild(icon);
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = "none";
+              if (target.parentElement) {
+                target.parentElement.classList.add(styles.placeholder);
+                const icon = document.createElement("span");
+                icon.textContent = "🖼";
+                icon.style.fontSize = "32px";
+                icon.style.opacity = "0.3";
+                target.parentElement.appendChild(icon);
+              }
             }}
           />
         ) : m.mediaType === "video" && resolvedUrl ? (
@@ -120,10 +136,14 @@ export default function MediaCardComponent({
             className={styles.previewVideo}
             muted
             preload="metadata"
-            onMouseEnter={(e: React.MouseEvent) => e.target.play().catch(() => {})}
-            onMouseLeave={(e: React.MouseEvent) => {
-              e.target.pause();
-              e.target.currentTime = 0;
+            onMouseEnter={(e: React.MouseEvent<HTMLVideoElement>) => {
+              const target = e.target as HTMLVideoElement;
+              target.play().catch(() => {});
+            }}
+            onMouseLeave={(e: React.MouseEvent<HTMLVideoElement>) => {
+              const target = e.target as HTMLVideoElement;
+              target.pause();
+              target.currentTime = 0;
             }}
           />
         ) : m.mediaType === "audio" && resolvedUrl ? (

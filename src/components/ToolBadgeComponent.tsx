@@ -14,7 +14,7 @@ import styles from "./ToolBadgeComponent.module.css";
  * Map raw tool function names (snake_case) AND canonical tool names
  * to a consistent display label.
  */
-const TOOL_DISPLAY_NAMES = {
+const TOOL_DISPLAY_NAMES: Record<string, string> = {
   // -- Canonical capability names --
   "Tool Calling": "Tool Calling",
   Thinking: "Thinking",
@@ -30,7 +30,7 @@ const TOOL_DISPLAY_NAMES = {
 /**
  * Abbreviated display names for the "condensed" variant.
  */
-const TOOL_SHORT_NAMES = {
+const TOOL_SHORT_NAMES: Record<string, string> = {
   Thinking: "Think",
   "Tool Calling": "Tool",
   "Web Search": "Web",
@@ -44,13 +44,14 @@ const TOOL_SHORT_NAMES = {
 
 /**
  * Resolve any tool name to a human-readable display label.
-
  */
-function resolveDisplayName(name: string, variant = "default") {
-  if (variant === "condensed" && (TOOL_SHORT_NAMES as Record<string, unknown>)[name])
-    return (TOOL_SHORT_NAMES as Record<string, unknown>)[name];
-  if ((TOOL_DISPLAY_NAMES as Record<string, unknown>)[name])
-    return (TOOL_DISPLAY_NAMES as Record<string, unknown>)[name];
+function resolveDisplayName(name: string, variant: string = "default"): string {
+  if (variant === "condensed" && TOOL_SHORT_NAMES[name]) {
+    return TOOL_SHORT_NAMES[name];
+  }
+  if (TOOL_DISPLAY_NAMES[name]) {
+    return TOOL_DISPLAY_NAMES[name];
+  }
   // Fallback: title-case via shared utility
   return renderToolName(name);
 }
@@ -58,6 +59,14 @@ function resolveDisplayName(name: string, variant = "default") {
 // ═══════════════════════════════════════════════════════════════════════
 // ToolBadgeComponent — THE single badge component used everywhere.
 // ═══════════════════════════════════════════════════════════════════════
+
+export interface ToolBadgeProps {
+  name: string;
+  count?: number;
+  active?: boolean;
+  variant?: "default" | "compact" | "condensed";
+  tooltip?: string;
+}
 
 /**
  * ToolBadgeComponent — renders a single, consistently-styled tool badge.
@@ -75,7 +84,7 @@ export default function ToolBadgeComponent({
   active,
   variant = "default",
   tooltip,
-}: unknown) {
+}: ToolBadgeProps) {
   const isCompact = variant === "compact";
   const displayName = resolveDisplayName(name, variant);
   const { Icon, color } = resolveToolVisuals(name);
@@ -109,11 +118,17 @@ export default function ToolBadgeComponent({
   return badge;
 }
 
+export interface ToolBadgeRowProps {
+  tools?: Record<string, number>;
+  activeTool?: string | null;
+  variant?: "default" | "compact" | "condensed";
+}
+
 /**
  * ToolBadgeRow — renders a row of tool badges from a { toolName: count } map.
  * Used in MessageList for worker tool activity.
  */
-export function ToolBadgeRow({ tools, activeTool, variant }: unknown) {
+export function ToolBadgeRow({ tools, activeTool, variant }: ToolBadgeRowProps) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
@@ -153,6 +168,12 @@ const TOOL_DEFS = [
   { key: "imageGeneration", name: "Image Generation" },
 ];
 
+export interface ModelToolsRowProps {
+  tools?: Record<string, unknown> | null;
+  variant?: "default" | "compact" | "condensed";
+  className?: string;
+}
+
 /**
  * ModelToolsRow — renders a compact row of tool-capability badges
  * for a model, using ToolBadgeComponent for each active capability.
@@ -162,7 +183,7 @@ const TOOL_DEFS = [
  *   variant   — "default" | "compact" | "condensed"
  *   className — extra root class name
  */
-export function ModelToolsRow({ tools, variant, className }: unknown) {
+export function ModelToolsRow({ tools, variant, className }: ModelToolsRowProps) {
   if (!tools) return null;
 
   const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);

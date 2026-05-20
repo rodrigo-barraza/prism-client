@@ -107,7 +107,7 @@ const TTFT_INITIAL: TtftState = {
  * `avgTimeToGeneration` from backend session stats.
  */
 export default function useTtft(
-  sessionStats: SessionTokenStats | null,
+  sessionStats: Partial<SessionTokenStats> | null,
   perfNow: number,
   needsTicker: boolean,
 ): { liveTtft: number | null; isLiveTtft: boolean } {

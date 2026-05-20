@@ -43,6 +43,7 @@ import ProjectBadgeComponent from "../../../components/ProjectBadgeComponent";
 import UserBadgeComponent from "../../../components/UserBadgeComponent";
 
 import { SETTINGS_DEFAULTS } from "../../../constants";
+import type { Conversation, PrismConfig, Favorite, Workflow } from "../../../types/types";
 import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000; // 5s
@@ -69,7 +70,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     sessionFilter,
     setSessionFilter,
   } = useAdminHeader();
-  const [conversations, setConversations] = useState<Record<string, unknown>[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [conversationsHasMore, setConversationsHasMore] = useState(false);
   const [conversationsLoading, setConversationsLoading] = useState(false);
   const conversationsPageRef = useRef<number>(1);
@@ -77,22 +78,22 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
 
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
-  const [selectedConv, setSelectedConv] = useState<Record<string, unknown> | null>(null);
+  const [selectedConv, setSelectedConv] = useState<Conversation | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [config, setConfig] = useState<Record<string, unknown> | null>(null);
+  const [config, setConfig] = useState<PrismConfig | null>(null);
 
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
   const [generatingCount, setGeneratingCount] = useState(0);
   const [changeStreamsActive, setChangeStreamsActive] = useState(false);
 
-  const [workflows, setWorkflows] = useState<Record<string, unknown>[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [leftTab, setLeftTab] = useState("settings");
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
-  const knownIdsRef = useRef<unknown>(null); // null = not yet initialized
+  const knownIdsRef = useRef<Set<string> | null>(null); // null = not yet initialized
   const lastFingerprintRef = useRef<string>("");
   const autoSelectedRef = useRef<boolean>(!!initialId);
-  const viewerBodyRef = useRef<unknown>(null);
+  const viewerBodyRef = useRef<HTMLDivElement | null>(null);
 
   // Sync the session parameter into the admin header context
   useEffect(() => {
@@ -115,7 +116,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
 
     // Load favorites
     PrismService.getFavorites("model")
-      .then((favs: Record<string, unknown>[]) => setFavoriteKeys(favs.map((f: Record<string, unknown>) => f.key as string)))
+      .then((favs: Favorite[]) => setFavoriteKeys(favs.map((f: Favorite) => f.key as string)))
       .catch(() => {});
   }, []);
 
@@ -142,7 +143,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     if (initialId) {
       setLoadingDetail(true);
       IrisService.getConversation(initialId)
-        .then(setSelectedConv)
+        .then((conv) => setSelectedConv(conv as unknown as Conversation))
         .catch(() => setSelectedConv(null))
         .finally(() => setLoadingDetail(false));
     }
@@ -166,11 +167,11 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       if (providerFilter) (params as Record<string, unknown>).provider = providerFilter;
       if (modelFilter) (params as Record<string, unknown>).model = modelFilter;
       const data = await IrisService.getConversations(params);
-      const list = data.data || [];
+      const list = (data.data || []) as Conversation[];
 
       // Build fingerprint from meaningful fields
       const fp = list
-        .map((c: Record<string, unknown>) => `${c.id}:${c.messages?.length || c.messageCount || 0}`)
+        .map((c: Conversation) => `${c.id}:${c.messages?.length || c.messageCount || 0}`)
         .join("|");
 
       if (fp !== lastFingerprintRef.current) {
@@ -185,7 +186,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       setConversationsHasMore(list.length < (data.total || 0));
 
       // Track new IDs
-      const currentIds = new Set(list.map((c: Record<string, unknown>) => c.id));
+      const currentIds = new Set(list.map((c: Conversation) => c.id || ""));
       if (knownIdsRef.current === null) {
         // First load — mark everything as known
         knownIdsRef.current = currentIds;
@@ -209,7 +210,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       // Auto-select on first load (only if no initialId)
       if (list.length > 0 && !autoSelectedRef.current) {
         autoSelectedRef.current = true;
-        selectConversation(list[0].id);
+        selectConversation(list[0].id || "");
       }
 
       setError((prev) => (prev !== null ? null : prev));
@@ -238,7 +239,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       if (providerFilter) (params as Record<string, unknown>).provider = providerFilter;
       if (modelFilter) (params as Record<string, unknown>).model = modelFilter;
       const data = await IrisService.getConversations(params);
-      const list = data.data || [];
+      const list = (data.data || []) as Conversation[];
       conversationsPageRef.current = nextPage;
       setConversations((prev) => [...prev, ...list]);
       setConversationsHasMore(
@@ -264,7 +265,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   // globally by AdminShell to avoid duplicate SSE connections).
   useEffect(() => {
     IrisService.getConversationStats(projectFilter)
-      .then((data: Record<string, unknown>) => {
+      .then((data) => {
         setGeneratingCount(data.generatingCount || 0);
       })
       .catch(() => {});
@@ -273,14 +274,14 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   // Live conversation detail — re-fetch when Change Streams detect updates
   const fingerprintRef = useRef<string>("");
   const [fingerprint, setFingerprint] = useState("");
-  const selectedIdRef = useRef<unknown>(selectedId);
+  const selectedIdRef = useRef<string | null>(selectedId);
   selectedIdRef.current = selectedId;
 
   // Refresh the selected conversation detail
   const refreshSelectedConv = useCallback(async (id: string) => {
     if (!id) return;
     try {
-      const full: unknown = await IrisService.getConversation(id);
+      const full = (await IrisService.getConversation(id)) as unknown as Conversation;
       setSelectedConv((prev) => {
         const oldMsgs = prev?.messages || [];
         const newMsgs = full?.messages || [];
@@ -422,7 +423,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   }
 
   const convTitle = selectedConv
-    ? (selectedConv as Record<string, unknown>).title || "Untitled Conversation"
+    ? selectedConv.title || "Untitled Conversation"
     : "Select a conversation";
 
   const {
@@ -433,12 +434,12 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     requestCount,
     usedTools,
     modalities,
-  } = useSessionStats((selectedConv as Record<string, unknown>)?.messages || []);
+  } = useSessionStats(selectedConv?.messages || []);
 
   const settingsWithDefaults = useMemo(
     () => ({
       ...SETTINGS_DEFAULTS,
-      ...((selectedConv as Record<string, unknown>)?.settings || {}),
+      ...(selectedConv?.settings || {}),
     }),
     [selectedConv],
   );
@@ -493,7 +494,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       <div className={styles.chatContainer}>
         <ThreePanelLayout
           leftPanel={
-            (selectedConv as Record<string, unknown>)?.settings ? (
+            selectedConv?.settings ? (
               <>
                 <TabBarComponent
                   tabs={[
@@ -524,24 +525,23 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
                     hideProviderModel
                     workflows={workflows}
                     sessionStats={
-                      (selectedConv as Record<string, unknown>)?.messages?.length > 0
+                      selectedConv.messages && selectedConv.messages.length > 0
                         ? (() => {
                             const displayMessages = prepareDisplayMessages(
-                              (selectedConv as Record<string, unknown>).messages,
+                              selectedConv.messages,
                             );
                             return {
                               messageCount: displayMessages.length,
                               deletedCount:
-                                ((selectedConv as Record<string, unknown>).messageCount ||
-                                  (selectedConv as Record<string, unknown>).messages.length) -
-                                (selectedConv as Record<string, unknown>).messages.length,
+                                ((selectedConv.messageCount ||
+                                  selectedConv.messages.length) -
+                                selectedConv.messages.length),
                               requestCount,
                               uniqueModels,
                               uniqueProviders,
                               totalTokens,
                               totalCost,
-                              originalTotalCost:
-                                (selectedConv as Record<string, unknown>).totalCost || 0,
+                              originalTotalCost: selectedConv.totalCost || 0,
                               usedTools,
                               modalities,
                             };
@@ -575,8 +575,8 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
             <HistoryPanel
               sessions={conversations}
               activeId={selectedId}
-              onSelect={(conversation: Record<string, unknown>) =>
-                selectConversation(conversation.id)
+              onSelect={(conversation: Conversation) =>
+                selectConversation(conversation.id || "")
               }
               readOnly
               showProject
@@ -596,10 +596,10 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
             selectedConv && (
               <div className={styles.headerMeta}>
                 <ProjectBadgeComponent
-                  project={(selectedConv as Record<string, unknown>).project}
+                  project={selectedConv.project}
                 />
-                <UserBadgeComponent username={(selectedConv as Record<string, unknown>).username} />
-                {(selectedConv as Record<string, unknown>).isGenerating && (
+                <UserBadgeComponent username={selectedConv.username} />
+                {selectedConv.isGenerating && (
                   <span className={styles.generatingBadge}>
                     <Loader size={12} className={styles.spinning} />
                     Generating
@@ -609,7 +609,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
             )
           }
           headerCenter={
-            (selectedConv as Record<string, unknown>)?.settings?.provider ? (
+            selectedConv?.settings?.provider ? (
               <ModelPickerPopoverComponent
                 config={config}
                 settings={settingsWithDefaults}
@@ -634,9 +634,9 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
               <div className={styles.emptyViewer}>Loading conversation...</div>
             ) : (
               <MessageList
-                messages={prepareDisplayMessages((selectedConv as Record<string, unknown>).messages || [])}
+                messages={prepareDisplayMessages(selectedConv?.messages || [])}
                 readOnly
-                systemPrompt={(selectedConv as Record<string, unknown>).systemPrompt}
+                systemPrompt={selectedConv?.systemPrompt}
               />
             )}
           </div>

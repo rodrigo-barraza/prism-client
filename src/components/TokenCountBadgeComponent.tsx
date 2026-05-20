@@ -7,8 +7,16 @@ import styles from "./TokenCountBadgeComponent.module.css";
 const TWEEN_MS = 600;
 
 /** Ease-out cubic — fast start, gentle landing. */
-function easeOutCubic(t: unknown) {
+function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
+}
+
+export interface TokenCountBadgeProps {
+  value: number;
+  label?: string;
+  showIcon?: boolean;
+  className?: string;
+  mini?: boolean;
 }
 
 /**
@@ -23,8 +31,8 @@ export default function TokenCountBadgeComponent({
   showIcon = true,
   className = "",
   mini = false,
-}: unknown) {
-  const prevRef = useRef<unknown>(null);
+}: TokenCountBadgeProps) {
+  const prevRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const [displayValue, setDisplayValue] = useState(value);
 
@@ -35,14 +43,15 @@ export default function TokenCountBadgeComponent({
     // First mount or same value — nothing to animate
     if (from === null || from === value) return;
 
-    const delta = value - from;
+    const fromVal = from;
+    const delta = value - fromVal;
     const start = performance.now();
 
-    function tick(now: unknown) {
+    function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / TWEEN_MS, 1);
       const eased = easeOutCubic(progress);
-      setDisplayValue(Math.round(from + delta * eased));
+      setDisplayValue(Math.round(fromVal + delta * eased));
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);

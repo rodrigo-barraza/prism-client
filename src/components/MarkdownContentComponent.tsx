@@ -9,7 +9,12 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import styles from "./MarkdownContentComponent.module.css";
 import { CopyButtonComponent } from "@rodrigo-barraza/components-library";
 
-function FencedCodeBlock({ language, children }: unknown) {
+interface FencedCodeBlockProps {
+  language: string;
+  children: React.ReactNode;
+}
+
+function FencedCodeBlock({ language, children }: FencedCodeBlockProps) {
   const codeString = String(children).replace(/\n$/, "");
 
   let displayLabel = language;
@@ -49,7 +54,11 @@ function FencedCodeBlock({ language, children }: unknown) {
   );
 }
 
-function CodeBlock({ children, className, ...rest }: unknown) {
+interface CodeBlockProps extends React.ComponentPropsWithoutRef<"code"> {
+  node?: unknown;
+}
+
+function CodeBlock({ children, className, node, ...rest }: CodeBlockProps) {
   const match = /language-(\w+)/.exec(className || "");
   if (!match) {
     return (
@@ -66,15 +75,22 @@ function CodeBlock({ children, className, ...rest }: unknown) {
  * Listens for postMessage `embed-resize` events from the embed page
  * and dynamically adjusts iframe height to fit content.
  */
-function AutoResizeEmbed({ src, title, fallbackHeight, className }: unknown) {
-  const iframeRef = useRef<number | null>(null);
+interface AutoResizeEmbedProps {
+  src: string;
+  title: string;
+  fallbackHeight: number;
+  className?: string;
+}
+
+function AutoResizeEmbed({ src, title, fallbackHeight, className }: AutoResizeEmbedProps) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [height, setHeight] = useState(fallbackHeight);
 
-  const handleMessage = useCallback((event) => {
+  const handleMessage = useCallback((event: MessageEvent) => {
     if (
       event.data?.type === "embed-resize" &&
       iframeRef.current &&
-      event.source === (iframeRef.current as HTMLIFrameElement).contentWindow
+      event.source === iframeRef.current.contentWindow
     ) {
       setHeight(event.data.height);
     }
@@ -100,9 +116,14 @@ function AutoResizeEmbed({ src, title, fallbackHeight, className }: unknown) {
   );
 }
 
-function ImageOrEmbed({ src, alt, ...rest }: unknown) {
+interface ImageOrEmbedProps extends React.ComponentPropsWithoutRef<"img"> {
+  node?: unknown;
+}
+
+function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
   // Detect embed URLs that return HTML pages and render as auto-resizing iframes
-  if (src && src.includes("/utility/map/embed")) {
+  const isStringSrc = typeof src === "string";
+  if (isStringSrc && src.includes("/utility/map/embed")) {
     return (
       <AutoResizeEmbed
         src={src}
@@ -112,7 +133,7 @@ function ImageOrEmbed({ src, alt, ...rest }: unknown) {
       />
     );
   }
-  if (src && src.includes("/compute/latex/embed")) {
+  if (isStringSrc && src.includes("/compute/latex/embed")) {
     return (
       <AutoResizeEmbed
         src={src}
@@ -122,7 +143,7 @@ function ImageOrEmbed({ src, alt, ...rest }: unknown) {
       />
     );
   }
-  if (src && src.includes("/compute/diagram/embed")) {
+  if (isStringSrc && src.includes("/compute/diagram/embed")) {
     return (
       <AutoResizeEmbed
         src={src}
@@ -132,7 +153,7 @@ function ImageOrEmbed({ src, alt, ...rest }: unknown) {
       />
     );
   }
-  if (src && src.includes("/compute/turtle/embed")) {
+  if (isStringSrc && src.includes("/compute/turtle/embed")) {
     return (
       <AutoResizeEmbed
         src={src}
@@ -146,7 +167,13 @@ function ImageOrEmbed({ src, alt, ...rest }: unknown) {
   return <img src={src} alt={alt} {...rest} />;
 }
 
-export default function MarkdownContent({ content, className, children }: unknown) {
+export interface MarkdownContentProps {
+  content: string;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+export default function MarkdownContent({ content, className, children }: MarkdownContentProps) {
   if (!content) return null;
   return (
     <div className={`${styles.text} ${className || ""}`}>

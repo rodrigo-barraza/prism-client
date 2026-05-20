@@ -6,6 +6,13 @@ import { formatElapsedTime } from "../utils/utilities";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./StopwatchBadgeComponent.module.css";
 
+export interface StopwatchBadgeProps {
+  seconds?: number;
+  startTime?: string | number | null;
+  live?: boolean;
+  className?: string;
+}
+
 /**
  * StopwatchBadgeComponent — displays an elapsed duration badge.
  *
@@ -24,7 +31,7 @@ export default function StopwatchBadgeComponent({
   startTime,
   live: externalLive,
   className = "",
-}: unknown) {
+}: StopwatchBadgeProps) {
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   const isLive = !!startTime && seconds == null;
@@ -39,8 +46,8 @@ export default function StopwatchBadgeComponent({
     };
   }, [isLive, startTime]);
 
-  let displaySeconds;
-  if (isLive) {
+  let displaySeconds: number;
+  if (isLive && startTime) {
     const start =
       typeof startTime === "number" ? startTime : new Date(startTime).getTime();
     displaySeconds = Math.max(0, (nowMs - start) / 1000);

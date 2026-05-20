@@ -14,6 +14,12 @@ const MODEL_TYPE_META = {
   embed: { icon: Cpu, label: "Embed" },
 };
 
+export interface ModelTypeBadgeProps {
+  modelType?: string;
+  className?: string;
+  mini?: boolean;
+}
+
 /**
  * ModelTypeBadgeComponent — renders a colour-coded pill for a model's
  * endpoint-based type (conversation | audio | embed).
@@ -22,7 +28,7 @@ export default function ModelTypeBadgeComponent({
   modelType,
   className = "",
   mini = false,
-}: unknown) {
+}: ModelTypeBadgeProps) {
   if (!modelType) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }

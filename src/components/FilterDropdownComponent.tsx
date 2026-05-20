@@ -11,9 +11,32 @@ import {
 import SoundService from "@/services/SoundService";
 import styles from "./FilterDropdownComponent.module.css";
 
-/**
- * FilterDropdownComponent — generic dropdown + badge (chip) filter.
- */
+import { LucideIcon } from "lucide-react";
+
+export interface FilterItem {
+  key: string;
+  icon?: LucideIcon | React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  title?: string;
+  color?: string;
+}
+
+export interface FilterGroup {
+  label: string;
+  items: FilterItem[];
+  activeKeys: string | Set<string> | null;
+  isSingleSelect?: boolean;
+  onToggle: (key: string | null) => void;
+}
+
+export interface FilterDropdownComponentProps {
+  groups?: FilterGroup[];
+  dateRange?: { from: string; to: string };
+  onDateChange?: (range: { from: string; to: string }) => void;
+  dateStorageKey?: string;
+  triggerLabel?: string;
+  fullWidth?: boolean;
+}
+
 export default function FilterDropdownComponent({
   groups = [],
   dateRange,
@@ -21,7 +44,7 @@ export default function FilterDropdownComponent({
   dateStorageKey,
   triggerLabel = "Filters",
   fullWidth = false,
-}: unknown) {
+}: FilterDropdownComponentProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -63,7 +86,7 @@ export default function FilterDropdownComponent({
   // Close on outside click
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
+    const handler = (e: MouseEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target as Node)
@@ -78,7 +101,7 @@ export default function FilterDropdownComponent({
   // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsOpen(false);
     };
     document.addEventListener("keydown", handler);

@@ -3,6 +3,14 @@ import ProviderLogo from "./ProviderLogosComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ModelBadgeComponent.module.css";
 
+export interface ModelBadgeProps {
+  models?: string[];
+  provider?: string;
+  providers?: string[];
+  className?: string;
+  mini?: boolean;
+}
+
 /**
  * ModelBadgeComponent — displays a single model name or a "N models" badge
  * with a tooltip listing all model names.
@@ -13,7 +21,7 @@ export default function ModelBadgeComponent({
   providers,
   className = "",
   mini = false,
-}: unknown) {
+}: ModelBadgeProps) {
   if (!models || models.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }

@@ -41,17 +41,28 @@ export function serializeEditable(element: Node) {
   return text;
 }
 
+export interface WorkspaceEntry {
+  path: string;
+  name: string;
+  type: string;
+  children?: WorkspaceEntry[];
+}
+
 // ── Tree Flattening ───────────────────────────────────────────────
 
 /**
  * Flatten a workspace tree node array into a flat list of entries.
  * Each entry has { path, name, type }.
  */
-export function flattenTree(nodes: Record<string, unknown>[], prefix = ""): Record<string, unknown>[] {
-  const out = [];
+export function flattenTree(nodes: WorkspaceEntry[], prefix = ""): WorkspaceEntry[] {
+  const out: WorkspaceEntry[] = [];
   for (const n of nodes) {
     const p = prefix ? `${prefix}/${n.name}` : n.name;
-    out.push({ path: p, name: n.name, type: n.type });
+    out.push({
+      path: String(p || ""),
+      name: String(n.name || ""),
+      type: String(n.type || ""),
+    });
     if (n.type === "directory" && n.children?.length) {
       out.push(...flattenTree(n.children, p));
     }
@@ -85,14 +96,14 @@ export function detectMentionToken(text: string, cursorOffset: number) {
  * Filter a flat entries list by a query string.
  * Matches against both path and name (case-insensitive).
  */
-export function filterMentionResults(entries: Record<string, unknown>[] | null, query: string, limit = 20) {
+export function filterMentionResults(entries: WorkspaceEntry[] | null, query: string, limit = 20): WorkspaceEntry[] {
   if (!entries || !entries.length) return [];
   if (!query) return entries.slice(0, limit);
   const q = query.toLowerCase();
   return entries
     .filter(
-      (e: Record<string, unknown>) =>
-        e.path.toLowerCase().includes(q) || e.name.toLowerCase().includes(q),
+      (e) =>
+        (e.path || "").toLowerCase().includes(q) || (e.name || "").toLowerCase().includes(q),
     )
     .slice(0, limit);
 }

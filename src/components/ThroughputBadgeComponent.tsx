@@ -1,5 +1,12 @@
 import styles from "./ThroughputBadgeComponent.module.css";
 
+export interface ThroughputBadgeProps {
+  liveTokPerSec: number | null;
+  avgTokPerSec?: number | null;
+  isActivelyGenerating?: boolean;
+  turnActive?: boolean;
+}
+
 /**
  * ThroughputBadgeComponent — tok/s speed pill for session stats.
  *
@@ -17,7 +24,7 @@ export default function ThroughputBadgeComponent({
   avgTokPerSec,
   isActivelyGenerating,
   turnActive,
-}: unknown) {
+}: ThroughputBadgeProps) {
   // Live tok/s takes priority over static average
   if (liveTokPerSec !== null) {
     const variant =

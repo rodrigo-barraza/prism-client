@@ -10,6 +10,17 @@ import styles from "./MentionBadgeComponent.module.css";
  * - MessageListComponent (read-only rendered messages)
  * - ChatAreaComponent input (via createMentionBadgeElement for contentEditable)
  */
+export interface MentionBadgeProps {
+  path: string;
+  name?: string;
+  type?: "file" | "directory";
+  lineStart?: number | null;
+  lineEnd?: number | null;
+  stale?: boolean;
+  knownPaths?: Set<string> | null | undefined;
+  onFileOpen?: ((path: string) => void) | undefined;
+}
+
 function MentionBadge({
   path,
   name,
@@ -19,7 +30,7 @@ function MentionBadge({
   stale,
   knownPaths,
   onFileOpen,
-}: unknown) {
+}: MentionBadgeProps) {
   const baseName = name || path.split("/").pop() || path;
   // Build display name with optional line suffix (#L format — GitHub convention)
   let displayName = baseName;

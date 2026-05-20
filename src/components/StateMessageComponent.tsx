@@ -2,7 +2,11 @@ import { AlertCircle } from "lucide-react";
 import { LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import styles from "./StateMessageComponent.module.css";
 
-export function LoadingMessage({ message = "Loading..." }: unknown) {
+interface LoadingMessageProps {
+  message?: string | null;
+}
+
+export function LoadingMessage({ message = "Loading..." }: LoadingMessageProps) {
   return (
     <div className={styles.container}>
       <LoadingIndicatorComponent size="small" color="inherit" />
@@ -11,7 +15,11 @@ export function LoadingMessage({ message = "Loading..." }: unknown) {
   );
 }
 
-export function EmptyMessage({ message = "No records found." }: unknown) {
+interface EmptyMessageProps {
+  message?: string | null;
+}
+
+export function EmptyMessage({ message = "No records found." }: EmptyMessageProps) {
   return (
     <div className={styles.container}>
       <span>{message}</span>
@@ -19,7 +27,11 @@ export function EmptyMessage({ message = "No records found." }: unknown) {
   );
 }
 
-export function ErrorMessage({ message }: unknown) {
+interface ErrorMessageProps {
+  message?: string | null;
+}
+
+export function ErrorMessage({ message }: ErrorMessageProps) {
   if (!message) return null;
   return (
     <div className={styles.errorBanner}>

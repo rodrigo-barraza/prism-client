@@ -65,15 +65,15 @@ function resolveUrl(url: unknown) {
   return url;
 }
 
-function MediaTypeIcon({ type, size = 32 }: unknown) {
-  const color = (MODALITY_COLORS as Record<string, unknown>)[type] || MODALITY_COLORS.image;
+function MediaTypeIcon({ type, size = 32 }: { type: string; size?: number }) {
+  const color = (MODALITY_COLORS as Record<string, string>)[type] || (MODALITY_COLORS as Record<string, string>).image;
   if (type === "audio") return <Music size={size} style={{ color }} />;
   if (type === "video") return <Film size={size} style={{ color }} />;
   if (type === "pdf") return <FileText size={size} style={{ color }} />;
   return <ImageIcon size={size} style={{ color }} />;
 }
 
-function OriginBadge({ origin, className }: unknown) {
+function OriginBadge({ origin, className }: { origin: string; className?: string }) {
   return (
     <span
       className={`${className} ${origin === "ai" ? styles.originAi : styles.originUser}`}
@@ -91,19 +91,37 @@ function OriginBadge({ origin, className }: unknown) {
   );
 }
 
+export interface MediaItem {
+  convId: string;
+  mediaType: string;
+  url?: string;
+  origin: string;
+  convTitle?: string;
+  project?: string;
+  model?: string;
+  timestamp?: number | string;
+}
+
+export interface MediaPageComponentProps {
+  mode?: string;
+  project?: string | null;
+  dateRange?: { from: string; to: string };
+  onCountChange?: (total: number) => void;
+}
+
 export default function MediaPageComponent({
   mode = "user",
   project: externalProject,
   dateRange: externalDateRange,
   onCountChange,
-}: unknown) {
+}: MediaPageComponentProps) {
   const isAdmin = mode === "admin";
   const convBasePath = "/admin/conversations";
 
-  const [media, setMedia] = useState<unknown[]>([]);
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [projects, setProjects] = useState<unknown[]>([]);
-  const [usernames, setUsernames] = useState<unknown[]>([]);
+  const [projects, setProjects] = useState<string[]>([]);
+  const [usernames, setUsernames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [origin, setOrigin] = useState("all");
   const [type, setType] = useState("all");
@@ -112,13 +130,13 @@ export default function MediaPageComponent({
   const [username, setUsername] = useState("");
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
-  const [providers, setProviders] = useState<unknown[]>([]);
-  const [models, setModels] = useState<unknown[]>([]);
+  const [providers, setProviders] = useState<string[]>([]);
+  const [models, setModels] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
-  const [lightboxSrc, setLightboxSrc] = useState<unknown>(null);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [internalDateRange, setInternalDateRange] = useState({
     from: "",
     to: "",
@@ -132,20 +150,27 @@ export default function MediaPageComponent({
   const loadMedia = useCallback(async () => {
     try {
       setLoading(true);
-      const params = { page, limit: PAGE_SIZE };
-      if (origin !== "all") (params as unknown).origin = origin;
-      if (type !== "all") (params as unknown).type = type;
+      const params: Record<string, any> = { page, limit: PAGE_SIZE };
+      if (origin !== "all") params.origin = origin;
+      if (type !== "all") params.type = type;
       if (isAdmin) {
-        if (project) (params as unknown).project = project;
-        if (username) (params as unknown).username = username;
+        if (project) params.project = project;
+        if (username) params.username = username;
       }
-      if (search) (params as unknown).search = search;
-      if (provider) (params as unknown).provider = provider;
-      if (model) (params as unknown).model = model;
+      if (search) params.search = search;
+      if (provider) params.provider = provider;
+      if (model) params.model = model;
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result: unknown = await service.getMedia(params);
+      const result = (await service.getMedia(params)) as {
+        data?: MediaItem[];
+        total?: number;
+        projects?: string[];
+        usernames?: string[];
+        providers?: string[];
+        models?: string[];
+      };
       setMedia(result.data || []);
       setTotal(result.total || 0);
       if (result.projects) setProjects(result.projects);
@@ -185,7 +210,7 @@ export default function MediaPageComponent({
       .catch(() => {});
   }, []);
 
-  const toggleFavorite = async (mediaKey: unknown) => {
+  const toggleFavorite = async (mediaKey: string) => {
     if (favoriteKeys.includes(mediaKey)) {
       setFavoriteKeys((prev) => prev.filter((k) => k !== mediaKey));
       PrismService.removeFavorite("media", mediaKey).catch(() => {});
@@ -195,7 +220,7 @@ export default function MediaPageComponent({
     }
   };
 
-  const getMediaKey = (m: unknown, i: unknown) => `${m.convId}-${m.mediaType}-${i}`;
+  const getMediaKey = (m: MediaItem, i: number) => `${m.convId}-${m.mediaType}-${i}`;
 
   const displayMedia = showFavoritesOnly
     ? media.filter((m, i) => favoriteKeys.includes(getMediaKey(m, i)))

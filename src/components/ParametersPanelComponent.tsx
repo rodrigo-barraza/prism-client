@@ -5,14 +5,28 @@ import {
   SelectComponent,
   SliderComponent,
 } from "@rodrigo-barraza/components-library";
+import type { PrismSettings, PrismConfig, ModelOption } from "../types/types";
 import styles from "./SettingsPanelComponent.module.css";
+
+export interface ParametersPanelProps {
+  settings: PrismSettings;
+  onChange?: (changes: Partial<PrismSettings>) => void;
+  config: PrismConfig | null;
+  readOnly?: boolean;
+}
+
+interface ExtendedModelOption extends ModelOption {
+  _isImageGen?: boolean;
+  _isTranscription?: boolean;
+  _isTTS?: boolean;
+}
 
 export default function ParametersPanelComponent({
   settings,
   onChange,
   config,
   readOnly = false,
-}: unknown) {
+}: ParametersPanelProps) {
   const textModelsMap = config?.textToText?.models || {};
   const imageModelsMap = config?.textToImage?.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
@@ -25,33 +39,34 @@ export default function ParametersPanelComponent({
     ...Object.keys(audioToTextModelsMap),
     ...Object.keys(ttsModelsMap),
   ]);
-  const modelsMap = {};
+  const modelsMap: Record<string, ExtendedModelOption[]> = {};
   for (const p of allProviderKeys) {
-    const textModels = textModelsMap[p] || [];
-    const imgModels = (imageModelsMap[p] || []).map((m) => ({
+    const textModels = (textModelsMap[p] || []) as ExtendedModelOption[];
+    const imgModels = ((imageModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
       ...m,
       _isImageGen: true,
     }));
-    const sttModels = (audioToTextModelsMap[p] || []).map((m) => ({
+    const sttModels = ((audioToTextModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
       ...m,
       _isTranscription: true,
     }));
-    const ttsModels = (ttsModelsMap[p] || []).map((m) => ({
+    const ttsModels = ((ttsModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
       ...m,
       _isTTS: true,
     }));
-    const seen = new Set();
-    const merged = [];
+
+    const seen = new Set<string>();
+    const merged: ExtendedModelOption[] = [];
     for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
       if (!seen.has(m.name)) {
         seen.add(m.name);
         merged.push(m);
       }
     }
-    (modelsMap as Record<string, unknown>)[p] = merged;
+    modelsMap[p] = merged;
   }
 
-  const currentProviderModels = (modelsMap as Record<string, unknown>)[settings.provider] || [];
+  const currentProviderModels = modelsMap[settings.provider || ""] || [];
   const selectedModelDef = currentProviderModels.find(
     (m) => m.name === settings.model,
   );
@@ -64,38 +79,55 @@ export default function ParametersPanelComponent({
   const isSpecialModel = isTranscription || isTTS;
 
   const handleTempChange = (value: string) => {
-onChange({ temperature: value });
+    onChange?.({ temperature: value === "" ? undefined : parseFloat(value) });
+  };
   const handleMaxTokensChange = (value: string) => {
-onChange({ maxTokens: value });
+    onChange?.({ maxTokens: value === "" ? undefined : parseInt(value, 10) });
+  };
   const handleTopPChange = (value: string) => {
-onChange({ topP: value });
+    onChange?.({ topP: value === "" ? undefined : parseFloat(value) });
+  };
   const handleTopKChange = (value: string) => {
-onChange({ topK: value });
+    onChange?.({ topK: value === "" ? undefined : parseInt(value, 10) });
+  };
   const handleFreqPenaltyChange = (value: string) => {
-onChange({ frequencyPenalty: value });
+    onChange?.({ frequencyPenalty: value === "" ? undefined : parseFloat(value) });
+  };
   const handlePresPenaltyChange = (value: string) => {
-onChange({ presencePenalty: value });
+    onChange?.({ presencePenalty: value === "" ? undefined : parseFloat(value) });
+  };
   const handleMinPChange = (value: string) => {
-onChange({ minP: value });
+    onChange?.({ minP: value === "" ? undefined : parseFloat(value) });
+  };
   const handleRepeatPenaltyChange = (value: string) => {
-onChange({ repeatPenalty: value });
-  const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => onChange({ seed: e.target.value });
+    onChange?.({ repeatPenalty: value === "" ? undefined : parseFloat(value) });
+  };
+  const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    onChange?.({ seed: val === "" ? undefined : val });
+  };
   const handleStopSeqChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    onChange({ stopSequences: e.target.value });
+    onChange?.({ stopSequences: e.target.value });
   const handleReasoningEffortChange = (value: string) => {
-onChange({ reasoningEffort: value });
+    onChange?.({ reasoningEffort: value });
+  };
   const handleThinkingLevelChange = (value: string) => {
-onChange({ thinkingLevel: value });
+    onChange?.({ thinkingLevel: value });
+  };
   const handleThinkingBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    onChange({ thinkingBudget: e.target.value });
+    onChange?.({ thinkingBudget: e.target.value });
   const handleVerbosityChange = (value: string) => {
-onChange({ verbosity: value });
+    onChange?.({ verbosity: value });
+  };
   const handleReasoningSummaryChange = (value: string) => {
-onChange({ reasoningSummary: value });
+    onChange?.({ reasoningSummary: value });
+  };
   const handleResponseFormatChange = (value: string) => {
-onChange({ responseFormat: value });
+    onChange?.({ responseFormat: value });
+  };
   const handleServiceTierChange = (value: string) => {
-onChange({ serviceTier: value });
+    onChange?.({ serviceTier: value });
+  };
 
   if (isSpecialModel || settings.provider === "ollama") {
     return (
@@ -120,20 +152,20 @@ onChange({ serviceTier: value });
         const thinkingLocked =
           isReasoning &&
           settings.thinkingEnabled &&
-          settings.provider === "anthropic";
-        const maxTemp = settings.provider === "anthropic" ? 1 : 2;
+          (settings.provider || "") === "anthropic";
+        const maxTemp = (settings.provider || "") === "anthropic" ? 1 : 2;
         return (
           <div className={styles.formGroup}>
             <label>
               Temperature (
-              {thinkingLocked ? "1 — Locked" : settings.temperature})
+              {thinkingLocked ? "1 — Locked" : (settings.temperature ?? 1)})
             </label>
             {!readOnly && (
               <SliderComponent
                 min={0}
                 max={maxTemp}
                 step={0.1}
-                value={thinkingLocked ? 1 : settings.temperature}
+                value={thinkingLocked ? 1 : (settings.temperature ?? 1)}
                 onChange={handleTempChange}
                 disabled={thinkingLocked}
               />
@@ -148,13 +180,13 @@ onChange({ serviceTier: value });
         const step = maxOutput > 32000 ? 1024 : 256;
         return (
           <div className={styles.formGroup}>
-            <label>Max Tokens ({settings.maxTokens})</label>
+            <label>Max Tokens ({settings.maxTokens ?? 2048})</label>
             {!readOnly && (
               <SliderComponent
                 min={256}
                 max={maxOutput}
                 step={step}
-                value={Math.min(settings.maxTokens, maxOutput)}
+                value={Math.min(settings.maxTokens ?? 2048, maxOutput)}
                 onChange={handleMaxTokensChange}
               />
             )}
@@ -214,7 +246,7 @@ onChange({ serviceTier: value });
       {isReasoning &&
         !selectedModelDef?.responsesAPI &&
         (settings.thinkingEnabled ||
-          (settings.provider === "lm-studio" &&
+          ((settings.provider || "") === "lm-studio" &&
             settings.thinkingEnabled !== false)) && (
           <>
             {[
@@ -224,7 +256,7 @@ onChange({ serviceTier: value });
               "anthropic",
               "ollama",
               "llama-cpp",
-            ].includes(settings.provider) && (
+            ].includes(settings.provider || "") && (
               <div className={styles.formGroup}>
                 <label>Reasoning Effort</label>
                 <SelectComponent
@@ -239,14 +271,14 @@ onChange({ serviceTier: value });
               </div>
             )}
 
-            {settings.provider === "google" &&
+            {(settings.provider || "") === "google" &&
               selectedModelDef?.thinkingLevels && (
                 <div className={styles.formGroup}>
                   <label>Thinking Level</label>
                   <SelectComponent
                     value={settings.thinkingLevel || "high"}
                     options={selectedModelDef.thinkingLevels.map(
-                      (level: unknown) => ({
+                      (level: string) => ({
                         value: level,
                         label: level.charAt(0).toUpperCase() + level.slice(1),
                       }),
@@ -256,7 +288,7 @@ onChange({ serviceTier: value });
                 </div>
               )}
 
-            {["anthropic", "google"].includes(settings.provider) && (
+            {["anthropic", "google"].includes(settings.provider || "") && (
               <div className={styles.formGroup}>
                 <label>Thinking Budget (Tokens)</label>
                 <input
@@ -271,164 +303,175 @@ onChange({ serviceTier: value });
           </>
         )}
 
-      {selectedModelDef?.verbosity && (
-        <div className={styles.formGroup}>
-          <label>Verbosity</label>
-          <SelectComponent
-            value={settings.verbosity || ""}
-            options={[
-              { value: "", label: "Default" },
-              { value: "low", label: "Low" },
-              { value: "medium", label: "Medium" },
-              { value: "high", label: "High" },
-            ]}
-            onChange={handleVerbosityChange}
-          />
-        </div>
-      )}
-
-      {!isReasoning && !readOnly && (
+      {/* Standard Generation Parameters (Non-reasoning or supported reasoning overrides) */}
+      {(!isReasoning ||
+        ["anthropic", "google", "lm-studio", "vllm", "llama-cpp"].includes(
+          settings.provider || "",
+        )) && (
         <>
-          <div className={styles.formGroup}>
-            <label>Top P ({settings.topP})</label>
-            <SliderComponent
-              min={0}
-              max={1}
-              step={0.05}
-              value={settings.topP}
-              onChange={handleTopPChange}
-            />
-          </div>
+          <div className={styles.sectionSeparator} />
 
-          <div className={styles.formGroup}>
-            <label>Stop Sequences (comma separated)</label>
-            <input
-              type="text"
-              placeholder="\n, Human:"
-              value={settings.stopSequences || ""}
-              onChange={handleStopSeqChange}
-              className={styles.inputField}
-            />
-          </div>
-
-          {["anthropic", "google", "llama-cpp", "lm-studio", "vllm"].includes(
-            settings.provider,
-          ) && (
+          {/* Verbosity (Google-specific override) */}
+          {(settings.provider || "") === "google" && selectedModelDef?.verbosity && (
             <div className={styles.formGroup}>
-              <label>Top K ({settings.topK})</label>
-              <SliderComponent
-                min={0}
-                max={100}
-                step={1}
-                value={settings.topK}
-                onChange={handleTopKChange}
-              />
-            </div>
-          )}
-
-          {["llama-cpp", "lm-studio", "vllm"].includes(settings.provider) && (
-            <div className={styles.formGroup}>
-              <label>Min P ({settings.minP ?? 0})</label>
-              <SliderComponent
-                min={0}
-                max={1}
-                step={0.01}
-                value={settings.minP ?? 0}
-                onChange={handleMinPChange}
-              />
-            </div>
-          )}
-
-          {["llama-cpp", "lm-studio", "vllm"].includes(settings.provider) && (
-            <div className={styles.formGroup}>
-              <label>Repeat Penalty ({settings.repeatPenalty ?? 1})</label>
-              <SliderComponent
-                min={1}
-                max={2}
-                step={0.05}
-                value={settings.repeatPenalty ?? 1}
-                onChange={handleRepeatPenaltyChange}
-              />
-            </div>
-          )}
-
-          {["openai", "google", "llama-cpp", "lm-studio", "vllm"].includes(
-            settings.provider,
-          ) && (
-            <div className={styles.formGroup}>
-              <label>Seed</label>
-              <input
-                type="number"
-                placeholder="Random"
-                value={settings.seed ?? ""}
-                onChange={handleSeedChange}
-                className={styles.inputField}
-              />
-            </div>
-          )}
-
-          {["openai", "lm-studio", "vllm", "google", "llama-cpp"].includes(
-            settings.provider,
-          ) && (
-            <>
-              <div className={styles.formGroup}>
-                <label>Frequency Penalty ({settings.frequencyPenalty})</label>
-                <SliderComponent
-                  min={-2}
-                  max={2}
-                  step={0.1}
-                  value={settings.frequencyPenalty}
-                  onChange={handleFreqPenaltyChange}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Presence Penalty ({settings.presencePenalty})</label>
-                <SliderComponent
-                  min={-2}
-                  max={2}
-                  step={0.1}
-                  value={settings.presencePenalty}
-                  onChange={handlePresPenaltyChange}
-                />
-              </div>
-            </>
-          )}
-
-          {/* Response Format — JSON mode for OpenAI + Google */}
-          {selectedModelDef?.jsonMode && (
-            <div className={styles.formGroup}>
-              <label>Response Format</label>
+              <label>Verbosity</label>
               <SelectComponent
-                value={settings.responseFormat || ""}
-                options={[
-                  { value: "", label: "Default (Text)" },
-                  { value: "json_object", label: "JSON Object" },
-                ]}
-                onChange={handleResponseFormatChange}
-              />
-            </div>
-          )}
-
-          {/* Service Tier — request priority routing */}
-          {["openai", "anthropic"].includes(settings.provider) && (
-            <div className={styles.formGroup}>
-              <label>Service Tier</label>
-              <SelectComponent
-                value={settings.serviceTier || ""}
+                value={settings.verbosity || ""}
                 options={[
                   { value: "", label: "Default" },
-                  { value: "auto", label: "Auto" },
-                  ...(settings.provider === "openai"
-                    ? [
-                        { value: "default", label: "Standard" },
-                        { value: "priority", label: "Priority" },
-                      ]
-                    : [{ value: "standard_only", label: "Standard Only" }]),
+                  { value: "low", label: "Low" },
+                  { value: "medium", label: "Medium" },
+                  { value: "high", label: "High" },
                 ]}
-                onChange={handleServiceTierChange}
+                onChange={handleVerbosityChange}
               />
             </div>
+          )}
+
+          {!isReasoning && !readOnly && (
+            <>
+              <div className={styles.formGroup}>
+                <label>Top P ({settings.topP ?? 1})</label>
+                <SliderComponent
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={settings.topP ?? 1}
+                  onChange={handleTopPChange}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Stop Sequences (comma separated)</label>
+                <input
+                  type="text"
+                  placeholder="\n, Human:"
+                  value={settings.stopSequences || ""}
+                  onChange={handleStopSeqChange}
+                  className={styles.inputField}
+                />
+              </div>
+
+              {["anthropic", "google", "llama-cpp", "lm-studio", "vllm"].includes(
+                settings.provider || "",
+              ) && (
+                <div className={styles.formGroup}>
+                  <label>Top K ({settings.topK ?? 40})</label>
+                  <SliderComponent
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={settings.topK ?? 40}
+                    onChange={handleTopKChange}
+                  />
+                </div>
+              )}
+
+              {["llama-cpp", "lm-studio", "vllm"].includes(settings.provider || "") && (
+                <div className={styles.formGroup}>
+                  <label>Min P ({settings.minP ?? 0})</label>
+                  <SliderComponent
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={settings.minP ?? 0}
+                    onChange={handleMinPChange}
+                  />
+                </div>
+              )}
+
+              {["llama-cpp", "lm-studio", "vllm"].includes(settings.provider || "") && (
+                <div className={styles.formGroup}>
+                  <label>Repeat Penalty ({settings.repeatPenalty ?? 1})</label>
+                  <SliderComponent
+                    min={1}
+                    max={2}
+                    step={0.05}
+                    value={settings.repeatPenalty ?? 1}
+                    onChange={handleRepeatPenaltyChange}
+                  />
+                </div>
+              )}
+
+              {["openai", "google", "llama-cpp", "lm-studio", "vllm"].includes(
+                settings.provider || "",
+              ) && (
+                <div className={styles.formGroup}>
+                  <label>Seed</label>
+                  <input
+                    type="number"
+                    placeholder="Random"
+                    value={settings.seed ?? ""}
+                    onChange={handleSeedChange}
+                    className={styles.inputField}
+                  />
+                </div>
+              )}
+
+              {["openai", "lm-studio", "vllm", "google", "llama-cpp"].includes(
+                settings.provider || "",
+              ) && (
+                <>
+                  <div className={styles.formGroup}>
+                    <label>Frequency Penalty ({settings.frequencyPenalty ?? 0})</label>
+                    <SliderComponent
+                      min={-2}
+                      max={2}
+                      step={0.1}
+                      value={settings.frequencyPenalty ?? 0}
+                      onChange={handleFreqPenaltyChange}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Presence Penalty ({settings.presencePenalty ?? 0})</label>
+                    <SliderComponent
+                      min={-2}
+                      max={2}
+                      step={0.1}
+                      value={settings.presencePenalty ?? 0}
+                      onChange={handlePresPenaltyChange}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Response Format — JSON mode for OpenAI + Google */}
+              {selectedModelDef?.jsonMode && (
+                <div className={styles.formGroup}>
+                  <label>Response Format</label>
+                  <SelectComponent
+                    value={settings.responseFormat || ""}
+                    options={[
+                      { value: "", label: "Default (Text)" },
+                      { value: "json_object", label: "JSON Object" },
+                    ]}
+                    onChange={handleResponseFormatChange}
+                  />
+                </div>
+              )}
+
+              {/* Service Tier — request priority routing */}
+              {["openai", "anthropic"].includes(settings.provider || "") && (
+                <div className={styles.formGroup}>
+                  <label>Service Tier</label>
+                  <SelectComponent
+                    value={settings.serviceTier || ""}
+                    options={[
+                      { value: "", label: "Default" },
+                      { value: "auto", label: "Auto" },
+                      ...((settings.provider || "") === "openai"
+                        ? [
+                            { value: "default", label: "Standard" },
+                            { value: "priority", label: "Priority" },
+                          ]
+                        : [{ value: "standard_only", label: "Standard Only" }]),
+                    ]}
+                    onChange={handleServiceTierChange}
+                  />
+                </div>
+              )}
+            </>
           )}
         </>
       )}

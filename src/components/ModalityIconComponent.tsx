@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import {
   Type,
   Image,
@@ -12,11 +13,18 @@ import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import styles from "./ModalityIconComponent.module.css";
 
+interface ModalityDef {
+  key: string;
+  label: string;
+  icon: React.ComponentType<{ size: number }>;
+  color: string;
+}
+
 /**
  * INPUT_MODALITIES / OUTPUT_MODALITIES — data-driven icon definitions
  * for input and output modality badges. Modalities only — no tools.
  */
-const INPUT_MODALITIES = [
+const INPUT_MODALITIES: ModalityDef[] = [
   {
     key: "textIn",
     label: "Text input",
@@ -49,7 +57,7 @@ const INPUT_MODALITIES = [
   },
 ];
 
-const OUTPUT_MODALITIES = [
+const OUTPUT_MODALITIES: ModalityDef[] = [
   {
     key: "textOut",
     label: "Text output",
@@ -76,6 +84,12 @@ const OUTPUT_MODALITIES = [
   },
 ];
 
+export interface ModalityIconProps {
+  modalities?: Record<string, boolean> | null;
+  size?: number;
+  className?: string;
+}
+
 /**
  * ModalityIconComponent — renders a compact row of input → output modality
  * icons. Modalities only — tool capabilities are rendered by ModelToolsRow (ToolBadgeComponent).
@@ -89,7 +103,7 @@ export default function ModalityIconComponent({
   modalities,
   size = 11,
   className,
-}: unknown) {
+}: ModalityIconProps) {
   if (!modalities) return null;
 
   const activeInputs = INPUT_MODALITIES.filter((m) => modalities[m.key]);
@@ -99,13 +113,16 @@ export default function ModalityIconComponent({
 
   if (!hasInputs && !hasOutputs) return null;
 
-  const renderIcon = (def: unknown) => (
-    <TooltipComponent key={def.key} label={def.label} position="top">
-      <span className={styles.modalityIcon} style={{ color: def.color }}>
-        <def.icon size={size} />
-      </span>
-    </TooltipComponent>
-  );
+  const renderIcon = (def: ModalityDef) => {
+    const Icon = def.icon;
+    return (
+      <TooltipComponent key={def.key} label={def.label} position="top">
+        <span className={styles.modalityIcon} style={{ color: def.color }}>
+          <Icon size={size} />
+        </span>
+      </TooltipComponent>
+    );
+  };
 
   return (
     <div className={`${styles.modalitiesRow} ${className || ""}`}>

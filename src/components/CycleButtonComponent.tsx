@@ -11,7 +11,7 @@ const TWEEN_MS = 500;
 const INFINITY_TWEEN_MS = TWEEN_MS * 2;
 
 /** Ease-out cubic — fast start, gentle landing. */
-function easeOutCubic(t: unknown) {
+function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
 }
 
@@ -117,11 +117,12 @@ const ZALGO_COMBINING = [
   "\u035F",
   "\u0360",
   "\u0361",
+  "\u0362",
 ];
 const GLITCH_CHARS = "ΣΩΨΞΘΔΛΠΦψξθδλπφ¿¡«»░▒▓█▄▀■□▪▫▬▲▼◆●○◎◇";
 
 /** Generate a short randomised glitch string (1–3 chars + zalgo). */
-function glitchText() {
+function glitchText(): string {
   const pool = SYMBOLS + GLITCH_CHARS;
   const len = 1 + Math.floor(Math.random() * 2); // 1-2 base chars
   let result = "";
@@ -135,6 +136,13 @@ function glitchText() {
     }
   }
   return result;
+}
+
+export interface CycleButtonProps {
+  value: number;
+  isActive?: boolean;
+  onClick?: () => void;
+  title?: string;
 }
 
 /**
@@ -159,8 +167,8 @@ export default function CycleButton({
   isActive = false,
   onClick,
   title,
-}: unknown) {
-  const prevValueRef = useRef<unknown>(value);
+}: CycleButtonProps) {
+  const prevValueRef = useRef<number>(value);
   const rafRef = useRef<number | null>(null);
   const glitchIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [displayNum, setDisplayNum] = useState(() =>
@@ -211,7 +219,7 @@ export default function CycleButton({
       setTweening(true);
 
       const start = performance.now();
-      function tick(now: unknown) {
+      function tick(now: number) {
         const elapsed = now - start;
         const progress = Math.min(elapsed / countDuration, 1);
         const eased = easeOutCubic(progress);
@@ -269,7 +277,7 @@ export default function CycleButton({
         setDisplayNum(-999);
 
         const start = performance.now();
-        function tick(now: unknown) {
+        function tick(now: number) {
           const elapsed = now - start;
           const progress = Math.min(elapsed / countDuration, 1);
           const eased = easeOutCubic(progress);
@@ -295,16 +303,17 @@ export default function CycleButton({
     }
 
     // -- Normal number → number transition
+    const fromVal = from;
     setShowInfinity(false);
     setTweening(true);
     const start = performance.now();
-    const delta = value - from;
+    const delta = value - fromVal;
 
-    function tick(now: unknown) {
+    function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / TWEEN_MS, 1);
       const eased = easeOutCubic(progress);
-      setDisplayNum(Math.round(from + delta * eased));
+      setDisplayNum(Math.round(fromVal + delta * eased));
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
@@ -322,7 +331,7 @@ export default function CycleButton({
   }, [value]);
 
   // Determine the label to render
-  let label;
+  let label: string;
   if (showInfinity) {
     label = "∞";
   } else if (glitching) {
@@ -336,10 +345,10 @@ export default function CycleButton({
       type="button"
       className={`${styles.cycleButton} ${isActive ? styles.cycleButtonActive : ""} ${tweening ? styles.tweening : ""} ${showInfinity ? styles.infinity : ""} ${glitching ? styles.glitching : ""}`}
       onClick={(e: React.MouseEvent) => {
-        SoundService.playClickButton({ event: e });
+        SoundService.playClickButton({ event: e.nativeEvent });
         onClick?.();
       }}
-      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e })}
+      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e.nativeEvent })}
       title={title}
     >
       {label}

@@ -8,8 +8,16 @@ import styles from "./CostBadgeComponent.module.css";
 const TWEEN_MS = 600;
 
 /** Ease-out cubic — fast start, gentle landing. */
-function easeOutCubic(t: unknown) {
+function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
+}
+
+export interface CostBadgeProps {
+  cost: number;
+  showIcon?: boolean;
+  className?: string;
+  mini?: boolean;
+  formatFn?: (value: number) => string;
 }
 
 /**
@@ -24,8 +32,8 @@ export default function CostBadgeComponent({
   className = "",
   mini = false,
   formatFn = formatCost,
-}: unknown) {
-  const prevCostRef = useRef<unknown>(null);
+}: CostBadgeProps) {
+  const prevCostRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const [displayCost, setDisplayCost] = useState(cost);
   const [tweening, setTweening] = useState(false);
@@ -41,15 +49,16 @@ export default function CostBadgeComponent({
       return;
     }
 
-    const delta = cost - from;
+    const fromVal = from;
+    const delta = cost - fromVal;
     const start = performance.now();
     setTweening(true);
 
-    function tick(now: unknown) {
+    function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / TWEEN_MS, 1);
       const eased = easeOutCubic(progress);
-      setDisplayCost(from + delta * eased);
+      setDisplayCost(fromVal + delta * eased);
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);

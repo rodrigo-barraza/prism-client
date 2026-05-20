@@ -51,6 +51,13 @@ export interface ModelOption {
   vramGiB?: number;
   /** Instance ID for local models (multi-instance) */
   instanceId?: string;
+  liveAPI?: boolean;
+  tools?: string[];
+  webFetch?: boolean;
+  responsesAPI?: boolean;
+  reasoningSummary?: boolean;
+  verbosity?: boolean;
+  jsonMode?: boolean;
 }
 
 export interface ModelDefaults {
@@ -197,6 +204,19 @@ export interface Message {
   generationSettings?: Record<string, unknown>;
   /** Incremental background usage (memory extraction, embedding) */
   _backgroundUsage?: Record<string, unknown>;
+  deleted?: boolean;
+  _liveStreaming?: boolean;
+  contentSegments?: ContentSegment[];
+  thinkingFragments?: string[];
+  textFragments?: string[];
+  video?: string | string[];
+  pdf?: string | string[];
+  error?: string;
+  totalTime?: number;
+  tokensPerSec?: number;
+  voice?: string;
+  tool_call_id?: string;
+  toolCallId?: string;
   [key: string]: unknown;
 }
 
@@ -212,8 +232,13 @@ export interface Conversation {
   traceId?: string;
   systemPrompt?: string;
   stats?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
+  messageCount?: number;
+  totalCost?: number;
+  isGenerating?: boolean;
+  username?: string;
   [key: string]: unknown;
 }
 
@@ -407,6 +432,12 @@ export interface SSECallbacks {
   onError?: (error: Error) => void;
 }
 
+export interface ContentSegment {
+  type: "thinking" | "tools" | "text" | "plan";
+  fragmentIndex: number;
+  toolIds?: string[];
+}
+
 // ─── Tool Calls ─────────────────────────────────────────────
 
 export interface ToolCallEvent {
@@ -551,6 +582,16 @@ export interface PrismSettings {
   webSearchEnabled?: boolean;
   verbosity?: string;
   reasoningSummary?: string;
+  minP?: number;
+  repeatPenalty?: number;
+  seed?: string | number | null;
+  voice?: string;
+  liveVoice?: string;
+  liveThinkingLevel?: string;
+  forceImageGeneration?: boolean;
+  functionCallingEnabled?: boolean;
+  urlContextEnabled?: boolean;
+  codeExecutionEnabled?: boolean;
   [key: string]: unknown;
 }
 
@@ -766,6 +807,7 @@ export interface Workflow {
   userContent?: string;
   createdAt?: string;
   updatedAt?: string;
+  workflowName?: string;
   [key: string]: unknown;
 }
 

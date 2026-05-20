@@ -33,13 +33,78 @@ import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
 import ThroughputBadgeComponent from "./ThroughputBadgeComponent";
 import useTokenRate from "../hooks/useTokenRate";
 import useTtft from "../hooks/useTtft";
+import type { PrismConfig, PrismSettings, ModelOption, Workflow, VoiceOption } from "../types/types";
+
+export interface SessionStats {
+  messageCount: number;
+  deletedCount: number;
+  requestCount: number;
+  uniqueModels?: string[];
+  uniqueProviders?: string[];
+  totalTokens?: {
+    total: number;
+    input: number;
+    output: number;
+    cacheRead?: number;
+    cacheWrite?: number;
+    reasoning?: number;
+  };
+  avgTokensPerSec?: number;
+  avgTimeToGeneration?: number;
+  lastTimeToGeneration?: number;
+  totalCost: number;
+  originalTotalCost: number;
+  completedElapsedTime?: number;
+  currentTurnStart?: string | number;
+  usedTools?: Array<{ name: string; count: number }>;
+  orchestrator?: SessionStats;
+  workers?: SessionStats;
+  modalities?: Record<string, boolean>;
+}
+
+export interface AgentToggleOption {
+  key: string;
+  icon?: React.ReactNode;
+  label: string;
+  type?: "cycle" | "toggle";
+  value?: number;
+  isActive?: boolean;
+  onChange?: (value: boolean | number) => void;
+  title?: string;
+  checked?: boolean;
+  disabled?: boolean;
+}
+
+export interface SettingsPanelProps {
+  config: PrismConfig | null;
+  settings: PrismSettings;
+  onChange?: (updates: Partial<PrismSettings>) => void;
+  _hasAssistantImages?: boolean;
+  _inferenceMode?: string;
+  readOnly?: boolean;
+  hideProviderModel?: boolean;
+  hideSystemPrompt?: boolean;
+  onSystemPromptClick?: () => void;
+  showSystemPromptModal?: boolean;
+  onCloseSystemPromptModal?: () => void;
+  workflows?: Workflow[];
+  sessionStats?: SessionStats | null;
+  lockedTools?: Set<string>;
+  sessionType?: string;
+  canSpawnWorkers?: boolean;
+  agentToggles?: AgentToggleOption[];
+}
+
+interface ExtendedModelOption extends ModelOption {
+  _isImageGen?: boolean;
+  _isTranscription?: boolean;
+  _isTTS?: boolean;
+}
 
 export default function SettingsPanel({
   config,
   settings,
-  onChange,
-  _hasAssistantImages,
-  _inferenceMode,
+  onChange = () => {},
   readOnly = false,
   hideProviderModel = false,
   hideSystemPrompt = false,
@@ -52,11 +117,10 @@ export default function SettingsPanel({
   sessionType = "conversation",
   canSpawnWorkers = false,
   agentToggles,
-}: unknown) {
+}: SettingsPanelProps) {
   const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
 
-  const { _providers = {}, textToText = {} } = config || {};
-  const textModelsMap = textToText.models || {};
+  const textModelsMap = config?.textToText?.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
   const ttsModelsMap = config?.textToSpeech?.models || {};
   const imageModelsMap = config?.textToImage?.models || {};
@@ -68,40 +132,40 @@ export default function SettingsPanel({
     ...Object.keys(audioToTextModelsMap),
     ...Object.keys(ttsModelsMap),
   ]);
-  const modelsMap = {};
+  const modelsMap: Record<string, ExtendedModelOption[]> = {};
   for (const p of allProviderKeys) {
-    const textModels = textModelsMap[p] || [];
-    const imgModels = (imageModelsMap[p] || []).map((m) => ({
+    const textModels = (textModelsMap[p] || []) as ExtendedModelOption[];
+    const imgModels = ((imageModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
       ...m,
       label: `${m.label} (Image)`,
       _isImageGen: true,
     }));
-    const sttModels = (audioToTextModelsMap[p] || []).map((m) => ({
+    const sttModels = ((audioToTextModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
       ...m,
       label: `${m.label} (Transcribe)`,
       _isTranscription: true,
     }));
-    const ttsModels = (ttsModelsMap[p] || []).map((m) => ({
+    const ttsModels = ((ttsModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
       ...m,
       label: `${m.label} (TTS)`,
       _isTTS: true,
     }));
     // Merge text models first, then image, then transcription, then TTS — deduplicated by name
-    const seen = new Set();
-    const merged = [];
+    const seen = new Set<string>();
+    const merged: ExtendedModelOption[] = [];
     for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
       if (!seen.has(m.name)) {
         seen.add(m.name);
         merged.push(m);
       }
     }
-    (modelsMap as Record<string, unknown>)[p] = merged;
+    modelsMap[p] = merged;
   }
 
-  const _handleSystemPromptChange = (e: React.SyntheticEvent) =>
+  const _handleSystemPromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
     onChange({ systemPrompt: e.target.value });
 
-  const currentProviderModels = (modelsMap as Record<string, unknown>)[settings.provider] || [];
+  const currentProviderModels = modelsMap[settings.provider || ""] || [];
   const selectedModelDef = currentProviderModels.find(
     (m) => m.name === settings.model,
   );
@@ -145,100 +209,97 @@ export default function SettingsPanel({
       ? totalElapsedTime
       : activeStats?.completedElapsedTime || 0;
 
-  const renderStatsBadges = (stats: unknown, showFull: unknown) => (
-    <div className={styles.statsBadges}>
-      <MessageCountBadgeComponent
-        count={stats.messageCount}
-        deletedCount={stats.deletedCount}
-      />
-      <RequestCountBadgeComponent count={stats.requestCount} />
-      {stats.uniqueModels?.length > 0 && (
-        <ModelBadgeComponent
-          models={stats.uniqueModels}
-          providers={stats.uniqueProviders}
+  const renderStatsBadges = (stats: SessionStats, showFull: boolean) => {
+    const ttftVal = stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
+    return (
+      <div className={styles.statsBadges}>
+        <MessageCountBadgeComponent
+          count={stats.messageCount}
+          deletedCount={stats.deletedCount}
         />
-      )}
-      {stats.totalTokens?.total > 0 && (
-        <>
-          <TokenCountBadgeComponent
-            value={stats.totalTokens.input}
-            label="tokens in"
+        <RequestCountBadgeComponent count={stats.requestCount} />
+        {stats.uniqueModels && stats.uniqueModels.length > 0 && (
+          <ModelBadgeComponent
+            models={stats.uniqueModels}
+            providers={stats.uniqueProviders}
           />
-          <TokenCountBadgeComponent
-            value={stats.totalTokens.output}
-            label="tokens out"
-          />
-          <TokenCountBadgeComponent
-            value={stats.totalTokens.total}
-            label="tokens total"
-          />
-          {stats.totalTokens.cacheRead > 0 && (
-            <TokenCountBadgeComponent
-              value={stats.totalTokens.cacheRead}
-              label="cached read"
-            />
-          )}
-          {stats.totalTokens.cacheWrite > 0 && (
-            <TokenCountBadgeComponent
-              value={stats.totalTokens.cacheWrite}
-              label="cached write"
-            />
-          )}
-          {stats.totalTokens.reasoning > 0 && (
-            <TokenCountBadgeComponent
-              value={stats.totalTokens.reasoning}
-              label="reasoning"
-            />
-          )}
-        </>
-      )}
-      <ThroughputBadgeComponent
-        liveTokPerSec={liveTokensPerSec}
-        avgTokPerSec={stats.avgTokensPerSec}
-        isActivelyGenerating={computedTokPerSec !== null || hasActiveWorkers}
-        turnActive={turnActive}
-      />
-      {/* TTFT badge — live during processing, latched after first token, static after completion */}
-      {liveTtft !== null ? (
-        <span
-          className={`${styles.statBadge} ${isLiveTtft ? styles.ttftBadgeLive : styles.ttftBadge}`}
-        >
-          ⏱ {liveTtft.toFixed(isLiveTtft ? 1 : 2)}s TTFT
-        </span>
-      ) : (
-        (stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration) !=
-          null && (
-          <span className={`${styles.statBadge} ${styles.ttftBadge}`}>
-            ⏱{" "}
-            {(
-              stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration
-            ).toFixed(2)}
-            s TTFT
-          </span>
-        )
-      )}
-      <CostBadgeComponent cost={stats.totalCost} />
-      {stats.originalTotalCost > 0 &&
-        stats.originalTotalCost !== stats.totalCost && (
-          <span className={`${styles.statBadge} ${styles.statBadgeSub}`}>
-            ({formatCost(stats.originalTotalCost)} total)
-          </span>
         )}
-      {showFull && activeElapsedTime > 0 && (
-        <StopwatchBadgeComponent
-          seconds={activeElapsedTime}
-          live={!!stats.currentTurnStart}
+        {stats.totalTokens && stats.totalTokens.total > 0 && (
+          <>
+            <TokenCountBadgeComponent
+              value={stats.totalTokens.input}
+              label="tokens in"
+            />
+            <TokenCountBadgeComponent
+              value={stats.totalTokens.output}
+              label="tokens out"
+            />
+            <TokenCountBadgeComponent
+              value={stats.totalTokens.total}
+              label="tokens total"
+            />
+            {stats.totalTokens.cacheRead !== undefined && stats.totalTokens.cacheRead > 0 && (
+              <TokenCountBadgeComponent
+                value={stats.totalTokens.cacheRead}
+                label="cached read"
+              />
+            )}
+            {stats.totalTokens.cacheWrite !== undefined && stats.totalTokens.cacheWrite > 0 && (
+              <TokenCountBadgeComponent
+                value={stats.totalTokens.cacheWrite}
+                label="cached write"
+              />
+            )}
+            {stats.totalTokens.reasoning !== undefined && stats.totalTokens.reasoning > 0 && (
+              <TokenCountBadgeComponent
+                value={stats.totalTokens.reasoning}
+                label="reasoning"
+              />
+            )}
+          </>
+        )}
+        <ThroughputBadgeComponent
+          liveTokPerSec={liveTokensPerSec}
+          avgTokPerSec={stats.avgTokensPerSec}
+          isActivelyGenerating={computedTokPerSec !== null || hasActiveWorkers}
+          turnActive={turnActive}
         />
-      )}
-      {!showFull && stats.completedElapsedTime > 0 && (
-        <StopwatchBadgeComponent
-          seconds={stats.completedElapsedTime}
-          live={false}
-        />
-      )}
+        {/* TTFT badge — live during processing, latched after first token, static after completion */}
+        {liveTtft !== null ? (
+          <span
+            className={`${styles.statBadge} ${isLiveTtft ? styles.ttftBadgeLive : styles.ttftBadge}`}
+          >
+            ⏱ {liveTtft.toFixed(isLiveTtft ? 1 : 2)}s TTFT
+          </span>
+        ) : (
+          ttftVal != null && (
+            <span className={`${styles.statBadge} ${styles.ttftBadge}`}>
+              ⏱ {ttftVal.toFixed(2)}s TTFT
+            </span>
+          )
+        )}
+        <CostBadgeComponent cost={stats.totalCost} />
+        {stats.originalTotalCost > 0 &&
+          stats.originalTotalCost !== stats.totalCost && (
+            <span className={`${styles.statBadge} ${styles.statBadgeSub}`}>
+              ({formatCost(stats.originalTotalCost)} total)
+            </span>
+          )}
+        {showFull && activeElapsedTime > 0 && (
+          <StopwatchBadgeComponent
+            seconds={activeElapsedTime}
+            live={!!stats.currentTurnStart}
+          />
+        )}
+        {!showFull && stats.completedElapsedTime !== undefined && stats.completedElapsedTime > 0 && (
+          <StopwatchBadgeComponent
+            seconds={stats.completedElapsedTime}
+            live={false}
+          />
+        )}
       {(() => {
         // When viewing "all" stats and there are workers, aggregate tools from orchestrator and workers
-        const displayTools = (() => {
+        const displayTools: Array<{ name: string; count: number }> = (() => {
           if (
             statsTab !== "all" ||
             !sessionStats?.workers ||
@@ -248,7 +309,7 @@ export default function SettingsPanel({
           }
 
           // Merge tools from orchestrator and workers
-          const toolMap = new Map();
+          const toolMap = new Map<string, number>();
 
           // Add orchestrator tools
           if (sessionStats.orchestrator?.usedTools) {
@@ -281,8 +342,8 @@ export default function SettingsPanel({
         const capabilities = displayTools.filter((t) =>
           CAPABILITY_TOOL_NAMES.has(t.name),
         );
-        const toolCalls = displayTools.filter(
-          (t: unknown) => !CAPABILITY_TOOL_NAMES.has(t.name),
+        const toolCalls = displayTools.filter((t) =>
+          !CAPABILITY_TOOL_NAMES.has(t.name),
         );
         return (
           <>
@@ -308,6 +369,7 @@ export default function SettingsPanel({
       )}
     </div>
   );
+};
 
   return (
     <>
@@ -404,11 +466,11 @@ export default function SettingsPanel({
         )}
 
         {isTTS &&
-          (() => {
+          (((): React.ReactNode => {
             const providerVoices =
-              config?.textToSpeech?.voices?.[settings.provider] || [];
+              (settings.provider && config?.textToSpeech?.voices?.[settings.provider]) || [];
             const defaultVoice =
-              config?.textToSpeech?.defaultVoices?.[settings.provider] || "";
+              (settings.provider && config?.textToSpeech?.defaultVoices?.[settings.provider]) || "";
             const currentVoice = settings.voice || defaultVoice;
             if (readOnly) {
               return currentVoice ? (
@@ -420,11 +482,16 @@ export default function SettingsPanel({
                 </div>
               ) : null;
             }
-            const voiceOptions = providerVoices.map((v) => ({
-              value: v.name || v.voice_id || v,
-              label: `${v.label || v.name || v}${v.gender ? ` (${v.gender})` : ""}`,
-              icon: <Mic size={18} />,
-            }));
+            const voiceOptions = providerVoices.map((v: string | VoiceOption) => {
+              const id = typeof v === "string" ? v : (v.id || v.name || "");
+              const label = typeof v === "string" ? v : (v.name || v.id || "");
+              const gender = typeof v === "string" ? undefined : v.gender;
+              return {
+                value: id,
+                label: `${label}${gender ? ` (${gender})` : ""}`,
+                icon: <Mic size={18} />,
+              };
+            });
             return voiceOptions.length > 0 ? (
               <div className={styles.formGroup}>
                 <label>Voice</label>
@@ -432,25 +499,26 @@ export default function SettingsPanel({
                   value={currentVoice}
                   options={voiceOptions}
                   onChange={(value: string) => {
-onChange({ voice: value })}
+                    onChange({ voice: value });
+                  }}
                   placeholder="Select Voice"
                   icon={<Mic size={18} />}
                 />
               </div>
             ) : null;
-          })()}
+          }))()}
 
         {/* Google models (non-live): Thinking Level dropdown — always visible */}
         {!selectedModelDef?.liveAPI &&
           settings.provider === "google" &&
           selectedModelDef?.thinkingLevels &&
           !readOnly &&
-          (() => {
+          (((): React.ReactNode => {
             const canDisable =
-              selectedModelDef.thinkingLevels.includes("minimal");
+              selectedModelDef.thinkingLevels!.includes("minimal");
             const options = [
               ...(canDisable ? [{ value: "none", label: "No Thinking" }] : []),
-              ...selectedModelDef.thinkingLevels.map((level) => ({
+              ...selectedModelDef.thinkingLevels!.map((level) => ({
                 value: level,
                 label: level.charAt(0).toUpperCase() + level.slice(1),
               })),
@@ -466,22 +534,22 @@ onChange({ voice: value })}
                   value={currentValue}
                   options={options}
                   onChange={(value: string) => {
-onChange({
+                    onChange({
                       thinkingLevel: value === "none" ? undefined : value,
                       thinkingEnabled: value !== "none",
-                    })
-                  }
+                    });
+                  }}
                   icon={<Brain size={18} />}
                 />
               </div>
             );
-          })()}
+          }))()}
 
         {/* Live API model: Voice + Thinking Level dropdowns */}
         {selectedModelDef?.liveAPI &&
           !readOnly &&
-          (() => {
-            const googleVoices = config?.textToSpeech?.voices?.google || [];
+          (((): React.ReactNode => {
+            const googleVoices: VoiceOption[] = config?.textToSpeech?.voices?.google || [];
             const currentLiveVoice = settings.liveVoice || "Puck";
             const voiceOptions = googleVoices.map((v) => ({
               value: v.name,
@@ -495,23 +563,24 @@ onChange({
                   value={currentLiveVoice}
                   options={voiceOptions}
                   onChange={(value: string) => {
-onChange({ liveVoice: value })}
+                    onChange({ liveVoice: value });
+                  }}
                   placeholder="Select Voice"
                   icon={<AudioLines size={18} />}
                 />
               </div>
             ) : null;
-          })()}
+          }))()}
 
         {selectedModelDef?.liveAPI &&
           !readOnly &&
           selectedModelDef?.thinkingLevels &&
-          (() => {
+          (((): React.ReactNode => {
             const canDisable =
-              selectedModelDef.thinkingLevels.includes("minimal");
+              selectedModelDef.thinkingLevels!.includes("minimal");
             const options = [
               ...(canDisable ? [{ value: "none", label: "No Thinking" }] : []),
-              ...selectedModelDef.thinkingLevels.map((level) => ({
+              ...selectedModelDef.thinkingLevels!.map((level) => ({
                 value: level,
                 label: level.charAt(0).toUpperCase() + level.slice(1),
               })),
@@ -522,23 +591,22 @@ onChange({ liveVoice: value })}
                 <SelectComponent
                   value={
                     settings.liveThinkingLevel ||
-                    (canDisable ? "none" : selectedModelDef.thinkingLevels[0])
+                    (canDisable ? "none" : selectedModelDef.thinkingLevels![0])
                   }
                   options={options}
                   onChange={(value: string) => {
-onChange({
+                    onChange({
                       liveThinkingLevel: value,
                       thinkingEnabled: value !== "none",
-                    })
-                  }
+                    });
+                  }}
                   icon={<Brain size={18} />}
                 />
               </div>
             );
-          })()}
+          }))()}
 
-        {/* readOnly: show live voice if saved */}
-        {readOnly && selectedModelDef?.liveAPI && settings.liveVoice && (
+        {!!(readOnly && selectedModelDef?.liveAPI && settings.liveVoice) && (
           <div className={styles.formGroup}>
             <label>Voice</label>
             <div className={styles.readOnlyValue}>
@@ -547,9 +615,9 @@ onChange({
           </div>
         )}
 
-        {readOnly &&
+        {!!(readOnly &&
           selectedModelDef?.liveAPI &&
-          settings.liveThinkingLevel && (
+          settings.liveThinkingLevel) && (
             <div className={styles.formGroup}>
               <label>Thinking Level</label>
               <div className={styles.readOnlyValue}>
@@ -561,8 +629,7 @@ onChange({
             </div>
           )}
 
-        {/* readOnly: show voice if saved even without TTS model context */}
-        {readOnly && !isTTS && !selectedModelDef?.liveAPI && settings.voice && (
+        {!!(readOnly && !isTTS && !selectedModelDef?.liveAPI && settings.voice) && (
           <div className={styles.formGroup}>
             <label>Voice</label>
             <div className={styles.readOnlyValue}>
@@ -581,7 +648,7 @@ onChange({
           </button>
         )}
 
-        {readOnly && !hideSystemPrompt && settings.systemPrompt && (
+        {!!(readOnly && !hideSystemPrompt && settings.systemPrompt) && (
           <div className={styles.formGroup}>
             <label>
               <Edit3 size={12} /> System Prompt
@@ -593,10 +660,10 @@ onChange({
         )}
 
         {/* -- Agent Toggles (Plan, Auto, Iterations) ---------------- */}
-        {agentToggles?.length > 0 && (
+        {(agentToggles?.length ?? 0) > 0 && (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Agent</div>
-            {agentToggles.map((toggle) => (
+            {agentToggles?.map((toggle) => (
               <div
                 key={toggle.key}
                 className={`${styles.modalityRow} ${styles.toolToggleRow}`}
@@ -605,15 +672,15 @@ onChange({
                 <span className={styles.modalityName}>{toggle.label}</span>
                 {toggle.type === "cycle" ? (
                   <CycleButton
-                    value={toggle.value}
+                    value={toggle.value ?? 0}
                     isActive={toggle.isActive}
-                    onClick={toggle.onChange}
+                    onClick={() => toggle.onChange?.(toggle.value ?? 0)}
                     title={toggle.title}
                   />
                 ) : (
                   <ToggleSwitch
                     checked={toggle.checked}
-                    onChange={toggle.onChange}
+                    onChange={(val: boolean) => toggle.onChange?.(val)}
                     size="mini"
                   />
                 )}
@@ -633,11 +700,11 @@ onChange({
                 : {},
             };
             const providerToolLabels =
-              (TOOL_LABELS as Record<string, unknown>)[settings.provider] || {};
-            const getToolLabel = (tool) =>
-              providerToolLabels[tool] || tool;
+              (settings.provider && (TOOL_LABELS as Record<string, Record<string, string>>)[settings.provider]) || {};
+            const getToolLabel = (tool: string) =>
+              (providerToolLabels as Record<string, string>)[tool] || tool;
 
-            const getToolToggle = (tool) => {
+            const getToolToggle = (tool: string) => {
               switch (tool) {
                 case "Thinking": {
                   const isLmStudio = settings.provider === "lm-studio";
@@ -668,14 +735,16 @@ onChange({
                           ? settings.thinkingEnabled !== false
                           : settings.thinkingEnabled || false,
                     onChange: isLive
-                      ? (value: string) => {
-onChange({
+                      ? (value: boolean) => {
+                          onChange({
                             liveThinkingLevel: value ? "low" : "none",
-                          })
+                          });
+                        }
                       : lmLocked || alwaysOn
                         ? () => {}
-                        : (value: string) => {
-onChange({ thinkingEnabled: value }),
+                        : (value: boolean) => {
+                            onChange({ thinkingEnabled: value });
+                          },
                     disabled: lmLocked || alwaysOn,
                   };
                 }
@@ -684,18 +753,19 @@ onChange({ thinkingEnabled: value }),
                 case "Web Fetch":
                   return {
                     checked: settings.webSearchEnabled || false,
-                    onChange: (value: string) => {
-onChange({ webSearchEnabled: value }),
+                    onChange: (value: boolean) => {
+                      onChange({ webSearchEnabled: value });
+                    },
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Code Execution":
                   return {
                     checked: settings.codeExecutionEnabled || false,
-                    onChange: (value) => {
+                    onChange: (value: boolean) => {
                       const updates = { codeExecutionEnabled: value };
                       if (value) {
-                        (updates as unknown).webSearchEnabled = false;
-                        (updates as unknown).urlContextEnabled = false;
+                        (updates as unknown as Record<string, unknown>).webSearchEnabled = false;
+                        (updates as unknown as Record<string, unknown>).urlContextEnabled = false;
                       }
                       onChange(updates);
                     },
@@ -704,8 +774,9 @@ onChange({ webSearchEnabled: value }),
                 case "URL Context":
                   return {
                     checked: settings.urlContextEnabled || false,
-                    onChange: (value: string) => {
-onChange({ urlContextEnabled: value }),
+                    onChange: (value: boolean) => {
+                      onChange({ urlContextEnabled: value });
+                    },
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Tool Calling":
@@ -716,15 +787,17 @@ onChange({ urlContextEnabled: value }),
                       false,
                     onChange: lockedTools?.has("Tool Calling")
                       ? () => {}
-                      : (value: string) => {
-onChange({ functionCallingEnabled: value }),
+                      : (value: boolean) => {
+                          onChange({ functionCallingEnabled: value });
+                        },
                     disabled: !!lockedTools?.has("Tool Calling"),
                   };
                 case "Image Generation":
                   return {
                     checked: settings.forceImageGeneration || false,
-                    onChange: (value: string) => {
-onChange({ forceImageGeneration: value }),
+                    onChange: (value: boolean) => {
+                      onChange({ forceImageGeneration: value });
+                    },
                     disabled: false,
                   };
                 default:

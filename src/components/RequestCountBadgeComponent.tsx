@@ -7,8 +7,15 @@ import styles from "./RequestCountBadgeComponent.module.css";
 const TWEEN_MS = 600;
 
 /** Ease-out cubic — fast start, gentle landing. */
-function easeOutCubic(t: unknown) {
+function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
+}
+
+export interface RequestCountBadgeProps {
+  count: number;
+  showIcon?: boolean;
+  className?: string;
+  mini?: boolean;
 }
 
 /**
@@ -22,8 +29,8 @@ export default function RequestCountBadgeComponent({
   showIcon = true,
   className = "",
   mini = false,
-}: unknown) {
-  const prevRef = useRef<unknown>(null);
+}: RequestCountBadgeProps) {
+  const prevRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const [displayCount, setDisplayCount] = useState(count);
 
@@ -34,14 +41,15 @@ export default function RequestCountBadgeComponent({
     // First mount or same value — nothing to animate
     if (from === null || from === count) return;
 
-    const delta = count - from;
+    const fromVal = from;
+    const delta = count - fromVal;
     const start = performance.now();
 
-    function tick(now: unknown) {
+    function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / TWEEN_MS, 1);
       const eased = easeOutCubic(progress);
-      setDisplayCount(Math.round(from + delta * eased));
+      setDisplayCount(Math.round(fromVal + delta * eased));
 
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
