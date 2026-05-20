@@ -10,16 +10,6 @@ import {
 import { usePathname } from "next/navigation";
 import { LS_DATE_RANGE } from "../constants";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-} from "react";
-import { usePathname } from "next/navigation";
-import { LS_DATE_RANGE } from "../constants";
-
 export interface DateRange {
   from: string;
   to: string;
