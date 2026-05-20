@@ -653,7 +653,7 @@ export default function BenchmarkDetailPageComponent({
     const configMap = new Map();
     for (const m of allModels) configMap.set(`${m.provider}:${m.name}`, m);
     return selectedInstances.map((inst) => {
-      const config = configMap.get(`${instanceData.provider}:${instanceData.name}`) || {};
+      const config = configMap.get(`${inst.provider}:${inst.name}`) || {};
       return { ...config, ...inst };
     });
   }, [allModels, selectedInstances]);
@@ -918,7 +918,7 @@ export default function BenchmarkDetailPageComponent({
               provider: result.provider,
               modelName: result.model,
             };
-            nextAgents.push(inst);
+            nextAgents.push(instanceData);
             if (result.thinkingEnabled)
               (nextThinking as Record<string, unknown>)[instanceData.instanceId] = true;
           } else {
@@ -928,7 +928,7 @@ export default function BenchmarkDetailPageComponent({
               provider: result.provider,
               name: result.model,
             };
-            nextInstances.push(inst);
+            nextInstances.push(instanceData);
             if (result.thinkingEnabled)
               (nextThinking as Record<string, unknown>)[instanceData.instanceId] = true;
             if (result.toolsEnabled) (nextTools as Record<string, unknown>)[instanceData.instanceId] = true;

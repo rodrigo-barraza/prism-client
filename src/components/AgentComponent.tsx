@@ -1267,7 +1267,7 @@ export default function AgentComponent({
           const characterCount = container.textContent
             ? container.textContent[range.startOffset - 1]
             : "";
-          if (ch && characterCount !== " " && characterCount !== "\n") {
+          if (characterCount && characterCount !== " " && characterCount !== "\n") {
             range.insertNode(document.createTextNode(" "));
             range.collapse(false);
           }
@@ -1311,7 +1311,7 @@ export default function AgentComponent({
           const characterCount = container.textContent
             ? container.textContent[range.startOffset - 1]
             : "";
-          if (ch && characterCount !== " " && characterCount !== "\n") {
+          if (characterCount && characterCount !== " " && characterCount !== "\n") {
             range.insertNode(document.createTextNode(" "));
             range.collapse(false);
           }

@@ -105,9 +105,9 @@ export default function ThreeCanvasComponent({
 
     // Fire the setup callback — pass THREE so consumers don't import it
     const instance = ThreeService.getInstance(id);
-    if (inst && onSetup) {
+    if (instance && onSetup) {
       const cleanup = onSetup({
-        ...inst,
+        ...instance,
         THREE: ThreeService.THREE,
       });
       if (typeof cleanup === "function") {

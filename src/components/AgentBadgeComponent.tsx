@@ -126,7 +126,7 @@ function CoinStatic({ agent, size }: unknown) {
       const imageElement = (iconRef.current as HTMLElement).querySelector("img");
       if (imageElement) {
         const drawImg = () => {
-          context.drawImage(img, off, off, iconSz, iconSz);
+          context.drawImage(imageElement, off, off, iconSz, iconSz);
           if (texRef.current) (texRef.current as {needsUpdate: boolean}).needsUpdate = true;
         };
         if (imageElement.complete && imageElement.naturalWidth > 0) {
