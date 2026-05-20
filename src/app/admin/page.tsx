@@ -82,8 +82,8 @@ export default function DashboardPage() {
 
   const loadDashboard = useCallback(async () => {
     try {
-      const filterParams = { ...dateParams };
-      if (projectFilter) (filterParams as unknown).project = projectFilter;
+      const filterParams: Record<string, string> = { ...dateParams };
+      if (projectFilter) filterParams.project = projectFilter;
 
       const [
         statsData,
