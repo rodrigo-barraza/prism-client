@@ -56,19 +56,19 @@ export default function AdminAgentViewerComponent() {
   const { setTitleBadge, setControls } = useAdminHeader();
 
   // -- State ----------------------------------------------------
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<unknown[]>([]);
   const [agentSessionId, setAgentSessionId] = useState(null);
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<unknown[]>([]);
   const [total, setTotal] = useState(0);
   const [page, _setPage] = useState(1);
   const [activeId, setActiveId] = useState(null);
   const [config, setConfig] = useState(null);
   const [title, setTitle] = useState("");
   const [leftTab, setLeftTab] = useState("settings");
-  const [customTools, setCustomTools] = useState<any[]>([]);
-  const [builtInTools, setBuiltInTools] = useState<any[]>([]);
-  const [skills, setSkills] = useState<any[]>([]);
-  const [mcpServers, setMcpServers] = useState<any[]>([]);
+  const [customTools, setCustomTools] = useState<unknown[]>([]);
+  const [builtInTools, setBuiltInTools] = useState<unknown[]>([]);
+  const [skills, setSkills] = useState<unknown[]>([]);
+  const [mcpServers, setMcpServers] = useState<unknown[]>([]);
   const [memoriesRefreshKey] = useState(0);
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
@@ -85,12 +85,12 @@ export default function AdminAgentViewerComponent() {
     functionCallingEnabled: true,
   });
 
-  const endRef = useRef<any>(null);
+  const endRef = useRef<unknown>(null);
 
   // -- Effects --------------------------------------------------
 
   useEffect(() => {
-    (endRef.current as any)?.scrollIntoView({ behavior: "smooth" });
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   // Set admin header badge
@@ -107,8 +107,8 @@ export default function AdminAgentViewerComponent() {
   // Fetch Prism config (for model info panels, provider logos, etc.)
   useEffect(() => {
     PrismService.getConfigWithLocalModels({
-      onConfig: (config: any) => setConfig(config),
-      onLocalMerge: (merged: any) => setConfig(merged),
+      onConfig: (config: PrismConfig) => setConfig(config),
+      onLocalMerge: (merged: PrismConfig) => setConfig(merged),
     }).catch(console.error);
   }, []);
 
@@ -124,7 +124,7 @@ export default function AdminAgentViewerComponent() {
       });
       setSessions(data.data || []);
       setTotal(data.total || 0);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load admin agent sessions:", error);
     } finally {
       setLoading(false);
@@ -138,60 +138,60 @@ export default function AdminAgentViewerComponent() {
   // Load custom tools (read-only display)
   useEffect(() => {
     PrismService.getCustomTools(PROJECT_AGENT)
-      .then((tools: any) => setCustomTools(tools))
+      .then((tools: unknown) => setCustomTools(tools))
       .catch(() => {});
   }, []);
 
   // Load skills (read-only display)
   useEffect(() => {
     PrismService.getSkills(PROJECT_AGENT)
-      .then((s: any) => setSkills(s))
+      .then((s) => setSkills(s))
       .catch(() => {});
   }, []);
 
   // Load MCP servers (read-only display)
   useEffect(() => {
     PrismService.getMCPServers(PROJECT_AGENT)
-      .then((s: any) => setMcpServers(s))
+      .then((s) => setMcpServers(s))
       .catch(() => {});
   }, []);
 
   // Load built-in tools
   useEffect(() => {
     PrismService.getBuiltInToolSchemas("CODING")
-      .then((tools: any) => setBuiltInTools(tools))
+      .then((tools: unknown) => setBuiltInTools(tools))
       .catch(() => {});
   }, []);
 
   // Fetch memory count
   useEffect(() => {
-    PrismService.getAgentMemories(PROJECT_AGENT, 1, 0 as any)
-      .then((r: any) => setTotalMemoriesCount(r.total || 0))
+    PrismService.getAgentMemories(PROJECT_AGENT, 1, 0)
+      .then((r) => setTotalMemoriesCount(r.total || 0))
       .catch(() => {});
   }, []);
 
   // -- Filtered config: only function-calling models ------------
   const filteredConfig = useMemo(() => {
     if (!config) return null;
-    const textModelsMap = (config as any).textToText?.models || {};
+    const textModelsMap = (config as Record<string, unknown>).textToText?.models || {};
     const filteredTextModels = {};
 
-    for (const [provider, models] of Object.entries<any>(textModelsMap)) {
-      const fcModels = models.filter((m: any) =>
+    for (const [provider, models] of Object.entries(textModelsMap)) {
+      const fcModels = models.filter((m) =>
         m.tools?.includes("Tool Calling"),
       );
-      if (fcModels.length > 0) (filteredTextModels as any)[provider] = fcModels;
+      if (fcModels.length > 0) (filteredTextModels as Record<string, unknown>)[provider] = fcModels;
     }
 
-    const filteredProviderList = ((config as any).providerList || []).filter(
-      (p: any) => (filteredTextModels as any)[p],
+    const filteredProviderList = ((config as Record<string, unknown>).providerList || []).filter(
+      (p) => (filteredTextModels as Record<string, unknown>)[p],
     );
 
     return {
-      ...(config as any),
+      ...config,
       providerList: filteredProviderList,
       textToText: {
-        ...(((config as any).textToText as any) || {}),
+        ...(((config as Record<string, unknown>).textToText as Record<string, unknown>) || {}),
         models: filteredTextModels,
       },
       textToImage: { models: {} },
@@ -213,18 +213,18 @@ export default function AdminAgentViewerComponent() {
   } = useSessionStats(messages);
 
   // Fetch backend stats when session changes
-  const fetchSessionStats = useCallback((sessionId: any) => {
+  const fetchSessionStats = useCallback((sessionId: unknown) => {
     if (!sessionId) return;
     IrisService.getSessionStats(sessionId)
-      .then((stats: any) => setBackendSessionStats(stats))
+      .then((stats) => setBackendSessionStats(stats))
       .catch(() => {});
   }, []);
 
   // -- Session selection ----------------------------------------
   const handleSelectSession = useCallback(
-    async (conversation: any) => {
+    async (conversation: unknown) => {
       try {
-        const full: any = await IrisService.getAgentSession(conversation.id);
+        const full: unknown = await IrisService.getAgentSession(conversation.id);
         const displayMessages = prepareDisplayMessages(full.messages || []);
         setMessages(displayMessages);
         setAgentSessionId(conversation.id);
@@ -234,10 +234,10 @@ export default function AdminAgentViewerComponent() {
         // Restore settings from the last assistant message
         const lastAssistant = [...(full.messages || [])]
           .reverse()
-          .find((m: any) => m.role === "assistant" && m.provider);
+          .find((m) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
           const gs = lastAssistant.generationSettings || {};
-          setSettings((prev: any) => ({
+          setSettings((prev) => ({
             ...prev,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
             ...(lastAssistant.model && { model: lastAssistant.model }),
@@ -258,16 +258,16 @@ export default function AdminAgentViewerComponent() {
 
         // Fetch tasks count for this session
         ToolsApiService.getAllAgenticTasks({ agentSessionId: conversation.id })
-          .then((r: any) =>
+          .then((r) =>
             setTasksCount(r.summary?.total || (r.tasks || []).length),
           )
           .catch(() => {});
 
         // Fetch workers count
         PrismService.getCoordinatorWorkers(conversation.id)
-          .then((r: any) => setWorkersCount((r.workers || []).length))
+          .then((r) => setWorkersCount((r.workers || []).length))
           .catch(() => {});
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to load agent session:", error);
       }
     },
@@ -278,7 +278,7 @@ export default function AdminAgentViewerComponent() {
   const allToolCount = builtInTools.length + customTools.length;
 
   // -- Badge helper ---------------------------------------------
-  const badgeProps = (count: any) => ({
+  const badgeProps = (count: unknown) => ({
     badge: count,
     badgeDisabled: count === 0,
   });
@@ -303,7 +303,7 @@ export default function AdminAgentViewerComponent() {
           {
             key: "skills",
             icon: <BookOpen size={14} />,
-            ...badgeProps(skills.filter((s: any) => s.enabled).length),
+            ...badgeProps(skills.filter((s) => s.enabled).length),
             tooltip: "Skills",
           },
           {
@@ -321,7 +321,7 @@ export default function AdminAgentViewerComponent() {
           {
             key: "mcp",
             icon: <Plug size={14} />,
-            ...badgeProps(mcpServers.filter((s: any) => s.connected).length),
+            ...badgeProps(mcpServers.filter((s) => s.connected).length),
             tooltip: "MCP Servers",
           },
           {
@@ -354,28 +354,28 @@ export default function AdminAgentViewerComponent() {
                   messageCount: messages.length,
                   deletedCount: 0,
                   requestCount:
-                    (backendSessionStats as any)?.requestCount || requestCount,
+                    (backendSessionStats as unknown)?.requestCount || requestCount,
                   uniqueModels:
-                    ((backendSessionStats as any)?.models?.length || 0) >
+                    ((backendSessionStats as unknown)?.models?.length || 0) >
                     uniqueModels.length
-                      ? (backendSessionStats as any).models
+                      ? (backendSessionStats as unknown).models
                       : uniqueModels,
                   uniqueProviders,
                   totalTokens: backendSessionStats
                     ? {
-                        input: (backendSessionStats as any).totalInputTokens,
-                        output: (backendSessionStats as any).totalOutputTokens,
-                        total: (backendSessionStats as any).totalTokens,
+                        input: (backendSessionStats as unknown).totalInputTokens,
+                        output: (backendSessionStats as unknown).totalOutputTokens,
+                        total: (backendSessionStats as unknown).totalTokens,
                       }
                     : totalTokens,
                   totalCost:
-                    (backendSessionStats as any)?.totalCost ?? totalCost,
+                    (backendSessionStats as unknown)?.totalCost ?? totalCost,
                   originalTotalCost: 0,
                   usedTools,
                   modalities:
-                    (backendSessionStats as any)?.modalities || modalities,
+                    (backendSessionStats as unknown)?.modalities || modalities,
                   completedElapsedTime:
-                    (backendSessionStats as any)?.totalElapsedTime ||
+                    (backendSessionStats as unknown)?.totalElapsedTime ||
                     completedElapsedTime,
                 }
               : null
@@ -470,7 +470,7 @@ export default function AdminAgentViewerComponent() {
 
         <MessageList
           messages={messages.filter(
-            (m: any) => m.role === "user" || m.role === "assistant",
+            (m) => m.role === "user" || m.role === "assistant",
           )}
           isGenerating={false}
           streamingOutputs={new Map()}
@@ -496,7 +496,7 @@ export default function AdminAgentViewerComponent() {
       <header className={styles.viewerHeader}>
         <button
           className={`${styles.panelToggle} ${!showLeft ? styles.panelToggleHidden : ""}`}
-          onClick={() => setShowLeft((v: any) => !v)}
+          onClick={() => setShowLeft((v) => !v)}
           title={showLeft ? "Hide settings" : "Show settings"}
         >
           {showLeft ? <PanelLeftClose size={15} /> : <PanelLeft size={15} />}
@@ -517,7 +517,7 @@ export default function AdminAgentViewerComponent() {
 
         <button
           className={`${styles.panelToggle} ${!showRight ? styles.panelToggleHidden : ""}`}
-          onClick={() => setShowRight((v: any) => !v)}
+          onClick={() => setShowRight((v) => !v)}
           title={showRight ? "Hide sessions" : "Show sessions"}
         >
           {showRight ? <PanelRightClose size={15} /> : <PanelRight size={15} />}

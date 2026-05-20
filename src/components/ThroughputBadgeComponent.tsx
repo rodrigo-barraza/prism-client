@@ -17,7 +17,7 @@ export default function ThroughputBadgeComponent({
   avgTokPerSec,
   isActivelyGenerating,
   turnActive,
-}: any) {
+}: unknown) {
   // Live tok/s takes priority over static average
   if (liveTokPerSec !== null) {
     const variant =

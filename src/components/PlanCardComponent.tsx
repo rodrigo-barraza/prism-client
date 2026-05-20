@@ -17,7 +17,7 @@ export default function PlanCardComponent({
   onApprove,
   onReject,
   status = "pending", // "pending" | "approved" | "rejected" | "executing"
-}: any) {
+}: unknown) {
   const [expanded, setExpanded] = useState(true);
 
   const statusLabel = useMemo(() => {
@@ -49,7 +49,7 @@ export default function PlanCardComponent({
     <div className={`${styles.card} ${styles[status] || ""}`}>
       <button
         className={styles.header}
-        onClick={() => setExpanded((v: any) => !v)}
+        onClick={() => setExpanded((v) => !v)}
         type="button"
       >
         <div className={styles.headerLeft}>
@@ -97,7 +97,7 @@ export default function PlanCardComponent({
 
           {steps.length > 0 && status === "executing" && (
             <div className={styles.stepsProgress}>
-              {steps.map((step: any, i: any) => {
+              {steps.map((step, i) => {
                 const isDone = completedSteps.includes(i);
                 return (
                   <div

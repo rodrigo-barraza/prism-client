@@ -34,7 +34,7 @@ const MAX_GLOW_OPACITY = 0.9; // Maximum glow drop-shadow opacity
  * Render a single pre-decoded ImageBitmap frame onto the canvas.
  * GPU-composited — no pixel data manipulation at draw time.
  */
-function renderFrame(canvas: any, frames: any, bitmaps: any, index: any) {
+function renderFrame(canvas: HTMLCanvasElement, frames: Array<{dims: {width: number; height: number; left: number; top: number}; disposalType: number}>, bitmaps: ImageBitmap[], index: number) {
   if (!canvas || !bitmaps?.length) return;
 
   const context = canvas.getContext("2d");
@@ -52,14 +52,14 @@ function renderFrame(canvas: any, frames: any, bitmaps: any, index: any) {
 export default function SpinningCatComponent({
   animate = false,
   className = "",
-}: any) {
-  const canvasRef = useRef<any>(null);
-  const framesRef = useRef<any>(null); // Raw frame metadata (dims, delay, disposalType)
-  const bitmapsRef = useRef<any>(null); // Pre-decoded ImageBitmap textures
-  const rafRef = useRef<any>(null);
+}: unknown) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const framesRef = useRef<HTMLCanvasElement | null>(null); // Raw frame metadata (dims, delay, disposalType)
+  const bitmapsRef = useRef<HTMLCanvasElement | null>(null); // Pre-decoded ImageBitmap textures
+  const rafRef = useRef<number | null>(null);
   // visuallyActive stays true during the wind-down deceleration
   const [visuallyActive, setVisuallyActive] = useState(false);
-  const stateRef = useRef<any>({
+  const stateRef = useRef<{frameIndex: number; timer: ReturnType<typeof setTimeout> | null; running: boolean}>({
     frameIndex: 0,
     elapsed: 0,
     accelTime: 0,
@@ -67,7 +67,7 @@ export default function SpinningCatComponent({
     lastTimestamp: 0,
     windingDown: false,
   });
-  const animateRef = useRef<any>(animate);
+  const animateRef = useRef<(() => void)>(animate);
 
   useEffect(() => {
     animateRef.current = animate;
@@ -97,7 +97,7 @@ export default function SpinningCatComponent({
 
         // Pre-decode every frame into a GPU-ready ImageBitmap
         const bitmaps = await Promise.all(
-          frames.map((frame: any) => {
+          frames.map((frame) => {
             const imageData = new ImageData(
               new Uint8ClampedArray(frame.patch),
               frame.dims.width,
@@ -107,7 +107,7 @@ export default function SpinningCatComponent({
           }),
         );
         if (cancelled) {
-          bitmaps.forEach((b: any) => b.close());
+          bitmaps.forEach((b) => b.close());
           return;
         }
 
@@ -116,11 +116,11 @@ export default function SpinningCatComponent({
 
         const canvas = canvasRef.current;
         if (canvas && frames.length > 0) {
-          (canvas as any).width = frames[0].dims.width;
-          (canvas as any).height = frames[0].dims.height;
+          (canvas as HTMLCanvasElement).width = frames[0].dims.width;
+          (canvas as HTMLCanvasElement).height = frames[0].dims.height;
           renderFrame(canvas, frames, bitmaps, 0);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("SpinningCatComponent: failed to decode GIF", error);
       }
     })();
@@ -128,19 +128,19 @@ export default function SpinningCatComponent({
     return () => {
       cancelled = true;
       // Release ImageBitmap GPU resources on unmount
-      (bitmapsRef.current as any)?.forEach((b: any) => b.close());
+      (bitmapsRef.current as ImageBitmap[]).forEach((b) => b.close());
       bitmapsRef.current = null;
     };
   }, []);
 
   // -- Main animation loop (always running, speed-controlled) ---
-  const tickRef = useRef<any>(null);
+  const tickRef = useRef<unknown>(null);
 
   useEffect(() => {
-    const loop = (now: any) => {
+    const loop = (now: unknown) => {
       const frames = framesRef.current;
       const bitmaps = bitmapsRef.current;
-      if (!(frames as any)?.length || !(bitmaps as any)?.length) {
+      if (!(frames as unknown[]).length || !(bitmaps as unknown[]).length) {
         rafRef.current = requestAnimationFrame(loop);
         return;
       }
@@ -164,7 +164,7 @@ export default function SpinningCatComponent({
         s.windingDown = false;
         setVisuallyActive(false);
         // Reset inline FX styles
-        const wrapper = (canvasRef.current as any)?.parentElement;
+        const wrapper = (canvasRef.current as HTMLCanvasElement).parentElement;
         if (wrapper) {
           wrapper.style.transform = "translate(-50%, -50%)";
           wrapper.style.filter = "";
@@ -172,24 +172,24 @@ export default function SpinningCatComponent({
       }
 
       const frame = frames[s.frameIndex];
-      const baseDelay = (frame as any)?.delay || 100;
+      const baseDelay = (frame as Record<string, unknown>).delay || 100;
       const effectiveDelay = baseDelay / s.speedMultiplier;
 
       s.elapsed += dt;
 
       if (s.elapsed >= effectiveDelay) {
         s.elapsed = 0;
-        s.frameIndex = (s.frameIndex + 1) % (frames as any).length;
+        s.frameIndex = (s.frameIndex + 1) % (frames as unknown[]).length;
 
         if (s.frameIndex === 0) {
           const canvas = canvasRef.current;
           if (canvas) {
-            const context = (canvas as any).getContext("2d");
+            const context = (canvas as HTMLCanvasElement).getContext("2d");
             context.clearRect(
               0,
               0,
-              (canvas as any).width,
-              (canvas as any).height,
+              (canvas as HTMLCanvasElement).width,
+              (canvas as HTMLCanvasElement).height,
             );
           }
         }
@@ -212,7 +212,7 @@ export default function SpinningCatComponent({
         const glowRadius = intensity * MAX_GLOW_RADIUS;
         const glowOpacity = intensity * MAX_GLOW_OPACITY;
 
-        const wrapper = (canvasRef.current as any)?.parentElement;
+        const wrapper = (canvasRef.current as HTMLCanvasElement).parentElement;
         if (wrapper) {
           wrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
           wrapper.style.filter = `brightness(${brightness}) drop-shadow(0 0 ${glowRadius}px rgba(255,255,255,${glowOpacity}))`;

@@ -36,19 +36,19 @@ export default function ConversationsTableComponent({
   maxHeight,
   title,
   traceId = null,
-}: any) {
+}: unknown) {
   const router = useRouter();
 
   const totalCost = useMemo(
     () =>
-      conversations.reduce((sum: any, c: any) => sum + (c.totalCost || 0), 0) ||
+      conversations.reduce((sum, c) => sum + (c.totalCost || 0), 0) ||
       1,
     [conversations],
   );
 
   const totalDuration = useMemo(
     () =>
-      conversations.reduce((sum: any, c: any) => sum + getDurationMs(c), 0) ||
+      conversations.reduce((sum, c) => sum + getDurationMs(c), 0) ||
       1,
     [conversations],
   );
@@ -84,8 +84,8 @@ export default function ConversationsTableComponent({
       sortKey={sortKey}
       sortDir={sortDir}
       onSort={onSort}
-      getRowKey={(c: any, i: any) => c.id || c._id || `conv-${i}`}
-      onRowClick={(c: any) => {
+      getRowKey={(c, i) => c.id || c._id || `conv-${i}`}
+      onRowClick={(c) => {
         const traceQs = traceId ? `?trace=${traceId}` : "";
         router.push(`/admin/conversations/${c.id}${traceQs}`);
       }}

@@ -18,7 +18,7 @@ export default function PromptSectionComponent({
   placeholder,
   rows = 2,
   className,
-}: any) {
+}: unknown) {
   return (
     <div className={`${styles.section} ${className || ""}`}>
       <div className={styles.header}>
@@ -29,7 +29,7 @@ export default function PromptSectionComponent({
       <TextAreaComponent
         className={styles.textarea}
         value={value}
-        onChange={(e: any) => onChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(e.target.value)}
         placeholder={placeholder}
         minRows={rows}
         maxRows={8}

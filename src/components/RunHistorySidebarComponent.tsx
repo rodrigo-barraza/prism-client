@@ -72,7 +72,7 @@ export default function RunHistorySidebarComponent({
   allModels = [],
   // Config for ModelPickerPopoverComponent inside AgentCardComponent
   config,
-}: any) {
+}: unknown) {
   const [activeTab, setActiveTab] = useState("general");
 
   // Normalize assertions: fall back to single expectedValue/matchMode for older benchmarks
@@ -130,7 +130,7 @@ export default function RunHistorySidebarComponent({
                 Assertions
               </div>
               <div className={styles.assertionsList}>
-                {assertions.map((a: any, i: any) => (
+                {assertions.map((a, i) => (
                   <div key={i} className={styles.assertionRow}>
                     {i > 0 && (
                       <BadgeComponent
@@ -178,12 +178,12 @@ export default function RunHistorySidebarComponent({
             {/* Selected model cards */}
             {selectedModels.length > 0 ? (
               <div className={styles.modelCards}>
-                {selectedModels.map((m: any) => {
+                {selectedModels.map((m) => {
                   const isThinking = !!thinkingMap[m.instanceId];
                   const isTools = !!toolsMap[m.instanceId];
                   const supportsThinking = !!m.thinking;
                   const dupeCount = selectedModels.filter(
-                    (s: any) => s.provider === m.provider && s.name === m.name,
+                    (s) => s.provider === m.provider && s.name === m.name,
                   ).length;
                   return (
                     <ModelCardComponent
@@ -213,10 +213,10 @@ export default function RunHistorySidebarComponent({
               <>
                 {agentInstances.length > 0 && (
                   <div className={styles.modelCards}>
-                    {agentInstances.map((a: any) => {
+                    {agentInstances.map((a) => {
                       const isThinking = !!thinkingMap[a.instanceId];
                       const currentModelDef = allModels.find(
-                        (m: any) =>
+                        (m) =>
                           m.provider === a.provider && m.name === a.modelName,
                       );
                       const supportsThinking =
@@ -273,12 +273,12 @@ export default function RunHistorySidebarComponent({
                 No runs yet
               </div>
             ) : (
-              runHistory.map((run: any, index: any) => {
+              runHistory.map((run, index) => {
                 const isActive = activeRunId === run.id;
                 const totalCost =
                   run.summary.totalCost ??
                   run.models?.reduce(
-                    (s: any, r: any) => s + (r.estimatedCost || 0),
+                    (s: unknown, r: unknown) => s + (r.estimatedCost || 0),
                     0,
                   ) ??
                   0;

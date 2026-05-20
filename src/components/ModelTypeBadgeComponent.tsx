@@ -22,12 +22,12 @@ export default function ModelTypeBadgeComponent({
   modelType,
   className = "",
   mini = false,
-}: any) {
+}: unknown) {
   if (!modelType) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
 
-  const meta = (MODEL_TYPE_META as any)[modelType] || {
+  const meta = (MODEL_TYPE_META as Record<string, unknown>)[modelType] || {
     icon: MessageSquare,
     label: modelType,
   };

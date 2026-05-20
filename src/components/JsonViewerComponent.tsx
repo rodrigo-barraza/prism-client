@@ -22,7 +22,7 @@ export default function JsonViewerComponent({
   collapsed = Infinity,
   maxHeight,
   className,
-}: any) {
+}: unknown) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -62,7 +62,7 @@ function JsonNode({
   depth,
   defaultCollapsed,
   isLast = true,
-}: any) {
+}: unknown) {
   const type = getType(value);
   const isExpandable = type === "object" || type === "array";
   const [expanded, setExpanded] = useState(depth < defaultCollapsed);
@@ -70,7 +70,7 @@ function JsonNode({
   if (isExpandable) {
     const entries =
       type === "array"
-        ? value.map((v: any, i: any) => [i, v])
+        ? value.map((v, i) => [i, v])
         : Object.entries(value);
     const bracket = type === "array" ? ["[", "]"] : ["{", "}"];
     const isEmpty = entries.length === 0;
@@ -79,7 +79,7 @@ function JsonNode({
       <div className={styles.node}>
         <div
           className={styles.row}
-          onClick={() => !isEmpty && setExpanded((e: any) => !e)}
+          onClick={() => !isEmpty && setExpanded((e: React.SyntheticEvent) => !e)}
           style={{ cursor: isEmpty ? "default" : "pointer" }}
         >
           {!isEmpty && (
@@ -115,7 +115,7 @@ function JsonNode({
         {expanded && (
           <>
             <div className={styles.children}>
-              {entries.map(([k, v]: any, i: any) => (
+              {entries.map(([k, v]: unknown, i: unknown) => (
                 <JsonNode
                   key={k}
                   keyName={type === "array" ? undefined : k}
@@ -154,13 +154,13 @@ function JsonNode({
   );
 }
 
-function getType(value: any) {
+function getType(value) {
   if (value === null || value === undefined) return "null";
   if (Array.isArray(value)) return "array";
   return typeof value; // "string", "number", "boolean", "object"
 }
 
-function formatValue(value: any, type: any) {
+function formatValue(value: unknown, type: unknown) {
   if (type === "string") return JSON.stringify(value);
   if (type === "null") return "null";
   if (type === "boolean") return value ? "true" : "false";

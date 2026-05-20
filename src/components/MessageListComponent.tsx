@@ -60,9 +60,9 @@ import MentionBadge from "./MentionBadgeComponent";
  * <task-notification> XML. Detect by content so it works for
  * both live messages and already-persisted history.            */
 
-function parseTaskNotification(content: any) {
+function parseTaskNotification(content: unknown) {
   if (!content || !content.includes("<task-notification>")) return null;
-  const tag = (name: any) => {
+  const tag = (name) => {
     const re = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
     const m = content.match(re);
     return m ? m[1].trim() : null;
@@ -84,15 +84,15 @@ function parseTaskNotification(content: any) {
  * for display in the message list.                             */
 
 function renderContentWithMentions(
-  text: any,
-  knownPaths: any,
-  onMentionFileOpen: any,
+  text: unknown,
+  knownPaths: unknown,
+  onMentionFileOpen: unknown,
 ) {
   const segments = parseMentionTokens(text);
   // Fast path: no mentions found, return plain string
   if (segments.length === 1 && segments[0].type === "text") return text;
 
-  return segments.map((seg: any, i: any) => {
+  return segments.map((seg, i) => {
     if (seg.type === "text") return seg.value;
     // Strip the #Lstart-Lend suffix from the value to get a clean path
     const cleanPath = seg.value.replace(/#L\d+(-L\d+)?$/, "");
@@ -109,7 +109,7 @@ function renderContentWithMentions(
   });
 }
 
-function getMimeCategory(ref: any) {
+function getMimeCategory(ref: unknown) {
   if (!ref) return "file";
   if (ref.startsWith("minio://")) {
     const ext = ref.split(".").pop()?.toLowerCase();
@@ -147,12 +147,12 @@ function getMimeCategory(ref: any) {
 
 /* -- Sub-components -------------------------------------------- */
 
-function ThinkingBlock({ thinking, isStreaming, children }: any) {
+function ThinkingBlock({ thinking, isStreaming, children }: unknown) {
   // User can manually toggle after streaming has finished
   const [manualOpen, setManualOpen] = useState(false);
   // User can temporarily close during streaming
   const [streamClosed, setStreamClosed] = useState(false);
-  const contentRef = useRef<any>(null);
+  const contentRef = useRef<unknown>(null);
 
   // Derive collapsed state:
   // - Streaming: expanded unless user explicitly closed it
@@ -164,8 +164,8 @@ function ThinkingBlock({ thinking, isStreaming, children }: any) {
     if (isStreaming && !streamClosed && contentRef.current) {
       const element = contentRef.current;
       requestAnimationFrame(() => {
-        (element as any).scrollTo({
-          top: (element as any).scrollHeight,
+        (element as HTMLElement).scrollTo({
+          top: (element as HTMLElement).scrollHeight,
           behavior: "smooth",
         });
       });
@@ -174,9 +174,9 @@ function ThinkingBlock({ thinking, isStreaming, children }: any) {
 
   const handleToggle = () => {
     if (isStreaming) {
-      setStreamClosed((v: any) => !v);
+      setStreamClosed((v) => !v);
     } else {
-      setManualOpen((v: any) => !v);
+      setManualOpen((v) => !v);
     }
   };
 
@@ -205,13 +205,13 @@ function ToolCallsBlock({
   toolCalls,
   streamingOutputs,
   workerToolActivity,
-}: any) {
+}: unknown) {
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   if (!toolCalls || toolCalls.length === 0) return null;
 
-  const hasActiveCalls = toolCalls.some((tc: any) => tc.status === "calling");
+  const hasActiveCalls = toolCalls.some((tc) => tc.status === "calling");
   const doneCount = toolCalls.filter(
-    (tc: any) => tc.status === "done" || tc.status === "error",
+    (tc: unknown) => tc.status === "done" || tc.status === "error",
   ).length;
 
   // Build header text with active tense awareness
@@ -239,7 +239,7 @@ function ToolCallsBlock({
       {/* -- Header toggle -- */}
       <button
         className={styles.toolCallsToggle}
-        onClick={() => setHeaderCollapsed((c: any) => !c)}
+        onClick={() => setHeaderCollapsed((c) => !c)}
       >
         <Zap size={13} />
         <span>{headerText}</span>
@@ -253,7 +253,7 @@ function ToolCallsBlock({
       {/* -- Always-visible tool cards -- */}
       {!headerCollapsed && (
         <div className={styles.toolCallsContent}>
-          {toolCalls.map((tc: any, j: any) => {
+          {toolCalls.map((tc, j) => {
             const name =
               tc.name === "googleSearch"
                 ? "Google Search"
@@ -310,8 +310,8 @@ function ToolCallsBlock({
                         for (const [name, count] of Object.entries(
                           activity.toolNames,
                         )) {
-                          (allToolNames as any)[name] =
-                            ((allToolNames as any)[name] || 0) + count;
+                          (allToolNames as Record<string, unknown>)[name] =
+                            ((allToolNames as Record<string, unknown>)[name] || 0) + count;
                         }
                         if (activity.currentTool)
                           activeTool = activity.currentTool;
@@ -326,19 +326,19 @@ function ToolCallsBlock({
                     ) {
                       for (const argMember of tc.args.members) {
                         const match = Object.values(workerToolActivity).find(
-                          (v: any) =>
+                          (v) =>
                             v.description &&
                             v.description.includes(argMember.description),
                         );
-                        if ((match as any)?.toolNames) {
+                        if ((match as unknown)?.toolNames) {
                           for (const [name, count] of Object.entries(
-                            (match as any).toolNames,
+                            (match as unknown).toolNames,
                           )) {
-                            (allToolNames as any)[name] =
-                              ((allToolNames as any)[name] || 0) + count;
+                            (allToolNames as Record<string, unknown>)[name] =
+                              ((allToolNames as Record<string, unknown>)[name] || 0) + count;
                           }
-                          if ((match as any).currentTool)
-                            activeTool = (match as any).currentTool;
+                          if ((match as unknown).currentTool)
+                            activeTool = (match as unknown).currentTool;
                         }
                       }
                     }
@@ -351,7 +351,7 @@ function ToolCallsBlock({
                       );
                     // Static badge from completed result
                     const totalToolUses = members.reduce(
-                      (sum: any, m: any) => sum + (m.toolUses || 0),
+                      (sum, m) => sum + (m.toolUses || 0),
                       0,
                     );
                     if (totalToolUses > 0)
@@ -385,7 +385,7 @@ function ToolCallsBlock({
  * so they render in-place as ghostly apparitions.
  * Use this in both /chat and /admin/conversations for consistency.
  */
-export function prepareDisplayMessages(rawMessages: any) {
+export function prepareDisplayMessages(rawMessages: unknown) {
   if (!rawMessages || rawMessages.length === 0) return [];
 
   // First pass: collect tool results keyed by tool_call_id
@@ -394,14 +394,14 @@ export function prepareDisplayMessages(rawMessages: any) {
   for (const m of rawMessages) {
     if (m.role === "tool") {
       const id = m.tool_call_id || m.toolCallId;
-      if (id) (toolResults as any)[id] = m.content;
+      if (id) (toolResults as Record<string, unknown>)[id] = m.content;
     }
   }
 
   // Second pass: filter and enrich
   const filtered = rawMessages
     .filter(
-      (m: any) =>
+      (m) =>
         m.role !== "tool" &&
         m.role !== "system" &&
         !(
@@ -413,15 +413,15 @@ export function prepareDisplayMessages(rawMessages: any) {
           !m.error
         ),
     )
-    .map((m: any) => {
+    .map((m) => {
       // Merge tool results into toolCalls
       if (m.toolCalls?.length > 0 && Object.keys(toolResults).length > 0) {
-        const enrichedCalls = m.toolCalls.map((tc: any) => ({
+        const enrichedCalls = m.toolCalls.map((tc) => ({
           ...tc,
           result:
             tc.result ||
-            (toolResults as any)[tc.id] ||
-            (toolResults as any)[tc.tool_call_id] ||
+            (toolResults as Record<string, unknown>)[tc.id] ||
+            (toolResults as Record<string, unknown>)[tc.tool_call_id] ||
             null,
         }));
         return { ...m, toolCalls: enrichedCalls };
@@ -431,7 +431,7 @@ export function prepareDisplayMessages(rawMessages: any) {
   return filtered;
 }
 
-function MediaPreview({ dataUrl: rawUrl, onClick }: any) {
+function MediaPreview({ dataUrl: rawUrl, onClick }: unknown) {
   const src = PrismService.getFileUrl(rawUrl);
   const cat = getMimeCategory(rawUrl);
 
@@ -515,18 +515,18 @@ function EditableMessage({
   onCancelEdit,
   knownPaths,
   onMentionFileOpen,
-}: any) {
+}: unknown) {
   const [editValue, setEditValue] = useState(content);
-  const textareaRef = useRef<any>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isAssistant = role === "assistant";
 
   // Auto-resize textarea to fit content on open
   useEffect(() => {
     if (editing && textareaRef.current) {
       const element = textareaRef.current;
-      (element as any).style.height = "auto";
-      (element as any).style.height =
-        Math.min((element as any).scrollHeight, 600) + "px";
+      (element as HTMLElement).style.height = "auto";
+      (element as HTMLElement).style.height =
+        Math.min((element as HTMLElement).scrollHeight, 600) + "px";
     }
   }, [editing]);
 
@@ -538,7 +538,7 @@ function EditableMessage({
     if (editValue.trim() && editValue !== content) onEdit(index, editValue);
     onCancelEdit();
   };
-  const handleKey = (e: any) => {
+  const handleKey = (e: KeyboardEvent) => {
     if (e.key === "Escape") cancel();
     // Only user messages submit on plain Enter; assistant messages
     // always use Shift+Enter or the Save button (since content is long)
@@ -562,7 +562,7 @@ function EditableMessage({
           ref={textareaRef}
           autoFocus
           value={editValue}
-          onChange={(e: any) => {
+          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
             setEditValue(e.target.value);
             // Auto-resize as content changes
             const element = e.target;
@@ -678,16 +678,16 @@ export default function MessageList({
   onImageClick,
   onDocClick,
   onMentionFileOpen,
-}: any) {
+}: unknown) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [expandedDeletedSet, setExpandedDeletedSet] = useState(new Set());
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
   // -- Sticky last user message (pinned header) -------------
   const [isUserMsgScrolledPast, setIsUserMsgScrolledPast] = useState(false);
-  const lastUserMsgRef = useRef<any>(null);
-  const lastUserMsgIndexRef = useRef<any>(-1);
-  const scrollingToUserMsgRef = useRef<any>(false);
+  const lastUserMsgRef = useRef<unknown>(null);
+  const lastUserMsgIndexRef = useRef<unknown>(-1);
+  const scrollingToUserMsgRef = useRef<boolean>(false);
 
   // Find the last user message
   const lastUserMsgIndex = useMemo(() => {
@@ -711,7 +711,7 @@ export default function MessageList({
     }
 
     // Find the scroll container — walk up to the nearest overflow-y ancestor
-    let scrollParent = (node as any).parentElement;
+    let scrollParent = (node as unknown).parentElement;
     while (scrollParent) {
       const overflow = getComputedStyle(scrollParent).overflowY;
       if (overflow === "auto" || overflow === "scroll") break;
@@ -720,7 +720,7 @@ export default function MessageList({
     if (!scrollParent) return;
 
     const observer = new IntersectionObserver(
-      ([entry]: any) => {
+      ([entry]: unknown) => {
         // Suppress during programmatic scroll-to to prevent stutter
         if (scrollingToUserMsgRef.current) return;
         // Show sticky when user message is NOT intersecting
@@ -760,7 +760,7 @@ export default function MessageList({
     const node = lastUserMsgRef.current;
     if (!node) return;
     // Walk up to the nearest scrollable ancestor
-    let scrollParent = (node as any).parentElement;
+    let scrollParent = (node as unknown).parentElement;
     while (scrollParent) {
       const overflow = getComputedStyle(scrollParent).overflowY;
       if (overflow === "auto" || overflow === "scroll") break;
@@ -771,7 +771,7 @@ export default function MessageList({
     // Suppress observer during scroll to prevent stutter from layout shifts
     scrollingToUserMsgRef.current = true;
 
-    const nodeRect = (node as any).getBoundingClientRect();
+    const nodeRect = (node as unknown).getBoundingClientRect();
     const parentRect = scrollParent.getBoundingClientRect();
     const offset = nodeRect.top - parentRect.top + scrollParent.scrollTop - 50;
     scrollParent.scrollTo({ top: offset, behavior: "smooth" });
@@ -781,7 +781,7 @@ export default function MessageList({
     setTimeout(() => {
       scrollingToUserMsgRef.current = false;
       // Manually check if element is now visible and dismiss sticky
-      const rect = (node as any).getBoundingClientRect();
+      const rect = (node as unknown).getBoundingClientRect();
       const pRect = scrollParent.getBoundingClientRect();
       if (rect.top >= pRect.top) {
         setIsUserMsgScrolledPast(false);
@@ -789,8 +789,8 @@ export default function MessageList({
     }, 600);
   }, []);
 
-  const toggleDeletedExpanded = (index: any) => {
-    setExpandedDeletedSet((prev: any) => {
+  const toggleDeletedExpanded = (index) => {
+    setExpandedDeletedSet((prev) => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
       else next.add(index);
@@ -889,10 +889,10 @@ export default function MessageList({
       {/* -- Sticky pinned user message -- */}
       <div
         className={styles.stickyUserMsg}
-        onMouseEnter={(e: any) =>
+        onMouseEnter={(e: React.MouseEvent) =>
           stickyUserMsg && SoundService.playHoverButton({ event: e })
         }
-        onClick={(e: any) => {
+        onClick={(e: React.MouseEvent) => {
           if (stickyUserMsg) {
             SoundService.playClickButton({ event: e });
             handleStickyClick();
@@ -955,7 +955,7 @@ export default function MessageList({
         </div>
       )}
       {headerContent}
-      {messages.map((message: any, i: any) => {
+      {messages.map((message, i) => {
         const roleClass =
           message.role === "user"
             ? styles.userNode
@@ -1093,7 +1093,7 @@ export default function MessageList({
                         </span>
                       </button>
                     </div>
-                    {groupIndices.map((gi: any) => {
+                    {groupIndices.map((gi) => {
                       const gMsg = messages[gi];
                       const gRoleClass =
                         gMsg.role === "user"
@@ -1199,7 +1199,7 @@ export default function MessageList({
                                   {gMsg.images && gMsg.images.length > 0 && (
                                     <div className={styles.imagePreviewRow}>
                                       {gMsg.images.map(
-                                        (rawUrl: any, j: any) => (
+                                        (rawUrl: unknown, j: unknown) => (
                                           <MediaPreview
                                             key={j}
                                             dataUrl={rawUrl}
@@ -1371,14 +1371,14 @@ export default function MessageList({
                         (() => {
                           const segs = message.contentSegments;
                           const hasThinking = segs.some(
-                            (s: any) => s.type === "thinking",
+                            (s) => s.type === "thinking",
                           );
                           // Dedup guard: track tool IDs already rendered to prevent
                           // the same tool call from appearing in multiple segments
                           const renderedToolIds = new Set();
 
                           // Helper: render a segment by type
-                          const renderSeg = (seg: any, si: any, opts = {}) => {
+                          const renderSeg = (seg: unknown, si: unknown, opts = {}) => {
                             if (seg.type === "thinking") {
                               const fragment =
                                 message.thinkingFragments?.[
@@ -1398,7 +1398,7 @@ export default function MessageList({
                             ) {
                               const toolIdSet = new Set(seg.toolIds || []);
                               const segmentTools = message.toolCalls.filter(
-                                (tc: any) => {
+                                (tc: unknown) => {
                                   if (!toolIdSet.has(tc.id)) return false;
                                   if (renderedToolIds.has(tc.id)) return false;
                                   renderedToolIds.add(tc.id);
@@ -1420,10 +1420,10 @@ export default function MessageList({
                                 message.textFragments?.[
                                   seg.fragmentIndex
                                 ]?.trim();
-                              const isLastTextSeg = !!(opts as any).isLastText;
+                              const isLastTextSeg = !!(opts as unknown).isLastText;
                               const showCursor =
-                                !(opts as any).insideThinking &&
-                                !(opts as any).suppressCursor;
+                                !(opts as unknown).insideThinking &&
+                                !(opts as unknown).suppressCursor;
                               if (fragmentText) {
                                 return (
                                   <MarkdownContent
@@ -1476,23 +1476,23 @@ export default function MessageList({
                             editingIndex === i
                           ) {
                             const thinkingOnly = segs.filter(
-                              (s: any) => s.type === "thinking",
+                              (s) => s.type === "thinking",
                             );
                             const nonThinking = segs.filter(
-                              (s: any) => s.type !== "thinking",
+                              (s) => s.type !== "thinking",
                             );
                             return (
                               <>
                                 {hasThinking && thinkingOnly.length > 0 && (
                                   <ThinkingBlock isStreaming={false}>
-                                    {thinkingOnly.map((seg: any, si: any) =>
+                                    {thinkingOnly.map((seg, si) =>
                                       renderSeg(seg, si, {
                                         insideThinking: true,
                                       }),
                                     )}
                                   </ThinkingBlock>
                                 )}
-                                {nonThinking.map((seg: any, si: any) =>
+                                {nonThinking.map((seg, si) =>
                                   renderSeg(seg, si),
                                 )}
                                 <EditableMessage
@@ -1516,15 +1516,15 @@ export default function MessageList({
                           // interleaved order — this matches the post-refresh layout.
                           if (hasThinking) {
                             const thinkingOnly = segs.filter(
-                              (s: any) => s.type === "thinking",
+                              (s) => s.type === "thinking",
                             );
                             const visibleSegs = segs
-                              .map((s: any, index: any) => ({
+                              .map((s, index) => ({
                                 seg: s,
                                 origIdx: index,
                               }))
                               .filter(
-                                ({ seg }: any) => seg.type !== "thinking",
+                                ({ seg }: unknown) => seg.type !== "thinking",
                               );
                             // ThinkingBlock is streaming when thinking is the current
                             // activity (last segment is thinking)
@@ -1551,7 +1551,7 @@ export default function MessageList({
                                   <ThinkingBlock
                                     isStreaming={thinkingIsStreaming}
                                   >
-                                    {thinkingOnly.map((seg: any, si: any) =>
+                                    {thinkingOnly.map((seg, si) =>
                                       renderSeg(seg, si, {
                                         insideThinking: true,
                                       }),
@@ -1560,7 +1560,7 @@ export default function MessageList({
                                 )}
                                 {/* Tools and text segments render outside in original order */}
                                 {visibleSegs.map(
-                                  ({ seg, origIdx }: any, vi: any) => {
+                                  ({ seg, origIdx }: unknown, vi: unknown) => {
                                     const isLastText =
                                       vi === lastVisibleTextIdx;
                                     return (
@@ -1588,7 +1588,7 @@ export default function MessageList({
                             }
                             return -1;
                           })();
-                          return segs.map((seg: any, si: any) =>
+                          return segs.map((seg, si) =>
                             renderSeg(seg, si, {
                               isLastText: si === lastTextIdx,
                             }),
@@ -1661,7 +1661,7 @@ export default function MessageList({
                       {/* Images / media */}
                       {message.images && message.images.length > 0 && (
                         <div className={styles.imagePreviewRow}>
-                          {message.images.map((rawUrl: any, j: any) => {
+                          {message.images.map((rawUrl, j) => {
                             const resolvedUrl = PrismService.getFileUrl(rawUrl);
                             const cat = getMimeCategory(rawUrl);
                             let clickHandler;
@@ -1696,7 +1696,7 @@ export default function MessageList({
                           {(Array.isArray(message.audio)
                             ? message.audio
                             : [message.audio]
-                          ).map((rawUrl: any, j: any) => (
+                          ).map((rawUrl, j) => (
                             <MediaPreview key={`aud-${j}`} dataUrl={rawUrl} />
                           ))}
                         </div>
@@ -1712,7 +1712,7 @@ export default function MessageList({
                             {(Array.isArray(message.video)
                               ? message.video
                               : [message.video]
-                            ).map((rawUrl: any, j: any) => (
+                            ).map((rawUrl, j) => (
                               <MediaPreview key={`vid-${j}`} dataUrl={rawUrl} />
                             ))}
                           </div>
@@ -1728,7 +1728,7 @@ export default function MessageList({
                             {(Array.isArray(message.pdf)
                               ? message.pdf
                               : [message.pdf]
-                            ).map((rawUrl: any, j: any) => {
+                            ).map((rawUrl, j) => {
                               const resolvedUrl =
                                 PrismService.getFileUrl(rawUrl);
                               return (
@@ -1913,7 +1913,7 @@ export default function MessageList({
                         message.role === "assistant" &&
                         i === messages.length - 1 &&
                         !message.contentSegments?.some(
-                          (s: any) => s.type === "plan",
+                          (s) => s.type === "plan",
                         ) && (
                           <PlanCardComponent
                             planText={planProposal.plan}

@@ -18,19 +18,19 @@ export default function SearchFilterComponent({
   allLabel = "All",
   badgeColor,
   icon: Icon = Search,
-}: any) {
+}: unknown) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const containerRef = useRef<any>(null);
-  const inputRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLDivElement | null>(null);
 
   const filtered = query
-    ? options.filter((o: any) => o.toLowerCase().includes(query.toLowerCase()))
+    ? options.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
     : options;
 
   const handleSelect = useCallback(
-    (value: any) => {
-      onChange(value);
+    (value: string) => {
+onChange(value);
       setQuery("");
       setOpen(false);
     },
@@ -43,7 +43,7 @@ export default function SearchFilterComponent({
     setOpen(false);
   }, [onChange]);
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     if (!open) setOpen(true);
   };
@@ -52,10 +52,10 @@ export default function SearchFilterComponent({
     setOpen(true);
   };
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
       setOpen(false);
-      (inputRef.current as any)?.blur();
+      inputRef.current?.blur();
     }
     if (e.key === "Enter" && filtered.length === 1) {
       handleSelect(filtered[0]);
@@ -65,10 +65,10 @@ export default function SearchFilterComponent({
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handler = (e: any) => {
+    const handler = (e: KeyboardEvent) => {
       if (
         containerRef.current &&
-        !(containerRef.current as any).contains(e.target)
+        !containerRef.current!.contains(e.target)
       ) {
         setOpen(false);
         setQuery("");
@@ -81,7 +81,7 @@ export default function SearchFilterComponent({
   // Close on Escape
   useEffect(() => {
     if (!open) return;
-    const handler = (e: any) => {
+    const handler = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", handler);
@@ -94,7 +94,7 @@ export default function SearchFilterComponent({
       <div className={styles.container} ref={containerRef}>
         <div
           className={`${styles.trigger} ${open ? styles.triggerOpen : ""}`}
-          onClick={() => (inputRef.current as any)?.focus()}
+          onClick={() => inputRef.current?.focus()}
         >
           <span className={styles.triggerIcon}>
             <Icon size={14} />
@@ -129,7 +129,7 @@ export default function SearchFilterComponent({
             {filtered.length === 0 && (
               <div className={styles.noResults}>No matches</div>
             )}
-            {filtered.map((opt: any) => (
+            {filtered.map((opt) => (
               <button
                 key={opt}
                 type="button"
@@ -155,7 +155,7 @@ export default function SearchFilterComponent({
                     "--badge-color": badgeColor,
                     "--badge-bg": `${badgeColor}18`,
                     "--badge-border": `${badgeColor}40`,
-                  } as any)
+                  } as React.CSSProperties)
                 : undefined
             }
           >

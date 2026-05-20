@@ -75,7 +75,7 @@ export default function WorkflowComponent({
 
   allModels,
   onChangeModel,
-}: any) {
+}: unknown) {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -90,14 +90,14 @@ export default function WorkflowComponent({
     ? onUpdateNodePosition || noop
     : onUpdateNodePosition || noop;
 
-  const selectedNode = nodes.find((n: any) => n.id === selectedNodeId) || null;
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId) || null;
 
   const handleClose = useCallback(() => {
     onSelectNode?.(null);
   }, [onSelectNode]);
 
   const handleToggleSidebar = useCallback(() => {
-    setSidebarVisible((v: any) => {
+    setSidebarVisible((v) => {
       const next = !v;
       // On mobile, close inspector when opening sidebar
       if (next && window.innerWidth < 768) {
@@ -109,7 +109,7 @@ export default function WorkflowComponent({
 
   // When loading a workflow on mobile, auto-hide sidebar
   const handleLoadWorkflowWithHide = useCallback(
-    (...args: any) => {
+    (...args: unknown) => {
       if (window.innerWidth < 768) {
         setSidebarVisible(false);
       }
@@ -120,7 +120,7 @@ export default function WorkflowComponent({
 
   // On mobile, close sidebar when selecting a node (opening inspector)
   const handleSelectNode = useCallback(
-    (nodeId: any) => {
+    (nodeId: unknown) => {
       if (nodeId && window.innerWidth < 768) {
         setSidebarVisible(false);
       }

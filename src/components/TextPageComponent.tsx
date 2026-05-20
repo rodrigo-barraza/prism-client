@@ -35,11 +35,11 @@ export default function TextPageComponent({
   mode = "user",
   dateRange: externalDateRange,
   onCountChange,
-}: any) {
+}: unknown) {
   const isAdmin = mode === "admin";
   const convBasePath = "/admin/conversations";
 
-  const [texts, setTexts] = useState<any[]>([]);
+  const [texts, setTexts] = useState<unknown[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [origin, setOrigin] = useState("all");
@@ -47,15 +47,15 @@ export default function TextPageComponent({
   const [searchInput, setSearchInput] = useState("");
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
-  const [providers, setProviders] = useState<any[]>([]);
-  const [models, setModels] = useState<any[]>([]);
+  const [providers, setProviders] = useState<unknown[]>([]);
+  const [models, setModels] = useState<unknown[]>([]);
   const [page, setPage] = useState(1);
   const [internalDateRange, setInternalDateRange] = useState({
     from: "",
     to: "",
   });
   const dateRange = externalDateRange ?? internalDateRange;
-  const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
+  const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const PAGE_SIZE = 30;
 
@@ -63,19 +63,19 @@ export default function TextPageComponent({
     try {
       setLoading(true);
       const params = { page, limit: PAGE_SIZE };
-      if (origin !== "all") (params as any).origin = origin;
-      if (search) (params as any).search = search;
-      if (provider) (params as any).provider = provider;
-      if (model) (params as any).model = model;
+      if (origin !== "all") (params as unknown).origin = origin;
+      if (search) (params as unknown).search = search;
+      if (provider) (params as unknown).provider = provider;
+      if (model) (params as unknown).model = model;
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result: any = await service.getText(params);
+      const result: unknown = await service.getText(params);
       setTexts(result.data || []);
       setTotal(result.total || 0);
       if (result.providers) setProviders(result.providers);
       if (result.models) setModels(result.models);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load text:", error);
     } finally {
       setLoading(false);
@@ -93,24 +93,24 @@ export default function TextPageComponent({
 
   useEffect(() => {
     PrismService.getFavorites("text")
-      .then((favs: any) => setFavoriteKeys(favs.map((f: any) => f.key)))
+      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
       .catch(() => {});
   }, []);
 
-  const toggleFavorite = async (textKey: any) => {
+  const toggleFavorite = async (textKey: unknown) => {
     if (favoriteKeys.includes(textKey)) {
-      setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== textKey));
+      setFavoriteKeys((prev) => prev.filter((k) => k !== textKey));
       PrismService.removeFavorite("text", textKey).catch(() => {});
     } else {
-      setFavoriteKeys((prev: any) => [...prev, textKey]);
+      setFavoriteKeys((prev) => [...prev, textKey]);
       PrismService.addFavorite("text", textKey).catch(() => {});
     }
   };
 
-  const getTextKey = (t: any, i: any) => `${t.convId}-${t.origin}-${i}`;
+  const getTextKey = (t: unknown, i: unknown) => `${t.convId}-${t.origin}-${i}`;
 
   const displayTexts = showFavoritesOnly
-    ? texts.filter((t: any, i: any) => favoriteKeys.includes(getTextKey(t, i)))
+    ? texts.filter((t, i) => favoriteKeys.includes(getTextKey(t, i)))
     : texts;
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -128,7 +128,7 @@ export default function TextPageComponent({
         <FilterBarComponent>
           <SearchInputComponent
             value={searchInput}
-            onChange={(v: any) => {
+            onChange={(v) => {
               setSearchInput(v);
               setSearch(v);
               setPage(1);
@@ -141,14 +141,14 @@ export default function TextPageComponent({
             groups={[
               {
                 label: "Source",
-                items: ORIGIN_FILTERS.map((f: any) => ({
+                items: ORIGIN_FILTERS.map((f) => ({
                   key: f.key,
                   icon: f.icon,
                   title: f.label,
                 })),
                 activeKeys: origin === "all" ? null : origin,
                 isSingleSelect: true,
-                onToggle: (v: any) => {
+                onToggle: (v) => {
                   setOrigin(v || "all");
                   setPage(1);
                 },
@@ -160,13 +160,13 @@ export default function TextPageComponent({
                 ],
                 activeKeys: showFavoritesOnly ? "favorites" : null,
                 isSingleSelect: true,
-                onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
+                onToggle: (v) => setShowFavoritesOnly(v === "favorites"),
               },
             ]}
             dateRange={!externalDateRange ? dateRange : undefined}
             onDateChange={
               !externalDateRange
-                ? (v: any) => {
+                ? (v) => {
                     setInternalDateRange(v);
                     setPage(1);
                   }
@@ -178,7 +178,7 @@ export default function TextPageComponent({
           <SearchFilterComponent
             options={providers}
             value={provider}
-            onChange={(v: any) => {
+            onChange={(v) => {
               setProvider(v);
               setModel("");
               setPage(1);
@@ -190,11 +190,11 @@ export default function TextPageComponent({
           <SearchFilterComponent
             options={
               provider
-                ? models.filter((m: any) => m.startsWith(provider + "/"))
+                ? models.filter((m) => m.startsWith(provider + "/"))
                 : models
             }
             value={model}
-            onChange={(v: any) => {
+            onChange={(v) => {
               setModel(v);
               setPage(1);
             }}
@@ -208,7 +208,7 @@ export default function TextPageComponent({
         {/* Text List */}
         {!loading && (
           <div className={styles.textList}>
-            {displayTexts.map((t: any, i: any) => {
+            {displayTexts.map((t, i) => {
               const textKey = getTextKey(t, i);
               const isFav = favoriteKeys.includes(textKey);
               return (

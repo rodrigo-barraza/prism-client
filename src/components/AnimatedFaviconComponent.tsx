@@ -53,27 +53,27 @@ function generateFrames() {
   return frames;
 }
 
-function changeFavicon(src: any) {
+function changeFavicon(src: unknown) {
   let link = document.getElementById("dynamic-favicon");
   if (!link) {
     link = document.createElement("link");
     link.id = "dynamic-favicon";
-    (link as any).rel = "icon";
-    (link as any).type = "image/png";
+    (link as unknown).rel = "icon";
+    (link as unknown).type = "image/png";
     document.head.appendChild(link);
   }
-  (link as any).href = src;
+  (link as unknown).href = src;
 
   // Remove any static favicon <link> so browsers don't show a stale .ico
   const oldLinks = document.querySelectorAll(
     'link[rel="icon"]:not(#dynamic-favicon), link[rel="shortcut icon"]:not(#dynamic-favicon)',
   );
-  oldLinks.forEach((element: any) => element.remove());
+  oldLinks.forEach((element) => element.remove());
 }
 
 export default function AnimatedFaviconComponent() {
-  const framesRef = useRef<any>(null);
-  const indexRef = useRef<any>(0);
+  const framesRef = useRef<unknown>(null);
+  const indexRef = useRef<number>(0);
 
   useEffect(() => {
     // Generate all Base64 frames once on mount

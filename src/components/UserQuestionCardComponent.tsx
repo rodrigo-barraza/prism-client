@@ -24,26 +24,26 @@ function QuestionBlock({
   isPending,
   onAnswer,
   answeredWith = null,
-}: any) {
-  const [selected, setSelected] = useState<any>(multiSelect ? [] : null);
+}: unknown) {
+  const [selected, setSelected] = useState<unknown>(multiSelect ? [] : null);
   const [freeText, setFreeText] = useState("");
   const [annotations, setAnnotations] = useState("");
   const [showAnnotations, setShowAnnotations] = useState(false);
   const [previewIdx, setPreviewIdx] = useState(null);
-  const inputRef = useRef<any>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Auto-focus input when there are no options or after mount
   useEffect(() => {
     if (isPending && options.length === 0 && inputRef.current) {
-      (inputRef.current as any).focus();
+      inputRef.current?.focus();
     }
   }, [isPending, options.length]);
 
-  const handleOptionClick = (label: any) => {
+  const handleOptionClick = (label) => {
     if (multiSelect) {
-      setSelected((prev: any) =>
+      setSelected((prev) =>
         prev.includes(label)
-          ? prev.filter((l: any) => l !== label)
+          ? prev.filter((l) => l !== label)
           : [...prev, label],
       );
     } else {
@@ -69,7 +69,7 @@ function QuestionBlock({
     onAnswer?.({ answer, annotations: annotations || undefined });
   };
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -94,7 +94,7 @@ function QuestionBlock({
           className={`${styles.optionsRow} ${activePreview ? styles.withPreview : ""}`}
         >
           <div className={styles.optionsList}>
-            {options.map((opt: any, i: any) => {
+            {options.map((opt, i) => {
               const isSelected = multiSelect
                 ? selected?.includes(opt.label)
                 : selected === opt.label;
@@ -146,13 +146,13 @@ function QuestionBlock({
                 : "Type your answer…"
             }
             value={freeText}
-            onChange={(e: any) => setFreeText(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setFreeText(e.target.value)}
             onKeyDown={handleKeyDown}
           />
           {/* Annotation toggle */}
           <button
             className={`${styles.annotateBtn} ${showAnnotations ? styles.annotateBtnActive : ""}`}
-            onClick={() => setShowAnnotations((v: any) => !v)}
+            onClick={() => setShowAnnotations((v) => !v)}
             title="Add notes"
           >
             <StickyNote size={14} />
@@ -178,7 +178,7 @@ function QuestionBlock({
             className={styles.annotationsInput}
             placeholder="Add notes or context for this answer…"
             value={annotations}
-            onChange={(e: any) => setAnnotations(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setAnnotations(e.target.value)}
             rows={2}
           />
         </div>
@@ -213,7 +213,7 @@ export default function UserQuestionCardComponent({
   // ── Backward compat (single question) ─────
   question,
   choices = [],
-}: any) {
+}: unknown) {
   // Normalize: single question props → questions array
   const normalizedQuestions = useMemo(() => {
     if (questions.length > 0) return questions;
@@ -222,7 +222,7 @@ export default function UserQuestionCardComponent({
         {
           question,
           header: null,
-          options: choices.map((c: any) => ({ label: c, preview: null })),
+          options: choices.map((c) => ({ label: c, preview: null })),
           multiSelect: false,
         },
       ];
@@ -231,17 +231,17 @@ export default function UserQuestionCardComponent({
   }, [questions, question, choices]);
 
   // Track answers per question index
-  const [collectedAnswers, setCollectedAnswers] = useState<any>({});
+  const [collectedAnswers, setCollectedAnswers] = useState<Record<string, unknown>>({});
   const isMultiQuestion = normalizedQuestions.length > 1;
   const allAnswered = isMultiQuestion
     ? Object.keys(collectedAnswers).length === normalizedQuestions.length
     : false;
 
   const handleQuestionAnswer = useCallback(
-    (index: any, answerData: any) => {
+    (index: unknown, answerData: unknown) => {
       if (isMultiQuestion) {
         // Collect answers for batch submission
-        setCollectedAnswers((prev: any) => ({ ...prev, [index]: answerData }));
+        setCollectedAnswers((prev) => ({ ...prev, [index]: answerData }));
       } else {
         // Single question — submit immediately
         onAnswer?.([answerData]);
@@ -253,7 +253,7 @@ export default function UserQuestionCardComponent({
   const handleSubmitAll = useCallback(() => {
     if (!allAnswered) return;
     const orderedAnswers = normalizedQuestions.map(
-      (_: any, i: any) => (collectedAnswers as any)[i],
+      (_: unknown, i: unknown) => (collectedAnswers as Record<string, unknown>)[i],
     );
     onAnswer?.(orderedAnswers);
   }, [allAnswered, normalizedQuestions, collectedAnswers, onAnswer]);
@@ -282,7 +282,7 @@ export default function UserQuestionCardComponent({
       )}
 
       {/* Questions */}
-      {normalizedQuestions.map((q: any, i: any) => (
+      {normalizedQuestions.map((q, i) => (
         <QuestionBlock
           key={i}
           index={i}
@@ -290,12 +290,12 @@ export default function UserQuestionCardComponent({
           header={q.header}
           options={q.options || []}
           multiSelect={q.multiSelect || false}
-          isPending={isPending && !(collectedAnswers as any)[i]}
-          onAnswer={(answerData: any) => handleQuestionAnswer(i, answerData)}
+          isPending={isPending && !(collectedAnswers as Record<string, unknown>)[i]}
+          onAnswer={(answerData: unknown) => handleQuestionAnswer(i, answerData)}
           answeredWith={
             !isPending
               ? answeredWith?.[i]?.answer || answeredWith?.[i]
-              : (collectedAnswers as any)[i]?.answer || null
+              : (collectedAnswers as Record<string, unknown>)[i]?.answer || null
           }
         />
       ))}

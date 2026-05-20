@@ -30,11 +30,11 @@ import styles from "./BenchmarkSidebarComponent.module.css";
  * Props:
  *   activeBenchmarkId — highlight the currently viewed benchmark
  */
-export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
+export default function BenchmarkSidebarComponent({ activeBenchmarkId }: unknown) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [benchmarks, setBenchmarks] = useState<any[]>([]);
+  const [benchmarks, setBenchmarks] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeBenchmarkIds, setActiveBenchmarkIds] = useState(new Set());
@@ -44,7 +44,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
     try {
       const { benchmarks: data } = await PrismService.getBenchmarks();
       setBenchmarks(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load benchmarks:", error);
     } finally {
       setLoading(false);
@@ -58,7 +58,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
   // -- Adaptive poll: only keep polling while benchmarks are active --
   useEffect(() => {
     let cancelled = false;
-    let interval: any = null;
+    let interval: unknown = null;
 
     const poll = async () => {
       try {
@@ -97,11 +97,11 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
     if (!search.trim()) return benchmarks;
     const q = search.toLowerCase();
     return benchmarks.filter(
-      (b: any) =>
+      (b) =>
         b.name.toLowerCase().includes(q) ||
         b.prompt?.toLowerCase().includes(q) ||
         b.expectedValue?.toLowerCase().includes(q) ||
-        b.assertions?.some((a: any) =>
+        b.assertions?.some((a) =>
           a.expectedValue?.toLowerCase().includes(q),
         ),
     );
@@ -109,7 +109,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
 
   // -- Navigate -----------------------------------------------
   const navigate = useCallback(
-    (benchmark: any) => {
+    (benchmark) => {
       router.push(`/benchmarks/${benchmark.id}`);
     },
     [router],
@@ -167,7 +167,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
             {search ? "No matches" : "No benchmarks yet"}
           </div>
         ) : (
-          filtered.map((b: any) => {
+          filtered.map((b) => {
             const isActive = activeBenchmarkId === b.id;
             const isRunning = activeBenchmarkIds.has(b.id);
             const run = b.latestRun;
@@ -176,7 +176,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
               <div
                 key={b.id}
                 className={`${styles.item} ${isActive ? styles.itemActive : ""} ${isRunning ? styles.itemRunning : ""}`}
-                {...(SoundService as any).interactive(() => navigate(b))}
+                {...(SoundService as Record<string, unknown>).interactive(() => navigate(b))}
                 data-panel-close
               >
                 {/* Row 1: date (left) · cost (right) */}

@@ -19,7 +19,7 @@ function MentionBadge({
   stale,
   knownPaths,
   onFileOpen,
-}: any) {
+}: unknown) {
   const baseName = name || path.split("/").pop() || path;
   // Build display name with optional line suffix (#L format — GitHub convention)
   let displayName = baseName;
@@ -48,7 +48,7 @@ function MentionBadge({
     .join(" ");
 
   const handleClick = isClickable
-    ? (e: any) => {
+    ? (e: React.SyntheticEvent) => {
         e.stopPropagation();
         onFileOpen(path);
       }

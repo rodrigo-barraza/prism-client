@@ -16,7 +16,7 @@ export default function TextContentComponent({
   readOnly = false,
   placeholder = "Enter text...",
   className,
-}: any) {
+}: unknown) {
   const [preview, setPreview] = useState(false);
 
   const isEditable = !!onChange && !readOnly;
@@ -56,7 +56,7 @@ export default function TextContentComponent({
           className={`${styles.textarea} ${!isEditable ? styles.textareaReadOnly : ""}`}
           value={value}
           onChange={
-            isEditable ? (e: any) => onChange(e.target.value) : undefined
+            isEditable ? (e: React.SyntheticEvent) => onChange(e.target.value) : undefined
           }
           readOnly={!isEditable}
           placeholder={isEditable ? placeholder : undefined}

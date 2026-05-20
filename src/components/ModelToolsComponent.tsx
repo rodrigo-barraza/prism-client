@@ -30,7 +30,7 @@ const TOOL_DEFS = [
     key: "functionCalling",
     label: "Function Calling",
     icon: Parentheses,
-    color: (TOOL_COLORS as any)["Function Calling"],
+    color: (TOOL_COLORS as Record<string, unknown>)["Function Calling"],
   },
   {
     key: "webSearch",
@@ -86,15 +86,15 @@ export default function ModelToolsComponent({
   tools,
   size = 11,
   className,
-}: any) {
+}: unknown) {
   if (!tools) return null;
 
-  const activeTools = TOOL_DEFS.filter((t: any) => tools[t.key]);
+  const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);
   if (activeTools.length === 0) return null;
 
   return (
     <div className={`${styles.toolsRow} ${className || ""}`}>
-      {activeTools.map((def: any) => {
+      {activeTools.map((def) => {
         const raw = tools[def.key];
         const count = typeof raw === "number" ? raw : 0;
         const tooltipLabel = count > 1 ? `${def.label} — ×${count}` : def.label;

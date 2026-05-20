@@ -11,7 +11,7 @@ export default function ProvidersBadgeComponent({
   providers = [],
   className = "",
   mini = false,
-}: any) {
+}: unknown) {
   if (!providers || providers.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
@@ -19,7 +19,7 @@ export default function ProvidersBadgeComponent({
   const iconSize = mini ? 8 : 10;
   const cls = `${styles.badge} ${mini ? styles.mini : ""} ${className}`;
 
-  const displayLabel = (key: any) => resolveProviderLabel(key);
+  const displayLabel = (key) => resolveProviderLabel(key);
 
   if (providers.length === 1) {
     return (

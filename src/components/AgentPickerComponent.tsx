@@ -30,7 +30,7 @@ const AGENT_IMAGES: Record<string, string> = {
  * Icon mapping per agent ID — built-in agents only.
  * Custom agents use the `icon` field stored in their data.
  */
-const AGENT_ICONS: Record<string, any> = {
+const AGENT_ICONS: Record<string, unknown> = {
   NONE: MessageSquare,
   CODING: Bot,
   OMNI: Infinity,
@@ -42,7 +42,7 @@ const AGENT_ICONS: Record<string, any> = {
 };
 
 /** Render the correct icon for an agent — image logo > custom icon field > built-in map. */
-export function renderAgentIcon(agent: any, size = 15) {
+export function renderAgentIcon(agent: unknown, size = 15) {
   // Image-based agent logos (e.g. OMNI)
   const imageSrc = AGENT_IMAGES[agent?.id];
   if (imageSrc) {
@@ -81,16 +81,16 @@ export default function AgentPickerComponent({
   addMode = false,
   addCount = 0,
   onAddAgent,
-}: any) {
+}: unknown) {
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef<any>(null);
+  const triggerRef = useRef<unknown>(null);
 
   const activeAgent = addMode
     ? null
-    : agents.find((a: any) => a.id === activeAgentId) || agents[0];
+    : agents.find((a) => a.id === activeAgentId) || agents[0];
 
   const handleSelect = useCallback(
-    (agentId: any) => {
+    (agentId: unknown) => {
       if (agentId !== activeAgentId) {
         onSelect?.(agentId);
       }
@@ -101,7 +101,7 @@ export default function AgentPickerComponent({
   );
 
   const handleAdd = useCallback(
-    (agent: any) => {
+    (agent) => {
       onAddAgent?.(agent);
     },
     [onAddAgent],
@@ -110,7 +110,7 @@ export default function AgentPickerComponent({
   // Close on Escape
   useEffect(() => {
     if (!open) return;
-    const handleKey = (e: any) => {
+    const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", handleKey);
@@ -135,7 +135,7 @@ export default function AgentPickerComponent({
           <button
             ref={triggerRef}
             className={`${styles.trigger} ${styles.triggerAdd} ${open ? styles.triggerAddOpen : ""} ${addCount > 0 ? styles.triggerAddActive : ""}`}
-            onClick={() => !disabled && setOpen((v: any) => !v)}
+            onClick={() => !disabled && setOpen((v) => !v)}
             title="Add agent to benchmark"
             disabled={disabled}
             type="button"
@@ -156,7 +156,7 @@ export default function AgentPickerComponent({
             <button
               ref={triggerRef}
               className={styles.trigger}
-              onClick={() => !disabled && setOpen((v: any) => !v)}
+              onClick={() => !disabled && setOpen((v) => !v)}
               title={`Active agent: ${activeAgent?.name || activeAgentId}`}
               disabled={disabled}
               type="button"
@@ -187,7 +187,7 @@ export default function AgentPickerComponent({
         <>
           <div className={styles.backdrop} onClick={() => setOpen(false)} />
           <div className={styles.popover}>
-            {agents.map((agent: any) => {
+            {agents.map((agent) => {
               const isActive = !addMode && agent.id === activeAgentId;
 
               return (
@@ -201,7 +201,7 @@ export default function AgentPickerComponent({
                   type="button"
                   style={
                     agent.color
-                      ? ({ "--agent-accent": agent.color } as any)
+                      ? ({ "--agent-accent": agent.color } as React.CSSProperties)
                       : undefined
                   }
                 >

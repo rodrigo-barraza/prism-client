@@ -5,7 +5,7 @@ import styles from "./UserBadgeComponent.module.css";
 /**
  * UserBadgeComponent — amber-colored user/username badge with icon.
  */
-export default function UserBadgeComponent({ username, className = "" }: any) {
+export default function UserBadgeComponent({ username, className = "" }: unknown) {
   if (!username || username === "unknown") return null;
   return (
     <TooltipComponent label={`User: ${username}`} position="top">

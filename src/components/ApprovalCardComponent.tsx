@@ -20,8 +20,8 @@ export default function ApprovalCardComponent({
   onReject,
   onApproveAll,
   isPending = true,
-}: any) {
-  const tierInfo = (TIER_CONFIG as any)[tier] || TIER_CONFIG[2];
+}: unknown) {
+  const tierInfo = (TIER_CONFIG as Record<string, unknown>)[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
 
   // Format args for preview (truncate long values)
@@ -51,7 +51,7 @@ export default function ApprovalCardComponent({
 
       {argEntries.length > 0 && (
         <div className={styles.args}>
-          {argEntries.map(([key, value]: any) => {
+          {argEntries.map(([key, value]: [string, unknown]) => {
             const strVal =
               typeof value === "string" ? value : JSON.stringify(value);
             const truncated =

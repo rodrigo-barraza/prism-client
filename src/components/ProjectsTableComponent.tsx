@@ -23,14 +23,14 @@ export default function ProjectsTableComponent({
   compact = false,
   title = "Projects",
   maxHeight = 420,
-}: any) {
+}: unknown) {
   const totalRequests =
     (totalRequestsProp ??
-      projects.reduce((s: any, x: any) => s + x.totalRequests, 0)) ||
+      projects.reduce((s, x) => s + x.totalRequests, 0)) ||
     1;
   const totalCost =
     (totalCostProp ??
-      projects.reduce((s: any, x: any) => s + (x.totalCost || 0), 0)) ||
+      projects.reduce((s, x) => s + (x.totalCost || 0), 0)) ||
     1;
 
   const allColumns = [
@@ -42,7 +42,7 @@ export default function ProjectsTableComponent({
     ...tokenColumns(),
     ...costColumns(totalCost),
     latencyColumn(),
-    ...countLinkColumns("project", (row: any) => row.project),
+    ...countLinkColumns("project", (row) => row.project),
   ];
 
   const COMPACT_KEYS = [
@@ -54,7 +54,7 @@ export default function ProjectsTableComponent({
     "conversationCount",
   ];
   const columns = compact
-    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (
@@ -63,7 +63,7 @@ export default function ProjectsTableComponent({
       maxHeight={maxHeight}
       columns={columns}
       data={projects}
-      getRowKey={(p: any, i: any) => `${p.project || "none"}-${i}`}
+      getRowKey={(p: unknown, i: unknown) => `${p.project || "none"}-${i}`}
       emptyText={emptyText}
       storageKey="projects"
     />

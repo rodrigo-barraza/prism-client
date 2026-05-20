@@ -26,7 +26,7 @@ const DEFAULT_ARCH_PARAMS = {
 /**
  * Load persisted config for a model key from localStorage.
  */
-function loadPersistedConfig(modelKey: any) {
+function loadPersistedConfig(modelKey: unknown) {
   try {
     const raw = localStorage.getItem(`${LS_KEY_PREFIX}${modelKey}`);
     return raw ? JSON.parse(raw) : null;
@@ -38,7 +38,7 @@ function loadPersistedConfig(modelKey: any) {
 /**
  * Save config for a model key to localStorage.
  */
-function savePersistedConfig(modelKey: any, config: any) {
+function savePersistedConfig(modelKey: string, config: unknown) {
   try {
     localStorage.setItem(`${LS_KEY_PREFIX}${modelKey}`, JSON.stringify(config));
   } catch {
@@ -58,7 +58,7 @@ export default function ModelLoadConfigPanel({
   onClose,
   service,
   loading = false,
-}: any) {
+}: unknown) {
   const modelKey = model.key || model.name;
   const maxContext = model.max_context_length || model.contextLength || 131072;
   const sizeBytes = model.size_bytes || 0;
@@ -93,7 +93,7 @@ export default function ModelLoadConfigPanel({
   // -- Memory Estimation (from backend) --------------------
   const [memory, setMemory] = useState({ gpuGiB: 0, totalGiB: 0 });
   const [maxMemory, setMaxMemory] = useState({ gpuGiB: 0, totalGiB: 0 });
-  const debounceRef = useRef<any>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!service?.estimateLmStudioMemory) return;
@@ -170,7 +170,7 @@ export default function ModelLoadConfigPanel({
 
   // Keyboard shortcut: Ctrl+Enter to load
   useEffect(() => {
-    const handleKey = (e: any) => {
+    const handleKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         handleLoad();
@@ -180,21 +180,21 @@ export default function ModelLoadConfigPanel({
     return () => document.removeEventListener("keydown", handleKey);
   }, [handleLoad]);
 
-  const handleContextInput = (e: any) => {
+  const handleContextInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value)) {
       setContextLength(Math.max(2048, Math.min(value, maxContext)));
     }
   };
 
-  const handleGpuInput = (e: any) => {
+  const handleGpuInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
     if (!isNaN(value)) {
       setGpuLayers(Math.max(0, Math.min(value, totalLayers)));
     }
   };
 
-  const formatGiB = (gib: any) => {
+  const formatGiB = (gib: unknown) => {
     if (gib < 0.01) return "0 GB";
     if (gib < 10) return `${gib.toFixed(2)} GB`;
     return `${gib.toFixed(1)} GB`;
@@ -332,7 +332,7 @@ export default function ModelLoadConfigPanel({
           max={maxContext}
           step={1024}
           value={contextLength}
-          onChange={(v: any) => setContextLength(v)}
+          onChange={(v) => setContextLength(v)}
         />
       </div>
 
@@ -364,7 +364,7 @@ export default function ModelLoadConfigPanel({
           max={totalLayers}
           step={1}
           value={gpuLayers}
-          onChange={(v: any) => setGpuLayers(v)}
+          onChange={(v) => setGpuLayers(v)}
         />
       </div>
 
@@ -407,7 +407,7 @@ export default function ModelLoadConfigPanel({
           type="checkbox"
           className={styles.rememberCheckbox}
           checked={rememberSettings}
-          onChange={(e: any) => setRememberSettings(e.target.checked)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setRememberSettings(e.target.checked)}
         />
         <span className={styles.rememberLabel}>
           Remember settings for <strong>{modelKey}</strong>

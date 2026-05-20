@@ -124,7 +124,7 @@ async function resolveToDataUrl(ref: unknown): Promise<string | null> {
 async function executeModelNode(
   node: WorkflowModelNode,
   inputData: WorkflowInputDatum[],
-  { onNodeContentUpdate, toolSchemas, customToolMap }: { onNodeContentUpdate?: WorkflowCallbacks['onNodeContentUpdate']; toolSchemas?: any[] | null; customToolMap?: Map<string, any> | null } = {},
+  { onNodeContentUpdate, toolSchemas, customToolMap }: { onNodeContentUpdate?: WorkflowCallbacks['onNodeContentUpdate']; toolSchemas?: unknown[] | null; customToolMap?: Map<string, unknown> | null } = {},
 ) {
   const endpoint = resolveEndpoint(node, inputData);
   const outputs: WorkflowOutputs = {};
@@ -140,23 +140,23 @@ async function executeModelNode(
   if (endpoint === "textToText") {
     // Collect piped inputs from edges
     const textParts = inputData
-      .filter((d: any) => d.type === "text")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "text")
+      .map((d) => d.data);
     const imageParts = inputData
-      .filter((d: any) => d.type === "image")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "image")
+      .map((d) => d.data);
     const audioParts = inputData
-      .filter((d: any) => d.type === "audio")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "audio")
+      .map((d) => d.data);
     const videoParts = inputData
-      .filter((d: any) => d.type === "video")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "video")
+      .map((d) => d.data);
     const pdfParts = inputData
-      .filter((d: any) => d.type === "pdf")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "pdf")
+      .map((d) => d.data);
     const conversationParts = inputData
-      .filter((d: any) => d.type === "conversation")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "conversation")
+      .map((d) => d.data);
     const pipedText = textParts.join("\n\n");
     const hasMedia =
       imageParts.length > 0 ||
@@ -185,7 +185,7 @@ async function executeModelNode(
     if (conversationParts.length > 0) {
       // Use the first conversation input as the base messages, filtering out empty ones
       finalMessages = conversationParts[0]
-        .map((m: any) => ({
+        .map((m) => ({
           role: m.role,
           content: m.content || "",
           ...(m.images?.length > 0 ? { images: m.images } : {}),
@@ -194,7 +194,7 @@ async function executeModelNode(
           ...(m.pdf?.length > 0 ? { pdf: m.pdf } : {}),
         }))
         .filter(
-          (m: any) =>
+          (m) =>
             m.content ||
             m.images?.length > 0 ||
             m.audio?.length > 0 ||
@@ -204,8 +204,8 @@ async function executeModelNode(
 
       // Append piped text/media to the last user message (or add a new one)
       const lastUserIdx = finalMessages
-        .map((m: any, i: any) => ({ m, i }))
-        .filter(({ m }: any) => m.role === "user")
+        .map((m, i) => ({ m, i }))
+        .filter(({ m }: unknown) => m.role === "user")
         .pop()?.i;
       if (lastUserIdx !== undefined && (pipedText || hasMedia)) {
         const lastUser = finalMessages[lastUserIdx];
@@ -227,7 +227,7 @@ async function executeModelNode(
       }
     } else if (node.messages && node.messages.length > 0) {
       // Use the full conversation messages array, preserving all media
-      finalMessages = node.messages.map((m: any) => ({
+      finalMessages = node.messages.map((m) => ({
         role: m.role,
         content: m.content || "",
         ...(m.images?.length > 0 ? { images: m.images } : {}),
@@ -238,8 +238,8 @@ async function executeModelNode(
 
       // Append piped text/media to the last user message (or add a new one)
       const lastUserIdx = finalMessages
-        .map((m: any, i: any) => ({ m, i }))
-        .filter(({ m }: any) => m.role === "user")
+        .map((m, i) => ({ m, i }))
+        .filter(({ m }: unknown) => m.role === "user")
         .pop()?.i;
       if (lastUserIdx !== undefined && (pipedText || hasMedia)) {
         const lastUser = finalMessages[lastUserIdx];
@@ -277,7 +277,7 @@ async function executeModelNode(
       conversationId,
       conversationMeta,
       ...(toolSchemas != null && {
-        enabledTools: toolSchemas.map((t: any) => t.name || t.function?.name),
+        enabledTools: toolSchemas.map((t) => t.name || t.function?.name),
       }),
     } as import("../types/types").ChatPayload;
 
@@ -328,25 +328,25 @@ async function executeModelNode(
     }
   } else if (endpoint === "textToImage") {
     const pipedPrompt =
-      inputData.find((d: any) => d.type === "text")?.data || "";
+      inputData.find((d) => d.type === "text")?.data || "";
     const rawImages = inputData
-      .filter((d: any) => d.type === "image")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "image")
+      .map((d) => d.data);
     const conversationParts = inputData
-      .filter((d: any) => d.type === "conversation")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "conversation")
+      .map((d) => d.data);
 
     let prompt;
     let systemPrompt;
-    const messageImages: any[] = [];
+    const messageImages: unknown[] = [];
 
     if (conversationParts.length > 0) {
       // Extract from conversation input: system message → systemPrompt, user messages → prompt + images
       const convMessages = conversationParts[0].filter(
-        (m: any) => m.content || m.images?.length > 0 || m.audio,
+        (m) => m.content || m.images?.length > 0 || m.audio,
       );
-      const systemMsg = convMessages.find((m: any) => m.role === "system");
-      const userMsgs = convMessages.filter((m: any) => m.role === "user");
+      const systemMsg = convMessages.find((m) => m.role === "system");
+      const userMsgs = convMessages.filter((m) => m.role === "user");
       const lastUser = userMsgs[userMsgs.length - 1];
 
       systemPrompt = systemMsg?.content || undefined;
@@ -358,13 +358,13 @@ async function executeModelNode(
         : userContent;
 
       // Collect images from all user messages
-      userMsgs.forEach((m: any) => {
+      userMsgs.forEach((m) => {
         if (m.images?.length > 0) messageImages.push(...m.images);
       });
     } else if (node.messages && node.messages.length > 0) {
       // Extract from messages array: last user message = prompt, system message = systemPrompt
-      const systemMsg = node.messages.find((m: any) => m.role === "system");
-      const userMsgs = node.messages.filter((m: any) => m.role === "user");
+      const systemMsg = node.messages.find((m) => m.role === "system");
+      const userMsgs = node.messages.filter((m) => m.role === "user");
       const lastUser = userMsgs[userMsgs.length - 1];
 
       systemPrompt = systemMsg?.content || undefined;
@@ -376,7 +376,7 @@ async function executeModelNode(
         : userContent;
 
       // Collect images from all user messages
-      userMsgs.forEach((m: any) => {
+      userMsgs.forEach((m) => {
         if (m.images?.length > 0) messageImages.push(...m.images);
       });
     } else {
@@ -389,7 +389,7 @@ async function executeModelNode(
     const allRawImages = [...rawImages, ...messageImages];
 
     // Convert data URLs → { imageData, mimeType } objects for Prism/providers
-    const images = allRawImages.map((image: any) => {
+    const images = allRawImages.map((image) => {
       if (typeof image === "string" && image.startsWith("data:")) {
         const match = image.match(/^data:([^;]+);base64,(.+)$/);
         if (match) {
@@ -425,7 +425,7 @@ async function executeModelNode(
       outputs.text = result.text;
     }
   } else if (endpoint === "audioToText") {
-    const audio = inputData.find((d: any) => d.type === "audio")?.data || "";
+    const audio = inputData.find((d) => d.type === "audio")?.data || "";
     const result = await PrismService.transcribeAudio({
       provider: node.provider as string,
       model: node.modelName as string,
@@ -441,7 +441,7 @@ async function executeModelNode(
 
     outputs.text = result.text || "";
   } else if (endpoint === "textToSpeech") {
-    const text = inputData.find((d: any) => d.type === "text")?.data || "";
+    const text = inputData.find((d) => d.type === "text")?.data || "";
     const result = await PrismService.generateSpeech({
       provider: node.provider as string,
       model: node.modelName as string,
@@ -453,14 +453,14 @@ async function executeModelNode(
     outputs.audio = result.audioDataUrl || "";
   } else if (endpoint === "modalityToEmbedding") {
     const textParts = inputData
-      .filter((d: any) => d.type === "text")
-      .map((d: any) => d.data);
+      .filter((d) => d.type === "text")
+      .map((d) => d.data);
     const imageParts = inputData
-      .filter((d: any) => d.type === "image")
-      .map((d: any) => d.data);
-    const audioPart = inputData.find((d: any) => d.type === "audio")?.data;
+      .filter((d) => d.type === "image")
+      .map((d) => d.data);
+    const audioPart = inputData.find((d) => d.type === "audio")?.data;
 
-    const payload: any = {
+    const payload: unknown = {
       provider: node.provider,
       model: node.modelName,
     };
@@ -566,9 +566,9 @@ export async function executeWorkflow(
 
     // Check if any upstream source has errored — if so, skip this node
     const incomingForCheck = edges.filter(
-      (c: any) => c.targetNodeId === nodeId,
+      (c) => c.targetNodeId === nodeId,
     );
-    const hasErroredUpstream = incomingForCheck.some((c: any) =>
+    const hasErroredUpstream = incomingForCheck.some((c) =>
       erroredNodeIds.has(c.sourceNodeId),
     );
     if (hasErroredUpstream) {
@@ -589,7 +589,7 @@ export async function executeWorkflow(
           // Collect piped data from upstream edges using compound port IDs
           // Port format: "{msgIndex}.{modality}" e.g. "0.text", "1.image"
           const incomingConns = edges.filter(
-            (c: any) => c.targetNodeId === nodeId,
+            (c) => c.targetNodeId === nodeId,
           );
 
           for (const conn of incomingConns) {
@@ -652,15 +652,15 @@ export async function executeWorkflow(
       if (node.nodeType === "tools") {
         const disabled = new Set(node.disabledTools || []);
         const builtIn = (node.builtInTools || []).filter(
-          (t: any) => !disabled.has(t.name),
+          (t: unknown) => !disabled.has(t.name),
         );
         const custom = (node.customTools || []).filter(
-          (t: any) => !disabled.has(t.name || t._id),
+          (t: unknown) => !disabled.has(t.name || t._id),
         );
 
         // Build OpenAI-format tool schemas
         const schemas = [
-          ...builtIn.map((t: any) => ({
+          ...builtIn.map((t) => ({
             type: "function",
             function: {
               name: t.name,
@@ -672,8 +672,8 @@ export async function executeWorkflow(
               },
             },
           })),
-          ...custom.map((t: any) => {
-            const props: Record<string, any> = {};
+          ...custom.map((t) => {
+            const props: Record<string, unknown> = {};
             const required = [];
             for (const p of t.parameters || []) {
               if (!p.name) continue;
@@ -709,9 +709,9 @@ export async function executeWorkflow(
       if (node.nodeType === "viewer") {
         // Viewer nodes collect connected input data and display it
         const incomingConns = edges.filter(
-          (c: any) => c.targetNodeId === nodeId,
+          (c) => c.targetNodeId === nodeId,
         );
-        const collectedOutputs: Record<string, any> = {};
+        const collectedOutputs: Record<string, unknown> = {};
 
         for (const conn of incomingConns) {
           const sourceOutputs = nodeOutputs[conn.sourceNodeId];
@@ -730,7 +730,7 @@ export async function executeWorkflow(
       }
 
       // Model node — gather inputs from edges
-      const incomingConns = edges.filter((c: any) => c.targetNodeId === nodeId);
+      const incomingConns = edges.filter((c) => c.targetNodeId === nodeId);
       const inputData: WorkflowInputDatum[] = [];
 
       for (const conn of incomingConns) {
@@ -745,8 +745,8 @@ export async function executeWorkflow(
       }
 
       // Separate tool inputs from regular modality inputs
-      const toolInputs = inputData.filter((d: any) => d.type === "tools");
-      const regularInputData = inputData.filter((d: any) => d.type !== "tools");
+      const toolInputs = inputData.filter((d) => d.type === "tools");
+      const regularInputData = inputData.filter((d) => d.type !== "tools");
 
       // Collect tool schemas from connected tool nodes
       let toolSchemas = null;
@@ -755,7 +755,7 @@ export async function executeWorkflow(
         toolSchemas = [];
         customToolMap = new Map();
         for (const ti of toolInputs) {
-          const tiData = ti.data as any;
+          const tiData = ti.data as Record<string, unknown>;
           if (tiData?.schemas) toolSchemas.push(...tiData.schemas);
           if (tiData?.customMap) {
             for (const [k, v] of tiData.customMap) customToolMap.set(k, v);
@@ -800,7 +800,7 @@ export async function executeWorkflow(
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       erroredNodeIds.add(nodeId);
       onNodeError?.(nodeId, error);
       // Put empty outputs so downstream nodes don't hang

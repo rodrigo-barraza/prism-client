@@ -25,18 +25,18 @@ import { CloseButtonComponent, TooltipComponent } from "@rodrigo-barraza/compone
 // Module-scoped so every ModelPickerPopoverComponent instance shares the
 // same search term. Uses useSyncExternalStore for tear-free reads.
 let _sharedSearch = "";
-const _listeners = new Set<any>();
+const _listeners = new Set<unknown>();
 function _notify() {
   for (const fn of _listeners) fn();
 }
-function subscribeSearch(callback: any) {
+function subscribeSearch(callback: unknown) {
   _listeners.add(callback);
   return () => _listeners.delete(callback);
 }
 function getSearchSnapshot() {
   return _sharedSearch;
 }
-function setSharedSearch(value: any) {
+function setSharedSearch(value) {
   _sharedSearch = value;
   _notify();
 }
@@ -105,16 +105,16 @@ export default function ModelPickerPopoverComponent({
   modelTypeFilter,
   allowDeselect = false,
   placeholderLabel,
-}: any) {
+}: unknown) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useSharedModelSearch();
-  const [popoverStyle, setPopoverStyle] = useState<any>({});
+  const [popoverStyle, setPopoverStyle] = useState<Record<string, unknown>>({});
   const [flipped, setFlipped] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
-  const triggerRef = useRef<any>(null);
-  const bodyRef = useRef<any>(null);
-  const searchRef = useRef<any>(null);
-  const highlightedRowRef = useCallback((element: any) => {
+  const triggerRef = useRef<unknown>(null);
+  const bodyRef = useRef<unknown>(null);
+  const searchRef = useRef<HTMLInputElement | null>(null);
+  const highlightedRowRef = useCallback((element: unknown) => {
     if (element) {
       element.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
@@ -124,14 +124,14 @@ export default function ModelPickerPopoverComponent({
   const baseModels = buildAllModels(config, modelTypeFilter);
 
   // -- Fetch usage stats and enrich models ------------------------------
-  const [usageMap, setUsageMap] = useState<any>(null);
-  const usageFetchedRef = useRef<any>(false);
+  const [usageMap, setUsageMap] = useState<unknown>(null);
+  const usageFetchedRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (usageFetchedRef.current) return;
     usageFetchedRef.current = true;
     PrismService.getModelStats()
-      .then((stats: any) => {
+      .then((stats) => {
         const map = new Map();
         for (const s of stats) {
           const key = `${s.provider}:${s.model}`;
@@ -155,8 +155,8 @@ export default function ModelPickerPopoverComponent({
 
   const allModels = useMemo(() => {
     if (!usageMap) return baseModels;
-    return baseModels.map((m: any) => {
-      const stats = (usageMap as any).get(`${m.provider}:${m.name}`);
+    return baseModels.map((m) => {
+      const stats = (usageMap as unknown).get(`${m.provider}:${m.name}`);
       if (!stats) return m;
       return {
         ...m,
@@ -168,9 +168,9 @@ export default function ModelPickerPopoverComponent({
   }, [baseModels, usageMap]);
 
   // -- Filter by search -------------------------------------------------
-  const filteredModels = (search as any).trim()
-    ? allModels.filter((m: any) => {
-        const q = (search as any).toLowerCase();
+  const filteredModels = (search as unknown).trim()
+    ? allModels.filter((m) => {
+        const q = (search as unknown).toLowerCase();
         return (
           (m.name || "").toLowerCase().includes(q) ||
           (m.label || "").toLowerCase().includes(q) ||
@@ -190,7 +190,7 @@ export default function ModelPickerPopoverComponent({
   // has enough space.
   const positionPopover = useCallback(() => {
     if (!triggerRef.current) return;
-    const triggerRect = (triggerRef.current as any).getBoundingClientRect();
+    const triggerRect = triggerRef.current!.getBoundingClientRect();
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
     const popoverW = Math.min(1600, viewportW - 32);
@@ -226,11 +226,11 @@ export default function ModelPickerPopoverComponent({
       if (impliedTop < pad) {
         // Not enough room even when flipped — center vertically
         const centeredTop = Math.max(pad, (viewportH - maxPopoverH) / 2);
-        (style as any).top = centeredTop;
-        (style as any).bottom = "auto";
-        (style as any).maxHeight = viewportH - centeredTop - pad;
+        (style as unknown).top = centeredTop;
+        (style as unknown).bottom = "auto";
+        (style as unknown).maxHeight = viewportH - centeredTop - pad;
       } else {
-        (style as any).bottom = bottom;
+        (style as unknown).bottom = bottom;
       }
     } else {
       // Prefer anchoring top edge just below the trigger
@@ -242,14 +242,14 @@ export default function ModelPickerPopoverComponent({
         if (availableH < 200) {
           // Barely any room below — center vertically instead
           const centeredTop = Math.max(pad, (viewportH - maxPopoverH) / 2);
-          (style as any).top = centeredTop;
-          (style as any).maxHeight = viewportH - centeredTop - pad;
+          (style as unknown).top = centeredTop;
+          (style as unknown).maxHeight = viewportH - centeredTop - pad;
         } else {
-          (style as any).top = top;
-          (style as any).maxHeight = availableH;
+          (style as unknown).top = top;
+          (style as unknown).maxHeight = availableH;
         }
       } else {
-        (style as any).top = top;
+        (style as unknown).top = top;
       }
     }
 
@@ -269,14 +269,14 @@ export default function ModelPickerPopoverComponent({
   // Focus search when popover opens
   useEffect(() => {
     if (open) {
-      setTimeout(() => (searchRef.current as any)?.focus(), 60);
+      setTimeout(() => searchRef.current?.focus(), 60);
     }
   }, [open]);
 
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handler = (e: any) => {
+    const handler = (e: KeyboardEvent) => {
       if (
         !e.target.closest("[data-model-picker-popover]") &&
         !e.target.closest("[data-model-picker-trigger]") &&
@@ -291,7 +291,7 @@ export default function ModelPickerPopoverComponent({
 
   // -- Handle model selection ---------------------------------------------
   const handleSelect = useCallback(
-    (rawModel: any) => {
+    (rawModel: unknown) => {
       if (multiSelect) {
         // Multi-select: toggle selection, keep popover open
         onSelectModel(rawModel);
@@ -342,7 +342,7 @@ export default function ModelPickerPopoverComponent({
   // Keyboard navigation (Escape / ArrowUp / ArrowDown / Enter)
   useEffect(() => {
     if (!open) return;
-    const handler = (e: any) => {
+    const handler = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.key === "Escape") {
         setOpen(false);
         return;
@@ -351,7 +351,7 @@ export default function ModelPickerPopoverComponent({
       // Arrow navigation
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setHighlightIndex((prev: any) => {
+        setHighlightIndex((prev) => {
           const max = filteredModels.length - 1;
           if (max < 0) return -1;
           return prev < max ? prev + 1 : 0;
@@ -361,7 +361,7 @@ export default function ModelPickerPopoverComponent({
 
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        setHighlightIndex((prev: any) => {
+        setHighlightIndex((prev) => {
           const max = filteredModels.length - 1;
           if (max < 0) return -1;
           return prev > 0 ? prev - 1 : max;
@@ -393,7 +393,7 @@ export default function ModelPickerPopoverComponent({
 
     // Watch the ChatArea for size changes (sidebar open/close transitions)
     const chatArea = document.querySelector("[data-chat-area]");
-    let ro: any;
+    let ro: unknown;
     if (chatArea) {
       ro = new ResizeObserver(reposition);
       ro.observe(chatArea);
@@ -408,7 +408,7 @@ export default function ModelPickerPopoverComponent({
 
   // -- Trigger display ---------------------------------------------------
   const currentModel = allModels.find(
-    (m: any) => m.provider === settings?.provider && m.name === settings?.model,
+    (m) => m.provider === settings?.provider && m.name === settings?.model,
   );
 
   // Build display label
@@ -466,13 +466,13 @@ export default function ModelPickerPopoverComponent({
     };
     const mod = {};
     for (const t of currentModel.inputTypes || []) {
-      if ((INPUT_MAP as any)[t]) (mod as any)[(INPUT_MAP as any)[t]] = true;
+      if ((INPUT_MAP as Record<string, unknown>)[t]) (mod as Record<string, unknown>)[(INPUT_MAP as Record<string, unknown>)[t]] = true;
     }
     for (const t of currentModel.outputTypes || []) {
-      if ((OUTPUT_MAP as any)[t]) (mod as any)[(OUTPUT_MAP as any)[t]] = true;
+      if ((OUTPUT_MAP as Record<string, unknown>)[t]) (mod as Record<string, unknown>)[(OUTPUT_MAP as Record<string, unknown>)[t]] = true;
     }
     for (const t of currentModel.tools || []) {
-      if ((TOOL_MAP as any)[t]) (mod as any)[(TOOL_MAP as any)[t]] = true;
+      if ((TOOL_MAP as Record<string, unknown>)[t]) (mod as Record<string, unknown>)[(TOOL_MAP as Record<string, unknown>)[t]] = true;
     }
     return Object.keys(mod).length > 0 ? mod : null;
   }, [currentModel, multiSelect]);
@@ -510,12 +510,12 @@ export default function ModelPickerPopoverComponent({
           onMouseEnter={
             disabled
               ? undefined
-              : (e: any) => SoundService.playHoverButton({ event: e })
+              : (e: React.SyntheticEvent) => SoundService.playHoverButton({ event: e })
           }
           onClick={
             disabled
               ? undefined
-              : (e: any) => {
+              : (e: React.SyntheticEvent) => {
                   SoundService.playClickButton({ event: e });
                   togglePopover();
                 }
@@ -577,7 +577,7 @@ export default function ModelPickerPopoverComponent({
                 className={styles.searchInput}
                 placeholder="Type to filter models…"
                 value={search}
-                onChange={(e: any) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
                   setSearch(e.target.value);
                   setHighlightIndex(-1);
                 }}
@@ -638,7 +638,7 @@ export default function ModelPickerPopoverComponent({
 
 // -- Helpers ------------------------------------------------------------
 
-function buildAllModels(config: any, modelTypeFilter: any) {
+function buildAllModels(config: unknown, modelTypeFilter: unknown) {
   if (!config) return [];
   const seen = new Map();
 
@@ -653,7 +653,7 @@ function buildAllModels(config: any, modelTypeFilter: any) {
   for (const { key, suffix } of sections) {
     const modelsMap = config[key]?.models || {};
     for (const [provider, models] of Object.entries(modelsMap)) {
-      for (const m of models as any) {
+      for (const m of models as unknown[]) {
         const id = `${provider}:${m.name}`;
         if (!seen.has(id)) {
           seen.set(id, {
@@ -673,7 +673,7 @@ function buildAllModels(config: any, modelTypeFilter: any) {
   // Apply modelType filter if specified
   if (modelTypeFilter) {
     result = result.filter(
-      (m: any) =>
+      (m) =>
         m.modelType === modelTypeFilter ||
         (m.name || "").toLowerCase().includes(modelTypeFilter),
     );
@@ -712,11 +712,11 @@ const PROVIDER_ORG_MAP = {
   "llama-cpp": null,
 };
 
-function inferOrganization(modelName: any, provider: any) {
-  if ((PROVIDER_ORG_MAP as any)[provider])
-    return (PROVIDER_ORG_MAP as any)[provider];
+function inferOrganization(modelName: unknown, provider: unknown) {
+  if ((PROVIDER_ORG_MAP as Record<string, unknown>)[provider])
+    return (PROVIDER_ORG_MAP as Record<string, unknown>)[provider];
   for (const [pattern, org] of ORG_MAP) {
-    if ((pattern as any).test(modelName)) return org;
+    if ((pattern as unknown).test(modelName)) return org;
   }
   return null;
 }

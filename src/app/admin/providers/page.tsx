@@ -31,11 +31,11 @@ export default function ProvidersPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [modelStats, setModelStats] = useState<Record<string, any>[]>([]);
+  const [modelStats, setModelStats] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedProvider, setExpandedProvider] = useState(null);
-  const [rateLimits, setRateLimits] = useState<Record<string, any>>({});
+  const [rateLimits, setRateLimits] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     // Immediately enter loading state and clear stale data when filters change
@@ -46,7 +46,7 @@ export default function ProvidersPage() {
     async function load() {
       try {
         const params = {};
-        if (projectFilter) (params as Record<string, any>).project = projectFilter;
+        if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
         Object.assign(params, buildDateRangeParams(dateRange));
         const [models, limits] = await Promise.all([
           IrisService.getModelStats(params),
@@ -68,9 +68,9 @@ export default function ProvidersPage() {
   // Aggregate by provider
   const providers = useMemo(() => {
     const map = {};
-    modelStats.forEach((m: Record<string, any>) => {
-      if (!(map as Record<string, any>)[m.provider]) {
-        (map as Record<string, any>)[m.provider] = {
+    modelStats.forEach((m: Record<string, unknown>) => {
+      if (!(map as Record<string, unknown>)[m.provider]) {
+        (map as Record<string, unknown>)[m.provider] = {
           provider: m.provider,
           totalRequests: 0,
           totalCost: 0,
@@ -81,7 +81,7 @@ export default function ProvidersPage() {
           _latencyCount: 0,
         };
       }
-      const p = (map as Record<string, any>)[m.provider];
+      const p = (map as Record<string, unknown>)[m.provider];
       p.totalRequests += m.totalRequests;
       p.totalCost += m.totalCost;
       p.totalTokens += m.totalTokens;
@@ -90,26 +90,26 @@ export default function ProvidersPage() {
       p.models.push(m);
     });
 
-    return (Object.values(map) as Record<string, any>[])
-      .map((p: Record<string, any>) => ({
+    return (Object.values(map) as Record<string, unknown>[])
+      .map((p: Record<string, unknown>) => ({
         ...p,
         avgLatency: p._latencyCount ? p._latencySum / p._latencyCount : 0,
         models: p.models.sort(
-          (a: Record<string, any>, b: Record<string, any>) => b.totalRequests - a.totalRequests,
+          (a: Record<string, unknown>, b: Record<string, unknown>) => b.totalRequests - a.totalRequests,
         ),
       }))
-      .sort((a: Record<string, any>, b: Record<string, any>) => b.totalRequests - a.totalRequests);
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => b.totalRequests - a.totalRequests);
   }, [modelStats]);
 
   const totalRequests =
-    providers.reduce((s: number, p: Record<string, any>) => s + p.totalRequests, 0) || 1;
+    providers.reduce((s: number, p: Record<string, unknown>) => s + p.totalRequests, 0) || 1;
 
   const modelColumns = useMemo(
     () => [
       {
         key: "model",
         label: "Model",
-        render: (m: Record<string, any>) => (
+        render: (m: Record<string, unknown>) => (
           <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
             {m.model}
           </span>
@@ -118,31 +118,31 @@ export default function ProvidersPage() {
       {
         key: "totalRequests",
         label: "Requests",
-        render: (m: Record<string, any>) => formatNumber(m.totalRequests),
+        render: (m: Record<string, unknown>) => formatNumber(m.totalRequests),
         align: "right",
       },
       {
         key: "totalTokens",
         label: "Tokens",
-        render: (m: Record<string, any>) => formatNumber(m.totalTokens),
+        render: (m: Record<string, unknown>) => formatNumber(m.totalTokens),
         align: "right",
       },
       {
         key: "avgTokensPerSec",
         label: "Tok/s",
-        render: (m: Record<string, any>) => formatTokensPerSec(m.avgTokensPerSec),
+        render: (m: Record<string, unknown>) => formatTokensPerSec(m.avgTokensPerSec),
         align: "right",
       },
       {
         key: "totalCost",
         label: "Cost",
-        render: (m: Record<string, any>) => formatCost(m.totalCost),
+        render: (m: Record<string, unknown>) => formatCost(m.totalCost),
         align: "right",
       },
       {
         key: "avgLatency",
         label: "Avg Latency",
-        render: (m: Record<string, any>) => formatLatency(m.avgLatency),
+        render: (m: Record<string, unknown>) => formatLatency(m.avgLatency),
         align: "right",
       },
     ],
@@ -180,11 +180,11 @@ export default function ProvidersPage() {
       {loading && <LoadingMessage message="Loading provider data..." />}
 
       <div className={styles.providerList}>
-        {providers.map((p: Record<string, any>, i: number) => {
+        {providers.map((p: Record<string, unknown>, i: number) => {
           const color = PROVIDER_COLORS[i % PROVIDER_COLORS.length];
           const share = ((p.totalRequests / totalRequests) * 100).toFixed(1);
           const isExpanded = expandedProvider === p.provider;
-          const providerLimits = (rateLimits as Record<string, any>)[p.provider];
+          const providerLimits = (rateLimits as Record<string, unknown>)[p.provider];
 
           return (
             <div key={p.provider} className={styles.providerCard}>
@@ -249,7 +249,7 @@ export default function ProvidersPage() {
                   <TableComponent
                     columns={modelColumns}
                     data={p.models}
-                    getRowKey={(m: Record<string, any>, i: number) => `${m.model}-${i}`}
+                    getRowKey={(m: Record<string, unknown>, i: number) => `${m.model}-${i}`}
                   />
                 </div>
               )}
@@ -263,7 +263,7 @@ export default function ProvidersPage() {
 
 // -- Rate Limit Panel ------------------------------------------
 
-function RateLimitPanel({ data }: { data: Record<string, any> }) {
+function RateLimitPanel({ data }: { data: Record<string, unknown> }) {
   const { dynamic, models, note } = data;
 
   if (!models || Object.keys(models).length === 0) return null;
@@ -275,7 +275,7 @@ function RateLimitPanel({ data }: { data: Record<string, any> }) {
         {note && <span className={styles.rateLimitMeta}>{note}</span>}
       </div>
       <div className={styles.rateLimitModels}>
-        {Object.entries(models).map(([modelName, modelData]: [string, any]) => (
+        {Object.entries(models).map(([modelName, modelData]: [string, Record<string, unknown>]) => (
           <ModelRateLimitCard
             key={modelName}
             modelName={modelName}
@@ -293,7 +293,7 @@ function RateLimitPanel({ data }: { data: Record<string, any> }) {
  * - Dynamic (OpenAI/Anthropic): shows remaining/limit progress bars per window (RPM, TPM).
  * - Static (Google): shows fixed RPM/TPM/RPD values.
  */
-function ModelRateLimitCard({ modelName, modelData, dynamic }: { modelName: string; modelData: Record<string, any>; dynamic?: boolean }) {
+function ModelRateLimitCard({ modelName, modelData, dynamic }: { modelName: string; modelData: Record<string, unknown>; dynamic?: boolean }) {
   // Static model (Google) — simple metric display
   if (!dynamic) {
     return (

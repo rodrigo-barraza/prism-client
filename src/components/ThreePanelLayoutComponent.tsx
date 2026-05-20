@@ -38,7 +38,7 @@ export default function ThreePanelLayout({
   headerCenter = null,
   fileViewerPanel = null,
   children,
-}: any) {
+}: unknown) {
   const resolvedRightTitle =
     rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
   // Start with panels hidden to prevent FOUC on mobile; mount effect opens them on desktop
@@ -77,7 +77,7 @@ export default function ThreePanelLayout({
 
   /* Narrow ↔ wide transitions: enforce exclusivity or restore both.
      Skip on initial mount — the mount effect handles initial panel state. */
-  const isNarrowMountRef = useRef<any>(true);
+  const isNarrowMountRef = useRef<boolean>(true);
   useEffect(() => {
     if (isNarrowMountRef.current) {
       isNarrowMountRef.current = false;
@@ -100,7 +100,7 @@ export default function ThreePanelLayout({
   }, [isNarrow]);
 
   const toggleLeft = useCallback(() => {
-    setShowLeft((prev: any) => {
+    setShowLeft((prev) => {
       const next = !prev;
       localStorage.setItem(LS_PANEL_LEFT, String(next));
       if (next && window.innerWidth <= 1400) {
@@ -112,7 +112,7 @@ export default function ThreePanelLayout({
   }, []);
 
   const toggleRight = useCallback(() => {
-    setShowRight((prev: any) => {
+    setShowRight((prev) => {
       const next = !prev;
       localStorage.setItem(LS_PANEL_RIGHT, String(next));
       if (next && window.innerWidth <= 1400) {
@@ -125,7 +125,7 @@ export default function ThreePanelLayout({
 
   /* -- Mobile: auto-close sidebar when a [data-panel-close] element is clicked -- */
   const handleSidebarClick = useCallback(
-    (closeFn: any) => (e: any) => {
+    (closeFn: (e: MouseEvent) => void) => (e: MouseEvent) => {
       if (!isMobile) return;
       if (e.target.closest("[data-panel-close]")) {
         closeFn();

@@ -44,7 +44,7 @@ const CARD_CLASS = {
 /**
  * Extract a short agent number from an agentId like "agent-1" → "1"
  */
-function getAgentNumber(agentId: any) {
+function getAgentNumber(agentId: unknown) {
   const match = agentId?.match(/agent-(\w+)/);
   return match ? match[1].toUpperCase() : agentId;
 }
@@ -61,12 +61,12 @@ export default function WorkersPanel({
   refreshKey,
   onCountChange,
   workerToolActivity = {},
-}: any) {
-  const [workers, setWorkers] = useState<any[]>([]);
+}: unknown) {
+  const [workers, setWorkers] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const hasData = useRef<any>(false);
-  const pollRef = useRef<any>(null);
+  const hasData = useRef<boolean>(false);
+  const pollRef = useRef<unknown>(null);
 
   // -- Load --------------------------------------------------
 
@@ -79,7 +79,7 @@ export default function WorkersPanel({
       setWorkers(list);
       onCountChange?.(list.length);
       hasData.current = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load workers:", error);
       if (!hasData.current) setError(error.message);
     } finally {
@@ -100,7 +100,7 @@ export default function WorkersPanel({
 
   // Auto-poll while any worker is running (every 3s)
   useEffect(() => {
-    const hasRunning = workers.some((w: any) => w.status === "running");
+    const hasRunning = workers.some((w) => w.status === "running");
 
     if (hasRunning) {
       pollRef.current = setInterval(loadWorkers, POLL_FAST);
@@ -169,12 +169,12 @@ export default function WorkersPanel({
       )}
 
       {/* -- Worker list --------------------------------------- */}
-      {workers.map((worker: any) => {
+      {workers.map((worker) => {
         const statusLabel =
-          (STATUS_LABEL as any)[worker.status] || worker.status;
+          (STATUS_LABEL as Record<string, unknown>)[worker.status] || worker.status;
         const statusClass =
-          (STATUS_CLASS as any)[worker.status] || "statusPending";
-        const cardClass = (CARD_CLASS as any)[worker.status] || "";
+          (STATUS_CLASS as Record<string, unknown>)[worker.status] || "statusPending";
+        const cardClass = (CARD_CLASS as Record<string, unknown>)[worker.status] || "";
         const isLive = worker.status === "running";
         const isComplete = worker.status === "complete";
 
@@ -276,7 +276,7 @@ export default function WorkersPanel({
             {/* Files */}
             {worker.files?.length > 0 && (
               <div className={styles.workerFiles}>
-                {worker.files.map((f: any, i: any) => (
+                {worker.files.map((f, i) => (
                   <span key={i} className={styles.workerFile} title={f}>
                     <FileCode
                       size={9}

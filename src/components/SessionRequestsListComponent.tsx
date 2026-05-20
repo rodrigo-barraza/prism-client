@@ -18,8 +18,8 @@ import styles from "./SessionRequestsListComponent.module.css";
 export default function SessionRequestsListComponent({
   agentSessionId,
   refreshKey = 0,
-}: any) {
-  const [data, setData] = useState<any>(null);
+}: unknown) {
+  const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -30,7 +30,7 @@ export default function SessionRequestsListComponent({
     try {
       const result = await IrisService.getSessionRequests(agentSessionId);
       setData(result);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 404 = no requests yet, don't show error
       if (!error.message?.includes("404")) {
         setError(error.message);
@@ -45,7 +45,7 @@ export default function SessionRequestsListComponent({
     fetchRequests();
   }, [fetchRequests, refreshKey]);
 
-  if (!agentSessionId || loading || error || !(data as any)?.requests?.length) {
+  if (!agentSessionId || loading || error || !(data as unknown)?.requests?.length) {
     if (error) {
       return (
         <div className={styles.container}>
@@ -67,13 +67,13 @@ export default function SessionRequestsListComponent({
   }
 
   // Flat list, newest first — each request tagged with isWorker
-  const rootSessionId = (data as any).rootSessionId;
-  const requests = [...(data as any).requests]
+  const rootSessionId = (data as unknown).rootSessionId;
+  const requests = [...(data as unknown).requests]
     .sort(
-      (a: any, b: any) =>
+      (a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     )
-    .map((req: any) => ({
+    .map((req) => ({
       ...req,
       isWorker: req.agentSessionId !== rootSessionId,
       workerShortId:
@@ -88,11 +88,11 @@ export default function SessionRequestsListComponent({
         <div className={styles.header}>
           <Activity size={12} />
           <span>Requests</span>
-          <span className={styles.headerCount}>{(data as any).total}</span>
+          <span className={styles.headerCount}>{(data as unknown).total}</span>
         </div>
 
         <div className={styles.requestList}>
-          {requests.map((req: any, i: any) => {
+          {requests.map((req, i) => {
             const isError = !req.success;
             return (
               <div

@@ -89,17 +89,17 @@ export default function ModalityIconComponent({
   modalities,
   size = 11,
   className,
-}: any) {
+}: unknown) {
   if (!modalities) return null;
 
-  const activeInputs = INPUT_MODALITIES.filter((m: any) => modalities[m.key]);
-  const activeOutputs = OUTPUT_MODALITIES.filter((m: any) => modalities[m.key]);
+  const activeInputs = INPUT_MODALITIES.filter((m) => modalities[m.key]);
+  const activeOutputs = OUTPUT_MODALITIES.filter((m) => modalities[m.key]);
   const hasInputs = activeInputs.length > 0;
   const hasOutputs = activeOutputs.length > 0;
 
   if (!hasInputs && !hasOutputs) return null;
 
-  const renderIcon = (def: any) => (
+  const renderIcon = (def: unknown) => (
     <TooltipComponent key={def.key} label={def.label} position="top">
       <span className={styles.modalityIcon} style={{ color: def.color }}>
         <def.icon size={size} />

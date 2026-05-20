@@ -47,17 +47,17 @@ export default function RequestsPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [requests, setRequests] = useState<Record<string, any>[]>([]);
+  const [requests, setRequests] = useState<Record<string, unknown>[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
-  const [selectedRequest, setSelectedRequest] = useState<Record<string, any> | null>(null);
-  const [associations, setAssociations] = useState<Record<string, any> | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Record<string, unknown> | null>(null);
+  const [associations, setAssociations] = useState<Record<string, unknown> | null>(null);
   const [loadingAssociations, setLoadingAssociations] = useState(false);
-  const [filters, setFilters] = useState<any>({
+  const [filters, setFilters] = useState<unknown>({
     provider: "",
     model: "",
     endpoint: "",
@@ -80,11 +80,11 @@ export default function RequestsPage() {
     const now = Date.now();
     const ids = new Set<string>();
     for (const r of requests) {
-      if (!(r as Record<string, any>).timestamp) continue;
-      const age = now - new Date((r as Record<string, any>).timestamp).getTime();
+      if (!(r as Record<string, unknown>).timestamp) continue;
+      const age = now - new Date((r as Record<string, unknown>).timestamp).getTime();
       // Treat timestamps up to 10s in the future (clock skew) or < 5s old
       if (age < 5000 && age > -10000)
-        ids.add((r as Record<string, any>).requestId || (r as Record<string, any>)._id);
+        ids.add((r as Record<string, unknown>).requestId || (r as Record<string, unknown>)._id);
     }
     return ids;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,9 +135,9 @@ export default function RequestsPage() {
     const gen = fetchGenRef.current;
     try {
       const params = { page, limit: LIMIT, sort, order };
-      if (projectFilter) (params as Record<string, any>).project = projectFilter;
+      if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
       Object.entries(filters).forEach(([k, v]) => {
-        if (v) (params as Record<string, any>)[k] = v;
+        if (v) (params as Record<string, unknown>)[k] = v;
       });
       Object.assign(params, buildDateRangeParams(dateRange));
 
@@ -174,7 +174,7 @@ export default function RequestsPage() {
       debounceTimer = setTimeout(loadRequests, 800);
     };
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: Record<string, any>) => {
+      onStatus: (data: Record<string, unknown>) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
           if (!pollInterval) {
@@ -182,7 +182,7 @@ export default function RequestsPage() {
           }
         }
       },
-      onChange: (event: Record<string, any>) => {
+      onChange: (event: Record<string, unknown>) => {
         if (event.collection === "requests") {
           debouncedLoad();
         }
@@ -198,14 +198,14 @@ export default function RequestsPage() {
 
   // Fetch associations when a request is selected
   useEffect(() => {
-    if (!(selectedRequest as Record<string, any>)?.requestId) {
+    if (!(selectedRequest as Record<string, unknown>)?.requestId) {
       setAssociations(null);
       return;
     }
     let cancelled = false;
     setLoadingAssociations(true);
-    IrisService.getRequestAssociations((selectedRequest as Record<string, any>).requestId)
-      .then((data: Record<string, any>) => {
+    IrisService.getRequestAssociations((selectedRequest as Record<string, unknown>).requestId)
+      .then((data: Record<string, unknown>) => {
         if (!cancelled) setAssociations(data);
       })
       .catch(() => {
@@ -218,7 +218,7 @@ export default function RequestsPage() {
     return () => {
       cancelled = true;
     };
-  }, [(selectedRequest as Record<string, any>)?.requestId]);
+  }, [(selectedRequest as Record<string, unknown>)?.requestId]);
 
   function handleSort(key: string, dir: string) {
     setSort(key);
@@ -257,7 +257,7 @@ export default function RequestsPage() {
       "Latency",
       "Status",
     ].join(",");
-    const rows = requests.map((r: Record<string, any>) =>
+    const rows = requests.map((r: Record<string, unknown>) =>
       [
         r.timestamp || "",
         r.project || "",
@@ -413,12 +413,12 @@ export default function RequestsPage() {
           sortDir={order}
           onSort={handleSort}
           maxHeight={null}
-          onRowMouseEnter={(row: Record<string, any>) => {
+          onRowMouseEnter={(row: Record<string, unknown>) => {
             if (row.conversationId)
               setHoveredConversationId(row.conversationId);
           }}
           onRowMouseLeave={() => setHoveredConversationId(null)}
-          getRowClassName={(row: Record<string, any>) => {
+          getRowClassName={(row: Record<string, unknown>) => {
             const id = row.requestId || row._id;
             const classes = [];
             if (
@@ -431,7 +431,7 @@ export default function RequestsPage() {
             else if (fadingIds.has(id)) classes.push(styles.newRowFadeOut);
             return classes.join(" ");
           }}
-          onRowClick={async (req: Record<string, any>) => {
+          onRowClick={async (req: Record<string, unknown>) => {
             setSelectedRequest(req);
             try {
               const full = await IrisService.getRequest(req.requestId);
@@ -471,9 +471,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <MessageSquare size={12} /> Conversations
                     </span>
-                    {(associations as Record<string, any>)?.conversations?.length > 0 ? (
+                    {(associations as Record<string, unknown>)?.conversations?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.conversations?.map((c: Record<string, any>) => (
+                        {associations?.conversations?.map((c: Record<string, unknown>) => (
                           <HistoryItemComponent
                             key={c.id}
                             item={{
@@ -513,9 +513,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <GitBranch size={12} /> Workflows
                     </span>
-                    {(associations as Record<string, any>)?.workflows?.length > 0 ? (
+                    {(associations as Record<string, unknown>)?.workflows?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.workflows?.map((w: Record<string, any>) => (
+                        {associations?.workflows?.map((w: Record<string, unknown>) => (
                           <HistoryItemComponent
                             key={w.id}
                             item={{
@@ -547,9 +547,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <FolderOpen size={12} /> Sessions
                     </span>
-                    {(associations as Record<string, any>)?.sessions?.length > 0 ? (
+                    {(associations as Record<string, unknown>)?.sessions?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.sessions?.map((s: Record<string, any>) => (
+                        {associations?.sessions?.map((s: Record<string, unknown>) => (
                           <HistoryItemComponent
                             key={s.id}
                             item={{
@@ -585,7 +585,7 @@ export default function RequestsPage() {
                 <div className={styles.detailSection}>
                   <div className={styles.detailSectionTitle}>Media Assets</div>
                   <div className={styles.mediaGrid}>
-                    {mediaAssets.map((asset: Record<string, any>, index: number) => (
+                    {mediaAssets.map((asset: Record<string, unknown>, index: number) => (
                       <MediaCardComponent
                         key={index}
                         media={{
@@ -616,19 +616,19 @@ export default function RequestsPage() {
                 </div>
               );
             })()}
-            {(selectedRequest as Record<string, any>).requestPayload && (
+            {(selectedRequest as Record<string, unknown>).requestPayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, any>).requestPayload}
+                  data={(selectedRequest as Record<string, unknown>).requestPayload}
                   label="Request Payload"
                   maxHeight="400px"
                 />
               </div>
             )}
-            {(selectedRequest as Record<string, any>).responsePayload && (
+            {(selectedRequest as Record<string, unknown>).responsePayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, any>).responsePayload}
+                  data={(selectedRequest as Record<string, unknown>).responsePayload}
                   label="Response Payload"
                   maxHeight="400px"
                 />

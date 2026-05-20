@@ -22,7 +22,7 @@ export default function ToggleButtonComponent({
   active = false,
   title,
   onClick,
-}: any) {
+}: unknown) {
   return (
     <button
       className={`${styles.toggle} ${active ? styles.active : ""}`}

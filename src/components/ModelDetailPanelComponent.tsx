@@ -92,12 +92,12 @@ const PRICING_LABELS = {
  * ModelDetailPanelComponent — a slide-in right panel showing comprehensive
  * model card information when a model row is clicked in the ModelsTable.
  */
-export default function ModelDetailPanelComponent({ model, onClose }: any) {
+export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
   const router = useRouter();
 
   // Close on Escape key
   const handleKeyDown = useCallback(
-    (e: any) => {
+    (e: React.SyntheticEvent) => {
       if (e.key === "Escape") onClose();
     },
     [onClose],
@@ -186,14 +186,14 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
   // Collect pricing entries
   const pricingEntries = m.pricing
     ? Object.entries(m.pricing).filter(
-        ([, value]: any) => value != null && value > 0,
+        ([, value]: unknown) => value != null && value > 0,
       )
     : [];
 
   // Collect arena entries
   const arenaEntries = m.arena
     ? Object.entries(m.arena).filter(
-        ([, value]: any) => value != null && value > 0,
+        ([, value]: unknown) => value != null && value > 0,
       )
     : [];
 
@@ -400,15 +400,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Modalities
                 </div>
                 <div className={styles.modalitiesRow}>
-                  {m.inputTypes.map((t: any) => {
-                    const meta = (MODALITY_ICONS as any)[t];
+                  {m.inputTypes.map((t) => {
+                    const meta = (MODALITY_ICONS as Record<string, unknown>)[t];
                     if (!meta) return null;
                     const Icon = meta.icon;
                     return (
                       <span
                         key={`in-${t}`}
                         className={styles.modalityChip}
-                        style={{ color: (MODALITY_COLORS as any)[t] }}
+                        style={{ color: (MODALITY_COLORS as Record<string, unknown>)[t] }}
                       >
                         <Icon size={12} />
                         {meta.label}
@@ -418,15 +418,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   {m.inputTypes.length > 0 && m.outputTypes.length > 0 && (
                     <ArrowRight size={14} className={styles.modalityArrow} />
                   )}
-                  {m.outputTypes.map((t: any) => {
-                    const meta = (MODALITY_ICONS as any)[t];
+                  {m.outputTypes.map((t) => {
+                    const meta = (MODALITY_ICONS as Record<string, unknown>)[t];
                     if (!meta) return null;
                     const Icon = meta.icon;
                     return (
                       <span
                         key={`out-${t}`}
                         className={styles.modalityChip}
-                        style={{ color: (MODALITY_COLORS as any)[t] }}
+                        style={{ color: (MODALITY_COLORS as Record<string, unknown>)[t] }}
                       >
                         <Icon size={12} />
                         {meta.label}
@@ -448,7 +448,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Media Limits
                 </div>
                 <div className={styles.mediaLimitsGrid}>
-                  {Object.entries(m.mediaLimits).map(([type, limits]: any) => (
+                  {Object.entries(m.mediaLimits).map(([type, limits]: unknown) => (
                     <div key={type} className={styles.mediaLimitCard}>
                       <span className={styles.mediaLimitType}>{type}</span>
                       {limits.maxCount && (
@@ -478,9 +478,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Tools & Capabilities
                 </div>
                 <div className={styles.toolsGrid}>
-                  {m.tools.map((tool: any) => {
-                    const Icon = (TOOL_ICONS as any)[tool];
-                    const color = (TOOL_COLORS as any)[tool];
+                  {m.tools.map((tool) => {
+                    const Icon = (TOOL_ICONS as Record<string, unknown>)[tool];
+                    const color = (TOOL_COLORS as Record<string, unknown>)[tool];
                     return (
                       <span
                         key={tool}
@@ -521,7 +521,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   API Features
                 </div>
                 <div className={styles.toolsGrid}>
-                  {capabilities.map((cap: any) => (
+                  {capabilities.map((cap) => (
                     <span key={cap} className={styles.toolChip}>
                       {cap}
                     </span>
@@ -541,10 +541,10 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Pricing
                 </div>
                 <div className={styles.pricingGrid}>
-                  {pricingEntries.map(([key, value]: any) => (
+                  {pricingEntries.map(([key, value]: [string, unknown]) => (
                     <div key={key} className={styles.pricingRow}>
                       <span className={styles.pricingLabel}>
-                        {(PRICING_LABELS as any)[key] || key}
+                        {(PRICING_LABELS as Record<string, unknown>)[key] || key}
                       </span>
                       <span className={styles.pricingValue}>
                         $
@@ -569,11 +569,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   LMArena ELO Scores
                 </div>
                 <div className={styles.arenaGrid}>
-                  {arenaEntries.map(([key, value]: any) => (
+                  {arenaEntries.map(([key, value]: [string, unknown]) => (
                     <div key={key} className={styles.arenaCard}>
                       <span className={styles.arenaScore}>{value}</span>
                       <span className={styles.arenaLabel}>
-                        {(ARENA_LABELS as any)[key] || key}
+                        {(ARENA_LABELS as Record<string, unknown>)[key] || key}
                       </span>
                     </div>
                   ))}

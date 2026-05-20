@@ -7,7 +7,7 @@ import styles from "./RequestCountBadgeComponent.module.css";
 const TWEEN_MS = 600;
 
 /** Ease-out cubic — fast start, gentle landing. */
-function easeOutCubic(t: any) {
+function easeOutCubic(t: unknown) {
   return 1 - Math.pow(1 - t, 3);
 }
 
@@ -22,9 +22,9 @@ export default function RequestCountBadgeComponent({
   showIcon = true,
   className = "",
   mini = false,
-}: any) {
-  const prevRef = useRef<any>(null);
-  const rafRef = useRef<any>(null);
+}: unknown) {
+  const prevRef = useRef<unknown>(null);
+  const rafRef = useRef<number | null>(null);
   const [displayCount, setDisplayCount] = useState(count);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function RequestCountBadgeComponent({
     const delta = count - from;
     const start = performance.now();
 
-    function tick(now: any) {
+    function tick(now: unknown) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / TWEEN_MS, 1);
       const eased = easeOutCubic(progress);

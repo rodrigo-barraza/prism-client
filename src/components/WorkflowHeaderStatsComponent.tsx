@@ -7,12 +7,12 @@ import styles from "./WorkflowHeaderStatsComponent.module.css";
 export default function WorkflowHeaderStatsComponent({
   nodes = [],
   edgeCount = 0,
-}: any) {
+}: unknown) {
   const workflowStats = useMemo(() => {
-    const modelNodes = nodes.filter((n: any) => !n.nodeType);
+    const modelNodes = nodes.filter((n) => !n.nodeType);
     const models = [
       ...new Map(
-        modelNodes.map((n: any) => [
+        modelNodes.map((n) => [
           `${n.provider}:${n.modelName}`,
           { provider: n.provider, name: n.displayName || n.modelName },
         ]),
@@ -40,8 +40,8 @@ export default function WorkflowHeaderStatsComponent({
       </span>
       {workflowStats.modalities.length > 0 && (
         <span className={styles.headerBadge}>
-          {workflowStats.modalities.map((mod: any) => {
-            const info = (MODALITY_ICONS as any)[mod];
+          {workflowStats.modalities.map((mod) => {
+            const info = (MODALITY_ICONS as Record<string, unknown>)[mod];
             if (!info) return null;
             const Icon = info.icon;
             return (
@@ -57,7 +57,7 @@ export default function WorkflowHeaderStatsComponent({
       )}
       {workflowStats.models.length > 0 && (
         <span className={styles.headerBadge}>
-          {workflowStats.models.map((m: any) => (
+          {workflowStats.models.map((m) => (
             <span
               key={`${m.provider}:${m.name}`}
               className={styles.headerModelTag}

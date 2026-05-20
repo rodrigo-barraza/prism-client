@@ -105,14 +105,14 @@ export default function StatusBarComponent({
   maxIterations,
   idleIcon,
   idleLabel,
-}: any) {
+}: unknown) {
   const isWorker = variant === "worker";
   // -- Synthetic progress when backend reports 0 --------------
   // The OpenAI-compat path (agentic mode) doesn't receive
   // prompt_processing.progress events from LM Studio, so progress
   // stays at 0. We fill in an asymptotic estimate client-side.
   const [syntheticProgress, setSyntheticProgress] = useState(0);
-  const syntheticStartRef = useRef<any>(null);
+  const syntheticStartRef = useRef<unknown>(null);
 
   const isProgressPhase = phase === "processing" || phase === "loading";
   const backendStuck = isProgressPhase && progress != null && progress === 0;
@@ -148,7 +148,7 @@ export default function StatusBarComponent({
       : null;
 
   // Strip trailing " 45%" / " done" from label when structured progress is shown via chip
-  const rawLabel = label || (PHASE_LABELS as any)[phase] || "Starting...";
+  const rawLabel = label || (PHASE_LABELS as Record<string, unknown>)[phase] || "Starting...";
   const hasEffectiveProgress =
     effectiveProgress != null && effectiveProgress >= 0;
   const resolvedLabel = hasEffectiveProgress
@@ -157,7 +157,7 @@ export default function StatusBarComponent({
         .replace(/[\u2026.]+\s*done$/i, "\u2026")
     : rawLabel;
   const resolvedIcon =
-    icon !== undefined ? icon : (PHASE_ICONS as any)[phase] || null;
+    icon !== undefined ? icon : (PHASE_ICONS as Record<string, unknown>)[phase] || null;
 
   // Rainbow visuals: colour when the model is actively producing tokens (text or reasoning)
   const isColorPhase =
@@ -169,7 +169,7 @@ export default function StatusBarComponent({
 
   // Resolve per-phase canvas palette (null = default rainbow)
   const activePalette =
-    active && isColorPhase ? (PHASE_PALETTES as any)[phase] || null : null;
+    active && isColorPhase ? (PHASE_PALETTES as Record<string, unknown>)[phase] || null : null;
 
   // Progress percentage
   const progressPct = hasEffectiveProgress

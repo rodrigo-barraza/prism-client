@@ -21,7 +21,7 @@ import styles from "./MediaCardComponent.module.css";
 
 /* -- Helpers -- */
 
-function resolveUrl(url: any) {
+function resolveUrl(url: unknown) {
   if (!url || typeof url !== "string") return null;
   if (url.startsWith("minio://")) return PrismService.getFileUrl(url);
   if (url.startsWith("data:")) return url;
@@ -29,15 +29,15 @@ function resolveUrl(url: any) {
   return url;
 }
 
-function MediaTypeIcon({ type, size = 32 }: any) {
-  const color = (MODALITY_COLORS as any)[type] || MODALITY_COLORS.image;
+function MediaTypeIcon({ type, size = 32 }: unknown) {
+  const color = (MODALITY_COLORS as Record<string, unknown>)[type] || MODALITY_COLORS.image;
   if (type === "audio") return <Music size={size} style={{ color }} />;
   if (type === "video") return <Film size={size} style={{ color }} />;
   if (type === "pdf") return <FileText size={size} style={{ color }} />;
   return <ImageIcon size={size} style={{ color }} />;
 }
 
-function OriginBadge({ origin }: any) {
+function OriginBadge({ origin }: unknown) {
   return (
     <span
       className={`${styles.originBadge} ${origin === "ai" ? styles.originAi : styles.originUser}`}
@@ -68,7 +68,7 @@ export default function MediaCardComponent({
   isFavorite = false,
   onFavorite,
   onImageClick,
-}: any) {
+}: unknown) {
   const resolvedUrl = resolveUrl(media.url);
   const m = media;
 
@@ -85,7 +85,7 @@ export default function MediaCardComponent({
       {showFavorite && (
         <button
           className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ""}`}
-          onClick={(e: any) => {
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onFavorite?.();
           }}
@@ -104,7 +104,7 @@ export default function MediaCardComponent({
             className={styles.previewImage}
             loading="lazy"
             onClick={() => onImageClick?.(resolvedUrl)}
-            onError={(e: any) => {
+            onError={(e: React.SyntheticEvent) => {
               e.target.style.display = "none";
               e.target.parentElement.classList.add(styles.placeholder);
               const icon = document.createElement("span");
@@ -120,8 +120,8 @@ export default function MediaCardComponent({
             className={styles.previewVideo}
             muted
             preload="metadata"
-            onMouseEnter={(e: any) => e.target.play().catch(() => {})}
-            onMouseLeave={(e: any) => {
+            onMouseEnter={(e: React.MouseEvent) => e.target.play().catch(() => {})}
+            onMouseLeave={(e: React.MouseEvent) => {
               e.target.pause();
               e.target.currentTime = 0;
             }}
@@ -129,7 +129,7 @@ export default function MediaCardComponent({
         ) : m.mediaType === "audio" && resolvedUrl ? (
           <div
             className={styles.previewAudio}
-            onClick={(e: any) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             <AudioPlayerRecorderComponent src={resolvedUrl} square />
           </div>

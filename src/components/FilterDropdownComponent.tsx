@@ -21,11 +21,11 @@ export default function FilterDropdownComponent({
   dateStorageKey,
   triggerLabel = "Filters",
   fullWidth = false,
-}: any) {
+}: unknown) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
-  const dropdownRef = useRef<any>(null);
-  const initializedDateRef = useRef<any>(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const initializedDateRef = useRef<boolean>(false);
 
   const showDateRange = !!onDateChange;
 
@@ -63,10 +63,10 @@ export default function FilterDropdownComponent({
   // Close on outside click
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: any) => {
+    const handler = (e: KeyboardEvent) => {
       if (
         dropdownRef.current &&
-        !(dropdownRef.current as any).contains(e.target)
+        !dropdownRef.current.contains(e.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -78,7 +78,7 @@ export default function FilterDropdownComponent({
   // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: any) => {
+    const handler = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.key === "Escape") setIsOpen(false);
     };
     document.addEventListener("keydown", handler);
@@ -147,8 +147,8 @@ export default function FilterDropdownComponent({
             type="button"
             className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
             {...(SoundService.interactive(() =>
-              setIsOpen((v: any) => !v),
-            ) as any)}
+              setIsOpen((v) => !v),
+            ) as React.CSSProperties)}
             style={fullWidth ? { width: "100%" } : undefined}
           >
             <span className={styles.triggerContent}>
@@ -173,7 +173,7 @@ export default function FilterDropdownComponent({
               {showDateRange && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
-                  {DATE_PRESETS.map((preset: any) => {
+                  {DATE_PRESETS.map((preset) => {
                     const isActive =
                       getActiveDatePreset(dateFrom, dateTo) === preset.label;
                     return (
@@ -183,7 +183,7 @@ export default function FilterDropdownComponent({
                         className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
                         {...(SoundService.interactive(() =>
                           onDateChange(preset.getValue()),
-                        ) as any)}
+                        ) as React.CSSProperties)}
                       >
                         <Calendar size={13} style={{ color: "#6366f1" }} />
                         <span>{preset.label}</span>
@@ -199,7 +199,7 @@ export default function FilterDropdownComponent({
                     {...(SoundService.interactive(() => {
                       setShowCustomDatePicker(true);
                       setIsOpen(false);
-                    }) as any)}
+                    }) as React.CSSProperties)}
                   >
                     <Calendar size={13} style={{ color: "#6366f1" }} />
                     <span>Custom…</span>
@@ -212,7 +212,7 @@ export default function FilterDropdownComponent({
               )}
 
               {/* -- Dynamic filter groups -- */}
-              {groups.map((group: any) => {
+              {groups.map((group) => {
                 const {
                   label,
                   items = [],
@@ -224,7 +224,7 @@ export default function FilterDropdownComponent({
                 return (
                   <div key={label} className={styles.menuGroup}>
                     <div className={styles.menuGroupLabel}>{label}</div>
-                    {items.map((item: any) => {
+                    {items.map((item) => {
                       const Icon = item.icon;
                       const isActive = isSingleSelect
                         ? activeKeys === item.key
@@ -240,7 +240,7 @@ export default function FilterDropdownComponent({
                             onToggle(
                               isSingleSelect && isActive ? null : item.key,
                             ),
-                          ) as any)}
+                          ) as React.CSSProperties)}
                         >
                           {Icon && (
                             <Icon
@@ -269,7 +269,7 @@ export default function FilterDropdownComponent({
           <DatePickerComponent
             from={dateFrom}
             to={dateTo}
-            onChange={(value: any) => {
+            onChange={(value) => {
               onDateChange(value);
               setShowCustomDatePicker(false);
             }}
@@ -284,7 +284,7 @@ export default function FilterDropdownComponent({
       {/* -- Active filter badges -- */}
       {badges.length > 0 && (
         <div className={styles.badgeList}>
-          {badges.map((b: any) => {
+          {badges.map((b) => {
             const Icon = b.icon;
             return (
               <span
@@ -296,7 +296,7 @@ export default function FilterDropdownComponent({
                         "--badge-color": b.color,
                         "--badge-bg": `${b.color}18`,
                         "--badge-border": `${b.color}40`,
-                      } as any)
+                      } as React.CSSProperties)
                     : undefined
                 }
               >
@@ -305,7 +305,7 @@ export default function FilterDropdownComponent({
                 <button
                   type="button"
                   className={styles.badgeRemove}
-                  onClick={(e: any) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     b.onRemove();
                   }}

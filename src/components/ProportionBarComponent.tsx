@@ -16,7 +16,7 @@ export default function ProportionBarComponent({
   total = 1,
   color,
   mini = false,
-}: any) {
+}: unknown) {
   const pct = total > 0 ? (value / total) * 100 : 0;
 
   return (

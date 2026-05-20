@@ -37,17 +37,17 @@ const COMPLEXITY_CLASSES = {
  *
  * Lifecycle: Input → Plan → Execute → Review → Merge
  */
-export default function CoordinatorPanel({ project: _project }: any) {
+export default function CoordinatorPanel({ project: _project }: unknown) {
   // -- State -------------------------------------------------
   const [phase, setPhase] = useState("input"); // input | planning | plan | executing | review | merged
   const [task, setTask] = useState("");
   const [filesInput, setFilesInput] = useState("");
-  const [plan, setPlan] = useState<any>(null);
-  const [workers, setWorkers] = useState<any[]>([]);
-  const [toast, setToast] = useState<any>(null);
+  const [plan, setPlan] = useState<unknown>(null);
+  const [workers, setWorkers] = useState<unknown[]>([]);
+  const [toast, setToast] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
 
-  const showToast = useCallback((type: any, text: any) => {
+  const showToast = useCallback((type: unknown, text: unknown) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, []);
@@ -58,7 +58,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
     const files = filesInput
       .split("\n")
-      .map((f: any) => f.trim())
+      .map((f) => f.trim())
       .filter(Boolean);
 
     if (files.length === 0) {
@@ -70,7 +70,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
     setLoading(true);
 
     try {
-      const result: any = await PrismService._request("/coordinator/plan", {
+      const result: unknown = await PrismService._request("/coordinator/plan", {
         body: { task, files },
       });
 
@@ -82,7 +82,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
       setPlan(result);
       setPhase("plan");
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast("error", `Planning failed: ${error.message}`);
       setPhase("input");
     } finally {
@@ -98,7 +98,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
     setLoading(true);
 
     try {
-      const result: any = await PrismService._request("/coordinator/execute", {
+      const result: unknown = await PrismService._request("/coordinator/execute", {
         body: { plan },
       });
 
@@ -110,7 +110,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
       setWorkers(result.workers || []);
       setPhase("review");
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast("error", `Execution failed: ${error.message}`);
       setPhase("plan");
     } finally {
@@ -120,12 +120,12 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
   // -- Merge -------------------------------------------------
   const handleMerge = useCallback(async () => {
-    if (!(plan as any)?.taskId) return;
+    if (!(plan as unknown)?.taskId) return;
 
     setLoading(true);
     try {
-      const result: any = await PrismService._request(
-        `/coordinator/approve-merge/${(plan as any).taskId}`,
+      const result: unknown = await PrismService._request(
+        `/coordinator/approve-merge/${(plan as unknown).taskId}`,
         {
           method: "POST",
         },
@@ -138,7 +138,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
       setPhase("merged");
       showToast("success", "All branches merged successfully!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast("error", `Merge failed: ${error.message}`);
     } finally {
       setLoading(false);
@@ -147,11 +147,11 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
   // -- Abort -------------------------------------------------
   const handleAbort = useCallback(async () => {
-    if (!(plan as any)?.taskId) return;
+    if (!(plan as unknown)?.taskId) return;
 
     try {
       await PrismService._request(
-        `/coordinator/abort/${(plan as any).taskId}`,
+        `/coordinator/abort/${(plan as unknown).taskId}`,
         {
           method: "POST",
         },
@@ -190,9 +190,9 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
       {toast && (
         <div
-          className={`${styles.toast} ${styles[`toast${(toast as any).type.charAt(0).toUpperCase() + (toast as any).type.slice(1)}`]}`}
+          className={`${styles.toast} ${styles[`toast${(toast as unknown).type.charAt(0).toUpperCase() + (toast as unknown).type.slice(1)}`]}`}
         >
-          {(toast as any).text}
+          {(toast as unknown).text}
         </div>
       )}
 
@@ -203,13 +203,13 @@ export default function CoordinatorPanel({ project: _project }: any) {
             className={styles.taskTextarea}
             placeholder="Describe the refactoring task…&#10;e.g. 'Refactor all services to use the new structured logger'"
             value={task}
-            onChange={(e: any) => setTask(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setTask(e.target.value)}
           />
           <textarea
             className={styles.filesInput}
             placeholder="Target file paths (one per line)&#10;e.g. /home/rodrigo/development/sun/prism/src/services/FileService.js"
             value={filesInput}
-            onChange={(e: any) => setFilesInput(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setFilesInput(e.target.value)}
             rows={4}
           />
           <button
@@ -233,20 +233,20 @@ export default function CoordinatorPanel({ project: _project }: any) {
       {/* -- Plan Review Phase -------------------------------- */}
       {phase === "plan" && plan && (
         <div className={styles.planSection}>
-          <div className={styles.planSummary}>{(plan as any).summary}</div>
+          <div className={styles.planSummary}>{(plan as unknown).summary}</div>
 
-          {(plan as any).subTasks?.map((st: any) => (
+          {(plan as unknown).subTasks?.map((st) => (
             <div key={st.id} className={styles.subTaskCard}>
               <div className={styles.subTaskHeader}>
                 <span className={styles.subTaskId}>{st.id}</span>
                 <span
-                  className={`${styles.subTaskComplexity} ${styles[(COMPLEXITY_CLASSES as any)[st.complexity] || "complexityMedium"]}`}
+                  className={`${styles.subTaskComplexity} ${styles[(COMPLEXITY_CLASSES as Record<string, unknown>)[st.complexity] || "complexityMedium"]}`}
                 >
                   {st.complexity || "medium"}
                 </span>
               </div>
               <div className={styles.subTaskFiles}>
-                {st.files?.map((f: any, i: any) => (
+                {st.files?.map((f, i) => (
                   <span key={i} className={styles.subTaskFile}>
                     {f.split("/").pop()}
                   </span>
@@ -262,7 +262,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
               onClick={handleExecute}
               disabled={loading}
             >
-              <Play size={12} /> Execute ({(plan as any).subTasks?.length}{" "}
+              <Play size={12} /> Execute ({(plan as unknown).subTasks?.length}{" "}
               workers)
             </button>
             <button className={styles.rejectBtn} onClick={handleReset}>
@@ -283,12 +283,12 @@ export default function CoordinatorPanel({ project: _project }: any) {
       {/* -- Review Phase ------------------------------------- */}
       {phase === "review" && (
         <>
-          {workers.map((w: any) => (
+          {workers.map((w) => (
             <div key={w.id} className={styles.workerCard}>
               <div className={styles.workerHeader}>
                 <span className={styles.workerName}>{w.id}</span>
                 <span
-                  className={`${styles.workerStatus} ${styles[(STATUS_CLASSES as any)[w.status] || "statusPending"]}`}
+                  className={`${styles.workerStatus} ${styles[(STATUS_CLASSES as Record<string, unknown>)[w.status] || "statusPending"]}`}
                 >
                   {w.status}
                 </span>

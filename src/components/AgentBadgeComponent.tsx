@@ -18,15 +18,15 @@ const AGENT_GRADIENTS: Record<string, string[]> = {
 };
 const FALLBACK_GRADIENT = ["#8b5cf6", "#06b6d4"];
 
-function resolveGradient(agent: any) {
+function resolveGradient(agent) {
   if (agent?.color) return [agent.color, agent.color];
-  return (AGENT_GRADIENTS as any)[agent?.id] || FALLBACK_GRADIENT;
+  return (AGENT_GRADIENTS as Record<string, unknown>)[agent?.id] || FALLBACK_GRADIENT;
 }
 
 // -- Canvas texture helpers -----------------------------------------
 
 /** Draw a rounded-rect gradient fill on a canvas context. */
-function drawGradientBase(context: any, s: any, gradient: any) {
+function drawGradientBase(context: CanvasRenderingContext2D, s: number, gradient: unknown) {
   const r = s * 0.16;
   context.beginPath();
   context.roundRect(0, 0, s, s, r);
@@ -39,8 +39,8 @@ function drawGradientBase(context: any, s: any, gradient: any) {
 }
 
 /** Load an SVG string as an Image (returns a Promise). */
-function loadSvgImage(svgMarkup: any) {
-  return new Promise((resolve: any) => {
+function loadSvgImage(svgMarkup: unknown) {
+  return new Promise((resolve: unknown) => {
     const image = new Image();
     const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -66,17 +66,17 @@ const TEX_SIZE = 256;
  * Uses MeshBasicMaterial (no lighting needed) and pauses after the first
  * painted frame to avoid burning GPU on a static element.
  */
-function CoinStatic({ agent, size }: any) {
-  const meshRef = useRef<any>(null);
-  const texRef = useRef<any>(null);
-  const canvasRef = useRef<any>(null);
-  const iconRef = useRef<any>(null);
-  const hasPaintedRef = useRef<any>(false);
+function CoinStatic({ agent, size }: unknown) {
+  const meshRef = useRef<unknown>(null);
+  const texRef = useRef<unknown>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const iconRef = useRef<HTMLCanvasElement | null>(null);
+  const hasPaintedRef = useRef<boolean>(false);
   const gradient = useMemo(() => resolveGradient(agent), [agent]);
 
   // -- Three.js scene setup — single flat plane --
   const handleSetup = useCallback(
-    ({ scene, camera, THREE }: any) => {
+    ({ scene, camera, THREE }: unknown) => {
       // Orthographic-style: push camera back, use tight FOV so plane fills view
       camera.position.set(0, 0, 20);
       camera.lookAt(0, 0, 0);
@@ -120,14 +120,14 @@ function CoinStatic({ agent, size }: any) {
       if (!canvasRef.current) return;
       const iconSz = TEX_SIZE * 0.55;
       const off = (TEX_SIZE - iconSz) / 2;
-      const context = (canvasRef.current as any).getContext("2d");
+      const context = (canvasRef.current as HTMLCanvasElement).getContext("2d");
 
       // Try <img> first (image-based agent logos like OMNI)
-      const img = (iconRef.current as any)?.querySelector("img");
+      const img = (iconRef.current as HTMLElement).querySelector("img");
       if (img) {
         const drawImg = () => {
           context.drawImage(img, off, off, iconSz, iconSz);
-          if (texRef.current) (texRef.current as any).needsUpdate = true;
+          if (texRef.current) (texRef.current as {needsUpdate: boolean}).needsUpdate = true;
         };
         if (img.complete && img.naturalWidth > 0) {
           drawImg();
@@ -138,16 +138,16 @@ function CoinStatic({ agent, size }: any) {
       }
 
       // Fall back to SVG icons (Lucide components)
-      const svg = (iconRef.current as any)?.querySelector("svg");
+      const svg = (iconRef.current as HTMLElement).querySelector("svg");
       if (!svg) return;
 
       svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
       const markup = svg.outerHTML.replace(/currentColor/g, "#ffffff");
 
-      loadSvgImage(markup).then((image: any) => {
+      loadSvgImage(markup).then((image: unknown) => {
         if (!image || !canvasRef.current) return;
         context.drawImage(image, off, off, iconSz, iconSz);
-        if (texRef.current) (texRef.current as any).needsUpdate = true;
+        if (texRef.current) (texRef.current as {needsUpdate: boolean}).needsUpdate = true;
       });
     });
 
@@ -155,9 +155,9 @@ function CoinStatic({ agent, size }: any) {
   }, [agent]);
 
   // Continuous Y-axis rotation — smooth coin-flip loop
-  const handleTick = useCallback(({ elapsed }: any) => {
+  const handleTick = useCallback(({ elapsed }: unknown) => {
     if (!meshRef.current) return;
-    (meshRef.current as any).rotation.y = elapsed * 1.2;
+    (meshRef.current as {rotation: {x: number; y: number; z: number}}).rotation.y = elapsed * 1.2;
   }, []);
 
   return (
@@ -192,7 +192,7 @@ export default function AgentBadgeComponent({
   iconSize = 13,
   animation = false,
   className = "",
-}: any) {
+}: unknown) {
   const agentId = agent?.id || "";
 
   if (animation) {

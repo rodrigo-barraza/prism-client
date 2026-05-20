@@ -19,7 +19,7 @@ import {
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import styles from "./AudioPlayerRecorderComponent.module.css";
 
-function formatTime(totalSeconds: any) {
+function formatTime(totalSeconds: unknown) {
   if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return "0:00";
   const mins = Math.floor(totalSeconds / 60);
   const secs = Math.floor(totalSeconds % 60);
@@ -31,11 +31,11 @@ const BAR_GAP = 1;
 
 /* -- Draw waveform bars on a canvas -- */
 function drawBars(
-  canvas: any,
-  peaks: any,
-  progress: any,
-  playedColor: any,
-  unplayedColor: any,
+  canvas: unknown,
+  peaks: unknown,
+  progress: unknown,
+  playedColor: unknown,
+  unplayedColor: unknown,
 ) {
   const context = canvas.getContext("2d");
   const w = canvas.width;
@@ -61,7 +61,7 @@ function drawBars(
 }
 
 /* -- Decode audio src into peaks + true duration -- */
-async function decodePeaks(src: any, numPeaks = 200) {
+async function decodePeaks(src: unknown, numPeaks = 200) {
   try {
     const resp = await fetch(src);
     const buffer = await resp.arrayBuffer();
@@ -81,7 +81,7 @@ async function decodePeaks(src: any, numPeaks = 200) {
       peaks.push(sum / blockSize);
     }
     const max = Math.max(...peaks, 0.01);
-    return { peaks: peaks.map((p: any) => p / max), duration: trueDuration };
+    return { peaks: peaks.map((p) => p / max), duration: trueDuration };
   } catch {
     return { peaks: new Array(numPeaks).fill(0.15), duration: null };
   }
@@ -99,30 +99,30 @@ export default function AudioPlayerRecorderComponent({
   compact = false,
   square = false,
   streaming = false,
-}: any) {
+}: unknown) {
   // --- Recorder state ---
   const [isRecording, setIsRecording] = useState(false);
   const [recSeconds, setRecSeconds] = useState(0);
-  const mediaRecorderRef = useRef<any>(null);
-  const audioChunksRef = useRef<any>([]);
-  const recTimerRef = useRef<any>(null);
-  const analyserRef = useRef<any>(null);
-  const audioCtxRef = useRef<any>(null);
-  const recCanvasRef = useRef<any>(null);
-  const animFrameRef = useRef<any>(null);
-  const recPeaksRef = useRef<any>([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<unknown>([]);
+  const recTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const analyserRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioCtxRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animFrameRef = useRef<HTMLCanvasElement | null>(null);
+  const recPeaksRef = useRef<unknown>([]);
 
   // --- Player state ---
-  const audioRef = useRef<any>(null);
-  const playerCanvasRef = useRef<any>(null);
+  const audioRef = useRef<HTMLCanvasElement | null>(null);
+  const playerCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [peaks, setPeaks] = useState(null);
-  const playAnimRef = useRef<any>(null);
-  const prevSrcRef = useRef<any>(src);
+  const playAnimRef = useRef<unknown>(null);
+  const prevSrcRef = useRef<unknown>(src);
 
   // -- Reset player state when src changes (prevents stale audio across conversations) --
   useEffect(() => {
@@ -136,10 +136,10 @@ export default function AudioPlayerRecorderComponent({
       // Reset the HTMLAudioElement to prevent zombie paused state
       const audio = audioRef.current;
       if (audio) {
-        (audio as any).pause();
-        (audio as any).currentTime = 0;
+        (audio as unknown).pause();
+        (audio as unknown).currentTime = 0;
         // Force reload when src changes to clear internal media state
-        (audio as any).load();
+        (audio as unknown).load();
       }
     }
   }, [src]);
@@ -150,8 +150,8 @@ export default function AudioPlayerRecorderComponent({
     const animRef = playAnimRef;
     return () => {
       if (audio) {
-        (audio as any).pause();
-        (audio as any).currentTime = 0;
+        (audio as unknown).pause();
+        (audio as unknown).currentTime = 0;
       }
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
@@ -161,7 +161,7 @@ export default function AudioPlayerRecorderComponent({
   useEffect(() => {
     if (!src) return;
     let cancelled = false;
-    decodePeaks(src).then(({ peaks: p, duration: d }: any) => {
+    decodePeaks(src).then(({ peaks: p, duration: d }: unknown) => {
       if (cancelled) return;
       setPeaks(p);
       // Use decoded duration as source of truth (WebM metadata often reports Infinity)
@@ -192,7 +192,7 @@ export default function AudioPlayerRecorderComponent({
     }
     const tick = () => {
       if (audioRef.current)
-        setCurrentTime((audioRef.current as any).currentTime);
+        setCurrentTime((audioRef.current as HTMLAudioElement).currentTime);
       playAnimRef.current = requestAnimationFrame(tick);
     };
     tick();
@@ -208,7 +208,7 @@ export default function AudioPlayerRecorderComponent({
       animFrameRef.current = null;
     }
     if (audioCtxRef.current) {
-      (audioCtxRef.current as any).close().catch(() => {});
+      (audioCtxRef.current as AudioContext).close().catch(() => {});
       audioCtxRef.current = null;
     }
     analyserRef.current = null;
@@ -219,14 +219,14 @@ export default function AudioPlayerRecorderComponent({
     const analyser = analyserRef.current;
     if (!canvas || !analyser) return;
 
-    const bufferLength = (analyser as any).frequencyBinCount;
+    const bufferLength = (analyser as unknown).frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    const maxBars = Math.floor((canvas as any).width / (BAR_WIDTH + BAR_GAP));
+    const maxBars = Math.floor((canvas as HTMLCanvasElement).width / (BAR_WIDTH + BAR_GAP));
     let frameCount = 0;
 
     const draw = () => {
       animFrameRef.current = requestAnimationFrame(draw);
-      (analyser as any).getByteTimeDomainData(dataArray);
+      (analyser as unknown).getByteTimeDomainData(dataArray);
 
       // Only sample a new peak every ~4 frames (~15 peaks/sec at 60fps)
       frameCount++;
@@ -247,9 +247,9 @@ export default function AudioPlayerRecorderComponent({
       }
 
       // Redraw every frame for smoothness
-      const context = (canvas as any).getContext("2d");
-      const w = (canvas as any).width;
-      const h = (canvas as any).height;
+      const context = (canvas as HTMLCanvasElement).getContext("2d");
+      const w = (canvas as HTMLCanvasElement).width;
+      const h = (canvas as HTMLCanvasElement).height;
       context.clearRect(0, 0, w, h);
 
       const curPeaks = recPeaksRef.current;
@@ -280,7 +280,7 @@ export default function AudioPlayerRecorderComponent({
   useEffect(() => {
     if (isRecording) {
       recTimerRef.current = setInterval(() => {
-        setRecSeconds((s: any) => s + 1);
+        setRecSeconds((s) => s + 1);
       }, 1000);
     } else {
       clearInterval(recTimerRef.current);
@@ -304,17 +304,17 @@ export default function AudioPlayerRecorderComponent({
 
       const recorder = new MediaRecorder(stream);
       audioChunksRef.current = [];
-      recorder.ondataavailable = (e: any) => {
+      recorder.ondataavailable = (e: React.SyntheticEvent) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const reader = new FileReader();
-        reader.onload = (ev: any) => {
+        reader.onload = (ev: unknown) => {
           onRecordingComplete?.(ev.target.result);
         };
         reader.readAsDataURL(blob);
-        stream.getTracks().forEach((t: any) => t.stop());
+        stream.getTracks().forEach((t) => t.stop());
       };
       mediaRecorderRef.current = recorder;
       recorder.start();
@@ -325,7 +325,7 @@ export default function AudioPlayerRecorderComponent({
   };
 
   const stopRecording = () => {
-    (mediaRecorderRef.current as any)?.stop();
+    mediaRecorderRef.current?.stop();
     setIsRecording(false);
     stopWaveform();
   };
@@ -334,27 +334,27 @@ export default function AudioPlayerRecorderComponent({
   const togglePlayback = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying) (audio as any).pause();
-    else (audio as any).play();
+    if (isPlaying) (audio as unknown).pause();
+    else (audio as unknown).play();
   };
 
-  const handleCanvasSeek = (e: any) => {
+  const handleCanvasSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const canvas = playerCanvasRef.current;
     const audio = audioRef.current;
     if (!canvas || !audio || !duration) return;
-    const rect = (canvas as any).getBoundingClientRect();
+    const rect = (canvas as HTMLCanvasElement).getBoundingClientRect();
     const ratio = Math.max(
       0,
       Math.min(1, (e.clientX - rect.left) / rect.width),
     );
-    (audio as any).currentTime = ratio * duration;
+    (audio as unknown).currentTime = ratio * duration;
     setCurrentTime(ratio * duration);
   };
 
   const toggleMute = () => {
     const next = !muted;
     setMuted(next);
-    if (audioRef.current) (audioRef.current as any).muted = next;
+    if (audioRef.current) (audioRef.current as HTMLAudioElement).muted = next;
   };
 
   const handleDownload = () => {
@@ -383,7 +383,7 @@ export default function AudioPlayerRecorderComponent({
             <Radio size={14} />
           </div>
           <div className={styles.streamingBars}>
-            {Array.from({ length: 24 }).map((_: any, i: any) => (
+            {Array.from({ length: 24 }).map((_, i) => (
               <span
                 key={i}
                 className={styles.streamingBar}
@@ -405,21 +405,21 @@ export default function AudioPlayerRecorderComponent({
       return (
         <div
           className={styles.audioSquare}
-          onMouseDown={(e: any) => e.stopPropagation()}
+          onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
         >
           <audio
             ref={audioRef}
             src={src}
             preload="metadata"
-            onLoadedMetadata={(e: any) => {
+            onLoadedMetadata={(e: React.SyntheticEvent) => {
               if (Number.isFinite(e.target.duration))
                 setDuration(e.target.duration);
             }}
-            onDurationChange={(e: any) => {
+            onDurationChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
               if (Number.isFinite(e.target.duration))
                 setDuration(e.target.duration);
             }}
-            onTimeUpdate={(e: any) => setCurrentTime(e.target.currentTime)}
+            onTimeUpdate={(e: React.SyntheticEvent) => setCurrentTime(e.target.currentTime)}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onEnded={() => setIsPlaying(false)}
@@ -467,15 +467,15 @@ export default function AudioPlayerRecorderComponent({
           ref={audioRef}
           src={src}
           preload="metadata"
-          onLoadedMetadata={(e: any) => {
+          onLoadedMetadata={(e: React.SyntheticEvent) => {
             if (Number.isFinite(e.target.duration))
               setDuration(e.target.duration);
           }}
-          onDurationChange={(e: any) => {
+          onDurationChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
             if (Number.isFinite(e.target.duration))
               setDuration(e.target.duration);
           }}
-          onTimeUpdate={(e: any) => setCurrentTime(e.target.currentTime)}
+          onTimeUpdate={(e: React.SyntheticEvent) => setCurrentTime(e.target.currentTime)}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
@@ -519,12 +519,12 @@ export default function AudioPlayerRecorderComponent({
             max={1}
             step={0.01}
             value={muted ? 0 : volume}
-            onChange={(value: any) => {
+            onChange={(value) => {
               setVolume(value);
               setMuted(value === 0);
               if (audioRef.current) {
-                (audioRef.current as any).volume = value;
-                (audioRef.current as any).muted = value === 0;
+                (audioRef.current as HTMLAudioElement).volume = value;
+                (audioRef.current as HTMLAudioElement).muted = value === 0;
               }
             }}
             compact

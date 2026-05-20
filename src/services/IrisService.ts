@@ -38,14 +38,14 @@ export interface IrisStatsResponse {
 }
 
 export interface IrisConversationListResponse {
-  data: any[];
+  data: unknown[];
   total: number;
   count: number;
   [key: string]: unknown;
 }
 
 export interface IrisTimelineResponse {
-  data: any[];
+  data: unknown[];
   [key: string]: unknown;
 }
 
@@ -53,7 +53,7 @@ export interface IrisTimelineResponse {
  * Generic paginated list response — shared by traces, media, text, agent-sessions, workflows.
  */
 export interface IrisPaginatedResponse {
-  data: any[];
+  data: unknown[];
   total: number;
   [key: string]: unknown;
 }

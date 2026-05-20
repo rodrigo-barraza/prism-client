@@ -115,19 +115,19 @@ export default function HistoryPanel({
   hasMore,
   loadingMore,
   onLoadMore,
-}: any) {
-  const newBtnRef = useRef<any>(null);
-  const rainbowTimer = useRef<any>(null);
-  const glitchInterval = useRef<any>(null);
+}: unknown) {
+  const newBtnRef = useRef<HTMLButtonElement | null>(null);
+  const rainbowTimer = useRef<HTMLButtonElement | null>(null);
+  const glitchInterval = useRef<HTMLButtonElement | null>(null);
   const [glitchLabel, setGlitchLabel] = useState<string | null>(null);
 
   const handleNew = useCallback(() => {
     const element = newBtnRef.current;
     if (element) {
       // Rainbow hue-rotate
-      (element as any).classList.remove(styles.newBtnRainbow);
-      void (element as any).offsetWidth;
-      (element as any).classList.add(styles.newBtnRainbow);
+      (element as HTMLElement).classList.remove(styles.newBtnRainbow);
+      void (element as HTMLElement).offsetWidth;
+      (element as HTMLElement).classList.add(styles.newBtnRainbow);
 
       // Glitch text scramble — 30ms swaps for chaotic feel
       setGlitchLabel(glitchText());
@@ -138,7 +138,7 @@ export default function HistoryPanel({
 
       clearTimeout(rainbowTimer.current);
       rainbowTimer.current = setTimeout(() => {
-        (element as any).classList.remove(styles.newBtnRainbow);
+        (element as HTMLElement).classList.remove(styles.newBtnRainbow);
         clearInterval(glitchInterval.current);
         glitchInterval.current = null;
         setGlitchLabel(null);
@@ -149,14 +149,14 @@ export default function HistoryPanel({
 
   // Normalize sessions into HistoryList items
   const items = useMemo(() => {
-    return sessions.map((conversation: any) => {
+    return sessions.map((conversation) => {
       // Prefer session-level totalCost (authoritative, from request logs
       // for agent sessions). Fall back to message-sum only for Direct Chat
       // sessions that carry messages inline with no precomputed total.
       const totalCost =
         conversation.totalCost ??
         (conversation.messages || []).reduce(
-          (sum: any, m: any) => sum + (m.estimatedCost || 0),
+          (sum, m) => sum + (m.estimatedCost || 0),
           0,
         );
 
@@ -231,7 +231,7 @@ export default function HistoryPanel({
         ? {
             ...baseModalities,
             functionCalling: Object.values(conversation.toolCounts).reduce(
-              (s: any, c: any) => s + c,
+              (s, c) => s + c,
               0,
             ),
           }
@@ -251,7 +251,7 @@ export default function HistoryPanel({
         searchText: [
           conversation.project || "",
           conversation.username || "",
-          ...(conversation.messages || []).map((m: any) => m.content || ""),
+          ...(conversation.messages || []).map((m) => m.content || ""),
         ].join(" "),
       };
     });
@@ -275,8 +275,8 @@ export default function HistoryPanel({
       <HistoryList
         items={items}
         activeId={activeId}
-        onSelect={(item: any) => {
-          const conversation = sessions.find((c: any) => c.id === item.id);
+        onSelect={(item) => {
+          const conversation = sessions.find((c) => c.id === item.id);
           if (conversation) onSelect(conversation);
         }}
         onDelete={!readOnly && onDelete ? onDelete : undefined}

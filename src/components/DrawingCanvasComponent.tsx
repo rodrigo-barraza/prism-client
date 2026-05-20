@@ -51,17 +51,17 @@ const CANVAS_H = 600;
  *   onSave(url)  – called with PNG data URL on save
  *   onClose()    – close without saving
  */
-export default function DrawingCanvas({ src, onSave, onClose }: any) {
-  const canvasRef = useRef<any>(null);
-  const bgCanvasRef = useRef<any>(null);
-  const containerRef = useRef<any>(null);
+export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const [tool, setTool] = useState("pen");
   const [color, setColor] = useState(COLORS[0].value);
   const [sizeIdx, setSizeIdx] = useState(1);
   const [drawing, setDrawing] = useState(false);
-  const [strokes, setStrokes] = useState<any[]>([]);
-  const [currentStroke, setCurrentStroke] = useState<any>(null);
+  const [strokes, setStrokes] = useState<unknown[]>([]);
+  const [currentStroke, setCurrentStroke] = useState<unknown>(null);
   const [canvasSize, setCanvasSize] = useState({ w: CANVAS_W, h: CANVAS_H });
   const [displaySize, setDisplaySize] = useState({ w: 0, h: 0 });
   const [bgReady, setBgReady] = useState(!src);
@@ -98,9 +98,9 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
       requestAnimationFrame(() => {
         const bgCanvas = bgCanvasRef.current;
         if (!bgCanvas) return;
-        (bgCanvas as any).width = image.naturalWidth;
-        (bgCanvas as any).height = image.naturalHeight;
-        const context = (bgCanvas as any).getContext("2d");
+        (bgCanvas as unknown).width = image.naturalWidth;
+        (bgCanvas as unknown).height = image.naturalHeight;
+        const context = (bgCanvas as unknown).getContext("2d");
         context.drawImage(image, 0, 0);
       });
     };
@@ -111,20 +111,20 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    (canvas as any).width = canvasSize.w;
-    (canvas as any).height = canvasSize.h;
+    (canvas as HTMLCanvasElement).width = canvasSize.w;
+    (canvas as HTMLCanvasElement).height = canvasSize.h;
   }, [canvasSize]);
 
   // Escape key
   useEffect(() => {
-    const handleKey = (e: any) => {
+    const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
-  const renderStroke = (context: any, stroke: any) => {
+  const renderStroke = (context: unknown, stroke: unknown) => {
     context.save();
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -187,11 +187,11 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
   /* -- Drawing helpers -- */
 
-  const redrawAll = useCallback((strokeList: any) => {
+  const redrawAll = useCallback((strokeList: unknown) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as any).getContext("2d");
-    context.clearRect(0, 0, (canvas as any).width, (canvas as any).height);
+    const context = (canvas as HTMLCanvasElement).getContext("2d");
+    context.clearRect(0, 0, (canvas as HTMLCanvasElement).width, (canvas as HTMLCanvasElement).height);
     for (const s of strokeList) {
       renderStroke(context, s);
     }
@@ -203,15 +203,15 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
   /* -- Coordinate helpers -- */
 
-  const getPos = (e: any) => {
+  const getPos = (e: React.PointerEvent | PointerEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
-    const rect = (canvas as any).getBoundingClientRect();
+    const rect = (canvas as HTMLCanvasElement).getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     // Scale from display coordinates to canvas internal coordinates
-    const scaleX = (canvas as any).width / rect.width;
-    const scaleY = (canvas as any).height / rect.height;
+    const scaleX = (canvas as HTMLCanvasElement).width / rect.width;
+    const scaleY = (canvas as HTMLCanvasElement).height / rect.height;
     return {
       x: (clientX - rect.left) * scaleX,
       y: (clientY - rect.top) * scaleY,
@@ -220,7 +220,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
   /* -- Pointer handlers -- */
 
-  const handlePointerDown = (e: any) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
     const pos = getPos(e);
     const isEraser = tool === "eraser";
@@ -246,19 +246,19 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     setDrawing(true);
   };
 
-  const handlePointerMove = (e: any) => {
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (!drawing || !currentStroke) return;
     e.preventDefault();
     const pos = getPos(e);
 
     let updated;
     if (
-      (currentStroke as any).tool === "pen" ||
-      (currentStroke as any).tool === "eraser"
+      (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).tool === "pen" ||
+      (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).tool === "eraser"
     ) {
       updated = {
         ...currentStroke,
-        points: [...(currentStroke as any).points, pos],
+        points: [...(currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points, pos],
       };
     } else {
       updated = { ...currentStroke, end: pos };
@@ -267,7 +267,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as any).getContext("2d");
+    const context = (canvas as HTMLCanvasElement).getContext("2d");
     redrawAll(strokes);
     renderStroke(context, updated);
   };
@@ -276,13 +276,13 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     if (!drawing || !currentStroke) return;
 
     const isValid =
-      (currentStroke as any).tool === "pen" ||
-      (currentStroke as any).tool === "eraser"
-        ? (currentStroke as any).points.length >= 2
-        : (currentStroke as any).start && (currentStroke as any).end;
+      (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).tool === "pen" ||
+      (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).tool === "eraser"
+        ? (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points.length >= 2
+        : (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).start && (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).end;
 
     if (isValid) {
-      setStrokes((prev: any) => [...prev, currentStroke]);
+      setStrokes((prev) => [...prev, currentStroke]);
     }
     setCurrentStroke(null);
     setDrawing(false);
@@ -290,7 +290,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
   /* -- Actions -- */
 
-  const handleUndo = () => setStrokes((prev: any) => prev.slice(0, -1));
+  const handleUndo = () => setStrokes((prev) => prev.slice(0, -1));
   const handleClear = () => setStrokes([]);
 
   const handleSave = () => {
@@ -328,7 +328,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
       <div className={styles.toolbar}>
         {/* Tool buttons */}
         <div className={styles.toolGroup}>
-          {TOOLS.map((t: any) => {
+          {TOOLS.map((t) => {
             const Icon = t.icon;
             return (
               <button
@@ -346,7 +346,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
         {/* Colors */}
         <div className={styles.toolGroup}>
           <span className={styles.toolLabel}>Color</span>
-          {COLORS.map((c: any) => (
+          {COLORS.map((c) => (
             <button
               key={c.value}
               className={`${styles.swatch} ${color === c.value && tool !== "eraser" ? styles.swatchActive : ""}`}
@@ -366,7 +366,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
         {/* Sizes */}
         <div className={styles.toolGroup}>
           <span className={styles.toolLabel}>Size</span>
-          {SIZES.map((s: any, i: any) => (
+          {SIZES.map((s, i) => (
             <button
               key={s.label}
               className={`${styles.sizeBtn} ${sizeIdx === i ? styles.sizeBtnActive : ""}`}

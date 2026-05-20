@@ -58,15 +58,15 @@ export default function DashboardPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, dateRange } = useAdminHeader();
-  const [stats, setStats] = useState<any>(null);
-  const [projectStats, setProjectStats] = useState<any[]>([]);
-  const [modelStats, setModelStats] = useState<any[]>([]);
-  const [configModels, setConfigModels] = useState<any>({});
+  const [stats, setStats] = useState<unknown>(null);
+  const [projectStats, setProjectStats] = useState<unknown[]>([]);
+  const [modelStats, setModelStats] = useState<unknown[]>([]);
+  const [configModels, setConfigModels] = useState<Record<string, unknown>>({});
 
-  const [timeline, setTimeline] = useState<any[]>([]);
-  const [recentRequests, setRecentRequests] = useState<any[]>([]);
-  const [recentTraces, setRecentTraces] = useState<any[]>([]);
-  const [recentConversations, setRecentConversations] = useState<any[]>([]);
+  const [timeline, setTimeline] = useState<unknown[]>([]);
+  const [recentRequests, setRecentRequests] = useState<unknown[]>([]);
+  const [recentTraces, setRecentTraces] = useState<unknown[]>([]);
+  const [recentConversations, setRecentConversations] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -83,7 +83,7 @@ export default function DashboardPage() {
   const loadDashboard = useCallback(async () => {
     try {
       const filterParams = { ...dateParams };
-      if (projectFilter) (filterParams as any).project = projectFilter;
+      if (projectFilter) (filterParams as unknown).project = projectFilter;
 
       const [
         statsData,
@@ -128,14 +128,14 @@ export default function DashboardPage() {
 
       // Build model→tools lookup from Prism config
       if (prismConfig?.textToText?.models) {
-        const buildLookup = (config: any) => {
+        const buildLookup = (config) => {
           const lookup = {};
           for (const [provider, models] of Object.entries(
             config.textToText?.models || {},
-          ) as [string, any[]][]) {
+          ) as [string, unknown[]][]) {
             for (const m of models) {
               const key = `${provider}:${m.name}`;
-              if (m.tools?.length) (lookup as any)[key] = m.tools;
+              if (m.tools?.length) (lookup as Record<string, unknown>)[key] = m.tools;
             }
           }
           return lookup;
@@ -145,7 +145,7 @@ export default function DashboardPage() {
         // Progressive loading: merge local provider model tools when they arrive
         if (prismConfig.localProviders?.length > 0) {
           PrismService.getLocalConfig()
-            .then(({ models }: any) => {
+            .then(({ models }: unknown) => {
               const merged = PrismService.mergeLocalModels(prismConfig, models);
               if (merged !== prismConfig) setConfigModels(buildLookup(merged));
             })
@@ -157,7 +157,7 @@ export default function DashboardPage() {
       setRecentRequests(requestsData.data || []);
       setRecentTraces(tracesData.data || []);
       setRecentConversations(conversationsData.data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message);
     } finally {
       setLoading(false);
@@ -180,8 +180,8 @@ export default function DashboardPage() {
 
     loadDashboard();
 
-    let pollInterval: any = null;
-    let debounceTimer: any = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+    let debounceTimer: unknown = null;
 
     const debouncedReload = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
@@ -191,7 +191,7 @@ export default function DashboardPage() {
     };
 
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: any) => {
+      onStatus: (data) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to 60s polling
           if (!pollInterval) {
@@ -229,9 +229,9 @@ export default function DashboardPage() {
 
   // Build provider distribution from model stats
   const providerAgg = {};
-  modelStats.forEach((m: any) => {
-    if (!(providerAgg as any)[m.provider]) {
-      (providerAgg as any)[m.provider] = {
+  modelStats.forEach((m) => {
+    if (!(providerAgg as Record<string, unknown>)[m.provider]) {
+      (providerAgg as Record<string, unknown>)[m.provider] = {
         provider: m.provider,
         totalRequests: 0,
         totalInputTokens: 0,
@@ -247,7 +247,7 @@ export default function DashboardPage() {
         sessionCount: 0,
       };
     }
-    const p = (providerAgg as any)[m.provider];
+    const p = (providerAgg as Record<string, unknown>)[m.provider];
     p.totalRequests += m.totalRequests;
     p.totalInputTokens += m.totalInputTokens || 0;
     p.totalOutputTokens += m.totalOutputTokens || 0;
@@ -264,36 +264,36 @@ export default function DashboardPage() {
     }
   });
   const providerData = Object.values(providerAgg)
-    .map((p: any) => ({
+    .map((p) => ({
       ...p,
       avgLatency: p.totalRequests > 0 ? p.latencySum / p.totalRequests : 0,
       avgTokensPerSec: p.tpsCount > 0 ? p.tpsSum / p.tpsCount : null,
     }))
-    .sort((a: any, b: any) => b.totalRequests - a.totalRequests);
+    .sort((a, b) => b.totalRequests - a.totalRequests);
   const totalProviderRequests =
-    providerData.reduce((s: any, p: any) => s + p.totalRequests, 0) || 1;
+    providerData.reduce((s, p) => s + p.totalRequests, 0) || 1;
   const totalProviderCost =
-    providerData.reduce((s: any, p: any) => s + p.totalCost, 0) || 1;
+    providerData.reduce((s, p) => s + p.totalCost, 0) || 1;
 
   // Top 10 models
   const topModels = [...modelStats].sort(
-    (a: any, b: any) => b.totalRequests - a.totalRequests,
+    (a, b) => b.totalRequests - a.totalRequests,
   );
 
   const totalModelRequests =
-    modelStats.reduce((s: any, m: any) => s + m.totalRequests, 0) || 1;
+    modelStats.reduce((s, m) => s + m.totalRequests, 0) || 1;
   const totalModelCost =
-    modelStats.reduce((s: any, m: any) => s + (m.totalCost || 0), 0) || 1;
+    modelStats.reduce((s, m) => s + (m.totalCost || 0), 0) || 1;
 
   // Project totals for proportion bars
   const totalProjectRequests =
-    projectStats.reduce((s: any, x: any) => s + x.totalRequests, 0) || 1;
+    projectStats.reduce((s, x) => s + x.totalRequests, 0) || 1;
   const totalProjectCost =
-    projectStats.reduce((s: any, x: any) => s + (x.totalCost || 0), 0) || 1;
+    projectStats.reduce((s, x) => s + (x.totalCost || 0), 0) || 1;
 
   // Recharts-friendly timeline data — convert UTC keys to local timezone labels
   const chartData = useMemo(() => {
-    return timeline.map((t: any) => {
+    return timeline.map((t) => {
       let label = "";
       let tickLabel = "";
       if (t.hour) {
@@ -316,7 +316,7 @@ export default function DashboardPage() {
             // Has seconds: 1s, 5s, or 15s bins — "22:05:31", "22:05:05"
             const [hh, mm, ss] = timePart
               .split(":")
-              .map((s: any) => s.padStart(2, "0"));
+              .map((s) => s.padStart(2, "0"));
             const date = new Date(`${key.slice(0, 10)}T${hh}:${mm}:${ss}Z`);
             const lH = String(date.getHours()).padStart(2, "0");
             const lM = String(date.getMinutes()).padStart(2, "0");
@@ -358,7 +358,7 @@ export default function DashboardPage() {
 
   // Derived stats for extra cards
   const avgCostPerRequest =
-    (stats as any)?.totalRequests > 0
+    (stats as Record<string, unknown>).totalRequests > 0
       ? stats.totalCost / stats.totalRequests
       : 0;
 
@@ -373,7 +373,7 @@ export default function DashboardPage() {
           icon={Box}
           count={loading ? "—" : formatNumber(projectStats.length)}
           label="Projects"
-          onClick={(e: any) => {
+          onClick={(e: React.MouseEvent) => {
             e.preventDefault();
             document
               .getElementById("projects-table")
@@ -395,33 +395,33 @@ export default function DashboardPage() {
         <ResourceCardComponent
           href="/admin/traces"
           icon={FolderOpen}
-          count={loading ? "—" : formatNumber((stats as any)?.sessionCount)}
+          count={loading ? "—" : formatNumber((stats as Record<string, unknown>).sessionCount)}
           label="Sessions"
         />
         <ResourceCardComponent
           href="/admin/conversations"
           icon={MessageSquare}
           count={
-            loading ? "—" : formatNumber((stats as any)?.conversationCount)
+            loading ? "—" : formatNumber((stats as Record<string, unknown>).conversationCount)
           }
           label="Conversations"
         />
         <ResourceCardComponent
           href="/admin/requests"
           icon={ScrollText}
-          count={loading ? "—" : formatNumber((stats as any)?.totalRequests)}
+          count={loading ? "—" : formatNumber((stats as Record<string, unknown>).totalRequests)}
           label="Requests"
         />
         <ResourceCardComponent
           href="/admin/agent-sessions"
           icon={Bot}
-          count={loading ? "—" : formatNumber((stats as any)?.agentCount)}
+          count={loading ? "—" : formatNumber((stats as Record<string, unknown>).agentCount)}
           label="Agents"
         />
         <ResourceCardComponent
           href="#"
           icon={FolderKanban}
-          count={loading ? "—" : formatNumber((stats as any)?.workspaceCount)}
+          count={loading ? "—" : formatNumber((stats as Record<string, unknown>).workspaceCount)}
           label="Workspaces"
         />
       </div>
@@ -434,14 +434,14 @@ export default function DashboardPage() {
             loading
               ? "..."
               : formatNumber(
-                  ((stats as any)?.totalInputTokens || 0) +
-                    ((stats as any)?.totalOutputTokens || 0),
+                  ((stats as Record<string, unknown>).totalInputTokens || 0) +
+                    ((stats as Record<string, unknown>).totalOutputTokens || 0),
                 )
           }
           subtitle={
             loading
               ? ""
-              : `${formatNumber((stats as any)?.totalInputTokens)} in / ${formatNumber((stats as any)?.totalOutputTokens)} out`
+              : `${formatNumber((stats as Record<string, unknown>).totalInputTokens)} in / ${formatNumber((stats as Record<string, unknown>).totalOutputTokens)} out`
           }
           icon={Zap}
           variant="info"
@@ -449,7 +449,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           label="Total Cost"
-          value={loading ? "..." : formatCost((stats as any)?.totalCost)}
+          value={loading ? "..." : formatCost((stats as Record<string, unknown>).totalCost)}
           subtitle="Estimated spend"
           icon={DollarSign}
           variant="warning"
@@ -458,7 +458,7 @@ export default function DashboardPage() {
         <StatsCard
           label="Total Duration"
           value={
-            loading ? "..." : formatElapsedTime((stats as any)?.totalDuration)
+            loading ? "..." : formatElapsedTime((stats as Record<string, unknown>).totalDuration)
           }
           subtitle="Cumulative request time"
           icon={Timer}
@@ -467,11 +467,11 @@ export default function DashboardPage() {
         />
         <StatsCard
           label="Avg Latency"
-          value={loading ? "..." : formatLatency((stats as any)?.avgLatency)}
+          value={loading ? "..." : formatLatency((stats as Record<string, unknown>).avgLatency)}
           subtitle={
             loading
               ? ""
-              : `${formatTokensPerSec((stats as any)?.avgTokensPerSec)} tok/s`
+              : `${formatTokensPerSec((stats as Record<string, unknown>).avgTokensPerSec)} tok/s`
           }
           icon={Clock}
           variant="success"
@@ -479,7 +479,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           label="Tool Calls"
-          value={loading ? "..." : formatNumber((stats as any)?.totalToolCalls)}
+          value={loading ? "..." : formatNumber((stats as Record<string, unknown>).totalToolCalls)}
           subtitle="Total tool invocations"
           icon={Wrench}
           variant="info"
@@ -490,11 +490,11 @@ export default function DashboardPage() {
           value={
             loading
               ? "..."
-              : `${(stats as any)?.totalRequests ? (((stats as any).successCount / (stats as any).totalRequests) * 100).toFixed(1) : 0}%`
+              : `${(stats as Record<string, unknown>).totalRequests ? (((stats as Record<string, unknown>).successCount / (stats as Record<string, unknown>).totalRequests) * 100).toFixed(1) : 0}%`
           }
-          subtitle={loading ? "" : `${(stats as any)?.errorCount || 0} errors`}
-          icon={(stats as any)?.errorCount > 0 ? AlertCircle : CheckCircle}
-          variant={(stats as any)?.errorCount > 0 ? "danger" : "success"}
+          subtitle={loading ? "" : `${(stats as Record<string, unknown>).errorCount || 0} errors`}
+          icon={(stats as Record<string, unknown>).errorCount > 0 ? AlertCircle : CheckCircle}
+          variant={(stats as Record<string, unknown>).errorCount > 0 ? "danger" : "success"}
           loading={loading}
         />
         <StatsCard

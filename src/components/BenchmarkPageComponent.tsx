@@ -31,7 +31,7 @@ const INITIAL_FORM = {
 export default function BenchmarkPageComponent({
   navSidebar,
   rightSidebar,
-}: any) {
+}: unknown) {
   const router = useRouter();
 
   // -- State --------------------------------------------------
@@ -40,7 +40,7 @@ export default function BenchmarkPageComponent({
 
   // -- Validation ---------------------------------------------
   const mode = form.benchmarkMode || "model";
-  const hasModelAssertion = form.assertions?.some((a: any) => a.expectedValue);
+  const hasModelAssertion = form.assertions?.some((a) => a.expectedValue);
   const hasAgentAssertion = form.agentAssertions?.length > 0;
 
   const isValid = (() => {
@@ -78,7 +78,7 @@ export default function BenchmarkPageComponent({
       if (created?.id) {
         router.push(`/benchmarks/${created.id}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to save benchmark:", error);
     } finally {
       setSaving(false);

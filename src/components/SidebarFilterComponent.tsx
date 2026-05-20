@@ -87,11 +87,11 @@ export default function SidebarFilterComponent({
   dateStorageKey,
   triggerLabel = "Filters",
   toolsGroupLabel = "Tools",
-}: any) {
-  const initializedDateRef = useRef<any>(false);
+}: unknown) {
+  const initializedDateRef = useRef<boolean>(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
-  const dropdownRef = useRef<any>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const showFavoriteRow = !!onFavoritesToggle;
   const showModalityRow = modalities.length >= 2;
@@ -139,10 +139,10 @@ export default function SidebarFilterComponent({
   // Close dropdown on outside click
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: any) => {
+    const handler = (e: KeyboardEvent) => {
       if (
         dropdownRef.current &&
-        !(dropdownRef.current as any).contains(e.target)
+        !dropdownRef.current.contains(e.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -154,7 +154,7 @@ export default function SidebarFilterComponent({
   // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: any) => {
+    const handler = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.key === "Escape") setIsOpen(false);
     };
     document.addEventListener("keydown", handler);
@@ -162,7 +162,7 @@ export default function SidebarFilterComponent({
   }, [isOpen]);
 
   const toggleModality = useCallback(
-    (key: any) => {
+    (key) => {
       const next = new Set(activeModalities);
       next.has(key) ? next.delete(key) : next.add(key);
       onModalityChange(next);
@@ -171,7 +171,7 @@ export default function SidebarFilterComponent({
   );
 
   const toggleTool = useCallback(
-    (key: any) => {
+    (key) => {
       const next = new Set(activeTools);
       next.has(key) ? next.delete(key) : next.add(key);
       onToolChange(next);
@@ -180,7 +180,7 @@ export default function SidebarFilterComponent({
   );
 
   const toggleProvider = useCallback(
-    (key: any) => {
+    (key) => {
       const next = new Set(activeProviders);
       next.has(key) ? next.delete(key) : next.add(key);
       onProviderChange(next);
@@ -260,7 +260,7 @@ export default function SidebarFilterComponent({
           <button
             type="button"
             className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
-            onClick={() => setIsOpen((v: any) => !v)}
+            onClick={() => setIsOpen((v) => !v)}
           >
             <span className={styles.triggerContent}>
               <span className={styles.triggerIcon}>
@@ -284,7 +284,7 @@ export default function SidebarFilterComponent({
               {showDateRange && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
-                  {DATE_PRESETS.map((preset: any) => {
+                  {DATE_PRESETS.map((preset) => {
                     const isActive =
                       getActiveDatePreset(dateFrom, dateTo) === preset.label;
                     return (
@@ -342,7 +342,7 @@ export default function SidebarFilterComponent({
               {showModalityRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Modality</div>
-                  {modalities.map((m: any) => {
+                  {modalities.map((m) => {
                     const Icon = m.icon;
                     const isActive = activeModalities.has(m.key);
                     return (
@@ -369,7 +369,7 @@ export default function SidebarFilterComponent({
               {showToolRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>{toolsGroupLabel}</div>
-                  {tools.map((t: any) => {
+                  {tools.map((t) => {
                     const Icon = t.icon;
                     const isActive = activeTools.has(t.key);
                     return (
@@ -396,7 +396,7 @@ export default function SidebarFilterComponent({
               {showProviderRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Providers</div>
-                  {providers.map((p: any) => {
+                  {providers.map((p) => {
                     const isActive = activeProviders.has(p);
                     return (
                       <button
@@ -424,7 +424,7 @@ export default function SidebarFilterComponent({
           <DatePickerComponent
             from={dateFrom}
             to={dateTo}
-            onChange={(value: any) => {
+            onChange={(value) => {
               onDateChange(value);
               setShowCustomDatePicker(false);
             }}
@@ -438,7 +438,7 @@ export default function SidebarFilterComponent({
         {/* -- Active filter badges (display-only) -- */}
         {badges.length > 0 && (
           <div className={styles.badgeList}>
-            {badges.map((b: any) => {
+            {badges.map((b) => {
               const Icon = b.icon;
               return (
                 <span
@@ -450,7 +450,7 @@ export default function SidebarFilterComponent({
                           "--badge-color": b.color,
                           "--badge-bg": `${b.color}18`,
                           "--badge-border": `${b.color}40`,
-                        } as any)
+                        } as React.CSSProperties)
                       : undefined
                   }
                 >
@@ -463,7 +463,7 @@ export default function SidebarFilterComponent({
                   <button
                     type="button"
                     className={styles.badgeRemove}
-                    onClick={(e: any) => {
+                    onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       b.onRemove();
                     }}

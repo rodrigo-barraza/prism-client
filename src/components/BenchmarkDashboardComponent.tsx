@@ -28,7 +28,7 @@ import styles from "./BenchmarkDashboardComponent.module.css";
  * Used to enrich benchmark stat rows with proper display_name, modalities,
  * model type, etc. that the stats endpoint doesn't carry.
  */
-function buildConfigLookup(config: any) {
+function buildConfigLookup(config: Record<string, unknown>) {
   if (!config) return new Map();
   const map = new Map();
   const MODEL_SECTIONS = [
@@ -41,7 +41,7 @@ function buildConfigLookup(config: any) {
   ];
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
-    for (const [provider, models] of Object.entries<any>(providers)) {
+    for (const [provider, models] of Object.entries(providers)) {
       for (const m of models) {
         const key = `${provider}:${m.name}`;
         if (!map.has(key)) {
@@ -60,7 +60,7 @@ function buildConfigLookup(config: any) {
  *   "deepseek-r1-distill-qwen-32b@q4_1"    → "DeepSeek R1 Distill Qwen 32B"
  *   "mistralai/devstral-small-2507"         → "Devstral Small 2507"
  */
-function humanizeModelPath(raw: any) {
+function humanizeModelPath(raw: string) {
   if (!raw) return raw;
   // Strip publisher/org prefix: "qwen/qwen3.5-9b" → "qwen3.5-9b"
   let name = raw.includes("/") ? raw.split("/").pop() : raw;
@@ -69,9 +69,9 @@ function humanizeModelPath(raw: any) {
   // Replace hyphens/underscores with spaces
   name = name.replace(/[-_]/g, " ");
   // Capitalize each word, preserving existing uppercase and numbers
-  name = name.replace(/\b([a-z])/g, (_: any, c: any) => c.toUpperCase());
+  name = name.replace(/\b([a-z])/g, (_: string, c: string) => c.toUpperCase());
   // Uppercase common size suffixes: "32b" → "32B", "0.6b" → "0.6B"
-  name = name.replace(/(\d+(?:\.\d+)?)\s*b\b/gi, (_: any, n: any) => `${n}B`);
+  name = name.replace(/(\d+(?:\.\d+)?)\s*b\b/gi, (_: string, n: string) => `${n}B`);
   return name.trim();
 }
 
@@ -84,15 +84,15 @@ const TABS = [
 export default function BenchmarkDashboardComponent({
   navSidebar,
   rightSidebar,
-}: any) {
+}: unknown) {
   const router = useRouter();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [selectedModel, setSelectedModel] = useState(null);
   const [configLookup, setConfigLookup] = useState(new Map());
-  const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
+  const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("all");
-  const hasLoadedRef = useRef<any>(false);
+  const hasLoadedRef = useRef<boolean>(false);
 
   // -- Load stats + config + favorites -----------------------
   const loadData = useCallback(async () => {
@@ -106,7 +106,7 @@ export default function BenchmarkDashboardComponent({
       // Merge local models (LM Studio, Ollama, etc.) into config
       // so we get display_name for local models too
       let mergedConfig = config;
-      if ((config as any)?.localProviders?.length > 0) {
+      if ((config as Record<string, unknown>).localProviders?.length > 0) {
         try {
           const localResult = await PrismService.getLocalConfig();
           mergedConfig = PrismService.mergeLocalModels(
@@ -120,7 +120,7 @@ export default function BenchmarkDashboardComponent({
 
       setConfigLookup(buildConfigLookup(mergedConfig));
       hasLoadedRef.current = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load benchmark stats:", error);
     } finally {
       setLoading(false);
@@ -130,18 +130,18 @@ export default function BenchmarkDashboardComponent({
   useEffect(() => {
     loadData();
     PrismService.getFavorites("model")
-      .then((favs: any) => setFavoriteKeys(favs.map((f: any) => f.key)))
+      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
       .catch(() => {});
   }, [loadData]);
 
   // -- Favorites ----------------------------------------------
   const handleToggleFavorite = useCallback(
-    async (key: any) => {
+    async (key: string) => {
       if (favoriteKeys.includes(key)) {
-        setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
+        setFavoriteKeys((prev) => prev.filter((k) => k !== key));
         PrismService.removeFavorite("model", key).catch(() => {});
       } else {
-        setFavoriteKeys((prev: any) => [...prev, key]);
+        setFavoriteKeys((prev) => [...prev, key]);
         const [provider, ...rest] = key.split(":");
         PrismService.addFavorite("model", key, {
           provider,
@@ -154,9 +154,9 @@ export default function BenchmarkDashboardComponent({
 
   // -- Aggregate totals --------------------------------------
   const totals = useMemo(() => {
-    if (!(stats as any)?.models) return null;
-    return (stats as any).models.reduce(
-      (acc: any, m: any) => ({
+    if (!(stats as Record<string, unknown>).models) return null;
+    return (stats as Record<string, unknown>).models.reduce(
+      (acc: Record<string, unknown>, m: unknown) => ({
         total: acc.total + m.total,
         passed: acc.passed + m.passed,
         failed: acc.failed + m.failed,
@@ -171,8 +171,8 @@ export default function BenchmarkDashboardComponent({
   // Enriches each stat row with config data (display_name, modalities,
   // model type, etc.) so normalizeModel() produces clean names.
   const allModelRows = useMemo(() => {
-    if (!(stats as any)?.models) return [];
-    return (stats as any).models.map((s: any) => {
+    if (!(stats as Record<string, unknown>).models) return [];
+    return (stats as Record<string, unknown>).models.map((s) => {
       const configKey = `${s.provider}:${s.model}`;
       const configModel = configLookup.get(configKey);
       return {
@@ -206,9 +206,9 @@ export default function BenchmarkDashboardComponent({
   // -- Tab filtering ----------------------------------
   const modelRows = useMemo(() => {
     if (activeTab === "models")
-      return allModelRows.filter((r: any) => !r._benchAgent);
+      return allModelRows.filter((r) => !r._benchAgent);
     if (activeTab === "agents")
-      return allModelRows.filter((r: any) => !!r._benchAgent);
+      return allModelRows.filter((r) => !!r._benchAgent);
     return allModelRows;
   }, [allModelRows, activeTab]);
 
@@ -216,26 +216,26 @@ export default function BenchmarkDashboardComponent({
   const tabCounts = useMemo(
     () => ({
       all: allModelRows.length,
-      models: allModelRows.filter((r: any) => !r._benchAgent).length,
-      agents: allModelRows.filter((r: any) => !!r._benchAgent).length,
+      models: allModelRows.filter((r) => !r._benchAgent).length,
+      agents: allModelRows.filter((r) => !!r._benchAgent).length,
     }),
     [allModelRows],
   );
 
   // -- Composite stat identity (model + config flags) ---------
-  const statId = (s: any) =>
+  const statId = (s) =>
     `${s?.provider}:${s?.model}:${s?.thinkingEnabled || false}:${s?.toolsEnabled || false}:${s?.agent || ""}`;
 
   // -- Row click → select model for sidebar detail -----------
-  const handleRowClick = useCallback((stat: any) => {
-    setSelectedModel((prev: any) =>
+  const handleRowClick = useCallback((stat: unknown) => {
+    setSelectedModel((prev) =>
       statId(prev) === statId(stat) ? null : stat,
     );
   }, []);
 
   // -- Row class for selected highlight ----------------------
   const getRowClassName = useCallback(
-    (stat: any) => {
+    (stat: unknown) => {
       if (selectedModel && statId(stat) === statId(selectedModel)) {
         return styles.selectedRow;
       }
@@ -246,10 +246,10 @@ export default function BenchmarkDashboardComponent({
 
   // -- Detail cards for selected model (left sidebar) --------
   const sidebarDetail = useMemo(() => {
-    if (!(selectedModel as any)?.benchmarks?.length) return null;
+    if (!(selectedModel as Record<string, unknown>).benchmarks?.length) return null;
     return (
       <div className={styles.sidebarDetailGrid}>
-        {(selectedModel as any).benchmarks.map((b: any, i: any) => {
+        {(selectedModel as Record<string, unknown>).benchmarks.map((b, i) => {
           const bRate =
             b.total > 0 ? Math.round((b.passed / b.total) * 100) : 0;
           return (
@@ -315,7 +315,7 @@ export default function BenchmarkDashboardComponent({
     <ThreePanelLayout
       navSidebar={navSidebar}
       leftPanel={sidebarDetail}
-      leftTitle={(selectedModel as any)?.model || ""}
+      leftTitle={(selectedModel as Record<string, unknown>).model || ""}
       rightPanel={rightSidebar}
       rightTitle="Benchmarks"
       headerTitle="Benchmarks"
@@ -334,7 +334,7 @@ export default function BenchmarkDashboardComponent({
             <Loader2 size={20} className={styles.spinIcon} />
             <span>Loading benchmark stats…</span>
           </div>
-        ) : !stats || (stats as any).models.length === 0 ? (
+        ) : !stats || (stats as Record<string, unknown>).models.length === 0 ? (
           <EmptyStateComponent
             icon={<BarChart3 size={36} />}
             title="No Benchmark Data Yet"
@@ -354,11 +354,11 @@ export default function BenchmarkDashboardComponent({
               <SummaryBarComponent
                 items={[
                   {
-                    value: (stats as any).totalModels,
+                    value: (stats as Record<string, unknown>).totalModels,
                     label: "Configs Tested",
                   },
                   {
-                    value: (stats as any).totalBenchmarks,
+                    value: (stats as Record<string, unknown>).totalBenchmarks,
                     label: "Benchmarks",
                   },
                   { value: totals.total, label: "Total Tests" },
@@ -400,10 +400,10 @@ export default function BenchmarkDashboardComponent({
 
             {/* -- Segmented Control (Models / Agents) -- */}
             <div className={styles.segmented}>
-              {TABS.map((tab: any) => {
+              {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
-                const count = (tabCounts as any)[tab.key];
+                const count = (tabCounts as Record<string, unknown>)[tab.key];
                 return (
                   <button
                     key={tab.key}

@@ -47,7 +47,7 @@ export default function BenchmarksTableComponent({
   activeRowKey,
   activeModels = new Map(),
   pendingTargets = [],
-}: any) {
+}: unknown) {
   const columns = useMemo(
     () => [
       benchmarkStatusColumn(),
@@ -74,7 +74,7 @@ export default function BenchmarksTableComponent({
     if (!pendingTargets.length) {
       if (activeModels.size === 0) return results;
       // Append synthetic running rows for all active models
-      const runningRows = [...activeModels.values()].map((entry: any) => ({
+      const runningRows = [...activeModels.values()].map((entry) => ({
         _running: true,
         _progress: entry.progress,
         _phase: entry.phase,
@@ -162,14 +162,14 @@ export default function BenchmarksTableComponent({
   }, [results, activeModels, pendingTargets]);
 
   // Assign a CSS class for running/pending rows
-  const getRowClassName = useCallback((row: any) => {
+  const getRowClassName = useCallback((row) => {
     if (row._running) return styles.runningRow;
     if (row._pending) return styles.pendingRow;
     return "";
   }, []);
 
   // Build a custom style variable for progress width on running rows
-  const getRowStyle = useCallback((row: any) => {
+  const getRowStyle = useCallback((row) => {
     if (!row._running) return undefined;
     return { "--progress": `${(row._progress || 0) * 100}%` };
   }, []);
@@ -185,7 +185,7 @@ export default function BenchmarksTableComponent({
       onSort={onSort}
       onRowClick={onRowClick}
       activeRowKey={activeRowKey}
-      getRowKey={(r: any, i: any) => `${r.provider}:${r.label}:${i}`}
+      getRowKey={(r, i: number) => `${r.provider}:${r.label}:${i}`}
       getRowClassName={getRowClassName}
       getRowStyle={getRowStyle}
       emptyText={emptyText}

@@ -12,7 +12,7 @@ export default function ParametersPanelComponent({
   onChange,
   config,
   readOnly = false,
-}: any) {
+}: unknown) {
   const textModelsMap = config?.textToText?.models || {};
   const imageModelsMap = config?.textToImage?.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
@@ -28,15 +28,15 @@ export default function ParametersPanelComponent({
   const modelsMap = {};
   for (const p of allProviderKeys) {
     const textModels = textModelsMap[p] || [];
-    const imgModels = (imageModelsMap[p] || []).map((m: any) => ({
+    const imgModels = (imageModelsMap[p] || []).map((m) => ({
       ...m,
       _isImageGen: true,
     }));
-    const sttModels = (audioToTextModelsMap[p] || []).map((m: any) => ({
+    const sttModels = (audioToTextModelsMap[p] || []).map((m) => ({
       ...m,
       _isTranscription: true,
     }));
-    const ttsModels = (ttsModelsMap[p] || []).map((m: any) => ({
+    const ttsModels = (ttsModelsMap[p] || []).map((m) => ({
       ...m,
       _isTTS: true,
     }));
@@ -48,12 +48,12 @@ export default function ParametersPanelComponent({
         merged.push(m);
       }
     }
-    (modelsMap as any)[p] = merged;
+    (modelsMap as Record<string, unknown>)[p] = merged;
   }
 
-  const currentProviderModels = (modelsMap as any)[settings.provider] || [];
+  const currentProviderModels = (modelsMap as Record<string, unknown>)[settings.provider] || [];
   const selectedModelDef = currentProviderModels.find(
-    (m: any) => m.name === settings.model,
+    (m) => m.name === settings.model,
   );
   const isReasoning =
     selectedModelDef?.thinking ||
@@ -63,33 +63,39 @@ export default function ParametersPanelComponent({
   const isTTS = selectedModelDef?._isTTS === true;
   const isSpecialModel = isTranscription || isTTS;
 
-  const handleTempChange = (value: any) => onChange({ temperature: value });
-  const handleMaxTokensChange = (value: any) => onChange({ maxTokens: value });
-  const handleTopPChange = (value: any) => onChange({ topP: value });
-  const handleTopKChange = (value: any) => onChange({ topK: value });
-  const handleFreqPenaltyChange = (value: any) =>
-    onChange({ frequencyPenalty: value });
-  const handlePresPenaltyChange = (value: any) =>
-    onChange({ presencePenalty: value });
-  const handleMinPChange = (value: any) => onChange({ minP: value });
-  const handleRepeatPenaltyChange = (value: any) =>
-    onChange({ repeatPenalty: value });
-  const handleSeedChange = (e: any) => onChange({ seed: e.target.value });
-  const handleStopSeqChange = (e: any) =>
+  const handleTempChange = (value: string) => {
+onChange({ temperature: value });
+  const handleMaxTokensChange = (value: string) => {
+onChange({ maxTokens: value });
+  const handleTopPChange = (value: string) => {
+onChange({ topP: value });
+  const handleTopKChange = (value: string) => {
+onChange({ topK: value });
+  const handleFreqPenaltyChange = (value: string) => {
+onChange({ frequencyPenalty: value });
+  const handlePresPenaltyChange = (value: string) => {
+onChange({ presencePenalty: value });
+  const handleMinPChange = (value: string) => {
+onChange({ minP: value });
+  const handleRepeatPenaltyChange = (value: string) => {
+onChange({ repeatPenalty: value });
+  const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => onChange({ seed: e.target.value });
+  const handleStopSeqChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     onChange({ stopSequences: e.target.value });
-  const handleReasoningEffortChange = (value: any) =>
-    onChange({ reasoningEffort: value });
-  const handleThinkingLevelChange = (value: any) =>
-    onChange({ thinkingLevel: value });
-  const handleThinkingBudgetChange = (e: any) =>
+  const handleReasoningEffortChange = (value: string) => {
+onChange({ reasoningEffort: value });
+  const handleThinkingLevelChange = (value: string) => {
+onChange({ thinkingLevel: value });
+  const handleThinkingBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     onChange({ thinkingBudget: e.target.value });
-  const handleVerbosityChange = (value: any) => onChange({ verbosity: value });
-  const handleReasoningSummaryChange = (value: any) =>
-    onChange({ reasoningSummary: value });
-  const handleResponseFormatChange = (value: any) =>
-    onChange({ responseFormat: value });
-  const handleServiceTierChange = (value: any) =>
-    onChange({ serviceTier: value });
+  const handleVerbosityChange = (value: string) => {
+onChange({ verbosity: value });
+  const handleReasoningSummaryChange = (value: string) => {
+onChange({ reasoningSummary: value });
+  const handleResponseFormatChange = (value: string) => {
+onChange({ responseFormat: value });
+  const handleServiceTierChange = (value: string) => {
+onChange({ serviceTier: value });
 
   if (isSpecialModel || settings.provider === "ollama") {
     return (
@@ -240,7 +246,7 @@ export default function ParametersPanelComponent({
                   <SelectComponent
                     value={settings.thinkingLevel || "high"}
                     options={selectedModelDef.thinkingLevels.map(
-                      (level: any) => ({
+                      (level: unknown) => ({
                         value: level,
                         label: level.charAt(0).toUpperCase() + level.slice(1),
                       }),

@@ -213,19 +213,19 @@ const LABEL_ORDER = [
 ];
 
 // -- Tri-state checkbox: global select-all -----------------------
-function MasterCheckbox({ enabledCount, totalCount, onToggle, label }: any) {
-  const ref = useRef<any>(null);
+function MasterCheckbox({ enabledCount, totalCount, onToggle, label }: unknown) {
+  const ref = useRef<unknown>(null);
   const allChecked = totalCount > 0 && enabledCount === totalCount;
   const partial = enabledCount > 0 && !allChecked;
 
   useEffect(() => {
-    if (ref.current) (ref.current as any).indeterminate = partial;
+    if (ref.current) (ref.current as HTMLInputElement).indeterminate = partial;
   }, [partial]);
 
   return (
     <label className={styles.bulkCheckboxRow}>
       <input
-        ref={ref}
+        ref={ref as React.Ref<HTMLInputElement>}
         type="checkbox"
         className={styles.toolCheckbox}
         checked={allChecked}
@@ -237,26 +237,26 @@ function MasterCheckbox({ enabledCount, totalCount, onToggle, label }: any) {
 }
 
 // -- Tri-state checkbox: per-domain select-all -------------------
-function DomainCheckbox({ domainEnabled, totalCount, onToggle }: any) {
-  const ref = useRef<any>(null);
+function DomainCheckbox({ domainEnabled, totalCount, onToggle }: unknown) {
+  const ref = useRef<unknown>(null);
   const allChecked = totalCount > 0 && domainEnabled === totalCount;
   const partial = domainEnabled > 0 && !allChecked;
 
   useEffect(() => {
-    if (ref.current) (ref.current as any).indeterminate = partial;
+    if (ref.current) (ref.current as HTMLInputElement).indeterminate = partial;
   }, [partial]);
 
   return (
     <input
-      ref={ref}
+      ref={ref as React.Ref<HTMLInputElement>}
       type="checkbox"
       className={styles.domainCheckbox}
       checked={allChecked}
-      onChange={(e: any) => {
+      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         e.stopPropagation();
         onToggle();
       }}
-      onClick={(e: any) => e.stopPropagation()}
+      onClick={(e: React.MouseEvent) => e.stopPropagation()}
     />
   );
 }
@@ -274,14 +274,14 @@ export default function ToolSelectionComponent({
   availableTools = [],
   enabledTools = [],
   onEnabledToolsChange,
-}: any) {
+}: unknown) {
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set());
   const [groupMode, setGroupMode] = useState("domain");
 
   // -- Resolve enabledTools → flat Set of tool names ------------
   const resolveEnabledTools = useCallback(
-    (entries: any) => {
+    (entries: unknown) => {
       const resolved = new Set();
       for (const entry of entries || []) {
         if (entry.startsWith("label:")) {
@@ -311,7 +311,7 @@ export default function ToolSelectionComponent({
 
   // -- Tool toggling --------------------------------------------
   const toggleTool = useCallback(
-    (toolName: any) => {
+    (toolName: unknown) => {
       const tools = enabledTools || [];
       const resolved = new Set();
       for (const entry of tools) {
@@ -320,7 +320,7 @@ export default function ToolSelectionComponent({
         }
       }
       if (resolved.has(toolName)) {
-        onEnabledToolsChange(tools.filter((t: any) => t !== toolName));
+        onEnabledToolsChange(tools.filter((t) => t !== toolName));
       } else {
         onEnabledToolsChange([...tools, toolName]);
       }
@@ -329,7 +329,7 @@ export default function ToolSelectionComponent({
   );
 
   const selectAllTools = useCallback(() => {
-    onEnabledToolsChange(availableTools.map((t: any) => t.name));
+    onEnabledToolsChange(availableTools.map((t) => t.name));
   }, [availableTools, onEnabledToolsChange]);
 
   const deselectAllTools = useCallback(() => {
@@ -342,7 +342,7 @@ export default function ToolSelectionComponent({
   const filteredTools = useMemo(() => {
     if (!query) return availableTools;
     return availableTools.filter(
-      (t: any) =>
+      (t: unknown) =>
         t.name?.toLowerCase().includes(query) ||
         renderToolName(t.name)?.toLowerCase().includes(query) ||
         t.description?.toLowerCase().includes(query),
@@ -389,8 +389,8 @@ export default function ToolSelectionComponent({
   }, [filteredTools]);
 
   // -- Collapse toggling ----------------------------------------
-  const toggleDomain = useCallback((domain: any) => {
-    setCollapsedDomains((prev: any) => {
+  const toggleDomain = useCallback((domain: unknown) => {
+    setCollapsedDomains((prev) => {
       const next = new Set(prev);
       if (next.has(domain)) next.delete(domain);
       else next.add(domain);
@@ -400,25 +400,25 @@ export default function ToolSelectionComponent({
 
   // -- Toggle all tools in a group ------------------------------
   const toggleGroupTools = useCallback(
-    (groupKey: any, groupTools: any) => {
+    (groupKey: unknown, groupTools: unknown) => {
       const currentTools = enabledTools || [];
       const isDomain = groupMode === "domain";
       const prefix = isDomain ? `domain:${groupKey}` : `label:${groupKey}`;
 
       const hasGroupRef = currentTools.includes(prefix);
       const resolved = resolveEnabledTools(currentTools);
-      const groupNames = groupTools.map((t: any) => t.name);
-      const allEnabled = groupNames.every((n: any) => resolved.has(n));
+      const groupNames = groupTools.map((t) => t.name);
+      const allEnabled = groupNames.every((n) => resolved.has(n));
 
       if (hasGroupRef || allEnabled) {
         onEnabledToolsChange(
           currentTools.filter(
-            (t: any) => t !== prefix && !groupNames.includes(t),
+            (t: unknown) => t !== prefix && !groupNames.includes(t),
           ),
         );
       } else {
         const cleaned = currentTools.filter(
-          (t: any) => !groupNames.includes(t),
+          (t: unknown) => !groupNames.includes(t),
         );
         onEnabledToolsChange([...cleaned, prefix]);
       }
@@ -475,7 +475,7 @@ export default function ToolSelectionComponent({
             className={styles.toolsSearchInput}
             placeholder="Search tools..."
             value={toolSearch}
-            onChange={(e: any) => setToolSearch(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setToolSearch(e.target.value)}
           />
         </div>
 
@@ -495,16 +495,16 @@ export default function ToolSelectionComponent({
 
         {/* Group rendering — domain or label mode */}
         {(groupMode === "domain" ? groupedTools : groupedByLabel).map(
-          ([groupKey, tools]: any) => {
+          ([groupKey, tools]: unknown) => {
             const isDomain = groupMode === "domain";
             const GroupIcon = isDomain
-              ? (DOMAIN_ICONS as any)[groupKey] || Layers
-              : (LABEL_ICONS as any)[groupKey] || Tag;
+              ? (DOMAIN_ICONS as Record<string, unknown>)[groupKey] || Layers
+              : (LABEL_ICONS as Record<string, unknown>)[groupKey] || Tag;
             const label = isDomain
-              ? (DOMAIN_LABELS as any)[groupKey] || groupKey
-              : (LABEL_DISPLAY as any)[groupKey] || groupKey;
+              ? (DOMAIN_LABELS as Record<string, unknown>)[groupKey] || groupKey
+              : (LABEL_DISPLAY as Record<string, unknown>)[groupKey] || groupKey;
             const collapsed = collapsedDomains.has(groupKey);
-            const groupEnabled = tools.filter((t: any) =>
+            const groupEnabled = tools.filter((t) =>
               resolvedEnabledSet.has(t.name),
             ).length;
 
@@ -534,7 +534,7 @@ export default function ToolSelectionComponent({
                 </div>
 
                 {!collapsed &&
-                  tools.map((tool: any) => (
+                  tools.map((tool) => (
                     <TooltipComponent
                       key={tool.name}
                       label={tool.description}

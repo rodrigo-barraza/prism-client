@@ -43,18 +43,18 @@ import styles from "./ToolResultRenderersComponent.module.css";
 
 // --- Helpers ----------------------------------------------------------
 
-function basename(filePath: any) {
+function basename(filePath: unknown) {
   if (!filePath) return "";
   return filePath.split("/").pop() || filePath;
 }
 
-function extensionOf(filePath: any) {
+function extensionOf(filePath: unknown) {
   const base = basename(filePath);
   const dot = base.lastIndexOf(".");
   return dot > 0 ? base.substring(dot + 1).toLowerCase() : "";
 }
 
-function tryParse(result: any) {
+function tryParse(result) {
   if (typeof result === "object" && result !== null) return result;
   if (typeof result === "string") {
     try {
@@ -99,7 +99,7 @@ const EXT_LANG = {
 
 // --- Status Badge -----------------------------------------------------
 
-function StatusBadge({ success, label }: any) {
+function StatusBadge({ success, label }: unknown) {
   return (
     <span
       className={`${styles.statusBadge} ${success ? styles.statusSuccess : styles.statusError}`}
@@ -112,7 +112,7 @@ function StatusBadge({ success, label }: any) {
 
 // --- File Path Pill ---------------------------------------------------
 
-function PathPill({ path, icon }: any) {
+function PathPill({ path, icon }: unknown) {
   const Icon = icon || FileText;
   return (
     <span className={styles.pathPill}>
@@ -124,7 +124,7 @@ function PathPill({ path, icon }: any) {
 
 // --- Collapsible Raw Result -------------------------------------------
 
-function RawResultToggle({ result }: any) {
+function RawResultToggle({ result }: unknown) {
   const [show, setShow] = useState(false);
   if (!result) return null;
 
@@ -147,7 +147,7 @@ function RawResultToggle({ result }: any) {
     <div className={styles.rawToggle}>
       <button
         className={styles.rawToggleBtn}
-        onClick={() => setShow((v: any) => !v)}
+        onClick={() => setShow((v) => !v)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
         <span>Raw Response</span>
@@ -165,13 +165,13 @@ function RawResultToggle({ result }: any) {
  * Collapsible panel that shows all input arguments passed to a tool call.
  * Renders key-value pairs in a clean, readable format.
  */
-function InputArgsToggle({ args }: any) {
+function InputArgsToggle({ args }: unknown) {
   const [show, setShow] = useState(false);
 
   const entries = useMemo(() => {
     if (!args || typeof args !== "object") return [];
     return Object.entries(args).filter(
-      ([, v]: any) => v !== undefined && v !== null,
+      ([, v]: [string, unknown]) => v !== undefined && v !== null,
     );
   }, [args]);
 
@@ -181,7 +181,7 @@ function InputArgsToggle({ args }: any) {
     <div className={styles.inputArgsToggle}>
       <button
         className={styles.rawToggleBtn}
-        onClick={() => setShow((v: any) => !v)}
+        onClick={() => setShow((v) => !v)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
         <span>Input</span>
@@ -189,7 +189,7 @@ function InputArgsToggle({ args }: any) {
       </button>
       {show && (
         <div className={styles.inputArgsContent}>
-          {entries.map(([key, value]: any) => {
+          {entries.map(([key, value]: [string, unknown]) => {
             const isLong = typeof value === "string" && value.length > 80;
             const display =
               typeof value === "string"
@@ -219,7 +219,7 @@ function InputArgsToggle({ args }: any) {
  * Collapsible panel that shows the raw result returned to the model.
  * Helps users understand exactly what the agent receives back.
  */
-function OutputResultToggle({ result }: any) {
+function OutputResultToggle({ result }: unknown) {
   const [show, setShow] = useState(false);
 
   const display = useMemo(() => {
@@ -258,7 +258,7 @@ function OutputResultToggle({ result }: any) {
     <div className={styles.outputResultToggle}>
       <button
         className={styles.rawToggleBtn}
-        onClick={() => setShow((v: any) => !v)}
+        onClick={() => setShow((v) => !v)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
         <span>Output</span>
@@ -270,8 +270,8 @@ function OutputResultToggle({ result }: any) {
         <div className={styles.outputResultContent}>
           {display.type === "object" && !Array.isArray(display.data) ? (
             Object.entries(display.data)
-              .filter(([, v]: any) => v !== undefined && v !== null)
-              .map(([key, value]: any) => {
+              .filter(([, v]: [string, unknown]) => v !== undefined && v !== null)
+              .map(([key, value]: [string, unknown]) => {
                 const isComplex = typeof value === "object";
                 const valStr = isComplex
                   ? JSON.stringify(value, null, 2)
@@ -304,13 +304,13 @@ function OutputResultToggle({ result }: any) {
 
 // -- 1. File Read ------------------------------------------------------
 
-function FileReadRenderer({ result, args }: any) {
+function FileReadRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
   const filePath = parsed.path || args?.path || "";
   const content = parsed.content || "";
-  const _lang = (EXT_LANG as any)[extensionOf(filePath)] || "";
+  const _lang = (EXT_LANG as Record<string, unknown>)[extensionOf(filePath)] || "";
 
   return (
     <div className={styles.rendererBlock}>
@@ -330,7 +330,7 @@ function FileReadRenderer({ result, args }: any) {
 
 // -- 2. File Write -----------------------------------------------------
 
-function FileWriteRenderer({ result, args }: any) {
+function FileWriteRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -355,7 +355,7 @@ function FileWriteRenderer({ result, args }: any) {
 
 // -- 3. String Replace -------------------------------------------------
 
-function StrReplaceRenderer({ result, args }: any) {
+function StrReplaceRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -398,7 +398,7 @@ function StrReplaceRenderer({ result, args }: any) {
 
 // -- 4. Grep Search ----------------------------------------------------
 
-function GrepSearchRenderer({ result, args }: any) {
+function GrepSearchRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -410,8 +410,8 @@ function GrepSearchRenderer({ result, args }: any) {
   const grouped = {};
   for (const m of matches.slice(0, 30)) {
     const file = m.file || m.path || "unknown";
-    if (!(grouped as any)[file]) (grouped as any)[file] = [];
-    (grouped as any)[file].push(m);
+    if (!(grouped as Record<string, unknown>)[file]) (grouped as Record<string, unknown>)[file] = [];
+    (grouped as Record<string, unknown>)[file].push(m);
   }
 
   return (
@@ -424,10 +424,10 @@ function GrepSearchRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.grepList}>
-        {Object.entries(grouped).map(([file, fileMatches]: any) => (
+        {Object.entries(grouped).map(([file, fileMatches]: unknown) => (
           <div key={file} className={styles.grepFile}>
             <span className={styles.grepFilePath}>{file}</span>
-            {fileMatches.map((m: any, i: any) => (
+            {fileMatches.map((m, i) => (
               <div key={i} className={styles.grepLine}>
                 {m.line != null && (
                   <span className={styles.grepLineNum}>{m.line}</span>
@@ -446,7 +446,7 @@ function GrepSearchRenderer({ result, args }: any) {
 
 // -- 5. Directory List -------------------------------------------------
 
-function DirectoryListRenderer({ result, args }: any) {
+function DirectoryListRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -465,7 +465,7 @@ function DirectoryListRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.dirList}>
-        {entries.slice(0, 40).map((entry: any, i: any) => {
+        {entries.slice(0, 40).map((entry, i) => {
           const name =
             typeof entry === "string" ? entry : entry.name || entry.path || "";
           const isDir =
@@ -489,7 +489,7 @@ function DirectoryListRenderer({ result, args }: any) {
 
 // -- 6. Glob Files -----------------------------------------------------
 
-function GlobFilesRenderer({ result, args }: any) {
+function GlobFilesRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -506,7 +506,7 @@ function GlobFilesRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.dirList}>
-        {files.slice(0, 40).map((f: any, i: any) => {
+        {files.slice(0, 40).map((f, i) => {
           const path = typeof f === "string" ? f : f.path || f.name || "";
           return (
             <div key={i} className={styles.dirEntry}>
@@ -522,7 +522,7 @@ function GlobFilesRenderer({ result, args }: any) {
 
 // -- 7. Web Search -----------------------------------------------------
 
-function WebSearchRenderer({ result, args }: any) {
+function WebSearchRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -539,7 +539,7 @@ function WebSearchRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.searchResults}>
-        {results.slice(0, 8).map((r: any, i: any) => (
+        {results.slice(0, 8).map((r, i) => (
           <div key={i} className={styles.searchResult}>
             <a
               href={r.url || r.link}
@@ -559,7 +559,7 @@ function WebSearchRenderer({ result, args }: any) {
 
 // -- 8. Fetch URL ------------------------------------------------------
 
-function FetchUrlRenderer({ result, args }: any) {
+function FetchUrlRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -597,16 +597,16 @@ const PROMPT_PREFIXES = { bash: "$ ", python: ">>> ", javascript: "> " };
 const CONTINUATION_PREFIXES = { python: "... ", javascript: ".. " };
 const DEFAULT_CWD = { bash: "/tmp", python: "python3", javascript: "node" };
 
-function formatInputPrompt(input: any, language: any, cwd: any) {
+function formatInputPrompt(input: unknown, language: unknown, cwd: unknown) {
   if (!input) return "";
-  const prompt = (PROMPT_PREFIXES as any)[language] || "$ ";
-  const contPrompt = (CONTINUATION_PREFIXES as any)[language] || "  ";
+  const prompt = (PROMPT_PREFIXES as Record<string, unknown>)[language] || "$ ";
+  const contPrompt = (CONTINUATION_PREFIXES as Record<string, unknown>)[language] || "  ";
   const lines = input.split("\n");
-  const resolvedCwd = cwd || (DEFAULT_CWD as any)[language] || "";
+  const resolvedCwd = cwd || (DEFAULT_CWD as Record<string, unknown>)[language] || "";
   const pathPrefix = resolvedCwd ? `${resolvedCwd} ` : "";
   return lines
     .map(
-      (line: any, i: any) =>
+      (line: unknown, i: unknown) =>
         `${i === 0 ? pathPrefix + prompt : contPrompt}${line}`,
     )
     .join("\n");
@@ -637,7 +637,7 @@ const ANSI_BRIGHT_COLORS = [
   "#ffffff", // 7 – bright white
 ];
 
-function ansi256ToHex(n: any) {
+function ansi256ToHex(n) {
   if (n < 8) return ANSI_COLORS[n];
   if (n < 16) return ANSI_BRIGHT_COLORS[n - 8];
   if (n < 232) {
@@ -651,11 +651,11 @@ function ansi256ToHex(n: any) {
   return `#${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}`;
 }
 
-function stripAnsi(text: any) {
+function stripAnsi(text) {
   return text.replace(/\x1b\[[0-9;]*m/g, "");
 }
 
-function parseAnsi(text: any) {
+function parseAnsi(text) {
   if (!text.includes("\x1b")) return text;
   const parts = [];
   let lastIndex = 0;
@@ -673,12 +673,12 @@ function parseAnsi(text: any) {
       const chunk = text.slice(lastIndex, match.index);
       if (color || bgColor || bold || dim || italic || underline) {
         const style = {};
-        if (color) (style as any).color = color;
-        if (bgColor) (style as any).backgroundColor = bgColor;
-        if (bold) (style as any).fontWeight = 700;
-        if (dim) (style as any).opacity = 0.6;
-        if (italic) (style as any).fontStyle = "italic";
-        if (underline) (style as any).textDecoration = "underline";
+        if (color) (style as unknown).color = color;
+        if (bgColor) (style as unknown).backgroundColor = bgColor;
+        if (bold) (style as unknown).fontWeight = 700;
+        if (dim) (style as unknown).opacity = 0.6;
+        if (italic) (style as unknown).fontStyle = "italic";
+        if (underline) (style as unknown).textDecoration = "underline";
         parts.push(
           <span key={key++} style={style}>
             {chunk}
@@ -727,12 +727,12 @@ function parseAnsi(text: any) {
     const chunk = text.slice(lastIndex);
     if (color || bgColor || bold || dim || italic || underline) {
       const style = {};
-      if (color) (style as any).color = color;
-      if (bgColor) (style as any).backgroundColor = bgColor;
-      if (bold) (style as any).fontWeight = 700;
-      if (dim) (style as any).opacity = 0.6;
-      if (italic) (style as any).fontStyle = "italic";
-      if (underline) (style as any).textDecoration = "underline";
+      if (color) (style as unknown).color = color;
+      if (bgColor) (style as unknown).backgroundColor = bgColor;
+      if (bold) (style as unknown).fontWeight = 700;
+      if (dim) (style as unknown).opacity = 0.6;
+      if (italic) (style as unknown).fontStyle = "italic";
+      if (underline) (style as unknown).textDecoration = "underline";
       parts.push(
         <span key={key++} style={style}>
           {chunk}
@@ -745,7 +745,7 @@ function parseAnsi(text: any) {
   return parts.length === 1 ? parts[0] : parts;
 }
 
-function detectTerminalLevel(text: any) {
+function detectTerminalLevel(text) {
   const clean = stripAnsi(text);
   if (/\bERR(?:OR)?\b/i.test(clean)) return "error";
   if (/\bWARN(?:ING)?\b/i.test(clean)) return "warn";
@@ -769,8 +769,8 @@ const TERM_CONTENT_LEVEL_CLASS = {
   debug: styles.termContentDebug,
 };
 
-function TerminalRenderer({ result, args, streamingOutput, language }: any) {
-  const bodyRef = useRef<any>(null);
+function TerminalRenderer({ result, args, streamingOutput, language }: unknown) {
+  const bodyRef = useRef<unknown>(null);
   const [autoScroll, setAutoScroll] = useState(true);
   const input = args?.command || args?.code || null;
   const cwd = args?.cwd || null;
@@ -806,8 +806,8 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
   // Auto-scroll to bottom on new output
   useEffect(() => {
     if (autoScroll && bodyRef.current) {
-      (bodyRef.current as any).scrollTop = (
-        bodyRef.current as any
+      (bodyRef.current as HTMLElement).scrollTop = (
+        bodyRef.current as HTMLElement
       ).scrollHeight;
     }
   }, [displayOutput, autoScroll]);
@@ -847,7 +847,7 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
         onScroll={handleScroll}
       >
         {/* Input command lines */}
-        {inputLines.map((line: any, i: any) => (
+        {inputLines.map((line, i) => (
           <div key={`in-${i}`} className={styles.termLine}>
             <span className={styles.termLineNum}>{i + 1}</span>
             <span
@@ -858,13 +858,13 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
           </div>
         ))}
         {/* Output lines */}
-        {outputLines.map((line: any, i: any) => {
+        {outputLines.map((line, i) => {
           const level = detectTerminalLevel(line);
           const lineNum = inputLines.length + i + 1;
           return (
             <div
               key={`out-${i}`}
-              className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as any)[level] || "" : ""}`}
+              className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as Record<string, unknown>)[level] || "" : ""}`}
             >
               <span className={styles.termLineNum}>{lineNum}</span>
               <span
@@ -890,7 +890,7 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
 
 // -- 10. Git Operations ------------------------------------------------
 
-function GitStatusRenderer({ result }: any) {
+function GitStatusRenderer({ result }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -910,7 +910,7 @@ function GitStatusRenderer({ result }: any) {
       </div>
       {!clean && (
         <div className={styles.dirList}>
-          {files.slice(0, 30).map((f: any, i: any) => {
+          {files.slice(0, 30).map((f, i) => {
             const name = typeof f === "string" ? f : f.path || f.file || "";
             const status =
               typeof f === "object" ? f.status || f.state || "" : "";
@@ -927,7 +927,7 @@ function GitStatusRenderer({ result }: any) {
   );
 }
 
-function GitDiffRenderer({ result }: any) {
+function GitDiffRenderer({ result }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -946,7 +946,7 @@ function GitDiffRenderer({ result }: any) {
             {diff
               .split("\n")
               .slice(0, 80)
-              .map((line: any, i: any) => {
+              .map((line, i) => {
                 let cls = "";
                 if (line.startsWith("+") && !line.startsWith("+++"))
                   cls = styles.diffAdded;
@@ -967,7 +967,7 @@ function GitDiffRenderer({ result }: any) {
   );
 }
 
-function GitLogRenderer({ result }: any) {
+function GitLogRenderer({ result }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -982,7 +982,7 @@ function GitLogRenderer({ result }: any) {
         </span>
       </div>
       <div className={styles.gitLog}>
-        {commits.slice(0, 15).map((c: any, i: any) => (
+        {commits.slice(0, 15).map((c, i) => (
           <div key={i} className={styles.gitCommit}>
             <span className={styles.gitHash}>
               {(c.hash || c.sha || "").slice(0, 7)}
@@ -1000,7 +1000,7 @@ function GitLogRenderer({ result }: any) {
 
 // -- 11. File Delete / Move --------------------------------------------
 
-function FileDeleteRenderer({ result, args }: any) {
+function FileDeleteRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
   const filePath = parsed.path || args?.path || "";
@@ -1018,7 +1018,7 @@ function FileDeleteRenderer({ result, args }: any) {
   );
 }
 
-function FileMoveRenderer({ result, args }: any) {
+function FileMoveRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
   const source = parsed.source || args?.source || "";
@@ -1054,12 +1054,12 @@ const BROWSER_ACTION_LABELS = {
   close: "Close",
 };
 
-function BrowserActionRenderer({ result, args }: any) {
+function BrowserActionRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
   const action = parsed.action || args?.action || "";
-  const label = (BROWSER_ACTION_LABELS as any)[action] || action;
+  const label = (BROWSER_ACTION_LABELS as Record<string, unknown>)[action] || action;
   const hasError = !!parsed.error;
 
   // Resolve screenshot ref (minio:// or base64 fallback)
@@ -1120,7 +1120,7 @@ function BrowserActionRenderer({ result, args }: any) {
 
       {action === "get_elements" && parsed.elements && (
         <div className={styles.dirList}>
-          {parsed.elements.slice(0, 30).map((element: any, i: any) => (
+          {parsed.elements.slice(0, 30).map((element, i) => (
             <div key={i} className={styles.dirEntry}>
               <code className={styles.inlineCode}>{element.selector}</code>
 
@@ -1135,7 +1135,7 @@ function BrowserActionRenderer({ result, args }: any) {
 
 // -- 13. Turtle Graphics -----------------------------------------------------
 
-function TurtleDrawRenderer({ result, args }: any) {
+function TurtleDrawRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1166,7 +1166,7 @@ function TurtleDrawRenderer({ result, args }: any) {
  * Mini status bar for an individual spawned worker agent.
  * Uses the shared StatusBarComponent.
  */
-function WorkerStatusBar({ activity }: any) {
+function WorkerStatusBar({ activity }: unknown) {
   if (!activity) return null;
   const {
     currentTool,
@@ -1234,7 +1234,7 @@ function WorkerStatusBar({ activity }: any) {
   );
 }
 
-function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
+function TeamCreateRenderer({ result, args, workerToolActivity }: unknown) {
   const [expandedMembers, setExpandedMembers] = useState(new Set());
   const parsed = tryParse(result);
 
@@ -1251,20 +1251,20 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   const hasActiveWorkers = useMemo(() => {
     if (!workerToolActivity) return false;
     return Object.values(workerToolActivity).some(
-      (a: any) => a.phase === "generating" || a.phase === "thinking",
+      (a) => a.phase === "generating" || a.phase === "thinking",
     );
   }, [workerToolActivity]);
 
   const [, setTick] = useState(0);
   useEffect(() => {
     if (!hasActiveWorkers) return;
-    const id = setInterval(() => setTick((t: any) => t + 1), 500);
+    const id = setInterval(() => setTick((t: unknown) => t + 1), 500);
     return () => clearInterval(id);
   }, [hasActiveWorkers]);
 
   // Use backend-computed per-worker tok/s directly. Only show when the
   // worker is in an active generation phase.
-  const getWorkerTokPerSec = (activity: any) => {
+  const getWorkerTokPerSec = (activity: unknown) => {
     if (!activity?.tokPerSec) return null;
     if (activity.phase !== "generating" && activity.phase !== "thinking")
       return null;
@@ -1284,7 +1284,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   // strategy for the "calling" state (before tool result arrives and
   // agent_id is available), because workers with identical descriptions
   // would all resolve to the first match via description.includes().
-  const getActivity = (member: any, memberIndex: any) => {
+  const getActivity = (member: unknown, memberIndex: unknown) => {
     if (!workerToolActivity) return null;
     // 1. Exact match by agent_id (available in result/done state)
     if (member.agent_id) return workerToolActivity[member.agent_id] || null;
@@ -1296,7 +1296,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
     if (member.description) {
       return (
         Object.values(workerToolActivity).find(
-          (v: any) =>
+          (v) =>
             v.description && v.description.includes(member.description),
         ) || null
       );
@@ -1304,8 +1304,8 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
     return null;
   };
 
-  const toggleMember = (index: any) => {
-    setExpandedMembers((prev: any) => {
+  const toggleMember = (index) => {
+    setExpandedMembers((prev) => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
       else next.add(index);
@@ -1325,7 +1325,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
           </span>
           <StatusBadge success={true} label="running" />
         </div>
-        {argMembers.map((member: any, i: any) => {
+        {argMembers.map((member, i) => {
           const activity = getActivity(member, i);
           const tokPerSec = getWorkerTokPerSec(activity);
           return (
@@ -1366,12 +1366,12 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   const hasError = !!parsed.error;
   const succeeded =
     parsed.succeeded ??
-    resultMembers.filter((m: any) => m.status === "completed").length;
+    resultMembers.filter((m) => m.status === "completed").length;
   const failed =
     parsed.failed ??
-    resultMembers.filter((m: any) => m.status === "failed").length;
+    resultMembers.filter((m) => m.status === "failed").length;
   const allDone = resultMembers.every(
-    (m: any) =>
+    (m) =>
       m.status === "completed" ||
       m.status === "failed" ||
       m.status === "stopped",
@@ -1398,7 +1398,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
 
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
 
-      {resultMembers.map((member: any, i: any) => {
+      {resultMembers.map((member, i) => {
         const activity = getActivity(member, i);
         const isTerminal =
           member.status === "completed" ||
@@ -1515,7 +1515,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   );
 }
 
-function SendMessageRenderer({ result, args }: any) {
+function SendMessageRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1538,7 +1538,7 @@ function SendMessageRenderer({ result, args }: any) {
   );
 }
 
-function StopAgentRenderer({ result, args }: any) {
+function StopAgentRenderer({ result, args }: unknown) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1564,7 +1564,7 @@ function StopAgentRenderer({ result, args }: any) {
 
 // -- 14. Generic Fallback ----------------------------------------------------
 
-function GenericRenderer({ result }: any) {
+function GenericRenderer({ result }: unknown) {
   return <RawResultToggle result={result} />;
 }
 
@@ -1622,9 +1622,9 @@ const TOOL_RESULT_REGISTRY = {
 /**
  * Resolve the appropriate result renderer for a tool call.
  */
-export function resolveToolResultRenderer(toolName: any) {
+export function resolveToolResultRenderer(toolName: unknown) {
   return (
-    (TOOL_RESULT_REGISTRY as any)[toolName] || { Renderer: GenericRenderer }
+    (TOOL_RESULT_REGISTRY as Record<string, unknown>)[toolName] || { Renderer: GenericRenderer }
   );
 }
 
@@ -1635,7 +1635,7 @@ export function ToolResultView({
   toolCall,
   streamingOutput,
   workerToolActivity,
-}: any) {
+}: unknown) {
   const { Renderer, language } = resolveToolResultRenderer(toolCall.name);
 
   return (

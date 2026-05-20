@@ -33,7 +33,7 @@ function getToolColumns() {
       label: "Tool",
       description: "Registered tool function name",
       sortable: true,
-      render: (r: any) => (
+      render: (r) => (
         <BadgeComponent variant="provider">{r.toolName}</BadgeComponent>
       ),
     },
@@ -43,7 +43,7 @@ function getToolColumns() {
       description: "Total number of invocations",
       sortable: true,
       align: "right",
-      render: (r: any) => formatNumber(r.count),
+      render: (r) => formatNumber(r.count),
     },
     {
       key: "avgMs",
@@ -51,7 +51,7 @@ function getToolColumns() {
       description: "Mean execution time across all calls",
       sortable: true,
       align: "right",
-      render: (r: any) => formatLatencyMs(r.avgMs),
+      render: (r) => formatLatencyMs(r.avgMs),
     },
     {
       key: "minMs",
@@ -59,7 +59,7 @@ function getToolColumns() {
       description: "Fastest execution time recorded",
       sortable: true,
       align: "right",
-      render: (r: any) => formatLatencyMs(r.minMs),
+      render: (r) => formatLatencyMs(r.minMs),
     },
     {
       key: "maxMs",
@@ -67,7 +67,7 @@ function getToolColumns() {
       description: "Slowest execution time recorded",
       sortable: true,
       align: "right",
-      render: (r: any) => formatLatencyMs(r.maxMs),
+      render: (r) => formatLatencyMs(r.maxMs),
     },
     {
       key: "errors",
@@ -75,7 +75,7 @@ function getToolColumns() {
       description: "Total failed invocations",
       sortable: true,
       align: "right",
-      render: (r: any) =>
+      render: (r) =>
         r.errors > 0 ? (
           <span className={styles.errorCount}>{r.errors}</span>
         ) : (
@@ -88,7 +88,7 @@ function getToolColumns() {
       description: "Percentage of calls that failed",
       sortable: true,
       align: "right",
-      render: (r: any) => {
+      render: (r) => {
         if (r.errorRate === 0)
           return <span className={styles.zeroErrors}>0%</span>;
         return (
@@ -108,7 +108,7 @@ function getToolColumns() {
       description: "Total bytes transferred (in + out)",
       sortable: true,
       align: "right",
-      render: (r: any) => {
+      render: (r) => {
         if (!r.totalTransferBytes || r.totalTransferBytes <= 0) return "—";
         return formatFileSize(r.totalTransferBytes);
       },
@@ -123,7 +123,7 @@ function getDomainColumns() {
       key: "domain",
       label: "Domain",
       sortable: true,
-      render: (r: any) => (
+      render: (r) => (
         <BadgeComponent variant="info">{r.domain || "—"}</BadgeComponent>
       ),
     },
@@ -132,21 +132,21 @@ function getDomainColumns() {
       label: "Calls",
       sortable: true,
       align: "right",
-      render: (r: any) => formatNumber(r.count),
+      render: (r) => formatNumber(r.count),
     },
     {
       key: "avgMs",
       label: "Avg Latency",
       sortable: true,
       align: "right",
-      render: (r: any) => formatLatencyMs(r.avgMs),
+      render: (r) => formatLatencyMs(r.avgMs),
     },
     {
       key: "errors",
       label: "Errors",
       sortable: true,
       align: "right",
-      render: (r: any) =>
+      render: (r) =>
         r.errors > 0 ? (
           <span className={styles.errorCount}>{r.errors}</span>
         ) : (
@@ -163,7 +163,7 @@ function getSlowestColumns() {
       key: "toolName",
       label: "Tool",
       sortable: false,
-      render: (r: any) => (
+      render: (r) => (
         <BadgeComponent variant="provider">{r.toolName}</BadgeComponent>
       ),
     },
@@ -171,7 +171,7 @@ function getSlowestColumns() {
       key: "domain",
       label: "Domain",
       sortable: false,
-      render: (r: any) => (
+      render: (r) => (
         <BadgeComponent variant="info">{r.domain || "—"}</BadgeComponent>
       ),
     },
@@ -180,13 +180,13 @@ function getSlowestColumns() {
       label: "Latency",
       sortable: false,
       align: "right",
-      render: (r: any) => formatLatencyMs(r.elapsedMs),
+      render: (r) => formatLatencyMs(r.elapsedMs),
     },
     {
       key: "success",
       label: "Status",
       sortable: false,
-      render: (r: any) =>
+      render: (r) =>
         r.success ? (
           <BadgeComponent variant="success">OK</BadgeComponent>
         ) : (
@@ -197,7 +197,7 @@ function getSlowestColumns() {
       key: "callerAgent",
       label: "Agent",
       sortable: false,
-      render: (r: any) =>
+      render: (r) =>
         r.callerAgent ? (
           <BadgeComponent variant="accent">{r.callerAgent}</BadgeComponent>
         ) : (
@@ -208,16 +208,16 @@ function getSlowestColumns() {
       key: "timestamp",
       label: "When",
       sortable: false,
-      render: (r: any) => (r.timestamp ? formatDateTime(r.timestamp) : "—"),
+      render: (r) => (r.timestamp ? formatDateTime(r.timestamp) : "—"),
     },
   ];
 }
 
 export default function ToolCallsPage() {
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null);
 
   // Sort state for tools table
   const [toolSort, setToolSort] = useState("count");
@@ -233,11 +233,11 @@ export default function ToolCallsPage() {
       setError(null);
       const params = {};
       const dateParams = buildDateRangeParams(dateRange);
-      if ((dateParams as any).since)
-        (params as any).since = (dateParams as any).since;
+      if ((dateParams as unknown).since)
+        (params as unknown).since = (dateParams as unknown).since;
       const data = await ToolsApiService.getToolCallStats(params);
       setStats(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message);
     } finally {
       setLoading(false);
@@ -265,7 +265,7 @@ export default function ToolCallsPage() {
   }, [setControls, setTitleBadge]);
 
   useEffect(() => {
-    if (stats) setTitleBadge(formatNumber((stats as any).totalCalls));
+    if (stats) setTitleBadge(formatNumber((stats as Record<string, unknown>).totalCalls));
   }, [setTitleBadge, stats]);
 
   // -- Column definitions (stable) ----------------------------
@@ -275,9 +275,9 @@ export default function ToolCallsPage() {
 
   // -- Sorted data --------------------------------------------
   const sortedTools = useMemo(() => {
-    if (!(stats as any)?.byTool) return [];
-    const array = [...(stats as any).byTool];
-    array.sort((a: any, b: any) => {
+    if (!(stats as Record<string, unknown>).byTool) return [];
+    const array = [...(stats as Record<string, unknown>).byTool];
+    array.sort((a, b) => {
       const mult = toolOrder === "desc" ? -1 : 1;
       if (toolSort === "toolName")
         return mult * a.toolName.localeCompare(b.toolName);
@@ -287,9 +287,9 @@ export default function ToolCallsPage() {
   }, [stats, toolSort, toolOrder]);
 
   const sortedDomains = useMemo(() => {
-    if (!(stats as any)?.byDomain) return [];
-    const array = [...(stats as any).byDomain];
-    array.sort((a: any, b: any) => {
+    if (!(stats as Record<string, unknown>).byDomain) return [];
+    const array = [...(stats as Record<string, unknown>).byDomain];
+    array.sort((a, b) => {
       const mult = domainOrder === "desc" ? -1 : 1;
       if (domainSort === "domain")
         return mult * (a.domain || "").localeCompare(b.domain || "");
@@ -300,17 +300,17 @@ export default function ToolCallsPage() {
 
   // -- Derived computed stats ---------------------------------
   const avgLatencyAll = useMemo(() => {
-    if (!(stats as any)?.byTool?.length) return 0;
-    const totalMs = (stats as any).byTool.reduce(
-      (sum: any, t: any) => sum + t.avgMs * t.count,
+    if (!(stats as Record<string, unknown>).byTool?.length) return 0;
+    const totalMs = (stats as Record<string, unknown>).byTool.reduce(
+      (sum: unknown, t: unknown) => sum + t.avgMs * t.count,
       0,
     );
-    return totalMs / (stats as any).totalCalls;
+    return totalMs / (stats as Record<string, unknown>).totalCalls;
   }, [stats]);
 
   const topDomain = useMemo(() => {
-    if (!(stats as any)?.byDomain?.length) return "—";
-    return (stats as any).byDomain[0].domain;
+    if (!(stats as Record<string, unknown>).byDomain?.length) return "—";
+    return (stats as Record<string, unknown>).byDomain[0].domain;
   }, [stats]);
 
   if (loading && !stats) {
@@ -337,7 +337,7 @@ export default function ToolCallsPage() {
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>
-              {formatNumber((stats as any)?.totalCalls || 0)}
+              {formatNumber((stats as Record<string, unknown>).totalCalls || 0)}
             </span>
             <span className={styles.statLabel}>Total Calls</span>
           </div>
@@ -349,7 +349,7 @@ export default function ToolCallsPage() {
           </div>
           <div className={styles.statContent}>
             <span className={styles.statValue}>
-              {(stats as any)?.successRate ?? 0}%
+              {(stats as Record<string, unknown>).successRate ?? 0}%
             </span>
             <span className={styles.statLabel}>Success Rate</span>
           </div>
@@ -385,11 +385,11 @@ export default function ToolCallsPage() {
         data={sortedTools}
         sortKey={toolSort}
         sortDir={toolOrder}
-        onSort={(key: any, dir: any) => {
+        onSort={(key: unknown, dir: unknown) => {
           setToolSort(key);
           setToolOrder(dir);
         }}
-        getRowKey={(r: any) => r.toolName}
+        getRowKey={(r) => r.toolName}
         emptyText="No tool data"
         maxHeight={null}
         storageKey="tool-calls-by-tool"
@@ -402,23 +402,23 @@ export default function ToolCallsPage() {
         data={sortedDomains}
         sortKey={domainSort}
         sortDir={domainOrder}
-        onSort={(key: any, dir: any) => {
+        onSort={(key: unknown, dir: unknown) => {
           setDomainSort(key);
           setDomainOrder(dir);
         }}
-        getRowKey={(r: any) => r.domain}
+        getRowKey={(r) => r.domain}
         emptyText="No domain data"
         maxHeight={null}
         storageKey="tool-calls-by-domain"
       />
 
       {/* -- Slowest Calls -- */}
-      {(stats as any)?.slowest?.length > 0 && (
+      {(stats as Record<string, unknown>).slowest?.length > 0 && (
         <TableComponent
           title="Top 10 Slowest Calls"
           columns={slowestColumns}
           data={stats.slowest}
-          getRowKey={(r: any, i: any) => r._id || `slow-${i}`}
+          getRowKey={(r, i: number) => r._id || `slow-${i}`}
           emptyText="No data"
           maxHeight={null}
           storageKey="tool-calls-slowest"
@@ -426,13 +426,13 @@ export default function ToolCallsPage() {
       )}
 
       {/* -- Error Breakdown -- */}
-      {(stats as any)?.errorsByTool?.length > 0 && (
+      {(stats as Record<string, unknown>).errorsByTool?.length > 0 && (
         <section className={styles.section}>
           <h2 className={`${styles.sectionTitle} ${styles.errorTitle}`}>
             <AlertTriangle size={16} /> Errors by Tool
           </h2>
           <div className={styles.errorGrid}>
-            {stats.errorsByTool.map((error: any) => (
+            {stats.errorsByTool.map((error) => (
               <div key={error._id} className={styles.errorCard}>
                 <div className={styles.errorCardHeader}>
                   <BadgeComponent variant="provider">

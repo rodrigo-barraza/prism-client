@@ -46,11 +46,11 @@ const TOOL_SHORT_NAMES = {
  * Resolve any tool name to a human-readable display label.
 
  */
-function resolveDisplayName(name: any, variant = "default") {
-  if (variant === "condensed" && (TOOL_SHORT_NAMES as any)[name])
-    return (TOOL_SHORT_NAMES as any)[name];
-  if ((TOOL_DISPLAY_NAMES as any)[name])
-    return (TOOL_DISPLAY_NAMES as any)[name];
+function resolveDisplayName(name: string, variant = "default") {
+  if (variant === "condensed" && (TOOL_SHORT_NAMES as Record<string, unknown>)[name])
+    return (TOOL_SHORT_NAMES as Record<string, unknown>)[name];
+  if ((TOOL_DISPLAY_NAMES as Record<string, unknown>)[name])
+    return (TOOL_DISPLAY_NAMES as Record<string, unknown>)[name];
   // Fallback: title-case via shared utility
   return renderToolName(name);
 }
@@ -75,7 +75,7 @@ export default function ToolBadgeComponent({
   active,
   variant = "default",
   tooltip,
-}: any) {
+}: unknown) {
   const isCompact = variant === "compact";
   const displayName = resolveDisplayName(name, variant);
   const { Icon, color } = resolveToolVisuals(name);
@@ -113,14 +113,14 @@ export default function ToolBadgeComponent({
  * ToolBadgeRow — renders a row of tool badges from a { toolName: count } map.
  * Used in MessageList for worker tool activity.
  */
-export function ToolBadgeRow({ tools, activeTool, variant }: any) {
+export function ToolBadgeRow({ tools, activeTool, variant }: unknown) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
     <div className={styles.badgeRow}>
       {Object.entries(tools)
-        .sort(([, a]: any, [, b]: any) => b - a)
-        .map(([name, count]: any) => (
+        .sort(([, a]: [string, number], [, b]: [string, number]) => b - a)
+        .map(([name, count]: [string, number]) => (
           <ToolBadgeComponent
             key={name}
             name={name}
@@ -162,15 +162,15 @@ const TOOL_DEFS = [
  *   variant   — "default" | "compact" | "condensed"
  *   className — extra root class name
  */
-export function ModelToolsRow({ tools, variant, className }: any) {
+export function ModelToolsRow({ tools, variant, className }: unknown) {
   if (!tools) return null;
 
-  const activeTools = TOOL_DEFS.filter((t: any) => tools[t.key]);
+  const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);
   if (activeTools.length === 0) return null;
 
   return (
     <div className={`${styles.badgeRow} ${className || ""}`}>
-      {activeTools.map((def: any) => {
+      {activeTools.map((def) => {
         const raw = tools[def.key];
         const count = typeof raw === "number" ? raw : 0;
 

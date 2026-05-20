@@ -92,11 +92,11 @@ export const TOOL_ICON_MAP = {
  * Resolve a tool name to its icon component and color.
  * Falls back to Wrench / "Tool Calling" amber for unknown tools.
  */
-export function resolveToolVisuals(name: any) {
-  if ((TOOL_ICON_MAP as any)[name]) {
+export function resolveToolVisuals(name: string) {
+  if ((TOOL_ICON_MAP as Record<string, unknown>)[name]) {
     return {
-      Icon: (TOOL_ICON_MAP as any)[name],
-      color: (TOOL_COLORS as any)[name] || "#f59e0b",
+      Icon: (TOOL_ICON_MAP as Record<string, unknown>)[name],
+      color: (TOOL_COLORS as Record<string, unknown>)[name] || "#f59e0b",
     };
   }
   return {
@@ -150,7 +150,7 @@ export const ASSET_INFO_HEIGHT = 80;
 
 // -- Compound port ID helpers for conversation input nodes --
 // Port format: "{msgIndex}.{modality}" e.g. "0.text", "1.image"
-export function parseCompoundPort(portId: any) {
+export function parseCompoundPort(portId: string) {
   const dotIdx = portId.indexOf(".");
   if (dotIdx === -1) return null;
   return {
@@ -159,17 +159,17 @@ export function parseCompoundPort(portId: any) {
   };
 }
 
-export function getBaseModality(portId: any) {
+export function getBaseModality(portId: string) {
   const parsed = parseCompoundPort(portId);
   return parsed ? parsed.modality : portId;
 }
 
 // -- Node dimensions --
-export function getNodeWidth(node: any) {
+export function getNodeWidth(node: WorkflowNode) {
   if (node.nodeType) {
     if (node.modality === "conversation") {
       const mods = (node.supportedModalities || ["text"]).filter(
-        (t: any) => t !== "conversation",
+        (t: string) => t !== "conversation",
       );
       const extraIcons = Math.max(0, mods.length - MIN_MODALITY_ICONS_FOR_BASE);
       return NODE_WIDTH_BASE + extraIcons * MODALITY_ICON_WIDTH;
@@ -177,7 +177,7 @@ export function getNodeWidth(node: any) {
     return ASSET_NODE_WIDTH_BASE;
   }
   const rawInputs = (node.rawInputTypes || node.inputTypes || []).filter(
-    (t: any) => t !== "conversation",
+    (t: string) => t !== "conversation",
   );
   const extraIcons = Math.max(
     0,
@@ -190,7 +190,7 @@ const TEXT_LINE_HEIGHT = 16; // ~11px font × 1.4 line-height + padding
 const TEXT_MIN_HEIGHT = 36;
 const CHARS_PER_LINE = 22; // rough estimate for node width
 
-export function getAssetContentHeight(node: any) {
+export function getAssetContentHeight(node: WorkflowNode) {
   // Text input nodes: auto-size based on content, up to 175px
   if (node.nodeType === "input" && node.modality === "text") {
     const text = node.content || "";
@@ -206,12 +206,12 @@ export function getAssetContentHeight(node: any) {
   return ASSET_CONTENT_HEIGHT;
 }
 
-export function getAssetInfoHeight(node: any) {
+export function getAssetInfoHeight(node: WorkflowNode) {
   if (node.nodeType === "viewer" || node.modality === "text") return 0;
   return ASSET_INFO_HEIGHT;
 }
 
-export function getNodeHeight(node: any, isExpanded = false) {
+export function getNodeHeight(node: WorkflowNode, isExpanded = false) {
   if (node.nodeType) {
     const inputCount = (node.inputTypes || []).length;
     const outputCount = (node.outputTypes || []).length;
@@ -230,9 +230,9 @@ export function getNodeHeight(node: any, isExpanded = false) {
 }
 
 export function getPortPosition(
-  node: any,
-  portType: any,
-  portIndex: any,
+  node: WorkflowNode,
+  portType: string,
+  portIndex: number,
   configOffset = 0,
 ) {
   const width = getNodeWidth(node);
@@ -246,7 +246,7 @@ export function getPortPosition(
 /**
  * Generate a smooth bezier curve path between two points.
  */
-export function edgePath(x1: any, y1: any, x2: any, y2: any) {
+export function edgePath(x1: number, y1: number, x2: number, y2: number) {
   const dx = Math.abs(x2 - x1);
   const cp = Math.max(dx * 0.5, 60);
   return `M ${x1} ${y1} C ${x1 + cp} ${y1}, ${x2 - cp} ${y2}, ${x2} ${y2}`;

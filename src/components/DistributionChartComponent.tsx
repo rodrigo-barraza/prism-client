@@ -50,7 +50,7 @@ const TABS = [
 /**
  * Extracts the raw numeric value for a metric from a stat record.
  */
-function extractValue(record: any, metric: any) {
+function extractValue(record: unknown, metric: unknown) {
   switch (metric) {
     case "requests":
       return record.totalRequests || 0;
@@ -76,7 +76,7 @@ function extractValue(record: any, metric: any) {
 /**
  * Formats a value using the appropriate unit for its metric.
  */
-function formatValue(value: any, metric: any) {
+function formatValue(value: unknown, metric: unknown) {
   switch (metric) {
     case "cost":
       return formatCost(value);
@@ -92,7 +92,7 @@ function formatValue(value: any, metric: any) {
 /**
  * Returns the unit label for the center text (e.g. "requests", "tokens").
  */
-function metricUnit(metric: any) {
+function metricUnit(metric: unknown) {
   switch (metric) {
     case "requests":
       return "requests";
@@ -119,11 +119,11 @@ function metricUnit(metric: any) {
  * Builds distribution entries: an array of { name, value } per tab/metric.
  */
 function buildEntries(
-  tab: any,
-  metric: any,
-  projectStats: any,
-  providerStats: any,
-  modelStats: any,
+  tab: unknown,
+  metric: unknown,
+  projectStats: unknown,
+  providerStats: unknown,
+  modelStats: unknown,
 ) {
   let source;
   let nameKey;
@@ -139,13 +139,13 @@ function buildEntries(
       break;
     case "model":
       source = modelStats;
-      nameKey = (r: any) => (r.model || "").split("/").pop() || "unknown";
+      nameKey = (r) => (r.model || "").split("/").pop() || "unknown";
       break;
     default:
       return [];
   }
 
-  const entries = source.map((record: any) => {
+  const entries = source.map((record) => {
     const name =
       typeof nameKey === "function"
         ? nameKey(record)
@@ -157,18 +157,18 @@ function buildEntries(
   // Aggregate duplicate names (e.g. same model basename from different paths)
   const aggMap = {};
   for (const { name, value } of entries) {
-    (aggMap as any)[name] = ((aggMap as any)[name] || 0) + value;
+    (aggMap as Record<string, unknown>)[name] = ((aggMap as Record<string, unknown>)[name] || 0) + value;
   }
 
   return Object.entries(aggMap)
-    .map(([name, value]: any) => ({ name, value }))
-    .sort((a: any, b: any) => b.value - a.value);
+    .map(([name, value]: unknown) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
 }
 
 /**
  * Builds status entries from overall stats (Success / Error).
  */
-function buildStatusEntries(stats: any) {
+function buildStatusEntries(stats) {
   const entries = [];
   if (stats?.successCount)
     entries.push({ name: "Success", value: stats.successCount });
@@ -179,7 +179,7 @@ function buildStatusEntries(stats: any) {
 
 /* -- Active sector renderer with glow and center text -- */
 
-function ActiveSectorRenderer(props: any) {
+function ActiveSectorRenderer(props: unknown) {
   const {
     cx,
     cy,
@@ -243,7 +243,7 @@ export default function DistributionChartComponent({
   loading = false,
   height = 220,
   title = "Distribution",
-}: any) {
+}: unknown) {
   const [activeTab, setActiveTab] = useState("project");
   const [activeMetric, setActiveMetric] = useState("requests");
   const [activeIndex, setActiveIndex] = useState(null);
@@ -270,18 +270,18 @@ export default function DistributionChartComponent({
   ]);
 
   const pieData = useMemo(() => {
-    return entries.map(({ name, value }: any, i: any) => ({
+    return entries.map(({ name, value }: unknown, i: unknown) => ({
       name,
       value,
       fill: isStatus
-        ? (STATUS_COLORS as any)[name] || COLORS[0]
+        ? (STATUS_COLORS as Record<string, unknown>)[name] || COLORS[0]
         : COLORS[i % COLORS.length],
     }));
   }, [entries, isStatus]);
 
   const isAvgMetric =
     activeMetric === "avgTps" || activeMetric === "avgLatency";
-  const total = entries.reduce((sum: any, e: any) => sum + e.value, 0);
+  const total = entries.reduce((sum, e) => sum + e.value, 0);
   const displayTotal = isAvgMetric
     ? entries.length > 0
       ? total / entries.length
@@ -289,12 +289,12 @@ export default function DistributionChartComponent({
     : total;
   const totalLabel = isAvgMetric ? "avg" : "total";
 
-  const handleTabChange = (key: any) => {
+  const handleTabChange = (key) => {
     setActiveTab(key);
     setActiveIndex(null);
   };
 
-  const handleMetricChange = (value: any) => {
+  const handleMetricChange = (value) => {
     setActiveMetric(value);
     setActiveIndex(null);
   };
@@ -345,16 +345,16 @@ export default function DistributionChartComponent({
                     outerRadius={height * 0.36}
                     paddingAngle={2}
                     dataKey="value"
-                    {...({ activeIndex } as any)}
-                    activeShape={(props: any) => (
+                    {...({ activeIndex } as React.CSSProperties)}
+                    activeShape={(props: unknown) => (
                       <ActiveSectorRenderer {...props} metric={activeMetric} />
                     )}
-                    onMouseEnter={(_: any, index: any) => setActiveIndex(index)}
+                    onMouseEnter={(_: unknown, index: unknown) => setActiveIndex(index)}
                     onMouseLeave={() => setActiveIndex(null)}
                     animationDuration={200}
                     animationEasing="ease-in-out"
                   >
-                    {pieData.map((entry: any, i: any) => (
+                    {pieData.map((entry, i) => (
                       <Cell
                         key={entry.name}
                         fill={entry.fill}
@@ -371,10 +371,10 @@ export default function DistributionChartComponent({
             </div>
 
             <div className={styles.legend}>
-              {entries.map(({ name, value }: any, i: any) => {
+              {entries.map(({ name, value }: unknown, i: unknown) => {
                 const pct = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                 const color = isStatus
-                  ? (STATUS_COLORS as any)[name] || COLORS[0]
+                  ? (STATUS_COLORS as Record<string, unknown>)[name] || COLORS[0]
                   : COLORS[i % COLORS.length];
 
                 return (

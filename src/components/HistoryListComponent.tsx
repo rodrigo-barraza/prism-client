@@ -61,7 +61,7 @@ export default function HistoryList({
   hasMore = false,
   loadingMore = false,
   onLoadMore,
-}: any) {
+}: unknown) {
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [activeModalities, setActiveModalities] = useState(new Set());
   const [activeTools, setActiveTools] = useState(new Set());
@@ -80,7 +80,7 @@ export default function HistoryList({
         if (mod[`${key}In`] || mod[`${key}Out`]) set.add(key);
       }
     }
-    return MODALITY_FILTERS.filter(({ key }: any) => set.has(key));
+    return MODALITY_FILTERS.filter(({ key }: unknown) => set.has(key));
   }, [items]);
 
   // Discover tools across all items
@@ -92,7 +92,7 @@ export default function HistoryList({
         if (mod[key]) set.add(key);
       }
     }
-    return TOOL_FILTERS.filter(({ key }: any) => set.has(key));
+    return TOOL_FILTERS.filter(({ key }: unknown) => set.has(key));
   }, [items]);
 
   // Discover providers
@@ -102,7 +102,7 @@ export default function HistoryList({
       for (const p of item.providers || []) set.add(p);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
-    return [...set].sort((a: any, b: any) => {
+    return [...set].sort((a, b) => {
       const ai = labelOrder.indexOf(a);
       const bi = labelOrder.indexOf(b);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
@@ -110,7 +110,7 @@ export default function HistoryList({
   }, [items]);
 
   const filtered = useMemo(() => {
-    return items.filter((item: any) => {
+    return items.filter((item) => {
       if (showFavoritesOnly && onToggleFavorite) {
         if (!(favorites || []).includes(item.id)) return false;
       }
@@ -125,18 +125,18 @@ export default function HistoryList({
       if (activeModalities.size > 0) {
         const mod = item.modalities || {};
         const matches = [...activeModalities].some(
-          (key: any) => mod[`${key}In`] || mod[`${key}Out`],
+          (key) => mod[`${key}In`] || mod[`${key}Out`],
         );
         if (!matches) return false;
       }
       if (activeTools.size > 0) {
         const mod = item.modalities || {};
-        const matches = [...activeTools].some((key: any) => mod[key]);
+        const matches = [...activeTools].some((key) => mod[key]);
         if (!matches) return false;
       }
       if (activeProviders.size > 0) {
         const itemProviders = item.providers || [];
-        const matches = [...activeProviders].some((p: any) =>
+        const matches = [...activeProviders].some((p) =>
           itemProviders.includes(p),
         );
         if (!matches) return false;
@@ -162,15 +162,15 @@ export default function HistoryList({
   ]);
 
   // -- Infinite scroll via IntersectionObserver -----------------
-  const sentinelRef = useRef<any>(null);
-  const listRef = useRef<any>(null);
+  const sentinelRef = useRef<unknown>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!hasMore || !onLoadMore || loadingMore) return;
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
     const observer = new IntersectionObserver(
-      ([entry]: any) => {
+      ([entry]: unknown) => {
         if (entry.isIntersecting) {
           onLoadMore();
         }
@@ -207,7 +207,7 @@ export default function HistoryList({
                   ],
                   activeKeys: showFavoritesOnly ? "favorites" : null,
                   isSingleSelect: true,
-                  onToggle: () => setShowFavoritesOnly((v: any) => !v),
+                  onToggle: () => setShowFavoritesOnly((v) => !v),
                 },
               ]
             : []),
@@ -215,15 +215,15 @@ export default function HistoryList({
             ? [
                 {
                   label: "Modality",
-                  items: allModalities.map((m: any) => ({
+                  items: allModalities.map((m) => ({
                     key: m.key,
                     icon: m.icon,
                     title: m.title,
                     color: m.color,
                   })),
                   activeKeys: activeModalities,
-                  onToggle: (key: any) => {
-                    setActiveModalities((prev: any) => {
+                  onToggle: (key) => {
+                    setActiveModalities((prev) => {
                       const next = new Set(prev);
                       next.has(key) ? next.delete(key) : next.add(key);
                       return next;
@@ -236,15 +236,15 @@ export default function HistoryList({
             ? [
                 {
                   label: "Tools",
-                  items: allTools.map((t: any) => ({
+                  items: allTools.map((t) => ({
                     key: t.key,
                     icon: t.icon,
                     title: t.title,
                     color: t.color,
                   })),
                   activeKeys: activeTools,
-                  onToggle: (key: any) => {
-                    setActiveTools((prev: any) => {
+                  onToggle: (key) => {
+                    setActiveTools((prev) => {
                       const next = new Set(prev);
                       next.has(key) ? next.delete(key) : next.add(key);
                       return next;
@@ -257,14 +257,14 @@ export default function HistoryList({
             ? [
                 {
                   label: "Providers",
-                  items: allProviders.map((p: any) => ({
+                  items: allProviders.map((p) => ({
                     key: p,
                     icon: () => <ProviderLogo provider={p} size={13} />,
                     title: resolveProviderLabel(p),
                   })),
                   activeKeys: activeProviders,
-                  onToggle: (key: any) => {
-                    setActiveProviders((prev: any) => {
+                  onToggle: (key) => {
+                    setActiveProviders((prev) => {
                       const next = new Set(prev);
                       next.has(key) ? next.delete(key) : next.add(key);
                       return next;
@@ -290,7 +290,7 @@ export default function HistoryList({
       )}
 
       <div className={styles.list} ref={listRef}>
-        {filtered.map((item: any) => (
+        {filtered.map((item) => (
           <HistoryItemComponent
             key={item.id}
             item={item}
@@ -307,7 +307,7 @@ export default function HistoryList({
             onToggleFavorite={onToggleFavorite}
             dataPanelClose
             onOpenInNewTab={
-              onOpenInNewTab ? (item: any) => onOpenInNewTab(item) : undefined
+              onOpenInNewTab ? (item) => onOpenInNewTab(item) : undefined
             }
             isGenerating={generatingSessionIds?.has?.(item.id)}
           />

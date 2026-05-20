@@ -42,7 +42,7 @@ import { generateUUID } from "../utils/utilities";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
 
-function RainbowCanvas({ turbo = false, greyscale = false }: any) {
+function RainbowCanvas({ turbo = false, greyscale = false }: unknown) {
   return (
     <RainbowCanvasComponent
       turbo={turbo}
@@ -145,7 +145,7 @@ export default function NavigationSidebarComponent({
   isGenerating = false,
   activeApiCount = 0,
   onNavClick,
-}: any) {
+}: unknown) {
   const badgeCounts = {
     conversations: liveCount,
     traces: tracesCount,
@@ -166,7 +166,7 @@ export default function NavigationSidebarComponent({
   useEffect(() => {
     if (mode !== "user") return;
     PrismService.getSettings()
-      .then((s: any) => {
+      .then((s) => {
         const mem = s?.memory || {};
         setMemoryConfigured(
           Boolean(
@@ -211,7 +211,7 @@ export default function NavigationSidebarComponent({
   }, []);
 
   const toggleNav = useCallback(() => {
-    setShowNav((prev: any) => {
+    setShowNav((prev) => {
       const next = !prev;
       localStorage.setItem(LS_PANEL_NAV, String(next));
       if (next) {
@@ -225,13 +225,13 @@ export default function NavigationSidebarComponent({
 
   // -- Bouncing mini cats for concurrent API calls ----------------
   // Lifecycle: active → windingDown → idle → fading → removed
-  const bannerRef = useRef<any>(null);
-  const catStateRef = useRef<any>(new Map());
-  const catElsRef = useRef<any>(new Map());
-  const isGenRef = useRef<any>(isGenerating);
-  const prevIsGenRef = useRef<any>(false);
-  const miniCatsRef = useRef<any>([]);
-  const [miniCats, setMiniCats] = useState<any[]>([]);
+  const bannerRef = useRef<unknown>(null);
+  const catStateRef = useRef<Map<string, unknown>>(new Map());
+  const catElsRef = useRef<Map<string, unknown>>(new Map());
+  const isGenRef = useRef<boolean>(isGenerating);
+  const prevIsGenRef = useRef<boolean>(false);
+  const miniCatsRef = useRef<unknown>([]);
+  const [miniCats, setMiniCats] = useState<unknown[]>([]);
 
   // Mirror props into refs for RAF access
   useEffect(() => {
@@ -244,8 +244,8 @@ export default function NavigationSidebarComponent({
   // Add cats when workers spawn, retire cats when workers finish
   useEffect(() => {
     const needed = Math.max(0, (activeApiCount || 0) - 1);
-    setMiniCats((prev: any) => {
-      const activeCount = prev.filter((c: any) => !c.retired).length;
+    setMiniCats((prev) => {
+      const activeCount = prev.filter((c) => !c.retired).length;
       if (needed === activeCount) return prev;
 
       if (needed < activeCount) {
@@ -282,9 +282,9 @@ export default function NavigationSidebarComponent({
   // Always-on RAF: movement, bouncing, FX, lifecycle phases
   useEffect(() => {
     let lastTime = 0;
-    let rafId: any;
+    let rafId: unknown;
 
-    const tick = (now: any) => {
+    const tick = (now: unknown) => {
       const cats = miniCatsRef.current;
       if (cats.length === 0) {
         lastTime = 0;
@@ -306,8 +306,8 @@ export default function NavigationSidebarComponent({
         rafId = requestAnimationFrame(tick);
         return;
       }
-      const bw = (banner as any).offsetWidth;
-      const bh = (banner as any).offsetHeight;
+      const bw = (banner as unknown).offsetWidth;
+      const bh = (banner as unknown).offsetHeight;
       const isGen = isGenRef.current;
 
       // Detect primary cat stop: isGenerating true → false → fade ALL cats
@@ -324,30 +324,30 @@ export default function NavigationSidebarComponent({
       const toRemove = [];
 
       for (const cat of cats) {
-        let p = catStateRef.current.get((cat as any).id);
+        let p = catStateRef.current.get((cat as unknown).id);
         if (!p) {
           p = {
             x: bw / 2,
             y: bh / 2,
-            vx: (cat as any).initVx,
-            vy: (cat as any).initVy,
+            vx: (cat as unknown).initVx,
+            vy: (cat as unknown).initVy,
             accelTime: 0,
             phase: "active",
             fadeStart: null,
           };
-          catStateRef.current.set((cat as any).id, p);
+          catStateRef.current.set((cat as unknown).id, p);
         }
 
-        const element = catElsRef.current.get((cat as any).id);
+        const element = catElsRef.current.get((cat as unknown).id);
         if (!element) continue;
 
         // Phase transition: worker finished → start winding down
-        if ((cat as any).retired && p.phase === "active") {
+        if ((cat as unknown).retired && p.phase === "active") {
           p.phase = "windingDown";
         }
 
         // Bounce helper (specular reflection)
-        const hs = (cat as any).size / 2;
+        const hs = (cat as unknown).size / 2;
         const bounce = () => {
           if (p.x < hs) {
             p.x = hs;
@@ -453,7 +453,7 @@ export default function NavigationSidebarComponent({
             element.src = "/cat.gif";
           }
 
-          if (progress >= 1) toRemove.push((cat as any).id);
+          if (progress >= 1) toRemove.push((cat as unknown).id);
         }
       }
 
@@ -464,8 +464,8 @@ export default function NavigationSidebarComponent({
           catStateRef.current.delete(id);
           catElsRef.current.delete(id);
         }
-        setMiniCats((prev: any) =>
-          prev.filter((c: any) => !removeSet.has(c.id)),
+        setMiniCats((prev) =>
+          prev.filter((c) => !removeSet.has(c.id)),
         );
       }
 
@@ -486,7 +486,7 @@ export default function NavigationSidebarComponent({
         {/* Floating triangle trigger */}
         <button
           className={styles.mobileHamburger}
-          onClick={() => setMobileOpen((v: any) => !v)}
+          onClick={() => setMobileOpen((v) => !v)}
           title={mobileOpen ? "Close navigation" : "Open navigation"}
         >
           {/* Spinning circle with rainbow ring */}
@@ -518,7 +518,7 @@ export default function NavigationSidebarComponent({
 
               {/* Navigation links */}
               <nav className={styles.mobilePopoverNav}>
-                {navSections.map((section: any, sectionIdx: any) => (
+                {navSections.map((section, sectionIdx) => (
                   <React.Fragment key={section.label || sectionIdx}>
                     {/* Section divider */}
                     {section.label && (
@@ -526,13 +526,13 @@ export default function NavigationSidebarComponent({
                         <span>{section.label}</span>
                       </div>
                     )}
-                    {section.items.map((item: any) => {
+                    {section.items.map((item) => {
                       const Icon = item.icon;
                       const isActive =
                         (item.exact
                           ? pathname === item.href
                           : pathname.startsWith(item.href)) ||
-                        item.alsoMatches?.some((p: any) =>
+                        item.alsoMatches?.some((p) =>
                           pathname.startsWith(p),
                         );
 
@@ -541,10 +541,10 @@ export default function NavigationSidebarComponent({
                           key={item.href}
                           href={item.href}
                           className={`${styles.navLink} ${isActive ? styles.active : ""}`}
-                          onMouseEnter={(e: any) =>
+                          onMouseEnter={(e: React.MouseEvent) =>
                             SoundService.playHover({ event: e })
                           }
-                          onClick={(e: any) => {
+                          onClick={(e: React.MouseEvent) => {
                             SoundService.playClick({ event: e });
                             onNavClick?.(item.href);
                             setMobileOpen(false);
@@ -564,11 +564,11 @@ export default function NavigationSidebarComponent({
                             </span>
                           )}
                           {item.showBadge &&
-                            (badgeCounts as any)[item.showBadge] > 0 && (
+                            (badgeCounts as Record<string, unknown>)[item.showBadge] > 0 && (
                               <span
                                 className={`${styles.badge} ${styles.live}`}
                               >
-                                {(badgeCounts as any)[item.showBadge]}
+                                {(badgeCounts as Record<string, unknown>)[item.showBadge]}
                               </span>
                             )}
                         </Link>
@@ -623,11 +623,11 @@ export default function NavigationSidebarComponent({
         {/* Rainbow logo banner */}
         <div className={styles.logoBanner} ref={bannerRef}>
           <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
-          {miniCats.map((cat: any) => (
+          {miniCats.map((cat) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={cat.id}
-              ref={(element: any) => {
+              ref={(element: unknown) => {
                 if (element) catElsRef.current.set(cat.id, element);
                 else catElsRef.current.delete(cat.id);
               }}
@@ -649,7 +649,7 @@ export default function NavigationSidebarComponent({
 
         {/* Navigation */}
         <nav className={styles.nav}>
-          {navSections.map((section: any, sectionIdx: any) => (
+          {navSections.map((section, sectionIdx) => (
             <React.Fragment key={section.label || sectionIdx}>
               {/* Section divider */}
               {section.label && (
@@ -657,23 +657,23 @@ export default function NavigationSidebarComponent({
                   <span>{section.label}</span>
                 </div>
               )}
-              {section.items.map((item: any) => {
+              {section.items.map((item) => {
                 const Icon = item.icon;
                 const isActive =
                   (item.exact
                     ? pathname === item.href
                     : pathname.startsWith(item.href)) ||
-                  item.alsoMatches?.some((p: any) => pathname.startsWith(p));
+                  item.alsoMatches?.some((p) => pathname.startsWith(p));
 
                 const link = (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={`${styles.navLink} ${isActive ? styles.active : ""}`}
-                    onMouseEnter={(e: any) =>
+                    onMouseEnter={(e: React.MouseEvent) =>
                       SoundService.playHover({ event: e })
                     }
-                    onClick={(e: any) => {
+                    onClick={(e: React.MouseEvent) => {
                       SoundService.playClick({ event: e });
                       onNavClick?.(item.href);
                     }}
@@ -689,9 +689,9 @@ export default function NavigationSidebarComponent({
                       </span>
                     )}
                     {item.showBadge &&
-                      (badgeCounts as any)[item.showBadge] > 0 && (
+                      (badgeCounts as Record<string, unknown>)[item.showBadge] > 0 && (
                         <span className={`${styles.badge} ${styles.live}`}>
-                          {(badgeCounts as any)[item.showBadge]}
+                          {(badgeCounts as Record<string, unknown>)[item.showBadge]}
                         </span>
                       )}
                   </Link>
@@ -727,8 +727,8 @@ export default function NavigationSidebarComponent({
               <Link
                 href="/"
                 className={styles.navLink}
-                onMouseEnter={(e: any) => SoundService.playHover({ event: e })}
-                onClick={(e: any) => SoundService.playClick({ event: e })}
+                onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e })}
+                onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e })}
               >
                 <ArrowLeft className={styles.navIcon} />
                 <span className={styles.navLabel}>Back to Prism</span>
@@ -745,8 +745,8 @@ export default function NavigationSidebarComponent({
               <Link
                 href="/admin"
                 className={styles.navLink}
-                onMouseEnter={(e: any) => SoundService.playHover({ event: e })}
-                onClick={(e: any) => SoundService.playClick({ event: e })}
+                onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e })}
+                onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e })}
               >
                 <Settings className={styles.navIcon} />
                 <span className={styles.navLabel}>Admin</span>

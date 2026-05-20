@@ -14,7 +14,7 @@ export default function RequestDetailsComponent({
   title = "Detail",
   sections = [],
   children,
-}: any) {
+}: unknown) {
   return (
     <DrawerComponent
       open={open}

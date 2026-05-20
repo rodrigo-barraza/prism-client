@@ -23,14 +23,14 @@ export default function ProvidersTableComponent({
   compact = false,
   title = "Providers",
   maxHeight = 420,
-}: any) {
+}: unknown) {
   const totalRequests =
     (totalRequestsProp ??
-      providers.reduce((s: any, p: any) => s + p.totalRequests, 0)) ||
+      providers.reduce((s, p) => s + p.totalRequests, 0)) ||
     1;
   const totalCost =
     (totalCostProp ??
-      providers.reduce((s: any, p: any) => s + (p.totalCost || 0), 0)) ||
+      providers.reduce((s, p) => s + (p.totalCost || 0), 0)) ||
     1;
 
   const allColumns = [
@@ -39,8 +39,8 @@ export default function ProvidersTableComponent({
     {
       key: "usage",
       label: "Usage",
-      sortValue: (p: any) => p.totalRequests,
-      render: (p: any, i: any) => (
+      sortValue: (p) => p.totalRequests,
+      render: (p: unknown, i: unknown) => (
         <ProportionBarComponent
           value={p.totalRequests}
           total={totalRequests}
@@ -52,7 +52,7 @@ export default function ProvidersTableComponent({
     ...tokenColumns(),
     ...costColumns(totalCost),
     latencyColumn(),
-    ...countLinkColumns("provider", (row: any) => row.provider),
+    ...countLinkColumns("provider", (row) => row.provider),
   ];
 
   const COMPACT_KEYS = [
@@ -63,7 +63,7 @@ export default function ProvidersTableComponent({
     "avgLatency",
   ];
   const columns = compact
-    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (
@@ -72,7 +72,7 @@ export default function ProvidersTableComponent({
       maxHeight={maxHeight}
       columns={columns}
       data={providers}
-      getRowKey={(p: any, i: any) => `${p.provider}-${i}`}
+      getRowKey={(p: unknown, i: unknown) => `${p.provider}-${i}`}
       emptyText={emptyText}
       storageKey="providers"
     />

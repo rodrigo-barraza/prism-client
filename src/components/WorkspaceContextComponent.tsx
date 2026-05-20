@@ -10,7 +10,7 @@ import {
 import WorkspaceService from "../services/WorkspaceService";
 import { LS_WORKSPACE_ROOT } from "../constants";
 
-const WorkspaceContext = createContext<any>({
+const WorkspaceContext = createContext<unknown>({
   workspaces: [],
   currentWorkspace: null,
   setCurrentWorkspace: () => {},
@@ -24,13 +24,13 @@ const WorkspaceContext = createContext<any>({
  * The selected workspace root is stored in localStorage and sent to Prism
  * via the x-workspace-root header (see serviceHeaders.js).
  */
-export function WorkspaceProvider({ children }: any) {
-  const [workspaces, setWorkspaces] = useState<any[]>([]);
+export function WorkspaceProvider({ children }: unknown) {
+  const [workspaces, setWorkspaces] = useState<unknown[]>([]);
   const [currentWorkspace, _setCurrentWorkspace] = useState(null);
   const [mounted, setMounted] = useState(false);
 
   /** Set the active workspace and persist to localStorage. */
-  const setCurrentWorkspace = useCallback((workspace: any) => {
+  const setCurrentWorkspace = useCallback((workspace: unknown) => {
     _setCurrentWorkspace(workspace);
     if (typeof window !== "undefined") {
       if (workspace?.path) {
@@ -43,13 +43,13 @@ export function WorkspaceProvider({ children }: any) {
 
   const refreshWorkspaces = useCallback(async () => {
     try {
-      const list: any = await WorkspaceService.list();
+      const list: unknown = await WorkspaceService.list();
       setWorkspaces(list);
 
       // If the persisted workspace is in the list, restore it
       const storedPath = localStorage.getItem(LS_WORKSPACE_ROOT);
       if (storedPath && list.length > 0) {
-        const match = list.find((w: any) => w.path === storedPath);
+        const match = list.find((w) => w.path === storedPath);
         if (match) {
           _setCurrentWorkspace(match);
         } else {

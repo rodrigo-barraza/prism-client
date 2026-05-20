@@ -11,7 +11,7 @@ const TWEEN_MS = 500;
 const INFINITY_TWEEN_MS = TWEEN_MS * 2;
 
 /** Ease-out cubic — fast start, gentle landing. */
-function easeOutCubic(t: any) {
+function easeOutCubic(t: unknown) {
   return 1 - Math.pow(1 - t, 3);
 }
 
@@ -159,10 +159,10 @@ export default function CycleButton({
   isActive = false,
   onClick,
   title,
-}: any) {
-  const prevValueRef = useRef<any>(value);
-  const rafRef = useRef<any>(null);
-  const glitchIntervalRef = useRef<any>(null);
+}: unknown) {
+  const prevValueRef = useRef<unknown>(value);
+  const rafRef = useRef<number | null>(null);
+  const glitchIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [displayNum, setDisplayNum] = useState(() =>
     Number.isFinite(value) ? value : 999,
   );
@@ -211,7 +211,7 @@ export default function CycleButton({
       setTweening(true);
 
       const start = performance.now();
-      function tick(now: any) {
+      function tick(now: unknown) {
         const elapsed = now - start;
         const progress = Math.min(elapsed / countDuration, 1);
         const eased = easeOutCubic(progress);
@@ -269,7 +269,7 @@ export default function CycleButton({
         setDisplayNum(-999);
 
         const start = performance.now();
-        function tick(now: any) {
+        function tick(now: unknown) {
           const elapsed = now - start;
           const progress = Math.min(elapsed / countDuration, 1);
           const eased = easeOutCubic(progress);
@@ -300,7 +300,7 @@ export default function CycleButton({
     const start = performance.now();
     const delta = value - from;
 
-    function tick(now: any) {
+    function tick(now: unknown) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / TWEEN_MS, 1);
       const eased = easeOutCubic(progress);
@@ -335,11 +335,11 @@ export default function CycleButton({
     <button
       type="button"
       className={`${styles.cycleButton} ${isActive ? styles.cycleButtonActive : ""} ${tweening ? styles.tweening : ""} ${showInfinity ? styles.infinity : ""} ${glitching ? styles.glitching : ""}`}
-      onClick={(e: any) => {
+      onClick={(e: React.MouseEvent) => {
         SoundService.playClickButton({ event: e });
         onClick?.();
       }}
-      onMouseEnter={(e: any) => SoundService.playHoverButton({ event: e })}
+      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e })}
       title={title}
     >
       {label}

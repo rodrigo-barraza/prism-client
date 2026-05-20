@@ -54,7 +54,7 @@ export default function HistoryItemComponent({
   onOpenInNewTab,
   isGenerating = false,
   children,
-}: any) {
+}: unknown) {
   const itemDate = item.updatedAt || item.createdAt;
   const mod = item.modalities || {};
   const hasModalities = mod && Object.keys(mod).length > 0;
@@ -67,7 +67,7 @@ export default function HistoryItemComponent({
       {...(dataPanelClose ? { "data-panel-close": true } : {})}
       onContextMenu={
         onOpenInNewTab
-          ? (e: any) => {
+          ? (e: React.SyntheticEvent) => {
               // Only show custom context on right-click of the main item area
               // (not on action buttons which have their own handlers)
               if (e.target.closest(`.${styles.actions}`)) return;
@@ -80,7 +80,7 @@ export default function HistoryItemComponent({
       {onToggleFavorite && (
         <button
           className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ""}`}
-          onClick={(e: any) => {
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onToggleFavorite(item.id);
           }}
@@ -97,7 +97,7 @@ export default function HistoryItemComponent({
             {admin && item.username && item.username !== "unknown" && (
               <span className={styles.usernameTag}>{item.username}</span>
             )}
-            {item.tags?.map((tag: any) => (
+            {item.tags?.map((tag) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>
                 {tag.label}
               </span>
@@ -139,7 +139,7 @@ export default function HistoryItemComponent({
         {onDownload && (
           <IconButtonComponent
             icon={<Download size={12} />}
-            onClick={(e: any) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onDownload(item.id);
             }}
@@ -150,7 +150,7 @@ export default function HistoryItemComponent({
         {onCopy && (
           <IconButtonComponent
             icon={<Copy size={12} />}
-            onClick={(e: any) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onCopy(item.id);
             }}
@@ -161,7 +161,7 @@ export default function HistoryItemComponent({
         {!readOnly && !admin && onDelete && (
           <IconButtonComponent
             icon={<Trash2 size={12} />}
-            onClick={(e: any) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onDelete(item.id);
             }}
@@ -173,7 +173,7 @@ export default function HistoryItemComponent({
         {onOpenInNewTab && (
           <IconButtonComponent
             icon={<ExternalLink size={12} />}
-            onClick={(e: any) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onOpenInNewTab(item);
             }}

@@ -14,15 +14,15 @@ import styles from "./AssetInputOptionsComponent.module.css";
  *   onFile(dataUrl, mimeType) – called when a file/asset is ready
  *   compact – smaller icon buttons for node view (default false = sidebar view)
  */
-export default function AssetInputOptions({ onFile, compact = false }: any) {
-  const fileInputRef = useRef<any>(null);
+export default function AssetInputOptions({ onFile, compact = false }: unknown) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showDrawing, setShowDrawing] = useState(false);
   const [showAudioRec, setShowAudioRec] = useState(false);
   const [showWebcam, setShowWebcam] = useState(false);
-  const videoRef = useRef<any>(null);
-  const streamRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<HTMLVideoElement | null>(null);
 
-  const handleFileChange = (e: any) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -31,7 +31,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
     e.target.value = "";
   };
 
-  const handleDrop = (e: any) => {
+  const handleDrop = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     e.stopPropagation();
     const file = e.dataTransfer?.files?.[0];
@@ -41,7 +41,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
     reader.readAsDataURL(file);
   };
 
-  const handleDragOver = (e: any) => {
+  const handleDragOver = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     e.stopPropagation();
   };
@@ -61,7 +61,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
       // Assign stream after render
       requestAnimationFrame(() => {
         if (videoRef.current) {
-          (videoRef.current as any).srcObject = stream;
+          (videoRef.current as HTMLVideoElement).srcObject = stream;
         }
       });
     } catch {
@@ -70,7 +70,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
   }, []);
 
   const stopWebcam = useCallback(() => {
-    (streamRef.current as any)?.getTracks().forEach((t: any) => t.stop());
+    (streamRef.current as MediaStream)?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setShowWebcam(false);
   }, []);
@@ -79,10 +79,10 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
     const video = videoRef.current;
     if (!video) return;
     const canvas = document.createElement("canvas");
-    canvas.width = (video as any).videoWidth;
-    canvas.height = (video as any).videoHeight;
+    canvas.width = (video as HTMLVideoElement).videoWidth;
+    canvas.height = (video as HTMLVideoElement).videoHeight;
     const context = canvas.getContext("2d");
-    context!.drawImage(video as any, 0, 0);
+    context!.drawImage(video as CanvasImageSource, 0, 0);
     const dataUrl = canvas.toDataURL("image/png");
     onFile?.(dataUrl, "image/png");
     stopWebcam();
@@ -137,7 +137,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
       >
         <div className={styles.audioRecWrap}>
           <AudioPlayerRecorderComponent
-            onRecordingComplete={(dataUrl: any) => {
+            onRecordingComplete={(dataUrl: unknown) => {
               onFile?.(dataUrl, "audio/webm");
               setShowAudioRec(false);
             }}
@@ -173,7 +173,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
           <button
             type="button"
             className={styles.optionBtn}
-            onClick={() => (fileInputRef.current as any)?.click()}
+            onClick={() => fileInputRef.current?.click()}
             title="Upload file"
           >
             <Paperclip size={iconSize} />
@@ -230,7 +230,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
       {showDrawing && (
         <DrawingCanvas
           onClose={() => setShowDrawing(false)}
-          onSave={(dataUrl: any) => {
+          onSave={(dataUrl: unknown) => {
             onFile?.(dataUrl, "image/png");
             setShowDrawing(false);
           }}

@@ -53,7 +53,7 @@ function NodePorts({
   onOutputPortClick,
   onPortHover,
   onPortLeave,
-}: any) {
+}: unknown) {
   const nodeWidth = getNodeWidth(node);
   const portStartY = HEADER_HEIGHT + configOffset + 8;
   const isConversationNode =
@@ -63,12 +63,12 @@ function NodePorts({
   return (
     <>
       {/* Input ports */}
-      {inputTypes.map((portId: any, i: any) => {
+      {inputTypes.map((portId, i) => {
         const compound = parseCompoundPort(portId);
         const baseMod = compound ? compound.modality : portId;
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
-        const color = (MODALITY_COLORS as any)[baseMod] || "#888";
+        const color = (MODALITY_COLORS as Record<string, unknown>)[baseMod] || "#888";
         const isCompatible =
           connecting &&
           getBaseModality(connecting.sourceModality) === baseMod &&
@@ -77,9 +77,9 @@ function NodePorts({
           hoveredPort?.nodeId === node.id &&
           hoveredPort?.type === "input" &&
           hoveredPort?.modality === portId;
-        const Icon = (MODALITY_ICONS as any)[baseMod]?.icon;
+        const Icon = (MODALITY_ICONS as Record<string, unknown>)[baseMod]?.icon;
         const hasPrismSource = connections.some(
-          (c: any) =>
+          (c) =>
             c.targetNodeId === node.id &&
             c.targetModality === portId &&
             (nodeStatuses[c.sourceNodeId] === "running" ||
@@ -88,28 +88,28 @@ function NodePorts({
         const hasDoneSource =
           hasPrismSource &&
           connections.some(
-            (c: any) =>
+            (c) =>
               c.targetNodeId === node.id &&
               c.targetModality === portId &&
               nodeStatuses[c.sourceNodeId] === "done",
           ) &&
           !connections.some(
-            (c: any) =>
+            (c) =>
               c.targetNodeId === node.id &&
               c.targetModality === portId &&
               nodeStatuses[c.sourceNodeId] === "running",
           );
 
-        let label = (MODALITY_ICONS as any)[baseMod]?.label || baseMod;
+        let label = (MODALITY_ICONS as Record<string, unknown>)[baseMod]?.label || baseMod;
         if (compound && isConversationNode) {
           const message = nodeMessages[compound.index];
           const roleLabel =
-            (ROLE_LABELS as any)[message?.role] ||
+            (ROLE_LABELS as Record<string, unknown>)[message?.role] ||
             message?.role ||
             `#${compound.index}`;
           const roleCount = nodeMessages
             .slice(0, compound.index)
-            .filter((m: any) => m.role === message?.role).length;
+            .filter((m) => m.role === message?.role).length;
           const numberedRole =
             roleCount > 0 ? `${roleLabel} ${roleCount + 1}` : roleLabel;
           if (message?.role === "system") {
@@ -153,7 +153,7 @@ function NodePorts({
               data-node-id={node.id}
               data-port-type="input"
               data-port-modality={portId}
-              onClick={(e: any) => onInputPortClick(e, node.id, portId)}
+              onClick={(e: React.MouseEvent) => onInputPortClick(e, node.id, portId)}
               onMouseEnter={() =>
                 onPortHover({
                   nodeId: node.id,
@@ -191,11 +191,11 @@ function NodePorts({
       })}
 
       {/* Output ports */}
-      {outputTypes.map((modality: any, i: any) => {
+      {outputTypes.map((modality, i) => {
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
-        const color = (MODALITY_COLORS as any)[modality] || "#888";
-        const Icon = (MODALITY_ICONS as any)[modality]?.icon;
+        const color = (MODALITY_COLORS as Record<string, unknown>)[modality] || "#888";
+        const Icon = (MODALITY_ICONS as Record<string, unknown>)[modality]?.icon;
         const isActive =
           connecting?.sourceNodeId === node.id &&
           connecting?.sourceModality === modality;
@@ -219,13 +219,13 @@ function NodePorts({
               data-node-id={node.id}
               data-port-type="output"
               data-port-modality={modality}
-              onClick={(e: any) => onOutputPortClick(e, node.id, modality, i)}
+              onClick={(e: React.MouseEvent) => onOutputPortClick(e, node.id, modality, i)}
               onMouseEnter={() =>
                 onPortHover({ nodeId: node.id, type: "output", modality })
               }
               onMouseLeave={onPortLeave}
             >
-              <title>{`OUT · ${(MODALITY_ICONS as any)[modality]?.label || modality} · ${node.id}`}</title>
+              <title>{`OUT · ${(MODALITY_ICONS as Record<string, unknown>)[modality]?.label || modality} · ${node.id}`}</title>
             </circle>
             {Icon && (
               <foreignObject
@@ -253,7 +253,7 @@ function NodePorts({
               textAnchor="end"
               className={styles.portLabel}
             >
-              {(MODALITY_ICONS as any)[modality]?.label || modality}
+              {(MODALITY_ICONS as Record<string, unknown>)[modality]?.label || modality}
             </text>
           </g>
         );
@@ -265,7 +265,7 @@ function NodePorts({
 /**
  * Shared port props builder to avoid repeating in both node types.
  */
-function usePortProps(props: any) {
+function usePortProps(props: unknown) {
   return {
     connecting: props.connecting,
     hoveredPort: props.hoveredPort,
@@ -308,7 +308,7 @@ function NodeShell({
   statusGradient,
   portProps,
   children,
-}: any) {
+}: unknown) {
   const isRunning = status === "running";
   const isDone = status === "done";
   const statusBorder = isRunning
@@ -335,8 +335,8 @@ function NodeShell({
       className={styles.nodeGroup}
       data-workflow-node
       data-node-id={node.id}
-      onMouseDown={(e: any) => onMouseDown(e, node.id)}
-      onTouchStart={(e: any) => onTouchStart?.(e, node.id)}
+      onMouseDown={(e: React.MouseEvent) => onMouseDown(e, node.id)}
+      onTouchStart={(e: React.SyntheticEvent) => onTouchStart?.(e, node.id)}
     >
       {/* Body */}
       <rect
@@ -369,8 +369,8 @@ function NodeShell({
       {/* Drag area with header content */}
       <g
         className={styles.nodeDragArea}
-        onMouseDown={(e: any) => onMouseDown(e, node.id)}
-        onTouchStart={(e: any) => onTouchStart?.(e, node.id)}
+        onMouseDown={(e: React.MouseEvent) => onMouseDown(e, node.id)}
+        onTouchStart={(e: React.SyntheticEvent) => onTouchStart?.(e, node.id)}
         style={{ cursor: "grab" }}
       >
         <rect
@@ -435,7 +435,7 @@ function NodeShell({
           {onDelete && (
             <button
               className={styles.deleteNodeBtn}
-              onClick={(e: any) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onDelete(node.id);
               }}
@@ -480,7 +480,7 @@ function NodeShell({
 /**
  * Renders a model node (AI model step).
  */
-function ModelNode(props: any) {
+function ModelNode(props: unknown) {
   const {
     node,
     status,
@@ -499,7 +499,7 @@ function ModelNode(props: any) {
   const width = getNodeWidth(node);
 
   const modalityIcons = (node.rawInputTypes || node.inputTypes || []).filter(
-    (t: any) => t !== "conversation",
+    (t: string) => t !== "conversation",
   );
   const modalityAreaWidth = modalityIcons.length * MODALITY_ICON_WIDTH;
 
@@ -550,8 +550,8 @@ function ModelNode(props: any) {
         />
       )}
       {/* Modality icons from model's input types */}
-      {modalityIcons.map((modality: any) => {
-        const mod = (MODALITY_ICONS as any)[modality];
+      {modalityIcons.map((modality) => {
+        const mod = (MODALITY_ICONS as Record<string, unknown>)[modality];
         if (!mod) return null;
         const Icon = mod.icon;
         return (
@@ -640,7 +640,7 @@ function ModelNode(props: any) {
                     type="file"
                     accept="image/*,audio/*"
                     className={styles.assetFileInput}
-                    onChange={(e: any) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       const reader = new FileReader();
@@ -681,7 +681,7 @@ function ModelNode(props: any) {
 /**
  * Handle file drop/upload for file input nodes.
  */
-function handleFileInputChange(nodeId: any, file: any, onUpdateFileInput: any) {
+function handleFileInputChange(nodeId: unknown, file: unknown, onUpdateFileInput: unknown) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
@@ -693,7 +693,7 @@ function handleFileInputChange(nodeId: any, file: any, onUpdateFileInput: any) {
 /**
  * Renders an asset node (input asset or output viewer).
  */
-function AssetNode(props: any) {
+function AssetNode(props: unknown) {
   const {
     node,
     status,
@@ -712,12 +712,12 @@ function AssetNode(props: any) {
 
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
-  const renameInputRef = useRef<any>(null);
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (isRenaming && renameInputRef.current) {
-      (renameInputRef.current as any).focus();
-      (renameInputRef.current as any).select();
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
     }
   }, [isRenaming]);
 
@@ -728,19 +728,19 @@ function AssetNode(props: any) {
   const outputTypes = node.outputTypes || [];
   const accentColor = isViewer
     ? "#a78bfa"
-    : (MODALITY_COLORS as any)[node.modality] || "#8b5cf6";
+    : (MODALITY_COLORS as Record<string, unknown>)[node.modality] || "#8b5cf6";
   const AssetIcon = isViewer
     ? Eye
     : node.modality
-      ? (ASSET_ICONS as any)[node.modality] ||
-        (MODALITY_ICONS as any)[node.modality]?.icon ||
+      ? (ASSET_ICONS as Record<string, unknown>)[node.modality] ||
+        (MODALITY_ICONS as Record<string, unknown>)[node.modality]?.icon ||
         Paperclip
       : Paperclip;
 
   const isConversation = node.modality === "conversation";
   const conversationModalities = isConversation
     ? (node.supportedModalities || ["text"]).filter(
-        (t: any) => t !== "conversation",
+        (t: string) => t !== "conversation",
       )
     : [];
   const modalityAreaWidth = conversationModalities.length * MODALITY_ICON_WIDTH;
@@ -757,7 +757,7 @@ function AssetNode(props: any) {
 
   const typeLabel = isViewer
     ? NODE_LABELS.viewer
-    : (NODE_LABELS as any)[node.modality] || "Media";
+    : (NODE_LABELS as Record<string, unknown>)[node.modality] || "Media";
   const displayTitle = node.customName || typeLabel;
 
   const handleStartRename = () => {
@@ -772,7 +772,7 @@ function AssetNode(props: any) {
     setIsRenaming(false);
   };
 
-  const handleRenameKeyDown = (e: any) => {
+  const handleRenameKeyDown = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleFinishRename();
     if (e.key === "Escape") setIsRenaming(false);
   };
@@ -805,10 +805,10 @@ function AssetNode(props: any) {
           className={styles.nodeRenameInput}
           style={{ color: accentColor }}
           value={renameValue}
-          onChange={(e: any) => setRenameValue(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setRenameValue(e.target.value)}
           onBlur={handleFinishRename}
           onKeyDown={handleRenameKeyDown}
-          onMouseDown={(e: any) => e.stopPropagation()}
+          onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
           placeholder={typeLabel}
           maxLength={40}
         />
@@ -836,8 +836,8 @@ function AssetNode(props: any) {
       {/* Modality icons for conversation input */}
       {isConversation &&
         conversationModalities.length > 0 &&
-        conversationModalities.map((modality: any) => {
-          const mod = (MODALITY_ICONS as any)[modality];
+        conversationModalities.map((modality) => {
+          const mod = (MODALITY_ICONS as Record<string, unknown>)[modality];
           if (!mod) return null;
           const Icon = mod.icon;
           return (
@@ -852,7 +852,7 @@ function AssetNode(props: any) {
       {/* Gear / eye button */}
       <button
         className={`${styles.deleteNodeBtn} ${isExpanded ? styles.configBtnActive : ""}`}
-        onClick={(e: any) => {
+        onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onToggleExpand(node.id);
         }}
@@ -938,7 +938,7 @@ function AssetNode(props: any) {
                             [{node.receivedOutputs.embedding.length} dims] [
                             {node.receivedOutputs.embedding
                               .slice(0, 4)
-                              .map((v: any) => v.toFixed(4))
+                              .map((v) => v.toFixed(4))
                               .join(", ")}
                             …]
                           </div>
@@ -950,7 +950,7 @@ function AssetNode(props: any) {
                               node.receivedOutputs.video,
                             )}
                             className={styles.viewerImage}
-                            onMouseDown={(e: any) => e.stopPropagation()}
+                            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
                           />
                         )}
                       </>
@@ -967,11 +967,11 @@ function AssetNode(props: any) {
                   <textarea
                     className={styles.assetTextarea}
                     value={node.content || ""}
-                    onChange={(e: any) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
                       onUpdateContent(node.id, e.target.value)
                     }
                     placeholder="Enter text…"
-                    onMouseDown={(e: any) => {
+                    onMouseDown={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       onSelectNode?.(node.id);
                     }}
@@ -980,11 +980,11 @@ function AssetNode(props: any) {
                   /* File input: upload / drag-drop zone or preview */
                   <div
                     className={styles.assetUploadArea}
-                    onDragOver={(e: any) => {
+                    onDragOver={(e: React.SyntheticEvent) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    onDrop={(e: any) => {
+                    onDrop={(e: React.SyntheticEvent) => {
                       e.preventDefault();
                       e.stopPropagation();
                       const file = e.dataTransfer?.files?.[0];
@@ -1010,14 +1010,14 @@ function AssetNode(props: any) {
                             controls
                             src={PrismService.getFileUrl(node.content)}
                             className={styles.assetVideoPlayer}
-                            onMouseDown={(e: any) => e.stopPropagation()}
+                            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
                           />
                         ) : node.modality === "pdf" ? (
                           <iframe
                             src={PrismService.getFileUrl(node.content)}
                             className={styles.assetPdfViewer}
                             title="PDF preview"
-                            onMouseDown={(e: any) => e.stopPropagation()}
+                            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
                           />
                         ) : (
                           <div className={styles.assetFileLabel}>
@@ -1027,7 +1027,7 @@ function AssetNode(props: any) {
                         )}
                         <button
                           className={styles.fileInputClearBtn}
-                          onClick={(e: any) => {
+                          onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             onUpdateFileInput?.(node.id, null, null);
                           }}
@@ -1039,7 +1039,7 @@ function AssetNode(props: any) {
                     ) : (
                       <AssetInputOptions
                         compact
-                        onFile={(dataUrl: any, mimeType: any) =>
+                        onFile={(dataUrl: unknown, mimeType: unknown) =>
                           onUpdateFileInput?.(node.id, dataUrl, mimeType)
                         }
                       />
@@ -1071,7 +1071,7 @@ function AssetNode(props: any) {
             {(node.messages || []).length > 2 && (
               <button
                 className={styles.deleteNodeBtn}
-                onClick={(e: any) => {
+                onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
                   const msgs = [...(node.messages || [])];
                   if (msgs.length > 2) {
@@ -1090,7 +1090,7 @@ function AssetNode(props: any) {
             )}
             <button
               className={styles.deleteNodeBtn}
-              onClick={(e: any) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 const msgs = [...(node.messages || [])];
                 msgs.push({ role: "assistant", content: "" });
@@ -1112,7 +1112,7 @@ function AssetNode(props: any) {
 /**
  * Renders a tool (function calling) node.
  */
-function ToolNode(props: any) {
+function ToolNode(props: unknown) {
   const {
     node,
     status,
@@ -1135,10 +1135,10 @@ function ToolNode(props: any) {
   const customToolsList = node.customTools || [];
   const disabledTools = new Set(node.disabledTools || []);
   const enabledBuiltIn = builtInTools.filter(
-    (t: any) => !disabledTools.has(t.name),
+    (t: unknown) => !disabledTools.has(t.name),
   ).length;
   const enabledCustom = customToolsList.filter(
-    (t: any) => !disabledTools.has(t.name || t._id),
+    (t: unknown) => !disabledTools.has(t.name || t._id),
   ).length;
   const totalEnabled = enabledBuiltIn + enabledCustom;
   const totalTools = builtInTools.length + customToolsList.length;
@@ -1158,11 +1158,11 @@ function ToolNode(props: any) {
   const MAX_PILLS = 6;
   const allToolNames = [
     ...builtInTools
-      .filter((t: any) => !disabledTools.has(t.name))
-      .map((t: any) => t.name),
+      .filter((t) => !disabledTools.has(t.name))
+      .map((t) => t.name),
     ...customToolsList
-      .filter((t: any) => !disabledTools.has(t.name || t._id))
-      .map((t: any) => t.name),
+      .filter((t) => !disabledTools.has(t.name || t._id))
+      .map((t) => t.name),
   ];
   const displayedTools = allToolNames.slice(0, MAX_PILLS);
   const remainingCount = allToolNames.length - displayedTools.length;
@@ -1218,7 +1218,7 @@ function ToolNode(props: any) {
       )}
       <button
         className={`${styles.deleteNodeBtn} ${isExpanded ? styles.configBtnActive : ""}`}
-        onClick={(e: any) => {
+        onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onToggleExpand(node.id);
         }}
@@ -1261,7 +1261,7 @@ function ToolNode(props: any) {
           height={contentH - 8}
         >
           <div className={styles.toolNodePills}>
-            {displayedTools.map((name: any) => (
+            {displayedTools.map((name) => (
               <span key={name} className={styles.toolNodePill}>
                 {renderToolName(name)}
               </span>
@@ -1281,7 +1281,7 @@ function ToolNode(props: any) {
 /**
  * WorkflowNode — dispatches to ModelNode, ToolNode, or AssetNode based on nodeType.
  */
-export default function WorkflowNode(props: any) {
+export default function WorkflowNode(props: unknown) {
   if (props.node.nodeType === "tools") {
     return <ToolNode {...props} />;
   }

@@ -21,15 +21,15 @@ export default function ToolCardComponent({
   locked = false,
   enabledLabel = "Enabled",
   disabledLabel = "Disabled",
-}: any) {
+}: unknown) {
   return (
     <div
       className={`${styles.card}${!enabled ? ` ${styles.cardDisabled}` : ""}${glowing ? ` ${styles.cardGlow}` : ""}${locked ? ` ${styles.cardLocked}` : ""}`}
-      style={{ "--tool-color": color } as any}
+      style={{ "--tool-color": color } as React.CSSProperties}
       onClick={
         locked
           ? undefined
-          : (e: any) => {
+          : (e: React.SyntheticEvent) => {
               SoundService.playClickButton({ event: e });
               onClick?.();
             }
@@ -38,7 +38,7 @@ export default function ToolCardComponent({
       tabIndex={onClick && !locked ? 0 : undefined}
       onKeyDown={
         onClick && !locked
-          ? (e: any) => {
+          ? (e: React.SyntheticEvent) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 onClick();
@@ -46,7 +46,7 @@ export default function ToolCardComponent({
             }
           : undefined
       }
-      onMouseEnter={(e: any) => {
+      onMouseEnter={(e: React.MouseEvent) => {
         SoundService.playHoverButton({ event: e });
         onHover?.(true);
       }}

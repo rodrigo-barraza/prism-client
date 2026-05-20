@@ -24,7 +24,7 @@ export default function ChatPreviewComponent({
   maxHeight,
   // Optional extra className
   className,
-}: any) {
+}: unknown) {
   // -- MessageList mode --
   if (messages) {
     return (

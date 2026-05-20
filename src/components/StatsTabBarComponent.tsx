@@ -17,10 +17,10 @@ const TABS = [
   { key: "workers", label: "Workers", icon: <Users size={10} /> },
 ];
 
-export default function StatsTabBarComponent({ activeTab, onChange }: any) {
+export default function StatsTabBarComponent({ activeTab, onChange }: unknown) {
   return (
     <div className={styles.statsTabBar}>
-      {TABS.map((tab: any) => (
+      {TABS.map((tab) => (
         <TooltipComponent
           key={tab.key}
           label={tab.label}

@@ -19,19 +19,19 @@ export default function ComboboxFilter({
   onChange,
   placeholder = "Search...",
   allLabel = "All",
-}: any) {
+}: unknown) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const containerRef = useRef<any>(null);
-  const inputRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLDivElement | null>(null);
 
   const filtered = query
-    ? options.filter((o: any) => o.toLowerCase().includes(query.toLowerCase()))
+    ? options.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
     : options;
 
   const handleSelect = useCallback(
-    (value: any) => {
-      onChange(value);
+    (value: string) => {
+onChange(value);
       setQuery("");
       setOpen(false);
     },
@@ -44,7 +44,7 @@ export default function ComboboxFilter({
     setOpen(false);
   }, [onChange]);
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     if (!open) setOpen(true);
   };
@@ -53,10 +53,10 @@ export default function ComboboxFilter({
     setOpen(true);
   };
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
       setOpen(false);
-      (inputRef.current as any)?.blur();
+      inputRef.current?.blur();
     }
     if (e.key === "Enter" && filtered.length === 1) {
       handleSelect(filtered[0]);
@@ -66,10 +66,10 @@ export default function ComboboxFilter({
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handleClick = (e: any) => {
+    const handleClick = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (
         containerRef.current &&
-        !(containerRef.current as any).contains(e.target)
+        !containerRef.current!.contains(e.target)
       ) {
         setOpen(false);
         setQuery("");
@@ -122,7 +122,7 @@ export default function ComboboxFilter({
           {filtered.length === 0 && (
             <div className={styles.noResults}>No matches</div>
           )}
-          {filtered.map((opt: any) => (
+          {filtered.map((opt) => (
             <button
               key={opt}
               type="button"

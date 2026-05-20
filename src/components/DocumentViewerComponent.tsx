@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { ModalComponent } from "@rodrigo-barraza/components-library";
 import styles from "./DocumentViewerComponent.module.css";
 
-function decodeDataUrl(dataUrl: any) {
+function decodeDataUrl(dataUrl: string) {
   const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!match) return { mimeType: "unknown", text: "" };
   const mimeType = match[1];
@@ -17,7 +17,7 @@ function decodeDataUrl(dataUrl: any) {
   }
 }
 
-export default function DocumentViewer({ dataUrl, onClose }: any) {
+export default function DocumentViewer({ dataUrl, onClose }: unknown) {
   const { mimeType } = decodeDataUrl(dataUrl);
   const isPdf = mimeType === "application/pdf";
   const content = useMemo(

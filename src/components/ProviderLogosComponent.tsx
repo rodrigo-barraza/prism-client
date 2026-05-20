@@ -6,7 +6,7 @@
  */
 
 const LOGOS = {
-  openai: (size: any) => (
+  openai: (size: number) => (
     <svg
       width={size}
       height={size}
@@ -17,7 +17,7 @@ const LOGOS = {
       <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.998 5.998 0 0 0-3.998 2.9 6.042 6.042 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z" />
     </svg>
   ),
-  anthropic: (size: any) => (
+  anthropic: (size: number) => (
     <svg
       width={size}
       height={size}
@@ -28,7 +28,7 @@ const LOGOS = {
       <path d="M13.827 3.52h3.603L24 20.48h-3.603l-6.57-16.96zm-7.258 0h3.767L16.906 20.48h-3.674l-1.508-4.116H5.248l-1.508 4.116H0L6.569 3.52zm1.04 3.878L5.248 13.406h4.722L7.61 7.398z" />
     </svg>
   ),
-  google: (size: any) => (
+  google: (size: number) => (
     <svg
       width={size}
       height={size}
@@ -53,7 +53,7 @@ const LOGOS = {
       />
     </svg>
   ),
-  "lm-studio": (size: any) => (
+  "lm-studio": (size: number) => (
     <svg
       width={size}
       height={size}
@@ -111,7 +111,7 @@ const LOGOS = {
       />
     </svg>
   ),
-  vllm: (size: any) => (
+  vllm: (size: number) => (
     <svg
       width={size}
       height={size}
@@ -136,7 +136,7 @@ const LOGOS = {
       />
     </svg>
   ),
-  elevenlabs: (size: any) => (
+  elevenlabs: (size: number) => (
     <svg
       width={size}
       height={size}
@@ -148,7 +148,7 @@ const LOGOS = {
       <rect x="13" y="3" width="3" height="18" rx="1.2" />
     </svg>
   ),
-  inworld: (size: any) => (
+  inworld: (size: number) => (
     <svg
       width={size}
       height={size}
@@ -175,7 +175,7 @@ const LOGOS = {
       />
     </svg>
   ),
-  ollama: (size: any) => (
+  ollama: (size: number) => (
     <svg
       width={size}
       height={size}
@@ -204,7 +204,7 @@ const LOGOS = {
       <circle cx="12.8" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
     </svg>
   ),
-  "llama-cpp": (size: any) => (
+  "llama-cpp": (size: number) => (
     <svg
       width={size}
       height={size}
@@ -255,12 +255,12 @@ export default function ProviderLogo({
   provider,
   size = 16,
   className = "",
-}: any) {
+}: unknown) {
   // Resolve multi-instance IDs (e.g. "lm-studio-2") to base type logo
-  const key = (LOGOS as any)[provider]
+  const key = (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[provider]
     ? provider
     : _resolveBaseTypeFromLogos(provider);
-  const render = (LOGOS as any)[key];
+  const render = (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[key];
   if (!render) return null;
   return (
     <span
@@ -276,9 +276,9 @@ export default function ProviderLogo({
  * Resolve base type from a potentially numbered instance ID, using LOGOS keys.
  * Inline helper so ProviderLogo works before setLocalProviderMeta is called.
  */
-function _resolveBaseTypeFromLogos(id: any) {
+function _resolveBaseTypeFromLogos(id: string) {
   const match = id.match(/^(.+)-(\d+)$/);
-  if (match && (LOGOS as any)[match[1]]) return match[1];
+  if (match && (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[match[1]]) return match[1];
   return id;
 }
 
@@ -301,14 +301,13 @@ export const PROVIDER_LABELS = {
 // Populated from the /config response's `localProviders` array.
 // Maps instance IDs (e.g. "lm-studio-2") → { nickname, instanceNumber }
 
-/** @type {Map<string, { nickname?: string, instanceNumber: number }>} */
-const _localMeta = new Map();
+const _localMeta = new Map<string, { nickname?: string; instanceNumber: number }>();
 
 /**
  * Register local provider metadata from the Prism config response.
  * Call once after fetching `/config` to enable nickname + numbering.
  */
-export function setLocalProviderMeta(providers: any) {
+export function setLocalProviderMeta(providers: Array<{id: string; nickname?: string; instanceNumber: number}>) {
   _localMeta.clear();
   if (!providers) return;
   for (const p of providers) {
@@ -323,8 +322,8 @@ export function setLocalProviderMeta(providers: any) {
  * Resolve the base provider type from a potentially numbered instance ID.
  * e.g. "lm-studio-2" → "lm-studio", "ollama" → "ollama"
  */
-function _resolveBaseType(id: any) {
-  if ((PROVIDER_LABELS as any)[id]) return id;
+function _resolveBaseType(id: string) {
+  if ((PROVIDER_LABELS as Record<string, string | undefined>)[id]) return id;
   // Check meta first (authoritative)
   const meta = _localMeta.get(id);
   if (meta) {
@@ -335,7 +334,7 @@ function _resolveBaseType(id: any) {
   }
   // Fallback: strip trailing "-N" suffix
   const match = id.match(/^(.+)-(\d+)$/);
-  if (match && (PROVIDER_LABELS as any)[match[1]]) return match[1];
+  if (match && (PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]) return match[1];
   return id;
 }
 
@@ -348,17 +347,17 @@ function _resolveBaseType(id: any) {
  *   3. Base type label      → "LM Studio"
  *   4. Raw ID fallback      → "lm-studio-2"
  */
-export function resolveProviderLabel(id: any) {
+export function resolveProviderLabel(id: string) {
   // Direct match (base type or cloud)
-  if ((PROVIDER_LABELS as any)[id]) {
+  if ((PROVIDER_LABELS as Record<string, string | undefined>)[id]) {
     const meta = _localMeta.get(id);
     if (meta?.nickname)
-      return `${(PROVIDER_LABELS as any)[id]} (${meta.nickname})`;
-    return (PROVIDER_LABELS as any)[id];
+      return `${(PROVIDER_LABELS as Record<string, string | undefined>)[id]} (${meta.nickname})`;
+    return (PROVIDER_LABELS as Record<string, string | undefined>)[id];
   }
 
   const baseType = _resolveBaseType(id);
-  const baseName = (PROVIDER_LABELS as any)[baseType] || id;
+  const baseName = (PROVIDER_LABELS as Record<string, string | undefined>)[baseType] || id;
   const meta = _localMeta.get(id);
 
   if (meta?.nickname) return `${baseName} (${meta.nickname})`;
@@ -366,8 +365,8 @@ export function resolveProviderLabel(id: any) {
 
   // Fallback: parse the suffix number
   const match = id.match(/^(.+)-(\d+)$/);
-  if (match && (PROVIDER_LABELS as any)[match[1]]) {
-    return `${(PROVIDER_LABELS as any)[match[1]]} #${match[2]}`;
+  if (match && (PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]) {
+    return `${(PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]} #${match[2]}`;
   }
 
   return baseName;
@@ -378,7 +377,7 @@ export function resolveProviderLabel(id: any) {
  * Multi-instance IDs (e.g. "lm-studio-2") map to the base type logo.
 
  */
-export function resolveProviderLogoKey(id: any) {
-  if ((LOGOS as any)[id]) return id;
+export function resolveProviderLogoKey(id: string) {
+  if ((LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[id]) return id;
   return _resolveBaseType(id);
 }

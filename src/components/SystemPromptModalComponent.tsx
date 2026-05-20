@@ -20,7 +20,7 @@ function loadInstructions() {
   }
 }
 
-function saveInstructions(list: any) {
+function saveInstructions(list) {
   localStorage.setItem(LS_SYSTEM_INSTRUCTIONS, JSON.stringify(list));
 }
 
@@ -28,28 +28,28 @@ export default function SystemPromptModal({
   activePrompt,
   onApply,
   onClose,
-}: any) {
+}: unknown) {
   const [instructions, setInstructions] = useState(() => loadInstructions());
   const [selectedId, setSelectedId] = useState(() => {
     const list = loadInstructions();
-    const match = list.find((i: any) => i.body === activePrompt);
+    const match = list.find((i) => i.body === activePrompt);
     return match ? match.id : null;
   });
   const [title, setTitle] = useState(() => {
     const list = loadInstructions();
-    const match = list.find((i: any) => i.body === activePrompt);
+    const match = list.find((i) => i.body === activePrompt);
     return match ? match.title : "";
   });
   const [body, setBody] = useState(activePrompt || "");
-  const saveTimerRef = useRef<any>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounced auto-save
   const persistInstruction = useCallback(
-    (id: any, newTitle: any, newBody: any) => {
+    (id: unknown, newTitle: unknown, newBody: unknown) => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
-        setInstructions((prev: any) => {
-          const updated = prev.map((i: any) =>
+        setInstructions((prev) => {
+          const updated = prev.map((i) =>
             i.id === id ? { ...i, title: newTitle, body: newBody } : i,
           );
           saveInstructions(updated);
@@ -61,12 +61,12 @@ export default function SystemPromptModal({
     [onApply],
   );
 
-  const handleSelectInstruction = (value: any) => {
+  const handleSelectInstruction = (value) => {
     if (value === "__new__") {
       // Create new
       const newId = Date.now().toString();
       const newInstruction = { id: newId, title: "", body: "" };
-      setInstructions((prev: any) => {
+      setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
         return updated;
@@ -77,7 +77,7 @@ export default function SystemPromptModal({
       onApply("");
       return;
     }
-    const found = instructions.find((i: any) => i.id === value);
+    const found = instructions.find((i) => i.id === value);
     if (found) {
       setSelectedId(found.id);
       setTitle(found.title);
@@ -86,7 +86,7 @@ export default function SystemPromptModal({
     }
   };
 
-  const handleTitleChange = (e: any) => {
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setTitle(value);
     if (selectedId) {
@@ -95,7 +95,7 @@ export default function SystemPromptModal({
       // Auto-create instruction
       const newId = Date.now().toString();
       const newInstruction = { id: newId, title: value, body };
-      setInstructions((prev: any) => {
+      setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
         return updated;
@@ -104,7 +104,7 @@ export default function SystemPromptModal({
     }
   };
 
-  const handleBodyChange = (e: any) => {
+  const handleBodyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setBody(value);
     if (selectedId) {
@@ -113,7 +113,7 @@ export default function SystemPromptModal({
       // Auto-create instruction
       const newId = Date.now().toString();
       const newInstruction = { id: newId, title, body: value };
-      setInstructions((prev: any) => {
+      setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
         return updated;
@@ -125,8 +125,8 @@ export default function SystemPromptModal({
 
   const handleDelete = () => {
     if (!selectedId) return;
-    setInstructions((prev: any) => {
-      const updated = prev.filter((i: any) => i.id !== selectedId);
+    setInstructions((prev) => {
+      const updated = prev.filter((i) => i.id !== selectedId);
       saveInstructions(updated);
       return updated;
     });
@@ -138,7 +138,7 @@ export default function SystemPromptModal({
 
   // Build dropdown options
   const dropdownOptions = [
-    ...instructions.map((i: any) => ({
+    ...instructions.map((i) => ({
       value: i.id,
       label: i.title || "Untitled Instruction",
     })),

@@ -21,7 +21,7 @@ export default function ToolIconComponent({
   toolApiNames,
   size = 12,
   className,
-}: any) {
+}: unknown) {
   if (!toolDisplayNames || toolDisplayNames.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
@@ -29,7 +29,7 @@ export default function ToolIconComponent({
   // Collect raw names that don't map to known canonical icons → shown in FC tooltip
   const functionCallRawNames = [];
   for (const raw of toolDisplayNames) {
-    if (!(TOOL_ICON_MAP as any)[raw]) {
+    if (!(TOOL_ICON_MAP as Record<string, unknown>)[raw]) {
       functionCallRawNames.push(raw);
     }
   }
@@ -43,8 +43,8 @@ export default function ToolIconComponent({
   // De-duplicate and resolve unknown tools → "Tool Calling"
   const resolved = new Map();
   for (const raw of toolDisplayNames) {
-    if ((TOOL_ICON_MAP as any)[raw]) {
-      if (!resolved.has(raw)) resolved.set(raw, (TOOL_ICON_MAP as any)[raw]);
+    if ((TOOL_ICON_MAP as Record<string, unknown>)[raw]) {
+      if (!resolved.has(raw)) resolved.set(raw, (TOOL_ICON_MAP as Record<string, unknown>)[raw]);
     } else {
       const fallbackIcon = TOOL_ICON_MAP["Tool Calling"] || Wrench;
       if (!resolved.has("Tool Calling")) {
@@ -55,7 +55,7 @@ export default function ToolIconComponent({
 
   return (
     <span className={`${styles.toolPills} ${className || ""}`}>
-      {[...resolved.entries()].map(([label, Icon]: any) => {
+      {[...resolved.entries()].map(([label, Icon]: unknown) => {
         // Build rich tooltip for "Tool Calling" showing actual tool names
         const tooltipLabel =
           label === "Tool Calling" && fcRawDisplay.length > 0
@@ -67,7 +67,7 @@ export default function ToolIconComponent({
             <span className={styles.toolPill}>
               <Icon
                 size={size}
-                style={{ color: (TOOL_COLORS as any)[label] || "#f97316" }}
+                style={{ color: (TOOL_COLORS as Record<string, unknown>)[label] || "#f97316" }}
               />
             </span>
           </TooltipComponent>

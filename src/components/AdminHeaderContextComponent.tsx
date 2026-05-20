@@ -11,17 +11,17 @@ import { usePathname } from "next/navigation";
 import { LS_DATE_RANGE } from "../constants";
 
 const AdminHeaderContext = createContext({
-  controls: null as any,
-  setControls: (_node: any) => {},
-  titleBadge: null as any,
-  setTitleBadge: (_value: any) => {},
+  controls: null as React.ReactNode,
+  setControls: (_node: unknown) => {},
+  titleBadge: null as React.ReactNode,
+  setTitleBadge: (_value: unknown) => {},
   dateRange: { from: "", to: "" },
-  setDateRange: (_value: any) => {},
-  sessionFilter: null as any,
-  setSessionFilter: (_value: any) => {},
+  setDateRange: (_value: unknown) => {},
+  sessionFilter: null as React.ReactNode,
+  setSessionFilter: (_value: unknown) => {},
 });
 
-export function AdminHeaderProvider({ children }: any) {
+export function AdminHeaderProvider({ children }: unknown) {
   const pathname = usePathname();
   const [controls, setControlsState] = useState(null);
   const [titleBadge, setTitleBadgeState] = useState(null);
@@ -74,19 +74,19 @@ export function AdminHeaderProvider({ children }: any) {
     }
   }, [dateRange]);
 
-  const setControls = useCallback((node: any) => {
+  const setControls = useCallback((node) => {
     setControlsState(node);
   }, []);
 
-  const setTitleBadge = useCallback((value: any) => {
+  const setTitleBadge = useCallback((value) => {
     setTitleBadgeState(value);
   }, []);
 
-  const setDateRange = useCallback((value: any) => {
+  const setDateRange = useCallback((value) => {
     setDateRangeState(value);
   }, []);
 
-  const setSessionFilter = useCallback((value: any) => {
+  const setSessionFilter = useCallback((value) => {
     setSessionFilterState(value);
   }, []);
 

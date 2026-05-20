@@ -45,21 +45,21 @@ const DEFAULT_PROMPT =
  */
 export default function VisionPageComponent() {
   // ── Config state ────────────────────────────────────────────────
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<unknown>(null);
   const [settings, setSettings] = useState({ provider: "", model: "" });
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<unknown[]>([]);
 
   // ── Source state ────────────────────────────────────────────────
-  const [sourceType, setSourceType] = useState<any>(null);
+  const [sourceType, setSourceType] = useState<unknown>(null);
   const [ipCamUrl, setIpCamUrl] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [resolution, setResolution] = useState<any>(null);
+  const [resolution, setResolution] = useState<unknown>(null);
 
   // ── Analysis state ─────────────────────────────────────────────
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [intervalSec, setIntervalSec] = useState(10);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<unknown[]>([]);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [snapshotCount, setSnapshotCount] = useState(0);
@@ -68,14 +68,14 @@ export default function VisionPageComponent() {
   const [captureProgress, setCaptureProgress] = useState(0);
 
   // ── Refs ────────────────────────────────────────────────────────
-  const videoRef = useRef<any>(null);
-  const canvasRef = useRef<any>(null);
-  const streamRef = useRef<any>(null);
-  const intervalRef = useRef<any>(null);
-  const progressRef = useRef<any>(null);
-  const resultsAreaRef = useRef<any>(null);
-  const isAnalyzingRef = useRef<any>(false);
-  const abortRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<HTMLCanvasElement | null>(null);
+  const intervalRef = useRef<HTMLCanvasElement | null>(null);
+  const progressRef = useRef<HTMLCanvasElement | null>(null);
+  const resultsAreaRef = useRef<HTMLCanvasElement | null>(null);
+  const isAnalyzingRef = useRef<boolean>(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   // ── Load Prism config ──────────────────────────────────────────
   useEffect(() => {
@@ -84,28 +84,28 @@ export default function VisionPageComponent() {
       onLocalMerge: setConfig,
     });
     PrismService.getFavorites("model")
-      .then((favs: any) => setFavorites(favs.map((f: any) => f.key)))
+      .then((favs: Array<{key: string}>) => setFavorites(favs.map((f) => f.key)))
       .catch(() => {});
   }, []);
 
   // Filter config to only vision-capable models (have image input)
   const visionConfig = useMemo(() => {
     if (!config) return null;
-    const filtered = { ...(config as any) };
-    const textModels = (config as any)?.textToText?.models || {};
+    const filtered = { ...config };
+    const textModels = (config as Record<string, unknown>).textToText?.models || {};
     const filteredModels = {};
 
-    for (const [provider, models] of Object.entries(textModels) as any) {
-      const visionModels = models.filter((m: any) =>
+    for (const [provider, models] of Object.entries(textModels)) {
+      const visionModels = models.filter((m) =>
         m.inputTypes?.includes("image"),
       );
       if (visionModels.length > 0) {
-        (filteredModels as any)[provider] = visionModels;
+        (filteredModels as Record<string, unknown>)[provider] = visionModels;
       }
     }
 
     filtered.textToText = {
-      ...(config as any).textToText,
+      ...config.textToText,
       models: filteredModels,
     };
     // Clear other sections so only vision text models appear
@@ -129,31 +129,31 @@ export default function VisionPageComponent() {
 
   const stopSource = useCallback(() => {
     if (streamRef.current) {
-      (streamRef.current as any).getTracks().forEach((t: any) => t.stop());
+      (streamRef.current as MediaStream).getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
     if (videoRef.current) {
-      (videoRef.current as any).pause();
-      (videoRef.current as any).srcObject = null;
-      (videoRef.current as any).removeAttribute("src");
-      (videoRef.current as any).load();
+      (videoRef.current as HTMLVideoElement).pause();
+      (videoRef.current as HTMLVideoElement).srcObject = null;
+      (videoRef.current as HTMLVideoElement).removeAttribute("src");
+      (videoRef.current as HTMLVideoElement).load();
     }
     setIsStreaming(false);
     setResolution(null);
   }, []);
 
-  const attachStream = useCallback((stream: any) => {
+  const attachStream = useCallback((stream: unknown) => {
     streamRef.current = stream;
     const video = videoRef.current;
     if (video) {
-      (video as any).srcObject = stream;
+      (video as HTMLVideoElement).srcObject = stream;
       // play() returns a promise — only set streaming on success
-      (video as any)
+      (video as unknown)
         .play()
         .then(() => {
           setIsStreaming(true);
         })
-        .catch((error: any) => {
+        .catch((error) => {
           console.warn("Video play() interrupted:", error.message);
         });
     }
@@ -173,7 +173,7 @@ export default function VisionPageComponent() {
         audio: false,
       });
       attachStream(stream);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Webcam error:", error);
     }
   }, [stopSource, attachStream]);
@@ -184,7 +184,7 @@ export default function VisionPageComponent() {
       // We intentionally delay stopSource() until we have a valid stream so
       // the video element is never hidden (isStreaming=false) when play() fires.
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: "always" } as any,
+        video: { cursor: "always" } as MediaTrackConstraints,
         audio: false,
       });
 
@@ -199,19 +199,19 @@ export default function VisionPageComponent() {
         stopSource();
         setSourceType(null);
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Screen capture error:", error);
     }
   }, [stopSource, attachStream]);
 
   const startIpCamera = useCallback(
-    (url: any) => {
+    (url: unknown) => {
       stopSource();
       if (!url) return;
       if (videoRef.current) {
-        (videoRef.current as any).srcObject = null;
-        (videoRef.current as any).src = url;
-        (videoRef.current as any).play().catch(() => {});
+        (videoRef.current as HTMLVideoElement).srcObject = null;
+        (videoRef.current as HTMLVideoElement).src = url;
+        (videoRef.current as HTMLVideoElement).play().catch(() => {});
       }
       setIsStreaming(true);
     },
@@ -219,7 +219,7 @@ export default function VisionPageComponent() {
   );
 
   const handleSourceSelect = useCallback(
-    async (type: any) => {
+    async (type: unknown) => {
       // Toggle off if clicking same source
       if (type === sourceType) {
         stopSource();
@@ -242,8 +242,8 @@ export default function VisionPageComponent() {
   // Video metadata loaded → update resolution
   const handleVideoMetadata = useCallback(() => {
     const v = videoRef.current;
-    if (v && (v as any).videoWidth && (v as any).videoHeight) {
-      setResolution(`${(v as any).videoWidth}×${(v as any).videoHeight}`);
+    if (v && (v as HTMLVideoElement).videoWidth && (v as HTMLVideoElement).videoHeight) {
+      setResolution(`${(v as HTMLVideoElement).videoWidth}×${(v as HTMLVideoElement).videoHeight}`);
     }
   }, []);
 
@@ -252,23 +252,23 @@ export default function VisionPageComponent() {
   const captureFrame = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas || (video as any).readyState < 2) return null;
+    if (!video || !canvas || (video as HTMLVideoElement).readyState < 2) return null;
 
-    (canvas as any).width =
-      (video as any).videoWidth || (video as any).clientWidth;
-    (canvas as any).height =
-      (video as any).videoHeight || (video as any).clientHeight;
-    const context = (canvas as any).getContext("2d");
+    (canvas as HTMLCanvasElement).width =
+      (video as HTMLVideoElement).videoWidth || (video as HTMLVideoElement).clientWidth;
+    (canvas as HTMLCanvasElement).height =
+      (video as HTMLVideoElement).videoHeight || (video as HTMLVideoElement).clientHeight;
+    const context = (canvas as HTMLCanvasElement).getContext("2d");
     context.drawImage(
       video,
       0,
       0,
-      (canvas as any).width,
-      (canvas as any).height,
+      (canvas as HTMLCanvasElement).width,
+      (canvas as HTMLCanvasElement).height,
     );
 
     // JPEG at 80% quality for bandwidth efficiency
-    return (canvas as any).toDataURL("image/jpeg", 0.8);
+    return (canvas as HTMLCanvasElement).toDataURL("image/jpeg", 0.8);
   }, []);
 
   // ── Analysis loop ──────────────────────────────────────────────
@@ -284,11 +284,11 @@ export default function VisionPageComponent() {
     setTimeout(() => setShowFlash(false), 250);
 
     const resultId = Date.now();
-    setSnapshotCount((c: any) => c + 1);
+    setSnapshotCount((c) => c + 1);
     setIsCapturing(true);
 
     // Add placeholder result
-    setResults((prev: any) => [
+    setResults((prev) => [
       {
         id: resultId,
         timestamp: new Date(),
@@ -318,24 +318,24 @@ export default function VisionPageComponent() {
           temperature: 0.5,
         },
         {
-          onChunk: (content: any) => {
-            setResults((prev: any) =>
-              prev.map((r: any) =>
+          onChunk: (content: unknown) => {
+            setResults((prev) =>
+              prev.map((r) =>
                 r.id === resultId ? { ...r, text: r.text + content } : r,
               ),
             );
           },
           onDone: () => {
-            setResults((prev: any) =>
-              prev.map((r: any) =>
+            setResults((prev) =>
+              prev.map((r) =>
                 r.id === resultId ? { ...r, streaming: false } : r,
               ),
             );
             setIsCapturing(false);
           },
-          onError: (error: any) => {
-            setResults((prev: any) =>
-              prev.map((r: any) =>
+          onError: (error) => {
+            setResults((prev) =>
+              prev.map((r) =>
                 r.id === resultId
                   ? {
                       ...r,
@@ -351,9 +351,9 @@ export default function VisionPageComponent() {
       );
 
       abortRef.current = abort;
-    } catch (error: any) {
-      setResults((prev: any) =>
-        prev.map((r: any) =>
+    } catch (error: unknown) {
+      setResults((prev) =>
+        prev.map((r) =>
           r.id === resultId
             ? { ...r, text: `Error: ${error.message}`, streaming: false }
             : r,
@@ -417,15 +417,15 @@ export default function VisionPageComponent() {
 
   // ── Model selection ────────────────────────────────────────────
 
-  const handleModelSelect = useCallback((provider: any, model: any) => {
+  const handleModelSelect = useCallback((provider: string, model: string) => {
     setSettings({ provider, model });
   }, []);
 
-  const handleToggleFavorite = useCallback(async (key: any) => {
-    setFavorites((prev: any) => {
+  const handleToggleFavorite = useCallback(async (key: string) => {
+    setFavorites((prev) => {
       if (prev.includes(key)) {
         PrismService.removeFavorite("model", key).catch(() => {});
-        return prev.filter((k: any) => k !== key);
+        return prev.filter((k) => k !== key);
       }
       const [provider, ...rest] = key.split(":");
       PrismService.addFavorite("model", key, {
@@ -463,7 +463,7 @@ export default function VisionPageComponent() {
           <div className={styles.sourceContent}>
             {/* Source type buttons */}
             <div className={styles.sourceSelector}>
-              {SOURCE_TYPES.map((src: any) => {
+              {SOURCE_TYPES.map((src) => {
                 const Icon = src.icon;
                 return (
                   <button
@@ -486,7 +486,7 @@ export default function VisionPageComponent() {
                   className={styles.urlInput}
                   placeholder="rtsp://user:pass@192.168.1.100/stream1 or http://…/mjpeg"
                   value={ipCamUrl}
-                  onChange={(e: any) => setIpCamUrl(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setIpCamUrl(e.target.value)}
                 />
                 <button
                   className={styles.urlConnectBtn}
@@ -629,7 +629,7 @@ export default function VisionPageComponent() {
                   type="number"
                   className={styles.intervalInput}
                   value={intervalSec}
-                  onChange={(e: any) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
                     setIntervalSec(Math.max(1, parseInt(e.target.value) || 1))
                   }
                   min={1}
@@ -673,7 +673,7 @@ export default function VisionPageComponent() {
               <textarea
                 className={styles.promptTextarea}
                 value={prompt}
-                onChange={(e: any) => setPrompt(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setPrompt(e.target.value)}
                 placeholder="What should the AI look for?"
                 disabled={isAnalyzing}
                 rows={2}
@@ -692,7 +692,7 @@ export default function VisionPageComponent() {
                   </span>
                 </div>
               ) : (
-                results.map((result: any) => (
+                results.map((result) => (
                   <div key={result.id} className={styles.resultCard}>
                     <div className={styles.resultHeader}>
                       <span className={styles.resultTimestamp}>

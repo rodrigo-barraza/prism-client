@@ -52,12 +52,12 @@ export default function ThreeCanvasComponent({
   paused = false,
   className = "",
   style,
-}: any) {
-  const containerRef = useRef<any>(null);
-  const canvasRef = useRef<any>(null);
-  const instanceIdRef = useRef<any>(null);
-  const onTickRef = useRef<any>(onTick);
-  const setupCleanupRef = useRef<any>(null);
+}: unknown) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const instanceIdRef = useRef<HTMLDivElement | null>(null);
+  const onTickRef = useRef<unknown>(onTick);
+  const setupCleanupRef = useRef<HTMLDivElement | null>(null);
 
   // Keep onTick ref current without re-creating the instance
   useEffect(() => {
@@ -76,7 +76,7 @@ export default function ThreeCanvasComponent({
   }, [paused]);
 
   // Stable tick wrapper that always calls the latest onTick ref
-  const tickWrapper = useCallback((state: any) => {
+  const tickWrapper = useCallback((state) => {
     onTickRef.current?.(state);
   }, []);
 

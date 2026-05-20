@@ -9,7 +9,7 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import styles from "./MarkdownContentComponent.module.css";
 import { CopyButtonComponent } from "@rodrigo-barraza/components-library";
 
-function FencedCodeBlock({ language, children }: any) {
+function FencedCodeBlock({ language, children }: unknown) {
   const codeString = String(children).replace(/\n$/, "");
 
   let displayLabel = language;
@@ -49,7 +49,7 @@ function FencedCodeBlock({ language, children }: any) {
   );
 }
 
-function CodeBlock({ children, className, ...rest }: any) {
+function CodeBlock({ children, className, ...rest }: unknown) {
   const match = /language-(\w+)/.exec(className || "");
   if (!match) {
     return (
@@ -66,15 +66,15 @@ function CodeBlock({ children, className, ...rest }: any) {
  * Listens for postMessage `embed-resize` events from the embed page
  * and dynamically adjusts iframe height to fit content.
  */
-function AutoResizeEmbed({ src, title, fallbackHeight, className }: any) {
-  const iframeRef = useRef<any>(null);
+function AutoResizeEmbed({ src, title, fallbackHeight, className }: unknown) {
+  const iframeRef = useRef<number | null>(null);
   const [height, setHeight] = useState(fallbackHeight);
 
-  const handleMessage = useCallback((event: any) => {
+  const handleMessage = useCallback((event) => {
     if (
       event.data?.type === "embed-resize" &&
       iframeRef.current &&
-      event.source === (iframeRef.current as any).contentWindow
+      event.source === (iframeRef.current as HTMLIFrameElement).contentWindow
     ) {
       setHeight(event.data.height);
     }
@@ -100,7 +100,7 @@ function AutoResizeEmbed({ src, title, fallbackHeight, className }: any) {
   );
 }
 
-function ImageOrEmbed({ src, alt, ...rest }: any) {
+function ImageOrEmbed({ src, alt, ...rest }: unknown) {
   // Detect embed URLs that return HTML pages and render as auto-resizing iframes
   if (src && src.includes("/utility/map/embed")) {
     return (
@@ -146,7 +146,7 @@ function ImageOrEmbed({ src, alt, ...rest }: any) {
   return <img src={src} alt={alt} {...rest} />;
 }
 
-export default function MarkdownContent({ content, className, children }: any) {
+export default function MarkdownContent({ content, className, children }: unknown) {
   if (!content) return null;
   return (
     <div className={`${styles.text} ${className || ""}`}>

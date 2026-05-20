@@ -9,7 +9,7 @@ export default function WordBadgeComponent({
   count,
   className = "",
   mini = false,
-}: any) {
+}: unknown) {
   if (!count || count <= 0) return null;
 
   const suffix = count !== 1 ? "words" : "word";

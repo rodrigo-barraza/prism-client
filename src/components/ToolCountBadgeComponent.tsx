@@ -10,7 +10,7 @@ import styles from "./ToolCountBadgeComponent.module.css";
  * trigger, mirroring how ModelPickerPopoverComponent stacks
  * triggerCapabilities under its trigger button.
  */
-export default function ToolCountBadgeComponent({ count, color }: any) {
+export default function ToolCountBadgeComponent({ count, color }: unknown) {
   if (count == null || count === 0) return null;
 
   const suffix = count !== 1 ? "Tools" : "Tool";
@@ -20,7 +20,7 @@ export default function ToolCountBadgeComponent({ count, color }: any) {
     <TooltipComponent label={tooltipLabel} position="top">
       <div
         className={styles.badge}
-        style={color ? ({ "--tool-badge-accent": color } as any) : undefined}
+        style={color ? ({ "--tool-badge-accent": color } as React.CSSProperties) : undefined}
       >
         <FunctionSquare size={9} className={styles.icon} />
         <span className={styles.label}>

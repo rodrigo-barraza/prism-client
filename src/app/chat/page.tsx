@@ -50,7 +50,7 @@ function buildUrl(currentParams: URLSearchParams, updates: Record<string, string
 function AgentsPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [agents, setAgents] = useState<any[]>([]);
+  const [agents, setAgents] = useState<Array<AgentPersona | typeof NONE_AGENT>>([]);
   // Always initialize to "CODING" for SSR/client parity — hydrate from
   // localStorage after mount to avoid hydration mismatch.
   const [localAgentId, setLocalAgentId] = useState("CODING");

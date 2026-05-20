@@ -69,7 +69,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     sessionFilter,
     setSessionFilter,
   } = useAdminHeader();
-  const [conversations, setConversations] = useState<Record<string, any>[]>([]);
+  const [conversations, setConversations] = useState<Record<string, unknown>[]>([]);
   const [conversationsHasMore, setConversationsHasMore] = useState(false);
   const [conversationsLoading, setConversationsLoading] = useState(false);
   const conversationsPageRef = useRef<number>(1);
@@ -77,22 +77,22 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
 
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
-  const [selectedConv, setSelectedConv] = useState<Record<string, any> | null>(null);
+  const [selectedConv, setSelectedConv] = useState<Record<string, unknown> | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [config, setConfig] = useState<Record<string, any> | null>(null);
+  const [config, setConfig] = useState<Record<string, unknown> | null>(null);
 
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
   const [generatingCount, setGeneratingCount] = useState(0);
   const [changeStreamsActive, setChangeStreamsActive] = useState(false);
 
-  const [workflows, setWorkflows] = useState<Record<string, any>[]>([]);
+  const [workflows, setWorkflows] = useState<Record<string, unknown>[]>([]);
   const [leftTab, setLeftTab] = useState("settings");
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
-  const knownIdsRef = useRef<any>(null); // null = not yet initialized
+  const knownIdsRef = useRef<unknown>(null); // null = not yet initialized
   const lastFingerprintRef = useRef<string>("");
   const autoSelectedRef = useRef<boolean>(!!initialId);
-  const viewerBodyRef = useRef<any>(null);
+  const viewerBodyRef = useRef<unknown>(null);
 
   // Sync the session parameter into the admin header context
   useEffect(() => {
@@ -115,7 +115,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
 
     // Load favorites
     PrismService.getFavorites("model")
-      .then((favs: Record<string, any>[]) => setFavoriteKeys(favs.map((f: Record<string, any>) => f.key as string)))
+      .then((favs: Record<string, unknown>[]) => setFavoriteKeys(favs.map((f: Record<string, unknown>) => f.key as string)))
       .catch(() => {});
   }, []);
 
@@ -158,19 +158,19 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       };
       // When filtering by session, skip date/project filters
       if (activeSession) {
-        (params as Record<string, any>).trace = activeSession;
+        (params as Record<string, unknown>).trace = activeSession;
       } else {
         Object.assign(params, buildDateRangeParams(dateRange));
-        if (projectFilter) (params as Record<string, any>).project = projectFilter;
+        if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
       }
-      if (providerFilter) (params as Record<string, any>).provider = providerFilter;
-      if (modelFilter) (params as Record<string, any>).model = modelFilter;
+      if (providerFilter) (params as Record<string, unknown>).provider = providerFilter;
+      if (modelFilter) (params as Record<string, unknown>).model = modelFilter;
       const data = await IrisService.getConversations(params);
       const list = data.data || [];
 
       // Build fingerprint from meaningful fields
       const fp = list
-        .map((c: Record<string, any>) => `${c.id}:${c.messages?.length || c.messageCount || 0}`)
+        .map((c: Record<string, unknown>) => `${c.id}:${c.messages?.length || c.messageCount || 0}`)
         .join("|");
 
       if (fp !== lastFingerprintRef.current) {
@@ -185,7 +185,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       setConversationsHasMore(list.length < (data.total || 0));
 
       // Track new IDs
-      const currentIds = new Set(list.map((c: Record<string, any>) => c.id));
+      const currentIds = new Set(list.map((c: Record<string, unknown>) => c.id));
       if (knownIdsRef.current === null) {
         // First load — mark everything as known
         knownIdsRef.current = currentIds;
@@ -230,13 +230,13 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
         order: "desc",
       };
       if (activeSession) {
-        (params as Record<string, any>).trace = activeSession;
+        (params as Record<string, unknown>).trace = activeSession;
       } else {
         Object.assign(params, buildDateRangeParams(dateRange));
-        if (projectFilter) (params as Record<string, any>).project = projectFilter;
+        if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
       }
-      if (providerFilter) (params as Record<string, any>).provider = providerFilter;
-      if (modelFilter) (params as Record<string, any>).model = modelFilter;
+      if (providerFilter) (params as Record<string, unknown>).provider = providerFilter;
+      if (modelFilter) (params as Record<string, unknown>).model = modelFilter;
       const data = await IrisService.getConversations(params);
       const list = data.data || [];
       conversationsPageRef.current = nextPage;
@@ -264,7 +264,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   // globally by AdminShell to avoid duplicate SSE connections).
   useEffect(() => {
     IrisService.getConversationStats(projectFilter)
-      .then((data: Record<string, any>) => {
+      .then((data: Record<string, unknown>) => {
         setGeneratingCount(data.generatingCount || 0);
       })
       .catch(() => {});
@@ -273,14 +273,14 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   // Live conversation detail — re-fetch when Change Streams detect updates
   const fingerprintRef = useRef<string>("");
   const [fingerprint, setFingerprint] = useState("");
-  const selectedIdRef = useRef<any>(selectedId);
+  const selectedIdRef = useRef<unknown>(selectedId);
   selectedIdRef.current = selectedId;
 
   // Refresh the selected conversation detail
   const refreshSelectedConv = useCallback(async (id: string) => {
     if (!id) return;
     try {
-      const full: any = await IrisService.getConversation(id);
+      const full: unknown = await IrisService.getConversation(id);
       setSelectedConv((prev) => {
         const oldMsgs = prev?.messages || [];
         const newMsgs = full?.messages || [];
@@ -301,7 +301,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   useEffect(() => {
     if (!changeStreamsActive) return;
 
-    const onEvent = (event: Record<string, any>) => {
+    const onEvent = (event: Record<string, unknown>) => {
       if (
         event.collection === "conversations" &&
         selectedIdRef.current &&
@@ -342,7 +342,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     // Subscribe to change stream SSE for real-time updates
     let pollInterval: NodeJS.Timeout | null = null;
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: Record<string, any>) => {
+      onStatus: (data: Record<string, unknown>) => {
         setChangeStreamsActive(!!data.changeStreams);
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
@@ -351,7 +351,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
           }
         }
       },
-      onChange: (event: Record<string, any>) => {
+      onChange: (event: Record<string, unknown>) => {
         if (event.collection === "conversations") {
           loadConversations();
         }
@@ -422,7 +422,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   }
 
   const convTitle = selectedConv
-    ? (selectedConv as Record<string, any>).title || "Untitled Conversation"
+    ? (selectedConv as Record<string, unknown>).title || "Untitled Conversation"
     : "Select a conversation";
 
   const {
@@ -433,12 +433,12 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     requestCount,
     usedTools,
     modalities,
-  } = useSessionStats((selectedConv as Record<string, any>)?.messages || []);
+  } = useSessionStats((selectedConv as Record<string, unknown>)?.messages || []);
 
   const settingsWithDefaults = useMemo(
     () => ({
       ...SETTINGS_DEFAULTS,
-      ...((selectedConv as Record<string, any>)?.settings || {}),
+      ...((selectedConv as Record<string, unknown>)?.settings || {}),
     }),
     [selectedConv],
   );
@@ -493,7 +493,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       <div className={styles.chatContainer}>
         <ThreePanelLayout
           leftPanel={
-            (selectedConv as Record<string, any>)?.settings ? (
+            (selectedConv as Record<string, unknown>)?.settings ? (
               <>
                 <TabBarComponent
                   tabs={[
@@ -524,24 +524,24 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
                     hideProviderModel
                     workflows={workflows}
                     sessionStats={
-                      (selectedConv as Record<string, any>)?.messages?.length > 0
+                      (selectedConv as Record<string, unknown>)?.messages?.length > 0
                         ? (() => {
                             const displayMessages = prepareDisplayMessages(
-                              (selectedConv as Record<string, any>).messages,
+                              (selectedConv as Record<string, unknown>).messages,
                             );
                             return {
                               messageCount: displayMessages.length,
                               deletedCount:
-                                ((selectedConv as Record<string, any>).messageCount ||
-                                  (selectedConv as Record<string, any>).messages.length) -
-                                (selectedConv as Record<string, any>).messages.length,
+                                ((selectedConv as Record<string, unknown>).messageCount ||
+                                  (selectedConv as Record<string, unknown>).messages.length) -
+                                (selectedConv as Record<string, unknown>).messages.length,
                               requestCount,
                               uniqueModels,
                               uniqueProviders,
                               totalTokens,
                               totalCost,
                               originalTotalCost:
-                                (selectedConv as Record<string, any>).totalCost || 0,
+                                (selectedConv as Record<string, unknown>).totalCost || 0,
                               usedTools,
                               modalities,
                             };
@@ -575,7 +575,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
             <HistoryPanel
               sessions={conversations}
               activeId={selectedId}
-              onSelect={(conversation: Record<string, any>) =>
+              onSelect={(conversation: Record<string, unknown>) =>
                 selectConversation(conversation.id)
               }
               readOnly
@@ -596,10 +596,10 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
             selectedConv && (
               <div className={styles.headerMeta}>
                 <ProjectBadgeComponent
-                  project={(selectedConv as Record<string, any>).project}
+                  project={(selectedConv as Record<string, unknown>).project}
                 />
-                <UserBadgeComponent username={(selectedConv as Record<string, any>).username} />
-                {(selectedConv as Record<string, any>).isGenerating && (
+                <UserBadgeComponent username={(selectedConv as Record<string, unknown>).username} />
+                {(selectedConv as Record<string, unknown>).isGenerating && (
                   <span className={styles.generatingBadge}>
                     <Loader size={12} className={styles.spinning} />
                     Generating
@@ -609,7 +609,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
             )
           }
           headerCenter={
-            (selectedConv as Record<string, any>)?.settings?.provider ? (
+            (selectedConv as Record<string, unknown>)?.settings?.provider ? (
               <ModelPickerPopoverComponent
                 config={config}
                 settings={settingsWithDefaults}
@@ -634,9 +634,9 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
               <div className={styles.emptyViewer}>Loading conversation...</div>
             ) : (
               <MessageList
-                messages={prepareDisplayMessages((selectedConv as Record<string, any>).messages || [])}
+                messages={prepareDisplayMessages((selectedConv as Record<string, unknown>).messages || [])}
                 readOnly
-                systemPrompt={(selectedConv as Record<string, any>).systemPrompt}
+                systemPrompt={(selectedConv as Record<string, unknown>).systemPrompt}
               />
             )}
           </div>

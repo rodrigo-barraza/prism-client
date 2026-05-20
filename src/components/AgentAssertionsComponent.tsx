@@ -80,7 +80,7 @@ export const AGENT_ASSERTION_TYPES = [
 ];
 
 const ASSERTION_TYPE_MAP = Object.fromEntries(
-  AGENT_ASSERTION_TYPES.map((t: any) => [t.value, t]),
+  AGENT_ASSERTION_TYPES.map((t) => [t.value, t]),
 );
 
 /**
@@ -94,13 +94,13 @@ export default function AgentAssertionsComponent({
   assertionOperator,
   onAssertionsChange,
   onOperatorChange,
-}: any) {
+}: unknown) {
   const operator = assertionOperator || "AND";
 
   // Which assertion types are already used (for the "Add" dropdown)
-  const usedTypes = new Set(assertions.map((a: any) => a.type));
+  const usedTypes = new Set(assertions.map((a) => a.type));
 
-  const addAssertion = (type: any) => {
+  const addAssertion = (type: unknown) => {
     const typeDef = ASSERTION_TYPE_MAP[type];
     const newAssertion = {
       type,
@@ -112,13 +112,13 @@ export default function AgentAssertionsComponent({
     onAssertionsChange([...assertions, newAssertion]);
   };
 
-  const removeAssertion = (index: any) => {
-    const next = assertions.filter((_: any, i: any) => i !== index);
+  const removeAssertion = (index) => {
+    const next = assertions.filter((_, i) => i !== index);
     onAssertionsChange(next.length > 0 ? next : []);
   };
 
-  const updateAssertion = (index: any, field: any, value: any) => {
-    const next = assertions.map((a: any, i: any) =>
+  const updateAssertion = (index: number, field: string, value: unknown) => {
+    const next = assertions.map((a, i) =>
       i === index ? { ...a, [field]: value } : a,
     );
     onAssertionsChange(next);
@@ -130,7 +130,7 @@ export default function AgentAssertionsComponent({
 
   // Available types that haven't been added yet
   const availableTypes = AGENT_ASSERTION_TYPES.filter(
-    (t: any) => !usedTypes.has(t.value),
+    (t: unknown) => !usedTypes.has(t.value),
   );
 
   return (
@@ -167,7 +167,7 @@ export default function AgentAssertionsComponent({
             behavior.
           </p>
           <div className={styles.quickAdd}>
-            {AGENT_ASSERTION_TYPES.map((t: any) => {
+            {AGENT_ASSERTION_TYPES.map((t) => {
               const Icon = t.icon;
               return (
                 <button
@@ -188,7 +188,7 @@ export default function AgentAssertionsComponent({
 
       {assertions.length > 0 && (
         <div className={styles.list}>
-          {assertions.map((a: any, i: any) => {
+          {assertions.map((a, i) => {
             const typeDef = ASSERTION_TYPE_MAP[a.type];
             if (!typeDef) return null;
             const Icon = typeDef.icon;
@@ -217,11 +217,11 @@ export default function AgentAssertionsComponent({
                       <FormGroupComponent label="Condition">
                         <select
                           value={a.operator || typeDef.operators[0].value}
-                          onChange={(e: any) =>
+                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
                             updateAssertion(i, "operator", e.target.value)
                           }
                         >
-                          {typeDef.operators.map((op: any) => (
+                          {typeDef.operators.map((op) => (
                             <option key={op.value} value={op.value}>
                               {op.label}
                             </option>
@@ -233,7 +233,7 @@ export default function AgentAssertionsComponent({
                           type="number"
                           min="0"
                           value={a.operand ?? ""}
-                          onChange={(e: any) =>
+                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
                             updateAssertion(i, "operand", e.target.value)
                           }
                           placeholder={typeDef.placeholder}

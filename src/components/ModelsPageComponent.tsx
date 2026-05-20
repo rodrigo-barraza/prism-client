@@ -21,7 +21,7 @@ import styles from "./ModelsPageComponent.module.css";
  * Flatten all model groups from the config into a single array,
  * tagging each model with its provider.
  */
-function flattenConfigModels(config: any) {
+function flattenConfigModels(config) {
   if (!config) return [];
 
   const modelsMap = new Map();
@@ -38,7 +38,7 @@ function flattenConfigModels(config: any) {
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
     for (const [provider, models] of Object.entries(providers)) {
-      for (const m of models as any[]) {
+      for (const m of models as unknown[]) {
         const key = `${provider}:${m.name}`;
         if (!modelsMap.has(key)) {
           modelsMap.set(key, { ...m, provider });
@@ -59,26 +59,26 @@ function flattenConfigModels(config: any) {
 export default function ModelsPageComponent({
   mode = "user",
   onCountChange,
-}: any) {
+}: unknown) {
   const isAdmin = mode === "admin";
-  const [allModels, setAllModels] = useState<any[]>([]);
+  const [allModels, setAllModels] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [actionInProgress, setActionInProgress] = useState<any>(null);
+  const [actionInProgress, setActionInProgress] = useState<unknown>(null);
   const { toasts, addToast, removeToast } = useToast(4000);
-  const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
+  const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [loadConfigModel, setLoadConfigModel] = useState<RawModel | null>(null);
   const [selectedModel, setSelectedModel] = useState<RawModel | null>(null);
-  const hasLoadedRef = useRef<any>(false);
+  const hasLoadedRef = useRef<boolean>(false);
 
   // Helper: merge config + LM data + stats into the allModels array
   const buildMergedModels = useCallback(
-    (config: any, lmData: any, modelStats: any) => {
+    (config: unknown, lmData: unknown, modelStats: unknown) => {
       const flat = flattenConfigModels(config);
       const lmApiModels = (lmData?.models || []).filter(
-        (m: any) => m.type === "llm",
+        (m) => m.type === "llm",
       );
-      const lmApiMap = new Map(lmApiModels.map((m: any) => [m.key, m]));
+      const lmApiMap = new Map(lmApiModels.map((m) => [m.key, m]));
 
       // Build usage map: "provider:model" → stats object
       const usageMap = new Map();
@@ -135,7 +135,7 @@ export default function ModelsPageComponent({
         grandTotal += s.totalRequests;
       }
 
-      return flat.map((m: any) => {
+      return flat.map((m) => {
         const usageKey = `${m.provider}:${m.name}`;
         const stats = usageMap.get(usageKey) || {
           totalRequests: 0,
@@ -172,17 +172,17 @@ export default function ModelsPageComponent({
           if (apiModel) {
             result = {
               ...result,
-              loaded_instances: (apiModel as any).loaded_instances,
-              loaded: (apiModel as any).loaded_instances?.length > 0,
-              key: (apiModel as any).key,
+              loaded_instances: (apiModel as unknown).loaded_instances,
+              loaded: (apiModel as unknown).loaded_instances?.length > 0,
+              key: (apiModel as unknown).key,
               // Preserve raw API fields for ModelLoadConfigPanel
-              max_context_length: (apiModel as any).max_context_length,
-              size_bytes: (apiModel as any).size_bytes,
-              params_string: (apiModel as any).params_string,
-              architecture: (apiModel as any).architecture,
-              archParams: (apiModel as any).archParams,
+              max_context_length: (apiModel as unknown).max_context_length,
+              size_bytes: (apiModel as unknown).size_bytes,
+              params_string: (apiModel as unknown).params_string,
+              architecture: (apiModel as unknown).architecture,
+              archParams: (apiModel as unknown).archParams,
               display_name:
-                (apiModel as any).display_name || result.display_name,
+                (apiModel as unknown).display_name || result.display_name,
             };
           }
         }
@@ -222,7 +222,7 @@ export default function ModelsPageComponent({
 
       // Fire both in parallel, each with their own error handling
       const [localResult, lmData] = await Promise.all([
-        (config as any)?.localProviders?.length > 0
+        (config as Record<string, unknown>).localProviders?.length > 0
           ? localService.getLocalConfig().catch(() => ({ models: {} }))
           : { models: {} },
         lmService.getLmStudioModels().catch(() => ({ models: [] })),
@@ -231,14 +231,14 @@ export default function ModelsPageComponent({
       // Merge local models into config using shared utility
       const mergedConfig = PrismService.mergeLocalModels(
         config!,
-        (localResult as any)?.models,
+        (localResult as unknown)?.models,
       );
 
       // Rebuild with local models + LM Studio API data
       const fullModels = buildMergedModels(mergedConfig, lmData, modelStats);
       setAllModels(fullModels);
       hasLoadedRef.current = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message);
       setAllModels([]);
     } finally {
@@ -249,7 +249,7 @@ export default function ModelsPageComponent({
   useEffect(() => {
     fetchModels();
     PrismService.getFavorites("model")
-      .then((favs: any) => setFavoriteKeys(favs.map((f: any) => f.key)))
+      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
       .catch(() => {});
     const interval = setInterval(fetchModels, POLL_MODERATE);
     return () => clearInterval(interval);
@@ -260,12 +260,12 @@ export default function ModelsPageComponent({
     onCountChange?.(allModels.length);
   }, [onCountChange, allModels.length]);
 
-  const handleToggleFavorite = async (key: any) => {
+  const handleToggleFavorite = async (key: string) => {
     if (favoriteKeys.includes(key)) {
-      setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== key));
+      setFavoriteKeys((prev) => prev.filter((k) => k !== key));
       PrismService.removeFavorite("model", key).catch(() => {});
     } else {
-      setFavoriteKeys((prev: any) => [...prev, key]);
+      setFavoriteKeys((prev) => [...prev, key]);
       const [provider, ...rest] = key.split(":");
       PrismService.addFavorite("model", key, {
         provider,
@@ -275,10 +275,10 @@ export default function ModelsPageComponent({
   };
 
   // Open the config panel instead of loading immediately
-  const handleLoad = (modelKey: any) => {
+  const handleLoad = (modelKey: unknown) => {
     // Find the raw LM Studio API model data for this key
     const rawModel = allModels.find(
-      (m: any) =>
+      (m) =>
         m.provider === "lm-studio" &&
         (m.key === modelKey || m.name === modelKey),
     );
@@ -288,29 +288,29 @@ export default function ModelsPageComponent({
   };
 
   // Called from the config panel with load options
-  const handleConfigLoad = async (modelKey: any, options: any) => {
-    setActionInProgress({ id: modelKey, type: "load" } as any);
+  const handleConfigLoad = async (modelKey: unknown, options: unknown) => {
+    setActionInProgress({ id: modelKey, type: "load" } as React.CSSProperties);
     setLoadConfigModel(null);
     try {
       const lmService = isAdmin ? IrisService : PrismService;
       await lmService.loadLmStudioModel(modelKey, options);
       addToast(`Loaded ${modelKey}`, "success");
       await fetchModels();
-    } catch (error: any) {
+    } catch (error: unknown) {
       addToast(`Failed to load: ${error.message}`, "error");
     } finally {
       setActionInProgress(null);
     }
   };
 
-  const handleUnload = async (instanceId: any) => {
-    setActionInProgress({ id: instanceId, type: "unload" } as any);
+  const handleUnload = async (instanceId: unknown) => {
+    setActionInProgress({ id: instanceId, type: "unload" } as React.CSSProperties);
     try {
       const lmService = isAdmin ? IrisService : PrismService;
       await lmService.unloadLmStudioModel(instanceId);
       addToast(`Unloaded ${instanceId}`, "success");
       await fetchModels();
-    } catch (error: any) {
+    } catch (error: unknown) {
       addToast(`Failed to unload: ${error.message}`, "error");
     } finally {
       setActionInProgress(null);
@@ -322,10 +322,10 @@ export default function ModelsPageComponent({
     await fetchModels();
   };
 
-  const providerSet = new Set(allModels.map((m: any) => m.provider));
+  const providerSet = new Set(allModels.map((m) => m.provider));
 
   const renderActions = isAdmin
-    ? (model: any) => {
+    ? (model) => {
         if (model.provider !== "lm-studio") return null;
 
         const isLoaded = model.loaded_instances?.length > 0;
@@ -333,9 +333,9 @@ export default function ModelsPageComponent({
         const modelKey = model.key || model.name;
         const isActioning =
           actionInProgress &&
-          ((actionInProgress as any).id === modelKey ||
-            (actionInProgress as any).id === instance?.id);
-        const actionType = isActioning ? (actionInProgress as any).type : null;
+          ((actionInProgress as unknown).id === modelKey ||
+            (actionInProgress as unknown).id === instance?.id);
+        const actionType = isActioning ? (actionInProgress as unknown).type : null;
 
         if (isActioning) {
           return (
@@ -353,7 +353,7 @@ export default function ModelsPageComponent({
           return (
             <button
               className={`${styles.actionBtn} ${styles.unloadBtn}`}
-              onClick={(e: any) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 handleUnload(instance.id);
               }}
@@ -369,7 +369,7 @@ export default function ModelsPageComponent({
         return (
           <button
             className={`${styles.actionBtn} ${styles.loadBtn}`}
-            onClick={(e: any) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               handleLoad(modelKey);
             }}

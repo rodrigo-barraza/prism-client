@@ -52,7 +52,7 @@ export default function SettingsPanel({
   sessionType = "conversation",
   canSpawnWorkers = false,
   agentToggles,
-}: any) {
+}: unknown) {
   const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
 
   const { _providers = {}, textToText = {} } = config || {};
@@ -71,17 +71,17 @@ export default function SettingsPanel({
   const modelsMap = {};
   for (const p of allProviderKeys) {
     const textModels = textModelsMap[p] || [];
-    const imgModels = (imageModelsMap[p] || []).map((m: any) => ({
+    const imgModels = (imageModelsMap[p] || []).map((m) => ({
       ...m,
       label: `${m.label} (Image)`,
       _isImageGen: true,
     }));
-    const sttModels = (audioToTextModelsMap[p] || []).map((m: any) => ({
+    const sttModels = (audioToTextModelsMap[p] || []).map((m) => ({
       ...m,
       label: `${m.label} (Transcribe)`,
       _isTranscription: true,
     }));
-    const ttsModels = (ttsModelsMap[p] || []).map((m: any) => ({
+    const ttsModels = (ttsModelsMap[p] || []).map((m) => ({
       ...m,
       label: `${m.label} (TTS)`,
       _isTTS: true,
@@ -95,15 +95,15 @@ export default function SettingsPanel({
         merged.push(m);
       }
     }
-    (modelsMap as any)[p] = merged;
+    (modelsMap as Record<string, unknown>)[p] = merged;
   }
 
-  const _handleSystemPromptChange = (e: any) =>
+  const _handleSystemPromptChange = (e: React.SyntheticEvent) =>
     onChange({ systemPrompt: e.target.value });
 
-  const currentProviderModels = (modelsMap as any)[settings.provider] || [];
+  const currentProviderModels = (modelsMap as Record<string, unknown>)[settings.provider] || [];
   const selectedModelDef = currentProviderModels.find(
-    (m: any) => m.name === settings.model,
+    (m) => m.name === settings.model,
   );
 
   const isTranscription = selectedModelDef?._isTranscription === true;
@@ -145,7 +145,7 @@ export default function SettingsPanel({
       ? totalElapsedTime
       : activeStats?.completedElapsedTime || 0;
 
-  const renderStatsBadges = (stats: any, showFull: any) => (
+  const renderStatsBadges = (stats: unknown, showFull: unknown) => (
     <div className={styles.statsBadges}>
       <MessageCountBadgeComponent
         count={stats.messageCount}
@@ -272,28 +272,28 @@ export default function SettingsPanel({
 
           // Convert back to array and sort by count
           return Array.from(toolMap.entries())
-            .map(([name, count]: any) => ({ name, count }))
-            .sort((a: any, b: any) => b.count - a.count);
+            .map(([name, count]: [string, number]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count);
         })();
 
         if (!displayTools?.length) return null;
 
-        const capabilities = displayTools.filter((t: any) =>
+        const capabilities = displayTools.filter((t) =>
           CAPABILITY_TOOL_NAMES.has(t.name),
         );
         const toolCalls = displayTools.filter(
-          (t: any) => !CAPABILITY_TOOL_NAMES.has(t.name),
+          (t: unknown) => !CAPABILITY_TOOL_NAMES.has(t.name),
         );
         return (
           <>
-            {capabilities.map((tool: any) => (
+            {capabilities.map((tool) => (
               <ToolBadgeComponent
                 key={tool.name}
                 name={tool.name}
                 count={tool.count}
               />
             ))}
-            {toolCalls.map((tool: any) => (
+            {toolCalls.map((tool) => (
               <ToolCallBadgeComponent
                 key={tool.name}
                 name={tool.name}
@@ -336,7 +336,7 @@ export default function SettingsPanel({
             <div className={styles.sectionHeader}>
               <GitBranch size={12} style={{ marginRight: 4 }} /> Workflow
             </div>
-            {workflows.map((wf: any) => (
+            {workflows.map((wf) => (
               <a
                 key={wf._id}
                 href={`/workflows/${wf._id}`}
@@ -420,7 +420,7 @@ export default function SettingsPanel({
                 </div>
               ) : null;
             }
-            const voiceOptions = providerVoices.map((v: any) => ({
+            const voiceOptions = providerVoices.map((v) => ({
               value: v.name || v.voice_id || v,
               label: `${v.label || v.name || v}${v.gender ? ` (${v.gender})` : ""}`,
               icon: <Mic size={18} />,
@@ -431,7 +431,8 @@ export default function SettingsPanel({
                 <SelectComponent
                   value={currentVoice}
                   options={voiceOptions}
-                  onChange={(value: any) => onChange({ voice: value })}
+                  onChange={(value: string) => {
+onChange({ voice: value })}
                   placeholder="Select Voice"
                   icon={<Mic size={18} />}
                 />
@@ -449,7 +450,7 @@ export default function SettingsPanel({
               selectedModelDef.thinkingLevels.includes("minimal");
             const options = [
               ...(canDisable ? [{ value: "none", label: "No Thinking" }] : []),
-              ...selectedModelDef.thinkingLevels.map((level: any) => ({
+              ...selectedModelDef.thinkingLevels.map((level) => ({
                 value: level,
                 label: level.charAt(0).toUpperCase() + level.slice(1),
               })),
@@ -464,8 +465,8 @@ export default function SettingsPanel({
                 <SelectComponent
                   value={currentValue}
                   options={options}
-                  onChange={(value: any) =>
-                    onChange({
+                  onChange={(value: string) => {
+onChange({
                       thinkingLevel: value === "none" ? undefined : value,
                       thinkingEnabled: value !== "none",
                     })
@@ -482,7 +483,7 @@ export default function SettingsPanel({
           (() => {
             const googleVoices = config?.textToSpeech?.voices?.google || [];
             const currentLiveVoice = settings.liveVoice || "Puck";
-            const voiceOptions = googleVoices.map((v: any) => ({
+            const voiceOptions = googleVoices.map((v) => ({
               value: v.name,
               label: `${v.name} (${v.gender})`,
               icon: <AudioLines size={18} />,
@@ -493,7 +494,8 @@ export default function SettingsPanel({
                 <SelectComponent
                   value={currentLiveVoice}
                   options={voiceOptions}
-                  onChange={(value: any) => onChange({ liveVoice: value })}
+                  onChange={(value: string) => {
+onChange({ liveVoice: value })}
                   placeholder="Select Voice"
                   icon={<AudioLines size={18} />}
                 />
@@ -509,7 +511,7 @@ export default function SettingsPanel({
               selectedModelDef.thinkingLevels.includes("minimal");
             const options = [
               ...(canDisable ? [{ value: "none", label: "No Thinking" }] : []),
-              ...selectedModelDef.thinkingLevels.map((level: any) => ({
+              ...selectedModelDef.thinkingLevels.map((level) => ({
                 value: level,
                 label: level.charAt(0).toUpperCase() + level.slice(1),
               })),
@@ -523,8 +525,8 @@ export default function SettingsPanel({
                     (canDisable ? "none" : selectedModelDef.thinkingLevels[0])
                   }
                   options={options}
-                  onChange={(value: any) =>
-                    onChange({
+                  onChange={(value: string) => {
+onChange({
                       liveThinkingLevel: value,
                       thinkingEnabled: value !== "none",
                     })
@@ -594,7 +596,7 @@ export default function SettingsPanel({
         {agentToggles?.length > 0 && (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Agent</div>
-            {agentToggles.map((toggle: any) => (
+            {agentToggles.map((toggle) => (
               <div
                 key={toggle.key}
                 className={`${styles.modalityRow} ${styles.toolToggleRow}`}
@@ -631,11 +633,11 @@ export default function SettingsPanel({
                 : {},
             };
             const providerToolLabels =
-              (TOOL_LABELS as any)[settings.provider] || {};
-            const getToolLabel = (tool: any) =>
+              (TOOL_LABELS as Record<string, unknown>)[settings.provider] || {};
+            const getToolLabel = (tool) =>
               providerToolLabels[tool] || tool;
 
-            const getToolToggle = (tool: any) => {
+            const getToolToggle = (tool) => {
               switch (tool) {
                 case "Thinking": {
                   const isLmStudio = settings.provider === "lm-studio";
@@ -652,7 +654,7 @@ export default function SettingsPanel({
                     "deepseek-v3",
                     "gpt-oss",
                     "gemma-4",
-                  ].some((p: any) => modelName.includes(p));
+                  ].some((p) => modelName.includes(p));
                   const lmCanToggle =
                     isLmStudio &&
                     (selectedModelDef?.thinking || nameBasedThinking);
@@ -666,13 +668,14 @@ export default function SettingsPanel({
                           ? settings.thinkingEnabled !== false
                           : settings.thinkingEnabled || false,
                     onChange: isLive
-                      ? (value: any) =>
-                          onChange({
+                      ? (value: string) => {
+onChange({
                             liveThinkingLevel: value ? "low" : "none",
                           })
                       : lmLocked || alwaysOn
                         ? () => {}
-                        : (value: any) => onChange({ thinkingEnabled: value }),
+                        : (value: string) => {
+onChange({ thinkingEnabled: value }),
                     disabled: lmLocked || alwaysOn,
                   };
                 }
@@ -681,18 +684,18 @@ export default function SettingsPanel({
                 case "Web Fetch":
                   return {
                     checked: settings.webSearchEnabled || false,
-                    onChange: (value: any) =>
-                      onChange({ webSearchEnabled: value }),
+                    onChange: (value: string) => {
+onChange({ webSearchEnabled: value }),
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Code Execution":
                   return {
                     checked: settings.codeExecutionEnabled || false,
-                    onChange: (value: any) => {
+                    onChange: (value) => {
                       const updates = { codeExecutionEnabled: value };
                       if (value) {
-                        (updates as any).webSearchEnabled = false;
-                        (updates as any).urlContextEnabled = false;
+                        (updates as unknown).webSearchEnabled = false;
+                        (updates as unknown).urlContextEnabled = false;
                       }
                       onChange(updates);
                     },
@@ -701,8 +704,8 @@ export default function SettingsPanel({
                 case "URL Context":
                   return {
                     checked: settings.urlContextEnabled || false,
-                    onChange: (value: any) =>
-                      onChange({ urlContextEnabled: value }),
+                    onChange: (value: string) => {
+onChange({ urlContextEnabled: value }),
                     disabled: settings.codeExecutionEnabled,
                   };
                 case "Tool Calling":
@@ -713,15 +716,15 @@ export default function SettingsPanel({
                       false,
                     onChange: lockedTools?.has("Tool Calling")
                       ? () => {}
-                      : (value: any) =>
-                          onChange({ functionCallingEnabled: value }),
+                      : (value: string) => {
+onChange({ functionCallingEnabled: value }),
                     disabled: !!lockedTools?.has("Tool Calling"),
                   };
                 case "Image Generation":
                   return {
                     checked: settings.forceImageGeneration || false,
-                    onChange: (value: any) =>
-                      onChange({ forceImageGeneration: value }),
+                    onChange: (value: string) => {
+onChange({ forceImageGeneration: value }),
                     disabled: false,
                   };
                 default:
@@ -732,7 +735,7 @@ export default function SettingsPanel({
             return (
               <div className={styles.section}>
                 <div className={styles.sectionHeader}>Native Tools</div>
-                {selectedModelDef.tools.map((tool: any) => {
+                {selectedModelDef.tools.map((tool) => {
                   const toggle = TOGGLEABLE_TOOLS.has(tool)
                     ? getToolToggle(tool)
                     : null;
@@ -791,7 +794,7 @@ export default function SettingsPanel({
       {!readOnly && showSystemPromptModal && (
         <SystemPromptModal
           activePrompt={settings.systemPrompt}
-          onApply={(text: any) => onChange({ systemPrompt: text })}
+          onApply={(text) => onChange({ systemPrompt: text })}
           onClose={() => onCloseSystemPromptModal?.()}
         />
       )}

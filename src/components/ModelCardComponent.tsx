@@ -35,7 +35,7 @@ export default function ModelCardComponent({
   onChangeModel,
   onToggleThinking,
   onToggleTools,
-}: any) {
+}: unknown) {
   // Build settings-like object for the picker trigger display
   const pickerSettings = useMemo(
     () => ({
@@ -45,7 +45,7 @@ export default function ModelCardComponent({
     [model.provider, model.name],
   );
 
-  const handlePickerSelect = (provider: any, name: any) => {
+  const handlePickerSelect = (provider: unknown, name: unknown) => {
     onChangeModel?.(model.instanceId, provider, name);
   };
 
@@ -67,7 +67,7 @@ export default function ModelCardComponent({
         )}
         <button
           className={styles.removeBtn}
-          onClick={(e: any) => {
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onRemove?.(model.instanceId);
           }}
@@ -91,7 +91,7 @@ export default function ModelCardComponent({
             label="Tools"
             active={isTools}
             title={isTools ? "Disable tools" : "Enable tools"}
-            onClick={(e: any) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onToggleTools?.(model.instanceId);
             }}
@@ -102,7 +102,7 @@ export default function ModelCardComponent({
               label="Think"
               active={isThinking}
               title={isThinking ? "Disable thinking" : "Enable thinking"}
-              onClick={(e: any) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onToggleThinking?.(model.instanceId);
               }}

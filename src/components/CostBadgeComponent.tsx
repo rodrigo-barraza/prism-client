@@ -8,7 +8,7 @@ import styles from "./CostBadgeComponent.module.css";
 const TWEEN_MS = 600;
 
 /** Ease-out cubic — fast start, gentle landing. */
-function easeOutCubic(t: any) {
+function easeOutCubic(t: unknown) {
   return 1 - Math.pow(1 - t, 3);
 }
 
@@ -24,9 +24,9 @@ export default function CostBadgeComponent({
   className = "",
   mini = false,
   formatFn = formatCost,
-}: any) {
-  const prevCostRef = useRef<any>(null);
-  const rafRef = useRef<any>(null);
+}: unknown) {
+  const prevCostRef = useRef<unknown>(null);
+  const rafRef = useRef<number | null>(null);
   const [displayCost, setDisplayCost] = useState(cost);
   const [tweening, setTweening] = useState(false);
 
@@ -45,7 +45,7 @@ export default function CostBadgeComponent({
     const start = performance.now();
     setTweening(true);
 
-    function tick(now: any) {
+    function tick(now: unknown) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / TWEEN_MS, 1);
       const eased = easeOutCubic(progress);

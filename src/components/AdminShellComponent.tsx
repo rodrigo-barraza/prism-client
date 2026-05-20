@@ -18,7 +18,7 @@ import {
 } from "./AdminHeaderContextComponent";
 import styles from "./AdminShellComponent.module.css";
 
-function AdminShellInner({ children }: any) {
+function AdminShellInner({ children }: unknown) {
   const [newCount, setNewCount] = useState(0);
   const [newTracesCount, setNewTracesCount] = useState(0);
   const [newRequestsCount, setNewRequestsCount] = useState(0);
@@ -30,18 +30,18 @@ function AdminShellInner({ children }: any) {
   const router = useRouter();
 
   // Track conversations by ID → messageCount to detect both new convos and updates
-  const knownConvsRef = useRef<any>(null); // null = not initialized
-  const knownSessionsRef = useRef<any>(null);
-  const knownRequestsRef = useRef<any>(null);
-  const knownMediaRef = useRef<any>(null);
-  const knownTextRef = useRef<any>(null);
-  const isOnConversationsRef = useRef<any>(
+  const knownConvsRef = useRef<unknown>(null); // null = not initialized
+  const knownSessionsRef = useRef<unknown>(null);
+  const knownRequestsRef = useRef<unknown>(null);
+  const knownMediaRef = useRef<unknown>(null);
+  const knownTextRef = useRef<unknown>(null);
+  const isOnConversationsRef = useRef<boolean>(
     pathname.startsWith("/admin/conversations"),
   );
-  const isOnSessionsRef = useRef<any>(pathname.startsWith("/admin/traces"));
-  const isOnRequestsRef = useRef<any>(pathname.startsWith("/admin/requests"));
-  const isOnMediaRef = useRef<any>(pathname.startsWith("/admin/media"));
-  const isOnTextRef = useRef<any>(pathname.startsWith("/admin/text"));
+  const isOnSessionsRef = useRef<boolean>(pathname.startsWith("/admin/traces"));
+  const isOnRequestsRef = useRef<boolean>(pathname.startsWith("/admin/requests"));
+  const isOnMediaRef = useRef<boolean>(pathname.startsWith("/admin/media"));
+  const isOnTextRef = useRef<boolean>(pathname.startsWith("/admin/text"));
 
   // Keep refs in sync with pathname
   useEffect(() => {
@@ -65,9 +65,9 @@ function AdminShellInner({ children }: any) {
   // SSE subscription for real-time generatingCount across all projects
   // Minimum visual duration: keep the rainbow animation alive for at least 3s
   // so it's visible (Change Streams push transitions faster than old polling).
-  const generatingTimerRef = useRef<any>(null);
+  const generatingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    const es = IrisService.subscribeConversationStats((data: any) => {
+    const es = IrisService.subscribeConversationStats((data) => {
       const count = data.generatingCount || 0;
       if (count > 0) {
         // Clear any pending "stop generating" timer
@@ -99,16 +99,16 @@ function AdminShellInner({ children }: any) {
       try {
         const data = await IrisService.getTraces({ page: 1, limit: 50 });
         const list = data.data || data.traces || [];
-        const currentIds = new Set(list.map((s: any) => s.id));
+        const currentIds = new Set(list.map((s) => s.id));
 
         if (knownSessionsRef.current === null) {
           knownSessionsRef.current = currentIds;
         } else if (!isOnSessionsRef.current) {
           let newOnes = 0;
           for (const id of currentIds) {
-            if (!(knownSessionsRef.current as any).has(id)) newOnes++;
+            if (!(knownSessionsRef.current as Set<string>).has(id)) newOnes++;
           }
-          if (newOnes > 0) setNewTracesCount((prev: any) => prev + newOnes);
+          if (newOnes > 0) setNewTracesCount((prev) => prev + newOnes);
           knownSessionsRef.current = currentIds;
         } else {
           knownSessionsRef.current = currentIds;
@@ -137,7 +137,7 @@ function AdminShellInner({ children }: any) {
         } else if (!isOnConversationsRef.current) {
           let changes = 0;
           for (const [id, msgCount] of currentMap) {
-            const known = (knownConvsRef.current as any).get(id);
+            const known = (knownConvsRef.current as Map<string, unknown>).get(id);
             if (known === undefined) {
               changes++;
             } else if (msgCount > known) {
@@ -145,7 +145,7 @@ function AdminShellInner({ children }: any) {
             }
           }
           if (changes > 0) {
-            setNewCount((prev: any) => prev + changes);
+            setNewCount((prev) => prev + changes);
           }
           knownConvsRef.current = currentMap;
         } else {
@@ -173,16 +173,16 @@ function AdminShellInner({ children }: any) {
           order: "desc",
         });
         const list = data.data || [];
-        const currentIds = new Set(list.map((r: any) => r.requestId || r._id));
+        const currentIds = new Set(list.map((r) => r.requestId || r._id));
 
         if (knownRequestsRef.current === null) {
           knownRequestsRef.current = currentIds;
         } else if (!isOnRequestsRef.current) {
           let newOnes = 0;
           for (const id of currentIds) {
-            if (!(knownRequestsRef.current as any).has(id)) newOnes++;
+            if (!(knownRequestsRef.current as Set<string>).has(id)) newOnes++;
           }
-          if (newOnes > 0) setNewRequestsCount((prev: any) => prev + newOnes);
+          if (newOnes > 0) setNewRequestsCount((prev) => prev + newOnes);
           knownRequestsRef.current = currentIds;
         } else {
           knownRequestsRef.current = currentIds;
@@ -201,7 +201,7 @@ function AdminShellInner({ children }: any) {
           knownMediaRef.current = total;
         } else if (!isOnMediaRef.current && total > knownMediaRef.current) {
           setNewMediaCount(
-            (prev: any) => prev + (total - knownMediaRef.current),
+            (prev) => prev + (total - knownMediaRef.current),
           );
           knownMediaRef.current = total;
         } else {
@@ -220,7 +220,7 @@ function AdminShellInner({ children }: any) {
         if (knownTextRef.current === null) {
           knownTextRef.current = total;
         } else if (!isOnTextRef.current && total > knownTextRef.current) {
-          setNewTextCount((prev: any) => prev + (total - knownTextRef.current));
+          setNewTextCount((prev) => prev + (total - knownTextRef.current));
           knownTextRef.current = total;
         } else {
           knownTextRef.current = total;
@@ -242,9 +242,9 @@ function AdminShellInner({ children }: any) {
     const healthInterval = setInterval(fetchHealth, POLL_SLOW);
 
     // Subscribe to change stream SSE
-    let pollInterval: any = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: any) => {
+      onStatus: (data) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
           if (!pollInterval) {
@@ -252,7 +252,7 @@ function AdminShellInner({ children }: any) {
           }
         }
       },
-      onChange: (event: any) => {
+      onChange: (event) => {
         if (event.collection === "conversations") {
           fetchConversations();
           fetchMedia();
@@ -272,7 +272,7 @@ function AdminShellInner({ children }: any) {
     };
   }, []);
 
-  const handleNavClick = useCallback((href: any) => {
+  const handleNavClick = useCallback((href: unknown) => {
     if (href.startsWith("/admin/conversations")) setNewCount(0);
     if (href.startsWith("/admin/traces")) setNewTracesCount(0);
     if (href.startsWith("/admin/requests")) setNewRequestsCount(0);
@@ -304,7 +304,7 @@ function AdminShellInner({ children }: any) {
     // Convert "tool-requests" -> "Tool Requests"
     return first
       .split("-")
-      .map((w: any) => w.charAt(0).toUpperCase() + w.slice(1))
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
   })();
 
@@ -338,7 +338,7 @@ function AdminShellInner({ children }: any) {
             >
               <span className={styles.sessionBadgeLabel}>Trace</span>
               <span className={styles.sessionBadgeId}>
-                {(sessionFilter as any).slice(0, 8)}
+                {(sessionFilter as string).slice(0, 8)}
               </span>
               <X size={12} className={styles.sessionBadgeX} />
             </button>
@@ -359,7 +359,7 @@ function AdminShellInner({ children }: any) {
   );
 }
 
-export default function AdminShell({ children }: any) {
+export default function AdminShell({ children }: unknown) {
   return (
     <AdminHeaderProvider>
       <AdminShellInner>{children}</AdminShellInner>

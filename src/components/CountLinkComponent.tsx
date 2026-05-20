@@ -13,7 +13,7 @@ export default function CountLinkComponent({
   href,
   icon: Icon,
   className,
-}: any) {
+}: unknown) {
   if (!count || count <= 0) {
     return <span className={styles.countLinkZero}>0</span>;
   }

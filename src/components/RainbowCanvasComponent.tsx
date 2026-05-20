@@ -16,18 +16,18 @@ export default function RainbowCanvasComponent({
   palette,
   className,
   style,
-}: any) {
-  const canvasRef = useRef<any>(null);
-  const stateRef = useRef<any>({
+}: unknown) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const stateRef = useRef<{frameIndex: number; timer: ReturnType<typeof setTimeout> | null; running: boolean}>({
     offset: 0,
     turboVelocity: 0,
     turboTime: 0,
     lastTime: 0,
   });
-  const turboRef = useRef<any>(turbo);
-  const animateRef = useRef<any>(animate);
-  const paletteRef = useRef<any>(palette || null);
-  const rafRef = useRef<any>(null);
+  const turboRef = useRef<unknown>(turbo);
+  const animateRef = useRef<(() => void)>(animate);
+  const paletteRef = useRef<unknown>(palette || null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     turboRef.current = turbo;
@@ -40,7 +40,7 @@ export default function RainbowCanvasComponent({
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as any).getContext("2d", { alpha: false });
+    const context = (canvas as HTMLCanvasElement).getContext("2d", { alpha: false });
     const { width, height } = canvas;
     const cols = Math.ceil(width / PIXEL_SIZE);
     const rows = Math.ceil(height / PIXEL_SIZE);
@@ -76,7 +76,7 @@ export default function RainbowCanvasComponent({
 
     if (shouldRun && !rafRef.current) {
       stateRef.current.lastTime = 0;
-      const tick = (now: any) => {
+      const tick = (now: unknown) => {
         const s = stateRef.current;
         if (!s.lastTime) s.lastTime = now;
         const dt = (now - s.lastTime) / 1000;
@@ -114,21 +114,21 @@ export default function RainbowCanvasComponent({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const parent = (canvas as any).parentElement;
+    const parent = (canvas as HTMLCanvasElement).parentElement;
 
     const resize = () => {
       const rect = parent.getBoundingClientRect();
-      (canvas as any).width = rect.width;
-      (canvas as any).height = rect.height;
-      (canvas as any).style.width = rect.width + "px";
-      (canvas as any).style.height = rect.height + "px";
+      (canvas as HTMLCanvasElement).width = rect.width;
+      (canvas as HTMLCanvasElement).height = rect.height;
+      (canvas as HTMLCanvasElement).style.width = rect.width + "px";
+      (canvas as HTMLCanvasElement).style.height = rect.height + "px";
       draw();
     };
 
     resize();
     window.addEventListener("resize", resize);
 
-    let ro: any;
+    let ro: unknown;
     if (typeof ResizeObserver !== "undefined") {
       ro = new ResizeObserver(resize);
       ro.observe(parent);

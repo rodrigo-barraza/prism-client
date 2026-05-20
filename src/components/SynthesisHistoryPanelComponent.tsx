@@ -13,7 +13,7 @@ export default function SynthesisHistoryPanel({
   activeId,
   onSelect,
   onDelete,
-}: any) {
+}: unknown) {
   return (
     <HistoryPanel
       conversations={conversations}

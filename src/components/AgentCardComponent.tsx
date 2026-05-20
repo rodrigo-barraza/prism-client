@@ -28,22 +28,22 @@ export default function AgentCardComponent({
   onRemove,
   onChangeModel,
   onToggleThinking,
-}: any) {
+}: unknown) {
   // Filter config to only FC-capable models for the picker
   const fcConfig = useMemo(() => {
     if (!config) return null;
     const textModelsMap = config.textToText?.models || {};
     const filteredTextModels = {};
 
-    for (const [provider, models] of Object.entries<any>(textModelsMap)) {
-      const fcModels = models.filter((m: any) =>
+    for (const [provider, models] of Object.entries(textModelsMap)) {
+      const fcModels = models.filter((m) =>
         m.tools?.includes("Tool Calling"),
       );
-      if (fcModels.length > 0) (filteredTextModels as any)[provider] = fcModels;
+      if (fcModels.length > 0) (filteredTextModels as Record<string, unknown>)[provider] = fcModels;
     }
 
     const filteredProviderList = (config.providerList || []).filter(
-      (p: any) => (filteredTextModels as any)[p],
+      (p) => (filteredTextModels as Record<string, unknown>)[p],
     );
 
     return {
@@ -69,7 +69,7 @@ export default function AgentCardComponent({
     [agent.provider, agent.modelName],
   );
 
-  const handlePickerSelect = (provider: any, name: any) => {
+  const handlePickerSelect = (provider: unknown, name: unknown) => {
     onChangeModel?.(agent.instanceId, provider, name);
   };
 
@@ -83,7 +83,7 @@ export default function AgentCardComponent({
         <span className={styles.badge}>Agent</span>
         <button
           className={styles.removeBtn}
-          onClick={(e: any) => {
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onRemove?.(agent.instanceId);
           }}
@@ -109,7 +109,7 @@ export default function AgentCardComponent({
               label="Think"
               active={isThinking}
               title={isThinking ? "Disable thinking" : "Enable thinking"}
-              onClick={(e: any) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onToggleThinking?.(agent.instanceId);
               }}

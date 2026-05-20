@@ -31,14 +31,14 @@ export default function PixelTransitionComponent({
   maxBlockSize = 24,
   onComplete,
   targetRef,
-}: any) {
-  const rafRef = useRef<any>(null);
-  const startTimeRef = useRef<any>(null);
-  const lastBlockRef = useRef<any>(0);
-  const filterCacheRef = useRef<any>(new Map());
+}: unknown) {
+  const rafRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number | null>(null);
+  const lastBlockRef = useRef<number>(0);
+  const filterCacheRef = useRef<Map<string, unknown>>(new Map());
 
   // Latest props always available inside the rAF closure
-  const propsRef = useRef<any>({
+  const propsRef = useRef<unknown>({
     phase,
     duration,
     maxBlockSize,
@@ -48,17 +48,17 @@ export default function PixelTransitionComponent({
   propsRef.current = { phase, duration, maxBlockSize, onComplete, targetRef };
 
   /** Ease-out cubic — fast initial ramp, decelerates toward end */
-  const easeOut = useCallback((t: any) => 1 - Math.pow(1 - t, 3), []);
+  const easeOut = useCallback((t: unknown) => 1 - Math.pow(1 - t, 3), []);
 
   /** Ease-in cubic — slow start, accelerates toward end */
-  const easeIn = useCallback((t: any) => t * t * t, []);
+  const easeIn = useCallback((t: unknown) => t * t * t, []);
 
   /**
    * Build (or retrieve from cache) a CSS `filter: url(...)` value for a given
    * blockSize. The entire SVG filter is encoded as an inline data URI — no
    * live DOM nodes, no getElementById lookups, no per-frame mutations.
    */
-  const getFilterCSS = useCallback((blockSize: any) => {
+  const getFilterCSS = useCallback((blockSize: unknown) => {
     if (blockSize <= 1) return "none";
 
     const cached = filterCacheRef.current.get(blockSize);
@@ -89,8 +89,8 @@ export default function PixelTransitionComponent({
   }, []);
 
   /** rAF animation tick — stored in a ref to avoid stale closures */
-  const tickRef = useRef<any>(null);
-  tickRef.current = (timestamp: any) => {
+  const tickRef = useRef<number | null>(null);
+  tickRef.current = (timestamp: unknown) => {
     if (!startTimeRef.current) startTimeRef.current = timestamp;
 
     const p = propsRef.current;

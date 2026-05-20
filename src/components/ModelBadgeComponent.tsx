@@ -13,7 +13,7 @@ export default function ModelBadgeComponent({
   providers,
   className = "",
   mini = false,
-}: any) {
+}: unknown) {
   if (!models || models.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }

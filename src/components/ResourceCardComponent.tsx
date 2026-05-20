@@ -21,12 +21,12 @@ export default function ResourceCardComponent({
   count,
   label,
   onClick,
-}: any) {
+}: unknown) {
   return (
     <Link
       href={href}
       className={styles.card}
-      {...SoundService.interactive((e: any) => {
+      {...SoundService.interactive((e: React.SyntheticEvent) => {
         onClick?.(e);
       })}
     >

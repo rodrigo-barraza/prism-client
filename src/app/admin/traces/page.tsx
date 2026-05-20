@@ -33,7 +33,7 @@ export default function TracesPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [traces, setTraces] = useState<Record<string, any>[]>([]);
+  const [traces, setTraces] = useState<Record<string, unknown>[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("createdAt");
@@ -43,8 +43,8 @@ export default function TracesPage() {
   const fetchGenRef = useRef<number>(0);
 
   // Request detail drawer state
-  const [selectedRequest, setSelectedRequest] = useState<Record<string, any> | null>(null);
-  const [associations, setAssociations] = useState<Record<string, any> | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Record<string, unknown> | null>(null);
+  const [associations, setAssociations] = useState<Record<string, unknown> | null>(null);
   const [loadingAssociations, setLoadingAssociations] = useState(false);
 
   const dateParams = useMemo(
@@ -62,7 +62,7 @@ export default function TracesPage() {
         order,
         ...dateParams,
       };
-      if (projectFilter) (params as Record<string, any>).project = projectFilter;
+      if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
 
       const data = await IrisService.getTraces(params);
       // Discard stale responses from previous filter/page generations
@@ -98,7 +98,7 @@ export default function TracesPage() {
       debounceTimer = setTimeout(loadTraces, 800);
     };
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: Record<string, any>) => {
+      onStatus: (data: Record<string, unknown>) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
           if (!pollInterval) {
@@ -106,7 +106,7 @@ export default function TracesPage() {
           }
         }
       },
-      onChange: (event: Record<string, any>) => {
+      onChange: (event: Record<string, unknown>) => {
         if (event.collection === "requests") {
           // Request changes update trace data — debounce to batch streaming updates
           debouncedLoad();
@@ -123,14 +123,14 @@ export default function TracesPage() {
 
   // Fetch associations when a request is selected
   useEffect(() => {
-    if (!(selectedRequest as Record<string, any>)?.requestId) {
+    if (!(selectedRequest as Record<string, unknown>)?.requestId) {
       setAssociations(null);
       return;
     }
     let cancelled = false;
     setLoadingAssociations(true);
-    IrisService.getRequestAssociations((selectedRequest as Record<string, any>).requestId)
-      .then((data: Record<string, any>) => {
+    IrisService.getRequestAssociations((selectedRequest as Record<string, unknown>).requestId)
+      .then((data: Record<string, unknown>) => {
         if (!cancelled) setAssociations(data);
       })
       .catch(() => {
@@ -143,12 +143,12 @@ export default function TracesPage() {
     return () => {
       cancelled = true;
     };
-  }, [(selectedRequest as Record<string, any>)?.requestId]);
+  }, [(selectedRequest as Record<string, unknown>)?.requestId]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   // Handle request row click — fetch full details and open drawer
-  const handleRequestRowClick = useCallback(async (req: Record<string, any>) => {
+  const handleRequestRowClick = useCallback(async (req: Record<string, unknown>) => {
     setSelectedRequest(req);
     try {
       const full = await IrisService.getRequest(req.requestId);
@@ -255,9 +255,9 @@ export default function TracesPage() {
                     <span className={styles.associationGroupLabel}>
                       <MessageSquare size={12} /> Conversations
                     </span>
-                    {(associations as Record<string, any>).conversations?.length > 0 ? (
+                    {(associations as Record<string, unknown>).conversations?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.conversations?.map((c: Record<string, any>) => (
+                        {associations?.conversations?.map((c: Record<string, unknown>) => (
                           <HistoryItemComponent
                             key={c.id}
                             item={{
@@ -297,9 +297,9 @@ export default function TracesPage() {
                     <span className={styles.associationGroupLabel}>
                       <GitBranch size={12} /> Workflows
                     </span>
-                    {(associations as Record<string, any>).workflows?.length > 0 ? (
+                    {(associations as Record<string, unknown>).workflows?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.workflows?.map((w: Record<string, any>) => (
+                        {associations?.workflows?.map((w: Record<string, unknown>) => (
                           <HistoryItemComponent
                             key={w.id}
                             item={{
@@ -331,9 +331,9 @@ export default function TracesPage() {
                     <span className={styles.associationGroupLabel}>
                       <FolderOpen size={12} /> Traces
                     </span>
-                    {(associations as Record<string, any>).traces?.length > 0 ? (
+                    {(associations as Record<string, unknown>).traces?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.traces?.map((s: Record<string, any>) => (
+                        {associations?.traces?.map((s: Record<string, unknown>) => (
                           <HistoryItemComponent
                             key={s.id}
                             item={{
@@ -369,7 +369,7 @@ export default function TracesPage() {
                 <div className={styles.detailSection}>
                   <div className={styles.detailSectionTitle}>Media Assets</div>
                   <div className={styles.mediaGrid}>
-                    {mediaAssets.map((asset: Record<string, any>, index: number) => (
+                    {mediaAssets.map((asset: Record<string, unknown>, index: number) => (
                       <MediaCardComponent
                         key={index}
                         media={{
@@ -400,19 +400,19 @@ export default function TracesPage() {
                 </div>
               );
             })()}
-            {(selectedRequest as Record<string, any>).requestPayload && (
+            {(selectedRequest as Record<string, unknown>).requestPayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, any>).requestPayload}
+                  data={(selectedRequest as Record<string, unknown>).requestPayload}
                   label="Request Payload"
                   maxHeight="400px"
                 />
               </div>
             )}
-            {(selectedRequest as Record<string, any>).responsePayload && (
+            {(selectedRequest as Record<string, unknown>).responsePayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, any>).responsePayload}
+                  data={(selectedRequest as Record<string, unknown>).responsePayload}
                   label="Response Payload"
                   maxHeight="400px"
                 />

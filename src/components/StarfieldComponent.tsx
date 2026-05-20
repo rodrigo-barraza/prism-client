@@ -11,7 +11,7 @@ import { useRef, useEffect, useCallback } from "react";
 
 // -- Seeded RNG --
 
-function seededRandom(seed: any) {
+function seededRandom(seed: unknown) {
   let s = seed;
   return () => {
     s = (s * 16807 + 0) % 2147483647;
@@ -370,7 +370,7 @@ const CONSTELLATIONS = [
 
 // -- Star generation --
 
-function generateFieldStars(count: any, w: any, h: any, rng: any) {
+function generateFieldStars(count: unknown, w: unknown, h: unknown, rng: unknown) {
   const stars = [];
   const padX = w * 0.35;
   const padY = h * 0.35;
@@ -456,7 +456,7 @@ function generateFieldStars(count: any, w: any, h: any, rng: any) {
 
 // -- Nebula & galactic core pre-render --
 
-function renderNebulaLayer(w: any, h: any, rng: any) {
+function renderNebulaLayer(w: unknown, h: unknown, rng: unknown) {
   const offscreen = document.createElement("canvas");
   offscreen.width = w;
   offscreen.height = h;
@@ -570,14 +570,14 @@ export default function StarfieldComponent({
   style,
   panX = 0,
   panY = 0,
-}: any) {
-  const canvasRef = useRef<any>(null);
-  const starsRef = useRef<any>(null);
-  const constellationStarsRef = useRef<any>(null);
-  const nebulaCanvasRef = useRef<any>(null);
-  const rafRef = useRef<any>(null);
-  const sizeRef = useRef<any>({ w: 0, h: 0 });
-  const panRef = useRef<any>({ x: panX, y: panY });
+}: unknown) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const starsRef = useRef<HTMLCanvasElement | null>(null);
+  const constellationStarsRef = useRef<HTMLCanvasElement | null>(null);
+  const nebulaCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rafRef = useRef<HTMLCanvasElement | null>(null);
+  const sizeRef = useRef<unknown>({ w: 0, h: 0 });
+  const panRef = useRef<unknown>({ x: panX, y: panY });
 
   useEffect(() => {
     panRef.current = { x: panX, y: panY };
@@ -585,7 +585,7 @@ export default function StarfieldComponent({
 
   const PARALLAX_FACTOR = 0.04;
 
-  const ensureStars = useCallback((w: any, h: any) => {
+  const ensureStars = useCallback((w: unknown, h: unknown) => {
     if (
       starsRef.current &&
       Math.abs(sizeRef.current.w - w) < 100 &&
@@ -606,9 +606,9 @@ export default function StarfieldComponent({
     nebulaCanvasRef.current = renderNebulaLayer(w, h, nebulaRng);
 
     // Map constellation data to pixel coordinates
-    constellationStarsRef.current = CONSTELLATIONS.map((c: any) => ({
+    constellationStarsRef.current = CONSTELLATIONS.map((c) => ({
       name: c.name,
-      stars: c.stars.map((s: any) => ({
+      stars: c.stars.map((s) => ({
         x: s.x * w,
         y: s.y * h,
         radius: 0.55 + Math.random() * 0.3, // slightly brighter than dust, but still sharp
@@ -627,16 +627,16 @@ export default function StarfieldComponent({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as any).getContext("2d");
+    const context = (canvas as HTMLCanvasElement).getContext("2d");
     if (!context) return;
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      const rect = (canvas as any).getBoundingClientRect();
+      const rect = (canvas as HTMLCanvasElement).getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      (canvas as any).width = w * dpr;
-      (canvas as any).height = h * dpr;
+      (canvas as HTMLCanvasElement).width = w * dpr;
+      (canvas as HTMLCanvasElement).height = h * dpr;
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       ensureStars(w, h);
     };
@@ -645,7 +645,7 @@ export default function StarfieldComponent({
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
 
-    const draw = (time: any) => {
+    const draw = (time: unknown) => {
       const t = time / 1000;
       const w = sizeRef.current.w;
       const h = sizeRef.current.h;

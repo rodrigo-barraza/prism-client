@@ -4,11 +4,11 @@ import { Search } from "lucide-react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./FilterBarComponent.module.css";
 
-export function FilterBarComponent({ children, className = "" }: any) {
+export function FilterBarComponent({ children, className = "" }: unknown) {
   return <div className={`${styles.filterBar} ${className}`}>{children}</div>;
 }
 
-export function FilterGroupComponent({ label, children }: any) {
+export function FilterGroupComponent({ label, children }: unknown) {
   return (
     <div className={styles.filterGroup}>
       {label && <span className={styles.filterLabel}>{label}</span>}
@@ -17,10 +17,10 @@ export function FilterGroupComponent({ label, children }: any) {
   );
 }
 
-export function FilterPillsComponent({ options, value, onChange }: any) {
+export function FilterPillsComponent({ options, value, onChange }: unknown) {
   return (
     <div className={styles.pills}>
-      {options.map((f: any) => {
+      {options.map((f) => {
         const Icon = f.icon;
         return (
           <button
@@ -48,7 +48,7 @@ export function SearchInputComponent({
   onChange,
   onSubmit,
   placeholder = "Search...",
-}: any) {
+}: unknown) {
   return (
     <form className={styles.searchBox} onSubmit={onSubmit}>
       <Search size={14} />
@@ -56,17 +56,17 @@ export function SearchInputComponent({
         type="text"
         placeholder={placeholder}
         value={value}
-        onChange={(e: any) => onChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(e.target.value)}
         className={styles.searchInput}
       />
     </form>
   );
 }
 
-export function ViewModeToggleComponent({ mode, onChange, modes }: any) {
+export function ViewModeToggleComponent({ mode, onChange, modes }: unknown) {
   return (
     <div className={styles.viewToggle}>
-      {modes.map((m: any) => {
+      {modes.map((m) => {
         const Icon = m.icon;
         return (
           <TooltipComponent key={m.key} label={m.title} position="bottom">
@@ -89,10 +89,10 @@ export function FilterIconButtonGroupComponent({
   activeKeys,
   onChange,
   isSingleSelect = false,
-}: any) {
+}: unknown) {
   return (
     <div className={styles.discreteGroup}>
-      {options.map((opt: any) => {
+      {options.map((opt) => {
         const Icon = opt.icon;
         const isActive = isSingleSelect
           ? activeKeys === opt.key
@@ -134,14 +134,14 @@ export function FilterInputComponent({
   onChange,
   placeholder,
   className = "",
-}: any) {
+}: unknown) {
   return (
     <input
       type="text"
       className={`${styles.filterInput} ${className}`}
       placeholder={placeholder}
       value={value}
-      onChange={(e: any) => onChange(e.target.value)}
+      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(e.target.value)}
     />
   );
 }
@@ -151,14 +151,14 @@ export function FilterSelectComponent({
   onChange,
   options,
   className = "",
-}: any) {
+}: unknown) {
   return (
     <select
       className={`${styles.filterSelect} ${className}`}
       value={value}
-      onChange={(e: any) => onChange(e.target.value)}
+      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(e.target.value)}
     >
-      {options.map((opt: any) => (
+      {options.map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}
         </option>
@@ -167,7 +167,7 @@ export function FilterSelectComponent({
   );
 }
 
-export function FilterClearButton({ onClick, children = "Clear" }: any) {
+export function FilterClearButton({ onClick, children = "Clear" }: unknown) {
   return (
     <button type="button" className={styles.clearBtn} onClick={onClick}>
       {children}

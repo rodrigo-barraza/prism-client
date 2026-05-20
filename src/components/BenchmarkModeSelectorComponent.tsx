@@ -35,19 +35,19 @@ export const BENCHMARK_MODES = [
 /**
  * BenchmarkModeSelector — Segmented control for picking the benchmark mode.
  */
-export default function BenchmarkModeSelector({ value, onChange }: any) {
-  const containerRef = useRef<any>(null);
-  const [pillStyle, setPillStyle] = useState<any>({});
+export default function BenchmarkModeSelector({ value, onChange }: unknown) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [pillStyle, setPillStyle] = useState<Record<string, unknown>>({});
 
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;
-    const index = BENCHMARK_MODES.findIndex((m: any) => m.value === value);
-    const buttons = (containerRef.current as any).querySelectorAll(
+    const index = BENCHMARK_MODES.findIndex((m) => m.value === value);
+    const buttons = containerRef.current!.querySelectorAll(
       `.${styles.option}`,
     );
     if (!buttons[index]) return;
 
-    const containerRect = (containerRef.current as any).getBoundingClientRect();
+    const containerRect = containerRef.current!.getBoundingClientRect();
     const btnRect = buttons[index].getBoundingClientRect();
 
     setPillStyle({
@@ -62,13 +62,13 @@ export default function BenchmarkModeSelector({ value, onChange }: any) {
     return () => window.removeEventListener("resize", updatePill);
   }, [updatePill]);
 
-  const activeMode = BENCHMARK_MODES.find((m: any) => m.value === value);
+  const activeMode = BENCHMARK_MODES.find((m) => m.value === value);
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.container} ref={containerRef}>
         <div className={styles.pill} style={pillStyle} />
-        {BENCHMARK_MODES.map((mode: any) => {
+        {BENCHMARK_MODES.map((mode) => {
           const Icon = mode.icon;
           const isActive = mode.value === value;
           return (

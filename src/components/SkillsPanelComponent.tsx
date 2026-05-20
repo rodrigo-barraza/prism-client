@@ -20,11 +20,11 @@ const CONTENT_MAX_CHARS = 10000;
  * the LLM domain-specific context, coding conventions, or project
  * rules without consuming tool call slots.
  */
-export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
-  const [editingSkill, setEditingSkill] = useState<any>(null);
+export default function SkillsPanel({ skills, onSkillsChange, project }: unknown) {
+  const [editingSkill, setEditingSkill] = useState<unknown>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<unknown>(null);
 
   // -- CRUD -----------------------------------------------------
 
@@ -38,7 +38,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
     setIsNew(true);
   }, []);
 
-  const handleEdit = useCallback((skill: any) => {
+  const handleEdit = useCallback((skill: Skill) => {
     setEditingSkill({ ...skill });
     setIsNew(false);
   }, []);
@@ -69,24 +69,24 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
       setEditingSkill(null);
       setIsNew(false);
       onSkillsChange();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to save skill:", error);
     } finally {
       setSaving(false);
     }
   }, [editingSkill, isNew, onSkillsChange, project]);
 
-  const handleDelete = useCallback((id: any) => {
+  const handleDelete = useCallback((id: string) => {
     setConfirmingDeleteId(id);
   }, []);
 
   const confirmDelete = useCallback(
-    async (id: any) => {
+    async (id: string) => {
       try {
         await PrismService.deleteSkill(id);
         setConfirmingDeleteId(null);
         onSkillsChange();
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to delete skill:", error);
       }
     },
@@ -94,16 +94,16 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
   );
 
   const handleToggleAll = useCallback(async () => {
-    const allEnabled = skills.length > 0 && skills.every((s: any) => s.enabled);
+    const allEnabled = skills.length > 0 && skills.every((s) => s.enabled);
     const newEnabled = !allEnabled;
     try {
       await Promise.all(
-        skills.map((s: any) =>
+        skills.map((s) =>
           PrismService.updateSkill(s.id || s._id, { enabled: newEnabled }),
         ),
       );
       onSkillsChange();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to toggle all skills:", error);
     }
   }, [skills, onSkillsChange]);
@@ -111,7 +111,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
   // -- Edit / Create Form ---------------------------------------
 
   if (editingSkill) {
-    const contentLen = (editingSkill as any).content?.length || 0;
+    const contentLen = (editingSkill as Record<string, unknown>).content?.length || 0;
     const isOverWarn = contentLen > CONTENT_WARN_CHARS;
     const isOverMax = contentLen > CONTENT_MAX_CHARS;
 
@@ -130,9 +130,9 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             <input
               type="text"
               className={styles.input}
-              value={(editingSkill as any).name}
-              onChange={(e: any) =>
-                setEditingSkill((s: any) => ({
+              value={(editingSkill as Record<string, unknown>).name}
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+                setEditingSkill((s) => ({
                   ...s,
                   name: e.target.value
                     .replace(/[^a-zA-Z0-9_-]/g, "-")
@@ -151,9 +151,9 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             <input
               type="text"
               className={styles.input}
-              value={(editingSkill as any).description}
-              onChange={(e: any) =>
-                setEditingSkill((s: any) => ({
+              value={(editingSkill as Record<string, unknown>).description}
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+                setEditingSkill((s) => ({
                   ...s,
                   description: e.target.value,
                 }))
@@ -169,11 +169,11 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             <label>Content (Markdown)</label>
             <textarea
               className={`${styles.textarea} ${styles.contentTextarea}`}
-              value={(editingSkill as any).content}
-              onChange={(e: any) => {
+              value={(editingSkill as Record<string, unknown>).content}
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
                 const value = e.target.value;
                 if (value.length <= CONTENT_MAX_CHARS) {
-                  setEditingSkill((s: any) => ({ ...s, content: value }));
+                  setEditingSkill((s) => ({ ...s, content: value }));
                 }
               }}
               placeholder={`## Coding Guidelines\n\n- Always use const over let\n- Prefer async/await over .then()\n- Use JSDoc comments for public functions\n- ...`}
@@ -193,8 +193,8 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
               onClick={handleSave}
               disabled={
                 saving ||
-                !(editingSkill as any).name?.trim() ||
-                !(editingSkill as any).content?.trim()
+                !(editingSkill as Record<string, unknown>).name?.trim() ||
+                !(editingSkill as Record<string, unknown>).content?.trim()
               }
             >
               <Save size={14} />
@@ -218,7 +218,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
         <div className={styles.headerActions}>
           {skills.length > 0 && (
             <ToggleComponent
-              checked={skills.length > 0 && skills.every((s: any) => s.enabled)}
+              checked={skills.length > 0 && skills.every((s) => s.enabled)}
               onChange={handleToggleAll}
               size="mini"
             />
@@ -254,7 +254,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
         </div>
       )}
 
-      {skills.map((skill: any) => {
+      {skills.map((skill) => {
         const skillId = skill.id || skill._id;
         const isConfirming = confirmingDeleteId === skillId;
 

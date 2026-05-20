@@ -24,7 +24,7 @@ export default function StopwatchBadgeComponent({
   startTime,
   live: externalLive,
   className = "",
-}: any) {
+}: unknown) {
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   const isLive = !!startTime && seconds == null;

@@ -55,9 +55,9 @@ const TOOL_CALL_DISPLAY_NAMES = {
 /**
  * Resolve a raw tool function name to a human-readable display label.
  */
-function resolveDisplayName(name: any) {
-  if ((TOOL_CALL_DISPLAY_NAMES as any)[name])
-    return (TOOL_CALL_DISPLAY_NAMES as any)[name];
+function resolveDisplayName(name) {
+  if ((TOOL_CALL_DISPLAY_NAMES as Record<string, unknown>)[name])
+    return (TOOL_CALL_DISPLAY_NAMES as Record<string, unknown>)[name];
   // Fallback: title-case via shared utility
   return renderToolName(name);
 }
@@ -85,7 +85,7 @@ export default function ToolCallBadgeComponent({
   active,
   size = 11,
   tooltip,
-}: any) {
+}: unknown) {
   const displayName = resolveDisplayName(name);
   const { Icon, color } = resolveToolVisuals(name);
   const tooltipLabel = tooltip || name;
@@ -123,14 +123,14 @@ export default function ToolCallBadgeComponent({
  * ToolCallBadgeRow — renders a row of individual tool call badges
  * from a { toolName: count } map.
  */
-export function ToolCallBadgeRow({ tools, activeTool }: any) {
+export function ToolCallBadgeRow({ tools, activeTool }: unknown) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
     <div className={styles.badgeRow}>
       {Object.entries(tools)
-        .sort(([, a]: any, [, b]: any) => b - a)
-        .map(([name, count]: any) => (
+        .sort(([, a]: [string, number], [, b]: [string, number]) => b - a)
+        .map(([name, count]: [string, number]) => (
           <ToolCallBadgeComponent
             key={name}
             name={name}

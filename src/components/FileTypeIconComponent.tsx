@@ -448,19 +448,19 @@ const DEFAULT_FILE_ICON = { icon: File, cls: "iconDefault" };
  * Checks exact filename matches first, then compound extensions (e.g. ".d.ts"),
  * then test/spec pattern detection, and finally simple extension match.
  */
-export function getFileIconData(filename: any) {
+export function getFileIconData(filename: string) {
   const lower = filename.toLowerCase();
 
   // 1. Exact filename match
-  if ((FILENAME_ICON_MAP as any)[lower])
-    return (FILENAME_ICON_MAP as any)[lower];
+  if ((FILENAME_ICON_MAP as Record<string, unknown>)[lower])
+    return (FILENAME_ICON_MAP as Record<string, unknown>)[lower];
 
   // 2. Check for compound extensions (e.g., ".d.ts", ".test.js")
   const parts = lower.split(".");
   if (parts.length >= 3) {
     const compoundExt = parts.slice(-2).join(".");
-    if ((EXTENSION_ICON_MAP as any)[compoundExt])
-      return (EXTENSION_ICON_MAP as any)[compoundExt];
+    if ((EXTENSION_ICON_MAP as Record<string, unknown>)[compoundExt])
+      return (EXTENSION_ICON_MAP as Record<string, unknown>)[compoundExt];
     // Test/spec/stories detection
     const secondLast = parts[parts.length - 2];
     if (secondLast === "test" || secondLast === "spec") {
@@ -473,8 +473,8 @@ export function getFileIconData(filename: any) {
 
   // 3. Simple extension match
   const ext = parts.length > 1 ? parts.pop() : "";
-  if (ext && (EXTENSION_ICON_MAP as any)[ext])
-    return (EXTENSION_ICON_MAP as any)[ext];
+  if (ext && (EXTENSION_ICON_MAP as Record<string, unknown>)[ext])
+    return (EXTENSION_ICON_MAP as Record<string, unknown>)[ext];
 
   return DEFAULT_FILE_ICON;
 }
@@ -487,7 +487,7 @@ const FileTypeIconComponent = memo(function FileTypeIconComponent({
   filename,
   size = 11,
   className = "",
-}: any) {
+}: unknown) {
   const { icon: Icon, cls } = getFileIconData(filename || "");
   return (
     <Icon

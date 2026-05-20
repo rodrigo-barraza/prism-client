@@ -57,7 +57,7 @@ const TYPE_FILTERS = [
   { key: "pdf", label: "PDF", icon: FileText, color: MODALITY_COLORS.pdf },
 ];
 
-function resolveUrl(url: any) {
+function resolveUrl(url: unknown) {
   if (!url || typeof url !== "string") return null;
   if (url.startsWith("minio://")) return PrismService.getFileUrl(url);
   if (url.startsWith("data:")) return url;
@@ -65,15 +65,15 @@ function resolveUrl(url: any) {
   return url;
 }
 
-function MediaTypeIcon({ type, size = 32 }: any) {
-  const color = (MODALITY_COLORS as any)[type] || MODALITY_COLORS.image;
+function MediaTypeIcon({ type, size = 32 }: unknown) {
+  const color = (MODALITY_COLORS as Record<string, unknown>)[type] || MODALITY_COLORS.image;
   if (type === "audio") return <Music size={size} style={{ color }} />;
   if (type === "video") return <Film size={size} style={{ color }} />;
   if (type === "pdf") return <FileText size={size} style={{ color }} />;
   return <ImageIcon size={size} style={{ color }} />;
 }
 
-function OriginBadge({ origin, className }: any) {
+function OriginBadge({ origin, className }: unknown) {
   return (
     <span
       className={`${className} ${origin === "ai" ? styles.originAi : styles.originUser}`}
@@ -96,14 +96,14 @@ export default function MediaPageComponent({
   project: externalProject,
   dateRange: externalDateRange,
   onCountChange,
-}: any) {
+}: unknown) {
   const isAdmin = mode === "admin";
   const convBasePath = "/admin/conversations";
 
-  const [media, setMedia] = useState<any[]>([]);
+  const [media, setMedia] = useState<unknown[]>([]);
   const [total, setTotal] = useState(0);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [usernames, setUsernames] = useState<any[]>([]);
+  const [projects, setProjects] = useState<unknown[]>([]);
+  const [usernames, setUsernames] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [origin, setOrigin] = useState("all");
   const [type, setType] = useState("all");
@@ -112,47 +112,47 @@ export default function MediaPageComponent({
   const [username, setUsername] = useState("");
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
-  const [providers, setProviders] = useState<any[]>([]);
-  const [models, setModels] = useState<any[]>([]);
+  const [providers, setProviders] = useState<unknown[]>([]);
+  const [models, setModels] = useState<unknown[]>([]);
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
-  const [lightboxSrc, setLightboxSrc] = useState<any>(null);
+  const [lightboxSrc, setLightboxSrc] = useState<unknown>(null);
   const [internalDateRange, setInternalDateRange] = useState({
     from: "",
     to: "",
   });
   const dateRange = externalDateRange ?? internalDateRange;
-  const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
+  const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const PAGE_SIZE = 60;
-  const searchTimerRef = useRef<any>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadMedia = useCallback(async () => {
     try {
       setLoading(true);
       const params = { page, limit: PAGE_SIZE };
-      if (origin !== "all") (params as any).origin = origin;
-      if (type !== "all") (params as any).type = type;
+      if (origin !== "all") (params as unknown).origin = origin;
+      if (type !== "all") (params as unknown).type = type;
       if (isAdmin) {
-        if (project) (params as any).project = project;
-        if (username) (params as any).username = username;
+        if (project) (params as unknown).project = project;
+        if (username) (params as unknown).username = username;
       }
-      if (search) (params as any).search = search;
-      if (provider) (params as any).provider = provider;
-      if (model) (params as any).model = model;
+      if (search) (params as unknown).search = search;
+      if (provider) (params as unknown).provider = provider;
+      if (model) (params as unknown).model = model;
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result: any = await service.getMedia(params);
+      const result: unknown = await service.getMedia(params);
       setMedia(result.data || []);
       setTotal(result.total || 0);
       if (result.projects) setProjects(result.projects);
       if (result.usernames) setUsernames(result.usernames);
       if (result.providers) setProviders(result.providers);
       if (result.models) setModels(result.models);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load media:", error);
     } finally {
       setLoading(false);
@@ -181,24 +181,24 @@ export default function MediaPageComponent({
 
   useEffect(() => {
     PrismService.getFavorites("media")
-      .then((favs: any) => setFavoriteKeys(favs.map((f: any) => f.key)))
+      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
       .catch(() => {});
   }, []);
 
-  const toggleFavorite = async (mediaKey: any) => {
+  const toggleFavorite = async (mediaKey: unknown) => {
     if (favoriteKeys.includes(mediaKey)) {
-      setFavoriteKeys((prev: any) => prev.filter((k: any) => k !== mediaKey));
+      setFavoriteKeys((prev) => prev.filter((k) => k !== mediaKey));
       PrismService.removeFavorite("media", mediaKey).catch(() => {});
     } else {
-      setFavoriteKeys((prev: any) => [...prev, mediaKey]);
+      setFavoriteKeys((prev) => [...prev, mediaKey]);
       PrismService.addFavorite("media", mediaKey, {}).catch(() => {});
     }
   };
 
-  const getMediaKey = (m: any, i: any) => `${m.convId}-${m.mediaType}-${i}`;
+  const getMediaKey = (m: unknown, i: unknown) => `${m.convId}-${m.mediaType}-${i}`;
 
   const displayMedia = showFavoritesOnly
-    ? media.filter((m: any, i: any) => favoriteKeys.includes(getMediaKey(m, i)))
+    ? media.filter((m, i) => favoriteKeys.includes(getMediaKey(m, i)))
     : media;
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -208,7 +208,7 @@ export default function MediaPageComponent({
       key: "preview",
       label: "Preview",
       sortable: false,
-      render: (m: any) => {
+      render: (m) => {
         const resolvedUrl = resolveUrl(m.url);
         return (
           <div className={styles.listThumb}>
@@ -231,7 +231,7 @@ export default function MediaPageComponent({
             ) : m.mediaType === "audio" && resolvedUrl ? (
               <div
                 className={styles.listThumbAudio}
-                onClick={(e: any) => e.stopPropagation()}
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
                 <AudioPlayerRecorderComponent src={resolvedUrl} compact />
               </div>
@@ -253,10 +253,10 @@ export default function MediaPageComponent({
     {
       key: "type",
       label: "Type",
-      render: (m: any) => (
+      render: (m) => (
         <span
           className={styles.typeBadge}
-          style={{ color: (MODALITY_COLORS as any)[m.mediaType] }}
+          style={{ color: (MODALITY_COLORS as Record<string, unknown>)[m.mediaType] }}
         >
           {m.mediaType}
         </span>
@@ -265,14 +265,14 @@ export default function MediaPageComponent({
     {
       key: "source",
       label: "Source",
-      render: (m: any) => (
+      render: (m) => (
         <OriginBadge origin={m.origin} className={styles.originPill} />
       ),
     },
     {
       key: "conversation",
       label: "Conversation",
-      render: (m: any) => (
+      render: (m) => (
         <Link
           href={`${convBasePath}/${m.convId}`}
           className={styles.convLink}
@@ -288,7 +288,7 @@ export default function MediaPageComponent({
           {
             key: "project",
             label: "Project",
-            render: (m: any) =>
+            render: (m) =>
               m.project ? (
                 <span className={styles.projectTag}>{m.project}</span>
               ) : (
@@ -300,7 +300,7 @@ export default function MediaPageComponent({
     {
       key: "model",
       label: "Model",
-      render: (m: any) =>
+      render: (m) =>
         m.model ? (
           <span className={styles.modelTag}>{m.model.split("/").pop()}</span>
         ) : (
@@ -310,7 +310,7 @@ export default function MediaPageComponent({
     {
       key: "date",
       label: "Date",
-      render: (m: any) => (
+      render: (m) => (
         <span className={styles.time}>
           {m.timestamp ? new Date(m.timestamp).toLocaleDateString() : "—"}
         </span>
@@ -331,7 +331,7 @@ export default function MediaPageComponent({
         <FilterBarComponent>
           <SearchInputComponent
             value={searchInput}
-            onChange={(v: any) => {
+            onChange={(v) => {
               setSearchInput(v);
               clearTimeout(searchTimerRef.current);
               searchTimerRef.current = setTimeout(() => {
@@ -347,21 +347,21 @@ export default function MediaPageComponent({
             groups={[
               {
                 label: "Source",
-                items: ORIGIN_FILTERS.map((f: any) => ({
+                items: ORIGIN_FILTERS.map((f) => ({
                   key: f.key,
                   icon: f.icon,
                   title: f.label,
                 })),
                 activeKeys: origin === "all" ? null : origin,
                 isSingleSelect: true,
-                onToggle: (v: any) => {
+                onToggle: (v) => {
                   setOrigin(v || "all");
                   setPage(1);
                 },
               },
               {
                 label: "Type",
-                items: TYPE_FILTERS.map((f: any) => ({
+                items: TYPE_FILTERS.map((f) => ({
                   key: f.key,
                   icon: f.icon,
                   color: f.color,
@@ -369,7 +369,7 @@ export default function MediaPageComponent({
                 })),
                 activeKeys: type === "all" ? null : type,
                 isSingleSelect: true,
-                onToggle: (v: any) => {
+                onToggle: (v) => {
                   setType(v || "all");
                   setPage(1);
                 },
@@ -378,14 +378,14 @@ export default function MediaPageComponent({
                 ? [
                     {
                       label: "Providers",
-                      items: providers.map((p: any) => ({
+                      items: providers.map((p) => ({
                         key: p,
                         icon: () => <ProviderLogo provider={p} size={13} />,
                         title: resolveProviderLabel(p),
                       })),
                       activeKeys: provider || null,
                       isSingleSelect: true,
-                      onToggle: (v: any) => {
+                      onToggle: (v) => {
                         setProvider(v || "");
                         setModel("");
                         setPage(1);
@@ -397,14 +397,14 @@ export default function MediaPageComponent({
                 ? [
                     {
                       label: "Models",
-                      items: models.map((m: any) => ({
+                      items: models.map((m) => ({
                         key: m,
                         icon: Bot,
                         title: m,
                       })),
                       activeKeys: model || null,
                       isSingleSelect: true,
-                      onToggle: (v: any) => {
+                      onToggle: (v) => {
                         setModel(v || "");
                         setPage(1);
                       },
@@ -418,13 +418,13 @@ export default function MediaPageComponent({
                 ],
                 activeKeys: showFavoritesOnly ? "favorites" : null,
                 isSingleSelect: true,
-                onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
+                onToggle: (v) => setShowFavoritesOnly(v === "favorites"),
               },
             ]}
             dateRange={!externalDateRange ? dateRange : undefined}
             onDateChange={
               !externalDateRange
-                ? (v: any) => {
+                ? (v) => {
                     setInternalDateRange(v);
                     setPage(1);
                   }
@@ -437,7 +437,7 @@ export default function MediaPageComponent({
             <SearchFilterComponent
               options={projects}
               value={project}
-              onChange={(v: any) => {
+              onChange={(v) => {
                 setInternalProject(v);
                 setPage(1);
               }}
@@ -450,7 +450,7 @@ export default function MediaPageComponent({
             <SearchFilterComponent
               options={usernames}
               value={username}
-              onChange={(v: any) => {
+              onChange={(v) => {
                 setUsername(v);
                 setPage(1);
               }}
@@ -475,7 +475,7 @@ export default function MediaPageComponent({
         {/* -- Grid View -- */}
         {!loading && viewMode === "grid" && (
           <div className={styles.mediaGrid}>
-            {displayMedia.map((m: any, i: any) => {
+            {displayMedia.map((m, i) => {
               const mediaKey = getMediaKey(m, i);
               const isFav = favoriteKeys.includes(mediaKey);
               return (
@@ -486,7 +486,7 @@ export default function MediaPageComponent({
                   showFavorite
                   isFavorite={isFav}
                   onFavorite={() => toggleFavorite(mediaKey)}
-                  onImageClick={(url: any) => setLightboxSrc(url)}
+                  onImageClick={(url: unknown) => setLightboxSrc(url)}
                 />
               );
             })}
@@ -499,7 +499,7 @@ export default function MediaPageComponent({
             <TableComponent
               columns={listColumns}
               data={displayMedia}
-              getRowKey={(m: any, i: any) => `${m.convId}-${i}`}
+              getRowKey={(m: unknown, i: unknown) => `${m.convId}-${i}`}
             />
           </div>
         )}
