@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Infinity,
 } from "lucide-react";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
@@ -130,9 +131,9 @@ export default function AgentPickerComponent({
         ? "1 Agent"
         : `${addCount} Agents`;
 
-  return (
+  const triggerContent = (
     <div style={{ position: "relative" }}>
-      <div className={styles.triggerWrap}>
+      <div className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}>
         {addMode ? (
           /* -- Add-mode trigger pill -- */
           <button
@@ -246,4 +247,18 @@ export default function AgentPickerComponent({
       )}
     </div>
   );
+
+  if (disabled) {
+    return (
+      <TooltipComponent
+        label="Start a new session to switch agents"
+        position="bottom"
+        enterDelay={200}
+      >
+        {triggerContent}
+      </TooltipComponent>
+    );
+  }
+
+  return triggerContent;
 }

@@ -668,25 +668,37 @@ export interface BenchmarkModelStats {
 
 // ─── VRAM Benchmarks ────────────────────────────────────────
 
+export interface VramBenchmarkGpuTelemetry {
+  name?: string;
+  temp?: number;
+  power?: string;
+  utilization?: string;
+  [key: string]: unknown;
+}
+
 export interface VramBenchmarkEntry {
   _id: ObjectId;
   model: string;
   displayName?: string;
   provider?: string;
   quantization?: string;
+  architecture?: string;
   bitsPerWeight?: number;
   fileSizeGB?: number;
   contextLength: number;
   vramUsageGiB: number;
   modelVramGiB?: number;
+  estimatedGiB?: number;
+  fitsInVram?: boolean;
   tokensPerSecond?: number;
   ttft?: { ms: number; prefillTokPerSec?: number; [key: string]: unknown };
   loadTimeMs?: number;
   hostname?: string;
   gpu?: string;
   gpuVramGB?: number;
-  system?: { hostname: string; gpu?: { name?: string; [key: string]: unknown }; [key: string]: unknown };
+  system?: { hostname: string; gpu?: VramBenchmarkGpuTelemetry; [key: string]: unknown };
   settings?: { label: string; [key: string]: unknown };
+  vramDuringGen?: { peakGiB?: number; [key: string]: unknown };
   createdAt?: string;
   [key: string]: unknown;
 }

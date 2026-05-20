@@ -614,7 +614,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: any) {
                 config={config}
                 settings={settingsWithDefaults}
                 onSelectModel={() => {}}
-                readOnly
+                disabled
                 favorites={favoriteKeys}
                 onToggleFavorite={handleToggleFavorite}
               />

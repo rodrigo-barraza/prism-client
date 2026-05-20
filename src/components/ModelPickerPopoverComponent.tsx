@@ -19,7 +19,7 @@ import { ModelToolsRow } from "./ToolBadgeComponent";
 import SoundService from "@/services/SoundService";
 import { LOCAL_PROVIDERS } from "../constants";
 import styles from "./ModelPickerPopoverComponent.module.css";
-import { CloseButtonComponent } from "@rodrigo-barraza/components-library";
+import { CloseButtonComponent, TooltipComponent } from "@rodrigo-barraza/components-library";
 
 // -- Shared model-search store ------------------------------------------
 // Module-scoped so every ModelPickerPopoverComponent instance shares the
@@ -77,7 +77,7 @@ function useSharedModelSearch() {
  *   loadingProgress — number | null (0–1 progress bar on trigger)
  *   favorites       — string[] of "provider:model" keys
  *   onToggleFavorite — (key) => void
- *   readOnly        — boolean — disables trigger interaction
+ *   disabled        — boolean — disables trigger interaction
  *   multiSelect     — boolean — enables multi-select mode
  *   selectedKeys    — Set<string> of "provider:model" keys (multi-select)
  *   renderActions   — (rawModel) => ReactNode — per-row actions
@@ -96,7 +96,7 @@ export default function ModelPickerPopoverComponent({
   loadingProgress,
   favorites = [],
   onToggleFavorite,
-  readOnly = false,
+  disabled = false,
   multiSelect = false,
   selectedKeys,
   renderActions,
@@ -500,20 +500,20 @@ export default function ModelPickerPopoverComponent({
     return undefined;
   })();
 
-  return (
+  const triggerContent = (
     <>
       {/* -- Trigger pill + modalities row --------------------------- */}
-      <div className={styles.triggerWrap}>
+      <div className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}>
         <button
           ref={triggerRef}
-          className={`${styles.trigger} ${open ? styles.triggerOpen : ""} ${readOnly ? styles.triggerReadOnly : ""} ${loadingProgress != null ? styles.triggerLoading : ""} ${multiSelect && selectedKeys?.size > 0 ? styles.triggerActive : ""}`}
+          className={`${styles.trigger} ${open ? styles.triggerOpen : ""} ${disabled ? styles.triggerReadOnly : ""} ${loadingProgress != null ? styles.triggerLoading : ""} ${multiSelect && selectedKeys?.size > 0 ? styles.triggerActive : ""}`}
           onMouseEnter={
-            readOnly
+            disabled
               ? undefined
               : (e: any) => SoundService.playHoverButton({ event: e })
           }
           onClick={
-            readOnly
+            disabled
               ? undefined
               : (e: any) => {
                   SoundService.playClickButton({ event: e });
@@ -522,13 +522,13 @@ export default function ModelPickerPopoverComponent({
           }
           data-model-picker-trigger
           title={
-            readOnly
+            disabled
               ? displayLabel
               : multiSelect
                 ? "Select models"
                 : "Switch model"
           }
-          style={readOnly ? { cursor: "default" } : undefined}
+          style={disabled ? { cursor: "default" } : undefined}
         >
           <span className={styles.triggerContent}>
             {triggerIconElement}
@@ -538,7 +538,7 @@ export default function ModelPickerPopoverComponent({
                 : displayLabel}
             </span>
           </span>
-          {!readOnly && loadingProgress == null && (
+          {!disabled && loadingProgress == null && (
             <ChevronDown
               size={14}
               className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
@@ -620,6 +620,20 @@ export default function ModelPickerPopoverComponent({
         )}
     </>
   );
+
+  if (disabled) {
+    return (
+      <TooltipComponent
+        label="Start a new session to switch models"
+        position="bottom"
+        enterDelay={200}
+      >
+        {triggerContent}
+      </TooltipComponent>
+    );
+  }
+
+  return triggerContent;
 }
 
 // -- Helpers ------------------------------------------------------------

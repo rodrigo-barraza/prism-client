@@ -33,6 +33,7 @@ import {
   Search,
 } from "lucide-react";
 import Chart from "chart.js/auto";
+import type { TooltipOptions, ScaleOptionsByType, LegendOptions } from "chart.js";
 import PrismService from "../services/PrismService";
 import {
   VramBenchmarkEntry,
@@ -61,7 +62,57 @@ export interface CustomChartDataPoint {
 export const isCustomPoint = (pt: unknown): pt is CustomChartDataPoint => 
   typeof pt === "object" && pt !== null;
 
-const QUANT_COLORS = {
+// ─── Local helper types (file-scoped) ──────────────────────
+
+/** Valid chart view keys — one per tab. */
+type ChartViewKey = "scatter" | "bar" | "efficiency" | "quantDist" | "ctxLeaderboard" | "context";
+
+/** Range stats computed per model name for VRAM/TPS/Context charts. */
+interface RangeStats {
+  min: number;
+  max: number;
+  count: number;
+  values: number[];
+  entries: VramBenchmarkEntry[];
+}
+
+/** Aggregation bucket for the Quantization Distribution chart. */
+interface QuantGroupStats {
+  count: number;
+  totalVram: number;
+  totalTps: number;
+  totalBpw: number;
+  minVram: number;
+  maxVram: number;
+  minTps: number;
+  maxTps: number;
+  avgVram?: number;
+  avgTps?: number;
+  avgBpw?: number;
+}
+
+/** Per-dataset original colour snapshot for search highlighting. */
+interface ColorSnapshot {
+  bg: string | string[];
+  border: string | string[];
+}
+
+/** Mapping of dataset index → snapshot. */
+type ChartColorCache = Record<number, ColorSnapshot>;
+
+/** Palette entry for chart color lookups. */
+interface PaletteEntry { bg: string; border: string }
+
+/** Settings info entry describing a VRAM benchmark configuration. */
+interface SettingsInfoEntry {
+  flash: boolean;
+  kv: string;
+  batch: number;
+  parallel: number;
+  purpose: string;
+}
+
+const QUANT_COLORS: Record<string, PaletteEntry> = {
   Q4_0: { bg: "rgba(34,211,238,0.55)", border: "#22d3ee" },
   Q4_K_M: { bg: "rgba(99,102,241,0.55)", border: "#6366f1" },
   Q4_K_S: { bg: "rgba(139,92,246,0.55)", border: "#8b5cf6" },
@@ -77,7 +128,7 @@ const QUANT_COLORS = {
   BF16: { bg: "rgba(217,70,239,0.55)", border: "#d946ef" },
 };
 
-const GPU_COLORS = {
+const GPU_COLORS: Record<string, PaletteEntry> = {
   "NVIDIA GeForce RTX 4090": {
     bg: "rgba(99,102,241,0.6)",
     border: "#6366f1",
@@ -89,7 +140,7 @@ const GPU_COLORS = {
 };
 
 // Fallback rainbow for unknown quant/GPU
-const PALETTE = [
+const PALETTE: PaletteEntry[] = [
   { bg: "rgba(99,102,241,0.55)", border: "#6366f1" },
   { bg: "rgba(16,185,129,0.55)", border: "#10b981" },
   { bg: "rgba(245,158,11,0.55)", border: "#f59e0b" },
@@ -101,20 +152,15 @@ const PALETTE = [
 ];
 
 let colorIdx = 0;
-function getQuantColor(q: string) {
-  if ((QUANT_COLORS as Record<string, { bg: string; border: string }>)[q]) return (QUANT_COLORS as Record<string, { bg: string; border: string }>)[q];
+function getQuantColor(q: string): PaletteEntry {
+  if (QUANT_COLORS[q]) return QUANT_COLORS[q];
   const fallbackColor = PALETTE[colorIdx % PALETTE.length];
   colorIdx++;
   return fallbackColor;
 }
 
-function getGPUColor(gpuName: string) {
-  return (
-    (GPU_COLORS as Record<string, { bg: string; border: string }>)[gpuName] || {
-      bg: "rgba(107,114,128,0.5)",
-      border: "#6b7280",
-    }
-  );
+function getGPUColor(gpuName: string): PaletteEntry {
+  return GPU_COLORS[gpuName] || { bg: "rgba(107,114,128,0.5)", border: "#6b7280" };
 }
 
 function shortGPU(name: string) {
@@ -138,7 +184,7 @@ function shortModelName(name: string, max = 18) {
 
 const CHART_FONT = "'Inter', sans-serif";
 
-const TOOLTIP_STYLE: any = {
+const TOOLTIP_STYLE: Partial<TooltipOptions> = {
   backgroundColor: "rgba(10, 10, 15, 0.92)",
   titleColor: "#f8f8f8",
   bodyColor: "#8e95ae",
@@ -146,24 +192,23 @@ const TOOLTIP_STYLE: any = {
   borderWidth: 1,
   padding: 14,
   cornerRadius: 2,
-  titleFont: { family: CHART_FONT, weight: "600", size: 13 },
+  titleFont: { family: CHART_FONT, weight: 600, size: 13 },
   bodyFont: { family: CHART_FONT, size: 12 },
   displayColors: true,
   boxPadding: 4,
 };
 
-const GRID_STYLE: any = {
+const GRID_STYLE: Record<string, unknown> = {
   color: "rgba(255,255,255,0.04)",
-  drawBorder: false,
 };
 
-const TICK_STYLE: any = {
+const TICK_STYLE: Record<string, unknown> = {
   font: { family: CHART_FONT, size: 11, weight: 500 },
   color: "#6b728e",
   padding: 6,
 };
 
-const AXIS_TITLE_STYLE: any = {
+const AXIS_TITLE_STYLE: Record<string, unknown> = {
   display: true,
   font: { family: CHART_FONT, weight: 600, size: 12 },
   color: "#8e95ae",
@@ -272,12 +317,12 @@ function makeConnectorHighlightPlugin() {
         }
       }
 
-      const prev = (chart as any)._hoveredConnectorModel;
-      (chart as any)._hoveredConnectorModel = hoveredModel;
+      const prev = (chart as unknown as Record<string, unknown>)._hoveredConnectorModel;
+      (chart as unknown as Record<string, unknown>)._hoveredConnectorModel = hoveredModel;
       if (prev !== hoveredModel) args.changed = true;
     },
     afterDraw(chart: Chart) {
-      const hoveredModel = (chart as any)._hoveredConnectorModel;
+      const hoveredModel = (chart as unknown as Record<string, unknown>)._hoveredConnectorModel as string | null;
       if (!hoveredModel) return;
 
       const context = chart.ctx;
@@ -300,7 +345,7 @@ function makeConnectorHighlightPlugin() {
           bubblePoints.push({
             x: element.x,
             y: element.y,
-            r: element.options?.radius || (raw as any).r || 5,
+            r: element.options?.radius || ('r' in raw ? (raw as any).r as number : 0) || 5,
             borderColor: ds.borderColor as string | undefined,
           });
         }
@@ -349,7 +394,7 @@ function makeConnectorHighlightPlugin() {
 
 // -- Settings info for tooltips ------------------------------
 
-const SETTINGS_INFO = {
+const SETTINGS_INFO: Record<string, SettingsInfoEntry> = {
   "no-flash-attn": {
     flash: false,
     kv: "GPU",
@@ -408,7 +453,7 @@ const SETTINGS_INFO = {
 };
 
 function SettingsTooltipContent({ settingsKey }: { settingsKey: string }) {
-  const info = (SETTINGS_INFO as Record<string, { flash: boolean; kv: string; batch: number; parallel: number; purpose: string }>)[settingsKey];
+  const info = SETTINGS_INFO[settingsKey];
   if (!info) return settingsKey;
   return (
     <span
@@ -507,10 +552,10 @@ function SettingsMatrixTooltip() {
             <span>
               {SETTINGS_EMOJI[key] || "⚙️"} {key}
             </span>
-            <span>{(info as { flash: boolean }).flash ? "✓" : "✗"}</span>
-            <span>{(info as { kv: string }).kv}</span>
-            <span>{(info as { batch: number }).batch}</span>
-            <span>{(info as { parallel: number }).parallel}</span>
+            <span>{info.flash ? "✓" : "✗"}</span>
+            <span>{info.kv}</span>
+            <span>{info.batch}</span>
+            <span>{info.parallel}</span>
           </Fragment>
         ))}
       </span>
@@ -617,7 +662,7 @@ export default function VramBenchmarkComponent() {
   const [settingsLabels, setSettingsLabels] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Filters
   const [machineFilter, setMachineFilter] = useState("all");
@@ -635,7 +680,7 @@ export default function VramBenchmarkComponent() {
   const [tpsClipMax, setTpsClipMax] = useState("");
   const [scatterClipXMin, setScatterClipXMin] = useState("");
   const [scatterClipXMax, setScatterClipXMax] = useState("");
-  const [activeView, setActiveView] = useState("scatter");
+  const [activeView, setActiveView] = useState<ChartViewKey>("scatter");
   const [chartSearch, setChartSearch] = useState("");
 
   // Parsed clip values — undefined means "auto" (Chart.js default)
@@ -712,8 +757,8 @@ export default function VramBenchmarkComponent() {
     ctxLeaderboard: useRef<HTMLCanvasElement>(null),
     context: useRef<HTMLCanvasElement>(null),
   };
-  const chartInstances = useRef<Record<string, Chart>>({});
-  const searchOrigColors = useRef<Record<string, string>>({});
+  const chartInstances = useRef<Partial<Record<ChartViewKey, Chart>>>({});
+  const searchOrigColors = useRef<Partial<Record<ChartViewKey, ChartColorCache>>>({});
 
   // -- Fetch data -------------------------------------------
 
@@ -730,8 +775,8 @@ export default function VramBenchmarkComponent() {
       setRawData(benchRes.data || []);
       setMachines(machinesRes || []);
       setSettingsLabels(settingsRes || []);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -784,7 +829,7 @@ export default function VramBenchmarkComponent() {
     if (batchFilter !== "all") {
       const bVal = parseInt(batchFilter);
       filtered = filtered.filter((d: VramBenchmarkEntry) => {
-        const info = (SETTINGS_INFO as Record<string, { batch: number }>)[d.settings?.label || ""];
+        const info = SETTINGS_INFO[d.settings?.label || ""];
         return info?.batch === bVal;
       });
     }
@@ -890,7 +935,7 @@ export default function VramBenchmarkComponent() {
     if (parallelFilter !== "all") {
       const pVal = parseInt(parallelFilter);
       filtered = filtered.filter((d: VramBenchmarkEntry) => {
-        const info = (SETTINGS_INFO as Record<string, { parallel: number }>)[d.settings?.label || ""];
+        const info = SETTINGS_INFO[d.settings?.label || ""];
         return info?.parallel === pVal;
       });
     }
@@ -1234,9 +1279,9 @@ export default function VramBenchmarkComponent() {
 
   // -- Chart render helpers ---------------------------------
 
-  function destroyChart(key: string) {
+  function destroyChart(key: ChartViewKey) {
     if (chartInstances.current[key]) {
-      chartInstances.current[key].destroy();
+      chartInstances.current[key]!.destroy();
       delete chartInstances.current[key];
     }
   }
@@ -1341,13 +1386,14 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
 
     // If the canvas element changed (e.g. remount after loading), destroy stale instance
-    const existing = (chartInstances.current as any).scatter;
+    const existing = chartInstances.current.scatter;
     if (existing && existing.canvas !== canvas) {
       existing.destroy();
-      (chartInstances.current as any).scatter = null;
+      chartInstances.current.scatter = undefined;
     }
 
-    const context = (canvas as any).getContext("2d");
+    const context = canvas.getContext("2d");
+    if (!context) return;
     const mode = activeScatterMode;
     // With range-based context filter, check if multiple distinct contexts exist
     const distinctCtx = new Set(
@@ -1360,7 +1406,7 @@ export default function VramBenchmarkComponent() {
     const toPoint = (m: VramBenchmarkEntry) => {
       const x = mode.getX(m);
       const y = mode.getY(m);
-      if (x == null || y == null || isNaN(x) || isNaN(y)) return null;
+      if (x == null || y == null || isNaN(x) || isNaN(y)) return undefined as any;
       return {
         x,
         y,
@@ -1529,10 +1575,10 @@ export default function VramBenchmarkComponent() {
           ? `${d.displayName}__${d.contextLength}`
           : d.displayName;
         if (
-          !(byKey as any)[key] ||
-          d.createdAt > (byKey as any)[key].createdAt
+          !byKey[key] ||
+          d.createdAt > byKey[key].createdAt
         ) {
-          (byKey as any)[key] = d;
+          byKey[key] = d;
         }
       }
       const scatterData = Object.values(byKey);
@@ -1542,8 +1588,8 @@ export default function VramBenchmarkComponent() {
       const quantGroups: Record<string, any[]> = {};
       for (const m of scatterData) {
         const q = m.quantization || "unknown";
-        if (!(quantGroups as any)[q]) (quantGroups as any)[q] = [];
-        (quantGroups as any)[q].push(m);
+        if (!quantGroups[q]) quantGroups[q] = [];
+        quantGroups[q].push(m);
       }
       datasets = Object.entries(quantGroups).map(([q, items]: any) => {
         const color = getQuantColor(q);
@@ -1582,22 +1628,30 @@ export default function VramBenchmarkComponent() {
     }
 
     // -- Reuse or create chart --
-    const currentChart = (chartInstances.current as any).scatter;
+    const currentChart = chartInstances.current.scatter;
     if (currentChart) {
       // Update data — instant swap, no misleading slide-from-bottom
       currentChart.data.datasets = datasets;
-      currentChart.options.scales.x.title.text = mode.xLabel;
-      currentChart.options.scales.y.title.text = mode.yLabel;
-      currentChart.options.scales.x.min = scatterClipXMinVal ?? mode.xMin ?? 0;
-      currentChart.options.scales.y.min = mode.yMin ?? 0;
-      if (scatterClipXMaxVal !== undefined) {
-        currentChart.options.scales.x.max = scatterClipXMaxVal;
-      } else {
-        delete currentChart.options.scales.x.max;
+      if ((currentChart.options.scales?.x as any)?.title) {
+        (currentChart.options.scales!.x as any).title.text = mode.xLabel;
+      }
+      if ((currentChart.options.scales?.y as any)?.title) {
+        (currentChart.options.scales!.y as any).title.text = mode.yLabel;
+      }
+      if (currentChart.options.scales?.x) {
+        currentChart.options.scales.x.min = scatterClipXMinVal ?? mode.xMin ?? 0;
+        if (scatterClipXMaxVal !== undefined) {
+          currentChart.options.scales.x.max = scatterClipXMaxVal;
+        } else {
+          delete currentChart.options.scales.x.max;
+        }
+      }
+      if (currentChart.options.scales?.y) {
+        currentChart.options.scales.y.min = mode.yMin ?? 0;
       }
       currentChart.update("none");
     } else {
-      (chartInstances.current as any).scatter = new Chart(context, {
+      chartInstances.current.scatter = new Chart(context, {
         type: "bubble",
         data: { datasets },
         plugins: [
@@ -1670,9 +1724,9 @@ export default function VramBenchmarkComponent() {
                     `File: ${(m.fileSizeGB || 0).toFixed(1)} GB · ${m.quantization} (${m.bitsPerWeight || "?"} bpw)`,
                     `Efficiency: ${((m.tokensPerSecond || 0) / (m.modelVramGiB || 1)).toFixed(1)} TPS/GiB`,
                   ];
-                  if ((m.vramDuringGen as any)?.peakGiB)
+                  if (m.vramDuringGen?.peakGiB)
                     lines.push(
-                      `Peak VRAM (gen): ${((m.vramDuringGen as any).peakGiB as number).toFixed(2)} GiB`,
+                      `Peak VRAM (gen): ${(m.vramDuringGen.peakGiB as number).toFixed(2)} GiB`,
                     );
                   if (m.ttft?.ms) {
                     let ttftLine = `TTFT: ${m.ttft.ms.toFixed(0)} ms`;
@@ -1704,21 +1758,21 @@ export default function VramBenchmarkComponent() {
   // -- Shared range data for bar charts ----------------------
 
   const { vramRanges, tpsRanges, ctxRanges } = useMemo(() => {
-    const vram = {};
-    const tps = {};
-    const ctxR = {};
+    const vram: Record<string, RangeStats> = {};
+    const tps: Record<string, RangeStats> = {};
+    const ctxR: Record<string, RangeStats> = {};
     const source =
       allFilteredData.length > 0
         ? allFilteredData
-        : rawData.filter((d: any) => d.modelVramGiB > 0);
+        : rawData.filter((d: VramBenchmarkEntry) => d.modelVramGiB && d.modelVramGiB > 0);
     for (const d of source) {
-      const name = (d as any).displayName;
-      const v = (d as any).modelVramGiB;
-      const t = (d as any).tokensPerSecond || 0;
-      const c = (d as any).contextLength || 0;
+      const name = d.displayName || d.model;
+      const v = d.modelVramGiB || 0;
+      const t = d.tokensPerSecond || 0;
+      const c = d.contextLength || 0;
       // VRAM ranges (store full entries for per-dot tooltips)
-      if (!(vram as any)[name]) {
-        (vram as any)[name] = {
+      if (!vram[name]) {
+        vram[name] = {
           min: v,
           max: v,
           count: 1,
@@ -1726,16 +1780,16 @@ export default function VramBenchmarkComponent() {
           entries: [d],
         };
       } else {
-        (vram as any)[name].min = Math.min((vram as any)[name].min, v);
-        (vram as any)[name].max = Math.max((vram as any)[name].max, v);
-        (vram as any)[name].count++;
-        (vram as any)[name].values.push(v);
-        (vram as any)[name].entries.push(d);
+        vram[name].min = Math.min(vram[name].min, v);
+        vram[name].max = Math.max(vram[name].max, v);
+        vram[name].count++;
+        vram[name].values.push(v);
+        vram[name].entries.push(d);
       }
       // TPS ranges (store full entries for per-dot tooltips)
       if (t > 0) {
-        if (!(tps as any)[name]) {
-          (tps as any)[name] = {
+        if (!tps[name]) {
+          tps[name] = {
             min: t,
             max: t,
             count: 1,
@@ -1743,18 +1797,18 @@ export default function VramBenchmarkComponent() {
             entries: [d],
           };
         } else {
-          (tps as any)[name].min = Math.min((tps as any)[name].min, t);
-          (tps as any)[name].max = Math.max((tps as any)[name].max, t);
-          (tps as any)[name].count++;
-          (tps as any)[name].values.push(t);
-          (tps as any)[name].entries.push(d);
+          tps[name].min = Math.min(tps[name].min, t);
+          tps[name].max = Math.max(tps[name].max, t);
+          tps[name].count++;
+          tps[name].values.push(t);
+          tps[name].entries.push(d);
         }
       }
       // Context length ranges (store full entries for per-dot tooltips)
       if (c > 0) {
         const cK = c / 1024;
-        if (!(ctxR as any)[name]) {
-          (ctxR as any)[name] = {
+        if (!ctxR[name]) {
+          ctxR[name] = {
             min: cK,
             max: cK,
             count: 1,
@@ -1762,11 +1816,11 @@ export default function VramBenchmarkComponent() {
             entries: [d],
           };
         } else {
-          (ctxR as any)[name].min = Math.min((ctxR as any)[name].min, cK);
-          (ctxR as any)[name].max = Math.max((ctxR as any)[name].max, cK);
-          (ctxR as any)[name].count++;
-          (ctxR as any)[name].values.push(cK);
-          (ctxR as any)[name].entries.push(d);
+          ctxR[name].min = Math.min(ctxR[name].min, cK);
+          ctxR[name].max = Math.max(ctxR[name].max, cK);
+          ctxR[name].count++;
+          ctxR[name].values.push(cK);
+          ctxR[name].entries.push(d);
         }
       }
     }
@@ -1775,8 +1829,8 @@ export default function VramBenchmarkComponent() {
 
   // -- Zoom-update effects: animate x-axis range when clip values change --
   useEffect(() => {
-    const chart = (chartInstances.current as any).scatter;
-    if (!chart) return;
+    const chart = chartInstances.current.scatter;
+    if (!chart || !chart.options.scales?.x) return;
     const xScale = chart.options.scales.x;
     const mode = activeScatterMode;
     xScale.min = scatterClipXMinVal ?? mode.xMin ?? 0;
@@ -1785,12 +1839,12 @@ export default function VramBenchmarkComponent() {
     } else {
       delete xScale.max;
     }
-    chart.update("zoom");
+    chart.update("none");
   }, [scatterClipXMinVal, scatterClipXMaxVal, activeScatterMode]);
 
   useEffect(() => {
-    const chart = (chartInstances.current as any).bar;
-    if (!chart) return;
+    const chart = chartInstances.current.bar;
+    if (!chart || !chart.options.scales?.x) return;
     const xScale = chart.options.scales.x;
     // Apply or clear min/max
     if (clipMin !== undefined) {
@@ -1803,7 +1857,7 @@ export default function VramBenchmarkComponent() {
     } else {
       delete xScale.max;
     }
-    chart.update("zoom");
+    chart.update("none");
   }, [clipMin, clipMax]);
 
   const renderBar = useCallback(() => {
@@ -1811,20 +1865,22 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
     destroyChart("bar");
 
-    const context = (canvas as any).getContext("2d");
+    const context = canvas.getContext("2d");
+    if (!context) return;
 
     const labels = models.map((m: any) => {
       const name = m.displayName;
       return name.length > 30 ? name.slice(0, 28) + "…" : name;
     });
 
-    // Dynamic height
-    (canvas as any).parentElement.style.height =
-      Math.max(400, models.length * 24 + 80) + "px";
+    if (canvas.parentElement) {
+      canvas.parentElement.style.height =
+        Math.max(400, models.length * 24 + 80) + "px";
+    }
 
     // Build floating bar data: [min, max] tuples per model
     const rangeData = models.map((m: any) => {
-      const range = (vramRanges as any)[m.displayName];
+      const range = vramRanges[m.displayName];
       if (range && range.count > 1) {
         return [range.min, range.max];
       }
@@ -1854,14 +1910,14 @@ export default function VramBenchmarkComponent() {
     const scatterData: any[] = [];
     for (let i = 0; i < models.length; i++) {
       const m: any = models[i];
-      const range = (vramRanges as any)[m.displayName];
+      const range = vramRanges[m.displayName];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
         scatterData.push({ x: entry.modelVramGiB, y: labels[i], entry });
       }
     }
 
-    (chartInstances.current as any).bar = new Chart(context, {
+    chartInstances.current.bar = new Chart(context, {
       type: "bar",
       data: {
         labels,
@@ -1905,11 +1961,11 @@ export default function VramBenchmarkComponent() {
           getLabel: (_raw: any, i: any) => {
             const m = models[i];
             if (!m) return "";
-            const range = (vramRanges as any)[(m as any).displayName];
+            const range = vramRanges[m.displayName || ""];
             if (range && range.count > 1) {
               return `${range.min.toFixed(1)}–${range.max.toFixed(1)}G`;
             }
-            return `${(m as any).modelVramGiB.toFixed(1)}G`;
+            return `${(m.modelVramGiB || 0).toFixed(1)}G`;
           },
           anchor: "end",
           align: "right",
@@ -1953,7 +2009,7 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex === 1) {
                   return item.raw?.entry?.displayName || "";
                 }
-                return (models[item.dataIndex] as any)?.displayName || "";
+                return models[item.dataIndex]?.displayName || "";
               },
               afterTitle: (items: any) => {
                 const item = items[0];
@@ -1965,7 +2021,7 @@ export default function VramBenchmarkComponent() {
                 }
                 const m = models[item.dataIndex];
                 if (!m) return "";
-                return `${(m as any).quantization} · ${(m as any).architecture} · ${((m as any).contextLength / 1024).toFixed(0)}K ctx · ${shortGPU((m as any).system?.gpu?.name)}`;
+                return `${m.quantization} · ${m.architecture} · ${(m.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU((m.system as any)?.gpu?.name || "")}`;
               },
               label: (item: any) => {
                 // Scatter dot — entry-specific data
@@ -1990,7 +2046,7 @@ export default function VramBenchmarkComponent() {
                     ? item.raw?.entry
                     : models[item.dataIndex];
                 if (!m) return "";
-                const sInfo = (SETTINGS_INFO as any)[m.settings?.label];
+                const sInfo = SETTINGS_INFO[m.settings?.label];
                 const lines = [
                   "",
                   `Parallel: ${sInfo?.parallel ?? "?"}`,
@@ -2017,7 +2073,7 @@ export default function VramBenchmarkComponent() {
                     `CPU RAM Δ: ${(m.cpuRam.deltaMiB / 1024).toFixed(2)} GiB`,
                   );
                 if (m.gpu?.temp)
-                  lines.push(`GPU: ${m.gpu.temp}°C · ${m.gpu.power || "?"}W`);
+                  lines.push(`GPU: ${(m.gpu as any).temp}°C · ${(m.gpu as any).power || "?"}W`);
                 if (m.hysteresis?.leakedMiB > 0)
                   lines.push(`⚠ VRAM leak: ${m.hysteresis.leakedMiB} MiB`);
                 if (m.fitsInVram === false)
@@ -2044,7 +2100,8 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
     destroyChart("efficiency");
 
-    const context = (canvas as any).getContext("2d");
+    const context = canvas.getContext("2d");
+    if (!context) return;
 
     // Sort by peak TPS descending
     const sorted = [...models].sort(
@@ -2056,13 +2113,14 @@ export default function VramBenchmarkComponent() {
       return name.length > 30 ? name.slice(0, 28) + "…" : name;
     });
 
-    // Dynamic height
-    (canvas as any).parentElement.style.height =
-      Math.max(400, sorted.length * 24 + 80) + "px";
+    if (canvas.parentElement) {
+      canvas.parentElement.style.height =
+        Math.max(400, sorted.length * 24 + 80) + "px";
+    }
 
     // Build floating bar data: [min, max] TPS tuples per model
     const rangeData = sorted.map((m: any) => {
-      const range = (tpsRanges as any)[m.displayName];
+      const range = tpsRanges[m.displayName];
       if (range && range.count > 1) {
         return [range.min, range.max];
       }
@@ -2092,7 +2150,7 @@ export default function VramBenchmarkComponent() {
     const scatterData = [];
     for (let i = 0; i < sorted.length; i++) {
       const m: any = sorted[i];
-      const range = (tpsRanges as any)[m.displayName];
+      const range = tpsRanges[m.displayName];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
         scatterData.push({
@@ -2103,7 +2161,7 @@ export default function VramBenchmarkComponent() {
       }
     }
 
-    (chartInstances.current as any).efficiency = new Chart(context, {
+    chartInstances.current.efficiency = new Chart(context, {
       type: "bar",
       data: {
         labels,
@@ -2145,11 +2203,11 @@ export default function VramBenchmarkComponent() {
           getLabel: (_raw: any, i: any) => {
             const m = sorted[i];
             if (!m) return "";
-            const range = (tpsRanges as any)[(m as any).displayName];
+            const range = tpsRanges[m.displayName || ""];
             if (range && range.count > 1) {
               return `${range.min.toFixed(0)}–${range.max.toFixed(0)} t/s`;
             }
-            return `${((m as any).tokensPerSecond || 0).toFixed(0)} t/s`;
+            return `${(m.tokensPerSecond || 0).toFixed(0)} t/s`;
           },
           anchor: "end",
           align: "right",
@@ -2192,7 +2250,7 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex === 1) {
                   return item.raw?.entry?.displayName || "";
                 }
-                return (sorted[item.dataIndex] as any)?.displayName || "";
+                return sorted[item.dataIndex]?.displayName || "";
               },
               afterTitle: (items: any) => {
                 const item = items[0];
@@ -2204,7 +2262,7 @@ export default function VramBenchmarkComponent() {
                 }
                 const m = sorted[item.dataIndex];
                 if (!m) return "";
-                return `${(m as any).quantization} · ${(m as any).architecture} · ${((m as any).contextLength / 1024).toFixed(0)}K ctx`;
+                return `${m.quantization} · ${m.architecture} · ${(m.contextLength / 1024).toFixed(0)}K ctx`;
               },
               label: (item: any) => {
                 if (item.datasetIndex === 1) {
@@ -2227,7 +2285,7 @@ export default function VramBenchmarkComponent() {
                     ? item.raw?.entry
                     : sorted[item.dataIndex];
                 if (!m) return "";
-                const sInfo = (SETTINGS_INFO as any)[m.settings?.label];
+                const sInfo = SETTINGS_INFO[m.settings?.label];
                 const lines = [
                   "",
                   ` VRAM: ${m.modelVramGiB.toFixed(2)} GiB`,
@@ -2241,7 +2299,7 @@ export default function VramBenchmarkComponent() {
                 if (m.loadTimeMs)
                   lines.push(` Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
                 if (m.gpu?.temp)
-                  lines.push(` GPU: ${m.gpu.temp}°C · ${m.gpu.power || "?"}W`);
+                  lines.push(` GPU: ${(m.gpu as any).temp}°C · ${(m.gpu as any).power || "?"}W`);
                 if (m.settings?.label && m.settings.label !== "default")
                   lines.push(` Settings: ${m.settings.label}`);
                 return lines;
@@ -2255,8 +2313,8 @@ export default function VramBenchmarkComponent() {
 
   // -- TPS zoom-update effect --
   useEffect(() => {
-    const chart = (chartInstances.current as any).efficiency;
-    if (!chart) return;
+    const chart = chartInstances.current.efficiency;
+    if (!chart || !chart.options.scales?.x) return;
     const xScale = chart.options.scales.x;
     if (tpsClipMinVal !== undefined) {
       xScale.min = tpsClipMinVal;
@@ -2268,7 +2326,7 @@ export default function VramBenchmarkComponent() {
     } else {
       delete xScale.max;
     }
-    chart.update("zoom");
+    chart.update("none");
   }, [tpsClipMinVal, tpsClipMaxVal]);
 
   // -- Quantization Distribution ----------------------------
@@ -2278,14 +2336,15 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
     destroyChart("quantDist");
 
-    const context = (canvas as any).getContext("2d");
+    const context = canvas.getContext("2d");
+    if (!context) return;
 
     // Group by quantization
-    const quantGroups = {};
+    const quantGroups: Record<string, any> = {};
     for (const m of models) {
       const q = m.quantization || "unknown";
-      if (!(quantGroups as any)[q]) {
-        (quantGroups as any)[q] = {
+      if (!quantGroups[q]) {
+        quantGroups[q] = {
           count: 0,
           totalVram: 0,
           totalTps: 0,
@@ -2297,18 +2356,18 @@ export default function VramBenchmarkComponent() {
         };
       }
       const tps = m.tokensPerSecond || 0;
-      (quantGroups as any)[q].count++;
-      (quantGroups as any)[q].totalVram += m.modelVramGiB;
-      (quantGroups as any)[q].totalTps += tps;
-      (quantGroups as any)[q].totalBpw += m.bitsPerWeight || 0;
-      if ((m.modelVramGiB || 0) < (quantGroups as any)[q].minVram)
-        (quantGroups as any)[q].minVram = m.modelVramGiB;
-      if ((m.modelVramGiB || 0) > (quantGroups as any)[q].maxVram)
-        (quantGroups as any)[q].maxVram = m.modelVramGiB;
-      if (tps < (quantGroups as any)[q].minTps)
-        (quantGroups as any)[q].minTps = tps;
-      if (tps > (quantGroups as any)[q].maxTps)
-        (quantGroups as any)[q].maxTps = tps;
+      quantGroups[q].count++;
+      quantGroups[q].totalVram += m.modelVramGiB;
+      quantGroups[q].totalTps += tps;
+      quantGroups[q].totalBpw += m.bitsPerWeight || 0;
+      if ((m.modelVramGiB || 0) < quantGroups[q].minVram)
+        quantGroups[q].minVram = m.modelVramGiB;
+      if ((m.modelVramGiB || 0) > quantGroups[q].maxVram)
+        quantGroups[q].maxVram = m.modelVramGiB;
+      if (tps < quantGroups[q].minTps)
+        quantGroups[q].minTps = tps;
+      if (tps > quantGroups[q].maxTps)
+        quantGroups[q].maxTps = tps;
     }
 
     // Sort quant labels by bits-per-weight rank (lowest → highest)
@@ -2351,13 +2410,13 @@ export default function VramBenchmarkComponent() {
     };
     const quantLabels = Object.keys(quantGroups).sort((a: any, b: any) => {
       const ra =
-        (QUANT_RANK as any)[a] ?? 50 + ((quantGroups as any)[a].avgBpw || 50);
+        (QUANT_RANK as Record<string, number>)[a] ?? 50 + (quantGroups[a].avgBpw || 50);
       const rb =
-        (QUANT_RANK as any)[b] ?? 50 + ((quantGroups as any)[b].avgBpw || 50);
+        (QUANT_RANK as Record<string, number>)[b] ?? 50 + (quantGroups[b].avgBpw || 50);
       return ra - rb || a.localeCompare(b);
     });
     for (const q of quantLabels) {
-      const g = (quantGroups as any)[q];
+      const g = quantGroups[q];
       g.avgVram = g.totalVram / g.count;
       g.avgTps = g.totalTps / g.count;
       g.avgBpw = g.totalBpw / g.count;
@@ -2387,7 +2446,7 @@ export default function VramBenchmarkComponent() {
           for (let i = 0; i < meta.data.length; i++) {
             const bar = meta.data[i];
             const q = quantLabels[i];
-            const avg = getAvg((quantGroups as any)[q]);
+            const avg = getAvg(quantGroups[q]);
             const yPx = scale.getPixelForValue(avg);
             const halfW = bar.width / 2;
             const barBorder = bar.options?.borderColor || "#6366f1";
@@ -2423,7 +2482,7 @@ export default function VramBenchmarkComponent() {
       },
     };
 
-    (chartInstances.current as any).quantDist = new Chart(context, {
+    chartInstances.current.quantDist = new Chart(context, {
       type: "bar",
       data: {
         labels: quantLabels,
@@ -2431,8 +2490,8 @@ export default function VramBenchmarkComponent() {
           {
             label: "VRAM Range (GiB)",
             data: quantLabels.map((q: any) => [
-              (quantGroups as any)[q].minVram,
-              (quantGroups as any)[q].maxVram,
+              quantGroups[q].minVram,
+              quantGroups[q].maxVram,
             ]),
             backgroundColor: quantLabels.map((q: any) => getQuantColor(q).bg),
             borderColor: quantLabels.map((q: any) => getQuantColor(q).border),
@@ -2444,8 +2503,8 @@ export default function VramBenchmarkComponent() {
           {
             label: "TPS Range",
             data: quantLabels.map((q: any) => [
-              (quantGroups as any)[q].minTps,
-              (quantGroups as any)[q].maxTps,
+              quantGroups[q].minTps,
+              quantGroups[q].maxTps,
             ]),
             backgroundColor: "rgba(128,128,128,0.15)",
             borderColor: "rgba(100,100,100,0.5)",
@@ -2489,11 +2548,11 @@ export default function VramBenchmarkComponent() {
                 `${quantLabels[items[0]?.dataIndex]} Quantization`,
               afterTitle: (items: any) => {
                 const q = quantLabels[items[0]?.dataIndex];
-                return `${(quantGroups as any)[q].count} model${(quantGroups as any)[q].count > 1 ? "s" : ""}`;
+                return `${quantGroups[q].count} model${quantGroups[q].count > 1 ? "s" : ""}`;
               },
               label: (item: any) => {
                 const q = quantLabels[item.dataIndex];
-                const g = (quantGroups as any)[q];
+                const g = quantGroups[q];
                 if (item.datasetIndex === 0) {
                   return [
                     ` Avg VRAM: ${g.avgVram.toFixed(2)} GiB`,
@@ -2508,7 +2567,7 @@ export default function VramBenchmarkComponent() {
               afterBody: (items: any) => {
                 const q = quantLabels[items[0]?.dataIndex];
                 if (!q) return "";
-                const g = (quantGroups as any)[q];
+                const g = quantGroups[q];
                 const lines = [];
                 if (g.avgBpw > 0)
                   lines.push(`Avg bits/weight: ${g.avgBpw.toFixed(1)} bpw`);
@@ -2535,14 +2594,15 @@ export default function VramBenchmarkComponent() {
     if (!canvas || models.length === 0) return;
     destroyChart("ctxLeaderboard");
 
-    const context = (canvas as any).getContext("2d");
+    const context = canvas.getContext("2d");
+    if (!context) return;
 
     // Sort by max context descending, then TPS within same tier
     const sorted = [...models].sort((a: any, b: any) => {
       const cA =
-        (ctxRanges as any)[a.displayName]?.max || a.contextLength / 1024 || 0;
+        ctxRanges[a.displayName]?.max || a.contextLength / 1024 || 0;
       const cB =
-        (ctxRanges as any)[b.displayName]?.max || b.contextLength / 1024 || 0;
+        ctxRanges[b.displayName]?.max || b.contextLength / 1024 || 0;
       return cB - cA || b.tokensPerSecond - a.tokensPerSecond;
     });
 
@@ -2551,13 +2611,14 @@ export default function VramBenchmarkComponent() {
       return name.length > 30 ? name.slice(0, 28) + "…" : name;
     });
 
-    // Dynamic height
-    (canvas as any).parentElement.style.height =
-      Math.max(400, sorted.length * 24 + 80) + "px";
+    if (canvas.parentElement) {
+      canvas.parentElement.style.height =
+        Math.max(400, sorted.length * 24 + 80) + "px";
+    }
 
     // Build floating bar data: [min, max] context (K) tuples per model
     const ctxRangeData = sorted.map((m: any) => {
-      const range = (ctxRanges as any)[m.displayName];
+      const range = ctxRanges[m.displayName];
       if (range && range.count > 1) {
         return [range.min, range.max];
       }
@@ -2567,7 +2628,7 @@ export default function VramBenchmarkComponent() {
 
     // Build floating bar data: [min, max] TPS tuples per model
     const tpsRangeData = sorted.map((m: any) => {
-      const range = (tpsRanges as any)[m.displayName];
+      const range = tpsRanges[m.displayName];
       if (range && range.count > 1) {
         return [range.min, range.max];
       }
@@ -2578,7 +2639,7 @@ export default function VramBenchmarkComponent() {
     // Color gradient for context bars: cyan → emerald → teal by context magnitude
     const allCtx = sorted.map(
       (m: any) =>
-        (ctxRanges as any)[m.displayName]?.max || (m.contextLength || 0) / 1024,
+        ctxRanges[m.displayName]?.max || (m.contextLength || 0) / 1024,
     );
     const cMin = Math.min(...allCtx);
     const cMax = Math.max(...allCtx);
@@ -2600,7 +2661,7 @@ export default function VramBenchmarkComponent() {
     const ctxScatterData = [];
     for (let i = 0; i < sorted.length; i++) {
       const m = sorted[i];
-      const range = (ctxRanges as any)[m?.displayName || ""];
+      const range = ctxRanges[m?.displayName || ""];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
         ctxScatterData.push({
@@ -2615,7 +2676,7 @@ export default function VramBenchmarkComponent() {
     const tpsScatterData = [];
     for (let i = 0; i < sorted.length; i++) {
       const m = sorted[i];
-      const range = (tpsRanges as any)[m?.displayName || ""];
+      const range = tpsRanges[m?.displayName || ""];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
         tpsScatterData.push({
@@ -2626,7 +2687,7 @@ export default function VramBenchmarkComponent() {
       }
     }
 
-    (chartInstances.current as any).ctxLeaderboard = new Chart(context, {
+    chartInstances.current.ctxLeaderboard = new Chart(context, {
       type: "bar",
       data: {
         labels,
@@ -2637,7 +2698,7 @@ export default function VramBenchmarkComponent() {
             backgroundColor: sorted.map(
               (m: any) =>
                 ctxColor(
-                  (ctxRanges as any)[m.displayName]?.max ||
+                  ctxRanges[m.displayName]?.max ||
                     (m.contextLength || 0) / 1024,
                   0.45,
                 ).bg,
@@ -2646,7 +2707,7 @@ export default function VramBenchmarkComponent() {
               m.fitsInVram === false
                 ? "#f43f5e"
                 : ctxColor(
-                    (ctxRanges as any)[m.displayName]?.max ||
+                    ctxRanges[m.displayName]?.max ||
                       (m.contextLength || 0) / 1024,
                     1,
                   ).border,
@@ -2710,7 +2771,7 @@ export default function VramBenchmarkComponent() {
             const m = sorted[i];
             if (!m) return "";
             // Context range label
-            const cRange = (ctxRanges as any)[(m as any).displayName];
+            const cRange = ctxRanges[m.displayName || ""];
             let ctxLabel;
             if (cRange && cRange.count > 1) {
               const minL =
@@ -2723,17 +2784,17 @@ export default function VramBenchmarkComponent() {
                   : `${cRange.max.toFixed(0)}K`;
               ctxLabel = `${minL}–${maxL}`;
             } else {
-              const k = ((m as any).contextLength || 0) / 1024;
+              const k = (m.contextLength || 0) / 1024;
               ctxLabel =
                 k >= 1024 ? `${(k / 1024).toFixed(0)}M` : `${k.toFixed(0)}K`;
             }
             // TPS label
-            const tRange = (tpsRanges as any)[(m as any).displayName];
+            const tRange = tpsRanges[m.displayName || ""];
             let tpsLabel;
             if (tRange && tRange.count > 1) {
               tpsLabel = `${tRange.min.toFixed(0)}–${tRange.max.toFixed(0)} t/s`;
             } else {
-              tpsLabel = `${((m as any).tokensPerSecond || 0).toFixed(0)} t/s`;
+              tpsLabel = `${(m.tokensPerSecond || 0).toFixed(0)} t/s`;
             }
             return `${ctxLabel} · ${tpsLabel}`;
           },
@@ -2783,7 +2844,7 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex >= 2) {
                   return item.raw?.entry?.displayName || "";
                 }
-                return (sorted[item.dataIndex] as any)?.displayName || "";
+                return sorted[item.dataIndex]?.displayName || "";
               },
               afterTitle: (items: any) => {
                 const item = items[0];
@@ -2791,11 +2852,11 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex >= 2) {
                   const e = item.raw?.entry;
                   if (!e) return "";
-                  return `${e.quantization} · ${e.architecture} · ${(e.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name)}`;
+                  return `${e.quantization} · ${e.architecture} · ${(e.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name || "")}`;
                 }
                 const m = sorted[item.dataIndex];
                 if (!m) return "";
-                return `${(m as any).quantization} · ${(m as any).architecture} · ${((m as any).contextLength / 1024).toFixed(0)}K ctx · ${shortGPU((m as any).system?.gpu?.name)}`;
+                return `${m.quantization} · ${m.architecture} · ${(m.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(m.system?.gpu?.name || "")}`;
               },
               label: (item: any) => {
                 // Scatter dots — entry-specific
@@ -2812,7 +2873,7 @@ export default function VramBenchmarkComponent() {
                 const m = sorted[item.dataIndex];
                 if (!m) return "";
                 if (item.datasetIndex === 0) {
-                  const range = (ctxRanges as any)[(m as any).displayName];
+                  const range = ctxRanges[m.displayName || ""];
                   if (range && range.count > 1) {
                     const minL =
                       range.min >= 1024
@@ -2824,14 +2885,14 @@ export default function VramBenchmarkComponent() {
                         : `${range.max.toFixed(0)}K`;
                     return ` Context: ${minL}–${maxL} (${range.count} runs)`;
                   }
-                  return ` Context: ${(((m as any).contextLength || 0) / 1024).toFixed(0)}K`;
+                  return ` Context: ${((m.contextLength || 0) / 1024).toFixed(0)}K`;
                 }
                 // TPS bar
-                const tRange = (tpsRanges as any)[(m as any).displayName];
+                const tRange = tpsRanges[m.displayName || ""];
                 if (tRange && tRange.count > 1) {
                   return ` Speed: ${tRange.min.toFixed(1)}–${tRange.max.toFixed(1)} tok/s (${tRange.count} runs)`;
                 }
-                return ` Speed: ${(m as any).tokensPerSecond?.toFixed(1) || "0"} tok/s`;
+                return ` Speed: ${m.tokensPerSecond?.toFixed(1) || "0"} tok/s`;
               },
               afterBody: (items: any) => {
                 const item = items[0];
@@ -2841,7 +2902,7 @@ export default function VramBenchmarkComponent() {
                     ? item.raw?.entry
                     : sorted[item.dataIndex];
                 if (!m) return "";
-                const sInfo = (SETTINGS_INFO as any)[m.settings?.label];
+                const sInfo = SETTINGS_INFO[m.settings?.label];
                 const lines = [
                   "",
                   `VRAM: ${m.modelVramGiB.toFixed(2)} GiB`,
@@ -2855,7 +2916,7 @@ export default function VramBenchmarkComponent() {
                 if (m.loadTimeMs)
                   lines.push(`Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
                 if (m.gpu?.temp)
-                  lines.push(`GPU: ${m.gpu.temp}°C · ${m.gpu.power || "?"}W`);
+                  lines.push(`GPU: ${(m.gpu as any).temp}°C · ${(m.gpu as any).power || "?"}W`);
                 if (m.fitsInVram === false)
                   lines.push(`⚠ Does NOT fit in VRAM`);
                 if (m.settings?.label && m.settings.label !== "default")
@@ -2876,30 +2937,33 @@ export default function VramBenchmarkComponent() {
     if (!canvas || allFilteredData.length === 0) return;
     destroyChart("context");
 
-    const context = (canvas as any).getContext("2d");
+    const context = canvas.getContext("2d");
+    if (!context) return;
     const showAllMachines = machineFilter === "all";
 
     // -- Group data --
     // When all machines: group by model+hostname so each GPU gets its own line
     // When single machine: group by model only (original behavior)
-    const groups = {};
+    const groups: Record<string, any> = {};
     for (const d of allFilteredData) {
-      const modelName = (d as any).displayName;
-      const hostname = (d as any).system?.hostname || "unknown";
+      const modelName = d.displayName || "unknown";
+      const hostname = d.system?.hostname || "unknown";
       const groupKey = showAllMachines
         ? `${modelName}__${hostname}`
         : modelName;
 
-      if (!(groups as any)[groupKey]) {
-        (groups as any)[groupKey] = { modelName, hostname, ctxMap: {} };
+      if (!groupKey) continue;
+
+      if (!groups[groupKey]) {
+        groups[groupKey] = { modelName, hostname, ctxMap: {} };
       }
-      const ctxKey = (d as any).contextLength;
+      const ctxKey = d.contextLength;
       if (
-        !(groups as any)[groupKey].ctxMap[ctxKey] ||
-        (d as any).createdAt >
-          (groups as any)[groupKey].ctxMap[ctxKey].createdAt
+        !groups[groupKey].ctxMap[ctxKey] ||
+        (d.createdAt && groups[groupKey].ctxMap[ctxKey].createdAt &&
+          d.createdAt > groups[groupKey].ctxMap[ctxKey].createdAt)
       ) {
-        (groups as any)[groupKey].ctxMap[ctxKey] = d;
+        groups[groupKey].ctxMap[ctxKey] = d;
       }
     }
 
@@ -2927,18 +2991,18 @@ export default function VramBenchmarkComponent() {
     const uniqueModels = [
       ...new Set(sortedGroups.map((g: any) => g.modelName)),
     ];
-    const modelColorMap = {};
+    const modelColorMap: Record<string, PaletteEntry> = {};
     uniqueModels.forEach((name: any, i: any) => {
-      (modelColorMap as any)[name] = PALETTE[i % PALETTE.length];
+      modelColorMap[name] = PALETTE[i % PALETTE.length] as PaletteEntry;
     });
 
     // Track how many lines per model (for dash style differentiation)
-    const modelLineCount = {};
+    const modelLineCount: Record<string, number> = {};
 
     const datasets = sortedGroups.map(({ modelName, items }: any) => {
-      const color = (modelColorMap as any)[modelName];
-      const lineIdx = (modelLineCount as any)[modelName] || 0;
-      (modelLineCount as any)[modelName] = lineIdx + 1;
+      const color = modelColorMap[modelName];
+      const lineIdx = modelLineCount[modelName] || 0;
+      modelLineCount[modelName] = lineIdx + 1;
 
       // Solid for first machine, dashed for second, dotted for third, etc.
       const dashPatterns = [[], [6, 3], [2, 3], [8, 4, 2, 4]];
@@ -2974,7 +3038,7 @@ export default function VramBenchmarkComponent() {
       };
     });
 
-    (chartInstances.current as any).context = new Chart(context, {
+    chartInstances.current.context = new Chart(context, {
       type: "scatter",
       data: { datasets },
       options: {
@@ -3012,7 +3076,7 @@ export default function VramBenchmarkComponent() {
               title: (items: any) => items[0]?.dataset?.label || "",
               label: (item: any) => {
                 const d = item.raw.ctx;
-                const sInfo = (SETTINGS_INFO as any)[d?.settings?.label];
+                const sInfo = SETTINGS_INFO[d?.settings?.label];
                 const lines = [
                   ` VRAM: ${item.raw.y.toFixed(2)} GiB`,
                   ` Parallel: ${sInfo?.parallel ?? "?"}`,
@@ -3020,7 +3084,7 @@ export default function VramBenchmarkComponent() {
                   ` Context: ${item.raw.x}K`,
                 ];
                 if (d?.system?.gpu?.name)
-                  lines.push(` GPU: ${shortGPU(d.system.gpu.name)}`);
+                  lines.push(` GPU: ${shortGPU((d.system as any)?.gpu?.name || "")}`);
                 if (d?.tokensPerSecond)
                   lines.push(` Speed: ${d.tokensPerSecond.toFixed(1)} tok/s`);
                 if (d?.quantization)
@@ -3049,7 +3113,7 @@ export default function VramBenchmarkComponent() {
     if (prev !== activeView) {
       destroyChart(prev);
       // Clear cached original colors for the destroyed chart
-      delete (searchOrigColors.current as any)[prev];
+      delete searchOrigColors.current[prev as ChartViewKey];
       prevViewRef.current = activeView;
     }
     return () => destroyChart(activeView);
@@ -3064,7 +3128,7 @@ export default function VramBenchmarkComponent() {
     Chart.defaults.font.family = CHART_FONT;
 
     // Clear cached colors so search highlight re-snapshots after rebuild
-    delete (searchOrigColors.current as any)[activeView];
+    delete searchOrigColors.current[activeView];
 
     // Render the active view
     const renderMap = {
@@ -3075,7 +3139,7 @@ export default function VramBenchmarkComponent() {
       ctxLeaderboard: renderCtxLeaderboard,
       context: renderContext,
     };
-    (renderMap as any)[activeView]?.();
+    renderMap[activeView]?.();
   }, [
     loading,
     error,
@@ -3092,11 +3156,11 @@ export default function VramBenchmarkComponent() {
 
   const applySearchHighlight = useCallback(
     (term: any) => {
-      const chart = (chartInstances.current as any)[activeView];
+      const chart = chartInstances.current[activeView];
       if (!chart) return;
 
       // -- Color utility helpers --
-      function dimColor(color: any, targetAlpha: any) {
+      function dimColor(color: string | undefined, targetAlpha: number): string | undefined {
         if (!color || typeof color !== "string") return color;
         // rgba(r, g, b, a)
         const rgbaMatch = color.match(
@@ -3108,7 +3172,7 @@ export default function VramBenchmarkComponent() {
         // hsla(h, s%, l%, a) or hsl(...)
         const hslaMatch = color.match(/hsla?\(([^)]+)\)/);
         if (hslaMatch) {
-          const parts = hslaMatch[1].split(",").map((s: any) => s.trim());
+          const parts = hslaMatch[1].split(",").map((s: string) => s.trim());
           if (parts.length >= 3) {
             return `hsla(${parts[0]}, ${parts[1]}, ${parts[2]}, ${targetAlpha})`;
           }
@@ -3125,10 +3189,11 @@ export default function VramBenchmarkComponent() {
       }
 
       // Extract searchable model name from various chart data shapes
-      function getSearchableName(raw: any, label: any, dsLabel: any) {
-        if (raw?.model?.displayName) return raw.model.displayName;
-        if (raw?.entry?.displayName) return raw.entry.displayName;
-        if (raw?.ctx?.displayName) return raw.ctx.displayName;
+      function getSearchableName(raw: unknown, label: unknown, dsLabel: unknown): string {
+        const r = raw as any;
+        if (r?.model?.displayName) return r.model.displayName;
+        if (r?.entry?.displayName) return r.entry.displayName;
+        if (r?.ctx?.displayName) return r.ctx.displayName;
         if (label) return String(label);
         if (dsLabel) return String(dsLabel);
         return "";
@@ -3139,7 +3204,7 @@ export default function VramBenchmarkComponent() {
 
       // -- Restore originals if search is cleared --
       if (!term) {
-        const cache = (searchOrigColors.current as any)[cacheKey];
+        const cache = searchOrigColors.current[cacheKey];
         if (cache) {
           for (let di = 0; di < datasets.length; di++) {
             if (cache[di]) {
@@ -3147,7 +3212,7 @@ export default function VramBenchmarkComponent() {
               datasets[di].borderColor = cache[di].border;
             }
           }
-          delete (searchOrigColors.current as any)[cacheKey];
+          delete searchOrigColors.current[cacheKey];
         }
         chart.update("none");
         return;
@@ -3156,23 +3221,23 @@ export default function VramBenchmarkComponent() {
       const needle = term.toLowerCase();
 
       // -- Snapshot original colors on first search --
-      if (!(searchOrigColors.current as any)[cacheKey]) {
-        const snapshot = {};
+      if (!searchOrigColors.current[cacheKey]) {
+        const snapshot: ChartColorCache = {};
         for (let di = 0; di < datasets.length; di++) {
           const ds = datasets[di];
-          (snapshot as any)[di] = {
+          snapshot[di] = {
             bg: Array.isArray(ds.backgroundColor)
               ? [...ds.backgroundColor]
-              : ds.backgroundColor,
+              : ds.backgroundColor as string,
             border: Array.isArray(ds.borderColor)
               ? [...ds.borderColor]
-              : ds.borderColor,
+              : ds.borderColor as string,
           };
         }
-        (searchOrigColors.current as any)[cacheKey] = snapshot;
+        searchOrigColors.current[cacheKey] = snapshot;
       }
 
-      const cache = (searchOrigColors.current as any)[cacheKey];
+      const cache = searchOrigColors.current[cacheKey];
 
       // -- Apply per-element dimming --
       for (let di = 0; di < datasets.length; di++) {
@@ -3448,7 +3513,7 @@ export default function VramBenchmarkComponent() {
                 ...settingsLabels.map((s: any) => ({
                   value: s,
                   label: s,
-                  icon: <span>{(SETTINGS_EMOJI as any)[s] || "⚙️"}</span>,
+                  icon: <span>{SETTINGS_EMOJI[s] || "⚙️"}</span>,
                   tooltip: <SettingsTooltipContent settingsKey={s} />,
                 })),
               ]}
@@ -3614,7 +3679,7 @@ export default function VramBenchmarkComponent() {
           </FilterBarComponent>
 
           <p className={styles.chartDescription}>
-            {(chartDescriptions as any)[activeView]}
+            {chartDescriptions[activeView]}
           </p>
           <div className={styles.chartPanels}>
             {viewTabs.map((tab: any) => (
@@ -3631,7 +3696,7 @@ export default function VramBenchmarkComponent() {
                       : 460,
                 }}
               >
-                <canvas ref={(chartRefs as any)[tab.key]} />
+                <canvas ref={chartRefs[tab.key as keyof typeof chartRefs] as any} />
               </div>
             ))}
           </div>

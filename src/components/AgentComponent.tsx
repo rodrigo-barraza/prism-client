@@ -4279,7 +4279,7 @@ export default function AgentComponent({
           <ModelPickerPopoverComponent
             config={filteredConfig}
             settings={settings}
-            readOnly={isSessionLocked}
+            disabled={isGenerating || isSessionLocked}
             onSelectModel={(provider: any, modelName: any) => {
               const modelDef = (
                 filteredConfig?.textToText?.models?.[provider] || []
