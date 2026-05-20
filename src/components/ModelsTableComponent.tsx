@@ -65,11 +65,102 @@ import {
 } from "../utils/tableColumns";
 import styles from "./ModelsTableComponent.module.css";
 
+export interface RawModel {
+  key?: string;
+  name?: string;
+  display_name?: string;
+  label?: string;
+  provider?: string;
+  modelType?: string;
+  size?: string;
+  size_bytes?: number;
+  params?: string;
+  params_string?: string;
+  contextLength?: number;
+  max_context_length?: number;
+  quantization?: string | { name: string };
+  bitsPerWeight?: number;
+  architecture?: string;
+  publisher?: string;
+  loaded?: boolean;
+  loaded_instances?: unknown[];
+  pricing?: {
+    inputPerMillion?: number;
+    outputPerMillion?: number;
+  };
+  arena?: Record<string, number>;
+  year?: number;
+  tools?: string[];
+  usageCount?: number;
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  _benchThinkingEnabled?: boolean;
+  _benchToolsEnabled?: boolean;
+  _benchAgent?: unknown;
+  inputTypes?: string[];
+  outputTypes?: string[];
+  _benchStat?: any;
+  _benchTotal?: number;
+  _benchPassed?: number;
+  _benchFailed?: number;
+  _benchErrored?: number;
+  _benchPassRate?: number;
+  _benchAvgLatency?: number;
+  _benchTotalCost?: number;
+}
+
+export interface NormalizedModel {
+  key: string;
+  name: string;
+  provider: string;
+  modelType: string | null;
+  size: string | null;
+  params: string | null;
+  contextLength: number | null;
+  quantization: string | null;
+  bitsPerWeight: number | null;
+  architecture: string | null;
+  publisher: string | null;
+  isLoaded: boolean;
+  pricing: RawModel["pricing"] | null;
+  arena: RawModel["arena"] | null;
+  year: number | null;
+}
+
+export interface RowData {
+  _raw: RawModel;
+  _model: NormalizedModel;
+  _favKey: string;
+  model: string;
+  name: string;
+  provider: string;
+  year: number;
+  context: number;
+  size: number;
+  params: number;
+  modelType: string;
+  quant: string;
+  bpw: number;
+  arch: string;
+  publisher: string;
+  input: number;
+  output: number;
+  favorite: number;
+  tools: number;
+  requests: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  _benchThinking: boolean;
+  _benchTools: boolean;
+  _benchAgent: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * Format a per-million-token pricing rate with clean precision.
  * e.g. 2.5 → "$2.50", 0.15 → "$0.15", 10 → "$10.00"
  */
-function formatPricingRate(n: any) {
+function formatPricingRate(n: number | null | undefined): string {
   if (n == null) return "—";
   // Use up to 4 decimals but strip unnecessary trailing zeros, min 2 decimals
   const str = n.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
@@ -81,7 +172,7 @@ function formatPricingRate(n: any) {
 /**
  * Parse a size display string like "7.5 GB", "500 MB", "120 KB" back to bytes.
  */
-function parseSize(str: any) {
+function parseSize(str: string | null | undefined): number {
   if (!str) return 0;
   const match = str.match(/([\d.]+)\s*(GB|MB|KB)/i);
   if (!match) return 0;
@@ -115,11 +206,11 @@ const TOOL_ICONS = {
   "Image Generation": ImagePlus,
 };
 
-function ModalityCell({ inputTypes, outputTypes }: any) {
+function ModalityCell({ inputTypes, outputTypes }: { inputTypes?: string[]; outputTypes?: string[] }) {
   if (!inputTypes?.length && !outputTypes?.length) return "—";
   return (
     <span className={styles.modalities}>
-      {(inputTypes || []).map((t: any) => {
+      {(inputTypes || []).map((t: string) => {
         const m = (MODALITY_ICONS as any)[t];
         if (!m) return null;
         const Icon = m.icon;
@@ -129,10 +220,10 @@ function ModalityCell({ inputTypes, outputTypes }: any) {
           </TooltipComponent>
         );
       })}
-      {inputTypes?.length > 0 && outputTypes?.length > 0 && (
+      {inputTypes && inputTypes.length > 0 && outputTypes && outputTypes.length > 0 && (
         <ArrowRight size={10} className={styles.modalityArrow} />
       )}
-      {(outputTypes || []).map((t: any) => {
+      {(outputTypes || []).map((t: string) => {
         const m = (MODALITY_ICONS as any)[t];
         if (!m) return null;
         const Icon = m.icon;
@@ -146,27 +237,27 @@ function ModalityCell({ inputTypes, outputTypes }: any) {
   );
 }
 
-function normalizeModel(model: any) {
-  const rawName = model.display_name || model.label || model.key || model.name;
+function normalizeModel(model: RawModel): NormalizedModel {
+  const rawName = model.display_name || model.label || model.key || model.name || "";
   const explicitQuant =
-    (typeof model.quantization === "object"
-      ? model.quantization?.name
+    (model.quantization && typeof model.quantization === "object"
+      ? model.quantization.name
       : model.quantization) || null;
   const quantization = explicitQuant || extractQuantization(rawName) || null;
   const name = quantization ? stripQuantSuffix(rawName) : rawName;
   return {
-    key: model.key || model.name,
+    key: model.key || model.name || "",
     name,
     provider: model.provider || "lm-studio",
     modelType: model.modelType || null,
-    size: model.size || formatFileSize(model.size_bytes) || null,
+    size: model.size || (model.size_bytes ? formatFileSize(model.size_bytes) : null),
     params: model.params || model.params_string || null,
     contextLength: model.contextLength || model.max_context_length || null,
     quantization,
     bitsPerWeight: model.bitsPerWeight ?? null,
     architecture: model.architecture || null,
     publisher: model.publisher || null,
-    isLoaded: model.loaded || model.loaded_instances?.length > 0 || false,
+    isLoaded: model.loaded || (model.loaded_instances && model.loaded_instances.length > 0) || false,
     pricing: model.pricing || null,
     arena: model.arena || null,
     year: model.year || null,
@@ -176,7 +267,7 @@ function normalizeModel(model: any) {
 /**
  * Extract a quantization tag from the end of a label, e.g. "(Q8_0)", "(Q4_K_M)", "(IQ3_XXS)".
  */
-function extractQuantization(str: any) {
+function extractQuantization(str: string | null | undefined): string | null {
   if (!str) return null;
   const match = str.match(/\(([A-Za-z][\dA-Za-z_]+)\)\s*$/);
   if (!match) return null;
@@ -188,15 +279,15 @@ function extractQuantization(str: any) {
 /**
  * Strip a trailing quantization suffix from a label string.
  */
-function stripQuantSuffix(str: any) {
-  if (!str) return str;
+function stripQuantSuffix(str: string | null | undefined): string {
+  if (!str) return "";
   return str.replace(/\s*\([A-Za-z][\dA-Za-z_]+\)\s*$/, "").trim();
 }
 
 /**
  * Parse a params string like "27B", "1.7B", "30B-A3B", "0.6B" into a number (in billions).
  */
-function parseParams(str: any) {
+function parseParams(str: string | null | undefined): number {
   if (!str) return 0;
   const match = str.match(/([\d.]+)\s*[Bb]/);
   return match ? parseFloat(match[1]) : parseFloat(str) || 0;
@@ -206,10 +297,10 @@ function parseParams(str: any) {
  * Build a flat row object from a raw model, with sortable values as direct properties.
  * TableComponent can sort on these keys natively.
  */
-function buildRow(rawModel: any, favorites = []) {
+function buildRow(rawModel: RawModel, favorites: string[] = []): RowData {
   const model = normalizeModel(rawModel);
   const favKey = `${model.provider}:${model.key}`;
-  const row = {
+  const row: RowData = {
     _raw: rawModel,
     _model: model,
     _favKey: favKey,
@@ -231,7 +322,7 @@ function buildRow(rawModel: any, favorites = []) {
     publisher: (model.publisher || "").toLowerCase(),
     input: rawModel.pricing?.inputPerMillion ?? Infinity,
     output: rawModel.pricing?.outputPerMillion ?? Infinity,
-    favorite: (favorites as any).includes(favKey) ? 1 : 0,
+    favorite: favorites.includes(favKey) ? 1 : 0,
     tools: rawModel.tools?.length || 0,
     requests: rawModel.usageCount || 0,
     totalInputTokens: rawModel.totalInputTokens || 0,
@@ -243,12 +334,32 @@ function buildRow(rawModel: any, favorites = []) {
   };
   // Arena columns
   for (const col of ARENA_COLUMNS) {
-    (row as any)[col.key] = rawModel.arena?.[col.dataKey] ?? 0;
+    row[col.key] = rawModel.arena?.[col.dataKey] ?? 0;
   }
   return row;
 }
 
 /* -- Stats mode helpers --------------------------------------- */
+
+interface BuildStatsColumnsParams {
+  configModels: Record<string, any>;
+  totalRequests: number;
+  totalCost: number;
+  compact?: boolean;
+}
+
+export interface TableColumn {
+  key: string;
+  label: React.ReactNode;
+  description?: string;
+  align?: "left" | "center" | "right";
+  sortable?: boolean;
+  hideable?: boolean;
+  defaultHidden?: boolean;
+  width?: string;
+  sortValue?: (row: any) => any;
+  render?: (row: any) => React.ReactNode;
+}
 
 /**
  * Build stats-mode columns from tableColumns.js factories.
@@ -259,8 +370,8 @@ function buildStatsColumns({
   totalRequests,
   totalCost,
   compact,
-}: any) {
-  const allColumns = [
+}: BuildStatsColumnsParams): TableColumn[] {
+  const allColumns: TableColumn[] = [
     {
       key: "model",
       label: "Model",
@@ -269,8 +380,8 @@ function buildStatsColumns({
         <ModelBadgeComponent models={row.model ? [row.model] : []} />
       ),
     },
-    requestsColumn(),
-    usageColumn(totalRequests, ""),
+    requestsColumn() as TableColumn,
+    usageColumn(totalRequests, "") as TableColumn,
     {
       key: "provider",
       label: "Provider",
@@ -281,12 +392,12 @@ function buildStatsColumns({
         />
       ),
     },
-    statsModalitiesColumn(),
-    statsToolsColumn({ configModels }),
-    ...tokenColumns(),
-    ...costColumns(totalCost),
-    latencyColumn(),
-    ...countLinkColumns("model", (row: any) => row.model),
+    statsModalitiesColumn() as TableColumn,
+    statsToolsColumn({ configModels }) as TableColumn,
+    ...(tokenColumns() as TableColumn[]),
+    ...(costColumns(totalCost) as TableColumn[]),
+    latencyColumn() as TableColumn,
+    ...(countLinkColumns("model", (row: any) => row.model) as TableColumn[]),
   ];
 
   if (compact) {
@@ -297,7 +408,7 @@ function buildStatsColumns({
       "totalCost",
       "avgLatency",
     ];
-    return allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key));
+    return allColumns.filter((c) => COMPACT_KEYS.includes(c.key));
   }
   return allColumns;
 }
@@ -324,6 +435,31 @@ function buildStatsColumns({
 
 
  */
+export interface ModelsTableComponentProps {
+  models?: any[];
+  mode?: "model" | "stats" | "full" | "benchmark";
+  onSelect?: (model: RawModel) => void;
+  renderActions?: (row: RowData) => React.ReactNode;
+  showSearch?: boolean;
+  showProviderFilter?: boolean;
+  favorites?: string[];
+  onToggleFavorite?: (key: string) => void;
+  activeRowKey?: string | null;
+  highlightedRowKey?: string | null;
+  highlightedRowRef?: React.RefObject<HTMLTableRowElement | null> | ((element: HTMLTableRowElement | null) => void);
+  loadingModelKey?: string | null;
+  configModels?: Record<string, any>;
+  totalRequests?: number;
+  totalCost?: number;
+  emptyText?: string;
+  compact?: boolean;
+  title?: string;
+  maxHeight?: number;
+  selectedKeys?: Set<string>;
+  onToggleSelect?: (model: RawModel) => void;
+  getRowClassName?: (row: RowData) => string;
+}
+
 export default function ModelsTableComponent({
   models = [],
   mode = "model",
@@ -347,7 +483,7 @@ export default function ModelsTableComponent({
   selectedKeys,
   onToggleSelect,
   getRowClassName,
-}: any) {
+}: ModelsTableComponentProps) {
   /* -- Stats-only mode (simple passthrough) -- */
   if (mode === "stats") {
     const totalRequests =
@@ -411,6 +547,30 @@ export default function ModelsTableComponent({
  * Inner component for model/full/benchmark modes — uses hooks so it must be a
  * proper component (can't conditionally call hooks in the parent).
  */
+interface ModelsTableInnerProps {
+  models: RawModel[];
+  mode: "model" | "full" | "benchmark";
+  onSelect?: (model: RawModel) => void;
+  renderActions?: (row: RowData) => React.ReactNode;
+  showSearch?: boolean;
+  showProviderFilter?: boolean;
+  favorites: string[];
+  onToggleFavorite?: (key: string) => void;
+  activeRowKey?: string | null;
+  highlightedRowKey?: string | null;
+  highlightedRowRef?: React.RefObject<HTMLTableRowElement | null> | ((element: HTMLTableRowElement | null) => void);
+  loadingModelKey?: string | null;
+  configModels?: Record<string, any>;
+  totalRequests?: number;
+  totalCost?: number;
+  emptyText?: string;
+  title?: string;
+  maxHeight?: number;
+  selectedKeys?: Set<string>;
+  onToggleSelect?: (model: RawModel) => void;
+  getRowClassName?: (row: RowData) => string;
+}
+
 function ModelsTableInner({
   models,
   mode,
@@ -430,22 +590,22 @@ function ModelsTableInner({
   selectedKeys,
   onToggleSelect,
   getRowClassName: getRowClassNameProp,
-}: any) {
+}: ModelsTableInnerProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeProvider, setActiveProvider] = useState(null);
-  const [activeModality, setActiveModality] = useState(null);
-  const [activeTool, setActiveTool] = useState(null);
+  const [activeProvider, setActiveProvider] = useState<string | null>(null);
+  const [activeModality, setActiveModality] = useState<string | null>(null);
+  const [activeTool, setActiveTool] = useState<string | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   // Discover all providers from models (ordered by PROVIDER_LABELS definition)
   const allProviders = useMemo(() => {
-    const set = new Set();
+    const set = new Set<string>();
     for (const m of models) {
       const p = normalizeModel(m).provider;
       if (p) set.add(p);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
-    return [...set].sort((a: any, b: any) => {
+    return [...set].sort((a: string, b: string) => {
       const ai = labelOrder.indexOf(a);
       const bi = labelOrder.indexOf(b);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
@@ -454,13 +614,13 @@ function ModelsTableInner({
 
   // Discover all unique modalities from models (ordered by MODALITY_ICONS definition)
   const allModalities = useMemo(() => {
-    const set = new Set();
+    const set = new Set<string>();
     for (const m of models) {
       for (const t of m.inputTypes || []) set.add(t);
       for (const t of m.outputTypes || []) set.add(t);
     }
     const iconOrder = Object.keys(MODALITY_ICONS);
-    return [...set].sort((a: any, b: any) => {
+    return [...set].sort((a: string, b: string) => {
       const ai = iconOrder.indexOf(a);
       const bi = iconOrder.indexOf(b);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
@@ -469,12 +629,12 @@ function ModelsTableInner({
 
   // Discover all unique tools from models (ordered by TOOL_ICONS definition)
   const allTools = useMemo(() => {
-    const set = new Set();
+    const set = new Set<string>();
     for (const m of models) {
       for (const t of m.tools || []) set.add(t);
     }
     const iconOrder = Object.keys(TOOL_ICONS);
-    return [...set].sort((a: any, b: any) => {
+    return [...set].sort((a: string, b: string) => {
       const ai = iconOrder.indexOf(a);
       const bi = iconOrder.indexOf(b);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
@@ -483,7 +643,7 @@ function ModelsTableInner({
 
   // Apply favorites filter → modality filter → tool filter → provider filter → search
   const favFiltered = showFavoritesOnly
-    ? models.filter((m: any) => {
+    ? models.filter((m: RawModel) => {
         const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
         return favorites.includes(key);
       })
@@ -491,24 +651,24 @@ function ModelsTableInner({
 
   const modalityFiltered = activeModality
     ? favFiltered.filter(
-        (m: any) =>
+        (m: RawModel) =>
           (m.inputTypes || []).includes(activeModality) ||
           (m.outputTypes || []).includes(activeModality),
       )
     : favFiltered;
 
   const toolFiltered = activeTool
-    ? modalityFiltered.filter((m: any) => (m.tools || []).includes(activeTool))
+    ? modalityFiltered.filter((m: RawModel) => (m.tools || []).includes(activeTool))
     : modalityFiltered;
 
   const providerFiltered = activeProvider
     ? toolFiltered.filter(
-        (m: any) => normalizeModel(m).provider === activeProvider,
+        (m: RawModel) => normalizeModel(m).provider === activeProvider,
       )
     : toolFiltered;
 
   const filtered = searchQuery.trim()
-    ? providerFiltered.filter((m: any) => {
+    ? providerFiltered.filter((m: RawModel) => {
         const q = searchQuery.trim().toLowerCase();
         const norm = normalizeModel(m);
         return (
@@ -522,43 +682,43 @@ function ModelsTableInner({
 
   // Build flat row objects for TableComponent
   const tableData = useMemo(
-    () => filtered.map((m: any) => buildRow(m, favorites)),
+    () => filtered.map((m: RawModel) => buildRow(m, favorites)),
     [filtered, favorites],
   );
 
   // Detect which optional columns have data
-  const hasYear = filtered.some((m: any) => m.year);
-  const hasSize = filtered.some((m: any) => normalizeModel(m).size);
-  const hasParams = filtered.some((m: any) => normalizeModel(m).params);
-  const hasContext = filtered.some((m: any) => normalizeModel(m).contextLength);
-  const hasQuant = filtered.some((m: any) => normalizeModel(m).quantization);
+  const hasYear = filtered.some((m: RawModel) => m.year);
+  const hasSize = filtered.some((m: RawModel) => normalizeModel(m).size);
+  const hasParams = filtered.some((m: RawModel) => normalizeModel(m).params);
+  const hasContext = filtered.some((m: RawModel) => normalizeModel(m).contextLength);
+  const hasQuant = filtered.some((m: RawModel) => normalizeModel(m).quantization);
   const hasBpw = filtered.some(
-    (m: any) => normalizeModel(m).bitsPerWeight != null,
+    (m: RawModel) => normalizeModel(m).bitsPerWeight != null,
   );
-  const hasArch = filtered.some((m: any) => normalizeModel(m).architecture);
-  const hasPublisher = filtered.some((m: any) => normalizeModel(m).publisher);
+  const hasArch = filtered.some((m: RawModel) => normalizeModel(m).architecture);
+  const hasPublisher = filtered.some((m: RawModel) => normalizeModel(m).publisher);
   const hasInputPrice = filtered.some(
-    (m: any) => m.pricing?.inputPerMillion != null,
+    (m: RawModel) => m.pricing?.inputPerMillion != null,
   );
   const hasOutputPrice = filtered.some(
-    (m: any) => m.pricing?.outputPerMillion != null,
+    (m: RawModel) => m.pricing?.outputPerMillion != null,
   );
   const hasModalities = filtered.some(
-    (m: any) => m.inputTypes?.length > 0 || m.outputTypes?.length > 0,
+    (m: RawModel) => (m.inputTypes?.length ?? 0) > 0 || (m.outputTypes?.length ?? 0) > 0,
   );
-  const hasTools = filtered.some((m: any) => m.tools?.length > 0);
-  const hasModelType = filtered.some((m: any) => normalizeModel(m).modelType);
-  const hasUsage = filtered.some((m: any) => m.usageCount > 0);
+  const hasTools = filtered.some((m: RawModel) => (m.tools?.length ?? 0) > 0);
+  const hasModelType = filtered.some((m: RawModel) => normalizeModel(m).modelType);
+  const hasUsage = filtered.some((m: RawModel) => (m.usageCount ?? 0) > 0);
   const hasTokens = filtered.some(
-    (m: any) => (m.totalInputTokens || 0) + (m.totalOutputTokens || 0) > 0,
+    (m: RawModel) => (m.totalInputTokens || 0) + (m.totalOutputTokens || 0) > 0,
   );
   const hasActions = !!renderActions;
   const hasSelection = !!selectedKeys && !!onToggleSelect;
   const isFull = mode === "full";
   const isBenchmark = mode === "benchmark";
 
-  const arenaCols = ARENA_COLUMNS.filter((col: any) =>
-    filtered.some((m: any) => m.arena && m.arena[col.dataKey] != null),
+  const arenaCols = ARENA_COLUMNS.filter((col) =>
+    filtered.some((m: RawModel) => m.arena && m.arena[col.dataKey] != null),
   );
 
   // Build dynamic columns array for TableComponent
@@ -568,7 +728,7 @@ function ModelsTableInner({
     // Check if all currently visible/filtered models are selected
     const allSelected =
       filtered.length > 0 &&
-      filtered.every((m: any) => {
+      filtered.every((m: RawModel) => {
         const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
         return selectedKeys.has(key);
       });
@@ -586,21 +746,21 @@ function ModelsTableInner({
   }, [filtered, selectedKeys, onToggleSelect]);
 
   const columns = useMemo(() => {
-    const cols = [];
+    const cols: TableColumn[] = [];
     // In benchmark mode, non-core model-spec columns default to hidden
     const benchmarkHide = isBenchmark ? { defaultHidden: true } : {};
 
     // 0. SELECTION — checkbox column (non-hideable, non-sortable)
-    if (hasSelection) {
+    if (hasSelection && selectedKeys) {
       const allSelected =
         filtered.length > 0 &&
-        filtered.every((m: any) => {
+        filtered.every((m: RawModel) => {
           const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
           return selectedKeys.has(key);
         });
       const someSelected =
         !allSelected &&
-        filtered.some((m: any) => {
+        filtered.some((m: RawModel) => {
           const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
           return selectedKeys.has(key);
         });
@@ -610,7 +770,7 @@ function ModelsTableInner({
         label: (
           <span
             className={`${styles.selectWrap} ${allSelected ? styles.selectWrapActive : ""}`}
-            onClick={(e: any) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               handleSelectAll();
             }}
@@ -630,13 +790,13 @@ function ModelsTableInner({
         align: "center",
         sortable: false,
         hideable: false,
-        render: (row: any) => {
+        render: (row: RowData) => {
           const key = `${row._model.provider}:${row._model.key}`;
           const isSelected = selectedKeys.has(key);
           return (
             <span
               className={`${styles.selectWrap} ${isSelected ? styles.selectWrapActive : ""}`}
-              onClick={(e: any) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onToggleSelect(row._raw);
               }}
@@ -1296,7 +1456,7 @@ function ModelsTableInner({
                     ],
                     activeKeys: showFavoritesOnly ? "favorites" : null,
                     isSingleSelect: true,
-                    onToggle: () => setShowFavoritesOnly((prev: any) => !prev),
+                    onToggle: () => setShowFavoritesOnly((prev: boolean) => !prev),
                   },
                 ]
               : []),
@@ -1305,7 +1465,7 @@ function ModelsTableInner({
                   {
                     label: "Modality",
                     items: allModalities
-                      .map((t: any) => {
+                      .map((t: string) => {
                         const m = (MODALITY_ICONS as any)[t];
                         return m
                           ? {
@@ -1316,7 +1476,7 @@ function ModelsTableInner({
                             }
                           : null;
                       })
-                      .filter(Boolean),
+                      .filter((item): item is NonNullable<typeof item> => item !== null),
                     activeKeys: activeModality,
                     isSingleSelect: true,
                     onToggle: setActiveModality,
@@ -1328,7 +1488,7 @@ function ModelsTableInner({
                   {
                     label: "Tools",
                     items: allTools
-                      .map((t: any) => {
+                      .map((t: string) => {
                         const Icon = (TOOL_ICONS as any)[t];
                         return Icon
                           ? {
@@ -1339,7 +1499,7 @@ function ModelsTableInner({
                             }
                           : null;
                       })
-                      .filter(Boolean),
+                      .filter((item): item is NonNullable<typeof item> => item !== null),
                     activeKeys: activeTool,
                     isSingleSelect: true,
                     onToggle: setActiveTool,
@@ -1350,7 +1510,7 @@ function ModelsTableInner({
               ? [
                   {
                     label: "Providers",
-                    items: allProviders.map((p: any) => ({
+                    items: allProviders.map((p: string) => ({
                       key: p,
                       icon: () => <ProviderLogo provider={p} size={13} />,
                       title: resolveProviderLabel(p),
@@ -1370,7 +1530,7 @@ function ModelsTableInner({
         maxHeight={maxHeight}
         columns={columns}
         data={tableData}
-        getRowKey={(row: any) => {
+        getRowKey={(row: RowData) => {
           if (isBenchmark) {
             // Composite key: same model with different thinking/tools/agent configs must be separate rows
             const t = row._benchThinking ? "T" : "";
@@ -1382,7 +1542,7 @@ function ModelsTableInner({
         }}
         onRowClick={
           onSelect
-            ? (row: any) =>
+            ? (row: RowData) =>
                 onSelect(isBenchmark ? row._raw._benchStat : row._raw)
             : undefined
         }
@@ -1396,10 +1556,10 @@ function ModelsTableInner({
         storageKey={isBenchmark ? "models-benchmark" : "models"}
         getRowClassName={
           getRowClassNameProp
-            ? (row: any) =>
-                getRowClassNameProp(isBenchmark ? row._raw._benchStat : row)
-            : hasSelection
-              ? (row: any) => {
+            ? (row: RowData) =>
+                getRowClassNameProp(isBenchmark ? (row._raw._benchStat as unknown as RowData) : row)
+            : hasSelection && selectedKeys
+              ? (row: RowData) => {
                   const key = `${row._model.provider}:${row._model.key}`;
                   return selectedKeys.has(key) ? styles.selectedRow : "";
                 }

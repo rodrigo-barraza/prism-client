@@ -54,31 +54,41 @@ import TokenCountBadgeComponent from "../components/TokenCountBadgeComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "../components/TableComponentsComponent.module.css";
 
+/* -- Generic table row type -------------------------------- */
+
+/**
+ * Generic table row — columns are reused across many entity types
+ * (conversations, sessions, requests, benchmarks, etc.) so we use
+ * a wide index type. Individual column renderers narrow via field access.
+ */
+export type TableRow = Record<string, unknown>;
+
 /* -- Helpers ---------------------------------------------- */
 
 /** Renders a muted "—" dash — replaces all inline style={{ color: "var(--text-muted)" }} */
 export const emptyDash = () => <span className={styles.emptyDash}>—</span>;
 
 /** Render a value or a muted dash if falsy/zero */
-export const valueOrDash = (value: any, render: any) =>
+export const valueOrDash = <T,>(value: T | undefined | null, render: (v: T) => React.ReactNode) =>
   value ? render(value) : emptyDash();
 
 /** Merge modalities from an array of conversations into a single object */
-export function mergeModalities(conversations: any) {
-  const merged = {};
+export function mergeModalities(conversations: TableRow[]) {
+  const merged: Record<string, boolean> = {};
   for (const c of conversations) {
-    if (!c.modalities) continue;
-    for (const [key, value] of Object.entries(c.modalities)) {
-      if (value) (merged as any)[key] = true;
+    const modalities = c.modalities as Record<string, unknown> | undefined;
+    if (!modalities) continue;
+    for (const [key, value] of Object.entries(modalities)) {
+      if (value) merged[key] = true;
     }
   }
   return Object.keys(merged).length > 0 ? merged : null;
 }
 
 /** Get duration in ms from createdAt/updatedAt or startedAt/finishedAt */
-export function getDurationMs(row: any) {
-  const start = row.startedAt || row.createdAt;
-  const end = row.finishedAt || row.updatedAt;
+export function getDurationMs(row: TableRow) {
+  const start = (row.startedAt || row.createdAt) as string | undefined;
+  const end = (row.finishedAt || row.updatedAt) as string | undefined;
   if (!start || !end) return 0;
   return Math.max(0, new Date(end).getTime() - new Date(start).getTime());
 }
@@ -96,10 +106,10 @@ export const modelColumn = () => ({
   key: "model",
   label: "Model",
   description: "The AI model identifier used for the request",
-  render: (row: any) => (
+  render: (row: TableRow) => (
     <ModelBadgeComponent
-      models={row.model ? [row.model] : []}
-      provider={row.provider}
+      models={row.model ? [row.model as string] : []}
+      provider={row.provider as string | undefined}
     />
   ),
 });
@@ -109,8 +119,8 @@ export const providerColumn = () => ({
   label: "Provider",
   description:
     "The API provider hosting this model (e.g. OpenAI, Google, Anthropic)",
-  render: (row: any) => (
-    <ProvidersBadgeComponent providers={row.provider ? [row.provider] : []} />
+  render: (row: TableRow) => (
+    <ProvidersBadgeComponent providers={row.provider ? [row.provider as string] : []} />
   ),
 });
 
@@ -118,7 +128,7 @@ export const projectColumn = () => ({
   key: "project",
   label: "Project",
   description: "The project or application this request belongs to",
-  render: (row: any) => <ProjectBadgeComponent project={row.project} />,
+  render: (row: TableRow) => <ProjectBadgeComponent project={row.project as string | undefined} />,
 });
 
 export const userColumn = () => ({
@@ -126,20 +136,20 @@ export const userColumn = () => ({
   label: "User",
   description: "The user who initiated this request",
   sortable: false,
-  render: (row: any) => <UserBadgeComponent username={row.username} />,
+  render: (row: TableRow) => <UserBadgeComponent username={row.username as string | undefined} />,
 });
 
 /* ·· Models / Providers (as badge lists) ·· */
 
-export const modelsListColumn = ({ mini = false }: any = {}) => ({
+export const modelsListColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
   key: "models",
   label: "Models",
   description: "All distinct models used in this group",
   sortable: false,
-  render: (row: any) => (
+  render: (row: TableRow) => (
     <ModelBadgeComponent
-      models={row.models}
-      providers={row.providers}
+      models={row.models as string[] | undefined}
+      providers={row.providers as string[] | undefined}
       mini={mini}
     />
   ),
@@ -149,19 +159,19 @@ export const modelCountColumn = () => ({
   key: "modelCount",
   label: "Models",
   description: "Number of distinct models used",
-  sortValue: (row: any) => row.models?.length || row.modelCount || 0,
-  render: (row: any) => (
-    <ModelBadgeComponent models={row.models || []} providers={row.providers} />
+  sortValue: (row: TableRow) => (row.models as unknown[] | undefined)?.length ?? (row.modelCount as number | undefined) ?? 0,
+  render: (row: TableRow) => (
+    <ModelBadgeComponent models={(row.models as string[] | undefined) ?? []} providers={row.providers as string[] | undefined} />
   ),
 });
 
-export const providersListColumn = ({ mini = false }: any = {}) => ({
+export const providersListColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
   key: "providers",
   label: "Providers",
   description: "All distinct providers used in this group",
   sortable: false,
-  render: (row: any) => (
-    <ProvidersBadgeComponent providers={row.providers} mini={mini} />
+  render: (row: TableRow) => (
+    <ProvidersBadgeComponent providers={row.providers as string[] | undefined} mini={mini} />
   ),
 });
 
@@ -169,9 +179,9 @@ export const providerCountColumn = () => ({
   key: "providerCount",
   label: "Providers",
   description: "Number of distinct API providers used",
-  sortValue: (row: any) => (row.providers || []).length,
-  render: (row: any) => (
-    <ProvidersBadgeComponent providers={row.providers || []} />
+  sortValue: (row: TableRow) => ((row.providers as unknown[] | undefined) ?? []).length,
+  render: (row: TableRow) => (
+    <ProvidersBadgeComponent providers={(row.providers as string[] | undefined) ?? []} />
   ),
 });
 
@@ -182,7 +192,7 @@ export const requestsColumn = () => ({
   label: "Requests",
   description: "Total number of API requests made",
   align: "right",
-  render: (row: any) => row.totalRequests?.toLocaleString() || "0",
+  render: (row: TableRow) => (row.totalRequests as number | undefined)?.toLocaleString() ?? "0",
 });
 
 export const requestCountColumn = () => ({
@@ -191,25 +201,25 @@ export const requestCountColumn = () => ({
   description: "Number of individual API calls",
   sortable: true,
   align: "right",
-  render: (row: any) =>
-    (row.requestCount || 0) > 0 ? (
+  render: (row: TableRow) =>
+    ((row.requestCount as number | undefined) ?? 0) > 0 ? (
       <span className={styles.countCell}>
         <Zap size={10} />
-        {row.requestCount}
+        {row.requestCount as number}
       </span>
     ) : (
       emptyDash()
     ),
 });
 
-export const usageColumn = (totalRequests: any, color: any) => ({
+export const usageColumn = (totalRequests: number, color: string) => ({
   key: "usage",
   label: "Usage",
   description: "Proportional share of total requests",
-  sortValue: (row: any) => row.totalRequests,
-  render: (row: any, _i: any) => (
+  sortValue: (row: TableRow) => row.totalRequests as number | undefined,
+  render: (row: TableRow) => (
     <ProportionBarComponent
-      value={row.totalRequests}
+      value={row.totalRequests as number | undefined}
       total={totalRequests}
       color={color}
     />
@@ -221,20 +231,20 @@ export const usageColumn = (totalRequests: any, color: any) => ({
 export const modalitiesColumn = ({
   mini = false,
   fromConversations = false,
-}: any = {}) => ({
+}: { mini?: boolean; fromConversations?: boolean } = {}) => ({
   key: "modalities",
   label: "Modalities",
   description: "Input/output types supported (text, image, audio, video)",
-  sortValue: (row: any) => {
+  sortValue: (row: TableRow) => {
     const mods = fromConversations
-      ? mergeModalities(row.conversations || [])
-      : row.modalities;
+      ? mergeModalities((row.conversations as TableRow[] | undefined) ?? [])
+      : row.modalities as Record<string, boolean> | undefined;
     return mods ? Object.values(mods).filter(Boolean).length : 0;
   },
-  render: (row: any) => {
+  render: (row: TableRow) => {
     const mods = fromConversations
-      ? mergeModalities(row.conversations || [])
-      : row.modalities;
+      ? mergeModalities((row.conversations as TableRow[] | undefined) ?? [])
+      : row.modalities as Record<string, boolean> | undefined;
     if (!mods) return emptyDash();
     return <ModalityIconComponent modalities={mods} size={mini ? 9 : 12} />;
   },
@@ -242,16 +252,16 @@ export const modalitiesColumn = ({
 
 /* ·· Tools ·· */
 
-export const toolsColumn = ({ mini = false, configModels }: any = {}) => ({
+export const toolsColumn = ({ mini = false, configModels }: { mini?: boolean; configModels?: Record<string, string[]> } = {}) => ({
   key: "toolDisplayNames",
   label: "Tools",
   description: "External tools and capabilities configured for this model",
   sortable: false,
   align: "left",
-  render: (row: any) => {
+  render: (row: TableRow) => {
     // Support either direct toolDisplayNames array or config-based lookup
     if (configModels) {
-      const tools = configModels[`${row.provider}:${row.model}`];
+      const tools = configModels[`${row.provider as string}:${row.model as string}`];
       if (!tools?.length) return emptyDash();
       return (
         <ToolIconComponent
@@ -262,8 +272,8 @@ export const toolsColumn = ({ mini = false, configModels }: any = {}) => ({
     }
     return (
       <ToolIconComponent
-        toolDisplayNames={row.toolDisplayNames}
-        toolApiNames={row.toolApiNames}
+        toolDisplayNames={row.toolDisplayNames as string[] | undefined}
+        toolApiNames={row.toolApiNames as string[] | undefined}
         size={mini ? 10 : undefined}
       />
     );
@@ -278,15 +288,15 @@ export const tokenColumns = ({
   outputKey = "totalOutputTokens",
   tpsKey = "avgTokensPerSec",
   showDash = false,
-}: any = {}) => [
+}: { inputKey?: string; outputKey?: string; tpsKey?: string; showDash?: boolean } = {}) => [
   {
     key: inputKey,
     label: "Tokens In",
     description: "Total input (prompt) tokens consumed",
     align: "right",
-    render: (row: any) => {
-      const v = row[inputKey];
-      if (showDash && !(v > 0)) return emptyDash();
+    render: (row: TableRow) => {
+      const v = row[inputKey] as number | undefined;
+      if (showDash && !(v && v > 0)) return emptyDash();
       return formatTokenCount(v);
     },
   },
@@ -295,9 +305,9 @@ export const tokenColumns = ({
     label: "Tokens Out",
     description: "Total output (completion) tokens generated",
     align: "right",
-    render: (row: any) => {
-      const v = row[outputKey];
-      if (showDash && !(v > 0)) return emptyDash();
+    render: (row: TableRow) => {
+      const v = row[outputKey] as number | undefined;
+      if (showDash && !(v && v > 0)) return emptyDash();
       return formatTokenCount(v);
     },
   },
@@ -306,9 +316,9 @@ export const tokenColumns = ({
     label: "Tokens",
     description: "Combined input + output token count",
     align: "right",
-    sortValue: (row: any) => (row[inputKey] || 0) + (row[outputKey] || 0),
-    render: (row: any) => {
-      const total = (row[inputKey] || 0) + (row[outputKey] || 0);
+    sortValue: (row: TableRow) => ((row[inputKey] as number | undefined) ?? 0) + ((row[outputKey] as number | undefined) ?? 0),
+    render: (row: TableRow) => {
+      const total = ((row[inputKey] as number | undefined) ?? 0) + ((row[outputKey] as number | undefined) ?? 0);
       if (showDash && total <= 0) return emptyDash();
       return total > 0 ? formatTokenCount(total) : "0";
     },
@@ -318,7 +328,7 @@ export const tokenColumns = ({
     label: "Tok/s",
     description: "Average output throughput in tokens per second",
     align: "right",
-    render: (row: any) => formatTokensPerSec(row[tpsKey]),
+    render: (row: TableRow) => formatTokensPerSec(row[tpsKey] as number | undefined),
   },
 ];
 
@@ -326,8 +336,8 @@ export const tokenColumns = ({
 
 /** Returns 2 columns: Cost, Cost % */
 export const costColumns = (
-  totalCost: any,
-  { costKey = "totalCost", mini = false }: any = {},
+  totalCost: number,
+  { costKey = "totalCost", mini = false }: { costKey?: string; mini?: boolean } = {},
 ) => [
   {
     key: costKey,
@@ -335,8 +345,8 @@ export const costColumns = (
     description: "Total estimated cost in USD",
     sortable: true,
     align: "right",
-    render: (row: any) => (
-      <CostBadgeComponent cost={row[costKey]} mini={mini} />
+    render: (row: TableRow) => (
+      <CostBadgeComponent cost={row[costKey] as number | undefined} mini={mini} />
     ),
   },
   {
@@ -344,10 +354,10 @@ export const costColumns = (
     label: "Cost %",
     description: "Proportional share of total cost",
     sortable: true,
-    sortValue: (row: any) => row[costKey],
-    render: (row: any) => (
+    sortValue: (row: TableRow) => row[costKey] as number | undefined,
+    render: (row: TableRow) => (
       <ProportionBarComponent
-        value={row[costKey]}
+        value={row[costKey] as number | undefined}
         total={totalCost}
         color="var(--warning)"
         mini={mini}
@@ -364,8 +374,8 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
   description: "Average round-trip response time",
   sortable: true,
   align: "right",
-  render: (row: any) => {
-    const v = row[key];
+  render: (row: TableRow) => {
+    const v = row[key] as number | undefined;
     if (!v || v <= 0) return emptyDash();
     return formatLatency(v);
   },
@@ -375,18 +385,18 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
 
 /**
  * Returns 3 columns with CountLinkComponent: Sessions, Conversations, Workflows.
- * @param {string} entityKey — query-param key (e.g. "model", "provider", "project")
- * @param {Function} entityValue — (row) => value for the query param
+ * @param entityKey — query-param key (e.g. "model", "provider", "project")
+ * @param entityValue — (row) => value for the query param
  */
-export const countLinkColumns = (entityKey: any, entityValue: any) => [
+export const countLinkColumns = (entityKey: string, entityValue: (row: TableRow) => string) => [
   {
     key: "traceCount",
     label: "Traces",
     description: "Number of request traces that used this entity",
     align: "right",
-    render: (row: any) => (
+    render: (row: TableRow) => (
       <CountLinkComponent
-        count={row.traceCount}
+        count={row.traceCount as number | undefined}
         href={`/admin/traces?${entityKey}=${encodeURIComponent(entityValue(row))}`}
         icon={FolderOpen}
       />
@@ -397,9 +407,9 @@ export const countLinkColumns = (entityKey: any, entityValue: any) => [
     label: "Conversations",
     description: "Number of conversations that used this entity",
     align: "right",
-    render: (row: any) => (
+    render: (row: TableRow) => (
       <CountLinkComponent
-        count={row.conversationCount}
+        count={row.conversationCount as number | undefined}
         href={`/admin/conversations?${entityKey}=${encodeURIComponent(entityValue(row))}`}
         icon={MessageSquare}
       />
@@ -410,9 +420,9 @@ export const countLinkColumns = (entityKey: any, entityValue: any) => [
     label: "Workflows",
     description: "Number of workflows that used this entity",
     align: "right",
-    render: (row: any) => (
+    render: (row: TableRow) => (
       <CountLinkComponent
-        count={row.workflowCount}
+        count={row.workflowCount as number | undefined}
         href={`/admin/workflows?${entityKey}=${encodeURIComponent(entityValue(row))}`}
         icon={Workflow}
       />
@@ -428,9 +438,10 @@ export const conversationCountColumn = () => ({
   description: "Total number of conversations",
   sortable: true,
   align: "right",
-  render: (row: any) => {
+  render: (row: TableRow) => {
     const count =
-      row.conversationCount || (row.conversations || []).length || 0;
+      (row.conversationCount as number | undefined) ??
+      ((row.conversations as unknown[] | undefined) ?? []).length;
     return (
       <span className={styles.countCell}>
         <MessageSquare size={10} />
@@ -442,23 +453,21 @@ export const conversationCountColumn = () => ({
 
 /* ·· Duration columns ·· */
 
-export const durationColumn = ({ useDurationMs = false }: any = {}) => ({
+export const durationColumn = ({ useDurationMs = false }: { useDurationMs?: boolean } = {}) => ({
   key: "duration",
   label: "Duration",
   description: "Elapsed wall-clock time from start to finish",
   sortable: false,
   align: "right",
-  sortValue: (row: any) => (useDurationMs ? getDurationMs(row) : 0),
-  render: (row: any) => {
+  sortValue: (row: TableRow) => (useDurationMs ? getDurationMs(row) : 0),
+  render: (row: TableRow) => {
     const ms = useDurationMs
       ? getDurationMs(row)
       : (() => {
-          // Session-style: startedAt / finishedAt
-          if (!row.startedAt || !row.finishedAt) return 0;
-          return (
-            new Date(row.finishedAt).getTime() -
-            new Date(row.startedAt).getTime()
-          );
+          const s = row.startedAt as string | undefined;
+          const f = row.finishedAt as string | undefined;
+          if (!s || !f) return 0;
+          return new Date(f).getTime() - new Date(s).getTime();
         })();
     const dur = formatDuration(ms);
     if (!dur) return emptyDash();
@@ -467,15 +476,15 @@ export const durationColumn = ({ useDurationMs = false }: any = {}) => ({
 });
 
 export const durationShareColumn = (
-  totalDuration: any,
-  { mini = false }: any = {},
+  totalDuration: number,
+  { mini = false }: { mini?: boolean } = {},
 ) => ({
   key: "durationShare",
   label: "Duration %",
   description: "Proportional share of total duration",
   sortable: true,
-  sortValue: (row: any) => getDurationMs(row),
-  render: (row: any) => (
+  sortValue: (row: TableRow) => getDurationMs(row),
+  render: (row: TableRow) => (
     <ProportionBarComponent
       value={getDurationMs(row)}
       total={totalDuration}
@@ -489,16 +498,16 @@ export const durationShareColumn = (
 
 export const createdAtColumn = (
   key = "createdAt",
-  { highlightNew = false }: any = {},
+  { highlightNew = false }: { highlightNew?: boolean } = {},
 ) => ({
   key,
   label: "Created",
   description: "When this record was first created",
   sortable: true,
   align: "right",
-  render: (row: any) =>
+  render: (row: TableRow) =>
     row[key] ? (
-      <DateTimeBadgeComponent date={row[key]} highlightNew={highlightNew} />
+      <DateTimeBadgeComponent date={row[key] as string} highlightNew={highlightNew} />
     ) : (
       emptyDash()
     ),
@@ -511,62 +520,62 @@ export const traceIdColumn = () => ({
   label: "Trace",
   description: "Unique trace identifier (click to view conversations)",
   sortable: false,
-  render: (s: any) => (
+  render: (s: TableRow) => (
     <a
-      href={`/admin/conversations?trace=${s.id}`}
+      href={`/admin/conversations?trace=${s.id as string}`}
       className={styles.sessionIdCell}
-      title={`View conversations for trace ${s.id}`}
-      onClick={(e: any) => e.stopPropagation()}
+      title={`View conversations for trace ${s.id as string}`}
+      onClick={(e: React.MouseEvent) => e.stopPropagation()}
     >
       <FolderOpen size={12} className={styles.sessionIcon} />
-      <span className={styles.sessionIdText}>{s.id.slice(0, 8)}</span>
+      <span className={styles.sessionIdText}>{(s.id as string).slice(0, 8)}</span>
     </a>
   ),
 });
 
 /* ·· Conversation title ·· */
 
-export const conversationTitleColumn = ({ mini = false }: any = {}) => ({
+export const conversationTitleColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
   key: "title",
   label: "Conversation",
   description: "Auto-generated conversation title",
   sortable: false,
-  render: (c: any) => (
+  render: (c: TableRow) => (
     <span
       className={`${styles.conversationTitle} ${mini ? styles.conversationTitleMini : ""}`}
     >
       <MessageSquare size={mini ? 9 : 12} />
-      {c.title || "Untitled"}
+      {(c.title as string | undefined) || "Untitled"}
     </span>
   ),
 });
 
 /* ·· Project / User as inline badges (for Conversations) ·· */
 
-export const projectBadgeColumn = ({ mini = false }: any = {}) => ({
+export const projectBadgeColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
   key: "project",
   label: "Project",
   description: "The project this conversation belongs to",
   sortable: false,
-  render: (c: any) =>
+  render: (c: TableRow) =>
     c.project ? (
       <BadgeComponent variant="info" mini={mini}>
-        {c.project}
+        {c.project as string}
       </BadgeComponent>
     ) : (
       emptyDash()
     ),
 });
 
-export const userBadgeColumn = ({ mini = false }: any = {}) => ({
+export const userBadgeColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
   key: "username",
   label: "User",
   description: "The user who started this conversation",
   sortable: false,
-  render: (c: any) =>
+  render: (c: TableRow) =>
     c.username && c.username !== "unknown" ? (
       <BadgeComponent variant="provider" mini={mini}>
-        {c.username}
+        {c.username as string}
       </BadgeComponent>
     ) : (
       emptyDash()
@@ -579,8 +588,8 @@ export const endpointColumn = () => ({
   key: "endpoint",
   label: "Endpoint",
   description: "The API endpoint path called (e.g. /chat, /image, /audio)",
-  render: (r: any) => (
-    <BadgeComponent variant="endpoint">{r.endpoint || "-"}</BadgeComponent>
+  render: (r: TableRow) => (
+    <BadgeComponent variant="endpoint">{(r.endpoint as string | undefined) || "-"}</BadgeComponent>
   ),
 });
 
@@ -589,8 +598,8 @@ export const operationColumn = () => ({
   label: "Operation",
   description:
     "The semantic purpose of this LLM call (e.g. chat, agent:iteration, memory:extract)",
-  render: (r: any) => (
-    <BadgeComponent variant="info">{r.operation || "-"}</BadgeComponent>
+  render: (r: TableRow) => (
+    <BadgeComponent variant="info">{(r.operation as string | undefined) || "-"}</BadgeComponent>
   ),
 });
 
@@ -602,9 +611,9 @@ export const agentColumn = () => ({
   description:
     "The originating agent that made this request (e.g. CODING, LUPOS)",
   sortable: false,
-  render: (r: any) => {
+  render: (r: TableRow) => {
     // Normalize: sessions expose `agents` (array), requests expose `agent` (string)
-    const agents = r.agents || (r.agent ? [r.agent] : []);
+    const agents = (r.agents as string[] | undefined) ?? (r.agent ? [r.agent as string] : []);
     return <AgentBadgeComponent agents={agents} />;
   },
 });
@@ -617,7 +626,7 @@ export const statusColumn = () => ({
   description:
     "Whether the request completed successfully (OK) or failed (ERR)",
   align: "right",
-  render: (r: any) => (
+  render: (r: TableRow) => (
     <BadgeComponent variant={r.success ? "success" : "error"}>
       {r.success ? "OK" : "ERR"}
     </BadgeComponent>
@@ -630,9 +639,9 @@ export const benchmarkStatusColumn = () => ({
   key: "status",
   label: "Status",
   description: "Whether the model passed, failed, or errored on this benchmark",
-  sortValue: (r: any) =>
+  sortValue: (r: TableRow) =>
     r._running ? -2 : r._pending ? -3 : r.error ? -1 : r.passed ? 1 : 0,
-  render: (r: any) => {
+  render: (r: TableRow) => {
     if (r._pending) {
       return (
         <span className={styles.benchmarkStatusCell}>
@@ -645,7 +654,7 @@ export const benchmarkStatusColumn = () => ({
       return (
         <span className={styles.benchmarkStatusCell}>
           <Loader2 size={16} className={styles.benchmarkRunningIcon} />
-          <span>{r._phase || "Running"}</span>
+          <span>{(r._phase as string | undefined) || "Running"}</span>
         </span>
       );
     }
@@ -678,16 +687,16 @@ export const benchmarkModelColumn = () => ({
   key: "label",
   label: "Model",
   description: "The model and provider tested",
-  render: (r: any) => (
+  render: (r: TableRow) => (
     <span
       className={`${styles.benchmarkModelCell} ${r._pending ? styles.benchmarkModelPending : ""}`}
     >
-      <span className={styles.benchmarkModelName}>{r.label}</span>
+      <span className={styles.benchmarkModelName}>{r.label as string}</span>
       <span className={styles.benchmarkModelProviderRow}>
         <span className={styles.benchmarkModelProvider}>
-          {resolveProviderLabel(r.provider)}
+          {resolveProviderLabel(r.provider as string | undefined)}
         </span>
-        {r._running && r._progress > 0 && (
+        {!!r._running && typeof r._progress === "number" && r._progress > 0 && (
           <span className={styles.benchmarkProgressPct}>
             {Math.round(r._progress * 100)}%
           </span>
@@ -702,12 +711,13 @@ export const benchmarkToolsColumn = () => ({
   label: "Tools",
   description: "Whether tool use (function calling) was enabled for this run",
   sortable: true,
-  sortValue: (r: any) => (r.toolsEnabled ? 1 : 0),
+  sortValue: (r: TableRow) => (r.toolsEnabled ? 1 : 0),
   defaultHidden: true,
-  render: (r: any) => {
+  render: (r: TableRow) => {
     if (!r.toolsEnabled) return emptyDash();
-    const toolNames = r.toolCalls?.length
-      ? [...new Set(r.toolCalls.map((tc: any) => tc.name).filter(Boolean))]
+    const rawToolCalls = r.toolCalls as Array<{ name?: string }> | undefined;
+    const toolNames = rawToolCalls?.length
+      ? [...new Set(rawToolCalls.map((tc) => tc.name).filter(Boolean))] as string[]
       : null;
     const badge = (
       <BadgeComponent variant="warning" mini>
@@ -726,9 +736,9 @@ export const benchmarkThinkingColumn = () => ({
   label: "Thinking",
   description: "Whether extended thinking / chain-of-thought was enabled",
   sortable: true,
-  sortValue: (r: any) => (r.thinkingEnabled ? 1 : 0),
+  sortValue: (r: TableRow) => (r.thinkingEnabled ? 1 : 0),
   defaultHidden: true,
-  render: (r: any) =>
+  render: (r: TableRow) =>
     r.thinkingEnabled ? (
       <BadgeComponent variant="accent" mini>
         <Brain size={10} /> Thinking
@@ -743,14 +753,14 @@ export const benchmarkThinkingColumn = () => ({
  * Shows the GGUF/weight file size for local models (e.g. "4.3 GB").
  * @param {Object} modelConfigMap  Map of "provider:modelName" → model config object
  */
-export const benchmarkSizeColumn = ({ modelConfigMap = {} }: any = {}) => ({
+export const benchmarkSizeColumn = ({ modelConfigMap = {} }: { modelConfigMap?: Record<string, { size?: string }> } = {}) => ({
   key: "size",
   label: "Size",
   description: "Model file/weight size on disk (local models only)",
   sortable: true,
-  sortValue: (r: any) => {
-    const config = modelConfigMap[`${r.provider}:${r.model}`];
-    const s = config?.size || "";
+  sortValue: (r: TableRow) => {
+    const config = modelConfigMap[`${r.provider as string}:${r.model as string}`];
+    const s = config?.size ?? "";
     const match = s.match(/([\d.]+)\s*(GB|MB|KB)/i);
     if (!match) return 0;
     const value = parseFloat(match[1]);
@@ -760,8 +770,8 @@ export const benchmarkSizeColumn = ({ modelConfigMap = {} }: any = {}) => ({
     return value / 1024;
   },
   align: "right",
-  render: (r: any) => {
-    const config = modelConfigMap[`${r.provider}:${r.model}`];
+  render: (r: TableRow) => {
+    const config = modelConfigMap[`${r.provider as string}:${r.model as string}`];
     if (!config?.size) return emptyDash();
     return (
       <span className={styles.benchmarkTpsCell}>
@@ -776,10 +786,10 @@ export const benchmarkSizeColumn = ({ modelConfigMap = {} }: any = {}) => ({
  * Highlight the expected value substring inside a response string.
  * Returns an array of React nodes with <mark> wrapping matched portions.
  */
-function highlightExpected(text: any, expected: any, matchMode: any) {
+function highlightExpected(text: string, expected: string, matchMode: string) {
   if (!text || !expected) return text || "—";
 
-  const norm = (s: any) => s.trim().toLowerCase();
+  const norm = (s: string) => s.trim().toLowerCase();
   const normText = norm(text);
   const normExpected = norm(expected);
 
@@ -788,7 +798,7 @@ function highlightExpected(text: any, expected: any, matchMode: any) {
     try {
       const re = new RegExp(`(${expected})`, "i");
       const match = text.match(re);
-      if (!match) return text;
+      if (!match || match.index === undefined) return text;
       const index = match.index;
       const len = match[0].length;
       return (
@@ -830,24 +840,24 @@ function highlightExpected(text: any, expected: any, matchMode: any) {
 export const benchmarkResponseColumn = ({
   expectedValue,
   matchMode,
-}: any = {}) => ({
+}: { expectedValue?: string; matchMode?: string } = {}) => ({
   key: "response",
   label: "Response",
   description: "The model's output text (or error message)",
   sortable: false,
-  render: (r: any) => {
+  render: (r: TableRow) => {
     if (r.error) {
-      return <span className={styles.benchmarkErrorMessage}>{r.error}</span>;
+      return <span className={styles.benchmarkErrorMessage}>{r.error as string}</span>;
     }
     return (
-      <span className={styles.benchmarkResponseCell} title={r.response}>
+      <span className={styles.benchmarkResponseCell} title={r.response as string | undefined}>
         {expectedValue
           ? highlightExpected(
-              r.response,
+              r.response as string,
               expectedValue,
-              matchMode || r.matchMode,
+              matchMode ?? (r.matchMode as string | undefined) ?? "contains",
             )
-          : r.response || "—"}
+          : (r.response as string | undefined) || "—"}
       </span>
     );
   },
@@ -859,9 +869,9 @@ export const benchmarkLatencyColumn = () => ({
   description: "Time taken for the model to respond",
   sortable: true,
   align: "right",
-  render: (r: any) =>
+  render: (r: TableRow) =>
     r.latency ? (
-      <span className={styles.monoCell}>{formatLatency(r.latency)}</span>
+      <span className={styles.monoCell}>{formatLatency(r.latency as number)}</span>
     ) : (
       emptyDash()
     ),
@@ -872,11 +882,11 @@ export const benchmarkDurationColumn = () => ({
   label: "Duration",
   description: "Wall-clock time from request start to finish",
   sortable: true,
-  sortValue: (r: any) => r.latency || 0,
+  sortValue: (r: TableRow) => (r.latency as number | undefined) ?? 0,
   align: "right",
-  render: (r: any) => {
+  render: (r: TableRow) => {
     if (!r.latency) return emptyDash();
-    return <StopwatchBadgeComponent seconds={r.latency} />;
+    return <StopwatchBadgeComponent seconds={r.latency as number} />;
   },
 });
 
@@ -885,10 +895,10 @@ export const benchmarkTokensInColumn = () => ({
   label: "Tokens In",
   description: "Input (prompt) tokens consumed by this model",
   sortable: true,
-  sortValue: (r: any) => getTotalInputTokens(r.usage) || 0,
+  sortValue: (r: TableRow) => getTotalInputTokens(r.usage as Record<string, unknown> | undefined) ?? 0,
   align: "right",
-  render: (r: any) => {
-    const v = getTotalInputTokens(r.usage);
+  render: (r: TableRow) => {
+    const v = getTotalInputTokens(r.usage as Record<string, unknown> | undefined);
     return v > 0 ? (
       <TokenCountBadgeComponent value={v} label="in" mini />
     ) : (
@@ -902,10 +912,10 @@ export const benchmarkTokensOutColumn = () => ({
   label: "Tokens Out",
   description: "Output (completion) tokens generated by this model",
   sortable: true,
-  sortValue: (r: any) => r.usage?.outputTokens || 0,
+  sortValue: (r: TableRow) => (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0,
   align: "right",
-  render: (r: any) => {
-    const v = r.usage?.outputTokens || 0;
+  render: (r: TableRow) => {
+    const v = (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
     return v > 0 ? (
       <TokenCountBadgeComponent value={v} label="out" mini />
     ) : (
@@ -919,15 +929,19 @@ export const benchmarkTokPerSecColumn = () => ({
   label: "Tok/s",
   description: "Output throughput — completion tokens per second",
   sortable: true,
-  sortValue: (r: any) => {
-    const out = r.usage?.outputTokens || 0;
-    return r.latency > 0 && out > 0 ? out / r.latency : 0;
+  sortValue: (r: TableRow) => {
+    const usage = r.usage as { outputTokens?: number } | undefined;
+    const out = usage?.outputTokens ?? 0;
+    const lat = r.latency as number | undefined;
+    return lat && lat > 0 && out > 0 ? out / lat : 0;
   },
   align: "right",
-  render: (r: any) => {
-    const out = r.usage?.outputTokens || 0;
-    if (!r.latency || r.latency <= 0 || out <= 0) return emptyDash();
-    const tps = out / r.latency;
+  render: (r: TableRow) => {
+    const usage = r.usage as { outputTokens?: number } | undefined;
+    const out = usage?.outputTokens ?? 0;
+    const lat = r.latency as number | undefined;
+    if (!lat || lat <= 0 || out <= 0) return emptyDash();
+    const tps = out / lat;
     return (
       <span className={styles.benchmarkTpsCell}>
         <Gauge size={10} />
@@ -943,9 +957,9 @@ export const benchmarkCostColumn = () => ({
   description: "Estimated cost for this individual model run",
   sortable: true,
   align: "right",
-  render: (r: any) =>
+  render: (r: TableRow) =>
     r.estimatedCost != null ? (
-      <CostBadgeComponent cost={r.estimatedCost} mini />
+      <CostBadgeComponent cost={r.estimatedCost as number} mini />
     ) : (
       emptyDash()
     ),
@@ -957,13 +971,20 @@ export const benchmarkDateColumn = () => ({
   description: "When this model was tested",
   sortable: true,
   align: "right",
-  render: (r: any) =>
+  render: (r: TableRow) =>
     r.completedAt ? (
-      <DateTimeBadgeComponent date={r.completedAt} />
+      <DateTimeBadgeComponent date={r.completedAt as string} />
     ) : (
       emptyDash()
     ),
 });
+
+const MATCH_MODE_LABELS: Record<string, string> = {
+  contains: "Contains",
+  exact: "Exact",
+  startsWith: "Starts With",
+  regex: "Regex",
+};
 
 export const benchmarkMatchModeColumn = () => ({
   key: "matchMode",
@@ -971,19 +992,11 @@ export const benchmarkMatchModeColumn = () => ({
   description:
     "Evaluation strategy used to compare response against expected value",
   sortable: false,
-  render: (r: any) => {
-    const labels = {
-      contains: "Contains",
-      exact: "Exact",
-      startsWith: "Starts With",
-      regex: "Regex",
-    };
-    return (
-      <BadgeComponent variant="info" mini>
-        {(labels as any)[r.matchMode] || r.matchMode || "—"}
-      </BadgeComponent>
-    );
-  },
+  render: (r: TableRow) => (
+    <BadgeComponent variant="info" mini>
+      {MATCH_MODE_LABELS[r.matchMode as string] ?? (r.matchMode as string | undefined) ?? "—"}
+    </BadgeComponent>
+  ),
 });
 
 /* -- Benchmark Dashboard columns (aggregated model stats) -- */
@@ -993,10 +1006,10 @@ export const dashboardModelColumn = () => ({
   label: "Model",
   description: "Model name and provider tested across benchmarks",
   sortable: true,
-  render: (r: any) => (
+  render: (r: TableRow) => (
     <span className={styles.dashboardModelCell}>
-      <ProviderLogo provider={r.provider} size={16} />
-      <span className={styles.dashboardModelName}>{r.label}</span>
+      <ProviderLogo provider={r.provider as string | undefined} size={16} />
+      <span className={styles.dashboardModelName}>{r.label as string}</span>
     </span>
   ),
 });
@@ -1006,8 +1019,8 @@ export const dashboardProviderColumn = () => ({
   label: "Provider",
   description: "The API provider hosting this model",
   sortable: true,
-  render: (r: any) => (
-    <ProvidersBadgeComponent providers={r.provider ? [r.provider] : []} />
+  render: (r: TableRow) => (
+    <ProvidersBadgeComponent providers={r.provider ? [r.provider as string] : []} />
   ),
 });
 
@@ -1017,7 +1030,7 @@ export const dashboardTestsColumn = () => ({
   description: "Total number of benchmark tests run for this model",
   sortable: true,
   align: "right",
-  render: (r: any) => <span className={styles.monoCell}>{r.total}</span>,
+  render: (r: TableRow) => <span className={styles.monoCell}>{r.total as number}</span>,
 });
 
 export const dashboardPassedColumn = () => ({
@@ -1026,10 +1039,10 @@ export const dashboardPassedColumn = () => ({
   description: "Number of benchmark tests this model passed",
   sortable: true,
   align: "right",
-  render: (r: any) => (
+  render: (r: TableRow) => (
     <span className={styles.dashboardPassedCell}>
       <CheckCircle2 size={12} />
-      {r.passed}
+      {r.passed as number}
     </span>
   ),
 });
@@ -1039,12 +1052,12 @@ export const dashboardFailedColumn = () => ({
   label: "Fail",
   description: "Number of benchmark tests this model failed or errored",
   sortable: true,
-  sortValue: (r: any) => r.failed + r.errored,
+  sortValue: (r: TableRow) => (r.failed as number) + (r.errored as number),
   align: "right",
-  render: (r: any) => (
+  render: (r: TableRow) => (
     <span className={styles.dashboardFailedCell}>
       <XCircle size={12} />
-      {r.failed + r.errored}
+      {(r.failed as number) + (r.errored as number)}
     </span>
   ),
 });
@@ -1055,8 +1068,8 @@ export const dashboardPassRateColumn = () => ({
   description: "Percentage of benchmark tests this model passed",
   sortable: true,
   width: "100px",
-  render: (r: any) => {
-    const pct = Math.round(r.passRate * 100);
+  render: (r: TableRow) => {
+    const pct = Math.round((r.passRate as number) * 100);
     const color =
       pct >= 80
         ? "var(--success)"
@@ -1085,7 +1098,7 @@ export const dashboardAvgLatencyColumn = () => ({
   description: "Average response latency across all benchmark tests",
   sortable: true,
   align: "right",
-  render: (r: any) => <StopwatchBadgeComponent seconds={r.avgLatency} />,
+  render: (r: TableRow) => <StopwatchBadgeComponent seconds={r.avgLatency as number} />,
 });
 
 export const dashboardCostColumn = () => ({
@@ -1094,9 +1107,9 @@ export const dashboardCostColumn = () => ({
   description: "Total estimated cost across all benchmark tests for this model",
   sortable: true,
   align: "right",
-  render: (r: any) =>
-    r.totalCost > 0 ? (
-      <CostBadgeComponent cost={r.totalCost} mini />
+  render: (r: TableRow) =>
+    (r.totalCost as number | undefined) ?? 0 > 0 ? (
+      <CostBadgeComponent cost={r.totalCost as number} mini />
     ) : (
       emptyDash()
     ),

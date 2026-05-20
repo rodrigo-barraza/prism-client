@@ -28,6 +28,20 @@ import {
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
+import {
+  Message,
+  PrismConfig,
+  AgentSession,
+  CustomTool,
+  Skill,
+  MCPServer,
+  ToolCallEvent,
+  CustomAgent,
+  PrismSettings,
+  Conversation,
+  AgentPersona,
+  ToolSchema,
+} from "../types/types";
 import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import HistoryPanel from "./HistoryPanelComponent";
@@ -239,9 +253,53 @@ const NONE_EMPTY_STATE = {
   placeholder: "Send a message...",
 };
 
+interface QueuedNextTurn {
+  text: string;
+  images: string[];
+}
+
+interface ViewerOpenFile {
+  id: string;
+  path: string;
+}
+
+interface ClientMessage extends Message {
+  _liveModelNames?: string[];
+  _liveModalities?: Record<string, number>;
+  _backgroundUsage?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    requests?: number;
+    [key: string]: any;
+  };
+  _streamingOutputCharacters?: number;
+  _streamingStartTime?: number;
+  _streamingLastChunkTime?: number;
+  _streamingBurstTokens?: number;
+  _streamingBurstElapsed?: number;
+  _processingStartTime?: number;
+  _ttftSamples?: number[];
+  _statusProgress?: any;
+  _workerGenerationProgress?: Record<string, any>;
+  _workerTokens?: {
+    input: number;
+    output: number;
+    requests: number;
+  };
+  _liveGenProgress?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    [key: string]: any;
+  };
+  _fromSnapshot?: boolean;
+  _snapshot?: any;
+  statusPhase?: string;
+  synthetic?: boolean;
+}
+
 export interface AgentComponentProps {
   agentId?: string;
-  agents?: any[];
+  agents?: Array<AgentPersona | (Partial<AgentPersona> & { id: string; name: string })>;
   initialFcEnabled?: boolean;
   initialThinkingEnabled?: boolean;
   initialModel?: string | null;
@@ -257,12 +315,12 @@ export default function AgentComponent({
   initialSessionId = null,
 }: AgentComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
-  const urlModelAppliedRef = useRef<any>(false);
+  const urlModelAppliedRef = useRef<boolean>(false);
   // Track whether the URL session param has been consumed
-  const urlSessionAppliedRef = useRef<any>(false);
+  const urlSessionAppliedRef = useRef<boolean>(false);
   const agentId = propAgentId;
   const isNoAgent = agentId === "NONE";
-  const activeAgentData = agents.find((a: any) => a.id === agentId);
+  const activeAgentData = agents.find((a) => a.id === agentId);
   // Direct Chat omits project so it uses the default x-project header — this
   // routes persistence to the conversations collection.
   // Agent modes use the persona's project so persistence goes to agent_sessions.
@@ -290,34 +348,34 @@ export default function AgentComponent({
   const { currentWorkspace, setCurrentWorkspace, workspaces } = useWorkspace();
 
   // -- State ----------------------------------------------------
-  const [messages, setMessages] = useState<any[]>([]);
-  const [queuedNextTurn, setQueuedNextTurn] = useState<any>(null);
-  const inputValueRef = useRef<any>("");
+  const [messages, setMessages] = useState<ClientMessage[]>([]);
+  const [queuedNextTurn, setQueuedNextTurn] = useState<QueuedNextTurn | null>(null);
+  const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [toolActivity, setToolActivity] = useState<any[]>([]);
-  const [streamingOutputs, setStreamingOutputs] = useState(new Map());
+  const [toolActivity, setToolActivity] = useState<ToolCallEvent[]>([]);
+  const [streamingOutputs, setStreamingOutputs] = useState<Map<string, string>>(new Map());
   const [agentSessionId, setAgentSessionId] = useState(() => generateUUID());
   const [traceId, setTraceId] = useState(() => generateUUID());
-  const [sessions, setSessions] = useState<any[]>([]);
-  const sessionsCursorRef = useRef<any>(null);
+  const [sessions, setSessions] = useState<Array<AgentSession | Conversation>>([]);
+  const sessionsCursorRef = useRef<string | null>(null);
   const [sessionsHasMore, setSessionsHasMore] = useState(false);
   const [sessionsLoading, setSessionsLoading] = useState(false);
-  const [activeId, setActiveId] = useState<any>(null);
-  const [config, setConfig] = useState<any>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState(isNoAgent ? "Direct Chat" : "Agent");
   const [leftTab, setLeftTab] = useState("settings"); // "settings" | "tools"
-  const [customTools, setCustomTools] = useState<any[]>([]);
-  const [builtInTools, setBuiltInTools] = useState<any[]>([]);
-  const [skills, setSkills] = useState<any[]>([]);
-  const [_injectedSkills, setInjectedSkills] = useState<any[]>([]);
-  const [mcpServers, setMcpServers] = useState<any[]>([]);
+  const [customTools, setCustomTools] = useState<CustomTool[]>([]);
+  const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [_injectedSkills, setInjectedSkills] = useState<Skill[]>([]);
+  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
   const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
   // When a loaded session references a workspace that isn't currently connected,
   // store the path so the UI can show "workspace not available" instead of looping errors.
-  const [unavailableWorkspace, setUnavailableWorkspace] = useState<any>(null);
+  const [unavailableWorkspace, setUnavailableWorkspace] = useState<string | null>(null);
 
   // -- File viewer pane state (VS Code-style read-only viewer) --
   const [viewerOpenFiles, setViewerOpenFiles] = useState<any[]>([]); // [{ id, path }]
@@ -751,13 +809,35 @@ export default function AgentComponent({
     }).catch(console.error);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Synchronise settings when provider/model changes to ensure thinking is properly defaulted/forced
+  useEffect(() => {
+    if (!config || !settings.provider || !settings.model) return;
+    const providerModels = config.textToText?.models?.[settings.provider] || [];
+    const modelDef = providerModels.find((m: any) => m.name === settings.model);
+    if (!modelDef) return;
+
+    // Check if the model is an always-on thinking model (e.g. Gemini 3.5 Flash)
+    const canDisable =
+      !modelDef.thinkingLevels ||
+      modelDef.thinkingLevels.includes("minimal");
+    const alwaysOn =
+      !canDisable && settings.provider === "google" && modelDef.thinking;
+
+    if (alwaysOn && !settings.thinkingEnabled) {
+      setSettings((s: any) => ({
+        ...s,
+        thinkingEnabled: true,
+      }));
+    }
+  }, [config, settings.provider, settings.model, settings.thinkingEnabled]);
+
   // Load session history — Direct Chat reads from conversations collection
   const loadSessions = useCallback(async () => {
     try {
       setSessionsLoading(true);
       const result = isNoAgent
         ? await PrismService.getConversations()
-        : await PrismService.getAgentSessions(agentProject, { agent: agentId });
+        : await PrismService.getAgentSessions(agentProject!, { agent: agentId });
       setSessions(result.items);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
@@ -775,7 +855,7 @@ export default function AgentComponent({
       const opts = { cursor: sessionsCursorRef.current, agent: agentId };
       const result = isNoAgent
         ? await PrismService.getConversations(opts)
-        : await PrismService.getAgentSessions(agentProject, opts);
+        : await PrismService.getAgentSessions(agentProject!, opts);
       setSessions((prev: any) => [...prev, ...result.items]);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
@@ -801,7 +881,7 @@ export default function AgentComponent({
       try {
         const full = isNoAgent
           ? await PrismService.getConversation(initialSessionId)
-          : await PrismService.getAgentSession(initialSessionId, agentProject);
+          : await PrismService.getAgentSession(initialSessionId, agentProject!);
         if (!full) return;
 
         const displayMessages = prepareDisplayMessages(full.messages || []);
@@ -810,7 +890,7 @@ export default function AgentComponent({
         setMessages(displayMessages);
         setAgentSessionId(full.id || generateUUID());
         setTraceId(full.traceId || null);
-        setActiveId(full.id);
+        setActiveId(full.id || null);
         setTitle(full.title || (isNoAgent ? "Direct Chat" : "Agent"));
         setToolActivity([]);
         setWorkerToolActivity({});
@@ -1056,7 +1136,7 @@ export default function AgentComponent({
       // second at 8s catches background requests (memory extraction,
       // embedding) that take longer to flush to the DB.
       const refetch = () =>
-        PrismService.getAgentSession(sessionId, agentProject)
+        PrismService.getAgentSession(sessionId, agentProject!)
           .then((session: any) => {
             if (session?.stats) {
               setBackendSessionStats(session.stats);
@@ -2003,8 +2083,8 @@ export default function AgentComponent({
           onToolOutput: (data: any) => {
             if (isStale()) return;
             if (data.event === "stdout" || data.event === "stderr") {
-              setStreamingOutputs((prev: any) => {
-                const updated = new Map(prev);
+              setStreamingOutputs((prev: Map<string, string>) => {
+                const updated = new Map<string, string>(prev);
                 const key = data.toolCallId || data.name;
                 const existing = updated.get(key) || "";
                 updated.set(key, existing + (data.data || ""));
@@ -3107,7 +3187,7 @@ export default function AgentComponent({
       try {
         const full = isNoAgent
           ? await PrismService.getConversation(conversation.id)
-          : await PrismService.getAgentSession(conversation.id, agentProject);
+          : await PrismService.getAgentSession(conversation.id, agentProject!);
         applySessionData(full);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
@@ -3155,7 +3235,7 @@ export default function AgentComponent({
         if (isNoAgent) {
           await PrismService.deleteConversation(convId);
         } else {
-          await PrismService.deleteAgentSession(convId, agentProject);
+          await PrismService.deleteAgentSession(convId, agentProject!);
         }
         setSessions((prev: any) => prev.filter((c: any) => c.id !== convId));
         if (activeId === convId) {

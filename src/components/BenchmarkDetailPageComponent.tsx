@@ -36,6 +36,8 @@ import StorageService from "../services/StorageService";
 import { SK_MODEL_MEMORY_BENCHMARKS } from "../constants";
 import { formatCost, generateUUID } from "../utils/utilities";
 import styles from "./BenchmarkPageComponent.module.css";
+import type { ReactNode } from "react";
+import type { Benchmark, BenchmarkRun, BenchmarkRunResult, AgentPersona } from "../types/types";
 
 const MATCH_MODES = [
   { value: "contains", label: "Contains" },
@@ -80,23 +82,42 @@ function resolveModelKeyForContent(liveDataMap: any, sourceModel: any) {
   return lastKey;
 }
 
+interface BenchmarkDetailPageComponentProps {
+  benchmarkId: string | string[] | undefined;
+  onRunningChange?: (running: boolean) => void;
+  navSidebar?: ReactNode;
+  rightSidebar?: ReactNode;
+}
+
+interface BenchmarkFormState {
+  name: string;
+  prompt: string;
+  systemPrompt: string;
+  benchmarkMode: string;
+  assertions: Array<{ expectedValue: string; matchMode: string }>;
+  assertionOperator: string;
+  agentAssertions: Array<{ expectedValue: string; matchMode: string }>;
+  agentAssertionOperator: string;
+}
+
 export default function BenchmarkDetailPageComponent({
-  benchmarkId,
+  benchmarkId: benchmarkIdProp,
   onRunningChange,
   navSidebar,
   rightSidebar,
-}: any) {
+}: BenchmarkDetailPageComponentProps) {
+  const benchmarkId = Array.isArray(benchmarkIdProp) ? benchmarkIdProp[0] : (benchmarkIdProp || "");
   const router = useRouter();
   // -- State --------------------------------------------------
-  const [benchmark, setBenchmark] = useState<any>(null);
+  const [benchmark, setBenchmark] = useState<Benchmark | null>(null);
   const [loading, setLoading] = useState(true);
-  const [latestRun, setLatestRun] = useState<any>(null);
-  const [runHistory, setRunHistory] = useState<any[]>([]);
-  const [activeRunId, setActiveRunId] = useState<any>(null);
+  const [latestRun, setLatestRun] = useState<BenchmarkRun | null>(null);
+  const [runHistory, setRunHistory] = useState<BenchmarkRun[]>([]);
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<BenchmarkFormState>({
     name: "",
     prompt: "",
     systemPrompt: "",
@@ -254,7 +275,7 @@ export default function BenchmarkDetailPageComponent({
       setBenchmark(detail);
       if (detail.latestRun) {
         setLatestRun(detail.latestRun);
-        setActiveRunId(detail.latestRun.id);
+        setActiveRunId(detail.latestRun.id || null);
       }
     } catch (error: any) {
       console.error("Failed to load benchmark detail:", error);
@@ -852,7 +873,7 @@ export default function BenchmarkDetailPageComponent({
           errored,
           totalCost,
         },
-      });
+      } as unknown as BenchmarkRun);
       setStreamingResults([]);
     }
 

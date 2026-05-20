@@ -37,6 +37,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import { copyToClipboard } from "../../utils/utilities";
 import styles from "./page.module.css";
+import type { Workflow as IWorkflow, WorkflowNode, WorkflowEdge } from "../../types/types";
 
 const MODEL_SECTIONS = [
   "textToText",
@@ -132,47 +133,58 @@ function generateEdgeId() {
   return `edge_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
 }
 
-export default function WorkflowsPage({ initialWorkflowId }: any) {
-  const [_config, setConfig] = useState(null);
+interface WorkflowsPageProps {
+  initialWorkflowId?: string;
+}
+
+interface UndoSnapshot {
+  workflowId: string | null;
+  workflowName: string;
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+}
+
+export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps) {
+  const [_config, setConfig] = useState<any>(null);
   const [allModels, setAllModels] = useState<any[]>([]);
-  const [savedWorkflows, setSavedWorkflows] = useState<any[]>([]);
+  const [savedWorkflows, setSavedWorkflows] = useState<IWorkflow[]>([]);
   const { toasts, addToast, removeToast } = useToast();
-  const [wfFavoriteKeys, setWfFavoriteKeys] = useState<any[]>([]);
-  const [modelFavoriteKeys, setModelFavoriteKeys] = useState<any[]>([]);
+  const [wfFavoriteKeys, setWfFavoriteKeys] = useState<string[]>([]);
+  const [modelFavoriteKeys, setModelFavoriteKeys] = useState<string[]>([]);
 
   // Update URL without Next.js navigation (avoids re-mount)
-  const updateUrl = (path: any) => {
+  const updateUrl = (path: string) => {
     if (window.location.pathname !== path) {
       History.prototype.replaceState.call(window.history, {}, "", path);
     }
   };
 
   // Current workflow state
-  const [workflowId, setWorkflowId] = useState<any>(null);
+  const [workflowId, setWorkflowId] = useState<string | null>(null);
   const [workflowName, setWorkflowName] = useState("Untitled Workflow");
-  const [nodes, setNodes] = useState<any[]>([]);
-  const [edges, setEdges] = useState<any[]>([]);
+  const [nodes, setNodes] = useState<WorkflowNode[]>([]);
+  const [edges, setEdges] = useState<WorkflowEdge[]>([]);
   const [isLoadingWorkflow, setIsLoadingWorkflow] =
     useState(!!initialWorkflowId);
 
   // Execution state
   const [isRunning, setIsRunning] = useState(false);
-  const importRef = useRef<any>(null);
-  const [nodeStatuses, setNodeStatuses] = useState<any>({}); // nodeId → "running" | "done" | "error"
-  const [nodeResults, setNodeResults] = useState<any>({}); // nodeId → { text?, image?, audio? }
-  const abortRef = useRef<any>(false);
+  const importRef = useRef<HTMLInputElement | null>(null);
+  const [nodeStatuses, setNodeStatuses] = useState<Record<string, string>>({}); // nodeId → "running" | "done" | "error"
+  const [nodeResults, setNodeResults] = useState<Record<string, any>>({}); // nodeId → { text?, image?, audio? }
+  const abortRef = useRef<boolean>(false);
 
   // Dirty-tracking: snapshot of the last saved/loaded state
-  const savedSnapshotRef = useRef<any>(null);
+  const savedSnapshotRef = useRef<string | null>(null);
   const [savedSnapshotVersion, setSavedSnapshotVersion] = useState(0);
 
   // Undo history (100 states max)
-  const undoStackRef = useRef<any>([]);
+  const undoStackRef = useRef<UndoSnapshot[]>([]);
   const [undoCount, setUndoCount] = useState(0); // trigger re-render when stack changes
-  const skipNextSnapshotRef = useRef<any>(false); // skip snapshot after undo restore
+  const skipNextSnapshotRef = useRef<boolean>(false); // skip snapshot after undo restore
 
   // Selection state
-  const [selectedNodeId, setSelectedNodeId] = useState<any>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   // Load config + saved workflows
   useEffect(() => {
@@ -297,8 +309,8 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
 
   // Undo last action
   const handleUndo = useCallback(() => {
-    if (undoStackRef.current.length === 0) return;
     const snapshot = undoStackRef.current.pop();
+    if (!snapshot) return;
     setUndoCount(undoStackRef.current.length);
     skipNextSnapshotRef.current = true;
     setWorkflowId(snapshot.workflowId);
@@ -552,7 +564,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
     );
 
     try {
-      const { conversationIds } = await executeWorkflow(nodes, edges, {
+      const { conversationIds } = await executeWorkflow(nodes as any, edges as any, {
         onNodeStart: (nodeId: any) => {
           if (abortRef.current) return;
           setNodeStatuses((prev: any) => ({ ...prev, [nodeId]: "running" }));
@@ -839,7 +851,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
       };
       const saved = await WorkflowService.saveWorkflow(workflow);
       const newId = saved.id || saved._id;
-      setWorkflowId(newId);
+      setWorkflowId(newId ? String(newId) : null);
       updateUrl(`/workflows/${newId}`);
       // Update saved snapshot after successful save
       savedSnapshotRef.current = JSON.stringify({
@@ -865,7 +877,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
       if (!wf) return;
       const loadedId = wf._id || wf.id;
       // React 18 batches all these into a single render — no flash
-      setWorkflowId(loadedId);
+      setWorkflowId(loadedId ? String(loadedId) : null);
       const loadedName =
         wf.name ||
         wf.title ||
@@ -877,7 +889,7 @@ export default function WorkflowsPage({ initialWorkflowId }: any) {
       setNodes(loadedNodes);
       setEdges(loadedEdges);
       setNodeResults(wf.nodeResults || {});
-      setNodeStatuses(wf.nodeStatuses || {});
+      setNodeStatuses((wf.nodeStatuses as Record<string, string>) || {});
       // Snapshot the loaded state for dirty-tracking
       savedSnapshotRef.current = JSON.stringify({
         workflowName: loadedName,

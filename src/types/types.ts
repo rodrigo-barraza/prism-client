@@ -36,6 +36,8 @@ export interface ModelOption {
   supportsFunctionCalling?: boolean;
   supportsStreaming?: boolean;
   supportsThinking?: boolean;
+  thinking?: boolean;
+  thinkingLevels?: string[];
   supportsWebSearch?: boolean;
   supportsPdf?: boolean;
   supportsSystemPrompt?: boolean;

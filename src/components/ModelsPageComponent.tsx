@@ -5,7 +5,7 @@ import { Loader2, Power, PowerOff, RefreshCw } from "lucide-react";
 import { POLL_MODERATE } from "@rodrigo-barraza/utilities-library";
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
-import ModelsTableComponent from "./ModelsTableComponent";
+import ModelsTableComponent, { RawModel } from "./ModelsTableComponent";
 import ModelLoadConfigPanel from "./ModelLoadConfigPanelComponent";
 import ModelDetailPanelComponent from "./ModelDetailPanelComponent";
 
@@ -67,8 +67,8 @@ export default function ModelsPageComponent({
   const [actionInProgress, setActionInProgress] = useState<any>(null);
   const { toasts, addToast, removeToast } = useToast(4000);
   const [favoriteKeys, setFavoriteKeys] = useState<any[]>([]);
-  const [loadConfigModel, setLoadConfigModel] = useState(null);
-  const [selectedModel, setSelectedModel] = useState(null);
+  const [loadConfigModel, setLoadConfigModel] = useState<RawModel | null>(null);
+  const [selectedModel, setSelectedModel] = useState<RawModel | null>(null);
   const hasLoadedRef = useRef<any>(false);
 
   // Helper: merge config + LM data + stats into the allModels array

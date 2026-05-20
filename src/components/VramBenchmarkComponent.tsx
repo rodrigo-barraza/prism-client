@@ -215,8 +215,8 @@ const AXIS_TITLE_STYLE: Record<string, unknown> = {
   padding: { top: 8 },
 };
 
-const LEGEND_STYLE: any = {
-  position: "top",
+const LEGEND_STYLE = {
+  position: "top" as const,
   labels: {
     usePointStyle: true,
     pointStyle: "circle",
@@ -226,7 +226,7 @@ const LEGEND_STYLE: any = {
     boxWidth: 8,
     boxHeight: 8,
   },
-};
+} as const;
 
 // -- Custom inline datalabels plugin --------------------------
 // Draws model name labels directly on chart data points.
@@ -345,7 +345,7 @@ function makeConnectorHighlightPlugin() {
           bubblePoints.push({
             x: element.x,
             y: element.y,
-            r: element.options?.radius || ('r' in raw ? (raw as any).r as number : 0) || 5,
+            r: element.options?.radius || ('r' in raw ? (raw as unknown as { r?: number }).r : 0) || 5,
             borderColor: ds.borderColor as string | undefined,
           });
         }
