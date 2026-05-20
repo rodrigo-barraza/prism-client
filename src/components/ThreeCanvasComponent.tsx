@@ -104,7 +104,7 @@ export default function ThreeCanvasComponent({
     ThreeService.setTick(id, tickWrapper);
 
     // Fire the setup callback — pass THREE so consumers don't import it
-    const inst = ThreeService.getInstance(id);
+    const instance = ThreeService.getInstance(id);
     if (inst && onSetup) {
       const cleanup = onSetup({
         ...inst,

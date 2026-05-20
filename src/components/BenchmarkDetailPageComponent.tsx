@@ -653,7 +653,7 @@ export default function BenchmarkDetailPageComponent({
     const configMap = new Map();
     for (const m of allModels) configMap.set(`${m.provider}:${m.name}`, m);
     return selectedInstances.map((inst) => {
-      const config = configMap.get(`${inst.provider}:${inst.name}`) || {};
+      const config = configMap.get(`${instanceData.provider}:${instanceData.name}`) || {};
       return { ...config, ...inst };
     });
   }, [allModels, selectedInstances]);
@@ -908,7 +908,7 @@ export default function BenchmarkDetailPageComponent({
 
           if (result.agent) {
             // Agent entry — restore as agent instance
-            const inst = {
+            const instanceData = {
               instanceId: generateUUID(),
               agentId: result.agent,
               name:
@@ -920,18 +920,18 @@ export default function BenchmarkDetailPageComponent({
             };
             nextAgents.push(inst);
             if (result.thinkingEnabled)
-              (nextThinking as Record<string, unknown>)[inst.instanceId] = true;
+              (nextThinking as Record<string, unknown>)[instanceData.instanceId] = true;
           } else {
             // Regular model entry
-            const inst = {
+            const instanceData = {
               instanceId: generateUUID(),
               provider: result.provider,
               name: result.model,
             };
             nextInstances.push(inst);
             if (result.thinkingEnabled)
-              (nextThinking as Record<string, unknown>)[inst.instanceId] = true;
-            if (result.toolsEnabled) (nextTools as Record<string, unknown>)[inst.instanceId] = true;
+              (nextThinking as Record<string, unknown>)[instanceData.instanceId] = true;
+            if (result.toolsEnabled) (nextTools as Record<string, unknown>)[instanceData.instanceId] = true;
           }
         }
 

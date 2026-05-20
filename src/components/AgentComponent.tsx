@@ -852,10 +852,10 @@ export default function AgentComponent({
     if (!sessionsCursorRef.current || sessionsLoading) return;
     try {
       setSessionsLoading(true);
-      const opts = { cursor: sessionsCursorRef.current, agent: agentId };
+      const fetchOptions = { cursor: sessionsCursorRef.current, agent: agentId };
       const result = isNoAgent
-        ? await PrismService.getConversations(opts)
-        : await PrismService.getAgentSessions(agentProject!, opts);
+        ? await PrismService.getConversations(fetchOptions)
+        : await PrismService.getAgentSessions(agentProject!, fetchOptions);
       setSessions((prev) => [...prev, ...result.items]);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
@@ -1196,8 +1196,8 @@ export default function AgentComponent({
 
   /** Create a styled mention badge span (wraps the pure fn). */
   const createMentionBadge = useCallback(
-    (path: unknown, name: unknown, type: unknown, opts?: unknown) => {
-      return _createMentionBadge(path, name, type, opts);
+    (path: unknown, name: unknown, type: unknown, fetchOptions?: unknown) => {
+      return _createMentionBadge(path, name, type, fetchOptions);
     },
     [],
   );
@@ -1264,10 +1264,10 @@ export default function AgentComponent({
       if (range) {
         const container = range.startContainer;
         if (container.nodeType === Node.TEXT_NODE) {
-          const ch = container.textContent
+          const characterCount = container.textContent
             ? container.textContent[range.startOffset - 1]
             : "";
-          if (ch && ch !== " " && ch !== "\n") {
+          if (ch && characterCount !== " " && characterCount !== "\n") {
             range.insertNode(document.createTextNode(" "));
             range.collapse(false);
           }
@@ -1308,10 +1308,10 @@ export default function AgentComponent({
       if (range) {
         const container = range.startContainer;
         if (container.nodeType === Node.TEXT_NODE) {
-          const ch = container.textContent
+          const characterCount = container.textContent
             ? container.textContent[range.startOffset - 1]
             : "";
-          if (ch && ch !== " " && ch !== "\n") {
+          if (ch && characterCount !== " " && characterCount !== "\n") {
             range.insertNode(document.createTextNode(" "));
             range.collapse(false);
           }
@@ -2692,10 +2692,10 @@ export default function AgentComponent({
   titleRef.current = title;
 
   const handleSend = useCallback(
-    async (e?: unknown, opts: unknown = {}) => {
+    async (e?: unknown, fetchOptions: unknown = {}) => {
       if (e && typeof e.preventDefault === "function") e.preventDefault();
 
-      const { isQueueing = false, overridePayload = null } = opts;
+      const { isQueueing = false, overridePayload = null } = fetchOptions;
 
       if (isGenerating && !isQueueing && !overridePayload) {
         handleStop();
