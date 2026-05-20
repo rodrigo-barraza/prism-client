@@ -86,8 +86,8 @@ function AgentsPageInner() {
   // If the URL arrives with ?session=...&model=...&agent=..., remove
   // model and agent immediately — the session data owns those values.
   useEffect(() => {
-    const sess = searchParams.get("session");
-    if (!sess) return;
+    const sessionId = searchParams.get("session");
+    if (!sessionId) return;
     const hasModel = searchParams.has("model");
     const hasAgent = searchParams.has("agent");
     if (hasModel || hasAgent) {

@@ -47,12 +47,12 @@ const PDF_EXTENSIONS = new Set(["pdf"]);
 const SVG_EXTENSION = "svg";
 
 /** Determine the media type from a file extension. */
-function getMediaType(ext: unknown) {
-  if (!ext) return null;
-  if (IMAGE_EXTENSIONS.has(ext)) return "image";
-  if (AUDIO_EXTENSIONS.has(ext)) return "audio";
-  if (VIDEO_EXTENSIONS.has(ext)) return "video";
-  if (PDF_EXTENSIONS.has(ext)) return "pdf";
+function getMediaType(fileExtension: unknown) {
+  if (!fileExtension) return null;
+  if (IMAGE_EXTENSIONS.has(fileExtension)) return "image";
+  if (AUDIO_EXTENSIONS.has(fileExtension)) return "audio";
+  if (VIDEO_EXTENSIONS.has(fileExtension)) return "video";
+  if (PDF_EXTENSIONS.has(fileExtension)) return "pdf";
   return null;
 }
 
@@ -199,18 +199,18 @@ function getFileExt(filepath: unknown) {
   if (basename === "Dockerfile" || basename.startsWith("Dockerfile."))
     return "dockerfile";
   if (basename.startsWith(".")) return basename.slice(1).toLowerCase();
-  const ext = basename.split(".").pop()?.toLowerCase();
-  return ext || null;
+  const fileExtension = basename.split(".").pop()?.toLowerCase();
+  return fileExtension || null;
 }
 
 function getPrismLanguage(filepath: unknown) {
-  const ext = getFileExt(filepath);
-  return ext ? (EXT_TO_PRISM as Record<string, unknown>)[ext] || "text" : "text";
+  const fileExtension = getFileExt(filepath);
+  return fileExtension ? (EXT_TO_PRISM as Record<string, unknown>)[fileExtension] || "text" : "text";
 }
 
 function getLanguageLabel(filepath: unknown) {
-  const ext = getFileExt(filepath);
-  return ext ? (EXT_TO_LABEL as Record<string, unknown>)[ext] || null : null;
+  const fileExtension = getFileExt(filepath);
+  return fileExtension ? (EXT_TO_LABEL as Record<string, unknown>)[fileExtension] || null : null;
 }
 
 function getBasename(filepath: unknown) {
@@ -384,13 +384,13 @@ export default function FileViewerPanelComponent({
 
           // Binary file — render via data URI (base64) or raw URL
           if (result.isBinary) {
-            const ext = result.extension?.replace(".", "") || getFileExt(path);
-            const mediaType = getMediaType(ext);
+            const fileExtension = result.extension?.replace(".", "") || getFileExt(path);
+            const mediaType = getMediaType(fileExtension);
             const rawUrl = ToolsApiService.getFileRawUrl(path);
             // Prefer inline base64 data URI when the backend provides it (works for remote workspaces)
             const dataUri =
-              result.contentBase64 && (EXT_TO_MIME as Record<string, unknown>)[ext]
-                ? `data:${(EXT_TO_MIME as Record<string, unknown>)[ext]};base64,${result.contentBase64}`
+              result.contentBase64 && (EXT_TO_MIME as Record<string, unknown>)[fileExtension]
+                ? `data:${(EXT_TO_MIME as Record<string, unknown>)[fileExtension]};base64,${result.contentBase64}`
                 : null;
             setFileContents((prev) => ({
               ...prev,
@@ -399,7 +399,7 @@ export default function FileViewerPanelComponent({
                 content: null,
                 totalLines: 0,
                 language: null,
-                languageLabel: ext?.toUpperCase() || null,
+                languageLabel: fileExtension?.toUpperCase() || null,
                 error: null,
                 isBinary: true,
                 mediaType,
@@ -417,8 +417,8 @@ export default function FileViewerPanelComponent({
           const cleanContent = stripLineNumberPrefixes(result.content ?? "");
 
           // SVG files are text but also renderable — flag them for dual-view
-          const ext = getFileExt(path);
-          const isSvg = ext === SVG_EXTENSION;
+          const fileExtension = getFileExt(path);
+          const isSvg = fileExtension === SVG_EXTENSION;
 
           setFileContents((prev) => ({
             ...prev,

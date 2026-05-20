@@ -407,11 +407,11 @@ export default class LiveSessionService {
   // -- Audio Utils --------------------------------------------
 
   _convertFloat32ToInt16(buffer: Float32Array): ArrayBuffer {
-    const buf = new Int16Array(buffer.length);
+    const audioBuffer = new Int16Array(buffer.length);
     for (let i = 0; i < buffer.length; i++) {
-      buf[i] = Math.min(1, Math.max(-1, buffer[i])) * 0x7fff;
+      audioBuffer[i] = Math.min(1, Math.max(-1, buffer[i])) * 0x7fff;
     }
-    return buf.buffer;
+    return audioBuffer.buffer;
   }
 
   _arrayBufferToBase64(buffer: ArrayBuffer): string {

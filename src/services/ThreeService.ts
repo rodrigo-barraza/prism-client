@@ -116,24 +116,24 @@ let rafId: number | null = null;
 
 function loop(timestamp: number): void {
   for (const inst of instances.values()) {
-    if (inst.paused) continue;
+    if (instance.paused) continue;
 
-    inst.timer.update(timestamp);
+    instance.timer.update(timestamp);
 
-    if (inst.tick) {
-      inst.tick({
-        scene: inst.scene,
-        camera: inst.camera,
-        renderer: inst.renderer,
-        timer: inst.timer,
-        dt: inst.timer.getDelta(),
-        elapsed: inst.timer.getElapsed(),
-        width: inst.width,
-        height: inst.height,
+    if (instance.tick) {
+      instance.tick({
+        scene: instance.scene,
+        camera: instance.camera,
+        renderer: instance.renderer,
+        timer: instance.timer,
+        dt: instance.timer.getDelta(),
+        elapsed: instance.timer.getElapsed(),
+        width: instance.width,
+        height: instance.height,
       });
     }
 
-    inst.renderer.render(inst.scene, inst.camera);
+    instance.renderer.render(instance.scene, instance.camera);
   }
 
   rafId = requestAnimationFrame(loop);
@@ -155,7 +155,7 @@ function stopLoopIfEmpty(): void {
 // --- Resize Handling -----------------------------------------------
 
 function handleResize(inst: ThreeInstance): void {
-  const canvas = inst.canvas;
+  const canvas = instance.canvas;
   const parent = canvas.parentElement;
   if (!parent) return;
 
@@ -164,19 +164,19 @@ function handleResize(inst: ThreeInstance): void {
   const h = rect.height;
 
   if (w === 0 || h === 0) return;
-  if (w === inst.width && h === inst.height) return;
+  if (w === instance.width && h === instance.height) return;
 
-  inst.width = w;
-  inst.height = h;
+  instance.width = w;
+  instance.height = h;
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  inst.renderer.setSize(w, h, false);
-  inst.renderer.setPixelRatio(dpr);
+  instance.renderer.setSize(w, h, false);
+  instance.renderer.setPixelRatio(dpr);
   canvas.style.width = `${w}px`;
   canvas.style.height = `${h}px`;
 
-  inst.camera.aspect = w / h;
-  inst.camera.updateProjectionMatrix();
+  instance.camera.aspect = w / h;
+  instance.camera.updateProjectionMatrix();
 }
 
 // --- Disposal Helpers ----------------------------------------------
@@ -281,7 +281,7 @@ const ThreeService = {
     if (typeof document !== "undefined") timer.connect(document);
 
     // -- Instance --
-    const inst: ThreeInstance = {
+    const instance: ThreeInstance = {
       id,
       canvas,
       renderer,
@@ -303,8 +303,8 @@ const ThreeService = {
     // Observe container resizes
     const parent = canvas.parentElement;
     if (parent && typeof ResizeObserver !== "undefined") {
-      inst.resizeObserver = new ResizeObserver(() => handleResize(inst));
-      inst.resizeObserver.observe(parent);
+      instance.resizeObserver = new ResizeObserver(() => handleResize(inst));
+      instance.resizeObserver.observe(parent);
     }
 
     ensureLoop();
@@ -317,24 +317,24 @@ const ThreeService = {
    * TickState: { scene, camera, renderer, timer, dt, elapsed, width, height }
    */
   setTick(id: string, fn: TickCallback): void {
-    const inst = instances.get(id);
-    if (inst) inst.tick = fn;
+    const instance = instances.get(id);
+    if (inst) instance.tick = fn;
   },
 
   /**
    * Pause rendering for an instance (e.g. when off-screen).
    */
   pause(id: string): void {
-    const inst = instances.get(id);
-    if (inst) inst.paused = true;
+    const instance = instances.get(id);
+    if (inst) instance.paused = true;
   },
 
   /**
    * Resume rendering for a paused instance.
    */
   resume(id: string): void {
-    const inst = instances.get(id);
-    if (inst) inst.paused = false;
+    const instance = instances.get(id);
+    if (inst) instance.paused = false;
   },
 
   /**
@@ -342,13 +342,13 @@ const ThreeService = {
    * Useful for imperative setup (adding meshes, lights, etc.).
    */
   getInstance(id: string): Pick<ThreeInstance, "scene" | "camera" | "renderer" | "timer"> | null {
-    const inst = instances.get(id);
-    if (!inst) return null;
+    const instance = instances.get(id);
+    if (!instance) return null;
     return {
-      scene: inst.scene,
-      camera: inst.camera,
-      renderer: inst.renderer,
-      timer: inst.timer,
+      scene: instance.scene,
+      camera: instance.camera,
+      renderer: instance.renderer,
+      timer: instance.timer,
     };
   },
 
@@ -431,17 +431,17 @@ const ThreeService = {
    * removes from the loop, and disconnects the ResizeObserver.
    */
   destroy(id: string): void {
-    const inst = instances.get(id);
-    if (!inst) return;
+    const instance = instances.get(id);
+    if (!instance) return;
 
     // Stop observing
-    inst.resizeObserver?.disconnect();
+    instance.resizeObserver?.disconnect();
 
     // Dispose scene graph (geometries, materials, textures)
-    disposeSceneGraph(inst.scene);
+    disposeSceneGraph(instance.scene);
 
     // Dispose renderer (WebGL context)
-    inst.renderer.dispose();
+    instance.renderer.dispose();
 
     // Remove from registry
     instances.delete(id);
@@ -461,7 +461,7 @@ const ThreeService = {
    * Get the count of active instances (for debugging).
    */
   get activeCount(): number {
-    return instances.size;
+    return instanceances.size;
   },
 };
 

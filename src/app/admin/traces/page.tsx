@@ -53,7 +53,7 @@ export default function TracesPage() {
   );
 
   const loadTraces = useCallback(async () => {
-    const gen = fetchGenRef.current;
+    const fetchGeneration = fetchGenRef.current;
     try {
       const params = {
         page,
@@ -66,14 +66,14 @@ export default function TracesPage() {
 
       const data = await IrisService.getTraces(params);
       // Discard stale responses from previous filter/page generations
-      if (gen !== fetchGenRef.current) return;
+      if (fetchGeneration !== fetchGenRef.current) return;
       setTraces(data.data || []);
       setTotal(data.total || 0);
     } catch (error: unknown) {
-      if (gen !== fetchGenRef.current) return;
+      if (fetchGeneration !== fetchGenRef.current) return;
       console.error("Failed to load traces:", error);
     } finally {
-      if (gen !== fetchGenRef.current) return;
+      if (fetchGeneration !== fetchGenRef.current) return;
       if (!initialLoadDone.current) {
         initialLoadDone.current = true;
         setLoading(false);

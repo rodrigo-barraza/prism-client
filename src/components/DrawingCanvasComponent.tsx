@@ -222,7 +222,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
-    const pos = getPos(e);
+    const position = getPos(e);
     const isEraser = tool === "eraser";
 
     if (tool === "pen" || tool === "eraser") {
@@ -231,7 +231,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
         color,
         width: SIZES[sizeIdx].width,
         eraser: isEraser,
-        points: [pos],
+        points: [position],
       });
     } else {
       setCurrentStroke({
@@ -239,8 +239,8 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
         color,
         width: SIZES[sizeIdx].width,
         eraser: false,
-        start: pos,
-        end: pos,
+        start: position,
+        end: position,
       });
     }
     setDrawing(true);
@@ -249,7 +249,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!drawing || !currentStroke) return;
     e.preventDefault();
-    const pos = getPos(e);
+    const position = getPos(e);
 
     let updated;
     if (
@@ -258,10 +258,10 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
     ) {
       updated = {
         ...currentStroke,
-        points: [...(currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points, pos],
+        points: [...(currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points, position],
       };
     } else {
-      updated = { ...currentStroke, end: pos };
+      updated = { ...currentStroke, end: position };
     }
     setCurrentStroke(updated);
 

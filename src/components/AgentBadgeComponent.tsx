@@ -123,16 +123,16 @@ function CoinStatic({ agent, size }: unknown) {
       const context = (canvasRef.current as HTMLCanvasElement).getContext("2d");
 
       // Try <img> first (image-based agent logos like OMNI)
-      const img = (iconRef.current as HTMLElement).querySelector("img");
-      if (img) {
+      const imageElement = (iconRef.current as HTMLElement).querySelector("img");
+      if (imageElement) {
         const drawImg = () => {
           context.drawImage(img, off, off, iconSz, iconSz);
           if (texRef.current) (texRef.current as {needsUpdate: boolean}).needsUpdate = true;
         };
-        if (img.complete && img.naturalWidth > 0) {
+        if (imageElement.complete && imageElement.naturalWidth > 0) {
           drawImg();
         } else {
-          img.onload = drawImg;
+          imageElement.onload = drawImg;
         }
         return;
       }

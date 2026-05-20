@@ -467,8 +467,8 @@ export const durationColumn = ({ useDurationMs = false }: { useDurationMs?: bool
           if (!s || !f) return 0;
           return new Date(f).getTime() - new Date(s).getTime();
         })();
-    const dur = formatDuration(ms);
-    if (!dur) return emptyDash();
+    const duration = formatDuration(ms);
+    if (!duration) return emptyDash();
     return <StopwatchBadgeComponent seconds={ms / 1000} />;
   },
 });

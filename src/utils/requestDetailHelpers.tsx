@@ -47,7 +47,7 @@ export function extractMediaAssets(object: Record<string, unknown>) {
         seen.add(node);
         assets.push({ url: node, origin });
       } else if ((typeof node === "string" && node.startsWith("http://")) || (typeof node === "string" && node.startsWith("https://"))) {
-        const ext = (node as string).split("?")[0].split(".").pop()?.toLowerCase();
+        const fileExtension = (node as string).split("?")[0].split(".").pop()?.toLowerCase();
         if (
           [
             "png",
@@ -63,7 +63,7 @@ export function extractMediaAssets(object: Record<string, unknown>) {
             "mov",
             "avi",
             "pdf",
-          ].includes(ext as string)
+          ].includes(fileExtension as string)
         ) {
           seen.add(node);
           assets.push({ url: node, origin });
@@ -92,10 +92,10 @@ export function getMediaTypeFromRef(ref: string) {
     if (ref.startsWith("data:application/pdf")) return "pdf";
     return "image";
   }
-  const ext = ref.split("?")[0].split(".").pop()?.toLowerCase();
-  if (["mp3", "wav", "ogg", "webm"].includes(ext as string)) return "audio";
-  if (["mp4", "avi", "mov"].includes(ext as string)) return "video";
-  if (ext === "pdf") return "pdf";
+  const fileExtension = ref.split("?")[0].split(".").pop()?.toLowerCase();
+  if (["mp3", "wav", "ogg", "webm"].includes(fileExtension as string)) return "audio";
+  if (["mp4", "avi", "mov"].includes(fileExtension as string)) return "video";
+  if (fileExtension === "pdf") return "pdf";
   return "image";
 }
 

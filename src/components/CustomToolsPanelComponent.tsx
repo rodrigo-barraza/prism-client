@@ -265,10 +265,10 @@ export default function CustomToolsPanel({
 
     // Shape 1: { type: "function", function: { ... } }
     if (parsed.type === "function" && parsed.function) {
-      const fn = parsed.function;
-      name = fn.name || "";
-      description = fn.description || "";
-      parametersObj = fn.parameters || null;
+      const parsedFunction = parsed.function;
+      name = parsedFunction.name || "";
+      description = parsedFunction.description || "";
+      parametersObj = parsedFunction.parameters || null;
     }
     // Shape 2: { name, parameters: { type: "object", properties } }
     else if (parsed.name && parsed.parameters?.properties) {

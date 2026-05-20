@@ -99,7 +99,7 @@ export default function RequestsPage() {
 
   // Detect transitions: was "just now" → no longer → trigger fade
   useEffect(() => {
-    const prev = prevJustNowIds.current;
+    const previousJustNowIds = prevJustNowIds.current;
     for (const id of prev) {
       if (!justNowIds.has(id) && !fadingTimers.current.has(id)) {
         setFadingIds((s: Set<string>) => {
@@ -132,7 +132,7 @@ export default function RequestsPage() {
   const LIMIT = 50;
 
   const loadRequests = useCallback(async () => {
-    const gen = fetchGenRef.current;
+    const fetchGeneration = fetchGenRef.current;
     try {
       const params = { page, limit: LIMIT, sort, order };
       if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
@@ -142,14 +142,14 @@ export default function RequestsPage() {
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const data = await IrisService.getRequests(params);
-      if (gen !== fetchGenRef.current) return;
+      if (fetchGeneration !== fetchGenRef.current) return;
       setRequests(data.data || []);
       setTotal(data.total || 0);
     } catch (error: unknown) {
-      if (gen !== fetchGenRef.current) return;
+      if (fetchGeneration !== fetchGenRef.current) return;
       setError(error instanceof Error ? error.message : String(error));
     } finally {
-      if (gen !== fetchGenRef.current) return;
+      if (fetchGeneration !== fetchGenRef.current) return;
       if (!initialLoadDone.current) {
         initialLoadDone.current = true;
         setLoading(false);
