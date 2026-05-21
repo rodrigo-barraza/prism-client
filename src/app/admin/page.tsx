@@ -358,7 +358,7 @@ export default function DashboardPage() {
 
   // Derived stats for extra cards
   const avgCostPerRequest =
-    (stats as Record<string, unknown>).totalRequests > 0
+    stats && (stats as Record<string, unknown>).totalRequests > 0
       ? stats.totalCost / stats.totalRequests
       : 0;
 
@@ -493,8 +493,8 @@ export default function DashboardPage() {
               : `${(stats as Record<string, unknown>).totalRequests ? (((stats as Record<string, unknown>).successCount / (stats as Record<string, unknown>).totalRequests) * 100).toFixed(1) : 0}%`
           }
           subtitle={loading ? "" : `${(stats as Record<string, unknown>).errorCount || 0} errors`}
-          icon={(stats as Record<string, unknown>).errorCount > 0 ? AlertCircle : CheckCircle}
-          variant={(stats as Record<string, unknown>).errorCount > 0 ? "danger" : "success"}
+          icon={stats && (stats as Record<string, unknown>).errorCount > 0 ? AlertCircle : CheckCircle}
+          variant={stats && (stats as Record<string, unknown>).errorCount > 0 ? "danger" : "success"}
           loading={loading}
         />
         <StatsCard
