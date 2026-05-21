@@ -207,9 +207,9 @@ export default function WorkflowCanvas({
     (e: any) => {
       if (dragging) {
         const svgPos = screenToSvg(e.clientX, e.clientY);
-        onUpdateNodePosition((dragging as unknown).nodeId, {
-          x: svgPos.x - (dragging as unknown).offsetX,
-          y: svgPos.y - (dragging as unknown).offsetY,
+        onUpdateNodePosition((dragging as any).nodeId, {
+          x: svgPos.x - (dragging as any).offsetX,
+          y: svgPos.y - (dragging as any).offsetY,
         });
       }
       if (connecting) {
@@ -426,13 +426,13 @@ export default function WorkflowCanvas({
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
     const container = containerRef.current;
-    (container as unknown)?.addEventListener("wheel", handleWheel, {
+    (container as any)?.addEventListener("wheel", handleWheel, {
       passive: false,
     });
 
     // -- Touch handlers --
     const handleTouchStart = (e: any) => {
-      if (!(container as unknown)?.contains(e.target)) return;
+      if (!(container as any)?.contains(e.target)) return;
 
       if (e.touches.length === 2) {
         // Pinch-zoom start
@@ -469,7 +469,7 @@ export default function WorkflowCanvas({
 
       if (t.type === "pinch" && e.touches.length === 2) {
         e.preventDefault();
-        const rect = (container as unknown)?.getBoundingClientRect();
+        const rect = (container as any)?.getBoundingClientRect();
         if (!rect) return;
         const newDist = getTouchDist(e.touches);
         const center = getTouchCenter(e.touches, rect);
@@ -496,9 +496,9 @@ export default function WorkflowCanvas({
       if (t.type === "drag" && dragging) {
         e.preventDefault();
         const svgPos = screenToSvg(touch.clientX, touch.clientY);
-        onUpdateNodePosition((dragging as unknown).nodeId, {
-          x: svgPos.x - (dragging as unknown).offsetX,
-          y: svgPos.y - (dragging as unknown).offsetY,
+        onUpdateNodePosition((dragging as any).nodeId, {
+          x: svgPos.x - (dragging as any).offsetX,
+          y: svgPos.y - (dragging as any).offsetY,
         });
         return;
       }
@@ -531,7 +531,7 @@ export default function WorkflowCanvas({
       }
     };
 
-    (container as unknown)?.addEventListener("touchstart", handleTouchStart, {
+    (container as any)?.addEventListener("touchstart", handleTouchStart, {
       passive: false,
     });
     window.addEventListener("touchmove", handleTouchMove, { passive: false });
@@ -540,8 +540,8 @@ export default function WorkflowCanvas({
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
-      (container as unknown)?.removeEventListener("wheel", handleWheel);
-      (container as unknown)?.removeEventListener("touchstart", handleTouchStart);
+      (container as any)?.removeEventListener("wheel", handleWheel);
+      (container as any)?.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
     };
@@ -566,7 +566,7 @@ export default function WorkflowCanvas({
 
       if ((e.ctrlKey || e.metaKey) && e.key === "c") {
         if (!selectedNodeId) return;
-        const node = nodes.find((n) => n.id === selectedNodeId);
+        const node = nodes.find((n: any) => n.id === selectedNodeId);
         if (!node) return;
         clipboardRef.current = structuredClone(node);
       }
@@ -611,18 +611,18 @@ export default function WorkflowCanvas({
       if (!connecting) return;
 
       if (
-        getBaseModality((connecting as unknown).sourceModality) !==
+        getBaseModality((connecting as any).sourceModality) !==
         getBaseModality(modality)
       )
         return;
-      if ((connecting as unknown).sourceNodeId === nodeId) return;
+      if ((connecting as any).sourceNodeId === nodeId) return;
 
       const existingConn = connections.find((c: any) => c.targetNodeId === nodeId && c.targetModality === modality);
       if (existingConn) return;
 
       onAddConnection({
-        sourceNodeId: (connecting as unknown).sourceNodeId,
-        sourceModality: (connecting as unknown).sourceModality,
+        sourceNodeId: (connecting as any).sourceNodeId,
+        sourceModality: (connecting as any).sourceModality,
         targetNodeId: nodeId,
         targetModality: modality,
       });
@@ -701,7 +701,7 @@ export default function WorkflowCanvas({
 
   const allExpanded =
     nodes.length > 0 &&
-    nodes.filter((n) => isNodeExpanded(n)).length > nodes.length / 2;
+    nodes.filter((n: any) => isNodeExpanded(n)).length > nodes.length / 2;
 
   // Compute the vertical offset for a node's ports (used by edge routing)
   const getExpandedOffset = useCallback(
@@ -747,7 +747,7 @@ export default function WorkflowCanvas({
       targetIndex,
       targetOffset,
     );
-    const color = (MODALITY_COLORS as Record<string, unknown>)[conn.sourceModality] || "#888";
+    const color = (MODALITY_COLORS as Record<string, any>)[conn.sourceModality] || "#888";
 
     const sourceStatus = nodeStatuses[conn.sourceNodeId];
     const isRunning = sourceStatus === "running";
@@ -817,12 +817,12 @@ export default function WorkflowCanvas({
   const renderConnectingLine = () => {
     if (!connecting || !connectingMouse) return null;
     const sourceNode = nodes.find(
-      (n) => n.id === (connecting as unknown).sourceNodeId,
+      (n: any) => n.id === (connecting as any).sourceNodeId,
     );
     if (!sourceNode) return null;
 
     const sourceIndex = (sourceNode.outputTypes || []).indexOf(
-      (connecting as unknown).sourceModality,
+      (connecting as any).sourceModality,
     );
     if (sourceIndex === -1) return null;
 
@@ -834,15 +834,15 @@ export default function WorkflowCanvas({
       srcOffset,
     );
     const color =
-      (MODALITY_COLORS as Record<string, unknown>)[(connecting as unknown).sourceModality] || "#888";
+      (MODALITY_COLORS as Record<string, any>)[(connecting as any).sourceModality] || "#888";
 
     return (
       <path
         d={edgePath(
           sourcePos.x,
           sourcePos.y,
-          (connectingMouse as unknown).x,
-          (connectingMouse as unknown).y,
+          (connectingMouse as any).x,
+          (connectingMouse as any).y,
         )}
         stroke={color}
         strokeWidth={2}
@@ -927,7 +927,7 @@ export default function WorkflowCanvas({
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {connections.map(renderConnection)}
           {renderConnectingLine()}
-          {nodes.map((node) => (
+          {nodes.map((node: any) => (
             <WorkflowNode
               key={node.id}
               node={node}

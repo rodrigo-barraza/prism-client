@@ -270,7 +270,7 @@ interface ClientMessage extends Message {
     inputTokens?: number;
     outputTokens?: number;
     requests?: number;
-    [key: string]: unknown;
+    [key: string]: any;
   };
   _streamingOutputCharacters?: number;
   _streamingStartTime?: number;
@@ -279,7 +279,7 @@ interface ClientMessage extends Message {
   _streamingBurstElapsed?: number;
   _processingStartTime?: number;
   _ttftSamples?: number[];
-  _statusProgress?: unknown;
+  _statusProgress?: any;
   _workerGenerationProgress?: any;
   _workerTokens?: {
     input?: number;
@@ -289,10 +289,10 @@ interface ClientMessage extends Message {
   _liveGenProgress?: {
     inputTokens?: number;
     outputTokens?: number;
-    [key: string]: unknown;
+    [key: string]: any;
   };
   _fromSnapshot?: boolean;
-  _snapshot?: unknown;
+  _snapshot?: any;
   statusPhase?: string;
   synthetic?: boolean;
 }
@@ -330,7 +330,7 @@ export default function AgentComponent({
   const agentBackgroundImage = activeAgentData?.backgroundImage || "";
   const rawEmptyState = (isNoAgent
     ? NONE_EMPTY_STATE
-    : (AGENT_EMPTY_STATE as Record<string, unknown>)[agentId] ||
+    : (AGENT_EMPTY_STATE as Record<string, any>)[agentId] ||
       (activeAgentData?.name
         ? {
             title: activeAgentData.name,
@@ -841,7 +841,7 @@ export default function AgentComponent({
       setSessions(result.items);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load sessions:", error);
     } finally {
       setSessionsLoading(false);
@@ -859,7 +859,7 @@ export default function AgentComponent({
       setSessions((prev) => [...prev, ...result.items]);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load more sessions:", error);
     } finally {
       setSessionsLoading(false);
@@ -920,7 +920,7 @@ export default function AgentComponent({
         }
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to preload session from URL:", error);
       }
     })();
@@ -931,7 +931,7 @@ export default function AgentComponent({
     try {
       const tools = await PrismService.getCustomTools(agentProject);
       setCustomTools(tools);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load custom tools:", error);
     }
   }, [agentProject]);
@@ -945,7 +945,7 @@ export default function AgentComponent({
     try {
       const s = await PrismService.getSkills(agentProject);
       setSkills(s);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load skills:", error);
     }
   }, [agentProject]);
@@ -959,7 +959,7 @@ export default function AgentComponent({
     try {
       const s = await PrismService.getMCPServers(agentProject);
       setMcpServers(s);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load MCP servers:", error);
     }
   }, [agentProject]);
@@ -1931,7 +1931,7 @@ export default function AgentComponent({
                       const next = prev.filter(
                         (f: any) => f.path !== mutatedPath,
                       );
-                      setViewerActiveFileId((activeId: unknown) => {
+                      setViewerActiveFileId((activeId: any) => {
                         if (activeId !== deleted.id) return activeId;
                         const closedIdx = prev.findIndex(
                           (f: any) => f.id === deleted.id,
@@ -2068,7 +2068,7 @@ export default function AgentComponent({
                       const next = prev.filter(
                         (f: any) => f.path !== mutatedPath,
                       );
-                      setViewerActiveFileId((activeId: unknown) => {
+                      setViewerActiveFileId((activeId: any) => {
                         if (activeId !== deleted.id) return activeId;
                         const closedIdx = prev.findIndex(
                           (f: any) => f.id === deleted.id,
@@ -3043,7 +3043,7 @@ export default function AgentComponent({
       // switch to it so the workspace tree and tool routing match.
       if (full.workspaceRoot) {
         const match = workspaces.find(
-          (w: Record<string, unknown>) => w.path === full.workspaceRoot,
+          (w: Record<string, any>) => w.path === full.workspaceRoot,
         );
         if (match) {
           if (match.path !== currentWorkspace?.path) {
@@ -3247,7 +3247,7 @@ export default function AgentComponent({
         if (activeId === convId) {
           handleNewChat();
         }
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to delete session:", error);
       }
     },
@@ -3271,7 +3271,7 @@ export default function AgentComponent({
 
   // -- Left sidebar: tab bar + content --------------------------
   // Badge helper — 0 = greyed-out, >0 = lit, "new" if tab has unseen data
-  const badgeProps = (count: unknown, tabKey: unknown) => ({
+  const badgeProps = (count: any, tabKey: any) => ({
     badge: count,
     badgeDisabled: count === 0,
     badgeState: newDataTabs.has(tabKey) ? "new" : "default",
@@ -3361,7 +3361,7 @@ export default function AgentComponent({
                   icon: <BotMessageSquare size={14} />,
                   ...badgeProps(workersCount, "workers"),
                   badgeRainbow: Object.values(workerToolActivity).some(
-                    (w: Record<string, unknown>) =>
+                    (w: Record<string, any>) =>
                       w.currentTool ||
                       w.phase === "generating" ||
                       w.phase === "thinking",
@@ -3712,7 +3712,7 @@ export default function AgentComponent({
           onMentionFile={handleMentionFile}
           locked={messages.length > 0}
           unavailableWorkspace={unavailableWorkspace}
-          onOpenFile={(relativePath: unknown) => {
+          onOpenFile={(relativePath: any) => {
             // Build absolute path from workspace root + relative path
             const absPath = currentWorkspace?.path
               ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
@@ -3850,7 +3850,7 @@ export default function AgentComponent({
         ref={messagesListRef}
         style={
           agentBackgroundImage
-            ? ({ "--agent-bg-image": `url(${agentBackgroundImage})` } as React.CSSProperties)
+            ? ({ "--agent-bg-image": `url(${agentBackgroundImage})` } as any)
             : undefined
         }
       >
@@ -3875,7 +3875,7 @@ export default function AgentComponent({
           streamingOutputs={streamingOutputs}
           workerToolActivity={workerToolActivity}
           knownPaths={knownPaths}
-          onMentionFileOpen={(relativePath: unknown) => {
+          onMentionFileOpen={(relativePath: any) => {
             const absPath = currentWorkspace?.path
               ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
@@ -3988,7 +3988,7 @@ export default function AgentComponent({
         if (hasActiveTools && Object.keys(workerToolActivity).length > 0) {
           const workers = Object.values(workerToolActivity);
           const activeWorkers = workers.filter(
-            (w: Record<string, unknown>) =>
+            (w: Record<string, any>) =>
               w.phase &&
               w.phase !== "complete" &&
               w.phase !== "failed" &&
@@ -4005,7 +4005,7 @@ export default function AgentComponent({
             ];
             for (const p of phasePriority) {
               const count = activeWorkers.filter(
-                (w: Record<string, unknown>) => w.phase === p,
+                (w: Record<string, any>) => w.phase === p,
               ).length;
               if (count > 0) {
                 workerDerivedPhase = p;
@@ -4299,7 +4299,7 @@ export default function AgentComponent({
               // Auto-close tabs for files that no longer exist
               setViewerOpenFiles((prev) => {
                 const next = prev.filter((f) => f.id !== id);
-                setViewerActiveFileId((activeId: unknown) => {
+                setViewerActiveFileId((activeId: any) => {
                   if (activeId !== id) return activeId;
                   const closedIdx = prev.findIndex((f: any) => f.id === id);
                   const newActive = next[Math.min(closedIdx, next.length - 1)];

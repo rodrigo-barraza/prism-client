@@ -270,7 +270,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
         );
         addToast(`Imported conversation with ${data.messages.length} messages`);
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to import conversation:", error);
     }
   }, []);
@@ -342,7 +342,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
 
   // Add a new asset node (input asset, output viewer, or model)
   const handleAddAsset = useCallback(
-    (modality: unknown, type: unknown) => {
+    (modality: any, type: any) => {
       pushUndo();
 
       // Model node
@@ -469,7 +469,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
   );
 
   // Update content of an asset node
-  const handleUpdateNodeContent = useCallback((nodeId: unknown, content: unknown) => {
+  const handleUpdateNodeContent = useCallback((nodeId: any, content: any) => {
     setNodes((prev) =>
       prev.map((n) => (n.id === nodeId ? { ...n, content } : n)),
     );
@@ -654,7 +654,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
           console.error("Failed to link conversations to workflow:", error),
         );
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       addToast(`Execution failed: ${(error as Error).message}`, "error");
     } finally {
       setIsRunning(false);
@@ -786,7 +786,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
           );
           if (targetNode?.nodeType === "viewer") {
             const receivedOutputs = { ...(targetNode.receivedOutputs || {}) };
-            delete (receivedOutputs as Record<string, unknown>)[deleted.targetModality as string];
+            delete (receivedOutputs as Record<string, any>)[deleted.targetModality as string];
             const viewerStillConnected = remaining.filter(
               (c) => c.targetNodeId === deleted.targetNodeId,
             );
@@ -863,7 +863,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
       const wfs = await WorkflowService.getWorkflows();
       setSavedWorkflows(wfs.map((w) => ({ ...w, id: w._id || w.id })));
       addToast("Workflow saved");
-    } catch (error: unknown) {
+    } catch (error: any) {
       addToast(`Failed to save: ${(error as Error).message}`, "error");
     }
   }, [workflowId, workflowName, nodes, edges, nodeResults, nodeStatuses]);
@@ -899,7 +899,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
       setSavedSnapshotVersion((v) => v + 1);
       updateUrl(`/workflows/${loadedId}`);
       addToast("Workflow loaded");
-    } catch (error: unknown) {
+    } catch (error: any) {
       addToast(`Failed to load: ${(error as Error).message}`, "error");
     }
   }, []);
@@ -921,7 +921,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
           updateUrl("/workflows");
         }
         addToast("Workflow deleted");
-      } catch (error: unknown) {
+      } catch (error: any) {
         addToast(`Failed to delete: ${(error as Error).message}`, "error");
       }
     },
@@ -1054,7 +1054,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
       a.click();
       URL.revokeObjectURL(url);
       addToast("Workflow downloaded");
-    } catch (error: unknown) {
+    } catch (error: any) {
       addToast(`Download failed: ${(error as Error).message}`, "error");
     }
   }, []);
@@ -1065,7 +1065,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
       if (!wf) return;
       await copyToClipboard(JSON.stringify(wf, null, 2));
       addToast("Workflow copied to clipboard");
-    } catch (error: unknown) {
+    } catch (error: any) {
       addToast(`Copy failed: ${(error as Error).message}`, "error");
     }
   }, []);
@@ -1079,7 +1079,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
         setWfFavoriteKeys((prev) => [...prev, wfId]);
         const wf = savedWorkflows.find((w) => (w._id || w.id) === wfId);
         PrismService.addFavorite("workflow", wfId, {
-          title: (wf as Record<string, unknown>)?.name || "Untitled Workflow",
+          title: (wf as Record<string, any>)?.name || "Untitled Workflow",
         }).catch(() => {});
       }
     },

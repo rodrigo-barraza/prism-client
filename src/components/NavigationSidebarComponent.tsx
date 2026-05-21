@@ -42,7 +42,7 @@ import { generateUUID } from "../utils/utilities";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
 
-function RainbowCanvas({ turbo = false, greyscale = false }: unknown) {
+function RainbowCanvas({ turbo = false, greyscale = false }: any) {
   return (
     <RainbowCanvasComponent
       turbo={turbo}
@@ -145,7 +145,7 @@ export default function NavigationSidebarComponent({
   isGenerating = false,
   activeApiCount = 0,
   onNavClick,
-}: unknown) {
+}: any) {
   const badgeCounts = {
     conversations: liveCount,
     traces: tracesCount,
@@ -225,12 +225,12 @@ export default function NavigationSidebarComponent({
 
   // -- Bouncing mini cats for concurrent API calls ----------------
   // Lifecycle: active → windingDown → idle → fading → removed
-  const bannerRef = useRef<unknown>(null);
+  const bannerRef = useRef<any>(null);
   const catStateRef = useRef<Map<string, any>>(new Map());
   const catElsRef = useRef<Map<string, any>>(new Map());
   const isGenRef = useRef<boolean>(isGenerating);
   const prevIsGenRef = useRef<boolean>(false);
-  const miniCatsRef = useRef<unknown>([]);
+  const miniCatsRef = useRef<any>([]);
   const [miniCats, setMiniCats] = useState<unknown[]>([]);
 
   // Mirror props into refs for RAF access
@@ -245,7 +245,7 @@ export default function NavigationSidebarComponent({
   useEffect(() => {
     const needed = Math.max(0, (activeApiCount || 0) - 1);
     setMiniCats((prev) => {
-      const activeCount = prev.filter((c) => !c.retired).length;
+      const activeCount = prev.filter((c: any) => !c.retired).length;
       if (needed === activeCount) return prev;
 
       if (needed < activeCount) {
@@ -253,8 +253,8 @@ export default function NavigationSidebarComponent({
         let toRetire = activeCount - needed;
         const next = [...prev];
         for (let i = next.length - 1; i >= 0 && toRetire > 0; i--) {
-          if (!next[i].retired) {
-            next[i] = { ...next[i], retired: true };
+          if (!(next[i] as any).retired) {
+            next[i] = { ...(next[i] as any), retired: true };
             toRetire--;
           }
         }
@@ -465,7 +465,7 @@ export default function NavigationSidebarComponent({
           catElsRef.current.delete(id);
         }
         setMiniCats((prev) =>
-          prev.filter((c) => !removeSet.has(c.id)),
+          prev.filter((c: any) => !removeSet.has(c.id)),
         );
       }
 
@@ -518,7 +518,7 @@ export default function NavigationSidebarComponent({
 
               {/* Navigation links */}
               <nav className={styles.mobilePopoverNav}>
-                {navSections.map((section, sectionIdx) => (
+                {navSections.map((section: any, sectionIdx: any) => (
                   <React.Fragment key={section.label || sectionIdx}>
                     {/* Section divider */}
                     {section.label && (
@@ -623,11 +623,11 @@ export default function NavigationSidebarComponent({
         {/* Rainbow logo banner */}
         <div className={styles.logoBanner} ref={bannerRef}>
           <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
-          {miniCats.map((cat) => (
+          {miniCats.map((cat: any) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={cat.id}
-              ref={(element: unknown) => {
+              ref={(element: any) => {
                 if (element) catElsRef.current.set(cat.id, element);
                 else catElsRef.current.delete(cat.id);
               }}
@@ -649,7 +649,7 @@ export default function NavigationSidebarComponent({
 
         {/* Navigation */}
         <nav className={styles.nav}>
-          {navSections.map((section, sectionIdx) => (
+          {navSections.map((section: any, sectionIdx: any) => (
             <React.Fragment key={section.label || sectionIdx}>
               {/* Section divider */}
               {section.label && (

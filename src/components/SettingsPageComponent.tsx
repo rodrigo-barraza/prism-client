@@ -73,15 +73,15 @@ export default function SettingsPageComponent() {
   const wsValidateTimer = useRef<any>(null);
 
   /** Detect Windows-style path for instant client-side preview */
-  const isWindowsPath = (p) => /^[A-Za-z]:[/\\]/.test(p);
-  const windowsToWslPreview = (p) => {
+  const isWindowsPath = (p: any) => /^[A-Za-z]:[/\\]/.test(p);
+  const windowsToWslPreview = (p: any) => {
     const m = p.match(/^([A-Za-z]):[/\\](.*)/);
     if (!m) return null;
     return `/mnt/${m[1].toLowerCase()}/${m[2].replace(/\\/g, "/")}`;
   };
 
   /** Format uptime duration from ISO date */
-  const formatUptime = (isoDate: unknown) => {
+  const formatUptime = (isoDate: any) => {
     if (!isoDate) return "";
     const ms = Date.now() - new Date(isoDate).getTime();
     const seconds = Math.floor(ms / 1000);
@@ -126,18 +126,18 @@ export default function SettingsPageComponent() {
   }, []);
 
   // -- Persist changes ------------------------------------------------
-  const persistSettings = useCallback(async (updatedSettings: unknown) => {
+  const persistSettings = useCallback(async (updatedSettings: any) => {
     setSaving(true);
     try {
       const result = await PrismService.updateSettings(updatedSettings);
       setSettings(result);
       setSaved(true);
-      clearTimeout(savedTimerRef.current);
+      clearTimeout(savedTimerRef.current!);
       savedTimerRef.current = setTimeout(
         () => setSaved(false),
         FEEDBACK_STANDARD_MS,
       );
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to save settings:", error);
     } finally {
       setSaving(false);
@@ -149,12 +149,12 @@ export default function SettingsPageComponent() {
     (provider: string, model: string) => {
       const updated = {
         memory: {
-          ...(settings as unknown)?.memory,
+          ...(settings as any)?.memory,
           extractionProvider: provider || "",
           extractionModel: model || "",
         },
       };
-      setSettings((s) => ({ ...s, ...updated }));
+      setSettings((s: any) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -164,12 +164,12 @@ export default function SettingsPageComponent() {
     (provider: string, model: string) => {
       const updated = {
         memory: {
-          ...(settings as unknown)?.memory,
+          ...(settings as any)?.memory,
           consolidationProvider: provider || "",
           consolidationModel: model || "",
         },
       };
-      setSettings((s) => ({ ...s, ...updated }));
+      setSettings((s: any) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -179,12 +179,12 @@ export default function SettingsPageComponent() {
     (provider: string, model: string) => {
       const updated = {
         memory: {
-          ...(settings as unknown)?.memory,
+          ...(settings as any)?.memory,
           embeddingProvider: provider || "",
           embeddingModel: model || "",
         },
       };
-      setSettings((s) => ({ ...s, ...updated }));
+      setSettings((s: any) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -195,12 +195,12 @@ export default function SettingsPageComponent() {
     (provider: string, model: string) => {
       const updated = {
         agents: {
-          ...(settings as unknown)?.agents,
+          ...(settings as any)?.agents,
           subagentProvider: provider || "",
           subagentModel: model || "",
         },
       };
-      setSettings((s) => ({ ...s, ...updated }));
+      setSettings((s: any) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -208,14 +208,14 @@ export default function SettingsPageComponent() {
 
   // -- Harness change handler -----------------------------------------
   const handleHarnessSelect = useCallback(
-    (harnessId: unknown) => {
+    (harnessId: any) => {
       const updated = {
         agents: {
-          ...(settings as unknown)?.agents,
+          ...(settings as any)?.agents,
           harness: harnessId,
         },
       };
-      setSettings((s) => ({ ...s, ...updated }));
+      setSettings((s: any) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -223,14 +223,14 @@ export default function SettingsPageComponent() {
 
   // -- Reset to defaults ----------------------------------------------
   const handleResetMemory = useCallback(async () => {
-    if (!(defaults as unknown)?.memory) return;
-    const updated = { memory: { ...(defaults as unknown).memory } };
-    setSettings((s) => ({ ...s, ...updated }));
+    if (!(defaults as any)?.memory) return;
+    const updated = { memory: { ...(defaults as any).memory } };
+    setSettings((s: any) => ({ ...s, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
   // -- Workspace handlers ---------------------------------------------
-  const handleWsPathChange = useCallback((value) => {
+  const handleWsPathChange = useCallback((value: any) => {
     setWsAddPath(value);
     setWsValidation(null);
     clearTimeout(wsValidateTimer.current);
@@ -250,8 +250,8 @@ export default function SettingsPageComponent() {
     setWsAdding(true);
     try {
       const currentUserRoots = wsWorkspaces
-        .filter((w) => !w.isPinned)
-        .map((w) => w.path);
+        .filter((w: any) => !w.isPinned)
+        .map((w: any) => w.path);
       // Resolve the new path — if Windows, the backend will translate
       const newPath = wsAddPath.trim();
       await WorkspaceService.update([...currentUserRoots, newPath]);
@@ -262,7 +262,7 @@ export default function SettingsPageComponent() {
       setWsAddPath("");
       setWsValidation(null);
       await refreshWorkspaces();
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to add workspace:", error);
       setWsValidation({ valid: false, error: "Failed to add workspace" });
     } finally {
@@ -271,17 +271,17 @@ export default function SettingsPageComponent() {
   }, [wsAddPath, wsAdding, wsWorkspaces, refreshWorkspaces]);
 
   const handleRemoveWorkspace = useCallback(
-    async (pathToRemove: unknown) => {
+    async (pathToRemove: any) => {
       try {
         const remainingUserRoots = wsWorkspaces
-          .filter((w) => !w.isPinned && w.path !== pathToRemove)
-          .map((w) => w.path);
+          .filter((w: any) => !w.isPinned && w.path !== pathToRemove)
+          .map((w: any) => w.path);
         await WorkspaceService.update(remainingUserRoots);
         const { workspaces, agents } = await WorkspaceService.listFull();
         setWsWorkspaces(workspaces || []);
         setWsAgents(agents || []);
         await refreshWorkspaces();
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to remove workspace:", error);
       }
     },
@@ -289,9 +289,9 @@ export default function SettingsPageComponent() {
   );
 
   const handleResetAgents = useCallback(async () => {
-    if (!(defaults as unknown)?.agents) return;
-    const updated = { agents: { ...(defaults as unknown).agents } };
-    setSettings((s) => ({ ...s, ...updated }));
+    if (!(defaults as any)?.agents) return;
+    const updated = { agents: { ...(defaults as any).agents } };
+    setSettings((s: any) => ({ ...s, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
@@ -300,17 +300,17 @@ export default function SettingsPageComponent() {
     try {
       const list = await PrismService.getCustomAgents();
       setCustomAgents(list);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load custom agents:", error);
     }
   }, []);
 
   // -- Derived workspace data -----------------------------------------
   const localStaticRoots = wsWorkspaces.filter(
-    (w: Record<string, unknown>) => w.isPinned && !w.isAgentServed,
+    (w: Record<string, any>) => w.isPinned && !w.isAgentServed,
   );
   const userRoots = wsWorkspaces.filter(
-    (w: Record<string, unknown>) => !w.isPinned && !w.isAgentServed,
+    (w: Record<string, any>) => !w.isPinned && !w.isAgentServed,
   );
 
   // -- Loading state --------------------------------------------------
@@ -329,8 +329,8 @@ export default function SettingsPageComponent() {
     );
   }
 
-  const mem = (settings as unknown).memory || {};
-  const agentDefaults = (settings as unknown).agents || {};
+  const mem = (settings as any).memory || {};
+  const agentDefaults = (settings as any).agents || {};
   const hasAgents = wsAgents.length > 0;
   const hasAnyWorkspaces = wsWorkspaces.length > 0;
 
@@ -385,7 +385,7 @@ export default function SettingsPageComponent() {
                 <Server size={10} />
                 Remote Agents
               </div>
-              {wsAgents.map((agent) => (
+              {wsAgents.map((agent: any) => (
                 <div key={agent.id} className={styles.agentCard}>
                   <div className={styles.agentCardHeader}>
                     <div className={styles.agentIcon}>
@@ -419,7 +419,7 @@ export default function SettingsPageComponent() {
                       </div>
                     </div>
                     <div className={styles.agentCapabilities}>
-                      {(agent.capabilities || []).map((cap) => (
+                      {(agent.capabilities || []).map((cap: any) => (
                         <span key={cap} className={styles.capabilityTag}>
                           {cap}
                         </span>
@@ -430,7 +430,7 @@ export default function SettingsPageComponent() {
                   {/* Roots served by this agent */}
                   {agent.roots?.length > 0 && (
                     <div className={styles.agentRoots}>
-                      {agent.roots.map((root) => (
+                      {agent.roots.map((root: any) => (
                         <div key={root} className={styles.agentRootItem}>
                           <FolderTree
                             size={11}
@@ -454,7 +454,7 @@ export default function SettingsPageComponent() {
                 <Settings2 size={10} />
                 Static Roots
               </div>
-              {localStaticRoots.map((ws) => (
+              {localStaticRoots.map((ws: any) => (
                 <div key={ws.id} className={styles.workspaceItem}>
                   <div className={styles.workspaceItemInfo}>
                     <FolderOpen
@@ -487,7 +487,7 @@ export default function SettingsPageComponent() {
                 <FolderOpen size={10} />
                 User Workspaces
               </div>
-              {userRoots.map((ws) => (
+              {userRoots.map((ws: any) => (
                 <div key={ws.id} className={styles.workspaceItem}>
                   <div className={styles.workspaceItemInfo}>
                     <FolderOpen
@@ -538,18 +538,18 @@ export default function SettingsPageComponent() {
           <div className={styles.addWorkspaceRow}>
             <input
               type="text"
-              className={`${styles.addWorkspaceInput} ${wsValidation ? ((wsValidation as unknown).valid ? styles.valid : styles.invalid) : ""}`}
+              className={`${styles.addWorkspaceInput} ${wsValidation ? ((wsValidation as any).valid ? styles.valid : styles.invalid) : ""}`}
               placeholder="Add workspace path (e.g. /home/user/projects or C:\Users\...)"
               value={wsAddPath}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => handleWsPathChange(e.target.value)}
-              onKeyDown={(e: React.SyntheticEvent) => {
-                if (e.key === "Enter" && (wsValidation as unknown)?.valid)
+              onKeyDown={(e: any) => {
+                if (e.key === "Enter" && (wsValidation as any)?.valid)
                   handleAddWorkspace();
               }}
             />
             <button
               className={styles.addButton}
-              disabled={!(wsValidation as unknown)?.valid || wsAdding}
+              disabled={!(wsValidation as any)?.valid || wsAdding}
               onClick={handleAddWorkspace}
             >
               <Plus size={14} />
@@ -560,15 +560,15 @@ export default function SettingsPageComponent() {
           {/* Validation feedback */}
           {wsAddPath.trim() && wsValidation && (
             <div
-              className={`${styles.validationRow} ${(wsValidation as unknown).valid ? styles.success : styles.error}`}
+              className={`${styles.validationRow} ${(wsValidation as any).valid ? styles.success : styles.error}`}
             >
-              {(wsValidation as unknown).valid ? (
+              {(wsValidation as any).valid ? (
                 <>
                   <CheckCircle2 size={12} /> Valid directory
                 </>
               ) : (
                 <>
-                  <XCircle size={12} /> {(wsValidation as unknown).error}
+                  <XCircle size={12} /> {(wsValidation as any).error}
                 </>
               )}
             </div>
@@ -1146,7 +1146,7 @@ export default function SettingsPageComponent() {
             </div>
           </div>
           <div className={styles.harnessGrid}>
-            {harnesses.map((h) => {
+            {harnesses.map((h: any) => {
               const isActive = (agentDefaults.harness || "standard") === h.id;
               return (
                 <button

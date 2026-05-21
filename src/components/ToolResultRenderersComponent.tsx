@@ -43,18 +43,18 @@ import styles from "./ToolResultRenderersComponent.module.css";
 
 // --- Helpers ----------------------------------------------------------
 
-function basename(filePath: unknown) {
+function basename(filePath: any) {
   if (!filePath) return "";
   return filePath.split("/").pop() || filePath;
 }
 
-function extensionOf(filePath: unknown) {
+function extensionOf(filePath: any) {
   const base = basename(filePath);
   const dot = base.lastIndexOf(".");
   return dot > 0 ? base.substring(dot + 1).toLowerCase() : "";
 }
 
-function tryParse(result) {
+function tryParse(result: any) {
   if (typeof result === "object" && result !== null) return result;
   if (typeof result === "string") {
     try {
@@ -310,7 +310,7 @@ function FileReadRenderer({ result, args }: any) {
 
   const filePath = parsed.path || args?.path || "";
   const content = parsed.content || "";
-  const _lang = (EXT_LANG as Record<string, unknown>)[extensionOf(filePath)] || "";
+  const _lang = (EXT_LANG as Record<string, any>)[extensionOf(filePath)] || "";
 
   return (
     <div className={styles.rendererBlock}>
@@ -410,8 +410,8 @@ function GrepSearchRenderer({ result, args }: any) {
   const grouped = {};
   for (const m of matches.slice(0, 30)) {
     const file = m.file || m.path || "unknown";
-    if (!(grouped as Record<string, unknown>)[file]) (grouped as Record<string, unknown>)[file] = [];
-    (grouped as Record<string, unknown>)[file].push(m);
+    if (!(grouped as Record<string, any>)[file]) (grouped as Record<string, any>)[file] = [];
+    (grouped as Record<string, any>)[file].push(m);
   }
 
   return (
@@ -424,10 +424,10 @@ function GrepSearchRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.grepList}>
-        {Object.entries(grouped).map(([file, fileMatches]: unknown) => (
+        {Object.entries(grouped).map(([file, fileMatches]: any) => (
           <div key={file} className={styles.grepFile}>
             <span className={styles.grepFilePath}>{file}</span>
-            {fileMatches.map((m, i) => (
+            {fileMatches.map((m: any, i: any) => (
               <div key={i} className={styles.grepLine}>
                 {m.line != null && (
                   <span className={styles.grepLineNum}>{m.line}</span>
@@ -465,7 +465,7 @@ function DirectoryListRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.dirList}>
-        {entries.slice(0, 40).map((entry, i) => {
+        {entries.slice(0, 40).map((entry: any, i: any) => {
           const name =
             typeof entry === "string" ? entry : entry.name || entry.path || "";
           const isDir =
@@ -506,7 +506,7 @@ function GlobFilesRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.dirList}>
-        {files.slice(0, 40).map((f, i) => {
+        {files.slice(0, 40).map((f: any, i: any) => {
           const path = typeof f === "string" ? f : f.path || f.name || "";
           return (
             <div key={i} className={styles.dirEntry}>
@@ -539,7 +539,7 @@ function WebSearchRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.searchResults}>
-        {results.slice(0, 8).map((r, i) => (
+        {results.slice(0, 8).map((r: any, i: any) => (
           <div key={i} className={styles.searchResult}>
             <a
               href={r.url || r.link}
@@ -597,16 +597,16 @@ const PROMPT_PREFIXES = { bash: "$ ", python: ">>> ", javascript: "> " };
 const CONTINUATION_PREFIXES = { python: "... ", javascript: ".. " };
 const DEFAULT_CWD = { bash: "/tmp", python: "python3", javascript: "node" };
 
-function formatInputPrompt(input: unknown, language: unknown, cwd: unknown) {
+function formatInputPrompt(input: any, language: any, cwd: any) {
   if (!input) return "";
-  const prompt = (PROMPT_PREFIXES as Record<string, unknown>)[language] || "$ ";
-  const contPrompt = (CONTINUATION_PREFIXES as Record<string, unknown>)[language] || "  ";
+  const prompt = (PROMPT_PREFIXES as Record<string, any>)[language] || "$ ";
+  const contPrompt = (CONTINUATION_PREFIXES as Record<string, any>)[language] || "  ";
   const lines = input.split("\n");
-  const resolvedCwd = cwd || (DEFAULT_CWD as Record<string, unknown>)[language] || "";
+  const resolvedCwd = cwd || (DEFAULT_CWD as Record<string, any>)[language] || "";
   const pathPrefix = resolvedCwd ? `${resolvedCwd} ` : "";
   return lines
     .map(
-      (line: unknown, i: unknown) =>
+      (line: any, i: any) =>
         `${i === 0 ? pathPrefix + prompt : contPrompt}${line}`,
     )
     .join("\n");
@@ -637,7 +637,7 @@ const ANSI_BRIGHT_COLORS = [
   "#ffffff", // 7 – bright white
 ];
 
-function ansi256ToHex(n) {
+function ansi256ToHex(n: any) {
   if (n < 8) return ANSI_COLORS[n];
   if (n < 16) return ANSI_BRIGHT_COLORS[n - 8];
   if (n < 232) {
@@ -651,11 +651,11 @@ function ansi256ToHex(n) {
   return `#${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}`;
 }
 
-function stripAnsi(text) {
+function stripAnsi(text: any) {
   return text.replace(/\x1b\[[0-9;]*m/g, "");
 }
 
-function parseAnsi(text) {
+function parseAnsi(text: any) {
   if (!text.includes("\x1b")) return text;
   const parts = [];
   let lastIndex = 0;
@@ -673,12 +673,12 @@ function parseAnsi(text) {
       const chunk = text.slice(lastIndex, match.index);
       if (color || bgColor || bold || dim || italic || underline) {
         const style = {};
-        if (color) (style as unknown).color = color;
-        if (bgColor) (style as unknown).backgroundColor = bgColor;
-        if (bold) (style as unknown).fontWeight = 700;
-        if (dim) (style as unknown).opacity = 0.6;
-        if (italic) (style as unknown).fontStyle = "italic";
-        if (underline) (style as unknown).textDecoration = "underline";
+        if (color) (style as any).color = color;
+        if (bgColor) (style as any).backgroundColor = bgColor;
+        if (bold) (style as any).fontWeight = 700;
+        if (dim) (style as any).opacity = 0.6;
+        if (italic) (style as any).fontStyle = "italic";
+        if (underline) (style as any).textDecoration = "underline";
         parts.push(
           <span key={key++} style={style}>
             {chunk}
@@ -727,12 +727,12 @@ function parseAnsi(text) {
     const chunk = text.slice(lastIndex);
     if (color || bgColor || bold || dim || italic || underline) {
       const style = {};
-      if (color) (style as unknown).color = color;
-      if (bgColor) (style as unknown).backgroundColor = bgColor;
-      if (bold) (style as unknown).fontWeight = 700;
-      if (dim) (style as unknown).opacity = 0.6;
-      if (italic) (style as unknown).fontStyle = "italic";
-      if (underline) (style as unknown).textDecoration = "underline";
+      if (color) (style as any).color = color;
+      if (bgColor) (style as any).backgroundColor = bgColor;
+      if (bold) (style as any).fontWeight = 700;
+      if (dim) (style as any).opacity = 0.6;
+      if (italic) (style as any).fontStyle = "italic";
+      if (underline) (style as any).textDecoration = "underline";
       parts.push(
         <span key={key++} style={style}>
           {chunk}
@@ -745,7 +745,7 @@ function parseAnsi(text) {
   return parts.length === 1 ? parts[0] : parts;
 }
 
-function detectTerminalLevel(text) {
+function detectTerminalLevel(text: any) {
   const clean = stripAnsi(text);
   if (/\bERR(?:OR)?\b/i.test(clean)) return "error";
   if (/\bWARN(?:ING)?\b/i.test(clean)) return "warn";
@@ -847,7 +847,7 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
         onScroll={handleScroll}
       >
         {/* Input command lines */}
-        {inputLines.map((line, i) => (
+        {inputLines.map((line: any, i: any) => (
           <div key={`in-${i}`} className={styles.termLine}>
             <span className={styles.termLineNum}>{i + 1}</span>
             <span
@@ -858,13 +858,13 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
           </div>
         ))}
         {/* Output lines */}
-        {outputLines.map((line, i) => {
+        {outputLines.map((line: any, i: any) => {
           const level = detectTerminalLevel(line);
           const lineNum = inputLines.length + i + 1;
           return (
             <div
               key={`out-${i}`}
-              className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as Record<string, unknown>)[level] || "" : ""}`}
+              className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as Record<string, any>)[level] || "" : ""}`}
             >
               <span className={styles.termLineNum}>{lineNum}</span>
               <span
@@ -910,7 +910,7 @@ function GitStatusRenderer({ result }: any) {
       </div>
       {!clean && (
         <div className={styles.dirList}>
-          {files.slice(0, 30).map((f, i) => {
+          {files.slice(0, 30).map((f: any, i: any) => {
             const name = typeof f === "string" ? f : f.path || f.file || "";
             const status =
               typeof f === "object" ? f.status || f.state || "" : "";
@@ -946,7 +946,7 @@ function GitDiffRenderer({ result }: any) {
             {diff
               .split("\n")
               .slice(0, 80)
-              .map((line, i) => {
+              .map((line: any, i: any) => {
                 let cls = "";
                 if (line.startsWith("+") && !line.startsWith("+++"))
                   cls = styles.diffAdded;
@@ -982,7 +982,7 @@ function GitLogRenderer({ result }: any) {
         </span>
       </div>
       <div className={styles.gitLog}>
-        {commits.slice(0, 15).map((c, i) => (
+        {commits.slice(0, 15).map((c: any, i: any) => (
           <div key={i} className={styles.gitCommit}>
             <span className={styles.gitHash}>
               {(c.hash || c.sha || "").slice(0, 7)}
@@ -1059,7 +1059,7 @@ function BrowserActionRenderer({ result, args }: any) {
   if (!parsed) return <RawResultToggle result={result} />;
 
   const action = parsed.action || args?.action || "";
-  const label = (BROWSER_ACTION_LABELS as Record<string, unknown>)[action] || action;
+  const label = (BROWSER_ACTION_LABELS as Record<string, any>)[action] || action;
   const hasError = !!parsed.error;
 
   // Resolve screenshot ref (minio:// or base64 fallback)
@@ -1120,7 +1120,7 @@ function BrowserActionRenderer({ result, args }: any) {
 
       {action === "get_elements" && parsed.elements && (
         <div className={styles.dirList}>
-          {parsed.elements.slice(0, 30).map((element, i) => (
+          {parsed.elements.slice(0, 30).map((element: any, i: any) => (
             <div key={i} className={styles.dirEntry}>
               <code className={styles.inlineCode}>{element.selector}</code>
 
@@ -1251,20 +1251,20 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   const hasActiveWorkers = useMemo(() => {
     if (!workerToolActivity) return false;
     return Object.values(workerToolActivity).some(
-      (a) => a.phase === "generating" || a.phase === "thinking",
+      (a: any) => a.phase === "generating" || a.phase === "thinking",
     );
   }, [workerToolActivity]);
 
   const [, setTick] = useState(0);
   useEffect(() => {
     if (!hasActiveWorkers) return;
-    const id = setInterval(() => setTick((t: unknown) => t + 1), 500);
+    const id = setInterval(() => setTick((t: any) => t + 1), 500);
     return () => clearInterval(id);
   }, [hasActiveWorkers]);
 
   // Use backend-computed per-worker tok/s directly. Only show when the
   // worker is in an active generation phase.
-  const getWorkerTokPerSec = (activity: unknown) => {
+  const getWorkerTokPerSec = (activity: any) => {
     if (!activity?.tokPerSec) return null;
     if (activity.phase !== "generating" && activity.phase !== "thinking")
       return null;
@@ -1284,7 +1284,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   // strategy for the "calling" state (before tool result arrives and
   // agent_id is available), because workers with identical descriptions
   // would all resolve to the first match via description.includes().
-  const getActivity = (member: unknown, memberIndex: unknown) => {
+  const getActivity = (member: any, memberIndex: any) => {
     if (!workerToolActivity) return null;
     // 1. Exact match by agent_id (available in result/done state)
     if (member.agent_id) return workerToolActivity[member.agent_id] || null;
@@ -1296,7 +1296,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
     if (member.description) {
       return (
         Object.values(workerToolActivity).find(
-          (v) =>
+          (v: any) =>
             v.description && v.description.includes(member.description),
         ) || null
       );
@@ -1304,7 +1304,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
     return null;
   };
 
-  const toggleMember = (index) => {
+  const toggleMember = (index: any) => {
     setExpandedMembers((prev) => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
@@ -1325,7 +1325,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
           </span>
           <StatusBadge success={true} label="running" />
         </div>
-        {argMembers.map((member, i) => {
+        {argMembers.map((member: any, i: any) => {
           const activity = getActivity(member, i);
           const tokPerSec = getWorkerTokPerSec(activity);
           return (
@@ -1366,10 +1366,10 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   const hasError = !!parsed.error;
   const succeeded =
     parsed.succeeded ??
-    resultMembers.filter((m) => m.status === "completed").length;
+    resultMembers.filter((m: any) => m.status === "completed").length;
   const failed =
     parsed.failed ??
-    resultMembers.filter((m) => m.status === "failed").length;
+    resultMembers.filter((m: any) => m.status === "failed").length;
   const allDone = resultMembers.every(
     (m) =>
       m.status === "completed" ||
@@ -1398,7 +1398,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
 
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
 
-      {resultMembers.map((member, i) => {
+      {resultMembers.map((member: any, i: any) => {
         const activity = getActivity(member, i);
         const isTerminal =
           member.status === "completed" ||
@@ -1622,9 +1622,9 @@ const TOOL_RESULT_REGISTRY = {
 /**
  * Resolve the appropriate result renderer for a tool call.
  */
-export function resolveToolResultRenderer(toolName: unknown) {
+export function resolveToolResultRenderer(toolName: any) {
   return (
-    (TOOL_RESULT_REGISTRY as Record<string, unknown>)[toolName] || { Renderer: GenericRenderer }
+    (TOOL_RESULT_REGISTRY as Record<string, any>)[toolName] || { Renderer: GenericRenderer }
   );
 }
 
