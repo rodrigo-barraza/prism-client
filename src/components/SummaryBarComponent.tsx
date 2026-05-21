@@ -23,7 +23,7 @@ export default function SummaryBarComponent({
   items,
   live = false,
   className,
-}: unknown) {
+}: any) {
   if (!items || items.length === 0) return null;
 
   const wrapperClass = [styles.bar, live ? styles.live : "", className || ""]
@@ -32,7 +32,7 @@ export default function SummaryBarComponent({
 
   return (
     <div className={wrapperClass}>
-      {items.map((item, i) => (
+      {items.map((item: any, i: number) => (
         <div key={i} className={styles.entry}>
           {i > 0 && <div className={styles.divider} />}
           <div className={styles.item}>

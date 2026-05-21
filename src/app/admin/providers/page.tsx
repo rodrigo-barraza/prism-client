@@ -27,15 +27,36 @@ import { useAdminHeader } from "../../../components/AdminHeaderContextComponent"
 import useProjectFilter from "../../../hooks/useProjectFilter";
 import styles from "./page.module.css";
 
+interface ModelStat {
+  provider: string;
+  model: string;
+  totalRequests: number;
+  totalCost: number;
+  totalTokens: number;
+  avgLatency: number;
+  avgTokensPerSec?: number;
+}
+
+interface ProviderStat {
+  provider: string;
+  totalRequests: number;
+  totalCost: number;
+  totalTokens: number;
+  avgLatency: number;
+  models: ModelStat[];
+  _latencySum: number;
+  _latencyCount: number;
+}
+
 export default function ProvidersPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [modelStats, setModelStats] = useState<Record<string, unknown>[]>([]);
+  const [modelStats, setModelStats] = useState<ModelStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedProvider, setExpandedProvider] = useState(null);
-  const [rateLimits, setRateLimits] = useState<Record<string, unknown>>({});
+  const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
+  const [rateLimits, setRateLimits] = useState<Record<string, RateLimitPanelData>>({});
 
   useEffect(() => {
     // Immediately enter loading state and clear stale data when filters change
@@ -54,8 +75,8 @@ export default function ProvidersPage() {
           // Side-effect: registers local provider nicknames
           PrismService.getConfig().catch(() => null),
         ]);
-        setModelStats(models);
-        setRateLimits(limits);
+        setModelStats((models || []) as unknown as ModelStat[]);
+        setRateLimits((limits || {}) as Record<string, RateLimitPanelData>);
       } catch (error: unknown) {
         setError(error instanceof Error ? error.message : String(error));
       } finally {
@@ -67,10 +88,10 @@ export default function ProvidersPage() {
 
   // Aggregate by provider
   const providers = useMemo(() => {
-    const map = {};
-    modelStats.forEach((m: Record<string, unknown>) => {
-      if (!(map as Record<string, unknown>)[m.provider]) {
-        (map as Record<string, unknown>)[m.provider] = {
+    const map: Record<string, ProviderStat> = {};
+    modelStats.forEach((m: ModelStat) => {
+      if (!map[m.provider]) {
+        map[m.provider] = {
           provider: m.provider,
           totalRequests: 0,
           totalCost: 0,
@@ -81,7 +102,7 @@ export default function ProvidersPage() {
           _latencyCount: 0,
         };
       }
-      const p = (map as Record<string, unknown>)[m.provider];
+      const p = map[m.provider];
       p.totalRequests += m.totalRequests;
       p.totalCost += m.totalCost;
       p.totalTokens += m.totalTokens;
@@ -90,26 +111,24 @@ export default function ProvidersPage() {
       p.models.push(m);
     });
 
-    return (Object.values(map) as Record<string, unknown>[])
-      .map((p: Record<string, unknown>) => ({
+    return Object.values(map)
+      .map((p) => ({
         ...p,
         avgLatency: p._latencyCount ? p._latencySum / p._latencyCount : 0,
-        models: p.models.sort(
-          (a: Record<string, unknown>, b: Record<string, unknown>) => b.totalRequests - a.totalRequests,
-        ),
+        models: p.models.sort((a, b) => b.totalRequests - a.totalRequests),
       }))
-      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => b.totalRequests - a.totalRequests);
+      .sort((a, b) => b.totalRequests - a.totalRequests);
   }, [modelStats]);
 
   const totalRequests =
-    providers.reduce((s: number, p: Record<string, unknown>) => s + p.totalRequests, 0) || 1;
+    providers.reduce((s: number, p) => s + p.totalRequests, 0) || 1;
 
   const modelColumns = useMemo(
     () => [
       {
         key: "model",
         label: "Model",
-        render: (m: Record<string, unknown>) => (
+        render: (m: ModelStat) => (
           <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
             {m.model}
           </span>
@@ -118,32 +137,32 @@ export default function ProvidersPage() {
       {
         key: "totalRequests",
         label: "Requests",
-        render: (m: Record<string, unknown>) => formatNumber(m.totalRequests),
-        align: "right",
+        render: (m: ModelStat) => formatNumber(m.totalRequests),
+        align: "right" as const,
       },
       {
         key: "totalTokens",
         label: "Tokens",
-        render: (m: Record<string, unknown>) => formatNumber(m.totalTokens),
-        align: "right",
+        render: (m: ModelStat) => formatNumber(m.totalTokens),
+        align: "right" as const,
       },
       {
         key: "avgTokensPerSec",
         label: "Tok/s",
-        render: (m: Record<string, unknown>) => formatTokensPerSec(m.avgTokensPerSec),
-        align: "right",
+        render: (m: ModelStat) => formatTokensPerSec(m.avgTokensPerSec),
+        align: "right" as const,
       },
       {
         key: "totalCost",
         label: "Cost",
-        render: (m: Record<string, unknown>) => formatCost(m.totalCost),
-        align: "right",
+        render: (m: ModelStat) => formatCost(m.totalCost),
+        align: "right" as const,
       },
       {
         key: "avgLatency",
         label: "Avg Latency",
-        render: (m: Record<string, unknown>) => formatLatency(m.avgLatency),
-        align: "right",
+        render: (m: ModelStat) => formatLatency(m.avgLatency),
+        align: "right" as const,
       },
     ],
     [],
@@ -180,11 +199,11 @@ export default function ProvidersPage() {
       {loading && <LoadingMessage message="Loading provider data..." />}
 
       <div className={styles.providerList}>
-        {providers.map((p: Record<string, unknown>, i: number) => {
+        {providers.map((p, i: number) => {
           const color = PROVIDER_COLORS[i % PROVIDER_COLORS.length];
           const share = ((p.totalRequests / totalRequests) * 100).toFixed(1);
           const isExpanded = expandedProvider === p.provider;
-          const providerLimits = (rateLimits as Record<string, unknown>)[p.provider];
+          const providerLimits = rateLimits[p.provider];
 
           return (
             <div key={p.provider} className={styles.providerCard}>
@@ -249,7 +268,7 @@ export default function ProvidersPage() {
                   <TableComponent
                     columns={modelColumns}
                     data={p.models}
-                    getRowKey={(m: Record<string, unknown>, i: number) => `${m.model}-${i}`}
+                    getRowKey={(m: ModelStat, index: number) => `${m.model}-${index}`}
                   />
                 </div>
               )}
@@ -263,7 +282,34 @@ export default function ProvidersPage() {
 
 // -- Rate Limit Panel ------------------------------------------
 
-function RateLimitPanel({ data }: { data: Record<string, unknown> }) {
+interface RateLimitDetail {
+  limit?: number;
+  remaining?: number;
+  reset?: string;
+}
+
+interface ModelRateLimit {
+  requests?: RateLimitDetail;
+  tokens?: RateLimitDetail;
+  inputTokens?: RateLimitDetail;
+  outputTokens?: RateLimitDetail;
+}
+
+interface ModelRateLimitData {
+  rpm?: number;
+  tpm?: number;
+  rpd?: number;
+  rateLimits?: ModelRateLimit;
+  updatedAt?: string;
+}
+
+interface RateLimitPanelData {
+  dynamic?: boolean;
+  models?: Record<string, ModelRateLimitData>;
+  note?: string;
+}
+
+function RateLimitPanel({ data }: { data: RateLimitPanelData }) {
   const { dynamic, models, note } = data;
 
   if (!models || Object.keys(models).length === 0) return null;
@@ -275,7 +321,7 @@ function RateLimitPanel({ data }: { data: Record<string, unknown> }) {
         {note && <span className={styles.rateLimitMeta}>{note}</span>}
       </div>
       <div className={styles.rateLimitModels}>
-        {Object.entries(models).map(([modelName, modelData]: [string, Record<string, unknown>]) => (
+        {Object.entries(models).map(([modelName, modelData]: [string, ModelRateLimitData]) => (
           <ModelRateLimitCard
             key={modelName}
             modelName={modelName}
@@ -293,7 +339,15 @@ function RateLimitPanel({ data }: { data: Record<string, unknown> }) {
  * - Dynamic (OpenAI/Anthropic): shows remaining/limit progress bars per window (RPM, TPM).
  * - Static (Google): shows fixed RPM/TPM/RPD values.
  */
-function ModelRateLimitCard({ modelName, modelData, dynamic }: { modelName: string; modelData: Record<string, unknown>; dynamic?: boolean }) {
+function ModelRateLimitCard({
+  modelName,
+  modelData,
+  dynamic,
+}: {
+  modelName: string;
+  modelData: ModelRateLimitData;
+  dynamic?: boolean;
+}) {
   // Static model (Google) — simple metric display
   if (!dynamic) {
     return (
@@ -327,7 +381,7 @@ function ModelRateLimitCard({ modelName, modelData, dynamic }: { modelName: stri
         {rateLimits.requests?.limit != null && (
           <LimitBar
             label="RPM"
-            remaining={rateLimits.requests.remaining}
+            remaining={rateLimits.requests.remaining ?? 0}
             limit={rateLimits.requests.limit}
             reset={rateLimits.requests.reset}
           />
@@ -336,7 +390,7 @@ function ModelRateLimitCard({ modelName, modelData, dynamic }: { modelName: stri
         {rateLimits.tokens?.limit != null && (
           <LimitBar
             label="TPM"
-            remaining={rateLimits.tokens.remaining}
+            remaining={rateLimits.tokens.remaining ?? 0}
             limit={rateLimits.tokens.limit}
             reset={rateLimits.tokens.reset}
           />
@@ -345,7 +399,7 @@ function ModelRateLimitCard({ modelName, modelData, dynamic }: { modelName: stri
         {rateLimits.inputTokens?.limit != null && (
           <LimitBar
             label="ITPM"
-            remaining={rateLimits.inputTokens.remaining}
+            remaining={rateLimits.inputTokens.remaining ?? 0}
             limit={rateLimits.inputTokens.limit}
             reset={rateLimits.inputTokens.reset}
           />
@@ -354,7 +408,7 @@ function ModelRateLimitCard({ modelName, modelData, dynamic }: { modelName: stri
         {rateLimits.outputTokens?.limit != null && (
           <LimitBar
             label="OTPM"
-            remaining={rateLimits.outputTokens.remaining}
+            remaining={rateLimits.outputTokens.remaining ?? 0}
             limit={rateLimits.outputTokens.limit}
             reset={rateLimits.outputTokens.reset}
           />
@@ -397,7 +451,7 @@ function LimitBar({ label, remaining, limit, reset }: { label: string; remaining
   );
 }
 
-function RateLimitMetric({ label, value }: { label: string; value: React.ReactNode }) {
+function RateLimitMetric({ label, value }: { label: string; value: number | undefined }) {
   return (
     <span className={styles.rateLimitMetric}>
       <span className={styles.rateLimitMetricValue}>

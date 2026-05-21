@@ -6,6 +6,7 @@ import { SelectComponent } from "@rodrigo-barraza/components-library";
 import ChartTabsComponent from "./ChartTabsComponent";
 import { formatNumber, formatCost, formatLatency } from "../utils/utilities";
 import styles from "./DistributionChartComponent.module.css";
+import type { IrisProjectStat, IrisModelStat, IrisProviderStat, IrisDashboardStats } from "../types/types";
 
 const COLORS = [
   "#6366f1",
@@ -22,7 +23,7 @@ const COLORS = [
   "#8b5cf6",
 ];
 
-const STATUS_COLORS = {
+const STATUS_COLORS: Record<string, string> = {
   Success: "#10b981",
   Error: "#ef4444",
 };
@@ -50,7 +51,8 @@ const TABS = [
 /**
  * Extracts the raw numeric value for a metric from a stat record.
  */
-function extractValue(record: unknown, metric: unknown) {
+function extractValue(record: any, metric: string): number {
+  if (!record) return 0;
   switch (metric) {
     case "requests":
       return record.totalRequests || 0;
@@ -76,7 +78,7 @@ function extractValue(record: unknown, metric: unknown) {
 /**
  * Formats a value using the appropriate unit for its metric.
  */
-function formatValue(value: unknown, metric: unknown) {
+function formatValue(value: number, metric: string): string {
   switch (metric) {
     case "cost":
       return formatCost(value);
@@ -92,7 +94,7 @@ function formatValue(value: unknown, metric: unknown) {
 /**
  * Returns the unit label for the center text (e.g. "requests", "tokens").
  */
-function metricUnit(metric: unknown) {
+function metricUnit(metric: string): string {
   switch (metric) {
     case "requests":
       return "requests";
@@ -119,14 +121,14 @@ function metricUnit(metric: unknown) {
  * Builds distribution entries: an array of { name, value } per tab/metric.
  */
 function buildEntries(
-  tab: unknown,
-  metric: unknown,
-  projectStats: unknown,
-  providerStats: unknown,
-  modelStats: unknown,
-) {
-  let source;
-  let nameKey;
+  tab: string,
+  metric: string,
+  projectStats: IrisProjectStat[],
+  providerStats: IrisProviderStat[],
+  modelStats: IrisModelStat[],
+): { name: string; value: number }[] {
+  let source: any[];
+  let nameKey: string | ((r: any) => string);
 
   switch (tab) {
     case "project":
@@ -155,21 +157,21 @@ function buildEntries(
   });
 
   // Aggregate duplicate names (e.g. same model basename from different paths)
-  const aggMap = {};
+  const aggMap: Record<string, number> = {};
   for (const { name, value } of entries) {
-    (aggMap as Record<string, unknown>)[name] = ((aggMap as Record<string, unknown>)[name] || 0) + value;
+    aggMap[name] = (aggMap[name] || 0) + value;
   }
 
   return Object.entries(aggMap)
-    .map(([name, value]: unknown) => ({ name, value }))
+    .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
 }
 
 /**
  * Builds status entries from overall stats (Success / Error).
  */
-function buildStatusEntries(stats) {
-  const entries = [];
+function buildStatusEntries(stats: IrisDashboardStats | null): { name: string; value: number }[] {
+  const entries: { name: string; value: number }[] = [];
   if (stats?.successCount)
     entries.push({ name: "Success", value: stats.successCount });
   if (stats?.errorCount)
@@ -179,7 +181,7 @@ function buildStatusEntries(stats) {
 
 /* -- Active sector renderer with glow and center text -- */
 
-function ActiveSectorRenderer(props: unknown) {
+function ActiveSectorRenderer(props: any) {
   const {
     cx,
     cy,
@@ -235,6 +237,18 @@ function ActiveSectorRenderer(props: unknown) {
   );
 }
 
+interface DistributionChartProps {
+  projectStats?: IrisProjectStat[];
+  providerStats?: IrisProviderStat[];
+  modelStats?: IrisModelStat[];
+  stats?: IrisDashboardStats | null;
+  loading?: boolean;
+  height?: number;
+  title?: string;
+}
+
+const SafePie = Pie as any;
+
 export default function DistributionChartComponent({
   projectStats = [],
   providerStats = [],
@@ -243,10 +257,10 @@ export default function DistributionChartComponent({
   loading = false,
   height = 220,
   title = "Distribution",
-}: unknown) {
+}: DistributionChartProps) {
   const [activeTab, setActiveTab] = useState("project");
   const [activeMetric, setActiveMetric] = useState("requests");
-  const [activeIndex, setActiveIndex] = useState(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const isStatus = activeMetric === "status";
 
@@ -270,11 +284,11 @@ export default function DistributionChartComponent({
   ]);
 
   const pieData = useMemo(() => {
-    return entries.map(({ name, value }: unknown, i: unknown) => ({
+    return entries.map(({ name, value }, i: number) => ({
       name,
       value,
       fill: isStatus
-        ? (STATUS_COLORS as Record<string, unknown>)[name] || COLORS[0]
+        ? STATUS_COLORS[name] || COLORS[0]
         : COLORS[i % COLORS.length],
     }));
   }, [entries, isStatus]);
@@ -289,12 +303,12 @@ export default function DistributionChartComponent({
     : total;
   const totalLabel = isAvgMetric ? "avg" : "total";
 
-  const handleTabChange = (key) => {
+  const handleTabChange = (key: string) => {
     setActiveTab(key);
     setActiveIndex(null);
   };
 
-  const handleMetricChange = (value) => {
+  const handleMetricChange = (value: string) => {
     setActiveMetric(value);
     setActiveIndex(null);
   };
@@ -337,7 +351,7 @@ export default function DistributionChartComponent({
             <div className={styles.chartArea}>
               <ResponsiveContainer width="100%" height={height}>
                 <PieChart>
-                  <Pie
+                  <SafePie
                     data={pieData}
                     cx="50%"
                     cy="50%"
@@ -345,11 +359,11 @@ export default function DistributionChartComponent({
                     outerRadius={height * 0.36}
                     paddingAngle={2}
                     dataKey="value"
-                    {...({ activeIndex } as React.CSSProperties)}
-                    activeShape={(props: unknown) => (
+                    activeIndex={activeIndex !== null ? activeIndex : undefined}
+                    activeShape={(props: any) => (
                       <ActiveSectorRenderer {...props} metric={activeMetric} />
                     )}
-                    onMouseEnter={(_: unknown, index: unknown) => setActiveIndex(index)}
+                    onMouseEnter={(_: any, index: number) => setActiveIndex(index)}
                     onMouseLeave={() => setActiveIndex(null)}
                     animationDuration={200}
                     animationEasing="ease-in-out"
@@ -365,16 +379,16 @@ export default function DistributionChartComponent({
                         style={{ transition: "opacity 0.2s ease" }}
                       />
                     ))}
-                  </Pie>
+                  </SafePie>
                 </PieChart>
               </ResponsiveContainer>
             </div>
 
             <div className={styles.legend}>
-              {entries.map(({ name, value }: unknown, i: unknown) => {
+              {entries.map(({ name, value }, i: number) => {
                 const pct = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                 const color = isStatus
-                  ? (STATUS_COLORS as Record<string, unknown>)[name] || COLORS[0]
+                  ? STATUS_COLORS[name] || COLORS[0]
                   : COLORS[i % COLORS.length];
 
                 return (

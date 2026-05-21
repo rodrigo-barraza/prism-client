@@ -47,14 +47,14 @@ export default function TasksPanel({
   refreshKey,
   agentSessionId,
   onCountChange,
-}: unknown) {
-  const [tasks, setTasks] = useState<unknown[]>([]);
-  const [summary, setSummary] = useState<unknown>(null);
+}: any) {
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
-  const [statusFilter, setStatusFilter] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<any>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const hasData = useRef<boolean>(false);
 
   // New task form
@@ -78,7 +78,7 @@ export default function TasksPanel({
       setSummary(result.summary || null);
       onCountChange?.(result.summary?.total || (result.tasks || []).length);
       hasData.current = true;
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load tasks:", error);
       if (!hasData.current) setError(error.message);
     } finally {
@@ -114,7 +114,7 @@ export default function TasksPanel({
         setNewDescription("");
         setShowNewForm(false);
         loadTasks();
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to create task:", error);
       } finally {
         setCreating(false);
@@ -126,7 +126,7 @@ export default function TasksPanel({
   // -- Status cycle -------------------------------------------
 
   const handleCycleStatus = useCallback(
-    async (task) => {
+    async (task: any) => {
       const index = STATUS_CYCLE.indexOf(task.status);
       const nextStatus = STATUS_CYCLE[(index + 1) % STATUS_CYCLE.length];
       try {
@@ -143,7 +143,7 @@ export default function TasksPanel({
         );
         // Refresh summary
         loadTasks();
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to update task:", error);
       }
     },
@@ -153,18 +153,18 @@ export default function TasksPanel({
   // -- Delete -------------------------------------------------
 
   const handleDelete = useCallback(
-    async (task) => {
+    async (task: any) => {
       try {
         await ToolsApiService.deleteAgenticTask(task.project, task.taskId);
         setTasks((prev) =>
           prev.filter(
-            (t: unknown) =>
+            (t: any) =>
               !(t.project === task.project && t.taskId === task.taskId),
           ),
         );
         setConfirmingDeleteId(null);
         loadTasks();
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to delete task:", error);
       }
     },
@@ -201,7 +201,7 @@ export default function TasksPanel({
       {/* -- Header -------------------------------------------- */}
       <div className={styles.header}>
         <span className={styles.headerTitle}>
-          Tasks {summary ? `(${(summary as unknown).total})` : ""}
+          Tasks {summary ? `(${summary.total})` : ""}
         </span>
         <button
           className={styles.headerBtn}
@@ -221,10 +221,10 @@ export default function TasksPanel({
       </div>
 
       {/* -- Summary badges ------------------------------------ */}
-      {summary && (summary as unknown).total > 0 && (
+      {summary && summary.total > 0 && (
         <div className={styles.summaryRow}>
           {STATUS_CYCLE.map((s) => {
-            const config = (STATUS_CONFIG as Record<string, unknown>)[s];
+            const config = (STATUS_CONFIG as any)[s];
             const count = summary[s] || 0;
             if (count === 0 && statusFilter !== s) return null;
             const isActive = statusFilter === s;
@@ -299,7 +299,7 @@ export default function TasksPanel({
           <div className={styles.emptyTitle}>No tasks yet</div>
           <div className={styles.emptySubtitle}>
             {statusFilter
-              ? `No ${(STATUS_CONFIG[statusFilter] as {label: string})?.label.toLowerCase()} tasks. Try clearing the filter.`
+              ? `No ${(STATUS_CONFIG as any)[statusFilter]?.label.toLowerCase()} tasks. Try clearing the filter.`
               : "Tasks are created by the agent during coding sessions, or you can create them manually."}
           </div>
         </div>
@@ -308,7 +308,7 @@ export default function TasksPanel({
       {/* -- Task list --------------------------------------- */}
       {tasks.map((task) => {
         const config =
-          (STATUS_CONFIG as Record<string, unknown>)[task.status] || STATUS_CONFIG.pending;
+          (STATUS_CONFIG as any)[task.status] || STATUS_CONFIG.pending;
         const StatusIcon = config.icon;
         const isExpanded = expandedId === task.taskId;
         const isConfirming = confirmingDeleteId === task.taskId;
@@ -393,7 +393,7 @@ export default function TasksPanel({
                 <div className={styles.taskDescription}>{task.description}</div>
                 {task.metadata && Object.keys(task.metadata).length > 0 && (
                   <div className={styles.taskMetadata}>
-                    {Object.entries(task.metadata).map(([k, v]: unknown) => (
+                    {Object.entries(task.metadata).map(([k, v]: any) => (
                       <span key={k} className={styles.metaTag}>
                         <span className={styles.metaKey}>{k}</span>
                         <span className={styles.metaValue}>{String(v)}</span>

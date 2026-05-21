@@ -194,13 +194,13 @@ export default function CustomAgentsPanel({
   agents = [],
   onAgentsChange,
   availableTools = [],
-}: unknown) {
-  const [editingAgent, setEditingAgent] = useState<unknown>(null);
+}: any) {
+  const [editingAgent, setEditingAgent] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<unknown>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
 
-  const [error, setError] = useState<unknown>(null);
+  const [error, setError] = useState<any>(null);
 
   // -- CRUD -----------------------------------------------------
 
@@ -335,7 +335,7 @@ export default function CustomAgentsPanel({
           <div className={styles.formGroup}>
             <label>Icon</label>
             <div className={styles.iconGrid}>
-              {ICON_OPTIONS.map(({ name, icon: IconComp }: unknown) => (
+              {ICON_OPTIONS.map(({ name, icon: IconComp }: any) => (
                 <button
                   key={name}
                   type="button"
@@ -372,7 +372,7 @@ export default function CustomAgentsPanel({
               Accent Color
             </label>
             <div className={styles.colorGrid}>
-              {COLOR_PALETTE.map(({ hex, name }: unknown) => (
+              {COLOR_PALETTE.map(({ hex, name }: any) => (
                 <button
                   key={hex}
                   type="button"

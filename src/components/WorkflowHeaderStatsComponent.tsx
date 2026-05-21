@@ -7,25 +7,25 @@ import styles from "./WorkflowHeaderStatsComponent.module.css";
 export default function WorkflowHeaderStatsComponent({
   nodes = [],
   edgeCount = 0,
-}: unknown) {
+}: any) {
   const workflowStats = useMemo(() => {
-    const modelNodes = nodes.filter((n) => !n.nodeType);
+    const modelNodes = nodes.filter((n: any) => !n.nodeType);
     const models = [
       ...new Map(
-        modelNodes.map((n) => [
+        modelNodes.map((n: any) => [
           `${n.provider}:${n.modelName}`,
           { provider: n.provider, name: n.displayName || n.modelName },
         ]),
       ).values(),
     ];
     const modalities = new Set();
-    for (const n of nodes) {
+    for (const n of nodes as any[]) {
       // Only boundary nodes: input assets define workflow inputs, viewers define outputs
       if (n.nodeType === "input") {
-        for (const t of n.outputTypes || [])
+        for (const t of (n.outputTypes || []) as any[])
           if (t !== "conversation") modalities.add(t);
       } else if (n.nodeType === "viewer") {
-        for (const t of n.inputTypes || [])
+        for (const t of (n.inputTypes || []) as any[])
           if (t !== "conversation") modalities.add(t);
       }
     }
@@ -40,8 +40,8 @@ export default function WorkflowHeaderStatsComponent({
       </span>
       {workflowStats.modalities.length > 0 && (
         <span className={styles.headerBadge}>
-          {workflowStats.modalities.map((mod) => {
-            const info = (MODALITY_ICONS as Record<string, unknown>)[mod];
+          {workflowStats.modalities.map((mod: any) => {
+            const info = (MODALITY_ICONS as any)[mod];
             if (!info) return null;
             const Icon = info.icon;
             return (
@@ -57,7 +57,7 @@ export default function WorkflowHeaderStatsComponent({
       )}
       {workflowStats.models.length > 0 && (
         <span className={styles.headerBadge}>
-          {workflowStats.models.map((m) => (
+          {workflowStats.models.map((m: any) => (
             <span
               key={`${m.provider}:${m.name}`}
               className={styles.headerModelTag}

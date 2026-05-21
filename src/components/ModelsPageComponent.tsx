@@ -21,7 +21,7 @@ import styles from "./ModelsPageComponent.module.css";
  * Flatten all model groups from the config into a single array,
  * tagging each model with its provider.
  */
-function flattenConfigModels(config) {
+function flattenConfigModels(config: any) {
   if (!config) return [];
 
   const modelsMap = new Map();
@@ -38,7 +38,7 @@ function flattenConfigModels(config) {
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
     for (const [provider, models] of Object.entries(providers)) {
-      for (const m of models as unknown[]) {
+      for (const m of models as any[]) {
         const key = `${provider}:${m.name}`;
         if (!modelsMap.has(key)) {
           modelsMap.set(key, { ...m, provider });
@@ -67,10 +67,10 @@ export default function ModelsPageComponent({
   onCountChange,
 }: ModelsPageComponentProps) {
   const isAdmin = mode === "admin";
-  const [allModels, setAllModels] = useState<unknown[]>([]);
+  const [allModels, setAllModels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [actionInProgress, setActionInProgress] = useState<unknown>(null);
+  const [actionInProgress, setActionInProgress] = useState<any>(null);
   const { toasts, addToast, removeToast } = useToast(4000);
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [loadConfigModel, setLoadConfigModel] = useState<RawModel | null>(null);
@@ -79,12 +79,12 @@ export default function ModelsPageComponent({
 
   // Helper: merge config + LM data + stats into the allModels array
   const buildMergedModels = useCallback(
-    (config: unknown, lmData: unknown, modelStats: unknown) => {
+    (config: any, lmData: any, modelStats: any) => {
       const flat = flattenConfigModels(config);
       const lmApiModels = (lmData?.models || []).filter(
-        (m) => m.type === "llm",
+        (m: any) => m.type === "llm",
       );
-      const lmApiMap = new Map(lmApiModels.map((m) => [m.key, m]));
+      const lmApiMap = new Map(lmApiModels.map((m: any) => [m.key, m]));
 
       // Build usage map: "provider:model" → stats object
       const usageMap = new Map();
@@ -174,21 +174,21 @@ export default function ModelsPageComponent({
         };
 
         if (m.provider === "lm-studio") {
-          const apiModel = lmApiMap.get(m.name);
+          const apiModel: any = lmApiMap.get(m.name);
           if (apiModel) {
             result = {
               ...result,
-              loaded_instances: (apiModel as unknown).loaded_instances,
-              loaded: (apiModel as unknown).loaded_instances?.length > 0,
-              key: (apiModel as unknown).key,
+              loaded_instances: apiModel.loaded_instances,
+              loaded: apiModel.loaded_instances?.length > 0,
+              key: apiModel.key,
               // Preserve raw API fields for ModelLoadConfigPanel
-              max_context_length: (apiModel as unknown).max_context_length,
-              size_bytes: (apiModel as unknown).size_bytes,
-              params_string: (apiModel as unknown).params_string,
-              architecture: (apiModel as unknown).architecture,
-              archParams: (apiModel as unknown).archParams,
+              max_context_length: apiModel.max_context_length,
+              size_bytes: apiModel.size_bytes,
+              params_string: apiModel.params_string,
+              architecture: apiModel.architecture,
+              archParams: apiModel.archParams,
               display_name:
-                (apiModel as unknown).display_name || result.display_name,
+                apiModel.display_name || result.display_name,
             };
           }
         }
@@ -228,7 +228,7 @@ export default function ModelsPageComponent({
 
       // Fire both in parallel, each with their own error handling
       const [localResult, lmData] = await Promise.all([
-        (config as Record<string, unknown>).localProviders?.length > 0
+        (config as any)?.localProviders?.length > 0
           ? localService.getLocalConfig().catch(() => ({ models: {} }))
           : { models: {} },
         lmService.getLmStudioModels().catch(() => ({ models: [] })),
@@ -237,15 +237,15 @@ export default function ModelsPageComponent({
       // Merge local models into config using shared utility
       const mergedConfig = PrismService.mergeLocalModels(
         config!,
-        (localResult as unknown)?.models,
+        (localResult as any)?.models,
       );
 
       // Rebuild with local models + LM Studio API data
       const fullModels = buildMergedModels(mergedConfig, lmData, modelStats);
       setAllModels(fullModels);
       hasLoadedRef.current = true;
-    } catch (error: unknown) {
-      setError(error.message);
+    } catch (error: any) {
+      setError(error.message || "Unknown error");
       setAllModels([]);
     } finally {
       setLoading(false);
@@ -281,7 +281,7 @@ export default function ModelsPageComponent({
   };
 
   // Open the config panel instead of loading immediately
-  const handleLoad = (modelKey: unknown) => {
+  const handleLoad = (modelKey: any) => {
     // Find the raw LM Studio API model data for this key
     const rawModel = allModels.find(
       (m) =>
@@ -294,29 +294,29 @@ export default function ModelsPageComponent({
   };
 
   // Called from the config panel with load options
-  const handleConfigLoad = async (modelKey: unknown, options: unknown) => {
-    setActionInProgress({ id: modelKey, type: "load" } as React.CSSProperties);
+  const handleConfigLoad = async (modelKey: any, options: any) => {
+    setActionInProgress({ id: modelKey, type: "load" });
     setLoadConfigModel(null);
     try {
       const lmService = isAdmin ? IrisService : PrismService;
       await lmService.loadLmStudioModel(modelKey, options);
       addToast(`Loaded ${modelKey}`, "success");
       await fetchModels();
-    } catch (error: unknown) {
+    } catch (error: any) {
       addToast(`Failed to load: ${error.message}`, "error");
     } finally {
       setActionInProgress(null);
     }
   };
 
-  const handleUnload = async (instanceId: unknown) => {
-    setActionInProgress({ id: instanceId, type: "unload" } as React.CSSProperties);
+  const handleUnload = async (instanceId: any) => {
+    setActionInProgress({ id: instanceId, type: "unload" });
     try {
       const lmService = isAdmin ? IrisService : PrismService;
       await lmService.unloadLmStudioModel(instanceId);
       addToast(`Unloaded ${instanceId}`, "success");
       await fetchModels();
-    } catch (error: unknown) {
+    } catch (error: any) {
       addToast(`Failed to unload: ${error.message}`, "error");
     } finally {
       setActionInProgress(null);
@@ -331,7 +331,7 @@ export default function ModelsPageComponent({
   const providerSet = new Set(allModels.map((m) => m.provider));
 
   const renderActions = isAdmin
-    ? (model) => {
+    ? (model: any) => {
         if (model.provider !== "lm-studio") return null;
 
         const isLoaded = model.loaded_instances?.length > 0;
@@ -339,9 +339,9 @@ export default function ModelsPageComponent({
         const modelKey = model.key || model.name;
         const isActioning =
           actionInProgress &&
-          ((actionInProgress as unknown).id === modelKey ||
-            (actionInProgress as unknown).id === instance?.id);
-        const actionType = isActioning ? (actionInProgress as unknown).type : null;
+          (actionInProgress.id === modelKey ||
+            actionInProgress.id === instance?.id);
+        const actionType = isActioning ? actionInProgress.type : null;
 
         if (isActioning) {
           return (

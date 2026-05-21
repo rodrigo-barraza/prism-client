@@ -53,7 +53,7 @@ export default function TracesTableComponent({
   ];
 
   // Remove costShare for traces — not useful without a global total
-  const allColumns = SESSION_COLUMNS.filter((c: Record<string, unknown>) => c.key !== "costShare");
+  const allColumns = SESSION_COLUMNS.filter((c: any) => c.key !== "costShare");
 
   const COMPACT_KEYS = [
     "id",
@@ -65,18 +65,18 @@ export default function TracesTableComponent({
     "duration",
   ];
   const columns = compact
-    ? allColumns.filter((c: Record<string, unknown>) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (
     <TableComponent
       columns={columns}
       data={traces}
-      getRowKey={(s: Record<string, unknown>, i: number) => s.id || `trace-${i}`}
+      getRowKey={(s: any, i: number) => s.id || `trace-${i}`}
       sortKey={sortKey}
       sortDir={sortDir}
       onSort={onSort}
-      renderExpandedContent={(trace: Record<string, unknown>) => (
+      renderExpandedContent={(trace: any) => (
         <div className={styles.expandedPanels}>
           <RequestsTableComponent
             requests={trace.requests || []}

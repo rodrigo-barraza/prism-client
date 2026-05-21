@@ -515,7 +515,7 @@ describe("Integration: full mention flow", () => {
     container.appendChild(textNode);
 
     const entry = results[0];
-    const badge = createMentionBadge(entry.path, entry.name, entry.type);
+    const badge = createMentionBadge(entry.path || "", entry.name, entry.type);
     applyMentionToTextNode(textNode, 5, 9, badge);
 
     // 4. Serialize for sending

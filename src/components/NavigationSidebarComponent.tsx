@@ -167,7 +167,7 @@ export default function NavigationSidebarComponent({
     if (mode !== "user") return;
     PrismService.getSettings()
       .then((s) => {
-        const mem = s?.memory || {};
+        const mem = (s?.memory || {}) as any;
         setMemoryConfigured(
           Boolean(
             mem.extractionProvider &&
@@ -226,8 +226,8 @@ export default function NavigationSidebarComponent({
   // -- Bouncing mini cats for concurrent API calls ----------------
   // Lifecycle: active → windingDown → idle → fading → removed
   const bannerRef = useRef<unknown>(null);
-  const catStateRef = useRef<Map<string, unknown>>(new Map());
-  const catElsRef = useRef<Map<string, unknown>>(new Map());
+  const catStateRef = useRef<Map<string, any>>(new Map());
+  const catElsRef = useRef<Map<string, any>>(new Map());
   const isGenRef = useRef<boolean>(isGenerating);
   const prevIsGenRef = useRef<boolean>(false);
   const miniCatsRef = useRef<unknown>([]);
@@ -282,9 +282,9 @@ export default function NavigationSidebarComponent({
   // Always-on RAF: movement, bouncing, FX, lifecycle phases
   useEffect(() => {
     let lastTime = 0;
-    let rafId: unknown;
+    let rafId: any;
 
-    const tick = (now: unknown) => {
+    const tick = (now: any) => {
       const cats = miniCatsRef.current;
       if (cats.length === 0) {
         lastTime = 0;
@@ -306,8 +306,8 @@ export default function NavigationSidebarComponent({
         rafId = requestAnimationFrame(tick);
         return;
       }
-      const bw = (banner as unknown).offsetWidth;
-      const bh = (banner as unknown).offsetHeight;
+      const bw = (banner as any).offsetWidth;
+      const bh = (banner as any).offsetHeight;
       const isGen = isGenRef.current;
 
       // Detect primary cat stop: isGenerating true → false → fade ALL cats
@@ -324,30 +324,30 @@ export default function NavigationSidebarComponent({
       const toRemove = [];
 
       for (const cat of cats) {
-        let p = catStateRef.current.get((cat as unknown).id);
+        let p = catStateRef.current.get((cat as any).id);
         if (!p) {
           p = {
             x: bw / 2,
             y: bh / 2,
-            vx: (cat as unknown).initVx,
-            vy: (cat as unknown).initVy,
+            vx: (cat as any).initVx,
+            vy: (cat as any).initVy,
             accelTime: 0,
             phase: "active",
             fadeStart: null,
           };
-          catStateRef.current.set((cat as unknown).id, p);
+          catStateRef.current.set((cat as any).id, p);
         }
 
-        const element = catElsRef.current.get((cat as unknown).id);
+        const element = catElsRef.current.get((cat as any).id);
         if (!element) continue;
 
         // Phase transition: worker finished → start winding down
-        if ((cat as unknown).retired && p.phase === "active") {
+        if ((cat as any).retired && p.phase === "active") {
           p.phase = "windingDown";
         }
 
         // Bounce helper (specular reflection)
-        const hs = (cat as unknown).size / 2;
+        const hs = (cat as any).size / 2;
         const bounce = () => {
           if (p.x < hs) {
             p.x = hs;
@@ -453,7 +453,7 @@ export default function NavigationSidebarComponent({
             element.src = "/cat.gif";
           }
 
-          if (progress >= 1) toRemove.push((cat as unknown).id);
+          if (progress >= 1) toRemove.push((cat as any).id);
         }
       }
 
@@ -526,13 +526,13 @@ export default function NavigationSidebarComponent({
                         <span>{section.label}</span>
                       </div>
                     )}
-                    {section.items.map((item) => {
+                    {section.items.map((item: any) => {
                       const Icon = item.icon;
                       const isActive =
                         (item.exact
                           ? pathname === item.href
                           : pathname.startsWith(item.href)) ||
-                        item.alsoMatches?.some((p) =>
+                        item.alsoMatches?.some((p: any) =>
                           pathname.startsWith(p),
                         );
 
@@ -542,10 +542,10 @@ export default function NavigationSidebarComponent({
                           href={item.href}
                           className={`${styles.navLink} ${isActive ? styles.active : ""}`}
                           onMouseEnter={(e: React.MouseEvent) =>
-                            SoundService.playHover({ event: e })
+                            SoundService.playHover({ event: e.nativeEvent })
                           }
                           onClick={(e: React.MouseEvent) => {
-                            SoundService.playClick({ event: e });
+                            SoundService.playClick({ event: e.nativeEvent });
                             onNavClick?.(item.href);
                             setMobileOpen(false);
                             // Pre-close ThreePanelLayout sidebars so the next page mounts clean
@@ -564,11 +564,11 @@ export default function NavigationSidebarComponent({
                             </span>
                           )}
                           {item.showBadge &&
-                            (badgeCounts as Record<string, unknown>)[item.showBadge] > 0 && (
+                            (badgeCounts as Record<string, any>)[item.showBadge] > 0 && (
                               <span
                                 className={`${styles.badge} ${styles.live}`}
                               >
-                                {(badgeCounts as Record<string, unknown>)[item.showBadge]}
+                                {(badgeCounts as Record<string, any>)[item.showBadge]}
                               </span>
                             )}
                         </Link>
@@ -657,13 +657,13 @@ export default function NavigationSidebarComponent({
                   <span>{section.label}</span>
                 </div>
               )}
-              {section.items.map((item) => {
+              {section.items.map((item: any) => {
                 const Icon = item.icon;
                 const isActive =
                   (item.exact
                     ? pathname === item.href
                     : pathname.startsWith(item.href)) ||
-                  item.alsoMatches?.some((p) => pathname.startsWith(p));
+                  item.alsoMatches?.some((p: any) => pathname.startsWith(p));
 
                 const link = (
                   <Link
@@ -671,10 +671,10 @@ export default function NavigationSidebarComponent({
                     href={item.href}
                     className={`${styles.navLink} ${isActive ? styles.active : ""}`}
                     onMouseEnter={(e: React.MouseEvent) =>
-                      SoundService.playHover({ event: e })
+                      SoundService.playHover({ event: e.nativeEvent })
                     }
                     onClick={(e: React.MouseEvent) => {
-                      SoundService.playClick({ event: e });
+                      SoundService.playClick({ event: e.nativeEvent });
                       onNavClick?.(item.href);
                     }}
                   >
@@ -689,9 +689,9 @@ export default function NavigationSidebarComponent({
                       </span>
                     )}
                     {item.showBadge &&
-                      (badgeCounts as Record<string, unknown>)[item.showBadge] > 0 && (
+                      (badgeCounts as Record<string, any>)[item.showBadge] > 0 && (
                         <span className={`${styles.badge} ${styles.live}`}>
-                          {(badgeCounts as Record<string, unknown>)[item.showBadge]}
+                          {(badgeCounts as Record<string, any>)[item.showBadge]}
                         </span>
                       )}
                   </Link>
@@ -727,8 +727,8 @@ export default function NavigationSidebarComponent({
               <Link
                 href="/"
                 className={styles.navLink}
-                onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e })}
-                onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e })}
+                onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e.nativeEvent })}
+                onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e.nativeEvent })}
               >
                 <ArrowLeft className={styles.navIcon} />
                 <span className={styles.navLabel}>Back to Prism</span>
@@ -745,8 +745,8 @@ export default function NavigationSidebarComponent({
               <Link
                 href="/admin"
                 className={styles.navLink}
-                onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e })}
-                onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e })}
+                onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e.nativeEvent })}
+                onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e.nativeEvent })}
               >
                 <Settings className={styles.navIcon} />
                 <span className={styles.navLabel}>Admin</span>

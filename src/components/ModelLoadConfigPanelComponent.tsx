@@ -26,7 +26,7 @@ const DEFAULT_ARCH_PARAMS = {
 /**
  * Load persisted config for a model key from localStorage.
  */
-function loadPersistedConfig(modelKey: unknown) {
+function loadPersistedConfig(modelKey: any) {
   try {
     const raw = localStorage.getItem(`${LS_KEY_PREFIX}${modelKey}`);
     return raw ? JSON.parse(raw) : null;
@@ -58,7 +58,7 @@ export default function ModelLoadConfigPanel({
   onClose,
   service,
   loading = false,
-}: unknown) {
+}: any) {
   const modelKey = model.key || model.name;
   const maxContext = model.max_context_length || model.contextLength || 131072;
   const sizeBytes = model.size_bytes || 0;
@@ -98,7 +98,7 @@ export default function ModelLoadConfigPanel({
   useEffect(() => {
     if (!service?.estimateLmStudioMemory) return;
 
-    clearTimeout(debounceRef.current);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
         const [current, max] = await Promise.all([
@@ -122,7 +122,7 @@ export default function ModelLoadConfigPanel({
       }
     }, 100);
 
-    return () => clearTimeout(debounceRef.current);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [
     service,
     modelKey,
@@ -194,7 +194,7 @@ export default function ModelLoadConfigPanel({
     }
   };
 
-  const formatGiB = (gib: unknown) => {
+  const formatGiB = (gib: any) => {
     if (gib < 0.01) return "0 GB";
     if (gib < 10) return `${gib.toFixed(2)} GB`;
     return `${gib.toFixed(1)} GB`;
@@ -332,7 +332,7 @@ export default function ModelLoadConfigPanel({
           max={maxContext}
           step={1024}
           value={contextLength}
-          onChange={(v) => setContextLength(v)}
+          onChange={(v: any) => setContextLength(v)}
         />
       </div>
 
@@ -364,7 +364,7 @@ export default function ModelLoadConfigPanel({
           max={totalLayers}
           step={1}
           value={gpuLayers}
-          onChange={(v) => setGpuLayers(v)}
+          onChange={(v: any) => setGpuLayers(v)}
         />
       </div>
 
@@ -406,8 +406,7 @@ export default function ModelLoadConfigPanel({
         <input
           type="checkbox"
           className={styles.rememberCheckbox}
-          checked={rememberSettings}
-          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setRememberSettings(e.target.checked)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRememberSettings(e.target.checked)}
         />
         <span className={styles.rememberLabel}>
           Remember settings for <strong>{modelKey}</strong>

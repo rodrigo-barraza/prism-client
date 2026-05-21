@@ -53,13 +53,13 @@ const EMPTY_TOOL = {
  * Mirrors ToolSelectionComponent's internal resolveEnabledTools logic so the
  * consumer can correctly diff the enabled set after a group checkbox toggle.
  */
-function resolveShorthands(entries: unknown, allTools: unknown) {
+function resolveShorthands(entries: any, allTools: any) {
   const resolved = new Set();
   for (const entry of entries) {
     if (entry.startsWith("label:")) {
       const label = entry.slice(6);
       for (const t of allTools) {
-        if ((t as unknown).labels?.includes(label)) resolved.add(t.name);
+        if (t.labels?.includes(label)) resolved.add(t.name);
       }
     } else if (entry.startsWith("domain:")) {
       const domain = entry.slice(7);
@@ -81,17 +81,17 @@ export default function CustomToolsPanel({
   disabledBuiltIns = new Set(),
   onToggleBuiltIn,
   agent = true,
-}: unknown) {
-  const [editingTool, setEditingTool] = useState<unknown>(null);
+}: any) {
+  const [editingTool, setEditingTool] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
-  const [expandedId, setExpandedId] = useState<unknown>(null);
+  const [expandedId, setExpandedId] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [customOpen, setCustomOpen] = useState(true);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<unknown>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
   const [inputMode, setInputMode] = useState("manual"); // "manual" | "json"
   const [jsonText, setJsonText] = useState("");
-  const [jsonError, setJsonError] = useState<unknown>(null);
-  const [jsonSuccess, setJsonSuccess] = useState<unknown>(null);
+  const [jsonError, setJsonError] = useState<any>(null);
+  const [jsonSuccess, setJsonSuccess] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // -- CRUD -----------------------------------------------------
@@ -105,10 +105,10 @@ export default function CustomToolsPanel({
     setJsonSuccess(null);
   }, []);
 
-  const handleEdit = useCallback((tool) => {
+  const handleEdit = useCallback((tool: any) => {
     setEditingTool({
       ...tool,
-      parameters: ((tool as unknown).parameters || []).map((p) => ({
+      parameters: (tool.parameters || []).map((p: any) => ({
         ...p,
         enum: Array.isArray(p.enum) ? p.enum.join(", ") : p.enum || "",
       })),
@@ -130,14 +130,14 @@ export default function CustomToolsPanel({
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!editingTool.name || !editingTool.code) return;
+    if (!editingTool?.name || !editingTool?.code) return;
     setSaving(true);
     try {
       const payload = {
         ...editingTool,
         ...(project ? { project } : {}),
-        parameters: editingTool.parameters
-          .map((p) => ({
+        parameters: (editingTool.parameters || [])
+          .map((p: any) => ({
             name: p.name,
             type: p.type,
             description: p.description,
@@ -146,12 +146,12 @@ export default function CustomToolsPanel({
               ? {
                   enum: p.enum
                     .split(",")
-                    .map((v) => v.trim())
+                    .map((v: any) => v.trim())
                     .filter(Boolean),
                 }
               : {}),
           }))
-          .filter((p) => p.name.trim()),
+          .filter((p: any) => p.name.trim()),
       };
 
       if (isNew) {
@@ -191,7 +191,7 @@ export default function CustomToolsPanel({
   );
 
   const handleToggle = useCallback(
-    async (tool) => {
+    async (tool: any) => {
       try {
         await PrismService.updateCustomTool(tool.id || tool._id, {
           enabled: !tool.enabled,
@@ -207,25 +207,25 @@ export default function CustomToolsPanel({
   // -- Parameter management -------------------------------------
 
   const addParameter = useCallback(() => {
-    setEditingTool((t: unknown) => ({
+    setEditingTool((t: any) => ({
       ...t,
-      parameters: [...t.parameters, { ...EMPTY_PARAM }],
+      parameters: [...(t?.parameters || []), { ...EMPTY_PARAM }],
     }));
   }, []);
 
-  const updateParameter = useCallback((index: unknown, field: unknown, value: unknown) => {
-    setEditingTool((t: unknown) => ({
+  const updateParameter = useCallback((index: any, field: any, value: any) => {
+    setEditingTool((t: any) => ({
       ...t,
-      parameters: t.parameters.map((p, i) =>
+      parameters: (t?.parameters || []).map((p: any, i: any) =>
         i === index ? { ...p, [field]: value } : p,
       ),
     }));
   }, []);
 
-  const removeParameter = useCallback((index) => {
-    setEditingTool((t: unknown) => ({
+  const removeParameter = useCallback((index: any) => {
+    setEditingTool((t: any) => ({
       ...t,
-      parameters: t.parameters.filter((_, i) => i !== index),
+      parameters: (t?.parameters || []).filter((_: any, i: any) => i !== index),
     }));
   }, []);
 
@@ -238,7 +238,7 @@ export default function CustomToolsPanel({
    *  3. Raw parameters object: { type: "object", properties: { ... } }
    *  4. Array of tools:        [ { type: "function", function: ... }, ... ]  (uses first)
    */
-  const parseJsonDefinition = useCallback((raw: unknown) => {
+  const parseJsonDefinition = useCallback((raw: any) => {
     setJsonError(null);
     setJsonSuccess(null);
 
@@ -261,7 +261,7 @@ export default function CustomToolsPanel({
 
     let name = "";
     let description = "";
-    let parametersObj = null;
+    let parametersObj: any = null;
 
     // Shape 1: { type: "function", function: { ... } }
     if (parsed.type === "function" && parsed.function) {
@@ -287,23 +287,23 @@ export default function CustomToolsPanel({
     }
 
     // Convert parametersObj → flat parameter list
-    const params: unknown[] = [];
+    const params: any[] = [];
     if (parametersObj?.properties) {
       const required = parametersObj.required || [];
       for (const [pName, schema] of Object.entries(parametersObj.properties)) {
         params.push({
           name: pName,
-          type: (schema as unknown).type || "string",
-          description: (schema as unknown).description || "",
+          type: (schema as any).type || "string",
+          description: (schema as any).description || "",
           required: required.includes(pName),
-          enum: Array.isArray((schema as unknown).enum)
-            ? (schema as unknown).enum.join(", ")
+          enum: Array.isArray((schema as any).enum)
+            ? (schema as any).enum.join(", ")
             : "",
         });
       }
     }
 
-    setEditingTool((t: unknown) => ({
+    setEditingTool((t: any) => ({
       ...t,
       ...(name
         ? { name: name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase() }
@@ -320,12 +320,12 @@ export default function CustomToolsPanel({
   }, []);
 
   const handleJsonFileUpload = useCallback(
-    (e: React.SyntheticEvent) => {
+    (e: any) => {
       const file = e.target.files?.[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (ev: unknown) => {
-        const text = ev.target.result;
+      reader.onload = (ev: any) => {
+        const text = ev.target?.result;
         setJsonText(text);
         parseJsonDefinition(text);
       };
@@ -338,7 +338,7 @@ export default function CustomToolsPanel({
 
   // -- Tool list ------------------------------------------------
 
-  const enabledCustomCount = tools.filter((t) => t.enabled).length;
+  const enabledCustomCount = tools.filter((t: any) => t.enabled).length;
   const allCustomEnabled =
     tools.length > 0 && enabledCustomCount === tools.length;
 
@@ -346,7 +346,7 @@ export default function CustomToolsPanel({
     const newEnabled = !allCustomEnabled;
     try {
       await Promise.all(
-        tools.map((t) =>
+        tools.map((t: any) =>
           PrismService.updateCustomTool(t.id || t._id, {
             enabled: newEnabled,
           }),
@@ -376,9 +376,9 @@ export default function CustomToolsPanel({
             <input
               type="text"
               className={styles.input}
-              value={(editingTool as unknown).name}
+              value={editingTool.name}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingTool((t: unknown) => ({
+                setEditingTool((t: any) => ({
                   ...t,
                   name: e.target.value
                     .replace(/[^a-zA-Z0-9_]/g, "_")
@@ -396,9 +396,9 @@ export default function CustomToolsPanel({
             <label>Description</label>
             <TextAreaComponent
               className={styles.textarea}
-              value={(editingTool as unknown).description}
+              value={editingTool.description}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingTool((t: unknown) => ({
+                setEditingTool((t: any) => ({
                   ...t,
                   description: e.target.value,
                 }))
@@ -416,9 +416,9 @@ export default function CustomToolsPanel({
             <label>Code</label>
             <TextAreaComponent
               className={`${styles.textarea} ${styles.codeTextarea}`}
-              value={(editingTool as unknown).code}
+              value={editingTool.code}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingTool((t: unknown) => ({ ...t, code: e.target.value }))
+                setEditingTool((t: any) => ({ ...t, code: e.target.value }))
               }
               placeholder={`// Tool arguments are available via the \`args\` object\nconst { message } = args;\nconsole.log(message);\n// The last expression becomes the return value\n({ logged: message, timestamp: new Date().toISOString() })`}
               minRows={6}
@@ -459,13 +459,13 @@ export default function CustomToolsPanel({
 
             {inputMode === "manual" && (
               <>
-                {(editingTool as unknown).parameters.length === 0 && (
+                {editingTool.parameters?.length === 0 && (
                   <div className={styles.paramsEmpty}>
                     No parameters — tool will be called without arguments.
                   </div>
                 )}
 
-                {(editingTool as unknown).parameters.map((param, i) => (
+                {editingTool.parameters?.map((param: any, i: any) => (
                   <div key={i} className={styles.paramCard}>
                     <div className={styles.paramCardHeader}>
                       <span className={styles.paramIndex}>#{i + 1}</span>
@@ -514,7 +514,7 @@ export default function CustomToolsPanel({
                           <label>Req</label>
                           <ToggleComponent
                             checked={param.required}
-                            onChange={(v) =>
+                            onChange={(v: any) =>
                               updateParameter(i, "required", v)
                             }
                             size="mini"
@@ -623,7 +623,7 @@ export default function CustomToolsPanel({
             className={styles.saveBtn}
             onClick={handleSave}
             disabled={
-              !(editingTool as unknown).name || !(editingTool as unknown).code || saving
+              !editingTool.name || !editingTool.code || saving
             }
           >
             <Save size={14} />
@@ -637,14 +637,14 @@ export default function CustomToolsPanel({
   // -- Non-agent view: lightweight ToolSelectionComponent only --
   if (!agent) {
     const derivedEnabled = builtInTools
-      .filter((t) => !disabledBuiltIns.has(t.name))
-      .map((t) => t.name);
+      .filter((t: any) => !disabledBuiltIns.has(t.name))
+      .map((t: any) => t.name);
 
     return (
       <ToolSelectionComponent
         availableTools={builtInTools}
         enabledTools={derivedEnabled}
-        onEnabledToolsChange={(newEnabled: unknown) => {
+        onEnabledToolsChange={(newEnabled: any) => {
           const enabledSet = resolveShorthands(newEnabled, builtInTools);
           for (const tool of builtInTools) {
             const isDisabled = disabledBuiltIns.has(tool.name);
@@ -660,10 +660,10 @@ export default function CustomToolsPanel({
 
   // -- Derive enabled tools from disabledBuiltIns for ToolSelectionComponent --
   const derivedEnabled = builtInTools
-    .filter((t) => !disabledBuiltIns.has(t.name))
-    .map((t) => t.name);
+    .filter((t: any) => !disabledBuiltIns.has(t.name))
+    .map((t: any) => t.name);
 
-  const handleSelectionChange = (newEnabled: unknown) => {
+  const handleSelectionChange = (newEnabled: any) => {
     const enabledSet = resolveShorthands(newEnabled, builtInTools);
     for (const tool of builtInTools) {
       const isDisabled = disabledBuiltIns.has(tool.name);
@@ -716,7 +716,7 @@ export default function CustomToolsPanel({
       )}
 
       {customOpen &&
-        tools.map((tool) => {
+        tools.map((tool: any) => {
           const id = tool.id || tool._id;
           const isExpanded = expandedId === id;
           return (
@@ -778,7 +778,7 @@ export default function CustomToolsPanel({
                   )}
                   {tool.parameters?.length > 0 && (
                     <div className={styles.toolCardParams}>
-                      {tool.parameters.map((p, i) => (
+                      {tool.parameters.map((p: any, i: any) => (
                         <div key={i} className={styles.toolCardParam}>
                           <code>{p.name}</code>
                           <span className={styles.paramType}>{p.type}</span>

@@ -165,7 +165,7 @@ export function getBaseModality(portId: string) {
 }
 
 // -- Node dimensions --
-export function getNodeWidth(node: WorkflowNode) {
+export function getNodeWidth(node: any) {
   if (node.nodeType) {
     if (node.modality === "conversation") {
       const mods = (node.supportedModalities || ["text"]).filter(
@@ -190,7 +190,7 @@ const TEXT_LINE_HEIGHT = 16; // ~11px font × 1.4 line-height + padding
 const TEXT_MIN_HEIGHT = 36;
 const CHARS_PER_LINE = 22; // rough estimate for node width
 
-export function getAssetContentHeight(node: WorkflowNode) {
+export function getAssetContentHeight(node: any) {
   // Text input nodes: auto-size based on content, up to 175px
   if (node.nodeType === "input" && node.modality === "text") {
     const text = node.content || "";
@@ -206,12 +206,12 @@ export function getAssetContentHeight(node: WorkflowNode) {
   return ASSET_CONTENT_HEIGHT;
 }
 
-export function getAssetInfoHeight(node: WorkflowNode) {
+export function getAssetInfoHeight(node: any) {
   if (node.nodeType === "viewer" || node.modality === "text") return 0;
   return ASSET_INFO_HEIGHT;
 }
 
-export function getNodeHeight(node: WorkflowNode, isExpanded = false) {
+export function getNodeHeight(node: any, isExpanded = false) {
   if (node.nodeType) {
     const inputCount = (node.inputTypes || []).length;
     const outputCount = (node.outputTypes || []).length;
@@ -230,7 +230,7 @@ export function getNodeHeight(node: WorkflowNode, isExpanded = false) {
 }
 
 export function getPortPosition(
-  node: WorkflowNode,
+  node: any,
   portType: string,
   portIndex: number,
   configOffset = 0,

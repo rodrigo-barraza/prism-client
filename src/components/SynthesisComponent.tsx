@@ -165,8 +165,8 @@ export default function SynthesisComponent() {
   });
   const [targetTurns, setTargetTurns] = useState(DEFAULT_TURNS);
   const [category, setCategory] = useState("Chat");
-  const [seedMessages, setSeedMessages] = useState<unknown[]>([]);
-  const [generatedMessages, setGeneratedMessages] = useState<unknown[]>([]);
+  const [seedMessages, setSeedMessages] = useState<any[]>([]);
+  const [generatedMessages, setGeneratedMessages] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
   const [seedsExpanded, setSeedsExpanded] = useState(true);
@@ -178,7 +178,7 @@ export default function SynthesisComponent() {
   const [conversationId, setConversationId] = useState(null);
 
   // -- History state ---------------------------------------------
-  const [synthesisConversations, setSynthesisConversations] = useState<unknown[]>(
+  const [synthesisConversations, setSynthesisConversations] = useState<any[]>(
     [],
   );
   const [activeHistoryId, setActiveHistoryId] = useState(null);

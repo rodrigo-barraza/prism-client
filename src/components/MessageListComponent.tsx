@@ -114,8 +114,8 @@ function renderContentWithMentions(
       <MentionBadge
         key={i}
         path={cleanPath}
-        lineStart={seg.lineStart}
-        lineEnd={seg.lineEnd}
+        lineStart={(seg as any).lineStart}
+        lineEnd={(seg as any).lineEnd}
         knownPaths={knownPaths}
         onFileOpen={onMentionFileOpen}
       />
@@ -286,7 +286,7 @@ function ToolCallsBlock({
               tc.name === "googleSearch"
                 ? "Google Search"
                 : renderToolName(tc.name);
-            const { Icon, color } = resolveToolVisuals(tc.name);
+            const { Icon, color } = resolveToolVisuals(tc.name) as any;
 
             const isCalling = tc.status === "calling";
             const isError = tc.status === "error";
@@ -451,7 +451,7 @@ export function prepareDisplayMessages(rawMessages: Message[] | undefined | null
           result:
             tc.result ||
             toolResults[tc.id] ||
-            toolResults[tc.tool_call_id || ""] ||
+            toolResults[(tc as any).tool_call_id || ""] ||
             null,
         }));
         return { ...m, toolCalls: enrichedCalls };
@@ -749,6 +749,7 @@ export default function MessageList({
   onMentionFileOpen,
 }: MessageListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const knownPathsSet = useMemo(() => knownPaths ? new Set(knownPaths) : null, [knownPaths]);
   const [expandedDeletedSet, setExpandedDeletedSet] = useState<Set<number>>(new Set());
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
@@ -960,11 +961,11 @@ export default function MessageList({
       <div
         className={styles.stickyUserMsg}
         onMouseEnter={(e: React.MouseEvent) =>
-          stickyUserMsg && SoundService.playHoverButton({ event: e })
+          stickyUserMsg && SoundService.playHoverButton({ event: e as any })
         }
         onClick={(e: React.MouseEvent) => {
           if (stickyUserMsg) {
-            SoundService.playClickButton({ event: e });
+            SoundService.playClickButton({ event: e as any });
             handleStickyClick();
           }
         }}
@@ -992,7 +993,7 @@ export default function MessageList({
                     stickyUserMsg.content.length > 200
                       ? stickyUserMsg.content.slice(0, 200) + "…"
                       : stickyUserMsg.content,
-                    knownPaths,
+                    knownPathsSet,
                     onMentionFileOpen,
                   )
                 : "(no text)"}
@@ -1163,7 +1164,7 @@ export default function MessageList({
                         </span>
                       </button>
                     </div>
-                    {groupIndices.map((gi) => {
+                    {groupIndices.map((gi: number) => {
                       const gMsg = messages[gi];
                       const gRoleClass =
                         gMsg.role === "user"
@@ -1539,7 +1540,7 @@ export default function MessageList({
                                   key={`seg-p-${si}`}
                                   planText={planProposal.plan}
                                   steps={planProposal.steps}
-                                  status={planProposal.status}
+                                  status={planProposal.status as any}
                                   onApprove={onPlanApprove}
                                   onReject={onPlanReject}
                                 />
@@ -1579,10 +1580,10 @@ export default function MessageList({
                                   content={message.content}
                                   index={i}
                                   role="assistant"
-                                  onEdit={onEdit}
+                                  onEdit={onEdit as any}
                                   editing={true}
                                   onCancelEdit={() => setEditingIndex(null)}
-                                  knownPaths={knownPaths}
+                                  knownPaths={knownPathsSet}
                                   onMentionFileOpen={onMentionFileOpen}
                                 />
                               </>
@@ -1703,10 +1704,10 @@ export default function MessageList({
                               content={message.content}
                               index={i}
                               role="user"
-                              onEdit={onEdit}
+                              onEdit={onEdit as any}
                               editing={editingIndex === i}
                               onCancelEdit={() => setEditingIndex(null)}
-                              knownPaths={knownPaths}
+                              knownPaths={knownPathsSet}
                               onMentionFileOpen={onMentionFileOpen}
                             />
                           ) : message.role === "assistant" &&
@@ -1716,10 +1717,10 @@ export default function MessageList({
                               content={message.content}
                               index={i}
                               role="assistant"
-                              onEdit={onEdit}
+                              onEdit={onEdit as any}
                               editing={true}
                               onCancelEdit={() => setEditingIndex(null)}
-                              knownPaths={knownPaths}
+                              knownPaths={knownPathsSet}
                               onMentionFileOpen={onMentionFileOpen}
                             />
                           ) : message.content ? (
@@ -1906,7 +1907,7 @@ export default function MessageList({
                                   inLabel = `in (${parts.join(" · ")})`;
                                 }
                                 const reasoning =
-                                  message.usage.reasoningOutputTokens || 0;
+                                  (message.usage as any).reasoningOutputTokens || 0;
                                 let outLabel = "out";
                                 if (reasoning > 0) {
                                   outLabel = `out (${reasoning.toLocaleString()} reasoning)`;
@@ -1997,7 +1998,7 @@ export default function MessageList({
                           <PlanCardComponent
                             planText={planProposal.plan}
                             steps={planProposal.steps}
-                            status={planProposal.status}
+                            status={planProposal.status as any}
                             onApprove={onPlanApprove}
                             onReject={onPlanReject}
                           />

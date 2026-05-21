@@ -19,7 +19,7 @@ import {
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import styles from "./AudioPlayerRecorderComponent.module.css";
 
-function formatTime(totalSeconds: unknown) {
+function formatTime(totalSeconds: any) {
   if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return "0:00";
   const mins = Math.floor(totalSeconds / 60);
   const secs = Math.floor(totalSeconds % 60);
@@ -31,11 +31,11 @@ const BAR_GAP = 1;
 
 /* -- Draw waveform bars on a canvas -- */
 function drawBars(
-  canvas: unknown,
-  peaks: unknown,
-  progress: unknown,
-  playedColor: unknown,
-  unplayedColor: unknown,
+  canvas: any,
+  peaks: any,
+  progress: any,
+  playedColor: any,
+  unplayedColor: any,
 ) {
   const context = canvas.getContext("2d");
   const w = canvas.width;
@@ -61,7 +61,7 @@ function drawBars(
 }
 
 /* -- Decode audio src into peaks + true duration -- */
-async function decodePeaks(src: unknown, numPeaks = 200) {
+async function decodePeaks(src: any, numPeaks = 200) {
   try {
     const resp = await fetch(src);
     const buffer = await resp.arrayBuffer();
@@ -113,25 +113,25 @@ export default function AudioPlayerRecorderComponent({
   const [isRecording, setIsRecording] = useState(false);
   const [recSeconds, setRecSeconds] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<unknown>([]);
-  const recTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const analyserRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const audioCtxRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioChunksRef = useRef<any>([]);
+  const recTimerRef = useRef<any>(null);
+  const analyserRef = useRef<any>(null);
+  const audioCtxRef = useRef<any>(null);
   const recCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const animFrameRef = useRef<HTMLCanvasElement | null>(null);
-  const recPeaksRef = useRef<unknown>([]);
+  const animFrameRef = useRef<any>(null);
+  const recPeaksRef = useRef<any>([]);
 
   // --- Player state ---
-  const audioRef = useRef<HTMLCanvasElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const playerCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
-  const [peaks, setPeaks] = useState(null);
-  const playAnimRef = useRef<unknown>(null);
-  const prevSrcRef = useRef<unknown>(src);
+  const [peaks, setPeaks] = useState<any>(null);
+  const playAnimRef = useRef<any>(null);
+  const prevSrcRef = useRef<any>(src);
 
   // -- Reset player state when src changes (prevents stale audio across conversations) --
   useEffect(() => {
@@ -145,10 +145,10 @@ export default function AudioPlayerRecorderComponent({
       // Reset the HTMLAudioElement to prevent zombie paused state
       const audio = audioRef.current;
       if (audio) {
-        (audio as unknown).pause();
-        (audio as unknown).currentTime = 0;
+        audio.pause();
+        audio.currentTime = 0;
         // Force reload when src changes to clear internal media state
-        (audio as unknown).load();
+        audio.load();
       }
     }
   }, [src]);
@@ -159,8 +159,8 @@ export default function AudioPlayerRecorderComponent({
     const animRef = playAnimRef;
     return () => {
       if (audio) {
-        (audio as unknown).pause();
-        (audio as unknown).currentTime = 0;
+        audio.pause();
+        audio.currentTime = 0;
       }
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
@@ -170,7 +170,7 @@ export default function AudioPlayerRecorderComponent({
   useEffect(() => {
     if (!src) return;
     let cancelled = false;
-    decodePeaks(src).then(({ peaks: p, duration: d }: unknown) => {
+    decodePeaks(src).then(({ peaks: p, duration: d }: any) => {
       if (cancelled) return;
       setPeaks(p);
       // Use decoded duration as source of truth (WebM metadata often reports Infinity)
@@ -228,14 +228,14 @@ export default function AudioPlayerRecorderComponent({
     const analyser = analyserRef.current;
     if (!canvas || !analyser) return;
 
-    const bufferLength = (analyser as unknown).frequencyBinCount;
+    const bufferLength = (analyser as any).frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     const maxBars = Math.floor((canvas as HTMLCanvasElement).width / (BAR_WIDTH + BAR_GAP));
     let frameCount = 0;
 
     const draw = () => {
       animFrameRef.current = requestAnimationFrame(draw);
-      (analyser as unknown).getByteTimeDomainData(dataArray);
+      (analyser as any).getByteTimeDomainData(dataArray);
 
       // Only sample a new peak every ~4 frames (~15 peaks/sec at 60fps)
       frameCount++;
@@ -257,6 +257,7 @@ export default function AudioPlayerRecorderComponent({
 
       // Redraw every frame for smoothness
       const context = (canvas as HTMLCanvasElement).getContext("2d");
+      if (!context) return;
       const w = (canvas as HTMLCanvasElement).width;
       const h = (canvas as HTMLCanvasElement).height;
       context.clearRect(0, 0, w, h);
@@ -313,14 +314,14 @@ export default function AudioPlayerRecorderComponent({
 
       const recorder = new MediaRecorder(stream);
       audioChunksRef.current = [];
-      recorder.ondataavailable = (e: React.SyntheticEvent) => {
+      recorder.ondataavailable = (e: any) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const reader = new FileReader();
-        reader.onload = (ev: unknown) => {
-          onRecordingComplete?.(ev.target.result);
+        reader.onload = (ev: any) => {
+          onRecordingComplete?.(ev.target?.result);
         };
         reader.readAsDataURL(blob);
         stream.getTracks().forEach((t) => t.stop());
@@ -343,11 +344,11 @@ export default function AudioPlayerRecorderComponent({
   const togglePlayback = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying) (audio as unknown).pause();
-    else (audio as unknown).play();
+    if (isPlaying) audio.pause();
+    else audio.play();
   };
 
-  const handleCanvasSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCanvasSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     const canvas = playerCanvasRef.current;
     const audio = audioRef.current;
     if (!canvas || !audio || !duration) return;
@@ -356,7 +357,7 @@ export default function AudioPlayerRecorderComponent({
       0,
       Math.min(1, (e.clientX - rect.left) / rect.width),
     );
-    (audio as unknown).currentTime = ratio * duration;
+    audio.currentTime = ratio * duration;
     setCurrentTime(ratio * duration);
   };
 
@@ -420,15 +421,15 @@ export default function AudioPlayerRecorderComponent({
             ref={audioRef}
             src={src}
             preload="metadata"
-            onLoadedMetadata={(e: React.SyntheticEvent) => {
-              if (Number.isFinite(e.target.duration))
+            onLoadedMetadata={(e: any) => {
+              if (Number.isFinite(e.target?.duration))
                 setDuration(e.target.duration);
             }}
-            onDurationChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-              if (Number.isFinite(e.target.duration))
+            onDurationChange={(e: any) => {
+              if (Number.isFinite(e.target?.duration))
                 setDuration(e.target.duration);
             }}
-            onTimeUpdate={(e: React.SyntheticEvent) => setCurrentTime(e.target.currentTime)}
+            onTimeUpdate={(e: any) => setCurrentTime(e.target?.currentTime || 0)}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onEnded={() => setIsPlaying(false)}
@@ -476,15 +477,15 @@ export default function AudioPlayerRecorderComponent({
           ref={audioRef}
           src={src}
           preload="metadata"
-          onLoadedMetadata={(e: React.SyntheticEvent) => {
-            if (Number.isFinite(e.target.duration))
+          onLoadedMetadata={(e: any) => {
+            if (Number.isFinite(e.target?.duration))
               setDuration(e.target.duration);
           }}
-          onDurationChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-            if (Number.isFinite(e.target.duration))
+          onDurationChange={(e: any) => {
+            if (Number.isFinite(e.target?.duration))
               setDuration(e.target.duration);
           }}
-          onTimeUpdate={(e: React.SyntheticEvent) => setCurrentTime(e.target.currentTime)}
+          onTimeUpdate={(e: any) => setCurrentTime(e.target?.currentTime || 0)}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}
@@ -528,12 +529,12 @@ export default function AudioPlayerRecorderComponent({
             max={1}
             step={0.01}
             value={muted ? 0 : volume}
-            onChange={(value) => {
+            onChange={(value: any) => {
               setVolume(value);
               setMuted(value === 0);
               if (audioRef.current) {
-                (audioRef.current as HTMLAudioElement).volume = value;
-                (audioRef.current as HTMLAudioElement).muted = value === 0;
+                audioRef.current.volume = value;
+                audioRef.current.muted = value === 0;
               }
             }}
             compact

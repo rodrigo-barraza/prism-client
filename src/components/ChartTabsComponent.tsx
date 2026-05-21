@@ -11,11 +11,24 @@ import styles from "./ChartTabsComponent.module.css";
  *   activeTab — current active tab key
  *   onChange  — (key) => void
  */
+interface TabItem {
+  key: string;
+  label: string;
+  color?: string;
+  unit?: string;
+}
+
+interface ChartTabsProps {
+  tabs?: TabItem[];
+  activeTab: string;
+  onChange: (key: string) => void;
+}
+
 export default function ChartTabsComponent({
   tabs = [],
   activeTab,
   onChange,
-}: unknown) {
+}: ChartTabsProps) {
   return (
     <div className={styles.tabs}>
       {tabs.map((tab) => (
@@ -23,7 +36,7 @@ export default function ChartTabsComponent({
           key={tab.key}
           type="button"
           className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ""}`}
-          {...(SoundService as Record<string, unknown>).interactive(() => onChange(tab.key))}
+          {...(SoundService as any).interactive(() => onChange(tab.key))}
           style={
             activeTab === tab.key && tab.color
               ? { color: tab.color, borderColor: tab.color }

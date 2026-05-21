@@ -346,7 +346,7 @@ export const costColumns = (
     sortable: true,
     align: "right",
     render: (row: TableRow) => (
-      <CostBadgeComponent cost={row[costKey] as number | undefined} mini={mini} />
+      <CostBadgeComponent cost={(row[costKey] as number) || 0} mini={mini} />
     ),
   },
   {

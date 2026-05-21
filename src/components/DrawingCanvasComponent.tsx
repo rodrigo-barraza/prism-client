@@ -51,7 +51,7 @@ const CANVAS_H = 600;
  *   onSave(url)  – called with PNG data URL on save
  *   onClose()    – close without saving
  */
-export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
+export default function DrawingCanvas({ src, onSave, onClose }: any) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -60,8 +60,8 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
   const [color, setColor] = useState(COLORS[0].value);
   const [sizeIdx, setSizeIdx] = useState(1);
   const [drawing, setDrawing] = useState(false);
-  const [strokes, setStrokes] = useState<unknown[]>([]);
-  const [currentStroke, setCurrentStroke] = useState<unknown>(null);
+  const [strokes, setStrokes] = useState<any[]>([]);
+  const [currentStroke, setCurrentStroke] = useState<any>(null);
   const [canvasSize, setCanvasSize] = useState({ w: CANVAS_W, h: CANVAS_H });
   const [displaySize, setDisplaySize] = useState({ w: 0, h: 0 });
   const [bgReady, setBgReady] = useState(!src);
@@ -98,9 +98,9 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
       requestAnimationFrame(() => {
         const bgCanvas = bgCanvasRef.current;
         if (!bgCanvas) return;
-        (bgCanvas as unknown).width = image.naturalWidth;
-        (bgCanvas as unknown).height = image.naturalHeight;
-        const context = (bgCanvas as unknown).getContext("2d");
+        (bgCanvas as any).width = image.naturalWidth;
+        (bgCanvas as any).height = image.naturalHeight;
+        const context = (bgCanvas as any).getContext("2d");
         context.drawImage(image, 0, 0);
       });
     };
@@ -124,7 +124,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
-  const renderStroke = (context: unknown, stroke: unknown) => {
+  const renderStroke = (context: any, stroke: any) => {
     context.save();
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -187,10 +187,10 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
 
   /* -- Drawing helpers -- */
 
-  const redrawAll = useCallback((strokeList: unknown) => {
+  const redrawAll = useCallback((strokeList: any[]) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as HTMLCanvasElement).getContext("2d");
+    const context = (canvas as HTMLCanvasElement).getContext("2d") as any;
     context.clearRect(0, 0, (canvas as HTMLCanvasElement).width, (canvas as HTMLCanvasElement).height);
     for (const s of strokeList) {
       renderStroke(context, s);
@@ -203,7 +203,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
 
   /* -- Coordinate helpers -- */
 
-  const getPos = (e: React.PointerEvent | PointerEvent) => {
+  const getPos = (e: any) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = (canvas as HTMLCanvasElement).getBoundingClientRect();
@@ -220,7 +220,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
 
   /* -- Pointer handlers -- */
 
-  const handlePointerDown = (e: React.PointerEvent) => {
+  const handlePointerDown = (e: any) => {
     e.preventDefault();
     const position = getPos(e);
     const isEraser = tool === "eraser";
@@ -246,19 +246,19 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
     setDrawing(true);
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
+  const handlePointerMove = (e: any) => {
     if (!drawing || !currentStroke) return;
     e.preventDefault();
     const position = getPos(e);
 
     let updated;
     if (
-      (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).tool === "pen" ||
-      (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).tool === "eraser"
+      (currentStroke as any).tool === "pen" ||
+      (currentStroke as any).tool === "eraser"
     ) {
       updated = {
         ...currentStroke,
-        points: [...(currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points, position],
+        points: [...((currentStroke as any).points || []), position],
       };
     } else {
       updated = { ...currentStroke, end: position };
@@ -276,10 +276,10 @@ export default function DrawingCanvas({ src, onSave, onClose }: unknown) {
     if (!drawing || !currentStroke) return;
 
     const isValid =
-      (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).tool === "pen" ||
-      (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).tool === "eraser"
-        ? (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points.length >= 2
-        : (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).start && (currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).end;
+      (currentStroke as any).tool === "pen" ||
+      (currentStroke as any).tool === "eraser"
+        ? ((currentStroke as any).points || []).length >= 2
+        : (currentStroke as any).start && (currentStroke as any).end;
 
     if (isValid) {
       setStrokes((prev) => [...prev, currentStroke]);

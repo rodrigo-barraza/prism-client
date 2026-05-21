@@ -51,26 +51,26 @@ import styles from "./SettingsPageComponent.module.css";
  *   - "Agent Defaults" section for subagent/worker model configuration
  */
 export default function SettingsPageComponent() {
-  const [config, setConfig] = useState<unknown>(null);
-  const [settings, setSettings] = useState<unknown>(null);
-  const [defaults, setDefaults] = useState<unknown>(null);
+  const [config, setConfig] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(null);
+  const [defaults, setDefaults] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [customAgents, setCustomAgents] = useState<unknown[]>([]);
-  const [availableTools, setAvailableTools] = useState<unknown[]>([]);
-  const [harnesses, setHarnesses] = useState<unknown[]>([]);
-  const [expandedGuide, setExpandedGuide] = useState<unknown>(null); // 'docker' | 'local' | null
-  const [copiedBlock, setCopiedBlock] = useState<unknown>(null);
+  const [customAgents, setCustomAgents] = useState<any[]>([]);
+  const [availableTools, setAvailableTools] = useState<any[]>([]);
+  const [harnesses, setHarnesses] = useState<any[]>([]);
+  const [expandedGuide, setExpandedGuide] = useState<any>(null); // 'docker' | 'local' | null
+  const [copiedBlock, setCopiedBlock] = useState<any>(null);
 
   // -- Workspace state ------------------------------------------------
   const { refreshWorkspaces } = useWorkspace();
-  const [wsWorkspaces, setWsWorkspaces] = useState<unknown[]>([]);
-  const [wsAgents, setWsAgents] = useState<unknown[]>([]);
+  const [wsWorkspaces, setWsWorkspaces] = useState<any[]>([]);
+  const [wsAgents, setWsAgents] = useState<any[]>([]);
   const [wsAddPath, setWsAddPath] = useState("");
-  const [wsValidation, setWsValidation] = useState<unknown>(null);
+  const [wsValidation, setWsValidation] = useState<any>(null);
   const [wsAdding, setWsAdding] = useState(false);
-  const wsValidateTimer = useRef<unknown>(null);
+  const wsValidateTimer = useRef<any>(null);
 
   /** Detect Windows-style path for instant client-side preview */
   const isWindowsPath = (p) => /^[A-Za-z]:[/\\]/.test(p);
@@ -118,7 +118,7 @@ export default function SettingsPageComponent() {
 
     // Fetch full workspace config (workspaces + agents)
     WorkspaceService.listFull()
-      .then(({ workspaces, agents }: unknown) => {
+      .then(({ workspaces, agents }: any) => {
         setWsWorkspaces(workspaces || []);
         setWsAgents(agents || []);
       })

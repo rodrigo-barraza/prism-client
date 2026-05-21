@@ -87,7 +87,7 @@ export default function ToolBadgeComponent({
 }: ToolBadgeProps) {
   const isCompact = variant === "compact";
   const displayName = resolveDisplayName(name, variant);
-  const { Icon, color } = resolveToolVisuals(name);
+  const { Icon, color } = resolveToolVisuals(name) as any;
   const tooltipLabel = tooltip || name;
 
   const badge = (

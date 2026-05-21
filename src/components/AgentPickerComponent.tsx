@@ -42,7 +42,7 @@ const AGENT_ICONS: Record<string, unknown> = {
 };
 
 /** Render the correct icon for an agent — image logo > custom icon field > built-in map. */
-export function renderAgentIcon(agent: unknown, size = 15) {
+export function renderAgentIcon(agent: any, size = 15) {
   // Image-based agent logos (e.g. OMNI)
   const imageSrc = AGENT_IMAGES[agent?.id];
   if (imageSrc) {
@@ -58,11 +58,11 @@ export function renderAgentIcon(agent: unknown, size = 15) {
   }
   // Custom agents store an icon name string
   if (typeof agent?.icon === "string" && agent.icon) {
-    const Resolved = resolveIconComponent(agent.icon);
+    const Resolved = resolveIconComponent(agent.icon) as any;
     return <Resolved size={size} />;
   }
   // Built-in agents use the hardcoded map
-  const BuiltIn = AGENT_ICONS[agent?.id] || Bot;
+  const BuiltIn = (AGENT_ICONS[agent?.id] || Bot) as any;
   return <BuiltIn size={size} />;
 }
 
@@ -81,13 +81,13 @@ export default function AgentPickerComponent({
   addMode = false,
   addCount = 0,
   onAddAgent,
-}: unknown) {
+}: any) {
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef<unknown>(null);
+  const triggerRef = useRef<any>(null);
 
   const activeAgent = addMode
     ? null
-    : agents.find((a) => a.id === activeAgentId) || agents[0];
+    : agents.find((a: any) => a.id === activeAgentId) || agents[0];
 
   const handleSelect = useCallback(
     (agentId: unknown) => {
@@ -101,7 +101,7 @@ export default function AgentPickerComponent({
   );
 
   const handleAdd = useCallback(
-    (agent) => {
+    (agent: any) => {
       onAddAgent?.(agent);
     },
     [onAddAgent],
@@ -187,7 +187,7 @@ export default function AgentPickerComponent({
         <>
           <div className={styles.backdrop} onClick={() => setOpen(false)} />
           <div className={styles.popover}>
-            {agents.map((agent) => {
+            {agents.map((agent: any) => {
               const isActive = !addMode && agent.id === activeAgentId;
 
               return (

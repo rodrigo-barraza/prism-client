@@ -53,7 +53,7 @@ function NodePorts({
   onOutputPortClick,
   onPortHover,
   onPortLeave,
-}: unknown) {
+}: any) {
   const nodeWidth = getNodeWidth(node);
   const portStartY = HEADER_HEIGHT + configOffset + 8;
   const isConversationNode =
@@ -63,12 +63,12 @@ function NodePorts({
   return (
     <>
       {/* Input ports */}
-      {inputTypes.map((portId, i) => {
+      {inputTypes.map((portId: any, i: any) => {
         const compound = parseCompoundPort(portId);
         const baseMod = compound ? compound.modality : portId;
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
-        const color = (MODALITY_COLORS as Record<string, unknown>)[baseMod] || "#888";
+        const color = (MODALITY_COLORS as Record<string, string>)[baseMod] || "#888";
         const isCompatible =
           connecting &&
           getBaseModality(connecting.sourceModality) === baseMod &&
@@ -77,9 +77,9 @@ function NodePorts({
           hoveredPort?.nodeId === node.id &&
           hoveredPort?.type === "input" &&
           hoveredPort?.modality === portId;
-        const Icon = (MODALITY_ICONS as Record<string, unknown>)[baseMod]?.icon;
+        const Icon = (MODALITY_ICONS as Record<string, any>)[baseMod]?.icon;
         const hasPrismSource = connections.some(
-          (c) =>
+          (c: any) =>
             c.targetNodeId === node.id &&
             c.targetModality === portId &&
             (nodeStatuses[c.sourceNodeId] === "running" ||
@@ -88,28 +88,28 @@ function NodePorts({
         const hasDoneSource =
           hasPrismSource &&
           connections.some(
-            (c) =>
+            (c: any) =>
               c.targetNodeId === node.id &&
               c.targetModality === portId &&
               nodeStatuses[c.sourceNodeId] === "done",
           ) &&
           !connections.some(
-            (c) =>
+            (c: any) =>
               c.targetNodeId === node.id &&
               c.targetModality === portId &&
               nodeStatuses[c.sourceNodeId] === "running",
           );
 
-        let label = (MODALITY_ICONS as Record<string, unknown>)[baseMod]?.label || baseMod;
+        let label = (MODALITY_ICONS as Record<string, any>)[baseMod]?.label || baseMod;
         if (compound && isConversationNode) {
           const message = nodeMessages[compound.index];
           const roleLabel =
-            (ROLE_LABELS as Record<string, unknown>)[message?.role] ||
+            (ROLE_LABELS as Record<string, any>)[message?.role] ||
             message?.role ||
             `#${compound.index}`;
           const roleCount = nodeMessages
             .slice(0, compound.index)
-            .filter((m) => m.role === message?.role).length;
+            .filter((m: any) => m.role === message?.role).length;
           const numberedRole =
             roleCount > 0 ? `${roleLabel} ${roleCount + 1}` : roleLabel;
           if (message?.role === "system") {
@@ -191,11 +191,11 @@ function NodePorts({
       })}
 
       {/* Output ports */}
-      {outputTypes.map((modality, i) => {
+      {outputTypes.map((modality: any, i: any) => {
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
-        const color = (MODALITY_COLORS as Record<string, unknown>)[modality] || "#888";
-        const Icon = (MODALITY_ICONS as Record<string, unknown>)[modality]?.icon;
+        const color = (MODALITY_COLORS as Record<string, string>)[modality] || "#888";
+        const Icon = (MODALITY_ICONS as Record<string, any>)[modality]?.icon;
         const isActive =
           connecting?.sourceNodeId === node.id &&
           connecting?.sourceModality === modality;
@@ -225,7 +225,7 @@ function NodePorts({
               }
               onMouseLeave={onPortLeave}
             >
-              <title>{`OUT · ${(MODALITY_ICONS as Record<string, unknown>)[modality]?.label || modality} · ${node.id}`}</title>
+              <title>{`OUT · ${(MODALITY_ICONS as Record<string, any>)[modality]?.label || modality} · ${node.id}`}</title>
             </circle>
             {Icon && (
               <foreignObject
@@ -253,7 +253,7 @@ function NodePorts({
               textAnchor="end"
               className={styles.portLabel}
             >
-              {(MODALITY_ICONS as Record<string, unknown>)[modality]?.label || modality}
+              {(MODALITY_ICONS as Record<string, any>)[modality]?.label || modality}
             </text>
           </g>
         );
@@ -265,7 +265,7 @@ function NodePorts({
 /**
  * Shared port props builder to avoid repeating in both node types.
  */
-function usePortProps(props: unknown) {
+function usePortProps(props: any) {
   return {
     connecting: props.connecting,
     hoveredPort: props.hoveredPort,
@@ -308,7 +308,7 @@ function NodeShell({
   statusGradient,
   portProps,
   children,
-}: unknown) {
+}: any) {
   const isRunning = status === "running";
   const isDone = status === "done";
   const statusBorder = isRunning
@@ -480,7 +480,7 @@ function NodeShell({
 /**
  * Renders a model node (AI model step).
  */
-function ModelNode(props: unknown) {
+function ModelNode(props: any) {
   const {
     node,
     status,
@@ -550,8 +550,8 @@ function ModelNode(props: unknown) {
         />
       )}
       {/* Modality icons from model's input types */}
-      {modalityIcons.map((modality) => {
-        const mod = (MODALITY_ICONS as Record<string, unknown>)[modality];
+      {modalityIcons.map((modality: any) => {
+        const mod = (MODALITY_ICONS as Record<string, any>)[modality];
         if (!mod) return null;
         const Icon = mod.icon;
         return (
@@ -640,14 +640,14 @@ function ModelNode(props: unknown) {
                     type="file"
                     accept="image/*,audio/*"
                     className={styles.assetFileInput}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       const reader = new FileReader();
                       reader.onload = () => {
                         const modality = file.type.startsWith("image")
-                          ? "image"
-                          : "audio";
+                           ? "image"
+                           : "audio";
                         onUpdateConfig?.(node.id, "staticInputs", {
                           ...node.staticInputs,
                           [modality]: reader.result,
@@ -681,7 +681,7 @@ function ModelNode(props: unknown) {
 /**
  * Handle file drop/upload for file input nodes.
  */
-function handleFileInputChange(nodeId: unknown, file: unknown, onUpdateFileInput: unknown) {
+function handleFileInputChange(nodeId: any, file: any, onUpdateFileInput: any) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
@@ -693,7 +693,7 @@ function handleFileInputChange(nodeId: unknown, file: unknown, onUpdateFileInput
 /**
  * Renders an asset node (input asset or output viewer).
  */
-function AssetNode(props: unknown) {
+function AssetNode(props: any) {
   const {
     node,
     status,
@@ -726,14 +726,14 @@ function AssetNode(props: unknown) {
   const width = getNodeWidth(node);
   const inputTypes = node.inputTypes || [];
   const outputTypes = node.outputTypes || [];
-  const accentColor = isViewer
+  const accentColor = (isViewer
     ? "#a78bfa"
-    : (MODALITY_COLORS as Record<string, unknown>)[node.modality] || "#8b5cf6";
+    : (MODALITY_COLORS as Record<string, string>)[node.modality] || "#8b5cf6") as string;
   const AssetIcon = isViewer
     ? Eye
     : node.modality
-      ? (ASSET_ICONS as Record<string, unknown>)[node.modality] ||
-        (MODALITY_ICONS as Record<string, unknown>)[node.modality]?.icon ||
+      ? (ASSET_ICONS as Record<string, any>)[node.modality] ||
+        (MODALITY_ICONS as Record<string, any>)[node.modality]?.icon ||
         Paperclip
       : Paperclip;
 
@@ -757,7 +757,7 @@ function AssetNode(props: unknown) {
 
   const typeLabel = isViewer
     ? NODE_LABELS.viewer
-    : (NODE_LABELS as Record<string, unknown>)[node.modality] || "Media";
+    : (NODE_LABELS as Record<string, string>)[node.modality] || "Media";
   const displayTitle = node.customName || typeLabel;
 
   const handleStartRename = () => {
@@ -772,7 +772,7 @@ function AssetNode(props: unknown) {
     setIsRenaming(false);
   };
 
-  const handleRenameKeyDown = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleFinishRename();
     if (e.key === "Escape") setIsRenaming(false);
   };
@@ -805,7 +805,7 @@ function AssetNode(props: unknown) {
           className={styles.nodeRenameInput}
           style={{ color: accentColor }}
           value={renameValue}
-          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setRenameValue(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRenameValue(e.target.value)}
           onBlur={handleFinishRename}
           onKeyDown={handleRenameKeyDown}
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
@@ -836,8 +836,8 @@ function AssetNode(props: unknown) {
       {/* Modality icons for conversation input */}
       {isConversation &&
         conversationModalities.length > 0 &&
-        conversationModalities.map((modality) => {
-          const mod = (MODALITY_ICONS as Record<string, unknown>)[modality];
+        conversationModalities.map((modality: any) => {
+          const mod = (MODALITY_ICONS as Record<string, any>)[modality];
           if (!mod) return null;
           const Icon = mod.icon;
           return (
@@ -938,7 +938,7 @@ function AssetNode(props: unknown) {
                             [{node.receivedOutputs.embedding.length} dims] [
                             {node.receivedOutputs.embedding
                               .slice(0, 4)
-                              .map((v) => v.toFixed(4))
+                              .map((v: any) => v.toFixed(4))
                               .join(", ")}
                             …]
                           </div>
@@ -980,11 +980,11 @@ function AssetNode(props: unknown) {
                   /* File input: upload / drag-drop zone or preview */
                   <div
                     className={styles.assetUploadArea}
-                    onDragOver={(e: React.SyntheticEvent) => {
+                    onDragOver={(e: React.DragEvent) => {
                       e.preventDefault();
                       e.stopPropagation();
                     }}
-                    onDrop={(e: React.SyntheticEvent) => {
+                    onDrop={(e: React.DragEvent) => {
                       e.preventDefault();
                       e.stopPropagation();
                       const file = e.dataTransfer?.files?.[0];
@@ -1039,7 +1039,7 @@ function AssetNode(props: unknown) {
                     ) : (
                       <AssetInputOptions
                         compact
-                        onFile={(dataUrl: unknown, mimeType: unknown) =>
+                        onFile={(dataUrl: any, mimeType: any) =>
                           onUpdateFileInput?.(node.id, dataUrl, mimeType)
                         }
                       />
@@ -1112,7 +1112,7 @@ function AssetNode(props: unknown) {
 /**
  * Renders a tool (function calling) node.
  */
-function ToolNode(props: unknown) {
+function ToolNode(props: any) {
   const {
     node,
     status,
@@ -1135,10 +1135,10 @@ function ToolNode(props: unknown) {
   const customToolsList = node.customTools || [];
   const disabledTools = new Set(node.disabledTools || []);
   const enabledBuiltIn = builtInTools.filter(
-    (t: unknown) => !disabledTools.has(t.name),
+    (t: any) => !disabledTools.has(t.name),
   ).length;
   const enabledCustom = customToolsList.filter(
-    (t: unknown) => !disabledTools.has(t.name || t._id),
+    (t: any) => !disabledTools.has(t.name || t._id),
   ).length;
   const totalEnabled = enabledBuiltIn + enabledCustom;
   const totalTools = builtInTools.length + customToolsList.length;
@@ -1158,11 +1158,11 @@ function ToolNode(props: unknown) {
   const MAX_PILLS = 6;
   const allToolNames = [
     ...builtInTools
-      .filter((t) => !disabledTools.has(t.name))
-      .map((t) => t.name),
+      .filter((t: any) => !disabledTools.has(t.name))
+      .map((t: any) => t.name),
     ...customToolsList
-      .filter((t) => !disabledTools.has(t.name || t._id))
-      .map((t) => t.name),
+      .filter((t: any) => !disabledTools.has(t.name || t._id))
+      .map((t: any) => t.name),
   ];
   const displayedTools = allToolNames.slice(0, MAX_PILLS);
   const remainingCount = allToolNames.length - displayedTools.length;
@@ -1281,7 +1281,7 @@ function ToolNode(props: unknown) {
 /**
  * WorkflowNode — dispatches to ModelNode, ToolNode, or AssetNode based on nodeType.
  */
-export default function WorkflowNode(props: unknown) {
+export default function WorkflowNode(props: any) {
   if (props.node.nodeType === "tools") {
     return <ToolNode {...props} />;
   }

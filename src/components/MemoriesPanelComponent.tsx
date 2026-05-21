@@ -75,16 +75,16 @@ export default function MemoriesPanel({
   consolidationEvent,
   onCountChange,
   memoryConfigured = true,
-}: unknown) {
-  const [memories, setMemories] = useState<unknown[]>([]);
+}: any) {
+  const [memories, setMemories] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<unknown>(null);
+  const [error, setError] = useState<any>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
   const [newMemoryIds, setNewMemoryIds] = useState(new Set());
   const [consolidating, setConsolidating] = useState(false);
-  const [toast, setToast] = useState<unknown>(null);
-  const knownIdsRef = useRef<unknown>(new Set());
+  const [toast, setToast] = useState<any>(null);
+  const knownIdsRef = useRef<any>(new Set());
 
   // -- Search & filter state ----------------------------------
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,7 +92,7 @@ export default function MemoriesPanel({
   const [dateTo, setDateTo] = useState("");
 
   // History state
-  const [history, setHistory] = useState<unknown[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
 
@@ -121,7 +121,7 @@ export default function MemoriesPanel({
 
       setMemories(fetched);
       setTotal(result.total || 0);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load memories:", error);
       setError(error.message);
     } finally {
@@ -134,7 +134,7 @@ export default function MemoriesPanel({
     try {
       const result = await PrismService.getConsolidationHistory(project, 5);
       setHistory(result.history || []);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load consolidation history:", error);
     } finally {
       setHistoryLoading(false);
@@ -175,7 +175,7 @@ export default function MemoriesPanel({
     setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, [consolidationEvent]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleDelete = useCallback(async (memoryId: unknown) => {
+  const handleDelete = useCallback(async (memoryId: any) => {
     try {
       await PrismService.deleteAgentMemory(memoryId);
       // Optimistic removal from local state
@@ -184,7 +184,7 @@ export default function MemoriesPanel({
       );
       setTotal((prev) => Math.max(0, prev - 1));
       setConfirmingDeleteId(null);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to delete memory:", error);
     }
   }, []);
@@ -193,7 +193,7 @@ export default function MemoriesPanel({
     setConsolidating(true);
     setToast(null);
     try {
-      const result: unknown = await PrismService.consolidateMemories(project, agent);
+      const result: any = await PrismService.consolidateMemories(project, agent);
       if (result.skipped) {
         const message =
           result.reason === "daily_limit_reached"
@@ -213,7 +213,7 @@ export default function MemoriesPanel({
       } else {
         setToast({ type: "info", text: result.summary || "No changes needed" });
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       setToast({
         type: "error",
         text: `Consolidation failed: ${error.message}`,
@@ -374,9 +374,9 @@ export default function MemoriesPanel({
 
       {toast && (
         <div
-          className={`${styles.toast} ${styles[`toast${(toast as unknown).type.charAt(0).toUpperCase() + (toast as unknown).type.slice(1)}`]}`}
+          className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}
         >
-          {(toast as unknown).text}
+          {toast.text}
         </div>
       )}
 
@@ -391,7 +391,7 @@ export default function MemoriesPanel({
         <DatePickerComponent
           from={dateFrom}
           to={dateTo}
-          onChange={({ from, to }: unknown) => {
+          onChange={({ from, to }: any) => {
             setDateFrom(from);
             setDateTo(to);
           }}
@@ -420,7 +420,7 @@ export default function MemoriesPanel({
                 <span
                   className={`${styles.historyTrigger} ${styles[`trigger${run.trigger?.charAt(0).toUpperCase()}${run.trigger?.slice(1)}`] || ""}`}
                 >
-                  {(TRIGGER_LABELS as Record<string, unknown>)[run.trigger] ||
+                  {(TRIGGER_LABELS as any)[run.trigger] ||
                     run.trigger ||
                     "unknown"}
                 </span>
@@ -459,10 +459,10 @@ export default function MemoriesPanel({
       {filteredMemories.map((memory) => {
         const memoryId = memory.id || memory._id;
         const type = memory.type || "project";
-        const IconComponent = (TYPE_ICONS as Record<string, unknown>)[type] || FolderKanban;
+        const IconComponent = (TYPE_ICONS as any)[type] || FolderKanban;
         const iconClass =
-          (TYPE_ICON_CLASSES as Record<string, unknown>)[type] || "memoryIconProject";
-        const badgeClass = (TYPE_BADGE_CLASSES as Record<string, unknown>)[type] || "badgeProject";
+          (TYPE_ICON_CLASSES as any)[type] || "memoryIconProject";
+        const badgeClass = (TYPE_BADGE_CLASSES as any)[type] || "badgeProject";
         const isConfirming = confirmingDeleteId === memoryId;
         const isNew = newMemoryIds.has(memoryId);
 

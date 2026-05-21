@@ -24,12 +24,12 @@ function QuestionBlock({
   isPending,
   onAnswer,
   answeredWith = null,
-}: unknown) {
-  const [selected, setSelected] = useState<unknown>(multiSelect ? [] : null);
+}: any) {
+  const [selected, setSelected] = useState<any>(multiSelect ? [] : null);
   const [freeText, setFreeText] = useState("");
   const [annotations, setAnnotations] = useState("");
   const [showAnnotations, setShowAnnotations] = useState(false);
-  const [previewIdx, setPreviewIdx] = useState(null);
+  const [previewIdx, setPreviewIdx] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Auto-focus input when there are no options or after mount
@@ -39,11 +39,11 @@ function QuestionBlock({
     }
   }, [isPending, options.length]);
 
-  const handleOptionClick = (label) => {
+  const handleOptionClick = (label: any) => {
     if (multiSelect) {
-      setSelected((prev) =>
+      setSelected((prev: any) =>
         prev.includes(label)
-          ? prev.filter((l) => l !== label)
+          ? prev.filter((l: any) => l !== label)
           : [...prev, label],
       );
     } else {
@@ -94,7 +94,7 @@ function QuestionBlock({
           className={`${styles.optionsRow} ${activePreview ? styles.withPreview : ""}`}
         >
           <div className={styles.optionsList}>
-            {options.map((opt, i) => {
+            {options.map((opt: any, i: number) => {
               const isSelected = multiSelect
                 ? selected?.includes(opt.label)
                 : selected === opt.label;
@@ -213,7 +213,7 @@ export default function UserQuestionCardComponent({
   // ── Backward compat (single question) ─────
   question,
   choices = [],
-}: unknown) {
+}: any) {
   // Normalize: single question props → questions array
   const normalizedQuestions = useMemo(() => {
     if (questions.length > 0) return questions;
@@ -222,7 +222,7 @@ export default function UserQuestionCardComponent({
         {
           question,
           header: null,
-          options: choices.map((c) => ({ label: c, preview: null })),
+          options: choices.map((c: any) => ({ label: c, preview: null })),
           multiSelect: false,
         },
       ];
@@ -231,17 +231,17 @@ export default function UserQuestionCardComponent({
   }, [questions, question, choices]);
 
   // Track answers per question index
-  const [collectedAnswers, setCollectedAnswers] = useState<Record<string, unknown>>({});
+  const [collectedAnswers, setCollectedAnswers] = useState<any>({});
   const isMultiQuestion = normalizedQuestions.length > 1;
   const allAnswered = isMultiQuestion
     ? Object.keys(collectedAnswers).length === normalizedQuestions.length
     : false;
 
   const handleQuestionAnswer = useCallback(
-    (index: unknown, answerData: unknown) => {
+    (index: any, answerData: any) => {
       if (isMultiQuestion) {
         // Collect answers for batch submission
-        setCollectedAnswers((prev) => ({ ...prev, [index]: answerData }));
+        setCollectedAnswers((prev: any) => ({ ...prev, [index]: answerData }));
       } else {
         // Single question — submit immediately
         onAnswer?.([answerData]);
@@ -253,7 +253,7 @@ export default function UserQuestionCardComponent({
   const handleSubmitAll = useCallback(() => {
     if (!allAnswered) return;
     const orderedAnswers = normalizedQuestions.map(
-      (_: unknown, i: unknown) => (collectedAnswers as Record<string, unknown>)[i],
+      (_: any, i: number) => (collectedAnswers as any)[i],
     );
     onAnswer?.(orderedAnswers);
   }, [allAnswered, normalizedQuestions, collectedAnswers, onAnswer]);
@@ -282,7 +282,7 @@ export default function UserQuestionCardComponent({
       )}
 
       {/* Questions */}
-      {normalizedQuestions.map((q, i) => (
+      {normalizedQuestions.map((q: any, i: number) => (
         <QuestionBlock
           key={i}
           index={i}
@@ -294,8 +294,8 @@ export default function UserQuestionCardComponent({
           onAnswer={(answerData: unknown) => handleQuestionAnswer(i, answerData)}
           answeredWith={
             !isPending
-              ? answeredWith?.[i]?.answer || answeredWith?.[i]
-              : (collectedAnswers as Record<string, unknown>)[i]?.answer || null
+              ? (answeredWith as any)?.[i]?.answer || (answeredWith as any)?.[i]
+              : (collectedAnswers as Record<string, any>)[i]?.answer || null
           }
         />
       ))}

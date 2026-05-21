@@ -204,7 +204,7 @@ function getInputParams(tool) {
 
 // -- Tool Detail Modal --------------------------------------------
 
-function ToolDetailModal({ tool, onClose, agents, stats, allTools }: unknown) {
+function ToolDetailModal({ tool, onClose, agents, stats, allTools }: any) {
   const router = useRouter();
   const required = new Set(tool.parameters?.required || []);
   const inputParams = getInputParams(tool);
@@ -527,7 +527,7 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: unknown) {
 
 // -- Tool Card (Grid view) ----------------------------------------
 
-function ToolCard({ tool, onClick, agents }: unknown) {
+function ToolCard({ tool, onClick, agents }: any) {
   const paramCount = countParams(tool);
   return (
     <ToolSchemaCard
@@ -568,7 +568,7 @@ function ToolCard({ tool, onClick, agents }: unknown) {
 
 // -- Tool Row (List view) -----------------------------------------
 
-function ToolRow({ tool, onClick, agents }: unknown) {
+function ToolRow({ tool, onClick, agents }: any) {
   const paramCount = countParams(tool);
   return (
     <div className={styles.toolRow} onClick={onClick}>
@@ -604,7 +604,7 @@ function ToolRow({ tool, onClick, agents }: unknown) {
 // -- Main Component -----------------------------------------------
 
 export default function ToolsPageComponent() {
-  const [tools, setTools] = useState<unknown[]>([]);
+  const [tools, setTools] = useState<any[]>([]);
   const [agents, setAgents] = useState<Array<AgentPersona | typeof NONE_AGENT>>([]);
   const [toolStats, setToolStats] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);

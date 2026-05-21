@@ -42,7 +42,7 @@ export function serializeEditable(element: Node) {
 }
 
 export interface WorkspaceEntry {
-  path: string;
+  path?: string;
   name: string;
   type: string;
   children?: WorkspaceEntry[];
@@ -229,11 +229,13 @@ export function applyMentionToTextNode(
   cursorOffset: number,
   badge: HTMLElement,
 ) {
-  const before = textNode.textContent.slice(0, anchorOffset);
-  const after = textNode.textContent.slice(cursorOffset);
-  textNode.textContent = before;
+  const before = textNode.textContent || "";
+  const slicedBefore = before.slice(0, anchorOffset);
+  const after = before.slice(cursorOffset);
+  textNode.textContent = slicedBefore;
   const space = document.createTextNode(" ");
   const parent = textNode.parentNode;
+  if (!parent) return space;
   const next = textNode.nextSibling;
   parent.insertBefore(badge, next);
   parent.insertBefore(space, badge.nextSibling);

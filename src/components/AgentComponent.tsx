@@ -280,11 +280,11 @@ interface ClientMessage extends Message {
   _processingStartTime?: number;
   _ttftSamples?: number[];
   _statusProgress?: unknown;
-  _workerGenerationProgress?: Record<string, unknown>;
+  _workerGenerationProgress?: any;
   _workerTokens?: {
-    input: number;
-    output: number;
-    requests: number;
+    input?: number;
+    output?: number;
+    requests?: number;
   };
   _liveGenProgress?: {
     inputTokens?: number;
@@ -328,7 +328,7 @@ export default function AgentComponent({
     ? undefined
     : activeAgentData?.project || PROJECT_AGENT;
   const agentBackgroundImage = activeAgentData?.backgroundImage || "";
-  const rawEmptyState = isNoAgent
+  const rawEmptyState = (isNoAgent
     ? NONE_EMPTY_STATE
     : (AGENT_EMPTY_STATE as Record<string, unknown>)[agentId] ||
       (activeAgentData?.name
@@ -339,7 +339,7 @@ export default function AgentComponent({
               "AI-powered agent with tool access.",
             placeholder: `Talk to ${activeAgentData.name}...`,
           }
-        : DEFAULT_EMPTY_STATE);
+        : DEFAULT_EMPTY_STATE)) as any;
   const emptyState = {
     ...rawEmptyState,
     subtitle: activeAgentData?.description || rawEmptyState.subtitle,
@@ -379,7 +379,7 @@ export default function AgentComponent({
 
   // -- File viewer pane state (VS Code-style read-only viewer) --
   const [viewerOpenFiles, setViewerOpenFiles] = useState<ViewerOpenFile[]>([]);
-  const [viewerActiveFileId, setViewerActiveFileId] = useState<unknown>(null);
+  const [viewerActiveFileId, setViewerActiveFileId] = useState<any>(null);
   const [viewerRefreshKey, setViewerRefreshKey] = useState(0);
   const viewerOpenFilesRef = useRef<ViewerOpenFile[]>(viewerOpenFiles);
   viewerOpenFilesRef.current = viewerOpenFiles;
@@ -390,7 +390,7 @@ export default function AgentComponent({
   });
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
-  const [workerToolActivity, setWorkerToolActivity] = useState<Record<string, unknown>>({});
+  const [workerToolActivity, setWorkerToolActivity] = useState<Record<string, any>>({});
 
   // Track which tabs have received new data the user hasn't viewed yet
   const [newDataTabs, setNewDataTabs] = useState(new Set());
@@ -430,7 +430,7 @@ export default function AgentComponent({
   // Count concurrent API calls: main generation + active worker agents
   const activeApiCount = useMemo(() => {
     const activeWorkers = Object.values(workerToolActivity).filter(
-      (w: Record<string, unknown>) =>
+      (w: any) =>
         w.currentTool || w.phase === "generating" || w.phase === "thinking",
     ).length;
     return (isGenerating ? 1 : 0) + activeWorkers;
@@ -458,7 +458,7 @@ export default function AgentComponent({
     thinkingEnabled: boolean;
     codeExecutionEnabled?: boolean;
     urlContextEnabled?: boolean;
-    [key: string]: unknown;
+    [key: string]: any;
   }>({
     ...SETTINGS_DEFAULTS,
     maxTokens: 64000,
@@ -473,7 +473,7 @@ export default function AgentComponent({
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   const [pendingImages, setPendingImages] = useState<string[]>([]);
-  const [lightboxSrc, setLightboxSrc] = useState<unknown>(null);
+  const [lightboxSrc, setLightboxSrc] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef<number>(0);
 
@@ -497,13 +497,13 @@ export default function AgentComponent({
     if (workerIter != null) setMaxWorkerIterations(workerIter);
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
-  const [pendingApprovals, setPendingApprovals] = useState<Array<{id: string; name: string; args: Record<string, unknown>}>>([]);
-  const [pendingUserQuestion, setPendingUserQuestion] = useState<{question: string; choices?: string[]; context?: string} | null>(null); // { question, choices, context }
+  const [pendingApprovals, setPendingApprovals] = useState<Array<any>>([]);
+  const [pendingUserQuestion, setPendingUserQuestion] = useState<any | null>(null); // { question, choices, context }
   const [planProposal, setPlanProposal] = useState<{plan: string; steps?: string[]; status?: string} | null>(null); // { plan, steps, status }
   const [agenticProgress, setAgenticProgress] = useState<{iteration: number; maxIterations: number} | null>(null); // { iteration, maxIterations }
   const [_contextTruncated, setContextTruncated] = useState<{strategy: string; estimatedTokens?: number} | null>(null); // { strategy, estimatedTokens }
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
-  const [backendSessionStats, setBackendSessionStats] = useState<Record<string, unknown> | null>(null); // aggregate from /admin/sessions/:id/stats
+  const [backendSessionStats, setBackendSessionStats] = useState<any | null>(null); // aggregate from /admin/sessions/:id/stats
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
 
   // Frontend-side high-water marks for token display.
@@ -601,14 +601,14 @@ export default function AgentComponent({
     // could arrive, leaving activity entries stuck in active phases.
     setWorkerToolActivity((prev) => {
       const hasActive = Object.values(prev).some(
-        (w: Record<string, unknown>) => w.phase && w.phase !== "complete" && w.phase !== "failed",
+        (w: any) => w.phase && w.phase !== "complete" && w.phase !== "failed",
       );
       if (!hasActive) return prev;
-      const next = {};
-      for (const [id, w] of Object.entries(prev as Record<string, unknown>)) {
-        (next as Record<string, unknown>)[id] =
+      const next: Record<string, any> = {};
+      for (const [id, w] of Object.entries(prev)) {
+        next[id] =
           w.phase && w.phase !== "complete" && w.phase !== "failed"
-            ? { ...(w as Record<string, unknown>), phase: "complete", currentTool: null }
+            ? { ...w, phase: "complete", currentTool: null }
             : w;
       }
       return next;
@@ -625,7 +625,7 @@ export default function AgentComponent({
   }, [isNoAgent]);
 
   // -- Filtered config: only tool-calling models for agents; all text models for Direct Chat ------------
-  const filteredConfig = useMemo(() => {
+  const filteredConfig = useMemo<any>(() => {
     if (!config) return null;
 
     // Direct Chat: show ALL text models — no FC restriction
@@ -639,19 +639,19 @@ export default function AgentComponent({
     }
 
     const textModelsMap = config.textToText?.models || {};
-    const filteredTextModels = {};
+    const filteredTextModels: Record<string, any> = {};
 
     for (const [provider, models] of Object.entries(
-      textModelsMap as Record<string, unknown[]>,
+      textModelsMap as Record<string, any[]>,
     )) {
-      const fcModels = models.filter((m) =>
+      const fcModels = models.filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );
-      if (fcModels.length > 0) (filteredTextModels as Record<string, unknown>)[provider] = fcModels;
+      if (fcModels.length > 0) filteredTextModels[provider] = fcModels;
     }
 
     const filteredProviderList = (config.providerList || []).filter(
-      (p) => (filteredTextModels as Record<string, unknown>)[p],
+      (p) => filteredTextModels[p],
     );
 
     return {
@@ -671,7 +671,7 @@ export default function AgentComponent({
   const supportsImageInput = useMemo(() => {
     if (!filteredConfig) return false;
     const models = filteredConfig.textToText?.models?.[settings.provider] || [];
-    const modelDef = models.find((m) => m.name === settings.model);
+    const modelDef = models.find((m: any) => m.name === settings.model);
     return modelDef?.inputTypes?.includes("image") ?? false;
   }, [filteredConfig, settings.provider, settings.model]);
 
@@ -899,7 +899,7 @@ export default function AgentComponent({
           .reverse()
           .find((m) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
-          const gs: unknown = lastAssistant.generationSettings || {};
+          const gs: any = lastAssistant.generationSettings || {};
           setSettings((prev) => ({
             ...prev,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
@@ -990,8 +990,8 @@ export default function AgentComponent({
   // -- Fetch memory settings to determine if memories are configured --
   useEffect(() => {
     PrismService.getSettings()
-      .then((s) => {
-        const mem = s?.memory || {};
+      .then((s: any) => {
+        const mem = ((s as any)?.memory || {}) as any;
         setMemoryConfigured(
           Boolean(
             mem.extractionProvider &&
@@ -1071,10 +1071,10 @@ export default function AgentComponent({
     setSessions((prev) => {
       const index = prev.findIndex((s) => s.id === activeId);
       if (index === -1) return prev;
-      const existing = prev[index];
+      const existing: any = prev[index];
       // Only patch if something actually changed to avoid churn
       const resolvedCost = backendSessionStats?.totalCost ?? totalCost;
-      const resolvedModalities =
+      const resolvedModalities: any =
         backendSessionStats?.modalities ?? modalities;
       const resolvedToolCounts =
         backendSessionStats?.toolCounts ?? undefined;
@@ -1083,11 +1083,11 @@ export default function AgentComponent({
       const resolvedModels =
         uniqueModels.length > 0 ? uniqueModels : existing._liveModelNames;
       // Shallow equality check — skip update if nothing visually changed
-      const prevMod = existing._liveModalities;
+      const prevMod: any = existing._liveModalities;
       const modSame =
         prevMod &&
         Object.keys(resolvedModalities).every(
-          (k) => prevMod[k] === resolvedModalities[k],
+          (k) => (prevMod as any)[k] === (resolvedModalities as any)[k],
         );
       if (
         modSame &&
@@ -1099,7 +1099,7 @@ export default function AgentComponent({
       ) {
         return prev;
       }
-      const updated = [...prev];
+      const updated: any[] = [...prev];
       updated[index] = {
         ...existing,
         title,
@@ -1127,7 +1127,7 @@ export default function AgentComponent({
 
   // -- Fetch backend-aggregate session stats ----------------
   const fetchSessionStats = useCallback(
-    (sessionId: unknown) => {
+    (sessionId: any) => {
       if (!sessionId) return;
       // Direct Chat sessions live in the conversations collection which
       // doesn't have the stats aggregation endpoint — skip.
@@ -1196,14 +1196,14 @@ export default function AgentComponent({
 
   /** Create a styled mention badge span (wraps the pure fn). */
   const createMentionBadge = useCallback(
-    (path: unknown, name: unknown, type: unknown, fetchOptions?: unknown) => {
+    (path: any, name: any, type: any, fetchOptions?: any) => {
       return _createMentionBadge(path, name, type, fetchOptions);
     },
     [],
   );
 
   // -- Stable input change handler -----------------------------
-  const handleInputChange = useCallback((_e: unknown) => {
+  const handleInputChange = useCallback((_e: any) => {
     const element = textareaRef.current;
     if (!element) return;
     const value = serializeEditable(element);
@@ -1215,7 +1215,7 @@ export default function AgentComponent({
   }, []);
 
   // Helper to programmatically set the editable value (quick prompts, queue cancel)
-  const setTextareaValue = useCallback((text) => {
+  const setTextareaValue = useCallback((text: string) => {
     inputValueRef.current = text;
     setHasInput(text.trim().length > 0);
     if (textareaRef.current) {
@@ -1224,7 +1224,7 @@ export default function AgentComponent({
   }, []);
 
   /** Strip HTML on paste — contentEditable should only accept plain text. */
-  const handleEditablePaste = useCallback((e: React.SyntheticEvent) => {
+  const handleEditablePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     const text = e.clipboardData.getData("text/plain");
     const sel = window.getSelection();
@@ -1245,11 +1245,11 @@ export default function AgentComponent({
   // -- File mention handler (@ in workspace tree) ---------------
   // Inserts a styled badge at the current cursor position.
   const handleMentionFile = useCallback(
-    (filePath: unknown) => {
+    (filePath: string) => {
       const element = textareaRef.current;
       if (!element) return;
       const name = filePath.split("/").pop();
-      const isDir = !name.includes(".");
+      const isDir = !name?.includes(".");
       const badge = createMentionBadge(
         filePath,
         name,
@@ -1291,7 +1291,7 @@ export default function AgentComponent({
   // -- File-line mention handler (@ gutter in FileViewerPanel) --
   // Inserts a file-line badge (e.g. 📄 file.js:42 or 📄 file.js:10-25)
   const handleMentionLines = useCallback(
-    (filePath: unknown, startLine: unknown, endLine: unknown) => {
+    (filePath: string, startLine: number, endLine: number) => {
       const element = textareaRef.current;
       if (!element) return;
       const name = filePath.split("/").pop();
@@ -1333,15 +1333,15 @@ export default function AgentComponent({
   );
 
   // ── Mention Autocomplete ───────────────────────────────────────
-  const mentionCacheRef = useRef<unknown>(null);
+  const mentionCacheRef = useRef<any>(null);
   const mentionLoadingRef = useRef<boolean>(false);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionIndex, setMentionIndex] = useState(0);
-  const mentionAnchorRef = useRef<unknown>(null); // { node, offset } of the `@`
+  const mentionAnchorRef = useRef<any>(null); // { node, offset } of the `@`
   const mentionListRef = useRef<HTMLDivElement | null>(null);
   // Set of known workspace paths — used for mention badge staleness detection
-  const [knownPaths, setKnownPaths] = useState<unknown>(null);
+  const [knownPaths, setKnownPaths] = useState<any>(null);
 
   const currentWorkspacePath = currentWorkspace?.path;
   const ensureMentionCache = useCallback(async () => {
@@ -1376,7 +1376,7 @@ export default function AgentComponent({
 
   /** Detect @query from cursor position inside contentEditable. */
   const detectMentionQuery = useCallback(
-    (element: unknown) => {
+    (element: any) => {
       const sel = window.getSelection();
       if (!sel || !sel.rangeCount || !element.contains(sel.anchorNode)) {
         setMentionOpen(false);
@@ -1407,7 +1407,7 @@ export default function AgentComponent({
     },
     [ensureMentionCache],
   );
-  const detectMentionQueryRef = useRef<unknown>(detectMentionQuery);
+  const detectMentionQueryRef = useRef<any>(detectMentionQuery);
   detectMentionQueryRef.current = detectMentionQuery;
 
   const mentionResults = useMemo(() => {
@@ -1417,7 +1417,7 @@ export default function AgentComponent({
 
   /** Apply mention — replace @query text with a badge span. */
   const applyMention = useCallback(
-    (entry) => {
+    (entry: any) => {
       const element = textareaRef.current;
       if (!element || !mentionAnchorRef.current) return;
       const { node, offset } = mentionAnchorRef.current;
@@ -1440,26 +1440,28 @@ export default function AgentComponent({
   );
 
   // -- Image handlers ------------------------------------------
-  const handleImageSelect = useCallback((e: React.SyntheticEvent) => {
-    const files = Array.from(e.target.files);
-    for (const file of files as unknown[]) {
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    for (const file of files) {
       const reader = new FileReader();
-      reader.onload = (ev: unknown) => {
-        setPendingImages((prev) => [...prev, ev.target.result]);
+      reader.onload = (ev: any) => {
+        if (ev.target?.result) {
+          setPendingImages((prev) => [...prev, ev.target.result]);
+        }
       };
-      reader.readAsDataURL(file as Blob);
+      reader.readAsDataURL(file);
     }
     e.target.value = "";
   }, []);
 
-  const removeImage = useCallback((index) => {
+  const removeImage = useCallback((index: number) => {
     setPendingImages((prev) =>
       prev.filter((_, i) => i !== index),
     );
   }, []);
 
   const handleDragEnter = useCallback(
-    (e: React.SyntheticEvent) => {
+    (e: React.DragEvent<any>) => {
       e.preventDefault();
       e.stopPropagation();
       dragCounter.current++;
@@ -1470,7 +1472,7 @@ export default function AgentComponent({
     [supportsImageInput],
   );
 
-  const handleDragLeave = useCallback((e: React.SyntheticEvent) => {
+  const handleDragLeave = useCallback((e: React.DragEvent<any>) => {
     e.preventDefault();
     e.stopPropagation();
     dragCounter.current--;
@@ -1479,13 +1481,13 @@ export default function AgentComponent({
     }
   }, []);
 
-  const handleDragOver = useCallback((e: React.SyntheticEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent<any>) => {
     e.preventDefault();
     e.stopPropagation();
   }, []);
 
   const handleDrop = useCallback(
-    (e: React.SyntheticEvent) => {
+    (e: React.DragEvent<any>) => {
       e.preventDefault();
       e.stopPropagation();
       setIsDragging(false);
@@ -1493,19 +1495,21 @@ export default function AgentComponent({
       if (!supportsImageInput) return;
       const files = Array.from(e.dataTransfer?.files || []);
       const images = files.filter((f) => f.type.startsWith("image/"));
-      for (const file of images as unknown[]) {
+      for (const file of images) {
         const reader = new FileReader();
-        reader.onload = (ev: unknown) => {
-          setPendingImages((prev) => [...prev, ev.target.result]);
+        reader.onload = (ev: any) => {
+          if (ev.target?.result) {
+            setPendingImages((prev) => [...prev, ev.target.result]);
+          }
         };
-        reader.readAsDataURL(file as Blob);
+        reader.readAsDataURL(file);
       }
     },
     [supportsImageInput],
   );
 
   const handlePaste = useCallback(
-    (e: React.SyntheticEvent) => {
+    (e: React.ClipboardEvent<any>) => {
       if (!supportsImageInput) return;
       const items = Array.from(e.clipboardData?.items || []);
       const files = items
@@ -1513,13 +1517,15 @@ export default function AgentComponent({
           (item) => item.kind === "file" && item.type.startsWith("image/"),
         )
         .map((item) => item.getAsFile())
-        .filter(Boolean);
+        .filter((file): file is File => file !== null);
       if (files.length === 0) return;
       e.preventDefault();
       for (const file of files) {
         const reader = new FileReader();
-        reader.onload = (ev: unknown) => {
-          setPendingImages((prev) => [...prev, ev.target.result]);
+        reader.onload = (ev: any) => {
+          if (ev.target?.result) {
+            setPendingImages((prev) => [...prev, ev.target.result]);
+          }
         };
         reader.readAsDataURL(file);
       }
@@ -1529,13 +1535,13 @@ export default function AgentComponent({
 
   // -- Orchestration loop ---------------------------------------
   const runOrchestrationLoop = useCallback(
-    async (sessionMessages: unknown, resolvedTitle: unknown) => {
+    async (sessionMessages: any, resolvedTitle: any) => {
       const currentMessages = [...sessionMessages];
       // Capture which session this generation belongs to — if the user
       // switches sessions, streaming callbacks will skip UI updates.
       const genSessionId = agentSessionIdRef.current;
 
-      await new Promise((resolve: unknown, reject: unknown) => {
+      await new Promise<void>((resolve, reject) => {
         // -- Build payload: Direct Chat (/chat) vs Agent (/agent) --
         const payload = isNoAgent
           ? {
@@ -1632,8 +1638,8 @@ export default function AgentComponent({
 
         let streamedText = "";
         let streamedThinking = "";
-        let firstChunkTime: unknown = null;
-        let prevChunkTime: unknown = null; // previous chunk's timestamp for delta accumulation
+        let firstChunkTime: any = null;
+        let prevChunkTime: any = null; // previous chunk's timestamp for delta accumulation
         let burstTokens = 0; // tokens in current generation burst (resets on gap)
         let burstElapsed = 0; // elapsed in current generation burst (resets on gap)
         const CHUNK_GAP_THRESHOLD = 500; // ms — gaps larger than this are processing/tool pauses
@@ -1641,11 +1647,11 @@ export default function AgentComponent({
         // contentSegments: ordered list of { type: "thinking", fragmentIndex } | { type: "text", fragmentIndex } | { type: "tools", toolIds: [...] }
         // textFragments: array of strings, one per text segment — the text delta between tool groups
         // thinkingFragments: array of strings, one per thinking segment — the thinking delta between tool groups
-        const contentSegments: unknown[] = [];
-        const textFragments: unknown[] = [];
-        const thinkingFragments: unknown[] = [];
+        const contentSegments: any[] = [];
+        const textFragments: any[] = [];
+        const thinkingFragments: any[] = [];
         const segmentToolIdSet = new Set(); // Dedup: track tool IDs already in contentSegments
-        let lastSegmentType: unknown = null; // "thinking" | "text" | "tools"
+        let lastSegmentType: any = null; // "thinking" | "text" | "tools"
         let prevCleanLen = 0; // length of cleanTextRaw at last onChunk — used for computing deltas
         let prevThinkingLen = 0; // length of thinking text at last onThinking — used for computing deltas
 
@@ -1665,7 +1671,7 @@ export default function AgentComponent({
           ? PrismService.streamText
           : PrismService.streamAgentText;
         abortRef.current = streamFn(payload, {
-          onChunk: (content: unknown, _sourceModel: unknown, outputCharacters: unknown) => {
+          onChunk: (content: any, _sourceModel: any, outputCharacters: any) => {
             streamedText += content;
             // Backend sends authoritative running token count on each chunk
             burstTokens++;
@@ -1738,9 +1744,9 @@ export default function AgentComponent({
             });
           },
           onThinking: (
-            content: unknown,
-            _sourceModel: unknown,
-            outputCharacters: unknown,
+            content: any,
+            _sourceModel: any,
+            outputCharacters: any,
           ) => {
             streamedThinking += content;
             if (isStale()) return;
@@ -1806,7 +1812,7 @@ export default function AgentComponent({
               return updated;
             });
           },
-          onToolExecution: (data) => {
+          onToolExecution: (data: any) => {
             if (isStale()) return;
             const tc = data.tool;
             setToolActivity((prev) => {
@@ -1864,7 +1870,7 @@ export default function AgentComponent({
                   return activity;
                 });
               }
-              setMessages((msgPrev: unknown) => {
+              setMessages((msgPrev: any) => {
                 const array = [...msgPrev];
                 const last = array[array.length - 1];
                 if (last?.role === "assistant") {
@@ -1918,17 +1924,17 @@ export default function AgentComponent({
                 // delete_file and move_file both remove the source path
                 if (tc.name === "delete_file" || tc.name === "move_file") {
                   const deleted = openFiles.find(
-                    (f: {key: string}) => f.path === mutatedPath,
+                    (f: any) => f.path === mutatedPath,
                   );
                   if (deleted) {
                     setViewerOpenFiles((prev) => {
                       const next = prev.filter(
-                        (f: {key: string}) => f.path !== mutatedPath,
+                        (f: any) => f.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: unknown) => {
                         if (activeId !== deleted.id) return activeId;
                         const closedIdx = prev.findIndex(
-                          (f: {key: string}) => f.id === deleted.id,
+                          (f: any) => f.id === deleted.id,
                         );
                         const newActive =
                           next[Math.min(closedIdx, next.length - 1)];
@@ -1945,7 +1951,7 @@ export default function AgentComponent({
             }
           },
           // LM Studio native MCP tool calls (toolCall events)
-          onToolCall: (tc: unknown) => {
+          onToolCall: (tc: any) => {
             if (isStale()) return;
             setToolActivity((prev) => {
               let updated;
@@ -2002,7 +2008,7 @@ export default function AgentComponent({
                   return activity;
                 });
               }
-              setMessages((msgPrev: unknown) => {
+              setMessages((msgPrev: any) => {
                 const array = [...msgPrev];
                 const last = array[array.length - 1];
                 if (last?.role === "assistant") {
@@ -2055,17 +2061,17 @@ export default function AgentComponent({
                 // delete_file and move_file both remove the source path
                 if (tc.name === "delete_file" || tc.name === "move_file") {
                   const deleted = openFiles.find(
-                    (f: {key: string}) => f.path === mutatedPath,
+                    (f: any) => f.path === mutatedPath,
                   );
                   if (deleted) {
                     setViewerOpenFiles((prev) => {
                       const next = prev.filter(
-                        (f: {key: string}) => f.path !== mutatedPath,
+                        (f: any) => f.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: unknown) => {
                         if (activeId !== deleted.id) return activeId;
                         const closedIdx = prev.findIndex(
-                          (f: {key: string}) => f.id === deleted.id,
+                          (f: any) => f.id === deleted.id,
                         );
                         const newActive =
                           next[Math.min(closedIdx, next.length - 1)];
@@ -2080,7 +2086,7 @@ export default function AgentComponent({
               }
             }
           },
-          onToolOutput: (data) => {
+          onToolOutput: (data: any) => {
             if (isStale()) return;
             if (data.event === "stdout" || data.event === "stderr") {
               setStreamingOutputs((prev: Map<string, string>) => {
@@ -2092,7 +2098,7 @@ export default function AgentComponent({
               });
             }
           },
-          onApprovalRequired: (data) => {
+          onApprovalRequired: (data: any) => {
             if (isStale()) return;
             setPendingApprovals((prev) => [
               ...prev,
@@ -2123,7 +2129,7 @@ export default function AgentComponent({
               return updated;
             });
           },
-          onUserQuestion: (data) => {
+          onUserQuestion: (data: any) => {
             if (isStale()) return;
             setPendingUserQuestion({
               // Multi-question payload (new)
@@ -2151,7 +2157,7 @@ export default function AgentComponent({
               return updated;
             });
           },
-          onPlanProposal: (data) => {
+          onPlanProposal: (data: any) => {
             if (isStale()) return;
 
             // Inject plan as a content segment so it renders in-flow —
@@ -2190,7 +2196,7 @@ export default function AgentComponent({
               status: isPending ? "pending" : "approved",
             });
           },
-          onStatus: (statusData: unknown) => {
+          onStatus: (statusData: any) => {
             if (isStale()) return;
             // statusData is now the full SSE data object { type, message, iteration?, maxIterations? }
             if (statusData?.message === "iteration_progress") {
@@ -2311,7 +2317,7 @@ export default function AgentComponent({
             }
           },
           // -- Worker agent live events -----------------------------
-          onWorkerToolExecution: (data) => {
+          onWorkerToolExecution: (data: any) => {
             if (isStale()) return;
             setWorkerToolActivity((prev) => {
               const raw = prev[data.workerId];
@@ -2346,7 +2352,7 @@ export default function AgentComponent({
               };
             });
           },
-          onWorkerStatus: (data) => {
+          onWorkerStatus: (data: any) => {
             if (isStale()) return;
             if (data.message === "spawned") {
               // Early mapping: store workerId indexed by description
@@ -2546,7 +2552,7 @@ export default function AgentComponent({
               }));
             }
           },
-          onUsageUpdate: (data) => {
+          onUsageUpdate: (data: any) => {
             if (isStale()) return;
             setMessages((prev) => {
               const updated = [...prev];
@@ -2589,7 +2595,7 @@ export default function AgentComponent({
               return updated;
             });
           },
-          onDone: (data) => {
+          onDone: (data: any) => {
             if (!isStale()) {
               setMessages((prev) => {
                 const updated = [...prev];
@@ -2684,15 +2690,15 @@ export default function AgentComponent({
   // -- Send handler ---------------------------------------------
   // Read inputValue from ref at send-time to avoid re-creating
   // handleSend on every keystroke (the main cause of input lag).
-  const pendingImagesRef = useRef<unknown>(pendingImages);
+  const pendingImagesRef = useRef<any>(pendingImages);
   pendingImagesRef.current = pendingImages;
-  const messagesRef = useRef<unknown>(messages);
+  const messagesRef = useRef<any>(messages);
   messagesRef.current = messages;
-  const titleRef = useRef<unknown>(title);
+  const titleRef = useRef<any>(title);
   titleRef.current = title;
 
   const handleSend = useCallback(
-    async (e?: unknown, fetchOptions: unknown = {}) => {
+    async (e?: any, fetchOptions: any = {}) => {
       if (e && typeof e.preventDefault === "function") e.preventDefault();
 
       const { isQueueing = false, overridePayload = null } = fetchOptions;
@@ -2761,7 +2767,7 @@ export default function AgentComponent({
             title: resolvedTitle,
             updatedAt: now,
             createdAt: now,
-          },
+          } as any,
           ...prev,
         ]);
       }
@@ -2791,7 +2797,7 @@ export default function AgentComponent({
         await runOrchestrationLoop(updatedMessages, resolvedTitle);
         // Messages are already updated by the streaming callbacks — just reload history
         loadSessions();
-      } catch (error: unknown) {
+      } catch (error: any) {
         setMessages((prev) => [
           ...prev,
           {
@@ -2845,7 +2851,7 @@ export default function AgentComponent({
   );
 
   const handleKeyDown = useCallback(
-    (e: React.SyntheticEvent) => {
+    (e: React.KeyboardEvent<any>) => {
       // -- Mention autocomplete keyboard nav --
       if (mentionOpen && mentionResults.length > 0) {
         if (e.key === "ArrowDown") {
@@ -2999,9 +3005,9 @@ export default function AgentComponent({
 
   /* ── Chat header "New Session" glitch effect ────────────────── */
   const chatNewBtnRef = useRef<HTMLButtonElement | null>(null);
-  const chatRainbowTimer = useRef<HTMLButtonElement | null>(null);
-  const chatGlitchInterval = useRef<HTMLButtonElement | null>(null);
-  const [chatGlitchLabel, setChatGlitchLabel] = useState<unknown>(null);
+  const chatRainbowTimer = useRef<any>(null);
+  const chatGlitchInterval = useRef<any>(null);
+  const [chatGlitchLabel, setChatGlitchLabel] = useState<any>(null);
 
   const handleNewChatGlitch = useCallback(() => {
     const element = chatNewBtnRef.current;
@@ -3029,7 +3035,7 @@ export default function AgentComponent({
 
   /** Apply fetched/snapshot session data to component state immediately. */
   const applySessionData = useCallback(
-    (full: unknown) => {
+    (full: any) => {
       if (!full) return;
 
       // ── Restore workspace selection from the session document ──
@@ -3133,7 +3139,7 @@ export default function AgentComponent({
   );
 
   const handleSelectSession = useCallback(
-    async (conversation: unknown) => {
+    async (conversation: any) => {
       // If generating, snapshot the current session so user can switch back to it
       if (isGenerating) {
         const currentId = agentSessionIdRef.current;
@@ -3168,7 +3174,7 @@ export default function AgentComponent({
       // If the target session is still generating in the background,
       // restore from the in-memory snapshot instead of hitting the backend
       // (which would 404 because the session hasn't been persisted yet).
-      const snapshot = backgroundSessionsRef.current.get(conversation.id);
+      const snapshot = backgroundSessionsRef.current.get(conversation.id) as any;
       if (snapshot && generatingSessionIds.has(conversation.id)) {
         applySessionData({
           id: conversation.id,
@@ -3191,7 +3197,7 @@ export default function AgentComponent({
         applySessionData(full);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
-      } catch (error: unknown) {
+      } catch (error: any) {
         const is404 =
           error.message?.includes("404") ||
           error.message?.includes("not found");
@@ -3229,7 +3235,7 @@ export default function AgentComponent({
   );
 
   const handleDeleteSession = useCallback(
-    async (convId: unknown) => {
+    async (convId: any) => {
       try {
         // Direct Chat sessions live in the conversations collection
         if (isNoAgent) {
@@ -3250,10 +3256,10 @@ export default function AgentComponent({
 
   // -- Open file in the FileViewerPanel (shared by workspace tree & mention badges) --
   const handleOpenFileInViewer = useCallback(
-    (absPath: unknown) => {
+    (absPath: any) => {
       const existingTab = viewerOpenFiles.find((f) => f.path === absPath);
       if (existingTab) {
-        setViewerActiveFileId((existingTab as unknown).id);
+        setViewerActiveFileId((existingTab as any).id);
       } else {
         const id = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         setViewerOpenFiles((prev) => [...prev, { id, path: absPath }]);
@@ -3384,7 +3390,7 @@ export default function AgentComponent({
             : []),
         ]}
         activeTab={leftTab}
-        onChange={(tab) => {
+        onChange={(tab: any) => {
           setLeftTab(tab);
           // User manually switched — cancel any pending ephemeral revert
           if (tabRevertTimerRef.current) {
@@ -3407,16 +3413,16 @@ export default function AgentComponent({
           settings={settings}
           onChange={
             isNoAgent
-              ? (updates: unknown) =>
+              ? (updates: any) =>
                   setSettings((s) => ({ ...s, ...updates }))
-              : (updates: unknown) =>
+              : (updates: any) =>
                   setSettings((s) => ({
                     ...s,
                     ...updates,
                     functionCallingEnabled: true,
                   }))
           }
-          hasAssistantImages={false}
+          _hasAssistantImages={false}
           lockedTools={isNoAgent ? new Set() : AGENT_LOCKED_TOOLS}
           hideSystemPrompt={!isNoAgent}
           sessionType={isNoAgent ? "chat" : "agent"}
@@ -3479,11 +3485,11 @@ export default function AgentComponent({
                 ]
           }
           sessionStats={
-            messages.length > 0
+            (messages.length > 0
               ? backendSessionStats
                 ? (() => {
                     // Map a backend sub-stats object to the display shape
-                    const mapSubStats = (sub: unknown) => {
+                    const mapSubStats = (sub: any) => {
                       if (!sub) return null;
                       return {
                         messageCount: sub.requestCount,
@@ -3560,13 +3566,13 @@ export default function AgentComponent({
                           output: Math.max(hwm.output, tokenOutput),
                           total: Math.max(hwm.total, tokenTotal),
                           cacheRead:
-                            (backendSessionStats as unknown)
+                            (backendSessionStats as any)
                               .totalCacheReadInputTokens || 0,
                           cacheWrite:
-                            (backendSessionStats as unknown)
+                            (backendSessionStats as any)
                               .totalCacheCreationInputTokens || 0,
                           reasoning:
-                            (backendSessionStats as unknown)
+                            (backendSessionStats as any)
                               .totalReasoningOutputTokens || 0,
                         };
                         tokenHwmRef.current = {
@@ -3671,7 +3677,7 @@ export default function AgentComponent({
                         };
                         return t;
                       })(),
-                      totalCost: totalCost + (bgUsage?.cost || 0),
+                      totalCost: (totalCost as number) + ((bgUsage?.cost || 0) as number),
                       originalTotalCost: 0,
                       // Merge client-side usedTools with live worker tool counts
                       usedTools: mergeUsedToolsWithWorkers(
@@ -3695,7 +3701,7 @@ export default function AgentComponent({
                       liveGenProgress,
                     };
                   })()
-              : null
+              : null) as any
           }
         />
       )}
@@ -3709,7 +3715,7 @@ export default function AgentComponent({
           onOpenFile={(relativePath: unknown) => {
             // Build absolute path from workspace root + relative path
             const absPath = currentWorkspace?.path
-              ? `${(currentWorkspace as unknown).path.replace(/\/$/, "")}/${relativePath}`
+              ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
             handleOpenFileInViewer(absPath);
           }}
@@ -3720,18 +3726,6 @@ export default function AgentComponent({
         <ModelInfoPanel
           config={filteredConfig}
           settings={settings}
-          onChange={
-            isNoAgent
-              ? (updates: unknown) =>
-                  setSettings((s) => ({ ...s, ...updates }))
-              : (updates: unknown) =>
-                  setSettings((s) => ({
-                    ...s,
-                    ...updates,
-                    functionCallingEnabled: true,
-                  }))
-          }
-          lockedTools={isNoAgent ? new Set() : AGENT_LOCKED_TOOLS}
         />
       )}
 
@@ -3752,7 +3746,7 @@ export default function AgentComponent({
       {leftTab === "params" && (
         <ParametersPanelComponent
           settings={settings}
-          onChange={(updates: unknown) =>
+          onChange={(updates: any) =>
             setSettings((s) => ({ ...s, ...updates }))
           }
           config={filteredConfig}
@@ -3883,7 +3877,7 @@ export default function AgentComponent({
           knownPaths={knownPaths}
           onMentionFileOpen={(relativePath: unknown) => {
             const absPath = currentWorkspace?.path
-              ? `${(currentWorkspace as unknown).path.replace(/\/$/, "")}/${relativePath}`
+              ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
             handleOpenFileInViewer(absPath);
           }}
@@ -3952,11 +3946,11 @@ export default function AgentComponent({
         {/* Pending user question card */}
         {pendingUserQuestion && (
           <UserQuestionCardComponent
-            questions={(pendingUserQuestion as unknown).questions}
-            question={(pendingUserQuestion as unknown).question}
-            choices={(pendingUserQuestion as unknown).choices}
-            context={(pendingUserQuestion as unknown).context}
-            onAnswer={(answers: unknown) => {
+            questions={(pendingUserQuestion as any).questions}
+            question={(pendingUserQuestion as any).question}
+            choices={(pendingUserQuestion as any).choices}
+            context={(pendingUserQuestion as any).context}
+            onAnswer={(answers: any) => {
               setPendingUserQuestion(null);
               PrismService.sendUserQuestionAnswer(
                 agentSessionId,
@@ -3976,11 +3970,11 @@ export default function AgentComponent({
           ? lastMsg?.statusPhase || "starting"
           : null;
         const hasActiveTools = toolActivity.some(
-          (t: unknown) => t.status === "calling",
+          (t: any) => t.status === "calling",
         );
         // Detect awaiting-approval state (plan proposal or tool approval pending)
         const isAwaitingApproval =
-          (planProposal as unknown)?.status === "pending" ||
+          (planProposal as any)?.status === "pending" ||
           pendingApprovals.some((a) => a.status === "pending") ||
           pendingUserQuestion !== null;
 
@@ -4077,7 +4071,7 @@ export default function AgentComponent({
             label={label}
             progress={progress}
             tokPerSec={orchestratorTokPerSec}
-            iteration={(agenticProgress as unknown)?.iteration || 0}
+            iteration={(agenticProgress as any)?.iteration || 0}
             maxIterations={
               Number.isFinite(maxIterations) ? maxIterations : undefined
             }
@@ -4122,8 +4116,8 @@ export default function AgentComponent({
                 <button
                   type="button"
                   onClick={() => {
-                    setTextareaValue((queuedNextTurn as unknown).text);
-                    setPendingImages((queuedNextTurn as unknown).images);
+                    setTextareaValue((queuedNextTurn as any).text);
+                    setPendingImages((queuedNextTurn as any).images);
                     setQueuedNextTurn(null);
                   }}
                   className={chatStyles.removeAttachment}
@@ -4132,15 +4126,15 @@ export default function AgentComponent({
                   <X size={14} />
                 </button>
               </div>
-              {(queuedNextTurn as unknown).text && (
+              {(queuedNextTurn as any).text && (
                 <div className={chatStyles.queuedText}>
-                  {(queuedNextTurn as unknown).text}
+                  {(queuedNextTurn as any).text}
                 </div>
               )}
-              {(queuedNextTurn as unknown).images?.length > 0 && (
+              {(queuedNextTurn as any).images?.length > 0 && (
                 <div className={chatStyles.queuedImagesCount}>
                   <Paperclip size={12} />{" "}
-                  {(queuedNextTurn as unknown).images.length} image(s)
+                  {(queuedNextTurn as any).images.length} image(s)
                 </div>
               )}
             </div>
@@ -4261,7 +4255,7 @@ export default function AgentComponent({
         <ImagePreviewComponent
           src={lightboxSrc}
           onClose={() => setLightboxSrc(null)}
-          onUseAnnotated={(dataUrl: unknown) => {
+          onUseAnnotated={(dataUrl: any) => {
             setPendingImages((prev) => [...prev, dataUrl]);
             setLightboxSrc(null);
           }}
@@ -4281,7 +4275,7 @@ export default function AgentComponent({
         />
       }
       leftPanel={leftPanel}
-      leftTitle={null}
+      leftTitle={undefined}
       fileViewerPanel={
         currentWorkspace &&
         hasFileOps && (
@@ -4289,25 +4283,25 @@ export default function AgentComponent({
             openFiles={viewerOpenFiles}
             activeFileId={viewerActiveFileId}
             onSelectFile={setViewerActiveFileId}
-            onCloseFile={(id) => {
+            onCloseFile={(id: any) => {
               setViewerOpenFiles((prev) => {
                 const next = prev.filter((f) => f.id !== id);
                 // If the closed tab was active, switch to the nearest tab
                 if (id === viewerActiveFileId) {
-                  const closedIdx = prev.findIndex((f: {key: string}) => f.id === id);
+                  const closedIdx = prev.findIndex((f: any) => f.id === id);
                   const newActive = next[Math.min(closedIdx, next.length - 1)];
                   setViewerActiveFileId(newActive?.id || null);
                 }
                 return next;
               });
             }}
-            onFileNotFound={(id) => {
+            onFileNotFound={(id: any) => {
               // Auto-close tabs for files that no longer exist
               setViewerOpenFiles((prev) => {
                 const next = prev.filter((f) => f.id !== id);
                 setViewerActiveFileId((activeId: unknown) => {
                   if (activeId !== id) return activeId;
-                  const closedIdx = prev.findIndex((f: {key: string}) => f.id === id);
+                  const closedIdx = prev.findIndex((f: any) => f.id === id);
                   const newActive = next[Math.min(closedIdx, next.length - 1)];
                   return newActive?.id || null;
                 });
@@ -4316,7 +4310,7 @@ export default function AgentComponent({
             }}
             isOpen={viewerOpenFiles.length > 0}
             width={viewerWidth}
-            onWidthChange={(w: Record<string, unknown>) => {
+            onWidthChange={(w: any) => {
               setViewerWidth(w);
               localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(w));
             }}
@@ -4337,7 +4331,7 @@ export default function AgentComponent({
           emptyText="No recent sessions"
           searchText="Search sessions..."
           countLabel="sessions"
-          generatingSessionIds={generatingSessionIds}
+          generatingSessionIds={generatingSessionIds as Set<string>}
           hasMore={sessionsHasMore}
           loadingMore={sessionsLoading}
           onLoadMore={loadMoreSessions}
@@ -4352,7 +4346,7 @@ export default function AgentComponent({
             <AgentPickerComponent
               agents={agents}
               activeAgentId={agentId}
-              onSelect={(id) => {
+              onSelect={(id: any) => {
                 // Agent switching is handled by the parent page via URL/state
                 // Emit a custom event or call a callback
                 window.dispatchEvent(
@@ -4366,10 +4360,10 @@ export default function AgentComponent({
             config={filteredConfig}
             settings={settings}
             disabled={isGenerating || isSessionLocked}
-            onSelectModel={(provider: unknown, modelName: unknown) => {
+            onSelectModel={(provider: any, modelName: any) => {
               const modelDef = (
                 filteredConfig?.textToText?.models?.[provider] || []
-              ).find((m) => m.name === modelName);
+              ).find((m: any) => m.name === modelName);
               const temp = modelDef?.defaultTemperature ?? 1.0;
               setSettings((s) => ({
                 ...s,

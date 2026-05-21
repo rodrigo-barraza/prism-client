@@ -58,6 +58,7 @@ export interface ModelOption {
   reasoningSummary?: boolean;
   verbosity?: boolean;
   jsonMode?: boolean;
+  defaultTemperature?: number;
 }
 
 export interface ModelDefaults {
@@ -1049,3 +1050,69 @@ export interface UserQuestionAnswer {
   answer: string | string[];
   annotations?: string;
 }
+
+// ─── Iris Stats ──────────────────────────────────────────────
+
+export interface IrisDashboardStats {
+  totalRequests: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCost: number;
+  totalDuration: number;
+  avgLatency: number;
+  avgTokensPerSec: number;
+  totalToolCalls: number;
+  successCount: number;
+  errorCount: number;
+  conversationCount: number;
+  sessionCount: number;
+  agentCount: number;
+  workspaceCount: number;
+}
+
+export interface IrisProjectStat {
+  project: string;
+  totalRequests: number;
+  totalCost?: number;
+  [key: string]: unknown;
+}
+
+export interface IrisModelStat {
+  provider: string;
+  model?: string;
+  totalRequests: number;
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  totalCost?: number;
+  avgLatency?: number;
+  avgTokensPerSec?: number;
+  conversationCount?: number;
+  workflowCount?: number;
+  sessionCount?: number;
+  [key: string]: unknown;
+}
+
+export interface IrisTimelineEntry {
+  hour?: string;
+  totalRequests: number;
+  totalCost?: number;
+  [key: string]: unknown;
+}
+
+export interface IrisProviderStat {
+  provider: string;
+  totalRequests: number;
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  totalCost?: number;
+  avgLatency?: number;
+  avgTokensPerSec?: number | null;
+  models?: string[];
+  modelCount?: number;
+  conversationCount?: number;
+  workflowCount?: number;
+  sessionCount?: number;
+  [key: string]: unknown;
+}
+
+

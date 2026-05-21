@@ -16,17 +16,17 @@ export default function RainbowCanvasComponent({
   palette,
   className,
   style,
-}: unknown) {
+}: any) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const stateRef = useRef<{frameIndex: number; timer: ReturnType<typeof setTimeout> | null; running: boolean}>({
+  const stateRef = useRef<any>({
     offset: 0,
     turboVelocity: 0,
     turboTime: 0,
     lastTime: 0,
   });
-  const turboRef = useRef<unknown>(turbo);
-  const animateRef = useRef<(() => void)>(animate);
-  const paletteRef = useRef<unknown>(palette || null);
+  const turboRef = useRef<any>(turbo);
+  const animateRef = useRef<boolean>(animate);
+  const paletteRef = useRef<any>(palette || null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -40,7 +40,8 @@ export default function RainbowCanvasComponent({
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as HTMLCanvasElement).getContext("2d", { alpha: false });
+    const context = canvas.getContext("2d", { alpha: false });
+    if (!context) return;
     const { width, height } = canvas;
     const cols = Math.ceil(width / PIXEL_SIZE);
     const rows = Math.ceil(height / PIXEL_SIZE);
@@ -76,7 +77,7 @@ export default function RainbowCanvasComponent({
 
     if (shouldRun && !rafRef.current) {
       stateRef.current.lastTime = 0;
-      const tick = (now: unknown) => {
+      const tick = (now: any) => {
         const s = stateRef.current;
         if (!s.lastTime) s.lastTime = now;
         const dt = (now - s.lastTime) / 1000;
@@ -114,21 +115,22 @@ export default function RainbowCanvasComponent({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const parent = (canvas as HTMLCanvasElement).parentElement;
+    const parent = canvas.parentElement;
+    if (!parent) return;
 
     const resize = () => {
       const rect = parent.getBoundingClientRect();
-      (canvas as HTMLCanvasElement).width = rect.width;
-      (canvas as HTMLCanvasElement).height = rect.height;
-      (canvas as HTMLCanvasElement).style.width = rect.width + "px";
-      (canvas as HTMLCanvasElement).style.height = rect.height + "px";
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      canvas.style.width = rect.width + "px";
+      canvas.style.height = rect.height + "px";
       draw();
     };
 
     resize();
     window.addEventListener("resize", resize);
 
-    let ro: unknown;
+    let ro: any;
     if (typeof ResizeObserver !== "undefined") {
       ro = new ResizeObserver(resize);
       ro.observe(parent);

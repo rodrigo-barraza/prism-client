@@ -30,7 +30,7 @@ export default function BenchmarkFormComponent({
   form,
   onChange,
   matchModes,
-}: unknown) {
+}: any) {
   const update = (field: unknown) => (e: React.SyntheticEvent) =>
     onChange((f: unknown) => ({ ...f, [field]: e.target.value }));
 

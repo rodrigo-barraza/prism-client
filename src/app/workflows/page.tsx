@@ -37,7 +37,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import { copyToClipboard } from "../../utils/utilities";
 import styles from "./page.module.css";
-import type { Workflow as IWorkflow, WorkflowNode, WorkflowEdge } from "../../types/types";
+import type { Workflow as IWorkflow, WorkflowNode, WorkflowEdge, PrismConfig } from "../../types/types";
 
 const MODEL_SECTIONS = [
   "textToText",
@@ -52,13 +52,13 @@ const MODEL_SECTIONS = [
  * Flatten all model groups from the config into a single array with unique
  * provider:name entries, tagged with provider and modalities.
  */
-function flattenConfigModels(config) {
+function flattenConfigModels(config: any) {
   if (!config) return [];
   const modelsMap = new Map();
 
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
-    for (const [provider, models] of Object.entries(providers)) {
+    for (const [provider, models] of Object.entries(providers) as [string, any][]) {
       for (const m of models) {
         const key = `${provider}:${m.name}`;
         if (!modelsMap.has(key)) {
@@ -107,7 +107,7 @@ function flattenConfigModels(config) {
  * Each message slot gets a text port, plus modality ports for non-assistant messages.
  * Format: "{messageIndex}.{modality}" e.g. "0.text", "0.image", "1.text"
  */
-function buildConversationPorts(messages: unknown, supportedModalities = ["text"]) {
+function buildConversationPorts(messages: any, supportedModalities = ["text"]) {
   const ports = [];
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
@@ -145,8 +145,8 @@ interface UndoSnapshot {
 }
 
 export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps) {
-  const [_config, setConfig] = useState<unknown>(null);
-  const [allModels, setAllModels] = useState<unknown[]>([]);
+  const [_config, setConfig] = useState<any>(null);
+  const [allModels, setAllModels] = useState<any[]>([]);
   const [savedWorkflows, setSavedWorkflows] = useState<IWorkflow[]>([]);
   const { toasts, addToast, removeToast } = useToast();
   const [wfFavoriteKeys, setWfFavoriteKeys] = useState<string[]>([]);
@@ -170,8 +170,8 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
   // Execution state
   const [isRunning, setIsRunning] = useState(false);
   const importRef = useRef<HTMLInputElement | null>(null);
-  const [nodeStatuses, setNodeStatuses] = useState<Record<string, string>>({}); // nodeId → "running" | "done" | "error"
-  const [nodeResults, setNodeResults] = useState<Record<string, unknown>>({}); // nodeId → { text?, image?, audio? }
+  const [nodeStatuses, setNodeStatuses] = useState<any>({}); // nodeId → "running" | "done" | "error"
+  const [nodeResults, setNodeResults] = useState<any>({}); // nodeId → { text?, image?, audio? }
   const abortRef = useRef<boolean>(false);
 
   // Dirty-tracking: snapshot of the last saved/loaded state
@@ -219,7 +219,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
     if (!initialWorkflowId) return;
     setIsLoadingWorkflow(true);
     WorkflowService.getWorkflow(initialWorkflowId)
-      .then((wf: unknown) => {
+      .then((wf: any) => {
         if (!wf) return;
         const loadedName =
           wf.name ||
@@ -276,7 +276,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
   }, []);
 
   // Keep a ref with the latest state so pushUndo never goes stale
-  const currentStateRef = useRef<unknown>({
+  const currentStateRef = useRef<any>({
     workflowId: null,
     workflowName: "Untitled Workflow",
     nodes: [],
@@ -349,31 +349,31 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
       if (modality === "model") {
         const defaultModel = modelsWithModalities[0];
         const isConversation =
-          (defaultModel as unknown)?.modelType === "conversation";
-        const supportsFC = (defaultModel as unknown)?.tools?.includes(
+          (defaultModel as any)?.modelType === "conversation";
+        const supportsFC = (defaultModel as any)?.tools?.includes(
           "Tool Calling",
         );
         const baseInputs = isConversation
           ? ["conversation"]
-          : (defaultModel as unknown)?.inputTypes || [];
+          : (defaultModel as any)?.inputTypes || [];
         const newNode = {
           id: generateNodeId(),
-          modelName: (defaultModel as unknown)?.name || "select-model",
-          provider: (defaultModel as unknown)?.provider || "",
+          modelName: (defaultModel as any)?.name || "select-model",
+          provider: (defaultModel as any)?.provider || "",
           displayName:
-            (defaultModel as unknown)?.display_name ||
-            (defaultModel as unknown)?.label ||
-            (defaultModel as unknown)?.name ||
+            (defaultModel as any)?.display_name ||
+            (defaultModel as any)?.label ||
+            (defaultModel as any)?.name ||
             "Select a Model",
-          modelType: (defaultModel as unknown)?.modelType || "conversation",
+          modelType: (defaultModel as any)?.modelType || "conversation",
           inputTypes: supportsFC ? [...baseInputs, "tools"] : baseInputs,
           rawInputTypes:
-            (defaultModel as unknown)?.rawInputTypes ||
-            (defaultModel as unknown)?.inputTypes ||
+            (defaultModel as any)?.rawInputTypes ||
+            (defaultModel as any)?.inputTypes ||
             [],
-          outputTypes: (defaultModel as unknown)?.outputTypes || [],
+          outputTypes: (defaultModel as any)?.outputTypes || [],
           supportsSystemPrompt:
-            (defaultModel as unknown)?.supportsSystemPrompt !== false,
+            (defaultModel as any)?.supportsSystemPrompt !== false,
           messages: [
             { role: "system", content: "" },
             { role: "user", content: "" },
@@ -407,7 +407,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
         Promise.all([
           PrismService.getCustomTools("CODING").catch(() => []),
           PrismService.getBuiltInToolSchemas("CODING").catch(() => []),
-        ]).then(([custom, builtIn]: unknown) => {
+        ]).then(([custom, builtIn]: any) => {
           setNodes((prev) =>
             prev.map((n) =>
               n.id === newNode.id
@@ -481,7 +481,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
    * When content is cleared (removed), reset modality and outputTypes and remove all outgoing connections.
    */
   const handleUpdateFileInput = useCallback(
-    async (nodeId: unknown, content: unknown, mimeType: unknown) => {
+    async (nodeId: any, content: any, mimeType: any) => {
       pushUndo();
       let newModality = null;
       if (content && mimeType) {
@@ -523,7 +523,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
 
   // Update config of a model node (systemPrompt, staticInputs, etc.)
   const handleUpdateNodeConfig = useCallback(
-    (nodeId: unknown, key: unknown, value: unknown) => {
+    (nodeId: any, key: any, value: any) => {
       setNodes((prev) =>
         prev.map((n) => {
           if (n.id !== nodeId) return n;
@@ -564,27 +564,27 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
     );
 
     try {
-      const { conversationIds } = await executeWorkflow(nodes, edges, {
-        onNodeStart: (nodeId: unknown) => {
+      const { conversationIds } = await executeWorkflow(nodes as any, edges as any, {
+        onNodeStart: (nodeId: any) => {
           if (abortRef.current) return;
-          setNodeStatuses((prev) => ({ ...prev, [nodeId]: "running" }));
+          setNodeStatuses((prev: any) => ({ ...prev, [nodeId]: "running" }));
         },
-        onNodeComplete: (nodeId: unknown, outputs: unknown) => {
+        onNodeComplete: (nodeId: any, outputs: any) => {
           if (abortRef.current) return;
-          setNodeStatuses((prev) => ({ ...prev, [nodeId]: "done" }));
-          setNodeResults((prev) => ({ ...prev, [nodeId]: outputs }));
+          setNodeStatuses((prev: any) => ({ ...prev, [nodeId]: "done" }));
+          setNodeResults((prev: any) => ({ ...prev, [nodeId]: outputs }));
 
           // Update viewer nodes with ALL received content
           setNodes((prev) =>
             prev.map((n) => {
               if (n.id !== nodeId || n.nodeType !== "viewer") return n;
               // Store all outputs on the viewer node
-              const receivedOutputs = {};
+              const receivedOutputs: any = {};
               let firstContent = null;
               let firstType = null;
               for (const [type, data] of Object.entries(outputs)) {
                 if (data) {
-                  (receivedOutputs as Record<string, unknown>)[type] = data;
+                  receivedOutputs[type] = data;
                   if (!firstContent) {
                     firstContent = data;
                     firstType = type;
@@ -600,18 +600,18 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             }),
           );
         },
-        onNodeError: (nodeId: unknown, error: unknown) => {
+        onNodeError: (nodeId: any, error: any) => {
           if (abortRef.current) return;
-          setNodeStatuses((prev) => ({ ...prev, [nodeId]: "error" }));
-          setNodeResults((prev) => ({
+          setNodeStatuses((prev: any) => ({ ...prev, [nodeId]: "error" }));
+          setNodeResults((prev: any) => ({
             ...prev,
             [nodeId]: { error: error.message },
           }));
         },
-        onViewerPartial: (viewerNodeId: unknown, partialOutputs: unknown) => {
+        onViewerPartial: (viewerNodeId: any, partialOutputs: any) => {
           if (abortRef.current) return;
           // Show viewer as running while it receives partial data
-          setNodeStatuses((prev) => {
+          setNodeStatuses((prev: any) => {
             if (prev[viewerNodeId] === "done") return prev;
             return { ...prev, [viewerNodeId]: "running" };
           });
@@ -635,7 +635,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             }),
           );
         },
-        onNodeContentUpdate: (nodeId: unknown, newContent: unknown) => {
+        onNodeContentUpdate: (nodeId: any, newContent: any) => {
           setNodes((prev) =>
             prev.map((n) => {
               if (n.id !== nodeId) return n;
@@ -681,14 +681,14 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
   }, []);
 
   // Update node position (drag)
-  const handleUpdateNodePosition = useCallback((nodeId: unknown, position: unknown) => {
+  const handleUpdateNodePosition = useCallback((nodeId: any, position: any) => {
     setNodes((prev) =>
       prev.map((n) => (n.id === nodeId ? { ...n, position } : n)),
     );
   }, []);
 
   // Delete a node and its edges
-  const handleDeleteNode = useCallback((nodeId: unknown) => {
+  const handleDeleteNode = useCallback((nodeId: any) => {
     pushUndo();
     setNodes((prev) => prev.filter((n) => n.id !== nodeId));
     setEdges((prev) =>
@@ -700,7 +700,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
 
   // Add an edge
   const handleAddEdge = useCallback(
-    (conn) => {
+    (conn: any) => {
       pushUndo();
       setEdges((prev) => [...prev, { ...conn, id: generateEdgeId() }]);
 
@@ -711,7 +711,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
 
         // Auto-populate viewer if source node already has results
         if (targetNode?.nodeType === "viewer") {
-          const existingResults = (nodeResults as Record<string, unknown>)[conn.sourceNodeId];
+          const existingResults = nodeResults[conn.sourceNodeId];
           if (existingResults && existingResults[conn.sourceModality]) {
             const data = existingResults[conn.sourceModality];
             return prev.map((n) => {
@@ -747,8 +747,8 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
           ];
           const newPorts = new Set(buildConversationPorts(messages, rawInputs));
           // Remove edges to conversation input ports that no longer exist
-          setEdges((prevEdges: unknown) =>
-            prevEdges.filter((c) => {
+          setEdges((prevEdges: any) =>
+            prevEdges.filter((c: any) => {
               if (c.targetNodeId !== conn.sourceNodeId) return true;
               return newPorts.has(c.targetModality);
             }),
@@ -995,7 +995,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
       },
     };
     // Strip runtime state
-    delete (newNode as unknown).receivedOutputs;
+    delete (newNode as any).receivedOutputs;
     setNodes((prev) => [...prev, newNode]);
     setSelectedNodeId(newNode.id);
   }, []);

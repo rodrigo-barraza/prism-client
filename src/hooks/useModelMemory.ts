@@ -40,7 +40,7 @@ export default function useModelMemory(storageKey: string) {
    * Safe to call multiple times (idempotent after first successful restore).
    */
   const restoreModel = useCallback(
-    (config: Record<string, unknown>, setSettings: Dispatch<SetStateAction<unknown>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: Record<string, unknown>) => void } = {}) => {
+    (config: any, setSettings: Dispatch<SetStateAction<any>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: any) => void } = {}) => {
       if (!config) return;
       if (restoredRef.current) return;
 
@@ -84,7 +84,7 @@ export default function useModelMemory(storageKey: string) {
       }
 
       const temp = (modelDef.defaultTemperature as number) ?? 1.0;
-      setSettings((s) => ({
+      setSettings((s: any) => ({
         ...s,
         provider: saved.provider,
         model: saved.model,

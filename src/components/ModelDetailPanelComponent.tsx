@@ -92,12 +92,12 @@ const PRICING_LABELS = {
  * ModelDetailPanelComponent — a slide-in right panel showing comprehensive
  * model card information when a model row is clicked in the ModelsTable.
  */
-export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
+export default function ModelDetailPanelComponent({ model, onClose }: any) {
   const router = useRouter();
 
   // Close on Escape key
   const handleKeyDown = useCallback(
-    (e: React.SyntheticEvent) => {
+    (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     },
     [onClose],
@@ -186,14 +186,14 @@ export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
   // Collect pricing entries
   const pricingEntries = m.pricing
     ? Object.entries(m.pricing).filter(
-        ([, value]: unknown) => value != null && value > 0,
+        ([, value]: any) => value != null && value > 0,
       )
     : [];
 
   // Collect arena entries
   const arenaEntries = m.arena
     ? Object.entries(m.arena).filter(
-        ([, value]: unknown) => value != null && value > 0,
+        ([, value]: any) => value != null && value > 0,
       )
     : [];
 
@@ -400,15 +400,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
                   Modalities
                 </div>
                 <div className={styles.modalitiesRow}>
-                  {m.inputTypes.map((t) => {
-                    const meta = (MODALITY_ICONS as Record<string, unknown>)[t];
+                  {m.inputTypes.map((t: string) => {
+                    const meta = (MODALITY_ICONS as any)[t];
                     if (!meta) return null;
                     const Icon = meta.icon;
                     return (
                       <span
                         key={`in-${t}`}
                         className={styles.modalityChip}
-                        style={{ color: (MODALITY_COLORS as Record<string, unknown>)[t] }}
+                        style={{ color: (MODALITY_COLORS as any)[t] }}
                       >
                         <Icon size={12} />
                         {meta.label}
@@ -418,15 +418,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
                   {m.inputTypes.length > 0 && m.outputTypes.length > 0 && (
                     <ArrowRight size={14} className={styles.modalityArrow} />
                   )}
-                  {m.outputTypes.map((t) => {
-                    const meta = (MODALITY_ICONS as Record<string, unknown>)[t];
+                  {m.outputTypes.map((t: string) => {
+                    const meta = (MODALITY_ICONS as any)[t];
                     if (!meta) return null;
                     const Icon = meta.icon;
                     return (
                       <span
                         key={`out-${t}`}
                         className={styles.modalityChip}
-                        style={{ color: (MODALITY_COLORS as Record<string, unknown>)[t] }}
+                        style={{ color: (MODALITY_COLORS as any)[t] }}
                       >
                         <Icon size={12} />
                         {meta.label}
@@ -448,7 +448,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
                   Media Limits
                 </div>
                 <div className={styles.mediaLimitsGrid}>
-                  {Object.entries(m.mediaLimits).map(([type, limits]: unknown) => (
+                  {Object.entries(m.mediaLimits).map(([type, limits]: any) => (
                     <div key={type} className={styles.mediaLimitCard}>
                       <span className={styles.mediaLimitType}>{type}</span>
                       {limits.maxCount && (
@@ -478,16 +478,16 @@ export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
                   Tools & Capabilities
                 </div>
                 <div className={styles.toolsGrid}>
-                  {m.tools.map((tool) => {
-                    const Icon = (TOOL_ICONS as Record<string, unknown>)[tool];
-                    const color = (TOOL_COLORS as Record<string, unknown>)[tool];
+                  {m.tools.map((tool: string) => {
+                    const Icon = (TOOL_ICONS as any)[tool];
+                    const color = (TOOL_COLORS as any)[tool];
                     return (
                       <span
                         key={tool}
                         className={styles.toolChip}
                         style={
                           color
-                            ? { color, borderColor: `${color}33` }
+                            ? { color, borderColor: `${color}33` } as any
                             : undefined
                         }
                       >
@@ -541,10 +541,10 @@ export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
                   Pricing
                 </div>
                 <div className={styles.pricingGrid}>
-                  {pricingEntries.map(([key, value]: [string, unknown]) => (
+                  {pricingEntries.map(([key, value]: any) => (
                     <div key={key} className={styles.pricingRow}>
                       <span className={styles.pricingLabel}>
-                        {(PRICING_LABELS as Record<string, unknown>)[key] || key}
+                        {(PRICING_LABELS as any)[key] || key}
                       </span>
                       <span className={styles.pricingValue}>
                         $
@@ -569,11 +569,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: unknown) {
                   LMArena ELO Scores
                 </div>
                 <div className={styles.arenaGrid}>
-                  {arenaEntries.map(([key, value]: [string, unknown]) => (
+                  {arenaEntries.map(([key, value]: any) => (
                     <div key={key} className={styles.arenaCard}>
-                      <span className={styles.arenaScore}>{value}</span>
+                      <span className={styles.arenaScore}>{value as any}</span>
                       <span className={styles.arenaLabel}>
-                        {(ARENA_LABELS as Record<string, unknown>)[key] || key}
+                        {(ARENA_LABELS as any)[key] || key}
                       </span>
                     </div>
                   ))}

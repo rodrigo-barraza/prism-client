@@ -21,7 +21,7 @@ export default function ToolIconComponent({
   toolApiNames,
   size = 12,
   className,
-}: unknown) {
+}: any) {
   if (!toolDisplayNames || toolDisplayNames.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
@@ -55,7 +55,7 @@ export default function ToolIconComponent({
 
   return (
     <span className={`${styles.toolPills} ${className || ""}`}>
-      {[...resolved.entries()].map(([label, Icon]: unknown) => {
+      {[...resolved.entries()].map(([label, Icon]: any) => {
         // Build rich tooltip for "Tool Calling" showing actual tool names
         const tooltipLabel =
           label === "Tool Calling" && fcRawDisplay.length > 0

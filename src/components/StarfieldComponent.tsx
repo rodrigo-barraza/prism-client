@@ -11,7 +11,7 @@ import { useRef, useEffect, useCallback } from "react";
 
 // -- Seeded RNG --
 
-function seededRandom(seed: unknown) {
+function seededRandom(seed: any) {
   let s = seed;
   return () => {
     s = (s * 16807 + 0) % 2147483647;
@@ -370,7 +370,7 @@ const CONSTELLATIONS = [
 
 // -- Star generation --
 
-function generateFieldStars(count: unknown, w: unknown, h: unknown, rng: unknown) {
+function generateFieldStars(count: any, w: any, h: any, rng: any) {
   const stars = [];
   const padX = w * 0.35;
   const padY = h * 0.35;
@@ -456,7 +456,7 @@ function generateFieldStars(count: unknown, w: unknown, h: unknown, rng: unknown
 
 // -- Nebula & galactic core pre-render --
 
-function renderNebulaLayer(w: unknown, h: unknown, rng: unknown) {
+function renderNebulaLayer(w: any, h: any, rng: any) {
   const offscreen = document.createElement("canvas");
   offscreen.width = w;
   offscreen.height = h;
@@ -570,14 +570,14 @@ export default function StarfieldComponent({
   style,
   panX = 0,
   panY = 0,
-}: unknown) {
+}: any) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const starsRef = useRef<HTMLCanvasElement | null>(null);
-  const constellationStarsRef = useRef<HTMLCanvasElement | null>(null);
+  const starsRef = useRef<any>(null);
+  const constellationStarsRef = useRef<any>(null);
   const nebulaCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rafRef = useRef<HTMLCanvasElement | null>(null);
-  const sizeRef = useRef<unknown>({ w: 0, h: 0 });
-  const panRef = useRef<unknown>({ x: panX, y: panY });
+  const rafRef = useRef<any>(null);
+  const sizeRef = useRef<any>({ w: 0, h: 0 });
+  const panRef = useRef<any>({ x: panX, y: panY });
 
   useEffect(() => {
     panRef.current = { x: panX, y: panY };
@@ -585,7 +585,7 @@ export default function StarfieldComponent({
 
   const PARALLAX_FACTOR = 0.04;
 
-  const ensureStars = useCallback((w: unknown, h: unknown) => {
+  const ensureStars = useCallback((w: any, h: any) => {
     if (
       starsRef.current &&
       Math.abs(sizeRef.current.w - w) < 100 &&
@@ -645,7 +645,7 @@ export default function StarfieldComponent({
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
 
-    const draw = (time: unknown) => {
+    const draw = (time: any) => {
       const t = time / 1000;
       const w = sizeRef.current.w;
       const h = sizeRef.current.h;

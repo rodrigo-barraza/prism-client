@@ -30,11 +30,11 @@ import styles from "./BenchmarkSidebarComponent.module.css";
  * Props:
  *   activeBenchmarkId — highlight the currently viewed benchmark
  */
-export default function BenchmarkSidebarComponent({ activeBenchmarkId }: unknown) {
+export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [benchmarks, setBenchmarks] = useState<unknown[]>([]);
+  const [benchmarks, setBenchmarks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeBenchmarkIds, setActiveBenchmarkIds] = useState(new Set());
@@ -58,7 +58,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: unknown
   // -- Adaptive poll: only keep polling while benchmarks are active --
   useEffect(() => {
     let cancelled = false;
-    let interval: unknown = null;
+    let interval: any = null;
 
     const poll = async () => {
       try {
@@ -101,7 +101,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: unknown
         b.name.toLowerCase().includes(q) ||
         b.prompt?.toLowerCase().includes(q) ||
         b.expectedValue?.toLowerCase().includes(q) ||
-        b.assertions?.some((a) =>
+        b.assertions?.some((a: any) =>
           a.expectedValue?.toLowerCase().includes(q),
         ),
     );
@@ -109,7 +109,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: unknown
 
   // -- Navigate -----------------------------------------------
   const navigate = useCallback(
-    (benchmark) => {
+    (benchmark: any) => {
       router.push(`/benchmarks/${benchmark.id}`);
     },
     [router],
@@ -176,7 +176,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: unknown
               <div
                 key={b.id}
                 className={`${styles.item} ${isActive ? styles.itemActive : ""} ${isRunning ? styles.itemRunning : ""}`}
-                {...(SoundService as Record<string, unknown>).interactive(() => navigate(b))}
+                {...(SoundService as any).interactive(() => navigate(b))}
                 data-panel-close
               >
                 {/* Row 1: date (left) · cost (right) */}

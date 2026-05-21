@@ -21,7 +21,7 @@ export default function BenchmarkBarComponent({
   mini = false,
   label,
   className = "",
-}: unknown) {
+}: any) {
   const passRate = total > 0 ? (passed / total) * 100 : 0;
   const hasRuns = total > 0;
 

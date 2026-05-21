@@ -79,7 +79,7 @@ export const AGENT_ASSERTION_TYPES = [
   },
 ];
 
-const ASSERTION_TYPE_MAP = Object.fromEntries(
+const ASSERTION_TYPE_MAP: Record<string, any> = Object.fromEntries(
   AGENT_ASSERTION_TYPES.map((t) => [t.value, t]),
 );
 
@@ -94,13 +94,13 @@ export default function AgentAssertionsComponent({
   assertionOperator,
   onAssertionsChange,
   onOperatorChange,
-}: unknown) {
+}: any) {
   const operator = assertionOperator || "AND";
 
   // Which assertion types are already used (for the "Add" dropdown)
-  const usedTypes = new Set(assertions.map((a) => a.type));
+  const usedTypes = new Set(assertions.map((a: any) => a.type));
 
-  const addAssertion = (type: unknown) => {
+  const addAssertion = (type: any) => {
     const typeDef = ASSERTION_TYPE_MAP[type];
     const newAssertion = {
       type,
@@ -112,13 +112,13 @@ export default function AgentAssertionsComponent({
     onAssertionsChange([...assertions, newAssertion]);
   };
 
-  const removeAssertion = (index) => {
-    const next = assertions.filter((_, i) => i !== index);
+  const removeAssertion = (index: number) => {
+    const next = assertions.filter((_: any, i: number) => i !== index);
     onAssertionsChange(next.length > 0 ? next : []);
   };
 
-  const updateAssertion = (index: number, field: string, value: unknown) => {
-    const next = assertions.map((a, i) =>
+  const updateAssertion = (index: number, field: string, value: any) => {
+    const next = assertions.map((a: any, i: number) =>
       i === index ? { ...a, [field]: value } : a,
     );
     onAssertionsChange(next);
@@ -130,7 +130,7 @@ export default function AgentAssertionsComponent({
 
   // Available types that haven't been added yet
   const availableTypes = AGENT_ASSERTION_TYPES.filter(
-    (t: unknown) => !usedTypes.has(t.value),
+    (t: any) => !usedTypes.has(t.value),
   );
 
   return (
@@ -188,7 +188,7 @@ export default function AgentAssertionsComponent({
 
       {assertions.length > 0 && (
         <div className={styles.list}>
-          {assertions.map((a, i) => {
+          {assertions.map((a: any, i: number) => {
             const typeDef = ASSERTION_TYPE_MAP[a.type];
             if (!typeDef) return null;
             const Icon = typeDef.icon;
@@ -221,7 +221,7 @@ export default function AgentAssertionsComponent({
                             updateAssertion(i, "operator", e.target.value)
                           }
                         >
-                          {typeDef.operators.map((op) => (
+                          {typeDef.operators.map((op: any) => (
                             <option key={op.value} value={op.value}>
                               {op.label}
                             </option>

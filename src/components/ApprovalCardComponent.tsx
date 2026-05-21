@@ -20,8 +20,8 @@ export default function ApprovalCardComponent({
   onReject,
   onApproveAll,
   isPending = true,
-}: unknown) {
-  const tierInfo = (TIER_CONFIG as Record<string, unknown>)[tier] || TIER_CONFIG[2];
+}: any) {
+  const tierInfo: any = (TIER_CONFIG as any)[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
 
   // Format args for preview (truncate long values)

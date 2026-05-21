@@ -10,7 +10,7 @@ import {
 import WorkspaceService from "../services/WorkspaceService";
 import { LS_WORKSPACE_ROOT } from "../constants";
 
-const WorkspaceContext = createContext<unknown>({
+const WorkspaceContext = createContext<any>({
   workspaces: [],
   currentWorkspace: null,
   setCurrentWorkspace: () => {},
@@ -24,17 +24,17 @@ const WorkspaceContext = createContext<unknown>({
  * The selected workspace root is stored in localStorage and sent to Prism
  * via the x-workspace-root header (see serviceHeaders.js).
  */
-export function WorkspaceProvider({ children }: unknown) {
-  const [workspaces, setWorkspaces] = useState<unknown[]>([]);
-  const [currentWorkspace, _setCurrentWorkspace] = useState(null);
+export function WorkspaceProvider({ children }: any) {
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [currentWorkspace, _setCurrentWorkspace] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
 
   /** Set the active workspace and persist to localStorage. */
   const setCurrentWorkspace = useCallback((workspace: unknown) => {
     _setCurrentWorkspace(workspace);
     if (typeof window !== "undefined") {
-      if (workspace?.path) {
-        localStorage.setItem(LS_WORKSPACE_ROOT, workspace.path);
+      if ((workspace as any)?.path) {
+        localStorage.setItem(LS_WORKSPACE_ROOT, (workspace as any).path);
       } else {
         localStorage.removeItem(LS_WORKSPACE_ROOT);
       }
@@ -43,7 +43,7 @@ export function WorkspaceProvider({ children }: unknown) {
 
   const refreshWorkspaces = useCallback(async () => {
     try {
-      const list: unknown = await WorkspaceService.list();
+      const list: any[] = await WorkspaceService.list() as any;
       setWorkspaces(list);
 
       // If the persisted workspace is in the list, restore it
@@ -104,6 +104,6 @@ export function WorkspaceProvider({ children }: unknown) {
   );
 }
 
-export function useWorkspace() {
+export function useWorkspace(): any {
   return useContext(WorkspaceContext);
 }

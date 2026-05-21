@@ -26,7 +26,7 @@ export default function BenchmarkDashboardTableComponent({
   emptyText = "No benchmark data",
   title,
   maxHeight,
-}: unknown) {
+}: any) {
   const columns = useMemo(
     () => [
       dashboardPassRateColumn(),
@@ -42,7 +42,7 @@ export default function BenchmarkDashboardTableComponent({
   );
 
   const getRowClassName = useCallback(
-    (row) => {
+    (row: any) => {
       if (
         selectedModel &&
         row.model === selectedModel.model &&
@@ -61,7 +61,7 @@ export default function BenchmarkDashboardTableComponent({
       maxHeight={maxHeight}
       columns={columns}
       data={models}
-      getRowKey={(m: unknown, i: unknown) => `${m.provider}:${m.model}:${i}`}
+      getRowKey={(m: any, i: any) => `${m.provider}:${m.model}:${i}`}
       onRowClick={onRowClick}
       getRowClassName={getRowClassName}
       emptyText={emptyText}

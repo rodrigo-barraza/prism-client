@@ -13,10 +13,10 @@ export default function SynthesisHistoryPanel({
   activeId,
   onSelect,
   onDelete,
-}: unknown) {
+}: any) {
   return (
     <HistoryPanel
-      conversations={conversations}
+      sessions={conversations}
       activeId={activeId}
       onSelect={onSelect}
       onDelete={onDelete}

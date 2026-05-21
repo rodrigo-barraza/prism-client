@@ -34,10 +34,10 @@ export default function WorkflowSidebar({
   onToggleFavorite,
   initialProviders,
   initialSearch = "",
-}: unknown) {
+}: any) {
   // Normalize workflows into HistoryList items
   const items = useMemo(() => {
-    return workflows.map((wf) => {
+    return workflows.map((wf: any) => {
       const id = wf._id || wf.id;
       const name =
         wf.name ||
@@ -163,7 +163,7 @@ export default function WorkflowSidebar({
       <HistoryList
         items={items}
         activeId={activeWorkflowId}
-        onSelect={(item) => onLoadWorkflow?.(item.id)}
+        onSelect={(item: any) => onLoadWorkflow?.(item.id)}
         onDelete={!admin ? onDeleteWorkflow : undefined}
         onDownload={onDownloadWorkflow}
         onCopy={onCopyWorkflow}

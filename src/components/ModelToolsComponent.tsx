@@ -30,7 +30,7 @@ const TOOL_DEFS = [
     key: "functionCalling",
     label: "Function Calling",
     icon: Parentheses,
-    color: (TOOL_COLORS as Record<string, unknown>)["Function Calling"],
+    color: (TOOL_COLORS as Record<string, any>)["Function Calling"],
   },
   {
     key: "webSearch",
@@ -86,7 +86,7 @@ export default function ModelToolsComponent({
   tools,
   size = 11,
   className,
-}: unknown) {
+}: any) {
   if (!tools) return null;
 
   const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);

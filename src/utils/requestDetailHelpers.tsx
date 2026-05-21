@@ -30,10 +30,10 @@ import { prepareDisplayMessages } from "../components/MessageListComponent";
  * (minio://, data:image/…, https://…jpg, etc.) with their origin
  * ("user" for request, "ai" for response).
  */
-export function extractMediaAssets(object: Record<string, unknown>) {
+export function extractMediaAssets(object: any) {
   const seen = new Set();
   const assets: Record<string, unknown>[] = [];
-  const search = (node: string | Record<string, unknown> | Record<string, unknown>[], origin: string) => {
+  const search = (node: any, origin: string) => {
     if (!node) return;
     if (typeof node === "string") {
       if (seen.has(node)) return;
@@ -70,9 +70,9 @@ export function extractMediaAssets(object: Record<string, unknown>) {
         }
       }
     } else if (Array.isArray(node)) {
-      node.forEach((n: Record<string, unknown>) => search(n, origin));
+      node.forEach((n: any) => search(n, origin));
     } else if (typeof node === "object") {
-      Object.values(node).forEach((n: Record<string, unknown>) => search(n, origin));
+      Object.values(node).forEach((n: any) => search(n, origin));
     }
   };
   search(object?.requestPayload, "user");
@@ -108,7 +108,7 @@ export function getMediaTypeFromRef(ref: string) {
  * Both /admin/requests and /admin/traces pass the exact same
  * section definitions — this function is the single source of truth.
  */
-export function buildRequestDetailSections(req: Record<string, unknown> | null) {
+export function buildRequestDetailSections(req: any) {
   if (!req) return [];
   return [
     {
@@ -390,7 +390,7 @@ export function buildRequestDetailSections(req: Record<string, unknown> | null) 
  * Returns { messages, systemPrompt } or null if there's nothing
  * to display.
  */
-export function reconstructChatMessages(selectedRequest: Record<string, unknown>) {
+export function reconstructChatMessages(selectedRequest: any) {
   const reqPayload = selectedRequest?.requestPayload;
   const resPayload = selectedRequest?.responsePayload;
   if (!reqPayload?.messages?.length) return null;
@@ -429,7 +429,7 @@ export function reconstructChatMessages(selectedRequest: Record<string, unknown>
     const toolCalls =
       resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls;
     if (toolCalls?.length) {
-      (assistantMsg as Record<string, unknown>).toolCalls = toolCalls.map((tc: Record<string, unknown>) => ({
+      (assistantMsg as Record<string, unknown>).toolCalls = toolCalls.map((tc: any) => ({
         id: tc.id,
         name: tc.function?.name || tc.name,
         args:
@@ -451,8 +451,8 @@ export function reconstructChatMessages(selectedRequest: Record<string, unknown>
 
     if (
       assistantMsg.content ||
-      (assistantMsg as Record<string, unknown>).toolCalls?.length ||
-      (assistantMsg as Record<string, unknown>).images?.length
+      (assistantMsg as any).toolCalls?.length ||
+      (assistantMsg as any).images?.length
     ) {
       chatMessages.push(assistantMsg);
     }

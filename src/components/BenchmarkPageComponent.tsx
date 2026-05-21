@@ -31,7 +31,7 @@ const INITIAL_FORM = {
 export default function BenchmarkPageComponent({
   navSidebar,
   rightSidebar,
-}: unknown) {
+}: any) {
   const router = useRouter();
 
   // -- State --------------------------------------------------

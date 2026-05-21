@@ -28,7 +28,7 @@ import styles from "./BenchmarkDashboardComponent.module.css";
  * Used to enrich benchmark stat rows with proper display_name, modalities,
  * model type, etc. that the stats endpoint doesn't carry.
  */
-function buildConfigLookup(config: Record<string, unknown>) {
+function buildConfigLookup(config: any) {
   if (!config) return new Map();
   const map = new Map();
   const MODEL_SECTIONS = [
@@ -42,7 +42,7 @@ function buildConfigLookup(config: Record<string, unknown>) {
   for (const section of MODEL_SECTIONS) {
     const providers = config[section]?.models || {};
     for (const [provider, models] of Object.entries(providers)) {
-      for (const m of models) {
+      for (const m of models as any[]) {
         const key = `${provider}:${m.name}`;
         if (!map.has(key)) {
           map.set(key, { ...m, provider });
@@ -63,7 +63,7 @@ function buildConfigLookup(config: Record<string, unknown>) {
 function humanizeModelPath(raw: string) {
   if (!raw) return raw;
   // Strip publisher/org prefix: "qwen/qwen3.5-9b" → "qwen3.5-9b"
-  let name = raw.includes("/") ? raw.split("/").pop() : raw;
+  let name = (raw.includes("/") ? raw.split("/").pop() : raw) || "";
   // Strip @quant suffix: "qwen3-32b@q8_0" → "qwen3-32b"
   name = name.replace(/@[\w.]+$/, "");
   // Replace hyphens/underscores with spaces
@@ -84,11 +84,11 @@ const TABS = [
 export default function BenchmarkDashboardComponent({
   navSidebar,
   rightSidebar,
-}: unknown) {
+}: any) {
   const router = useRouter();
-  const [stats, setStats] = useState<unknown>(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedModel, setSelectedModel] = useState(null);
+  const [selectedModel, setSelectedModel] = useState<any>(null);
   const [configLookup, setConfigLookup] = useState(new Map());
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("all");
@@ -105,8 +105,8 @@ export default function BenchmarkDashboardComponent({
 
       // Merge local models (LM Studio, Ollama, etc.) into config
       // so we get display_name for local models too
-      let mergedConfig = config;
-      if ((config as Record<string, unknown>).localProviders?.length > 0) {
+      let mergedConfig: any = config;
+      if ((config as any)?.localProviders?.length > 0) {
         try {
           const localResult = await PrismService.getLocalConfig();
           mergedConfig = PrismService.mergeLocalModels(
@@ -120,7 +120,7 @@ export default function BenchmarkDashboardComponent({
 
       setConfigLookup(buildConfigLookup(mergedConfig));
       hasLoadedRef.current = true;
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load benchmark stats:", error);
     } finally {
       setLoading(false);
@@ -154,9 +154,9 @@ export default function BenchmarkDashboardComponent({
 
   // -- Aggregate totals --------------------------------------
   const totals = useMemo(() => {
-    if (!(stats as Record<string, unknown>).models) return null;
-    return (stats as Record<string, unknown>).models.reduce(
-      (acc: Record<string, unknown>, m: unknown) => ({
+    if (!stats?.models) return null;
+    return stats.models.reduce(
+      (acc: any, m: any) => ({
         total: acc.total + m.total,
         passed: acc.passed + m.passed,
         failed: acc.failed + m.failed,
@@ -171,8 +171,8 @@ export default function BenchmarkDashboardComponent({
   // Enriches each stat row with config data (display_name, modalities,
   // model type, etc.) so normalizeModel() produces clean names.
   const allModelRows = useMemo(() => {
-    if (!(stats as Record<string, unknown>).models) return [];
-    return (stats as Record<string, unknown>).models.map((s) => {
+    if (!stats?.models) return [];
+    return stats.models.map((s: any) => {
       const configKey = `${s.provider}:${s.model}`;
       const configModel = configLookup.get(configKey);
       return {
@@ -206,9 +206,9 @@ export default function BenchmarkDashboardComponent({
   // -- Tab filtering ----------------------------------
   const modelRows = useMemo(() => {
     if (activeTab === "models")
-      return allModelRows.filter((r) => !r._benchAgent);
+      return allModelRows.filter((r: any) => !r._benchAgent);
     if (activeTab === "agents")
-      return allModelRows.filter((r) => !!r._benchAgent);
+      return allModelRows.filter((r: any) => !!r._benchAgent);
     return allModelRows;
   }, [allModelRows, activeTab]);
 
@@ -216,19 +216,19 @@ export default function BenchmarkDashboardComponent({
   const tabCounts = useMemo(
     () => ({
       all: allModelRows.length,
-      models: allModelRows.filter((r) => !r._benchAgent).length,
-      agents: allModelRows.filter((r) => !!r._benchAgent).length,
+      models: allModelRows.filter((r: any) => !r._benchAgent).length,
+      agents: allModelRows.filter((r: any) => !!r._benchAgent).length,
     }),
     [allModelRows],
   );
 
   // -- Composite stat identity (model + config flags) ---------
-  const statId = (s) =>
+  const statId = (s: any) =>
     `${s?.provider}:${s?.model}:${s?.thinkingEnabled || false}:${s?.toolsEnabled || false}:${s?.agent || ""}`;
 
   // -- Row click → select model for sidebar detail -----------
   const handleRowClick = useCallback((stat: unknown) => {
-    setSelectedModel((prev) =>
+    setSelectedModel((prev: any) =>
       statId(prev) === statId(stat) ? null : stat,
     );
   }, []);
@@ -246,10 +246,10 @@ export default function BenchmarkDashboardComponent({
 
   // -- Detail cards for selected model (left sidebar) --------
   const sidebarDetail = useMemo(() => {
-    if (!(selectedModel as Record<string, unknown>).benchmarks?.length) return null;
+    if (!selectedModel?.benchmarks?.length) return null;
     return (
       <div className={styles.sidebarDetailGrid}>
-        {(selectedModel as Record<string, unknown>).benchmarks.map((b, i) => {
+        {selectedModel.benchmarks.map((b: any, i: any) => {
           const bRate =
             b.total > 0 ? Math.round((b.passed / b.total) * 100) : 0;
           return (
@@ -315,7 +315,7 @@ export default function BenchmarkDashboardComponent({
     <ThreePanelLayout
       navSidebar={navSidebar}
       leftPanel={sidebarDetail}
-      leftTitle={(selectedModel as Record<string, unknown>).model || ""}
+      leftTitle={selectedModel?.model || ""}
       rightPanel={rightSidebar}
       rightTitle="Benchmarks"
       headerTitle="Benchmarks"
@@ -334,7 +334,7 @@ export default function BenchmarkDashboardComponent({
             <Loader2 size={20} className={styles.spinIcon} />
             <span>Loading benchmark stats…</span>
           </div>
-        ) : !stats || (stats as Record<string, unknown>).models.length === 0 ? (
+        ) : !stats || stats.models.length === 0 ? (
           <EmptyStateComponent
             icon={<BarChart3 size={36} />}
             title="No Benchmark Data Yet"
@@ -354,11 +354,11 @@ export default function BenchmarkDashboardComponent({
               <SummaryBarComponent
                 items={[
                   {
-                    value: (stats as Record<string, unknown>).totalModels,
+                    value: stats.totalModels,
                     label: "Configs Tested",
                   },
                   {
-                    value: (stats as Record<string, unknown>).totalBenchmarks,
+                    value: stats.totalBenchmarks,
                     label: "Benchmarks",
                   },
                   { value: totals.total, label: "Total Tests" },
@@ -403,7 +403,7 @@ export default function BenchmarkDashboardComponent({
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
-                const count = (tabCounts as Record<string, unknown>)[tab.key];
+                const count = (tabCounts as any)[tab.key];
                 return (
                   <button
                     key={tab.key}

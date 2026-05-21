@@ -10,7 +10,7 @@ export default function SectionHeaderComponent({
   children,
   action,
   className,
-}: unknown) {
+}: any) {
   return (
     <div
       className={`${styles.sectionHeader}${className ? ` ${className}` : ""}`}

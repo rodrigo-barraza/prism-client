@@ -18,7 +18,7 @@ export default function PromptSectionComponent({
   placeholder,
   rows = 2,
   className,
-}: unknown) {
+}: any) {
   return (
     <div className={`${styles.section} ${className || ""}`}>
       <div className={styles.header}>

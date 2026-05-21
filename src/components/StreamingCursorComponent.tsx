@@ -19,7 +19,7 @@ const SCRAMBLE_CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/~`¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿×÷ΔΩπΣφψλαβγ∞∑∏√∂∫≈≠≤≥∈∉∩∪⊂⊃∀∃∇☰☷☶☵☴☳";
 const SCRAMBLE_INTERVAL_MS = 35;
 
-export default function StreamingCursorComponent({ active, standalone }: unknown) {
+export default function StreamingCursorComponent({ active, standalone }: any) {
   const [char, setChar] = useState("_");
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -35,7 +35,9 @@ export default function StreamingCursorComponent({ active, standalone }: unknown
       );
     }, SCRAMBLE_INTERVAL_MS);
 
-    return () => clearInterval(intervalRef.current);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [active]);
 
   if (!active) return null;

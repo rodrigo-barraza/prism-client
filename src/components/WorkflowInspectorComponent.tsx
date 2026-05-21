@@ -63,7 +63,7 @@ export default function WorkflowInspector({
   onSelectNode,
   onClose,
   readOnly = false,
-}: unknown) {
+}: any) {
   // Model change state (hooks must be called before any early return)
   const [modelSearch, setModelSearch] = useState("");
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
@@ -627,7 +627,7 @@ export default function WorkflowInspector({
             };
             const messagesJson = JSON.stringify(
               resolved.map(
-                ({ role, content, images, audio, video, pdf }: unknown) => ({
+                ({ role, content, images, audio, video, pdf }: any) => ({
                   role,
                   content: content || "",
                   ...(images?.length > 0

@@ -41,23 +41,80 @@ import useProjectFilter from "../../../hooks/useProjectFilter";
 import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000;
+interface RequestItem {
+  _id: string;
+  requestId: string;
+  timestamp: string;
+  project?: string;
+  endpoint?: string;
+  operation?: string;
+  provider?: string;
+  model?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  estimatedCost?: number;
+  tokensPerSec?: number;
+  totalTime?: number;
+  success?: boolean;
+  conversationId?: string;
+  requestPayload?: any;
+  responsePayload?: any;
+  [key: string]: any;
+}
+
+interface RequestFilters {
+  provider: string;
+  model: string;
+  endpoint: string;
+  operation: string;
+  success: string;
+  [key: string]: string;
+}
+
+interface RequestAssociations {
+  conversations?: Array<{
+    id: string;
+    title?: string;
+    project?: string;
+    updatedAt?: string;
+    createdAt?: string;
+    totalCost?: number;
+    modalities?: Record<string, unknown>;
+    model?: string;
+    username?: string;
+  }>;
+  workflows?: Array<{
+    id: string;
+    name?: string;
+    nodeCount?: number;
+    edgeCount?: number;
+    updatedAt?: string;
+    createdAt?: string;
+  }>;
+  sessions?: Array<{
+    id: string;
+    conversationCount?: number;
+    updatedAt?: string;
+    createdAt?: string;
+  }>;
+}
 
 export default function RequestsPage() {
   const router = useRouter();
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [requests, setRequests] = useState<Record<string, unknown>[]>([]);
+  const [requests, setRequests] = useState<RequestItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
-  const [selectedRequest, setSelectedRequest] = useState<Record<string, unknown> | null>(null);
-  const [associations, setAssociations] = useState<Record<string, unknown> | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
+  const [associations, setAssociations] = useState<RequestAssociations | null>(null);
   const [loadingAssociations, setLoadingAssociations] = useState(false);
-  const [filters, setFilters] = useState<unknown>({
+  const [filters, setFilters] = useState<RequestFilters>({
     provider: "",
     model: "",
     endpoint: "",
@@ -65,7 +122,7 @@ export default function RequestsPage() {
     success: "",
   });
 
-  const [hoveredConversationId, setHoveredConversationId] = useState(null);
+  const [hoveredConversationId, setHoveredConversationId] = useState<string | null>(null);
   const initialLoadDone = useRef<boolean>(false);
   const fetchGenRef = useRef<number>(0);
 
@@ -80,11 +137,11 @@ export default function RequestsPage() {
     const now = Date.now();
     const ids = new Set<string>();
     for (const r of requests) {
-      if (!(r as Record<string, unknown>).timestamp) continue;
-      const age = now - new Date((r as Record<string, unknown>).timestamp).getTime();
+      if (!r.timestamp) continue;
+      const age = now - new Date(r.timestamp).getTime();
       // Treat timestamps up to 10s in the future (clock skew) or < 5s old
       if (age < 5000 && age > -10000)
-        ids.add((r as Record<string, unknown>).requestId || (r as Record<string, unknown>)._id);
+        ids.add(r.requestId || r._id);
     }
     return ids;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,7 +200,7 @@ export default function RequestsPage() {
 
       const data = await IrisService.getRequests(params);
       if (fetchGeneration !== fetchGenRef.current) return;
-      setRequests(data.data || []);
+      setRequests((data.data || []) as RequestItem[]);
       setTotal(data.total || 0);
     } catch (error: unknown) {
       if (fetchGeneration !== fetchGenRef.current) return;
@@ -198,15 +255,15 @@ export default function RequestsPage() {
 
   // Fetch associations when a request is selected
   useEffect(() => {
-    if (!(selectedRequest as Record<string, unknown>)?.requestId) {
+    if (!selectedRequest?.requestId) {
       setAssociations(null);
       return;
     }
     let cancelled = false;
     setLoadingAssociations(true);
-    IrisService.getRequestAssociations((selectedRequest as Record<string, unknown>).requestId)
-      .then((data: Record<string, unknown>) => {
-        if (!cancelled) setAssociations(data);
+    IrisService.getRequestAssociations(selectedRequest.requestId)
+      .then((data: any) => {
+        if (!cancelled) setAssociations(data as RequestAssociations);
       })
       .catch(() => {
         if (!cancelled)
@@ -218,7 +275,7 @@ export default function RequestsPage() {
     return () => {
       cancelled = true;
     };
-  }, [(selectedRequest as Record<string, unknown>)?.requestId]);
+  }, [selectedRequest?.requestId]);
 
   function handleSort(key: string, dir: string) {
     setSort(key);
@@ -227,7 +284,7 @@ export default function RequestsPage() {
   }
 
   const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev: Record<string, string>) => ({ ...prev, [key]: value }));
+    setFilters((prev: RequestFilters) => ({ ...prev, [key]: value }));
     setPage(1);
   }, []);
 
@@ -413,12 +470,12 @@ export default function RequestsPage() {
           sortDir={order}
           onSort={handleSort}
           maxHeight={null}
-          onRowMouseEnter={(row: Record<string, unknown>) => {
+          onRowMouseEnter={(row: any) => {
             if (row.conversationId)
               setHoveredConversationId(row.conversationId);
           }}
           onRowMouseLeave={() => setHoveredConversationId(null)}
-          getRowClassName={(row: Record<string, unknown>) => {
+          getRowClassName={(row: any) => {
             const id = row.requestId || row._id;
             const classes = [];
             if (
@@ -431,11 +488,11 @@ export default function RequestsPage() {
             else if (fadingIds.has(id)) classes.push(styles.newRowFadeOut);
             return classes.join(" ");
           }}
-          onRowClick={async (req: Record<string, unknown>) => {
-            setSelectedRequest(req);
+          onRowClick={async (req: any) => {
+            setSelectedRequest(req as RequestItem);
             try {
               const full = await IrisService.getRequest(req.requestId);
-              setSelectedRequest(full);
+              setSelectedRequest(full as unknown as RequestItem);
             } catch {
               /* keep partial data */
             }
@@ -471,9 +528,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <MessageSquare size={12} /> Conversations
                     </span>
-                    {(associations as Record<string, unknown>)?.conversations?.length > 0 ? (
+                    {associations?.conversations && associations.conversations.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.conversations?.map((c: Record<string, unknown>) => (
+                        {associations?.conversations?.map((c: any) => (
                           <HistoryItemComponent
                             key={c.id}
                             item={{
@@ -513,9 +570,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <GitBranch size={12} /> Workflows
                     </span>
-                    {(associations as Record<string, unknown>)?.workflows?.length > 0 ? (
+                    {associations?.workflows && associations.workflows.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.workflows?.map((w: Record<string, unknown>) => (
+                        {associations?.workflows?.map((w: any) => (
                           <HistoryItemComponent
                             key={w.id}
                             item={{
@@ -547,9 +604,9 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <FolderOpen size={12} /> Sessions
                     </span>
-                    {(associations as Record<string, unknown>)?.sessions?.length > 0 ? (
+                    {associations?.sessions && associations.sessions.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.sessions?.map((s: Record<string, unknown>) => (
+                        {associations?.sessions?.map((s: any) => (
                           <HistoryItemComponent
                             key={s.id}
                             item={{
@@ -585,10 +642,11 @@ export default function RequestsPage() {
                 <div className={styles.detailSection}>
                   <div className={styles.detailSectionTitle}>Media Assets</div>
                   <div className={styles.mediaGrid}>
-                    {mediaAssets.map((asset: Record<string, unknown>, index: number) => (
+                    {mediaAssets.map((asset: any, index: number) => (
                       <MediaCardComponent
                         key={index}
                         media={{
+                          convId: selectedRequest?.conversationId || "",
                           url: asset.url,
                           mediaType: getMediaTypeFromRef(asset.url),
                           origin: asset.origin,

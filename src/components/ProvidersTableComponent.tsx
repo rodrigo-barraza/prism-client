@@ -10,6 +10,17 @@ import {
   countLinkColumns,
   PROVIDER_COLORS,
 } from "../utils/tableColumns";
+import type { IrisProviderStat } from "../types/types";
+
+interface ProvidersTableProps {
+  providers?: IrisProviderStat[];
+  totalRequests?: number;
+  totalCost?: number;
+  emptyText?: string;
+  compact?: boolean;
+  title?: React.ReactNode;
+  maxHeight?: number;
+}
 
 /**
  * ProvidersTableComponent — reusable admin table for displaying provider-level
@@ -23,7 +34,7 @@ export default function ProvidersTableComponent({
   compact = false,
   title = "Providers",
   maxHeight = 420,
-}: unknown) {
+}: ProvidersTableProps) {
   const totalRequests =
     (totalRequestsProp ??
       providers.reduce((s, p) => s + p.totalRequests, 0)) ||
@@ -39,8 +50,8 @@ export default function ProvidersTableComponent({
     {
       key: "usage",
       label: "Usage",
-      sortValue: (p) => p.totalRequests,
-      render: (p: unknown, i: unknown) => (
+      sortValue: (p: any) => p.totalRequests,
+      render: (p: any, i: number) => (
         <ProportionBarComponent
           value={p.totalRequests}
           total={totalRequests}
@@ -52,7 +63,7 @@ export default function ProvidersTableComponent({
     ...tokenColumns(),
     ...costColumns(totalCost),
     latencyColumn(),
-    ...countLinkColumns("provider", (row) => row.provider),
+    ...countLinkColumns("provider", (row: any) => String(row.provider || "")),
   ];
 
   const COMPACT_KEYS = [
@@ -63,7 +74,7 @@ export default function ProvidersTableComponent({
     "avgLatency",
   ];
   const columns = compact
-    ? allColumns.filter((c) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (
@@ -72,7 +83,7 @@ export default function ProvidersTableComponent({
       maxHeight={maxHeight}
       columns={columns}
       data={providers}
-      getRowKey={(p: unknown, i: unknown) => `${p.provider}-${i}`}
+      getRowKey={(p: any, i: number) => `${p.provider}-${i}`}
       emptyText={emptyText}
       storageKey="providers"
     />

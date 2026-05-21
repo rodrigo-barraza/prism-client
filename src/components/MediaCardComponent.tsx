@@ -83,7 +83,7 @@ export default function MediaCardComponent({
   onImageClick,
 }: MediaCardProps) {
   const resolvedUrl = resolveUrl(media.url);
-  const m = media;
+  const m = media as any;
 
   const cardClasses = [
     styles.card,
@@ -184,7 +184,7 @@ export default function MediaCardComponent({
           <div className={styles.meta}>
             {m.model && (
               <ModelBadgeComponent
-                models={[m.model.split("/").pop()]}
+                models={[m.model.split("/").pop() || ""]}
                 provider={m.provider}
                 mini
               />

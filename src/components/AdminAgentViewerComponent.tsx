@@ -39,6 +39,7 @@ import { useAdminHeader } from "./AdminHeaderContextComponent";
 import { formatNumber } from "../utils/utilities";
 import useSessionStats from "../hooks/useSessionStats";
 import { PROJECT_AGENT } from "../constants";
+import type { PrismConfig } from "../types/types";
 import chatStyles from "./ChatAreaComponent.module.css";
 import styles from "./AdminAgentViewerComponent.module.css";
 import {
@@ -56,24 +57,24 @@ export default function AdminAgentViewerComponent() {
   const { setTitleBadge, setControls } = useAdminHeader();
 
   // -- State ----------------------------------------------------
-  const [messages, setMessages] = useState<unknown[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [agentSessionId, setAgentSessionId] = useState(null);
-  const [sessions, setSessions] = useState<unknown[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, _setPage] = useState(1);
   const [activeId, setActiveId] = useState(null);
-  const [config, setConfig] = useState(null);
+  const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState("");
   const [leftTab, setLeftTab] = useState("settings");
-  const [customTools, setCustomTools] = useState<unknown[]>([]);
-  const [builtInTools, setBuiltInTools] = useState<unknown[]>([]);
-  const [skills, setSkills] = useState<unknown[]>([]);
-  const [mcpServers, setMcpServers] = useState<unknown[]>([]);
+  const [customTools, setCustomTools] = useState<any[]>([]);
+  const [builtInTools, setBuiltInTools] = useState<any[]>([]);
+  const [skills, setSkills] = useState<any[]>([]);
+  const [mcpServers, setMcpServers] = useState<any[]>([]);
   const [memoriesRefreshKey] = useState(0);
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
   const [tasksCount, setTasksCount] = useState(0);
-  const [backendSessionStats, setBackendSessionStats] = useState(null);
+  const [backendSessionStats, setBackendSessionStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(true);
@@ -85,7 +86,7 @@ export default function AdminAgentViewerComponent() {
     functionCallingEnabled: true,
   });
 
-  const endRef = useRef<unknown>(null);
+  const endRef = useRef<any>(null);
 
   // -- Effects --------------------------------------------------
 
@@ -138,60 +139,60 @@ export default function AdminAgentViewerComponent() {
   // Load custom tools (read-only display)
   useEffect(() => {
     PrismService.getCustomTools(PROJECT_AGENT)
-      .then((tools: unknown) => setCustomTools(tools))
+      .then((tools: any) => setCustomTools(tools))
       .catch(() => {});
   }, []);
 
   // Load skills (read-only display)
   useEffect(() => {
     PrismService.getSkills(PROJECT_AGENT)
-      .then((s) => setSkills(s))
+      .then((s: any) => setSkills(s))
       .catch(() => {});
   }, []);
 
   // Load MCP servers (read-only display)
   useEffect(() => {
     PrismService.getMCPServers(PROJECT_AGENT)
-      .then((s) => setMcpServers(s))
+      .then((s: any) => setMcpServers(s))
       .catch(() => {});
   }, []);
 
   // Load built-in tools
   useEffect(() => {
     PrismService.getBuiltInToolSchemas("CODING")
-      .then((tools: unknown) => setBuiltInTools(tools))
+      .then((tools: any) => setBuiltInTools(tools))
       .catch(() => {});
   }, []);
 
   // Fetch memory count
   useEffect(() => {
-    PrismService.getAgentMemories(PROJECT_AGENT, 1, 0)
-      .then((r) => setTotalMemoriesCount(r.total || 0))
+    PrismService.getAgentMemories(PROJECT_AGENT, 1, undefined)
+      .then((r: any) => setTotalMemoriesCount(r.total || 0))
       .catch(() => {});
   }, []);
 
   // -- Filtered config: only function-calling models ------------
   const filteredConfig = useMemo(() => {
     if (!config) return null;
-    const textModelsMap = (config as Record<string, unknown>).textToText?.models || {};
+    const textModelsMap = (config as any).textToText?.models || {};
     const filteredTextModels = {};
 
     for (const [provider, models] of Object.entries(textModelsMap)) {
-      const fcModels = models.filter((m) =>
+      const fcModels = (models as any[]).filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );
       if (fcModels.length > 0) (filteredTextModels as Record<string, unknown>)[provider] = fcModels;
     }
 
-    const filteredProviderList = ((config as Record<string, unknown>).providerList || []).filter(
-      (p) => (filteredTextModels as Record<string, unknown>)[p],
+    const filteredProviderList = ((config as any).providerList || []).filter(
+      (p: any) => (filteredTextModels as any)[p],
     );
 
     return {
-      ...config,
+      ...(config as any),
       providerList: filteredProviderList,
       textToText: {
-        ...(((config as Record<string, unknown>).textToText as Record<string, unknown>) || {}),
+        ...((config as any).textToText || {}),
         models: filteredTextModels,
       },
       textToImage: { models: {} },
@@ -213,7 +214,7 @@ export default function AdminAgentViewerComponent() {
   } = useSessionStats(messages);
 
   // Fetch backend stats when session changes
-  const fetchSessionStats = useCallback((sessionId: unknown) => {
+  const fetchSessionStats = useCallback((sessionId: any) => {
     if (!sessionId) return;
     IrisService.getSessionStats(sessionId)
       .then((stats) => setBackendSessionStats(stats))
@@ -222,9 +223,9 @@ export default function AdminAgentViewerComponent() {
 
   // -- Session selection ----------------------------------------
   const handleSelectSession = useCallback(
-    async (conversation: unknown) => {
+    async (conversation: any) => {
       try {
-        const full: unknown = await IrisService.getAgentSession(conversation.id);
+        const full: any = await IrisService.getAgentSession(conversation.id);
         const displayMessages = prepareDisplayMessages(full.messages || []);
         setMessages(displayMessages);
         setAgentSessionId(conversation.id);
@@ -258,14 +259,14 @@ export default function AdminAgentViewerComponent() {
 
         // Fetch tasks count for this session
         ToolsApiService.getAllAgenticTasks({ agentSessionId: conversation.id })
-          .then((r) =>
+          .then((r: any) =>
             setTasksCount(r.summary?.total || (r.tasks || []).length),
           )
           .catch(() => {});
 
         // Fetch workers count
         PrismService.getCoordinatorWorkers(conversation.id)
-          .then((r) => setWorkersCount((r.workers || []).length))
+          .then((r: any) => setWorkersCount((r.workers || []).length))
           .catch(() => {});
       } catch (error: unknown) {
         console.error("Failed to load agent session:", error);
@@ -354,28 +355,28 @@ export default function AdminAgentViewerComponent() {
                   messageCount: messages.length,
                   deletedCount: 0,
                   requestCount:
-                    (backendSessionStats as unknown)?.requestCount || requestCount,
+                    backendSessionStats?.requestCount || requestCount,
                   uniqueModels:
-                    ((backendSessionStats as unknown)?.models?.length || 0) >
+                    (backendSessionStats?.models?.length || 0) >
                     uniqueModels.length
-                      ? (backendSessionStats as unknown).models
+                      ? backendSessionStats.models
                       : uniqueModels,
                   uniqueProviders,
                   totalTokens: backendSessionStats
                     ? {
-                        input: (backendSessionStats as unknown).totalInputTokens,
-                        output: (backendSessionStats as unknown).totalOutputTokens,
-                        total: (backendSessionStats as unknown).totalTokens,
+                        input: backendSessionStats.totalInputTokens,
+                        output: backendSessionStats.totalOutputTokens,
+                        total: backendSessionStats.totalTokens,
                       }
                     : totalTokens,
                   totalCost:
-                    (backendSessionStats as unknown)?.totalCost ?? totalCost,
+                    backendSessionStats?.totalCost ?? totalCost,
                   originalTotalCost: 0,
                   usedTools,
                   modalities:
-                    (backendSessionStats as unknown)?.modalities || modalities,
+                    backendSessionStats?.modalities || modalities,
                   completedElapsedTime:
-                    (backendSessionStats as unknown)?.totalElapsedTime ||
+                    backendSessionStats?.totalElapsedTime ||
                     completedElapsedTime,
                 }
               : null
@@ -387,8 +388,6 @@ export default function AdminAgentViewerComponent() {
         <ModelInfoPanel
           config={filteredConfig}
           settings={settings}
-          onChange={() => {}}
-          lockedTools={new Set(["Tool Calling"])}
         />
       )}
 

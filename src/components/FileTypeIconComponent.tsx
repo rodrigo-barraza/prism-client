@@ -448,7 +448,7 @@ const DEFAULT_FILE_ICON = { icon: File, cls: "iconDefault" };
  * Checks exact filename matches first, then compound extensions (e.g. ".d.ts"),
  * then test/spec pattern detection, and finally simple extension match.
  */
-export function getFileIconData(filename: string) {
+export function getFileIconData(filename: string): any {
   const lower = filename.toLowerCase();
 
   // 1. Exact filename match
@@ -487,7 +487,7 @@ const FileTypeIconComponent = memo(function FileTypeIconComponent({
   filename,
   size = 11,
   className = "",
-}: unknown) {
+}: any) {
   const { icon: Icon, cls } = getFileIconData(filename || "");
   return (
     <Icon

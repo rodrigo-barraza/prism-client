@@ -24,13 +24,13 @@ export default function MCPServersPanel({
   servers,
   onServersChange,
   project,
-}: unknown) {
-  const [editingServer, setEditingServer] = useState<unknown>(null);
+}: any) {
+  const [editingServer, setEditingServer] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [connecting, setConnecting] = useState<unknown>(null); // server ID being connected
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<unknown>(null);
-  const [error, setError] = useState<unknown>(null);
+  const [connecting, setConnecting] = useState<any>(null); // server ID being connected
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
+  const [error, setError] = useState<any>(null);
 
   // -- CRUD -----------------------------------------------------
 
@@ -50,7 +50,7 @@ export default function MCPServersPanel({
     setError(null);
   }, []);
 
-  const handleEdit = useCallback((server) => {
+  const handleEdit = useCallback((server: any) => {
     setEditingServer({ ...server });
     setIsNew(false);
     setError(null);
@@ -74,7 +74,7 @@ export default function MCPServersPanel({
           typeof editingServer.args === "string"
             ? editingServer.args
                 .split(",")
-                .map((a) => a.trim())
+                .map((a: any) => a.trim())
                 .filter(Boolean)
             : editingServer.args,
         ...(project ? { project } : {}),
@@ -92,7 +92,7 @@ export default function MCPServersPanel({
       setEditingServer(null);
       setIsNew(false);
       onServersChange();
-    } catch (error: unknown) {
+    } catch (error: any) {
       setError(error.message || "Failed to save server");
     } finally {
       setSaving(false);
@@ -109,7 +109,7 @@ export default function MCPServersPanel({
         await PrismService.deleteMCPServer(id);
         setConfirmingDeleteId(null);
         onServersChange();
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to delete MCP server:", error);
       }
     },
@@ -119,14 +119,14 @@ export default function MCPServersPanel({
   // -- Connect / Disconnect -------------------------------------
 
   const handleConnect = useCallback(
-    async (server) => {
+    async (server: any) => {
       const serverId = server.id || server._id;
       setConnecting(serverId);
       setError(null);
       try {
         await PrismService.connectMCPServer(serverId);
         onServersChange();
-      } catch (error: unknown) {
+      } catch (error: any) {
         setError(`Connect failed: ${error.message || "Unknown error"}`);
       } finally {
         setConnecting(null);
@@ -136,13 +136,13 @@ export default function MCPServersPanel({
   );
 
   const handleDisconnect = useCallback(
-    async (server) => {
+    async (server: any) => {
       const serverId = server.id || server._id;
       setConnecting(serverId);
       try {
         await PrismService.disconnectMCPServer(serverId);
         onServersChange();
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Disconnect failed:", error);
       } finally {
         setConnecting(null);
@@ -154,7 +154,7 @@ export default function MCPServersPanel({
   // -- Edit / Create Form ---------------------------------------
 
   if (editingServer) {
-    const isStdio = (editingServer as unknown).transport === "stdio";
+    const isStdio = editingServer.transport === "stdio";
 
     return (
       <div className={styles.container}>
@@ -171,9 +171,9 @@ export default function MCPServersPanel({
             <input
               type="text"
               className={styles.input}
-              value={(editingServer as unknown).name}
+              value={editingServer.name}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingServer((s) => ({
+                setEditingServer((s: any) => ({
                   ...s,
                   name: e.target.value
                     .replace(/[^a-zA-Z0-9_-]/g, "-")
@@ -192,9 +192,9 @@ export default function MCPServersPanel({
             <input
               type="text"
               className={styles.input}
-              value={(editingServer as unknown).displayName}
+              value={editingServer.displayName}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingServer((s) => ({
+                setEditingServer((s: any) => ({
                   ...s,
                   displayName: e.target.value,
                 }))
@@ -209,7 +209,7 @@ export default function MCPServersPanel({
               <button
                 className={`${styles.transportTab} ${isStdio ? styles.transportTabActive : ""}`}
                 onClick={() =>
-                  setEditingServer((s) => ({ ...s, transport: "stdio" }))
+                  setEditingServer((s: any) => ({ ...s, transport: "stdio" }))
                 }
               >
                 stdio
@@ -217,7 +217,7 @@ export default function MCPServersPanel({
               <button
                 className={`${styles.transportTab} ${!isStdio ? styles.transportTabActive : ""}`}
                 onClick={() =>
-                  setEditingServer((s) => ({
+                  setEditingServer((s: any) => ({
                     ...s,
                     transport: "streamable-http",
                   }))
@@ -235,9 +235,9 @@ export default function MCPServersPanel({
                 <input
                   type="text"
                   className={styles.input}
-                  value={(editingServer as unknown).command}
+                  value={editingServer.command}
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                    setEditingServer((s) => ({
+                    setEditingServer((s: any) => ({
                       ...s,
                       command: e.target.value,
                     }))
@@ -251,12 +251,12 @@ export default function MCPServersPanel({
                   type="text"
                   className={styles.input}
                   value={
-                    Array.isArray((editingServer as unknown).args)
-                      ? (editingServer as unknown).args.join(", ")
-                      : (editingServer as unknown).args
+                    Array.isArray(editingServer.args)
+                      ? editingServer.args.join(", ")
+                      : editingServer.args
                   }
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                    setEditingServer((s) => ({
+                    setEditingServer((s: any) => ({
                       ...s,
                       args: e.target.value,
                     }))
@@ -272,9 +272,9 @@ export default function MCPServersPanel({
               <input
                 type="text"
                 className={styles.input}
-                value={(editingServer as unknown).url}
+                value={editingServer.url}
                 onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                  setEditingServer((s) => ({ ...s, url: e.target.value }))
+                  setEditingServer((s: any) => ({ ...s, url: e.target.value }))
                 }
                 placeholder="https://mcp-server.example.com/mcp"
               />
@@ -287,7 +287,7 @@ export default function MCPServersPanel({
             <button
               className={styles.saveBtn}
               onClick={handleSave}
-              disabled={saving || !(editingServer as unknown).name?.trim()}
+              disabled={saving || !editingServer.name?.trim()}
             >
               <Save size={14} />
               {saving ? "Saving..." : isNew ? "Add Server" : "Save Changes"}
@@ -303,7 +303,7 @@ export default function MCPServersPanel({
 
   // -- List View ------------------------------------------------
 
-  const connectedCount = servers.filter((s) => s.connected).length;
+  const connectedCount = servers.filter((s: any) => s.connected).length;
 
   return (
     <div className={styles.container}>
@@ -338,7 +338,7 @@ export default function MCPServersPanel({
         </div>
       )}
 
-      {servers.map((server) => {
+      {servers.map((server: any) => {
         const serverId = server.id || server._id;
         const isConfirming = confirmingDeleteId === serverId;
         const isConnecting = connecting === serverId;
@@ -405,7 +405,7 @@ export default function MCPServersPanel({
             {/* Show discovered tools when connected */}
             {server.connected && server.tools?.length > 0 && (
               <div className={styles.toolList}>
-                {server.tools.map((tool) => (
+                {server.tools.map((tool: any) => (
                   <span key={tool.name} className={styles.toolTag}>
                     {tool.name}
                   </span>

@@ -168,10 +168,10 @@ async function executeModelNode(
     interface MediaFields { images?: string[]; audio?: string[]; video?: string[]; pdf?: string[] }
     const buildMediaFields = (existing: MediaFields = {}): MediaFields => {
       const fields: MediaFields = {};
-      const imgs = [...(existing.images || []), ...imageParts];
-      const auds = [...(existing.audio || []), ...audioParts];
-      const vids = [...(existing.video || []), ...videoParts];
-      const pdfs = [...(existing.pdf || []), ...pdfParts];
+      const imgs = [...(existing.images || []), ...imageParts] as string[];
+      const auds = [...(existing.audio || []), ...audioParts] as string[];
+      const vids = [...(existing.video || []), ...videoParts] as string[];
+      const pdfs = [...(existing.pdf || []), ...pdfParts] as string[];
       if (imgs.length > 0) fields.images = imgs;
       if (auds.length > 0) fields.audio = auds;
       if (vids.length > 0) fields.video = vids;
@@ -179,13 +179,13 @@ async function executeModelNode(
       return fields;
     };
 
-    let finalMessages;
+    let finalMessages: any[];
 
     // Priority: conversation input > node.messages > legacy systemPrompt/userPrompt
     if (conversationParts.length > 0) {
       // Use the first conversation input as the base messages, filtering out empty ones
-      finalMessages = conversationParts[0]
-        .map((m) => ({
+      finalMessages = (conversationParts[0] as any[])
+        .map((m: any) => ({
           role: m.role,
           content: m.content || "",
           ...(m.images?.length > 0 ? { images: m.images } : {}),
@@ -194,7 +194,7 @@ async function executeModelNode(
           ...(m.pdf?.length > 0 ? { pdf: m.pdf } : {}),
         }))
         .filter(
-          (m) =>
+          (m: any) =>
             m.content ||
             m.images?.length > 0 ||
             m.audio?.length > 0 ||
@@ -204,8 +204,8 @@ async function executeModelNode(
 
       // Append piped text/media to the last user message (or add a new one)
       const lastUserIdx = finalMessages
-        .map((m, i) => ({ m, i }))
-        .filter(({ m }: unknown) => m.role === "user")
+        .map((m: any, i: number) => ({ m, i }))
+        .filter(({ m }: any) => m.role === "user")
         .pop()?.i;
       if (lastUserIdx !== undefined && (pipedText || hasMedia)) {
         const lastUser = finalMessages[lastUserIdx];
@@ -227,7 +227,7 @@ async function executeModelNode(
       }
     } else if (node.messages && node.messages.length > 0) {
       // Use the full conversation messages array, preserving all media
-      finalMessages = node.messages.map((m) => ({
+      finalMessages = node.messages.map((m: any) => ({
         role: m.role,
         content: m.content || "",
         ...(m.images?.length > 0 ? { images: m.images } : {}),
@@ -238,8 +238,8 @@ async function executeModelNode(
 
       // Append piped text/media to the last user message (or add a new one)
       const lastUserIdx = finalMessages
-        .map((m, i) => ({ m, i }))
-        .filter(({ m }: unknown) => m.role === "user")
+        .map((m: any, i: number) => ({ m, i }))
+        .filter(({ m }: any) => m.role === "user")
         .pop()?.i;
       if (lastUserIdx !== undefined && (pipedText || hasMedia)) {
         const lastUser = finalMessages[lastUserIdx];
@@ -277,7 +277,7 @@ async function executeModelNode(
       conversationId,
       conversationMeta,
       ...(toolSchemas != null && {
-        enabledTools: toolSchemas.map((t) => t.name || t.function?.name),
+        enabledTools: toolSchemas.map((t: any) => t.name || t.function?.name),
       }),
     } as import("../types/types").ChatPayload;
 
@@ -342,12 +342,12 @@ async function executeModelNode(
 
     if (conversationParts.length > 0) {
       // Extract from conversation input: system message → systemPrompt, user messages → prompt + images
-      const convMessages = conversationParts[0].filter(
-        (m) => m.content || m.images?.length > 0 || m.audio,
+      const convMessages = (conversationParts[0] as any[]).filter(
+        (m: any) => m.content || m.images?.length > 0 || m.audio,
       );
-      const systemMsg = convMessages.find((m) => m.role === "system");
+      const systemMsg = convMessages.find((m: any) => m.role === "system");
       const userMsgs = convMessages.filter((m) => m.role === "user");
-      const lastUser = userMsgs[userMsgs.length - 1];
+      const lastUser: any = userMsgs[userMsgs.length - 1];
 
       systemPrompt = systemMsg?.content || undefined;
       const userContent = lastUser?.content || "";
@@ -358,14 +358,14 @@ async function executeModelNode(
         : userContent;
 
       // Collect images from all user messages
-      userMsgs.forEach((m) => {
+      userMsgs.forEach((m: any) => {
         if (m.images?.length > 0) messageImages.push(...m.images);
       });
     } else if (node.messages && node.messages.length > 0) {
       // Extract from messages array: last user message = prompt, system message = systemPrompt
-      const systemMsg = node.messages.find((m) => m.role === "system");
+      const systemMsg = node.messages.find((m: any) => m.role === "system");
       const userMsgs = node.messages.filter((m) => m.role === "user");
-      const lastUser = userMsgs[userMsgs.length - 1];
+      const lastUser: any = userMsgs[userMsgs.length - 1];
 
       systemPrompt = systemMsg?.content || undefined;
       const userContent = lastUser?.content || "";
@@ -376,7 +376,7 @@ async function executeModelNode(
         : userContent;
 
       // Collect images from all user messages
-      userMsgs.forEach((m) => {
+      userMsgs.forEach((m: any) => {
         if (m.images?.length > 0) messageImages.push(...m.images);
       });
     } else {
@@ -398,9 +398,9 @@ async function executeModelNode(
       }
       // Already an object or fallback
       return typeof image === "object"
-        ? image
+        ? (image as any)
         : { imageData: image, mimeType: "image/jpeg" };
-    });
+    }) as any[];
 
     const result = await PrismService.generateImage({
       provider: node.provider as string,
@@ -460,7 +460,7 @@ async function executeModelNode(
       .map((d) => d.data);
     const audioPart = inputData.find((d) => d.type === "audio")?.data;
 
-    const payload: unknown = {
+    const payload: any = {
       provider: node.provider,
       model: node.modelName,
     };
@@ -652,10 +652,10 @@ export async function executeWorkflow(
       if (node.nodeType === "tools") {
         const disabled = new Set(node.disabledTools || []);
         const builtIn = (node.builtInTools || []).filter(
-          (t: unknown) => !disabled.has(t.name),
+          (t: any) => !disabled.has(t.name),
         );
         const custom = (node.customTools || []).filter(
-          (t: unknown) => !disabled.has(t.name || t._id),
+          (t: any) => !disabled.has(t.name || t._id),
         );
 
         // Build OpenAI-format tool schemas
@@ -672,7 +672,7 @@ export async function executeWorkflow(
               },
             },
           })),
-          ...custom.map((t) => {
+          ...custom.map((t: any) => {
             const props: Record<string, unknown> = {};
             const required = [];
             for (const p of t.parameters || []) {
@@ -755,7 +755,7 @@ export async function executeWorkflow(
         toolSchemas = [];
         customToolMap = new Map();
         for (const ti of toolInputs) {
-          const tiData = ti.data as Record<string, unknown>;
+          const tiData = ti.data as any;
           if (tiData?.schemas) toolSchemas.push(...tiData.schemas);
           if (tiData?.customMap) {
             for (const [k, v] of tiData.customMap) customToolMap.set(k, v);

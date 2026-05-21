@@ -36,11 +36,11 @@ function AdminWorkflowsPageInner() {
   const initialId = searchParams.get("id") || null;
   const providerFilter = searchParams.get("provider") || null;
   const modelFilter = searchParams.get("model") || null;
-  const [workflows, setWorkflows] = useState<unknown[]>([]);
+  const [workflows, setWorkflows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState(initialId);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<unknown>(null);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const { toasts, addToast, removeToast } = useToast();
@@ -54,9 +54,9 @@ function AdminWorkflowsPageInner() {
         order: "desc",
         ...buildDateRangeParams(dateRange),
       };
-      if (projectFilter) (params as unknown).project = projectFilter;
-      if (providerFilter) (params as unknown).provider = providerFilter;
-      if (modelFilter) (params as unknown).model = modelFilter;
+      if (projectFilter) (params as any).project = projectFilter;
+      if (providerFilter) (params as any).provider = providerFilter;
+      if (modelFilter) (params as any).model = modelFilter;
       const data = await IrisService.getWorkflows(params);
       const list = data.data || [];
       setWorkflows(list);
@@ -112,7 +112,7 @@ function AdminWorkflowsPageInner() {
 
   // Use persisted nodeResults and nodeStatuses from the workflow document
   const nodeResults = useMemo(() => {
-    return (selectedWorkflow as unknown)?.nodeResults || {};
+    return selectedWorkflow?.nodeResults || {};
   }, [selectedWorkflow]);
 
   // nodeStatuses are ephemeral runtime state — always empty for read-only view
@@ -120,18 +120,18 @@ function AdminWorkflowsPageInner() {
 
   const edgeCount = useMemo(() => {
     const edges =
-      (selectedWorkflow as unknown)?.edges ||
-      (selectedWorkflow as unknown)?.connections ||
+      selectedWorkflow?.edges ||
+      selectedWorkflow?.connections ||
       [];
     return edges.length;
   }, [selectedWorkflow]);
 
   // Local node state for drag-to-rearrange (not persisted)
-  const [localNodes, setLocalNodes] = useState<unknown[]>([]);
+  const [localNodes, setLocalNodes] = useState<any[]>([]);
 
   // Reset local nodes whenever the selected workflow changes
   useEffect(() => {
-    setLocalNodes((selectedWorkflow as unknown)?.nodes || []);
+    setLocalNodes(selectedWorkflow?.nodes || []);
   }, [selectedWorkflow]);
 
   const handleUpdateNodePosition = useCallback((nodeId: unknown, position: unknown) => {
@@ -230,8 +230,8 @@ function AdminWorkflowsPageInner() {
             admin
             nodes={localNodes}
             connections={
-              (selectedWorkflow as unknown)?.edges ||
-              (selectedWorkflow as unknown)?.connections ||
+              selectedWorkflow?.edges ||
+              selectedWorkflow?.connections ||
               []
             }
             selectedNodeId={selectedNodeId}

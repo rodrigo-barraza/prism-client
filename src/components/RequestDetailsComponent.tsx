@@ -8,13 +8,21 @@ import { DrawerComponent } from "@rodrigo-barraza/components-library";
  * Thin wrapper around the shared DrawerComponent, preserving the existing API
  * so all consumers continue to work without changes.
  */
+export interface RequestDetailsProps {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  sections?: any[];
+  children?: React.ReactNode;
+}
+
 export default function RequestDetailsComponent({
   open,
   onClose,
   title = "Detail",
   sections = [],
   children,
-}: unknown) {
+}: RequestDetailsProps) {
   return (
     <DrawerComponent
       open={open}

@@ -20,6 +20,20 @@ import {
   createdAtColumn,
   getDurationMs,
 } from "../utils/tableColumns";
+import type { Conversation } from "../types/types";
+
+interface ConversationsTableProps {
+  conversations?: Conversation[];
+  emptyText?: string;
+  sortKey?: string;
+  sortDir?: "asc" | "desc" | null;
+  onSort?: (key: string) => void;
+  compact?: boolean;
+  mini?: boolean;
+  maxHeight?: number | string;
+  title?: React.ReactNode;
+  traceId?: string | null;
+}
 
 /**
  * ConversationsTableComponent — reusable admin table for displaying
@@ -36,19 +50,19 @@ export default function ConversationsTableComponent({
   maxHeight,
   title,
   traceId = null,
-}: unknown) {
+}: ConversationsTableProps) {
   const router = useRouter();
 
   const totalCost = useMemo(
     () =>
-      conversations.reduce((sum, c) => sum + (c.totalCost || 0), 0) ||
+      conversations.reduce((sum, c: any) => sum + (c.totalCost || 0), 0) ||
       1,
     [conversations],
   );
 
   const totalDuration = useMemo(
     () =>
-      conversations.reduce((sum, c) => sum + getDurationMs(c), 0) ||
+      conversations.reduce((sum, c: any) => sum + getDurationMs(c), 0) ||
       1,
     [conversations],
   );
@@ -84,8 +98,8 @@ export default function ConversationsTableComponent({
       sortKey={sortKey}
       sortDir={sortDir}
       onSort={onSort}
-      getRowKey={(c, i) => c.id || c._id || `conv-${i}`}
-      onRowClick={(c) => {
+      getRowKey={(c: any, i: number) => c.id || c._id || `conv-${i}`}
+      onRowClick={(c: any) => {
         const traceQs = traceId ? `?trace=${traceId}` : "";
         router.push(`/admin/conversations/${c.id}${traceQs}`);
       }}

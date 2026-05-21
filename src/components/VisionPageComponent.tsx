@@ -45,21 +45,21 @@ const DEFAULT_PROMPT =
  */
 export default function VisionPageComponent() {
   // ── Config state ────────────────────────────────────────────────
-  const [config, setConfig] = useState<unknown>(null);
+  const [config, setConfig] = useState<any>(null);
   const [settings, setSettings] = useState({ provider: "", model: "" });
-  const [favorites, setFavorites] = useState<unknown[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
 
   // ── Source state ────────────────────────────────────────────────
-  const [sourceType, setSourceType] = useState<unknown>(null);
+  const [sourceType, setSourceType] = useState<any>(null);
   const [ipCamUrl, setIpCamUrl] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [resolution, setResolution] = useState<unknown>(null);
+  const [resolution, setResolution] = useState<any>(null);
 
   // ── Analysis state ─────────────────────────────────────────────
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [intervalSec, setIntervalSec] = useState(10);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
-  const [results, setResults] = useState<unknown[]>([]);
+  const [results, setResults] = useState<any[]>([]);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [snapshotCount, setSnapshotCount] = useState(0);
@@ -70,12 +70,12 @@ export default function VisionPageComponent() {
   // ── Refs ────────────────────────────────────────────────────────
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const streamRef = useRef<HTMLCanvasElement | null>(null);
-  const intervalRef = useRef<HTMLCanvasElement | null>(null);
-  const progressRef = useRef<HTMLCanvasElement | null>(null);
-  const resultsAreaRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<any>(null);
+  const intervalRef = useRef<any>(null);
+  const progressRef = useRef<any>(null);
+  const resultsAreaRef = useRef<HTMLDivElement | null>(null);
   const isAnalyzingRef = useRef<boolean>(false);
-  const abortRef = useRef<AbortController | null>(null);
+  const abortRef = useRef<any>(null);
 
   // ── Load Prism config ──────────────────────────────────────────
   useEffect(() => {
@@ -92,15 +92,15 @@ export default function VisionPageComponent() {
   const visionConfig = useMemo(() => {
     if (!config) return null;
     const filtered = { ...config };
-    const textModels = (config as Record<string, unknown>).textToText?.models || {};
+    const textModels = config.textToText?.models || {};
     const filteredModels = {};
 
     for (const [provider, models] of Object.entries(textModels)) {
-      const visionModels = models.filter((m) =>
+      const visionModels = (models as any).filter((m: any) =>
         m.inputTypes?.includes("image"),
       );
       if (visionModels.length > 0) {
-        (filteredModels as Record<string, unknown>)[provider] = visionModels;
+        (filteredModels as any)[provider] = visionModels;
       }
     }
 
@@ -142,18 +142,18 @@ export default function VisionPageComponent() {
     setResolution(null);
   }, []);
 
-  const attachStream = useCallback((stream: unknown) => {
+  const attachStream = useCallback((stream: any) => {
     streamRef.current = stream;
     const video = videoRef.current;
     if (video) {
-      (video as HTMLVideoElement).srcObject = stream;
+      video.srcObject = stream;
       // play() returns a promise — only set streaming on success
-      (video as unknown)
+      video
         .play()
         .then(() => {
           setIsStreaming(true);
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.warn("Video play() interrupted:", error.message);
         });
     }
@@ -205,13 +205,13 @@ export default function VisionPageComponent() {
   }, [stopSource, attachStream]);
 
   const startIpCamera = useCallback(
-    (url: unknown) => {
+    (url: any) => {
       stopSource();
       if (!url) return;
       if (videoRef.current) {
-        (videoRef.current as HTMLVideoElement).srcObject = null;
-        (videoRef.current as HTMLVideoElement).src = url;
-        (videoRef.current as HTMLVideoElement).play().catch(() => {});
+        videoRef.current.srcObject = null;
+        videoRef.current.src = url;
+        videoRef.current.play().catch(() => {});
       }
       setIsStreaming(true);
     },
@@ -219,7 +219,7 @@ export default function VisionPageComponent() {
   );
 
   const handleSourceSelect = useCallback(
-    async (type: unknown) => {
+    async (type: any) => {
       // Toggle off if clicking same source
       if (type === sourceType) {
         stopSource();
@@ -252,23 +252,24 @@ export default function VisionPageComponent() {
   const captureFrame = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas || (video as HTMLVideoElement).readyState < 2) return null;
+    if (!video || !canvas || video.readyState < 2) return null;
 
-    (canvas as HTMLCanvasElement).width =
-      (video as HTMLVideoElement).videoWidth || (video as HTMLVideoElement).clientWidth;
-    (canvas as HTMLCanvasElement).height =
-      (video as HTMLVideoElement).videoHeight || (video as HTMLVideoElement).clientHeight;
-    const context = (canvas as HTMLCanvasElement).getContext("2d");
+    canvas.width =
+      video.videoWidth || video.clientWidth;
+    canvas.height =
+      video.videoHeight || video.clientHeight;
+    const context = canvas.getContext("2d");
+    if (!context) return null;
     context.drawImage(
       video,
       0,
       0,
-      (canvas as HTMLCanvasElement).width,
-      (canvas as HTMLCanvasElement).height,
+      canvas.width,
+      canvas.height,
     );
 
     // JPEG at 80% quality for bandwidth efficiency
-    return (canvas as HTMLCanvasElement).toDataURL("image/jpeg", 0.8);
+    return canvas.toDataURL("image/jpeg", 0.8);
   }, []);
 
   // ── Analysis loop ──────────────────────────────────────────────
@@ -318,7 +319,7 @@ export default function VisionPageComponent() {
           temperature: 0.5,
         },
         {
-          onChunk: (content: unknown) => {
+          onChunk: (content: any) => {
             setResults((prev) =>
               prev.map((r) =>
                 r.id === resultId ? { ...r, text: r.text + content } : r,
@@ -333,7 +334,7 @@ export default function VisionPageComponent() {
             );
             setIsCapturing(false);
           },
-          onError: (error) => {
+          onError: (error: any) => {
             setResults((prev) =>
               prev.map((r) =>
                 r.id === resultId
@@ -351,7 +352,7 @@ export default function VisionPageComponent() {
       );
 
       abortRef.current = abort;
-    } catch (error: unknown) {
+    } catch (error: any) {
       setResults((prev) =>
         prev.map((r) =>
           r.id === resultId

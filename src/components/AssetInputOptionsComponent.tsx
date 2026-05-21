@@ -14,13 +14,13 @@ import styles from "./AssetInputOptionsComponent.module.css";
  *   onFile(dataUrl, mimeType) – called when a file/asset is ready
  *   compact – smaller icon buttons for node view (default false = sidebar view)
  */
-export default function AssetInputOptions({ onFile, compact = false }: unknown) {
+export default function AssetInputOptions({ onFile, compact = false }: any) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showDrawing, setShowDrawing] = useState(false);
   const [showAudioRec, setShowAudioRec] = useState(false);
   const [showWebcam, setShowWebcam] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,7 +31,7 @@ export default function AssetInputOptions({ onFile, compact = false }: unknown) 
     e.target.value = "";
   };
 
-  const handleDrop = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDrop = (e: React.DragEvent<any>) => {
     e.preventDefault();
     e.stopPropagation();
     const file = e.dataTransfer?.files?.[0];
@@ -41,7 +41,7 @@ export default function AssetInputOptions({ onFile, compact = false }: unknown) 
     reader.readAsDataURL(file);
   };
 
-  const handleDragOver = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDragOver = (e: React.DragEvent<any>) => {
     e.preventDefault();
     e.stopPropagation();
   };
@@ -70,7 +70,7 @@ export default function AssetInputOptions({ onFile, compact = false }: unknown) 
   }, []);
 
   const stopWebcam = useCallback(() => {
-    (streamRef.current as MediaStream)?.getTracks().forEach((t) => t.stop());
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setShowWebcam(false);
   }, []);

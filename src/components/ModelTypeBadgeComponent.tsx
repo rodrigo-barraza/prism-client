@@ -33,7 +33,7 @@ export default function ModelTypeBadgeComponent({
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
 
-  const meta = (MODEL_TYPE_META as Record<string, unknown>)[modelType] || {
+  const meta: any = (MODEL_TYPE_META as any)[modelType] || {
     icon: MessageSquare,
     label: modelType,
   };

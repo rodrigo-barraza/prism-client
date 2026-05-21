@@ -105,14 +105,14 @@ export default function StatusBarComponent({
   maxIterations,
   idleIcon,
   idleLabel,
-}: unknown) {
+}: any) {
   const isWorker = variant === "worker";
   // -- Synthetic progress when backend reports 0 --------------
   // The OpenAI-compat path (agentic mode) doesn't receive
   // prompt_processing.progress events from LM Studio, so progress
   // stays at 0. We fill in an asymptotic estimate client-side.
   const [syntheticProgress, setSyntheticProgress] = useState(0);
-  const syntheticStartRef = useRef<unknown>(null);
+  const syntheticStartRef = useRef<any>(null);
 
   const isProgressPhase = phase === "processing" || phase === "loading";
   const backendStuck = isProgressPhase && progress != null && progress === 0;

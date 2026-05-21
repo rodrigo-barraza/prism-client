@@ -4,11 +4,21 @@ import { Search } from "lucide-react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./FilterBarComponent.module.css";
 
-export function FilterBarComponent({ children, className = "" }: unknown) {
+export interface FilterBarProps {
+  children?: React.ReactNode;
+  className?: string;
+}
+
+export function FilterBarComponent({ children, className = "" }: FilterBarProps) {
   return <div className={`${styles.filterBar} ${className}`}>{children}</div>;
 }
 
-export function FilterGroupComponent({ label, children }: unknown) {
+export interface FilterGroupProps {
+  label?: string;
+  children?: React.ReactNode;
+}
+
+export function FilterGroupComponent({ label, children }: FilterGroupProps) {
   return (
     <div className={styles.filterGroup}>
       {label && <span className={styles.filterLabel}>{label}</span>}
@@ -17,7 +27,20 @@ export function FilterGroupComponent({ label, children }: unknown) {
   );
 }
 
-export function FilterPillsComponent({ options, value, onChange }: unknown) {
+export interface PillOption {
+  key: string;
+  label: string;
+  icon?: any;
+  color?: string;
+}
+
+export interface FilterPillsProps {
+  options: PillOption[];
+  value: string;
+  onChange: (key: string) => void;
+}
+
+export function FilterPillsComponent({ options, value, onChange }: FilterPillsProps) {
   return (
     <div className={styles.pills}>
       {options.map((f) => {
@@ -43,12 +66,19 @@ export function FilterPillsComponent({ options, value, onChange }: unknown) {
   );
 }
 
+export interface SearchInputProps {
+  value: string;
+  onChange: (val: string) => void;
+  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  placeholder?: string;
+}
+
 export function SearchInputComponent({
   value,
   onChange,
   onSubmit,
   placeholder = "Search...",
-}: unknown) {
+}: SearchInputProps) {
   return (
     <form className={styles.searchBox} onSubmit={onSubmit}>
       <Search size={14} />
@@ -63,7 +93,19 @@ export function SearchInputComponent({
   );
 }
 
-export function ViewModeToggleComponent({ mode, onChange, modes }: unknown) {
+export interface ViewModeOption {
+  key: string;
+  title: string;
+  icon: any;
+}
+
+export interface ViewModeToggleProps {
+  mode: string;
+  onChange: (mode: string) => void;
+  modes: ViewModeOption[];
+}
+
+export function ViewModeToggleComponent({ mode, onChange, modes }: ViewModeToggleProps) {
   return (
     <div className={styles.viewToggle}>
       {modes.map((m) => {
@@ -84,19 +126,34 @@ export function ViewModeToggleComponent({ mode, onChange, modes }: unknown) {
   );
 }
 
+export interface FilterIconButtonOption {
+  key: string;
+  label: string;
+  icon?: any;
+  color?: string;
+  customRender?: () => React.ReactNode;
+}
+
+export interface FilterIconButtonGroupProps {
+  options: FilterIconButtonOption[];
+  activeKeys: any;
+  onChange: (keys: any) => void;
+  isSingleSelect?: boolean;
+}
+
 export function FilterIconButtonGroupComponent({
   options,
   activeKeys,
   onChange,
   isSingleSelect = false,
-}: unknown) {
+}: FilterIconButtonGroupProps) {
   return (
     <div className={styles.discreteGroup}>
       {options.map((opt) => {
         const Icon = opt.icon;
         const isActive = isSingleSelect
           ? activeKeys === opt.key
-          : activeKeys?.has(opt.key);
+          : activeKeys?.has?.(opt.key);
 
         return (
           <TooltipComponent key={opt.key} label={opt.label} position="bottom">
@@ -129,12 +186,19 @@ export function FilterIconButtonGroupComponent({
   );
 }
 
+export interface FilterInputProps {
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  className?: string;
+}
+
 export function FilterInputComponent({
   value,
   onChange,
   placeholder,
   className = "",
-}: unknown) {
+}: FilterInputProps) {
   return (
     <input
       type="text"
@@ -146,12 +210,24 @@ export function FilterInputComponent({
   );
 }
 
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+export interface FilterSelectProps {
+  value: string;
+  onChange: (val: string) => void;
+  options: SelectOption[];
+  className?: string;
+}
+
 export function FilterSelectComponent({
   value,
   onChange,
   options,
   className = "",
-}: unknown) {
+}: FilterSelectProps) {
   return (
     <select
       className={`${styles.filterSelect} ${className}`}
@@ -167,7 +243,12 @@ export function FilterSelectComponent({
   );
 }
 
-export function FilterClearButton({ onClick, children = "Clear" }: unknown) {
+export interface FilterClearButtonProps {
+  onClick: () => void;
+  children?: React.ReactNode;
+}
+
+export function FilterClearButton({ onClick, children = "Clear" }: FilterClearButtonProps) {
   return (
     <button type="button" className={styles.clearBtn} onClick={onClick}>
       {children}

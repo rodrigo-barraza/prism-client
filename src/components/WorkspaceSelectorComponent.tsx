@@ -20,7 +20,7 @@ export default function WorkspaceSelectorComponent({
   locked = false,
   className,
   unavailableWorkspace = null,
-}: unknown) {
+}: any) {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
 
   const [open, setOpen] = useState(false);
@@ -29,7 +29,7 @@ export default function WorkspaceSelectorComponent({
   // -- Close on outside click ---------------------------------
   useEffect(() => {
     if (!open) return;
-    const handleClickOutside = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleClickOutside = (e: any) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
@@ -63,7 +63,7 @@ export default function WorkspaceSelectorComponent({
       <div className={`${styles.wrapper} ${className || ""}`}>
         <div className={styles.button} data-locked>
           <Monitor className={styles.buttonIcon} />
-          <span>{(currentWorkspace as unknown)?.name ?? "Workspace"}</span>
+          <span>{(currentWorkspace as any)?.name ?? "Workspace"}</span>
           <Lock className={styles.lockIcon} />
         </div>
       </div>
@@ -77,10 +77,10 @@ export default function WorkspaceSelectorComponent({
         type="button"
         className={styles.button}
         onClick={() => setOpen((v) => !v)}
-        title={(currentWorkspace as unknown)?.path ?? "Switch workspace"}
+        title={(currentWorkspace as any)?.path ?? "Switch workspace"}
       >
         <Monitor className={styles.buttonIcon} />
-        <span>{(currentWorkspace as unknown)?.name ?? "Workspace"}</span>
+        <span>{(currentWorkspace as any)?.name ?? "Workspace"}</span>
         {(workspaces.length > 1 || true) && (
           <ChevronDown size={12} className={open ? styles.chevronOpen : ""} />
         )}
@@ -89,10 +89,10 @@ export default function WorkspaceSelectorComponent({
       {open && (
         <div className={styles.menu}>
           {/* Workspace list */}
-          {workspaces.map((w) => (
+          {workspaces.map((w: any) => (
             <button
               key={w.id}
-              className={`${styles.menuItem} ${(currentWorkspace as unknown)?.path === w.path ? styles.menuItemActive : ""}`}
+              className={`${styles.menuItem} ${(currentWorkspace as any)?.path === w.path ? styles.menuItemActive : ""}`}
               onClick={() => {
                 setCurrentWorkspace(w);
                 setOpen(false);

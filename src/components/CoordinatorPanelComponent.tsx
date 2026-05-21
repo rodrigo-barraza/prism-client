@@ -37,14 +37,14 @@ const COMPLEXITY_CLASSES = {
  *
  * Lifecycle: Input → Plan → Execute → Review → Merge
  */
-export default function CoordinatorPanel({ project: _project }: unknown) {
+export default function CoordinatorPanel({ project: _project }: any) {
   // -- State -------------------------------------------------
   const [phase, setPhase] = useState("input"); // input | planning | plan | executing | review | merged
   const [task, setTask] = useState("");
   const [filesInput, setFilesInput] = useState("");
-  const [plan, setPlan] = useState<unknown>(null);
-  const [workers, setWorkers] = useState<unknown[]>([]);
-  const [toast, setToast] = useState<unknown>(null);
+  const [plan, setPlan] = useState<any>(null);
+  const [workers, setWorkers] = useState<any[]>([]);
+  const [toast, setToast] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const showToast = useCallback((type: unknown, text: unknown) => {
@@ -70,7 +70,7 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
     setLoading(true);
 
     try {
-      const result: unknown = await PrismService._request("/coordinator/plan", {
+      const result: any = await PrismService._request("/coordinator/plan", {
         body: { task, files },
       });
 
@@ -82,7 +82,7 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
 
       setPlan(result);
       setPhase("plan");
-    } catch (error: unknown) {
+    } catch (error: any) {
       showToast("error", `Planning failed: ${error.message}`);
       setPhase("input");
     } finally {
@@ -98,7 +98,7 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
     setLoading(true);
 
     try {
-      const result: unknown = await PrismService._request("/coordinator/execute", {
+      const result: any = await PrismService._request("/coordinator/execute", {
         body: { plan },
       });
 
@@ -110,7 +110,7 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
 
       setWorkers(result.workers || []);
       setPhase("review");
-    } catch (error: unknown) {
+    } catch (error: any) {
       showToast("error", `Execution failed: ${error.message}`);
       setPhase("plan");
     } finally {
@@ -120,12 +120,12 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
 
   // -- Merge -------------------------------------------------
   const handleMerge = useCallback(async () => {
-    if (!(plan as unknown)?.taskId) return;
+    if (!plan?.taskId) return;
 
     setLoading(true);
     try {
-      const result: unknown = await PrismService._request(
-        `/coordinator/approve-merge/${(plan as unknown).taskId}`,
+      const result: any = await PrismService._request(
+        `/coordinator/approve-merge/${plan.taskId}`,
         {
           method: "POST",
         },
@@ -138,7 +138,7 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
 
       setPhase("merged");
       showToast("success", "All branches merged successfully!");
-    } catch (error: unknown) {
+    } catch (error: any) {
       showToast("error", `Merge failed: ${error.message}`);
     } finally {
       setLoading(false);
@@ -147,11 +147,11 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
 
   // -- Abort -------------------------------------------------
   const handleAbort = useCallback(async () => {
-    if (!(plan as unknown)?.taskId) return;
+    if (!plan?.taskId) return;
 
     try {
       await PrismService._request(
-        `/coordinator/abort/${(plan as unknown).taskId}`,
+        `/coordinator/abort/${plan.taskId}`,
         {
           method: "POST",
         },
@@ -190,9 +190,9 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
 
       {toast && (
         <div
-          className={`${styles.toast} ${styles[`toast${(toast as unknown).type.charAt(0).toUpperCase() + (toast as unknown).type.slice(1)}`]}`}
+          className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}
         >
-          {(toast as unknown).text}
+          {toast.text}
         </div>
       )}
 
@@ -233,20 +233,20 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
       {/* -- Plan Review Phase -------------------------------- */}
       {phase === "plan" && plan && (
         <div className={styles.planSection}>
-          <div className={styles.planSummary}>{(plan as unknown).summary}</div>
+          <div className={styles.planSummary}>{plan.summary}</div>
 
-          {(plan as unknown).subTasks?.map((st) => (
+          {plan.subTasks?.map((st: any) => (
             <div key={st.id} className={styles.subTaskCard}>
               <div className={styles.subTaskHeader}>
                 <span className={styles.subTaskId}>{st.id}</span>
                 <span
-                  className={`${styles.subTaskComplexity} ${styles[(COMPLEXITY_CLASSES as Record<string, unknown>)[st.complexity] || "complexityMedium"]}`}
+                  className={`${styles.subTaskComplexity} ${styles[(COMPLEXITY_CLASSES as any)[st.complexity] || "complexityMedium"]}`}
                 >
                   {st.complexity || "medium"}
                 </span>
               </div>
               <div className={styles.subTaskFiles}>
-                {st.files?.map((f, i) => (
+                {st.files?.map((f: any, i: any) => (
                   <span key={i} className={styles.subTaskFile}>
                     {f.split("/").pop()}
                   </span>
@@ -262,7 +262,7 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
               onClick={handleExecute}
               disabled={loading}
             >
-              <Play size={12} /> Execute ({(plan as unknown).subTasks?.length}{" "}
+              <Play size={12} /> Execute ({plan.subTasks?.length}{" "}
               workers)
             </button>
             <button className={styles.rejectBtn} onClick={handleReset}>
@@ -288,7 +288,7 @@ export default function CoordinatorPanel({ project: _project }: unknown) {
               <div className={styles.workerHeader}>
                 <span className={styles.workerName}>{w.id}</span>
                 <span
-                  className={`${styles.workerStatus} ${styles[(STATUS_CLASSES as Record<string, unknown>)[w.status] || "statusPending"]}`}
+                  className={`${styles.workerStatus} ${styles[(STATUS_CLASSES as any)[w.status] || "statusPending"]}`}
                 >
                   {w.status}
                 </span>

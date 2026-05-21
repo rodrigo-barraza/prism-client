@@ -11,12 +11,19 @@ import styles from "./ProportionBarComponent.module.css";
  *   total    — the total to compute percentage against
  *   color    — fill color (defaults to accent)
  */
+interface ProportionBarProps {
+  value?: number;
+  total?: number;
+  color?: string;
+  mini?: boolean;
+}
+
 export default function ProportionBarComponent({
   value = 0,
   total = 1,
   color,
   mini = false,
-}: unknown) {
+}: ProportionBarProps) {
   const pct = total > 0 ? (value / total) * 100 : 0;
 
   return (

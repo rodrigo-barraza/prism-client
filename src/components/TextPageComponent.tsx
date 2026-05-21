@@ -35,11 +35,11 @@ export default function TextPageComponent({
   mode = "user",
   dateRange: externalDateRange,
   onCountChange,
-}: unknown) {
+}: any) {
   const isAdmin = mode === "admin";
   const convBasePath = "/admin/conversations";
 
-  const [texts, setTexts] = useState<unknown[]>([]);
+  const [texts, setTexts] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [origin, setOrigin] = useState("all");
@@ -47,8 +47,8 @@ export default function TextPageComponent({
   const [searchInput, setSearchInput] = useState("");
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
-  const [providers, setProviders] = useState<unknown[]>([]);
-  const [models, setModels] = useState<unknown[]>([]);
+  const [providers, setProviders] = useState<any[]>([]);
+  const [models, setModels] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [internalDateRange, setInternalDateRange] = useState({
     from: "",
@@ -62,20 +62,20 @@ export default function TextPageComponent({
   const loadText = useCallback(async () => {
     try {
       setLoading(true);
-      const params = { page, limit: PAGE_SIZE };
-      if (origin !== "all") (params as unknown).origin = origin;
-      if (search) (params as unknown).search = search;
-      if (provider) (params as unknown).provider = provider;
-      if (model) (params as unknown).model = model;
+      const params: any = { page, limit: PAGE_SIZE };
+      if (origin !== "all") params.origin = origin;
+      if (search) params.search = search;
+      if (provider) params.provider = provider;
+      if (model) params.model = model;
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result: unknown = await service.getText(params);
+      const result: any = await service.getText(params);
       setTexts(result.data || []);
       setTotal(result.total || 0);
       if (result.providers) setProviders(result.providers);
       if (result.models) setModels(result.models);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load text:", error);
     } finally {
       setLoading(false);
@@ -97,7 +97,7 @@ export default function TextPageComponent({
       .catch(() => {});
   }, []);
 
-  const toggleFavorite = async (textKey: unknown) => {
+  const toggleFavorite = async (textKey: any) => {
     if (favoriteKeys.includes(textKey)) {
       setFavoriteKeys((prev) => prev.filter((k) => k !== textKey));
       PrismService.removeFavorite("text", textKey).catch(() => {});
@@ -107,7 +107,7 @@ export default function TextPageComponent({
     }
   };
 
-  const getTextKey = (t: unknown, i: unknown) => `${t.convId}-${t.origin}-${i}`;
+  const getTextKey = (t: any, i: any) => `${t.convId}-${t.origin}-${i}`;
 
   const displayTexts = showFavoritesOnly
     ? texts.filter((t, i) => favoriteKeys.includes(getTextKey(t, i)))
@@ -128,7 +128,7 @@ export default function TextPageComponent({
         <FilterBarComponent>
           <SearchInputComponent
             value={searchInput}
-            onChange={(v) => {
+            onChange={(v: any) => {
               setSearchInput(v);
               setSearch(v);
               setPage(1);

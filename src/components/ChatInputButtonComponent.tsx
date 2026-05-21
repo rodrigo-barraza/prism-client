@@ -24,7 +24,7 @@ const TYPE_ICON_MAP = {
   pdf: FileText,
 };
 
-function RotatingUploadIcon({ types, size = 18 }: unknown) {
+function RotatingUploadIcon({ types, size = 18 }: any) {
   const allTypes = ["paperclip", ...types];
   const [activeIndex, setActiveIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -42,14 +42,14 @@ function RotatingUploadIcon({ types, size = 18 }: unknown) {
   }, [allTypes.length]);
 
   if (allTypes.length === 1) {
-    const Icon = (TYPE_ICON_MAP as Record<string, unknown>)[allTypes[0]] || Paperclip;
+    const Icon = (TYPE_ICON_MAP as any)[allTypes[0]] || Paperclip;
     return <Icon size={size} />;
   }
 
   const currentType = allTypes[activeIndex];
   const nextType = allTypes[(activeIndex + 1) % allTypes.length];
-  const CurrentIcon = (TYPE_ICON_MAP as Record<string, unknown>)[currentType] || Paperclip;
-  const NextIcon = (TYPE_ICON_MAP as Record<string, unknown>)[nextType] || Paperclip;
+  const CurrentIcon = (TYPE_ICON_MAP as any)[currentType] || Paperclip;
+  const NextIcon = (TYPE_ICON_MAP as any)[nextType] || Paperclip;
 
   return (
     <div className={styles.rotatingIconContainer}>
@@ -88,7 +88,7 @@ export default function ChatInputButton({
   variant = "button",
   isGenerating = false,
   ...props
-}: unknown) {
+}: any) {
   const isSubmit = variant === "submit";
 
   const classes = [
@@ -111,7 +111,7 @@ export default function ChatInputButton({
   } else if (icon === "upload" && uploadTypes) {
     IconElement = <RotatingUploadIcon types={uploadTypes} size={18} />;
   } else if (typeof icon === "string") {
-    const Comp = (ICON_MAP as Record<string, unknown>)[icon];
+    const Comp = (ICON_MAP as any)[icon];
     if (Comp) IconElement = <Comp size={18} />;
   } else {
     IconElement = icon;
@@ -122,10 +122,10 @@ export default function ChatInputButton({
       type={isSubmit ? "submit" : "button"}
       className={classes}
       onClick={(e: React.MouseEvent) => {
-        SoundService.playClickButton({ event: e });
+        SoundService.playClickButton({ event: e as any });
         onClick?.(e);
       }}
-      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e })}
+      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e as any })}
       disabled={disabled}
       aria-label={label}
       {...props}

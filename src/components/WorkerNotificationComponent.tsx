@@ -21,7 +21,7 @@ export default function WorkerNotificationComponent({
   timestamp,
   readOnly,
   onDelete,
-}: unknown) {
+}: any) {
   const statusIcon =
     taskNotif.status === "completed"
       ? "✓"

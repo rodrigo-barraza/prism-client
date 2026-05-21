@@ -30,7 +30,7 @@ const TABS = [
  *
  * Injected via Recharts' <Customized /> component.
  */
-function VerticalGridLines(props: unknown) {
+function VerticalGridLines(props: any) {
   const { formattedGraphicalItems, offset } = props;
 
   const areaItem = formattedGraphicalItems?.[0];
@@ -42,7 +42,7 @@ function VerticalGridLines(props: unknown) {
 
   return (
     <g className="vertical-grid-lines">
-      {points.map((pt, i) => (
+      {points.map((pt: any, i: number) => (
         <line
           key={`vg-${i}`}
           x1={pt.x}
@@ -57,7 +57,7 @@ function VerticalGridLines(props: unknown) {
   );
 }
 
-function formatValue(value: unknown, tab: unknown) {
+function formatValue(value: any, tab: any) {
   if (value === null || value === undefined) return "—";
   if (tab.key === "cost") {
     return value >= 0.01 ? `$${value.toFixed(4)}` : `$${value.toFixed(6)}`;
@@ -73,7 +73,7 @@ function formatValue(value: unknown, tab: unknown) {
   return formatNumber(value);
 }
 
-function yTickFormatter(value: unknown, tabKey: unknown) {
+function yTickFormatter(value: any, tabKey: any) {
   if (tabKey === "cost") return `$${value.toFixed(2)}`;
   if (tabKey === "avgLatency")
     return value >= 1000 ? `${(value / 1000).toFixed(1)}s` : `${value}ms`;
@@ -82,7 +82,7 @@ function yTickFormatter(value: unknown, tabKey: unknown) {
 }
 
 /* Custom tooltip — uses `label` field (always present, e.g. "14:10") */
-function ChartTooltipComponent({ active, payload, label, tab }: unknown) {
+function ChartTooltipComponent({ active, payload, label, tab }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className={styles.tooltip}>
@@ -95,7 +95,7 @@ function ChartTooltipComponent({ active, payload, label, tab }: unknown) {
 }
 
 /* Custom glow dot */
-function GlowDotComponent({ cx, cy, color }: unknown) {
+function GlowDotComponent({ cx, cy, color }: any) {
   if (cx == null || cy == null) return null;
   return (
     <g>
@@ -116,7 +116,7 @@ function GlowDotComponent({ cx, cy, color }: unknown) {
  * Custom XAxis tick — only renders text when `tickLabel` is non-empty.
  * This keeps the axis sparse for 10-min granularity (label only at hour marks).
  */
-function SparseTick({ x, y, payload, data }: unknown) {
+function SparseTick({ x, y, payload, data }: any) {
   const entry = data?.[payload?.index];
   const text = entry?.tickLabel;
   if (!text) return null;
@@ -135,12 +135,19 @@ function SparseTick({ x, y, payload, data }: unknown) {
  *   loading  — boolean
  *   height   — chart height in px (default: 260)
  */
+interface TimelineChartProps {
+  data?: any[];
+  loading?: boolean;
+  height?: number;
+  title?: string;
+}
+
 export default function TimelineChartComponent({
   data = [],
   loading = false,
   height = 260,
   title = "Activity Over Time",
-}: unknown) {
+}: TimelineChartProps) {
   const [activeTab, setActiveTab] = useState("requests");
   const tab = TABS.find((t) => t.key === activeTab) || TABS[0];
 
@@ -152,14 +159,14 @@ export default function TimelineChartComponent({
   }, [tab.key]);
 
   const renderTooltip = useCallback(
-    (props: unknown) => {
+    (props: any) => {
       return <ChartTooltipComponent {...props} tab={tab} />;
     },
     [tab],
   );
 
   const renderDot = useCallback(
-    (props: unknown) => {
+    (props: any) => {
       return <GlowDotComponent {...props} color={tab.color} />;
     },
     [tab],
@@ -181,7 +188,7 @@ export default function TimelineChartComponent({
 
   // Custom tick renderer that pulls tickLabel from data
   const renderTick = useCallback(
-    (props: unknown) => <SparseTick {...props} data={data} />,
+    (props: any) => <SparseTick {...props} data={data} />,
     [data],
   );
 

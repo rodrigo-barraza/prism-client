@@ -99,7 +99,7 @@ const EXT_LANG = {
 
 // --- Status Badge -----------------------------------------------------
 
-function StatusBadge({ success, label }: unknown) {
+function StatusBadge({ success, label }: any) {
   return (
     <span
       className={`${styles.statusBadge} ${success ? styles.statusSuccess : styles.statusError}`}
@@ -112,7 +112,7 @@ function StatusBadge({ success, label }: unknown) {
 
 // --- File Path Pill ---------------------------------------------------
 
-function PathPill({ path, icon }: unknown) {
+function PathPill({ path, icon }: any) {
   const Icon = icon || FileText;
   return (
     <span className={styles.pathPill}>
@@ -124,7 +124,7 @@ function PathPill({ path, icon }: unknown) {
 
 // --- Collapsible Raw Result -------------------------------------------
 
-function RawResultToggle({ result }: unknown) {
+function RawResultToggle({ result }: any) {
   const [show, setShow] = useState(false);
   if (!result) return null;
 
@@ -165,7 +165,7 @@ function RawResultToggle({ result }: unknown) {
  * Collapsible panel that shows all input arguments passed to a tool call.
  * Renders key-value pairs in a clean, readable format.
  */
-function InputArgsToggle({ args }: unknown) {
+function InputArgsToggle({ args }: any) {
   const [show, setShow] = useState(false);
 
   const entries = useMemo(() => {
@@ -219,7 +219,7 @@ function InputArgsToggle({ args }: unknown) {
  * Collapsible panel that shows the raw result returned to the model.
  * Helps users understand exactly what the agent receives back.
  */
-function OutputResultToggle({ result }: unknown) {
+function OutputResultToggle({ result }: any) {
   const [show, setShow] = useState(false);
 
   const display = useMemo(() => {
@@ -304,7 +304,7 @@ function OutputResultToggle({ result }: unknown) {
 
 // -- 1. File Read ------------------------------------------------------
 
-function FileReadRenderer({ result, args }: unknown) {
+function FileReadRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -330,7 +330,7 @@ function FileReadRenderer({ result, args }: unknown) {
 
 // -- 2. File Write -----------------------------------------------------
 
-function FileWriteRenderer({ result, args }: unknown) {
+function FileWriteRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -355,7 +355,7 @@ function FileWriteRenderer({ result, args }: unknown) {
 
 // -- 3. String Replace -------------------------------------------------
 
-function StrReplaceRenderer({ result, args }: unknown) {
+function StrReplaceRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -398,7 +398,7 @@ function StrReplaceRenderer({ result, args }: unknown) {
 
 // -- 4. Grep Search ----------------------------------------------------
 
-function GrepSearchRenderer({ result, args }: unknown) {
+function GrepSearchRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -446,7 +446,7 @@ function GrepSearchRenderer({ result, args }: unknown) {
 
 // -- 5. Directory List -------------------------------------------------
 
-function DirectoryListRenderer({ result, args }: unknown) {
+function DirectoryListRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -489,7 +489,7 @@ function DirectoryListRenderer({ result, args }: unknown) {
 
 // -- 6. Glob Files -----------------------------------------------------
 
-function GlobFilesRenderer({ result, args }: unknown) {
+function GlobFilesRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -522,7 +522,7 @@ function GlobFilesRenderer({ result, args }: unknown) {
 
 // -- 7. Web Search -----------------------------------------------------
 
-function WebSearchRenderer({ result, args }: unknown) {
+function WebSearchRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -559,7 +559,7 @@ function WebSearchRenderer({ result, args }: unknown) {
 
 // -- 8. Fetch URL ------------------------------------------------------
 
-function FetchUrlRenderer({ result, args }: unknown) {
+function FetchUrlRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -769,8 +769,8 @@ const TERM_CONTENT_LEVEL_CLASS = {
   debug: styles.termContentDebug,
 };
 
-function TerminalRenderer({ result, args, streamingOutput, language }: unknown) {
-  const bodyRef = useRef<unknown>(null);
+function TerminalRenderer({ result, args, streamingOutput, language }: any) {
+  const bodyRef = useRef<any>(null);
   const [autoScroll, setAutoScroll] = useState(true);
   const input = args?.command || args?.code || null;
   const cwd = args?.cwd || null;
@@ -890,7 +890,7 @@ function TerminalRenderer({ result, args, streamingOutput, language }: unknown) 
 
 // -- 10. Git Operations ------------------------------------------------
 
-function GitStatusRenderer({ result }: unknown) {
+function GitStatusRenderer({ result }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -927,7 +927,7 @@ function GitStatusRenderer({ result }: unknown) {
   );
 }
 
-function GitDiffRenderer({ result }: unknown) {
+function GitDiffRenderer({ result }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -967,7 +967,7 @@ function GitDiffRenderer({ result }: unknown) {
   );
 }
 
-function GitLogRenderer({ result }: unknown) {
+function GitLogRenderer({ result }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1000,7 +1000,7 @@ function GitLogRenderer({ result }: unknown) {
 
 // -- 11. File Delete / Move --------------------------------------------
 
-function FileDeleteRenderer({ result, args }: unknown) {
+function FileDeleteRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
   const filePath = parsed.path || args?.path || "";
@@ -1018,7 +1018,7 @@ function FileDeleteRenderer({ result, args }: unknown) {
   );
 }
 
-function FileMoveRenderer({ result, args }: unknown) {
+function FileMoveRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
   const source = parsed.source || args?.source || "";
@@ -1054,7 +1054,7 @@ const BROWSER_ACTION_LABELS = {
   close: "Close",
 };
 
-function BrowserActionRenderer({ result, args }: unknown) {
+function BrowserActionRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1135,7 +1135,7 @@ function BrowserActionRenderer({ result, args }: unknown) {
 
 // -- 13. Turtle Graphics -----------------------------------------------------
 
-function TurtleDrawRenderer({ result, args }: unknown) {
+function TurtleDrawRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1166,7 +1166,7 @@ function TurtleDrawRenderer({ result, args }: unknown) {
  * Mini status bar for an individual spawned worker agent.
  * Uses the shared StatusBarComponent.
  */
-function WorkerStatusBar({ activity }: unknown) {
+function WorkerStatusBar({ activity }: any) {
   if (!activity) return null;
   const {
     currentTool,
@@ -1234,7 +1234,7 @@ function WorkerStatusBar({ activity }: unknown) {
   );
 }
 
-function TeamCreateRenderer({ result, args, workerToolActivity }: unknown) {
+function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   const [expandedMembers, setExpandedMembers] = useState(new Set());
   const parsed = tryParse(result);
 
@@ -1515,7 +1515,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: unknown) {
   );
 }
 
-function SendMessageRenderer({ result, args }: unknown) {
+function SendMessageRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1538,7 +1538,7 @@ function SendMessageRenderer({ result, args }: unknown) {
   );
 }
 
-function StopAgentRenderer({ result, args }: unknown) {
+function StopAgentRenderer({ result, args }: any) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1564,7 +1564,7 @@ function StopAgentRenderer({ result, args }: unknown) {
 
 // -- 14. Generic Fallback ----------------------------------------------------
 
-function GenericRenderer({ result }: unknown) {
+function GenericRenderer({ result }: any) {
   return <RawResultToggle result={result} />;
 }
 
@@ -1635,7 +1635,7 @@ export function ToolResultView({
   toolCall,
   streamingOutput,
   workerToolActivity,
-}: unknown) {
+}: any) {
   const { Renderer, language } = resolveToolResultRenderer(toolCall.name);
 
   return (

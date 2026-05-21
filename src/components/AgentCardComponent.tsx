@@ -28,22 +28,22 @@ export default function AgentCardComponent({
   onRemove,
   onChangeModel,
   onToggleThinking,
-}: unknown) {
+}: any) {
   // Filter config to only FC-capable models for the picker
   const fcConfig = useMemo(() => {
     if (!config) return null;
     const textModelsMap = config.textToText?.models || {};
     const filteredTextModels = {};
 
-    for (const [provider, models] of Object.entries(textModelsMap)) {
-      const fcModels = models.filter((m) =>
+    for (const [provider, models] of Object.entries(textModelsMap) as [string, any][]) {
+      const fcModels = models.filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );
       if (fcModels.length > 0) (filteredTextModels as Record<string, unknown>)[provider] = fcModels;
     }
 
     const filteredProviderList = (config.providerList || []).filter(
-      (p) => (filteredTextModels as Record<string, unknown>)[p],
+      (p: any) => (filteredTextModels as Record<string, unknown>)[p],
     );
 
     return {

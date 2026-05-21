@@ -3,7 +3,7 @@ import { getBaseHeaders } from "./serviceHeaders";
 import { subscribe as sseSubscribe } from "./SSEManager";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
-import type { PrismConfig, LmStudioModel, LmStudioVramEstimate, Conversation, Workflow } from "../types/types";
+import type { PrismConfig, LmStudioModel, LmStudioVramEstimate, Conversation, Workflow, IrisDashboardStats, IrisProjectStat, IrisModelStat, IrisTimelineEntry } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
 
@@ -23,14 +23,14 @@ export interface IrisRequestEntry {
   duration?: number;
   estimatedCost?: number;
   timestamp?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisRequestListResponse {
   data: IrisRequestEntry[];
   total: number;
   count: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisStatsResponse {
@@ -38,29 +38,29 @@ export interface IrisStatsResponse {
 }
 
 export interface IrisConversationListResponse {
-  data: unknown[];
+  data: any[];
   total: number;
   count: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisTimelineResponse {
-  data: unknown[];
-  [key: string]: unknown;
+  data: IrisTimelineEntry[];
+  [key: string]: any;
 }
 
 /**
  * Generic paginated list response — shared by traces, media, text, agent-sessions, workflows.
  */
 export interface IrisPaginatedResponse {
-  data: unknown[];
+  data: any[];
   total: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisConversationStatsResponse {
   generatingCount?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisCollectionChangeEvent {
@@ -69,7 +69,7 @@ export interface IrisCollectionChangeEvent {
   operationType?: string;
   id?: string;
   timestamp?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisHealthResponse {
@@ -77,7 +77,7 @@ export interface IrisHealthResponse {
   mongo?: string;
   uptime?: number;
   version?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Service ────────────────────────────────────────────────
@@ -124,19 +124,19 @@ export default class IrisService {
   }
 
   // -- Stats -------------------------------------------------
-  static async getStats(params: QueryParams = {}): Promise<IrisStatsResponse> {
+  static async getStats(params: QueryParams = {}): Promise<IrisDashboardStats> {
     const query = toSearchParams(params);
-    return fetchJSON<IrisStatsResponse>(`/stats${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisDashboardStats>(`/stats${query ? `?${query}` : ""}`);
   }
 
-  static async getProjectStats(params: QueryParams = {}): Promise<Array<Record<string, unknown>>> {
+  static async getProjectStats(params: QueryParams = {}): Promise<IrisProjectStat[]> {
     const query = toSearchParams(params);
-    return fetchJSON<Array<Record<string, unknown>>>(`/stats/projects${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisProjectStat[]>(`/stats/projects${query ? `?${query}` : ""}`);
   }
 
-  static async getModelStats(params: QueryParams = {}): Promise<Array<Record<string, unknown>>> {
+  static async getModelStats(params: QueryParams = {}): Promise<IrisModelStat[]> {
     const query = toSearchParams(params);
-    return fetchJSON<Array<Record<string, unknown>>>(`/stats/models${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisModelStat[]>(`/stats/models${query ? `?${query}` : ""}`);
   }
 
   static async getEndpointStats(params: QueryParams = {}): Promise<Array<Record<string, unknown>>> {
@@ -188,7 +188,7 @@ export default class IrisService {
    * Uses a shared singleton connection per URL (SSEManager).
    */
   static subscribeConversationStats(
-    onStats: (data: unknown) => void,
+    onStats: (data: any) => void,
     project: string | null = null,
   ): { close: () => void } {
     const params = project ? `?project=${encodeURIComponent(project)}` : "";

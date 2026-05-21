@@ -143,7 +143,7 @@ export default function FilterDropdownComponent({
       label: dateLabel,
       icon: Calendar,
       color: "#6366f1",
-      onRemove: () => onDateChange({ from: "", to: "" }),
+      onRemove: () => onDateChange?.({ from: "", to: "" }),
     });
   }
 
@@ -171,7 +171,7 @@ export default function FilterDropdownComponent({
             className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
             {...(SoundService.interactive(() =>
               setIsOpen((v) => !v),
-            ) as React.CSSProperties)}
+            ) as any)}
             style={fullWidth ? { width: "100%" } : undefined}
           >
             <span className={styles.triggerContent}>
@@ -196,7 +196,7 @@ export default function FilterDropdownComponent({
               {showDateRange && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
-                  {DATE_PRESETS.map((preset) => {
+                  {DATE_PRESETS.map((preset: any) => {
                     const isActive =
                       getActiveDatePreset(dateFrom, dateTo) === preset.label;
                     return (
@@ -206,7 +206,7 @@ export default function FilterDropdownComponent({
                         className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
                         {...(SoundService.interactive(() =>
                           onDateChange(preset.getValue()),
-                        ) as React.CSSProperties)}
+                        ) as any)}
                       >
                         <Calendar size={13} style={{ color: "#6366f1" }} />
                         <span>{preset.label}</span>
@@ -222,7 +222,7 @@ export default function FilterDropdownComponent({
                     {...(SoundService.interactive(() => {
                       setShowCustomDatePicker(true);
                       setIsOpen(false);
-                    }) as React.CSSProperties)}
+                    }) as any)}
                   >
                     <Calendar size={13} style={{ color: "#6366f1" }} />
                     <span>Custom…</span>
@@ -263,7 +263,7 @@ export default function FilterDropdownComponent({
                             onToggle(
                               isSingleSelect && isActive ? null : item.key,
                             ),
-                          ) as React.CSSProperties)}
+                          ) as any)}
                         >
                           {Icon && (
                             <Icon
@@ -292,7 +292,7 @@ export default function FilterDropdownComponent({
           <DatePickerComponent
             from={dateFrom}
             to={dateTo}
-            onChange={(value) => {
+            onChange={(value: any) => {
               onDateChange(value);
               setShowCustomDatePicker(false);
             }}

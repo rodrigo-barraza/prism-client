@@ -10,7 +10,7 @@ import styles from "./ToolCountBadgeComponent.module.css";
  * trigger, mirroring how ModelPickerPopoverComponent stacks
  * triggerCapabilities under its trigger button.
  */
-export default function ToolCountBadgeComponent({ count, color }: unknown) {
+export default function ToolCountBadgeComponent({ count, color }: any) {
   if (count == null || count === 0) return null;
 
   const suffix = count !== 1 ? "Tools" : "Tool";

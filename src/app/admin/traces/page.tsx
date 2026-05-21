@@ -43,8 +43,8 @@ export default function TracesPage() {
   const fetchGenRef = useRef<number>(0);
 
   // Request detail drawer state
-  const [selectedRequest, setSelectedRequest] = useState<Record<string, unknown> | null>(null);
-  const [associations, setAssociations] = useState<Record<string, unknown> | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [associations, setAssociations] = useState<any>(null);
   const [loadingAssociations, setLoadingAssociations] = useState(false);
 
   const dateParams = useMemo(
@@ -123,13 +123,13 @@ export default function TracesPage() {
 
   // Fetch associations when a request is selected
   useEffect(() => {
-    if (!(selectedRequest as Record<string, unknown>)?.requestId) {
+    if (!selectedRequest?.requestId) {
       setAssociations(null);
       return;
     }
     let cancelled = false;
     setLoadingAssociations(true);
-    IrisService.getRequestAssociations((selectedRequest as Record<string, unknown>).requestId)
+    IrisService.getRequestAssociations(selectedRequest.requestId)
       .then((data: Record<string, unknown>) => {
         if (!cancelled) setAssociations(data);
       })
@@ -143,12 +143,12 @@ export default function TracesPage() {
     return () => {
       cancelled = true;
     };
-  }, [(selectedRequest as Record<string, unknown>)?.requestId]);
+  }, [selectedRequest?.requestId]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   // Handle request row click — fetch full details and open drawer
-  const handleRequestRowClick = useCallback(async (req: Record<string, unknown>) => {
+  const handleRequestRowClick = useCallback(async (req: any) => {
     setSelectedRequest(req);
     try {
       const full = await IrisService.getRequest(req.requestId);
@@ -255,9 +255,9 @@ export default function TracesPage() {
                     <span className={styles.associationGroupLabel}>
                       <MessageSquare size={12} /> Conversations
                     </span>
-                    {(associations as Record<string, unknown>).conversations?.length > 0 ? (
+                    {associations?.conversations?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.conversations?.map((c: Record<string, unknown>) => (
+                        {associations.conversations.map((c: any) => (
                           <HistoryItemComponent
                             key={c.id}
                             item={{
@@ -297,9 +297,9 @@ export default function TracesPage() {
                     <span className={styles.associationGroupLabel}>
                       <GitBranch size={12} /> Workflows
                     </span>
-                    {(associations as Record<string, unknown>).workflows?.length > 0 ? (
+                    {associations?.workflows?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.workflows?.map((w: Record<string, unknown>) => (
+                        {associations.workflows.map((w: any) => (
                           <HistoryItemComponent
                             key={w.id}
                             item={{
@@ -331,14 +331,14 @@ export default function TracesPage() {
                     <span className={styles.associationGroupLabel}>
                       <FolderOpen size={12} /> Traces
                     </span>
-                    {(associations as Record<string, unknown>).traces?.length > 0 ? (
+                    {associations?.traces?.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.traces?.map((s: Record<string, unknown>) => (
+                        {associations.traces.map((s: any) => (
                           <HistoryItemComponent
                             key={s.id}
                             item={{
                               id: s.id,
-                              title: s.id.slice(0, 8),
+                              title: typeof s.id === "string" ? s.id.slice(0, 8) : String(s.id),
                               tags: [
                                 {
                                   label: `${s.requestCount} request${s.requestCount !== 1 ? "s" : ""}`,
@@ -369,14 +369,14 @@ export default function TracesPage() {
                 <div className={styles.detailSection}>
                   <div className={styles.detailSectionTitle}>Media Assets</div>
                   <div className={styles.mediaGrid}>
-                    {mediaAssets.map((asset: Record<string, unknown>, index: number) => (
+                    {mediaAssets.map((asset: any, index: number) => (
                       <MediaCardComponent
                         key={index}
                         media={{
                           url: asset.url,
                           mediaType: getMediaTypeFromRef(asset.url),
                           origin: asset.origin,
-                        }}
+                        } as any}
                         compact
                         showInfo={false}
                         showOrigin

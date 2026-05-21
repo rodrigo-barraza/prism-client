@@ -87,7 +87,7 @@ export default function SidebarFilterComponent({
   dateStorageKey,
   triggerLabel = "Filters",
   toolsGroupLabel = "Tools",
-}: unknown) {
+}: any) {
   const initializedDateRef = useRef<boolean>(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
@@ -139,7 +139,7 @@ export default function SidebarFilterComponent({
   // Close dropdown on outside click
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
+    const handler = (e: MouseEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target as Node)
@@ -154,7 +154,7 @@ export default function SidebarFilterComponent({
   // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsOpen(false);
     };
     document.addEventListener("keydown", handler);
@@ -162,7 +162,7 @@ export default function SidebarFilterComponent({
   }, [isOpen]);
 
   const toggleModality = useCallback(
-    (key) => {
+    (key: any) => {
       const next = new Set(activeModalities);
       next.has(key) ? next.delete(key) : next.add(key);
       onModalityChange(next);
@@ -171,7 +171,7 @@ export default function SidebarFilterComponent({
   );
 
   const toggleTool = useCallback(
-    (key) => {
+    (key: any) => {
       const next = new Set(activeTools);
       next.has(key) ? next.delete(key) : next.add(key);
       onToolChange(next);
@@ -180,7 +180,7 @@ export default function SidebarFilterComponent({
   );
 
   const toggleProvider = useCallback(
-    (key) => {
+    (key: any) => {
       const next = new Set(activeProviders);
       next.has(key) ? next.delete(key) : next.add(key);
       onProviderChange(next);
@@ -191,7 +191,7 @@ export default function SidebarFilterComponent({
   if (!hasAnyOptions) return null;
 
   // Collect active badges for display
-  const badges = [];
+  const badges: any[] = [];
 
   if (showFavoritesOnly) {
     badges.push({
@@ -284,7 +284,7 @@ export default function SidebarFilterComponent({
               {showDateRange && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
-                  {DATE_PRESETS.map((preset) => {
+                  {DATE_PRESETS.map((preset: any) => {
                     const isActive =
                       getActiveDatePreset(dateFrom, dateTo) === preset.label;
                     return (
@@ -342,7 +342,7 @@ export default function SidebarFilterComponent({
               {showModalityRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Modality</div>
-                  {modalities.map((m) => {
+                  {modalities.map((m: any) => {
                     const Icon = m.icon;
                     const isActive = activeModalities.has(m.key);
                     return (
@@ -369,7 +369,7 @@ export default function SidebarFilterComponent({
               {showToolRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>{toolsGroupLabel}</div>
-                  {tools.map((t) => {
+                  {tools.map((t: any) => {
                     const Icon = t.icon;
                     const isActive = activeTools.has(t.key);
                     return (
@@ -396,7 +396,7 @@ export default function SidebarFilterComponent({
               {showProviderRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Providers</div>
-                  {providers.map((p) => {
+                  {providers.map((p: any) => {
                     const isActive = activeProviders.has(p);
                     return (
                       <button
@@ -424,7 +424,7 @@ export default function SidebarFilterComponent({
           <DatePickerComponent
             from={dateFrom}
             to={dateTo}
-            onChange={(value) => {
+            onChange={(value: any) => {
               onDateChange(value);
               setShowCustomDatePicker(false);
             }}
@@ -438,8 +438,8 @@ export default function SidebarFilterComponent({
         {/* -- Active filter badges (display-only) -- */}
         {badges.length > 0 && (
           <div className={styles.badgeList}>
-            {badges.map((b) => {
-              const Icon = b.icon;
+            {badges.map((b: any) => {
+              const Icon = b.icon as any;
               return (
                 <span
                   key={b.key}

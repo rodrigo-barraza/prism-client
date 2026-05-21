@@ -108,7 +108,7 @@ export interface HistoryPanelProps {
   newLabel?: string;
   emptyText?: string;
   searchText?: string;
-  itemIcon?: React.ReactNode;
+  itemIcon?: any;
   countLabel?: string;
   onOpenInNewTab?: (id: string) => void;
   generatingSessionIds?: Set<string>;
@@ -144,8 +144,8 @@ export default function HistoryPanel({
   onLoadMore,
 }: HistoryPanelProps) {
   const newBtnRef = useRef<HTMLButtonElement | null>(null);
-  const rainbowTimer = useRef<NodeJS.Timeout | null>(null);
-  const glitchInterval = useRef<NodeJS.Timeout | null>(null);
+  const rainbowTimer = useRef<any>(null);
+  const glitchInterval = useRef<any>(null);
   const [glitchLabel, setGlitchLabel] = useState<string | null>(null);
 
   const handleNew = useCallback(() => {
@@ -176,14 +176,14 @@ export default function HistoryPanel({
 
   // Normalize sessions into HistoryList items
   const items = useMemo(() => {
-    return sessions.map((conversation) => {
+    return sessions.map((conversation: any) => {
       // Prefer session-level totalCost (authoritative, from request logs
       // for agent sessions). Fall back to message-sum only for Direct Chat
       // sessions that carry messages inline with no precomputed total.
       const totalCost =
         conversation.totalCost ??
         (conversation.messages || []).reduce(
-          (sum, m) => sum + (m.estimatedCost || 0),
+          (sum: number, m: any) => sum + (m.estimatedCost || 0),
           0,
         );
 
@@ -258,7 +258,7 @@ export default function HistoryPanel({
         ? {
             ...baseModalities,
             functionCalling: Object.values(conversation.toolCounts).reduce(
-              (s, c) => s + c,
+              (s: number, c: any) => s + c,
               0,
             ),
           }
@@ -278,7 +278,7 @@ export default function HistoryPanel({
         searchText: [
           conversation.project || "",
           conversation.username || "",
-          ...(conversation.messages || []).map((m) => m.content || ""),
+          ...(conversation.messages || []).map((m: any) => m.content || ""),
         ].join(" "),
       };
     });
@@ -302,9 +302,9 @@ export default function HistoryPanel({
       <HistoryList
         items={items}
         activeId={activeId}
-        onSelect={(item) => {
+        onSelect={(item: any) => {
           const conversation = sessions.find((c) => c.id === item.id);
-          if (conversation) onSelect(conversation);
+          if (conversation && onSelect) onSelect(conversation);
         }}
         onDelete={!readOnly && onDelete ? onDelete : undefined}
         icon={itemIcon || MessageSquare}

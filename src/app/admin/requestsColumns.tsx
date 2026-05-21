@@ -25,7 +25,7 @@ export const getRequestsColumns = ({
   totalCost = 1,
   totalDuration = 1,
   mini = false,
-}: unknown = {}) => [
+}: { totalCost?: number; totalDuration?: number; mini?: boolean } = {}) => [
   createdAtColumn("timestamp"),
   projectColumn(),
   modalitiesColumn({ mini }),
@@ -39,7 +39,7 @@ export const getRequestsColumns = ({
     label: "Tools",
     sortable: true,
     align: "left",
-    render: (r) => {
+    render: (r: any) => {
       if (!r.toolsUsed || !r.toolDisplayNames?.length) return emptyDash();
       return (
         <ToolIconComponent
@@ -61,16 +61,16 @@ export const getRequestsColumns = ({
     key: "duration",
     label: "Duration",
     sortable: true,
-    sortValue: (r) => r.totalTime || 0,
+    sortValue: (r: any) => r.totalTime || 0,
     align: "right",
-    render: (r) => valueOrDash(r.totalTime, (v) => formatLatency(v)),
+    render: (r: any) => valueOrDash(r.totalTime, (v: number) => formatLatency(v)),
   },
   {
     key: "durationShare",
     label: "Duration %",
     sortable: true,
-    sortValue: (r) => r.totalTime || 0,
-    render: (r) => (
+    sortValue: (r: any) => r.totalTime || 0,
+    render: (r: any) => (
       <ProportionBarComponent
         value={r.totalTime || 0}
         total={totalDuration}

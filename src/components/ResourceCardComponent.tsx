@@ -15,13 +15,21 @@ import styles from "./ResourceCardComponent.module.css";
  *   label      — Text label beneath the count
  *   onClick    — Optional click handler (e.g. for scroll-to targets)
  */
+interface ResourceCardProps {
+  href: string;
+  icon: any;
+  count: string | number;
+  label: string;
+  onClick?: (e: any) => void;
+}
+
 export default function ResourceCardComponent({
   href,
   icon: Icon,
   count,
   label,
   onClick,
-}: unknown) {
+}: ResourceCardProps) {
   return (
     <Link
       href={href}

@@ -35,7 +35,7 @@ export default function ModelCardComponent({
   onChangeModel,
   onToggleThinking,
   onToggleTools,
-}: unknown) {
+}: any) {
   // Build settings-like object for the picker trigger display
   const pickerSettings = useMemo(
     () => ({

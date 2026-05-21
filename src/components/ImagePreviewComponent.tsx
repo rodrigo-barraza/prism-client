@@ -25,15 +25,15 @@ export default function ImagePreviewComponent({
   onClose,
   onUseAnnotated,
   readOnly = false,
-}: unknown) {
+}: any) {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [color, setColor] = useState(COLORS[0].value);
   const [sizeIdx, setSizeIdx] = useState(1);
   const [isEraser, setIsEraser] = useState(false);
   const [drawing, setDrawing] = useState(false);
-  const [strokes, setStrokes] = useState<unknown[]>([]);
-  const [currentStroke, setCurrentStroke] = useState<unknown>(null);
+  const [strokes, setStrokes] = useState<any[]>([]);
+  const [currentStroke, setCurrentStroke] = useState<any>(null);
   const [canvasReady, setCanvasReady] = useState(false);
 
   // Resize canvas to match image display size
@@ -78,6 +78,7 @@ export default function ImagePreviewComponent({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const context = (canvas as HTMLCanvasElement).getContext("2d");
+    if (!context) return;
     context.clearRect(0, 0, (canvas as HTMLCanvasElement).width, (canvas as HTMLCanvasElement).height);
 
     for (const stroke of strokeList) {
@@ -109,15 +110,16 @@ export default function ImagePreviewComponent({
     context.restore();
   };
 
-  const getPos = (e: React.PointerEvent | PointerEvent) => {
+  const getPos = (e: any) => {
     const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     return { x: clientX - rect.left, y: clientY - rect.top };
   };
 
-  const handlePointerDown = (e: React.PointerEvent) => {
+  const handlePointerDown = (e: any) => {
     e.preventDefault();
     const pos = getPos(e);
     const stroke = {
@@ -130,7 +132,7 @@ export default function ImagePreviewComponent({
     setDrawing(true);
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
+  const handlePointerMove = (e: any) => {
     if (!drawing || !currentStroke) return;
     e.preventDefault();
     const pos = getPos(e);
@@ -144,6 +146,7 @@ export default function ImagePreviewComponent({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const context = (canvas as HTMLCanvasElement).getContext("2d");
+    if (!context) return;
     redrawAll(strokes);
     drawStroke(context, updated);
   };

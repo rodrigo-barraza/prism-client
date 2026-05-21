@@ -44,8 +44,8 @@ const CARD_CLASS = {
 /**
  * Extract a short agent number from an agentId like "agent-1" → "1"
  */
-function getAgentNumber(agentId: unknown) {
-  const match = agentId?.match(/agent-(\w+)/);
+function getAgentNumber(agentId: any) {
+  const match = typeof agentId === "string" ? agentId.match(/agent-(\w+)/) : null;
   return match ? match[1].toUpperCase() : agentId;
 }
 
@@ -61,12 +61,12 @@ export default function WorkersPanel({
   refreshKey,
   onCountChange,
   workerToolActivity = {},
-}: unknown) {
-  const [workers, setWorkers] = useState<unknown[]>([]);
+}: any) {
+  const [workers, setWorkers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const hasData = useRef<boolean>(false);
-  const pollRef = useRef<unknown>(null);
+  const pollRef = useRef<any>(null);
 
   // -- Load --------------------------------------------------
 
@@ -79,7 +79,7 @@ export default function WorkersPanel({
       setWorkers(list);
       onCountChange?.(list.length);
       hasData.current = true;
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load workers:", error);
       if (!hasData.current) setError(error.message);
     } finally {
@@ -171,10 +171,10 @@ export default function WorkersPanel({
       {/* -- Worker list --------------------------------------- */}
       {workers.map((worker) => {
         const statusLabel =
-          (STATUS_LABEL as Record<string, unknown>)[worker.status] || worker.status;
+          (STATUS_LABEL as any)[worker.status] || worker.status;
         const statusClass =
-          (STATUS_CLASS as Record<string, unknown>)[worker.status] || "statusPending";
-        const cardClass = (CARD_CLASS as Record<string, unknown>)[worker.status] || "";
+          (STATUS_CLASS as any)[worker.status] || "statusPending";
+        const cardClass = (CARD_CLASS as any)[worker.status] || "";
         const isLive = worker.status === "running";
         const isComplete = worker.status === "complete";
 
@@ -276,7 +276,7 @@ export default function WorkersPanel({
             {/* Files */}
             {worker.files?.length > 0 && (
               <div className={styles.workerFiles}>
-                {worker.files.map((f, i) => (
+                {worker.files.map((f: any, i: number) => (
                   <span key={i} className={styles.workerFile} title={f}>
                     <FileCode
                       size={9}

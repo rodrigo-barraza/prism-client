@@ -20,11 +20,11 @@ const CONTENT_MAX_CHARS = 10000;
  * the LLM domain-specific context, coding conventions, or project
  * rules without consuming tool call slots.
  */
-export default function SkillsPanel({ skills, onSkillsChange, project }: unknown) {
-  const [editingSkill, setEditingSkill] = useState<unknown>(null);
+export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
+  const [editingSkill, setEditingSkill] = useState<any>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<unknown>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
 
   // -- CRUD -----------------------------------------------------
 
@@ -38,7 +38,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
     setIsNew(true);
   }, []);
 
-  const handleEdit = useCallback((skill: Skill) => {
+  const handleEdit = useCallback((skill: any) => {
     setEditingSkill({ ...skill });
     setIsNew(false);
   }, []);
@@ -94,11 +94,11 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
   );
 
   const handleToggleAll = useCallback(async () => {
-    const allEnabled = skills.length > 0 && skills.every((s) => s.enabled);
+    const allEnabled = skills.length > 0 && skills.every((s: any) => s.enabled);
     const newEnabled = !allEnabled;
     try {
       await Promise.all(
-        skills.map((s) =>
+        skills.map((s: any) =>
           PrismService.updateSkill(s.id || s._id, { enabled: newEnabled }),
         ),
       );
@@ -111,7 +111,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
   // -- Edit / Create Form ---------------------------------------
 
   if (editingSkill) {
-    const contentLen = (editingSkill as Record<string, unknown>).content?.length || 0;
+    const contentLen = (editingSkill as any).content?.length || 0;
     const isOverWarn = contentLen > CONTENT_WARN_CHARS;
     const isOverMax = contentLen > CONTENT_MAX_CHARS;
 
@@ -130,9 +130,9 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
             <input
               type="text"
               className={styles.input}
-              value={(editingSkill as Record<string, unknown>).name}
+              value={(editingSkill as any).name}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingSkill((s) => ({
+                setEditingSkill((s: any) => ({
                   ...s,
                   name: e.target.value
                     .replace(/[^a-zA-Z0-9_-]/g, "-")
@@ -151,9 +151,9 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
             <input
               type="text"
               className={styles.input}
-              value={(editingSkill as Record<string, unknown>).description}
+              value={(editingSkill as any).description}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingSkill((s) => ({
+                setEditingSkill((s: any) => ({
                   ...s,
                   description: e.target.value,
                 }))
@@ -169,11 +169,11 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
             <label>Content (Markdown)</label>
             <textarea
               className={`${styles.textarea} ${styles.contentTextarea}`}
-              value={(editingSkill as Record<string, unknown>).content}
+              value={(editingSkill as any).content}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
                 const value = e.target.value;
                 if (value.length <= CONTENT_MAX_CHARS) {
-                  setEditingSkill((s) => ({ ...s, content: value }));
+                  setEditingSkill((s: any) => ({ ...s, content: value }));
                 }
               }}
               placeholder={`## Coding Guidelines\n\n- Always use const over let\n- Prefer async/await over .then()\n- Use JSDoc comments for public functions\n- ...`}
@@ -193,8 +193,8 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
               onClick={handleSave}
               disabled={
                 saving ||
-                !(editingSkill as Record<string, unknown>).name?.trim() ||
-                !(editingSkill as Record<string, unknown>).content?.trim()
+                !(editingSkill as any).name?.trim() ||
+                !(editingSkill as any).content?.trim()
               }
             >
               <Save size={14} />
@@ -218,7 +218,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
         <div className={styles.headerActions}>
           {skills.length > 0 && (
             <ToggleComponent
-              checked={skills.length > 0 && skills.every((s) => s.enabled)}
+              checked={skills.length > 0 && skills.every((s: any) => s.enabled)}
               onChange={handleToggleAll}
               size="mini"
             />
@@ -254,7 +254,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: unknown
         </div>
       )}
 
-      {skills.map((skill) => {
+      {skills.map((skill: any) => {
         const skillId = skill.id || skill._id;
         const isConfirming = confirmingDeleteId === skillId;
 

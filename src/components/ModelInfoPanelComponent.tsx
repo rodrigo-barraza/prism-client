@@ -28,7 +28,7 @@ export interface ModelInfoPanelProps {
  */
 export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps) {
   const { textToText = {} } = config || {};
-  const textModelsMap = textToText.models || {};
+  const textModelsMap = (textToText as any).models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
   const ttsModelsMap = config?.textToSpeech?.models || {};
   const imageModelsMap = config?.textToImage?.models || {};
@@ -40,38 +40,38 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
     ...Object.keys(audioToTextModelsMap),
     ...Object.keys(ttsModelsMap),
   ]);
-  const modelsMap = {};
+  const modelsMap = {} as any;
   for (const p of allProviderKeys) {
-    const textModels = textModelsMap[p] || [];
-    const imgModels = (imageModelsMap[p] || []).map((m) => ({
+    const textModels = (textModelsMap as any)[p] || [];
+    const imgModels = ((imageModelsMap as any)[p] || []).map((m: any) => ({
       ...m,
       label: `${m.label} (Image)`,
       _isImageGen: true,
     }));
-    const sttModels = (audioToTextModelsMap[p] || []).map((m) => ({
+    const sttModels = ((audioToTextModelsMap as any)[p] || []).map((m: any) => ({
       ...m,
       label: `${m.label} (Transcribe)`,
       _isTranscription: true,
     }));
-    const ttsModels = (ttsModelsMap[p] || []).map((m) => ({
+    const ttsModels = ((ttsModelsMap as any)[p] || []).map((m: any) => ({
       ...m,
       label: `${m.label} (TTS)`,
       _isTTS: true,
     }));
     const seen = new Set();
     const merged = [];
-    for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
+    for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels] as any[]) {
       if (!seen.has(m.name)) {
         seen.add(m.name);
         merged.push(m);
       }
     }
-    (modelsMap as Record<string, unknown>)[p] = merged;
+    modelsMap[p] = merged;
   }
 
-  const currentProviderModels = (modelsMap as Record<string, unknown>)[settings.provider] || [];
+  const currentProviderModels = (modelsMap as any)[(settings as any).provider] || [];
   const selectedModelDef = currentProviderModels.find(
-    (m) => m.name === settings.model,
+    (m: any) => m.name === (settings as any).model,
   );
 
   if (!selectedModelDef) {
@@ -123,13 +123,13 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
         return (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Modalities</div>
-            {mods.map((m) => (
+            {mods.map((m: any) => (
               <div key={m.type} className={styles.modalityRow}>
                 <span
                   className={styles.modalityIcon}
-                  style={{ color: (MODALITY_COLORS as Record<string, unknown>)[m.type] }}
+                  style={{ color: (MODALITY_COLORS as any)[m.type] }}
                 >
-                  {(iconMap as Record<string, unknown>)[m.type]}
+                  {(iconMap as any)[m.type]}
                 </span>
                 <span className={styles.modalityName}>{m.type}</span>
                 <span
@@ -198,15 +198,15 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
         };
         if (!selectedModelDef.pricing) return null;
         const entries = Object.entries(selectedModelDef.pricing)
-          .filter(([key]: [string, unknown]) => (PRICING_LABELS as Record<string, unknown>)[key])
-          .map(([key, value]: [string, unknown]) => ({
-            ...(PRICING_LABELS as Record<string, unknown>)[key],
+          .filter(([key]: [string, any]) => (PRICING_LABELS as any)[key])
+          .map(([key, value]: [string, any]) => ({
+            ...(PRICING_LABELS as any)[key],
             value,
           }));
         return entries.length > 0 ? (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Pricing</div>
-            {entries.map((e) => (
+            {entries.map((e: any) => (
               <div key={e.label} className={styles.modalityRow}>
                 <span className={styles.modalityIcon}>
                   <DollarSign size={12} />
@@ -236,18 +236,18 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
           imageEdit: "Image Edit",
           search: "Search",
         };
-        const entries = Object.entries(arena).filter(([, v]: [string, unknown]) => v != null);
+        const entries = Object.entries(arena).filter(([, v]: [string, any]) => v != null);
         if (entries.length === 0) return null;
         return (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Arena Scores</div>
-            {entries.map(([key, value]: [string, unknown]) => (
+            {entries.map(([key, value]: [string, any]) => (
               <div key={key} className={styles.modalityRow}>
                 <span className={styles.modalityIcon}>
                   <Brain size={12} />
                 </span>
                 <span className={styles.modalityName}>
-                  {(arenaLabels as Record<string, unknown>)[key] || key}
+                  {(arenaLabels as any)[key] || key}
                 </span>
                 <span
                   className={`${styles.modalityStatus} ${styles.arenaValue}`}

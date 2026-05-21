@@ -145,7 +145,7 @@ export default function MediaPageComponent({
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const PAGE_SIZE = 60;
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchTimerRef = useRef<any>(null);
 
   const loadMedia = useCallback(async () => {
     try {
@@ -233,7 +233,7 @@ export default function MediaPageComponent({
       key: "preview",
       label: "Preview",
       sortable: false,
-      render: (m) => {
+      render: (m: any) => {
         const resolvedUrl = resolveUrl(m.url);
         return (
           <div className={styles.listThumb}>
@@ -278,10 +278,10 @@ export default function MediaPageComponent({
     {
       key: "type",
       label: "Type",
-      render: (m) => (
+      render: (m: any) => (
         <span
           className={styles.typeBadge}
-          style={{ color: (MODALITY_COLORS as Record<string, unknown>)[m.mediaType] }}
+          style={{ color: (MODALITY_COLORS as any)[m.mediaType] }}
         >
           {m.mediaType}
         </span>
@@ -290,14 +290,14 @@ export default function MediaPageComponent({
     {
       key: "source",
       label: "Source",
-      render: (m) => (
+      render: (m: any) => (
         <OriginBadge origin={m.origin} className={styles.originPill} />
       ),
     },
     {
       key: "conversation",
       label: "Conversation",
-      render: (m) => (
+      render: (m: any) => (
         <Link
           href={`${convBasePath}/${m.convId}`}
           className={styles.convLink}
@@ -313,7 +313,7 @@ export default function MediaPageComponent({
           {
             key: "project",
             label: "Project",
-            render: (m) =>
+            render: (m: any) =>
               m.project ? (
                 <span className={styles.projectTag}>{m.project}</span>
               ) : (
@@ -325,7 +325,7 @@ export default function MediaPageComponent({
     {
       key: "model",
       label: "Model",
-      render: (m) =>
+      render: (m: any) =>
         m.model ? (
           <span className={styles.modelTag}>{m.model.split("/").pop()}</span>
         ) : (
@@ -335,7 +335,7 @@ export default function MediaPageComponent({
     {
       key: "date",
       label: "Date",
-      render: (m) => (
+      render: (m: any) => (
         <span className={styles.time}>
           {m.timestamp ? new Date(m.timestamp).toLocaleDateString() : "—"}
         </span>
@@ -356,7 +356,7 @@ export default function MediaPageComponent({
         <FilterBarComponent>
           <SearchInputComponent
             value={searchInput}
-            onChange={(v) => {
+            onChange={(v: any) => {
               setSearchInput(v);
               clearTimeout(searchTimerRef.current);
               searchTimerRef.current = setTimeout(() => {
@@ -379,7 +379,7 @@ export default function MediaPageComponent({
                 })),
                 activeKeys: origin === "all" ? null : origin,
                 isSingleSelect: true,
-                onToggle: (v) => {
+                onToggle: (v: any) => {
                   setOrigin(v || "all");
                   setPage(1);
                 },
@@ -394,7 +394,7 @@ export default function MediaPageComponent({
                 })),
                 activeKeys: type === "all" ? null : type,
                 isSingleSelect: true,
-                onToggle: (v) => {
+                onToggle: (v: any) => {
                   setType(v || "all");
                   setPage(1);
                 },
@@ -410,7 +410,7 @@ export default function MediaPageComponent({
                       })),
                       activeKeys: provider || null,
                       isSingleSelect: true,
-                      onToggle: (v) => {
+                      onToggle: (v: any) => {
                         setProvider(v || "");
                         setModel("");
                         setPage(1);
@@ -429,7 +429,7 @@ export default function MediaPageComponent({
                       })),
                       activeKeys: model || null,
                       isSingleSelect: true,
-                      onToggle: (v) => {
+                      onToggle: (v: any) => {
                         setModel(v || "");
                         setPage(1);
                       },
@@ -443,7 +443,7 @@ export default function MediaPageComponent({
                 ],
                 activeKeys: showFavoritesOnly ? "favorites" : null,
                 isSingleSelect: true,
-                onToggle: (v) => setShowFavoritesOnly(v === "favorites"),
+                onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
               },
             ]}
             dateRange={!externalDateRange ? dateRange : undefined}
@@ -511,7 +511,7 @@ export default function MediaPageComponent({
                   showFavorite
                   isFavorite={isFav}
                   onFavorite={() => toggleFavorite(mediaKey)}
-                  onImageClick={(url: unknown) => setLightboxSrc(url)}
+                  onImageClick={(url: any) => setLightboxSrc(url)}
                 />
               );
             })}
@@ -524,7 +524,7 @@ export default function MediaPageComponent({
             <TableComponent
               columns={listColumns}
               data={displayMedia}
-              getRowKey={(m: unknown, i: unknown) => `${m.convId}-${i}`}
+              getRowKey={(m: any, i: any) => `${m.convId}-${i}`}
             />
           </div>
         )}

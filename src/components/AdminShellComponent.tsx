@@ -30,11 +30,11 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   // Track conversations by ID → messageCount to detect both new convos and updates
-  const knownConvsRef = useRef<unknown>(null); // null = not initialized
-  const knownSessionsRef = useRef<unknown>(null);
-  const knownRequestsRef = useRef<unknown>(null);
-  const knownMediaRef = useRef<unknown>(null);
-  const knownTextRef = useRef<unknown>(null);
+  const knownConvsRef = useRef<any>(null); // null = not initialized
+  const knownSessionsRef = useRef<any>(null);
+  const knownRequestsRef = useRef<any>(null);
+  const knownMediaRef = useRef<any>(null);
+  const knownTextRef = useRef<any>(null);
   const isOnConversationsRef = useRef<boolean>(
     pathname.startsWith("/admin/conversations"),
   );
@@ -137,7 +137,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         } else if (!isOnConversationsRef.current) {
           let changes = 0;
           for (const [id, msgCount] of currentMap) {
-            const known = (knownConvsRef.current as Map<string, unknown>).get(id);
+            const known = (knownConvsRef.current as Map<string, any>).get(id);
             if (known === undefined) {
               changes++;
             } else if (msgCount > known) {
@@ -272,7 +272,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const handleNavClick = useCallback((href: unknown) => {
+  const handleNavClick = useCallback((href: any) => {
     if (href.startsWith("/admin/conversations")) setNewCount(0);
     if (href.startsWith("/admin/traces")) setNewTracesCount(0);
     if (href.startsWith("/admin/requests")) setNewRequestsCount(0);

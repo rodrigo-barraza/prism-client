@@ -54,7 +54,7 @@ export default function HistoryItemComponent({
   onOpenInNewTab,
   isGenerating = false,
   children,
-}: unknown) {
+}: any) {
   const itemDate = item.updatedAt || item.createdAt;
   const mod = item.modalities || {};
   const hasModalities = mod && Object.keys(mod).length > 0;
@@ -67,7 +67,7 @@ export default function HistoryItemComponent({
       {...(dataPanelClose ? { "data-panel-close": true } : {})}
       onContextMenu={
         onOpenInNewTab
-          ? (e: React.SyntheticEvent) => {
+          ? (e: any) => {
               // Only show custom context on right-click of the main item area
               // (not on action buttons which have their own handlers)
               if (e.target.closest(`.${styles.actions}`)) return;
@@ -97,7 +97,7 @@ export default function HistoryItemComponent({
             {admin && item.username && item.username !== "unknown" && (
               <span className={styles.usernameTag}>{item.username}</span>
             )}
-            {item.tags?.map((tag) => (
+            {item.tags?.map((tag: any) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>
                 {tag.label}
               </span>

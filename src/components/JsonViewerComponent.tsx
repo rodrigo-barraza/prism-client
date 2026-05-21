@@ -16,13 +16,21 @@ import styles from "./JsonViewerComponent.module.css";
  *   maxHeight — optional max-height with scroll (e.g. "400px")
  *   className — extra root class
  */
+export interface JsonViewerProps {
+  data: any;
+  label?: string;
+  collapsed?: number;
+  maxHeight?: string;
+  className?: string;
+}
+
 export default function JsonViewerComponent({
   data,
   label,
   collapsed = Infinity,
   maxHeight,
   className,
-}: unknown) {
+}: JsonViewerProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -56,22 +64,31 @@ export default function JsonViewerComponent({
   );
 }
 
+interface JsonNodeProps {
+  keyName?: string | number;
+  value: any;
+  depth: number;
+  defaultCollapsed: number;
+  isLast?: boolean;
+}
+
 function JsonNode({
   keyName,
   value,
   depth,
   defaultCollapsed,
   isLast = true,
-}: unknown) {
+}: JsonNodeProps) {
   const type = getType(value);
   const isExpandable = type === "object" || type === "array";
   const [expanded, setExpanded] = useState(depth < defaultCollapsed);
 
   if (isExpandable) {
-    const entries =
+    const entries = (
       type === "array"
-        ? value.map((v, i) => [i, v])
-        : Object.entries(value);
+        ? (value as any[]).map((v, i) => [i, v])
+        : Object.entries(value)
+    ) as [any, any][];
     const bracket = type === "array" ? ["[", "]"] : ["{", "}"];
     const isEmpty = entries.length === 0;
 
@@ -79,7 +96,7 @@ function JsonNode({
       <div className={styles.node}>
         <div
           className={styles.row}
-          onClick={() => !isEmpty && setExpanded((e: React.SyntheticEvent) => !e)}
+          onClick={() => !isEmpty && setExpanded((prev) => !prev)}
           style={{ cursor: isEmpty ? "default" : "pointer" }}
         >
           {!isEmpty && (
@@ -115,7 +132,7 @@ function JsonNode({
         {expanded && (
           <>
             <div className={styles.children}>
-              {entries.map(([k, v]: unknown, i: unknown) => (
+              {entries.map(([k, v]: [any, any], i: number) => (
                 <JsonNode
                   key={k}
                   keyName={type === "array" ? undefined : k}
@@ -154,13 +171,13 @@ function JsonNode({
   );
 }
 
-function getType(value) {
+function getType(value: any) {
   if (value === null || value === undefined) return "null";
   if (Array.isArray(value)) return "array";
   return typeof value; // "string", "number", "boolean", "object"
 }
 
-function formatValue(value: unknown, type: unknown) {
+function formatValue(value: any, type: string) {
   if (type === "string") return JSON.stringify(value);
   if (type === "null") return "null";
   if (type === "boolean") return value ? "true" : "false";

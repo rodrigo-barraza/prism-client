@@ -1,3 +1,4 @@
+import type { IrisProjectStat } from "@/types/types";
 import { TableComponent } from "@rodrigo-barraza/components-library";
 import {
   projectColumn,
@@ -11,6 +12,16 @@ import {
   countLinkColumns,
 } from "../utils/tableColumns";
 
+interface ProjectsTableProps {
+  projects?: IrisProjectStat[];
+  totalRequests?: number;
+  totalCost?: number;
+  emptyText?: string;
+  compact?: boolean;
+  title?: React.ReactNode;
+  maxHeight?: number;
+}
+
 /**
  * ProjectsTableComponent — reusable admin table for displaying project-level
  * aggregated stats (requests, tokens, cost, latency, etc.).
@@ -23,7 +34,7 @@ export default function ProjectsTableComponent({
   compact = false,
   title = "Projects",
   maxHeight = 420,
-}: unknown) {
+}: ProjectsTableProps) {
   const totalRequests =
     (totalRequestsProp ??
       projects.reduce((s, x) => s + x.totalRequests, 0)) ||
@@ -42,7 +53,7 @@ export default function ProjectsTableComponent({
     ...tokenColumns(),
     ...costColumns(totalCost),
     latencyColumn(),
-    ...countLinkColumns("project", (row) => row.project),
+    ...countLinkColumns("project", (row: any) => String(row.project || "")),
   ];
 
   const COMPACT_KEYS = [
@@ -54,7 +65,7 @@ export default function ProjectsTableComponent({
     "conversationCount",
   ];
   const columns = compact
-    ? allColumns.filter((c) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
     : allColumns;
 
   return (
@@ -63,7 +74,7 @@ export default function ProjectsTableComponent({
       maxHeight={maxHeight}
       columns={columns}
       data={projects}
-      getRowKey={(p: unknown, i: unknown) => `${p.project || "none"}-${i}`}
+      getRowKey={(p: any, i: number) => `${p.project || "none"}-${i}`}
       emptyText={emptyText}
       storageKey="projects"
     />

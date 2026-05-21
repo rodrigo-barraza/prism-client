@@ -11,20 +11,32 @@ import styles from "./ChatPreviewComponent.module.css";
  * Usage B: Prompt blocks (system prompt + user prompt)
  *   <ChatPreviewComponent systemPrompt="..." userPrompt="..." />
  */
-export default function ChatPreviewComponent({
+import { Message } from "../types/types";
+
+export interface ChatPreviewProps {
   // MessageList mode
+  messages?: Message[];
+  readOnly?: boolean;
+  // Prompt block mode (when no messages array)
+  systemPrompt?: string;
+  userPrompt?: string;
+  // Compact sidebar variant
+  mini?: boolean;
+  // Optional max-height override
+  maxHeight?: string;
+  // Optional extra className
+  className?: string;
+}
+
+export default function ChatPreviewComponent({
   messages,
   readOnly = true,
-  // Prompt block mode (when no messages array)
   systemPrompt,
   userPrompt,
-  // Compact sidebar variant
   mini = false,
-  // Optional max-height override
   maxHeight,
-  // Optional extra className
   className,
-}: unknown) {
+}: ChatPreviewProps) {
   // -- MessageList mode --
   if (messages) {
     return (
