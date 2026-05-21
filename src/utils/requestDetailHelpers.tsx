@@ -32,7 +32,7 @@ import { prepareDisplayMessages } from "../components/MessageListComponent";
  */
 export function extractMediaAssets(object: any) {
   const seen = new Set();
-  const assets: Record<string, unknown>[] = [];
+  const assets: Record<string, any>[] = [];
   const search = (node: any, origin: string) => {
     if (!node) return;
     if (typeof node === "string") {
@@ -416,7 +416,7 @@ export function reconstructChatMessages(selectedRequest: any) {
     } else if (resPayload.candidates?.[0]?.content?.parts) {
       // Google format
       assistantMsg.content = resPayload.candidates[0].content.parts
-        .map((p: Record<string, unknown>) => p.text || "")
+        .map((p: Record<string, any>) => p.text || "")
         .join("");
     } else if (resPayload.choices?.[0]?.message?.content) {
       // OpenAI format
@@ -429,7 +429,7 @@ export function reconstructChatMessages(selectedRequest: any) {
     const toolCalls =
       resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls;
     if (toolCalls?.length) {
-      (assistantMsg as Record<string, unknown>).toolCalls = toolCalls.map((tc: any) => ({
+      (assistantMsg as Record<string, any>).toolCalls = toolCalls.map((tc: any) => ({
         id: tc.id,
         name: tc.function?.name || tc.name,
         args:
@@ -441,12 +441,12 @@ export function reconstructChatMessages(selectedRequest: any) {
 
     // Extract generated images
     if (resPayload.images?.length) {
-      (assistantMsg as Record<string, unknown>).images = resPayload.images;
+      (assistantMsg as Record<string, any>).images = resPayload.images;
     }
 
     // Extract thinking content
     if (resPayload.thinking) {
-      (assistantMsg as Record<string, unknown>).thinking = resPayload.thinking;
+      (assistantMsg as Record<string, any>).thinking = resPayload.thinking;
     }
 
     if (
@@ -460,7 +460,7 @@ export function reconstructChatMessages(selectedRequest: any) {
 
   const messages = prepareDisplayMessages(chatMessages);
   const systemPrompt = chatMessages.find(
-    (m: Record<string, unknown>) => m.role === "system",
+    (m: Record<string, any>) => m.role === "system",
   )?.content;
   if (!messages.length) return null;
 

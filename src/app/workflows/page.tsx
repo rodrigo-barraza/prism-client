@@ -200,7 +200,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
     }).catch(console.error);
 
     WorkflowService.getWorkflows()
-      .then((wfs: { _id?: string; id?: string; [key: string]: unknown }[]) =>
+      .then((wfs: { _id?: string; id?: string; [key: string]: any }[]) =>
         setSavedWorkflows(wfs.map((w) => ({ ...w, id: w._id || w.id })) as IWorkflow[]),
       )
       .catch(console.error);
@@ -929,7 +929,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
   );
 
   // Change the model on an existing node
-  const handleChangeModel = useCallback((nodeId: string, newModel: { provider?: string; modelName?: string; displayName?: string; modelType?: string; tools?: string[]; inputTypes?: string[]; outputTypes?: string[]; [key: string]: unknown }) => {
+  const handleChangeModel = useCallback((nodeId: string, newModel: { provider?: string; modelName?: string; displayName?: string; modelType?: string; tools?: string[]; inputTypes?: string[]; outputTypes?: string[]; [key: string]: any }) => {
     const isConversation = newModel.modelType === "conversation";
     const supportsFC = newModel.tools?.includes("Tool Calling");
     const baseInputs = isConversation

@@ -83,7 +83,7 @@ export interface RawModel {
   architecture?: string;
   publisher?: string;
   loaded?: boolean;
-  loaded_instances?: unknown[];
+  loaded_instances?: any[];
   pricing?: {
     inputPerMillion?: number;
     outputPerMillion?: number;
@@ -96,10 +96,10 @@ export interface RawModel {
   totalOutputTokens?: number;
   _benchThinkingEnabled?: boolean;
   _benchToolsEnabled?: boolean;
-  _benchAgent?: unknown;
+  _benchAgent?: any;
   inputTypes?: string[];
   outputTypes?: string[];
-  _benchStat?: Record<string, unknown>;
+  _benchStat?: Record<string, any>;
   _benchTotal?: number;
   _benchPassed?: number;
   _benchFailed?: number;
@@ -153,7 +153,7 @@ export interface RowData {
   _benchThinking: boolean;
   _benchTools: boolean;
   _benchAgent: unknown;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 /**
@@ -503,7 +503,7 @@ export default function ModelsTableComponent({
         maxHeight={maxHeight ?? 420}
         columns={columns}
         data={models}
-        getRowKey={(m: Record<string, unknown>, i: number) => `${m.provider}-${m.model}-${i}`}
+        getRowKey={(m: Record<string, any>, i: number) => `${m.provider}-${m.model}-${i}`}
         emptyText={emptyText || "No data yet"}
         storageKey="models-stats"
       />

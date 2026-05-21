@@ -62,11 +62,11 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<IrisDashboardStats | null>(null);
   const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
   const [modelStats, setModelStats] = useState<IrisModelStat[]>([]);
-  const [configModels, setConfigModels] = useState<Record<string, unknown>>({});
+  const [configModels, setConfigModels] = useState<Record<string, any>>({});
 
   const [timeline, setTimeline] = useState<IrisTimelineEntry[]>([]);
-  const [recentRequests, setRecentRequests] = useState<Record<string, unknown>[]>([]);
-  const [recentTraces, setRecentTraces] = useState<Record<string, unknown>[]>([]);
+  const [recentRequests, setRecentRequests] = useState<Record<string, any>[]>([]);
+  const [recentTraces, setRecentTraces] = useState<Record<string, any>[]>([]);
   const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export default function DashboardPage() {
       // Build model→tools lookup from Prism config
       if (prismConfig?.textToText?.models) {
         const buildLookup = (config: PrismConfig) => {
-          const lookup: Record<string, unknown> = {};
+          const lookup: Record<string, any> = {};
           for (const [provider, models] of Object.entries(
             config.textToText?.models || {},
           ) as [string, ModelOption[]][]) {
@@ -156,8 +156,8 @@ export default function DashboardPage() {
       }
 
       setTimeline(timelineData.data || timelineData);
-      setRecentRequests((requestsData.data || []) as Record<string, unknown>[]);
-      setRecentTraces((tracesData.data || []) as Record<string, unknown>[]);
+      setRecentRequests((requestsData.data || []) as Record<string, any>[]);
+      setRecentTraces((tracesData.data || []) as Record<string, any>[]);
       setRecentConversations((conversationsData.data || []) as Conversation[]);
     } catch (error: any) {
       setError(error.message || String(error));

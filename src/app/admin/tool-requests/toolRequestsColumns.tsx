@@ -28,8 +28,8 @@ export interface ToolCallRecord {
   callerIteration?: number;
   clientIp?: string;
   timestamp?: string;
-  args?: Record<string, unknown>;
-  result?: Record<string, unknown>;
+  args?: Record<string, any>;
+  result?: Record<string, any>;
 }
 
 

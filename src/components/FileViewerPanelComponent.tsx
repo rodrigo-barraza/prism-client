@@ -205,12 +205,12 @@ function getFileExt(filepath: any) {
 
 function getPrismLanguage(filepath: any) {
   const fileExtension = getFileExt(filepath);
-  return fileExtension ? (EXT_TO_PRISM as Record<string, unknown>)[fileExtension] || "text" : "text";
+  return fileExtension ? (EXT_TO_PRISM as Record<string, any>)[fileExtension] || "text" : "text";
 }
 
 function getLanguageLabel(filepath: any) {
   const fileExtension = getFileExt(filepath);
-  return fileExtension ? (EXT_TO_LABEL as Record<string, unknown>)[fileExtension] || null : null;
+  return fileExtension ? (EXT_TO_LABEL as Record<string, any>)[fileExtension] || null : null;
 }
 
 function getBasename(filepath: any) {
@@ -389,8 +389,8 @@ export default function FileViewerPanelComponent({
             const rawUrl = ToolsApiService.getFileRawUrl(path);
             // Prefer inline base64 data URI when the backend provides it (works for remote workspaces)
             const dataUri =
-              result.contentBase64 && (EXT_TO_MIME as Record<string, unknown>)[fileExtension]
-                ? `data:${(EXT_TO_MIME as Record<string, unknown>)[fileExtension]};base64,${result.contentBase64}`
+              result.contentBase64 && (EXT_TO_MIME as Record<string, any>)[fileExtension]
+                ? `data:${(EXT_TO_MIME as Record<string, any>)[fileExtension]};base64,${result.contentBase64}`
                 : null;
             setFileContents((prev) => ({
               ...prev,

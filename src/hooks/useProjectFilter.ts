@@ -41,7 +41,7 @@ export default function useProjectFilter() {
 
   useEffect(() => {
     IrisService.getConversationFilters()
-      .then((data) => setProjects((data as Record<string, unknown>).projects as string[] || []))
+      .then((data) => setProjects((data as Record<string, any>).projects as string[] || []))
       .catch(() => {});
   }, []);
 

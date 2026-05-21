@@ -25,7 +25,7 @@ const StorageService = {
   /**
    * Get a value from localStorage (returns parsed JSON or the fallback).
    */
-  get<T = unknown>(key: string, fallback: T | null = null): T | null {
+  get<T = any>(key: string, fallback: T | null = null): T | null {
     if (!isAvailable()) return fallback;
     try {
       const raw = localStorage.getItem(makeKey(key));
@@ -39,7 +39,7 @@ const StorageService = {
   /**
    * Set a value in localStorage (JSON-serialized).
    */
-  set(key: string, value: unknown): void {
+  set(key: string, value: any): void {
     if (!isAvailable()) return;
     try {
       localStorage.setItem(makeKey(key), JSON.stringify(value));

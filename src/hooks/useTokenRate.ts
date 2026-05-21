@@ -86,11 +86,11 @@ const TOK_PER_SEC_INITIAL: TokPerSecState = { current: null, lastComputed: null 
  * The aggregate shown in the SettingsPanel should be the **additive sum**
  * of all concurrent workers (e.g. 3 × 40 = 120 tok/s), not the average.
  */
-function sumWorkerThroughput(workerGenerationProgress: Record<string, unknown> | null): { sum: number; count: number } {
+function sumWorkerThroughput(workerGenerationProgress: Record<string, any> | null): { sum: number; count: number } {
   let sum = 0;
   let count = 0;
   if (!workerGenerationProgress) return { sum: 0, count: 0 };
-  for (const wp of Object.values(workerGenerationProgress) as Array<Record<string, unknown>>) {
+  for (const wp of Object.values(workerGenerationProgress) as Array<Record<string, any>>) {
     if (wp.tokPerSec != null && (wp.tokPerSec as number) > 0) {
       sum += wp.tokPerSec as number;
       count++;
@@ -194,7 +194,7 @@ export default function useTokenRate(sessionStats: ExtendedSessionStats | null):
   } else {
     // Priority 2: Backend-sourced generation_progress from
     // SessionGenerationTracker (for solo orchestrator sessions).
-    const genProgress = sessionStats?.liveGenProgress as Record<string, unknown> | null;
+    const genProgress = sessionStats?.liveGenProgress as Record<string, any> | null;
     const genProgressFresh =
       genProgress &&
       genProgress.timestamp &&

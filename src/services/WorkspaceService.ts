@@ -10,40 +10,40 @@ export interface WorkspaceRoot {
   label?: string;
   isWsl?: boolean;
   exists?: boolean;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface WorkspaceListResponse {
   workspaceRoots: string[];
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface WorkspaceFullResponse {
   workspaces: WorkspaceRoot[];
-  agents: Array<Record<string, unknown>>;
+  agents: Array<Record<string, any>>;
   staticRoots: string[];
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface WorkspaceUpdateResponse {
   workspaceRoots: string[];
   staticRoots: string[];
   userRoots: string[];
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface WorkspaceValidateResponse {
   resolvedPath: string;
   isWsl: boolean;
   exists: boolean;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface WorkspaceTreeNode {
   name: string;
   type: "file" | "directory";
   children?: WorkspaceTreeNode[];
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface WorkspaceTreeResponse {
@@ -51,7 +51,7 @@ export interface WorkspaceTreeResponse {
   tree: WorkspaceTreeNode[];
   totalEntries?: number;
   truncated?: boolean;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Service ────────────────────────────────────────────────

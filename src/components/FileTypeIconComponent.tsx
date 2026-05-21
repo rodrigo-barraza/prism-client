@@ -452,15 +452,15 @@ export function getFileIconData(filename: string): any {
   const lower = filename.toLowerCase();
 
   // 1. Exact filename match
-  if ((FILENAME_ICON_MAP as Record<string, unknown>)[lower])
-    return (FILENAME_ICON_MAP as Record<string, unknown>)[lower];
+  if ((FILENAME_ICON_MAP as Record<string, any>)[lower])
+    return (FILENAME_ICON_MAP as Record<string, any>)[lower];
 
   // 2. Check for compound extensions (e.g., ".d.ts", ".test.js")
   const parts = lower.split(".");
   if (parts.length >= 3) {
     const compoundExt = parts.slice(-2).join(".");
-    if ((EXTENSION_ICON_MAP as Record<string, unknown>)[compoundExt])
-      return (EXTENSION_ICON_MAP as Record<string, unknown>)[compoundExt];
+    if ((EXTENSION_ICON_MAP as Record<string, any>)[compoundExt])
+      return (EXTENSION_ICON_MAP as Record<string, any>)[compoundExt];
     // Test/spec/stories detection
     const secondLast = parts[parts.length - 2];
     if (secondLast === "test" || secondLast === "spec") {
@@ -473,8 +473,8 @@ export function getFileIconData(filename: string): any {
 
   // 3. Simple extension match
   const ext = parts.length > 1 ? parts.pop() : "";
-  if (ext && (EXTENSION_ICON_MAP as Record<string, unknown>)[ext])
-    return (EXTENSION_ICON_MAP as Record<string, unknown>)[ext];
+  if (ext && (EXTENSION_ICON_MAP as Record<string, any>)[ext])
+    return (EXTENSION_ICON_MAP as Record<string, any>)[ext];
 
   return DEFAULT_FILE_ICON;
 }

@@ -29,7 +29,7 @@ export default function ToolIconComponent({
   // Collect raw names that don't map to known canonical icons → shown in FC tooltip
   const functionCallRawNames = [];
   for (const raw of toolDisplayNames) {
-    if (!(TOOL_ICON_MAP as Record<string, unknown>)[raw]) {
+    if (!(TOOL_ICON_MAP as Record<string, any>)[raw]) {
       functionCallRawNames.push(raw);
     }
   }
@@ -43,8 +43,8 @@ export default function ToolIconComponent({
   // De-duplicate and resolve unknown tools → "Tool Calling"
   const resolved = new Map();
   for (const raw of toolDisplayNames) {
-    if ((TOOL_ICON_MAP as Record<string, unknown>)[raw]) {
-      if (!resolved.has(raw)) resolved.set(raw, (TOOL_ICON_MAP as Record<string, unknown>)[raw]);
+    if ((TOOL_ICON_MAP as Record<string, any>)[raw]) {
+      if (!resolved.has(raw)) resolved.set(raw, (TOOL_ICON_MAP as Record<string, any>)[raw]);
     } else {
       const fallbackIcon = TOOL_ICON_MAP["Tool Calling"] || Wrench;
       if (!resolved.has("Tool Calling")) {
@@ -67,7 +67,7 @@ export default function ToolIconComponent({
             <span className={styles.toolPill}>
               <Icon
                 size={size}
-                style={{ color: (TOOL_COLORS as Record<string, unknown>)[label] || "#f97316" }}
+                style={{ color: (TOOL_COLORS as Record<string, any>)[label] || "#f97316" }}
               />
             </span>
           </TooltipComponent>

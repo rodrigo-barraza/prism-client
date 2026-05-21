@@ -140,7 +140,7 @@ export default function SpinningCatComponent({
           canvas.height = frames[0].dims.height;
           renderFrame(canvas, frames as unknown as DecodedFrame[], bitmaps, 0);
         }
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("SpinningCatComponent: failed to decode GIF", error);
       }
     })();

@@ -169,7 +169,7 @@ const TOOL_DEFS = [
 ];
 
 export interface ModelToolsRowProps {
-  tools?: Record<string, unknown> | null;
+  tools?: Record<string, any> | null;
   variant?: "default" | "compact" | "condensed";
   className?: string;
 }

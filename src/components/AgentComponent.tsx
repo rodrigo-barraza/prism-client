@@ -559,7 +559,7 @@ export default function AgentComponent({
   );
   // Snapshot cache: stores UI state for sessions that are generating in the background
   // so the user can switch back without waiting for backend persistence.
-  const backgroundSessionsRef = useRef<Map<string, unknown>>(new Map());
+  const backgroundSessionsRef = useRef<Map<string, any>>(new Map());
 
   const handleStop = useCallback(() => {
     if (abortRef.current) {

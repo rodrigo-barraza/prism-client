@@ -27,7 +27,7 @@ export default function useToolToggles(builtInTools: ToolSchema[], storageKey?: 
       return;
     }
     if (!storageKey) return;
-    const current = StorageService.get<Record<string, unknown>>(storageKey) || {};
+    const current = StorageService.get<Record<string, any>>(storageKey) || {};
     StorageService.set(storageKey, {
       ...current,
       disabledBuiltIns: [...disabledBuiltIns],

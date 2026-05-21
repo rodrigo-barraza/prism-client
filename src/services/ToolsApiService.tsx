@@ -8,7 +8,7 @@ export interface ToolCallLogEntry {
   status: string;
   duration?: number;
   timestamp: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface ToolCallListResponse {
@@ -23,9 +23,9 @@ export interface ToolCallStatsResponse {
     totalCalls: number;
     avgDuration?: number;
     successRate?: number;
-    [key: string]: unknown;
+    [key: string]: any;
   }>;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface AgenticTask {
@@ -39,7 +39,7 @@ export interface AgenticTask {
   agentSessionId?: string;
   createdAt?: string;
   updatedAt?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface AgenticTaskListResponse {
@@ -63,7 +63,7 @@ export interface FileReadResponse {
  * tools-api admin endpoints (tool-call telemetry).
  */
 export default class ToolsApiService {
-  static async _fetch<T = unknown>(path: string): Promise<T> {
+  static async _fetch<T = any>(path: string): Promise<T> {
     const response = await fetch(`${TOOLS_SERVICE_URL}${path}`);
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
@@ -98,7 +98,7 @@ export default class ToolsApiService {
   // Agentic Tasks
   // ---------------------------------------------------------------------------
 
-  static async _post<T = unknown>(path: string, body: unknown): Promise<T> {
+  static async _post<T = any>(path: string, body: any): Promise<T> {
     const response = await fetch(`${TOOLS_SERVICE_URL}${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

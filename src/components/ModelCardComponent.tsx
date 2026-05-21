@@ -45,7 +45,7 @@ export default function ModelCardComponent({
     [model.provider, model.name],
   );
 
-  const handlePickerSelect = (provider: unknown, name: unknown) => {
+  const handlePickerSelect = (provider: any, name: any) => {
     onChangeModel?.(model.instanceId, provider, name);
   };
 

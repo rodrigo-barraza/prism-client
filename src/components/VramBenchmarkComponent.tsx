@@ -59,7 +59,7 @@ export interface CustomChartDataPoint {
   ctx?: VramBenchmarkEntry;
 }
 
-export const isCustomPoint = (pt: unknown): pt is CustomChartDataPoint => 
+export const isCustomPoint = (pt: any): pt is CustomChartDataPoint => 
   typeof pt === "object" && pt !== null;
 
 // ─── Local helper types (file-scoped) ──────────────────────
@@ -198,17 +198,17 @@ const TOOLTIP_STYLE: Partial<TooltipOptions> = {
   boxPadding: 4,
 };
 
-const GRID_STYLE: Record<string, unknown> = {
+const GRID_STYLE: Record<string, any> = {
   color: "rgba(255,255,255,0.04)",
 };
 
-const TICK_STYLE: Record<string, unknown> = {
+const TICK_STYLE: Record<string, any> = {
   font: { family: CHART_FONT, size: 11, weight: 500 },
   color: "#6b728e",
   padding: 6,
 };
 
-const AXIS_TITLE_STYLE: Record<string, unknown> = {
+const AXIS_TITLE_STYLE: Record<string, any> = {
   display: true,
   font: { family: CHART_FONT, weight: 600, size: 12 },
   color: "#8e95ae",
@@ -317,12 +317,12 @@ function makeConnectorHighlightPlugin() {
         }
       }
 
-      const prev = (chart as unknown as Record<string, unknown>)._hoveredConnectorModel;
-      (chart as unknown as Record<string, unknown>)._hoveredConnectorModel = hoveredModel;
+      const prev = (chart as unknown as Record<string, any>)._hoveredConnectorModel;
+      (chart as unknown as Record<string, any>)._hoveredConnectorModel = hoveredModel;
       if (prev !== hoveredModel) args.changed = true;
     },
     afterDraw(chart: Chart) {
-      const hoveredModel = (chart as unknown as Record<string, unknown>)._hoveredConnectorModel as string | null;
+      const hoveredModel = (chart as unknown as Record<string, any>)._hoveredConnectorModel as string | null;
       if (!hoveredModel) return;
 
       const context = chart.ctx;
@@ -775,7 +775,7 @@ export default function VramBenchmarkComponent() {
       setRawData(benchRes.data || []);
       setMachines(machinesRes || []);
       setSettingsLabels(settingsRes || []);
-    } catch (err: unknown) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
@@ -1632,10 +1632,10 @@ export default function VramBenchmarkComponent() {
     if (currentChart) {
       // Update data — instant swap, no misleading slide-from-bottom
       currentChart.data.datasets = datasets;
-      if ((currentChart.options.scales?.x as Record<string, unknown>)?.title) {
+      if ((currentChart.options.scales?.x as Record<string, any>)?.title) {
         (currentChart.options.scales!.x as Record<string, Record<string, string>>).title.text = mode.xLabel;
       }
-      if ((currentChart.options.scales?.y as Record<string, unknown>)?.title) {
+      if ((currentChart.options.scales?.y as Record<string, any>)?.title) {
         (currentChart.options.scales!.y as Record<string, Record<string, string>>).title.text = mode.yLabel;
       }
       if (currentChart.options.scales?.x) {
@@ -1703,12 +1703,12 @@ export default function VramBenchmarkComponent() {
               ...TOOLTIP_STYLE,
               filter: (item: { dataset: { type?: string } }) => item.dataset.type !== "line",
               callbacks: {
-                title: (items: { raw?: unknown }[]) => {
+                title: (items: { raw?: any }[]) => {
                   const raw = items[0]?.raw;
                   if (isCustomPoint(raw)) return raw.model?.displayName || "";
                   return "";
                 },
-                label: (item: { raw?: unknown }) => {
+                label: (item: { raw?: any }) => {
                   const raw = item.raw;
                   if (!isCustomPoint(raw)) return "";
                   const m = raw.model;
@@ -1907,7 +1907,7 @@ export default function VramBenchmarkComponent() {
     }
 
     // Build scatter overlay: individual entries as interactive dots
-    const scatterData: unknown[] = [];
+    const scatterData: any[] = [];
     for (let i = 0; i < models.length; i++) {
       const m: any = models[i];
       const range = (vramRanges as any)[m.displayName || "unknown"];
@@ -1943,7 +1943,7 @@ export default function VramBenchmarkComponent() {
           {
             type: "scatter",
             label: "Individual Runs",
-            data: scatterData as unknown,
+            data: scatterData as any,
             backgroundColor: "rgba(255, 255, 255, 0.7)",
             borderColor: "rgba(255, 255, 255, 0.3)",
             borderWidth: 0.5,
@@ -1958,7 +1958,7 @@ export default function VramBenchmarkComponent() {
       },
       plugins: [
         makeDatalabelsPlugin({
-          getLabel: (_raw: unknown, i: any) => {
+          getLabel: (_raw: any, i: any) => {
             const m = models[i];
             if (!m) return "";
             const range = vramRanges[m.displayName || ""];
@@ -2185,7 +2185,7 @@ export default function VramBenchmarkComponent() {
           {
             type: "scatter",
             label: "Individual Runs",
-            data: scatterData as unknown,
+            data: scatterData as any,
             backgroundColor: "rgba(255, 255, 255, 0.7)",
             borderColor: "rgba(255, 255, 255, 0.3)",
             borderWidth: 0.5,
@@ -2200,7 +2200,7 @@ export default function VramBenchmarkComponent() {
       },
       plugins: [
         makeDatalabelsPlugin({
-          getLabel: (_raw: unknown, i: any) => {
+          getLabel: (_raw: any, i: any) => {
             const m = sorted[i];
             if (!m) return "";
             const range = tpsRanges[m.displayName || ""];
@@ -2736,7 +2736,7 @@ export default function VramBenchmarkComponent() {
           {
             type: "scatter",
             label: "Context Runs",
-            data: ctxScatterData as unknown,
+            data: ctxScatterData as any,
             backgroundColor: "rgba(255, 255, 255, 0.7)",
             borderColor: "rgba(255, 255, 255, 0.3)",
             borderWidth: 0.5,
@@ -2751,7 +2751,7 @@ export default function VramBenchmarkComponent() {
           {
             type: "scatter",
             label: "TPS Runs",
-            data: tpsScatterData as unknown,
+            data: tpsScatterData as any,
             backgroundColor: "rgba(255, 255, 255, 0.5)",
             borderColor: "rgba(255, 255, 255, 0.2)",
             borderWidth: 0.5,
@@ -2767,7 +2767,7 @@ export default function VramBenchmarkComponent() {
       },
       plugins: [
         makeDatalabelsPlugin({
-          getLabel: (_raw: unknown, i: any) => {
+          getLabel: (_raw: any, i: any) => {
             const m = sorted[i];
             if (!m) return "";
             // Context range label
@@ -3155,7 +3155,7 @@ export default function VramBenchmarkComponent() {
   // -- Search highlight — dims non-matching chart elements --
 
   const applySearchHighlight = useCallback(
-    (term: unknown) => {
+    (term: any) => {
       const chart = chartInstances.current[activeView];
       if (!chart) return;
 

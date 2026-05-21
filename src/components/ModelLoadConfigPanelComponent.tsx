@@ -38,7 +38,7 @@ function loadPersistedConfig(modelKey: any) {
 /**
  * Save config for a model key to localStorage.
  */
-function savePersistedConfig(modelKey: string, config: unknown) {
+function savePersistedConfig(modelKey: string, config: any) {
   try {
     localStorage.setItem(`${LS_KEY_PREFIX}${modelKey}`, JSON.stringify(config));
   } catch {

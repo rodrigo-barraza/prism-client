@@ -173,7 +173,7 @@ export default function VisionPageComponent() {
         audio: false,
       });
       attachStream(stream);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Webcam error:", error);
     }
   }, [stopSource, attachStream]);
@@ -199,7 +199,7 @@ export default function VisionPageComponent() {
         stopSource();
         setSourceType(null);
       });
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Screen capture error:", error);
     }
   }, [stopSource, attachStream]);

@@ -171,7 +171,7 @@ function InputArgsToggle({ args }: any) {
   const entries = useMemo(() => {
     if (!args || typeof args !== "object") return [];
     return Object.entries(args).filter(
-      ([, v]: [string, unknown]) => v !== undefined && v !== null,
+      ([, v]: [string, any]) => v !== undefined && v !== null,
     );
   }, [args]);
 
@@ -189,7 +189,7 @@ function InputArgsToggle({ args }: any) {
       </button>
       {show && (
         <div className={styles.inputArgsContent}>
-          {entries.map(([key, value]: [string, unknown]) => {
+          {entries.map(([key, value]: [string, any]) => {
             const isLong = typeof value === "string" && value.length > 80;
             const display =
               typeof value === "string"
@@ -270,8 +270,8 @@ function OutputResultToggle({ result }: any) {
         <div className={styles.outputResultContent}>
           {display.type === "object" && !Array.isArray(display.data) ? (
             Object.entries(display.data)
-              .filter(([, v]: [string, unknown]) => v !== undefined && v !== null)
-              .map(([key, value]: [string, unknown]) => {
+              .filter(([, v]: [string, any]) => v !== undefined && v !== null)
+              .map(([key, value]: [string, any]) => {
                 const isComplex = typeof value === "object";
                 const valStr = isComplex
                   ? JSON.stringify(value, null, 2)

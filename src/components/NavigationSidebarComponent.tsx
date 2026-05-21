@@ -231,7 +231,7 @@ export default function NavigationSidebarComponent({
   const isGenRef = useRef<boolean>(isGenerating);
   const prevIsGenRef = useRef<boolean>(false);
   const miniCatsRef = useRef<any>([]);
-  const [miniCats, setMiniCats] = useState<unknown[]>([]);
+  const [miniCats, setMiniCats] = useState<any[]>([]);
 
   // Mirror props into refs for RAF access
   useEffect(() => {

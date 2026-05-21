@@ -9,7 +9,7 @@ import { generateUUID } from "../utils/utilities";
 
 interface WorkflowInputDatum {
   type: string;
-  data: unknown;
+  data: any;
   sourceNodeId: string | null;
 }
 
@@ -18,9 +18,9 @@ interface WorkflowOutputs {
   image?: string;
   audio?: string;
   embedding?: number[];
-  conversation?: unknown[];
-  tools?: { schemas: unknown[]; customMap: Map<string, unknown> };
-  [key: string]: unknown;
+  conversation?: any[];
+  tools?: { schemas: any[]; customMap: Map<string, any> };
+  [key: string]: any;
 }
 
 interface MediaRef {
@@ -41,12 +41,12 @@ interface WorkflowModelNode {
   systemPrompt?: string;
   userPrompt?: string;
   outputTypes?: string[];
-  messages?: Array<Record<string, unknown>>;
-  staticInputs?: Record<string, unknown>;
+  messages?: Array<Record<string, any>>;
+  staticInputs?: Record<string, any>;
   disabledTools?: string[];
-  builtInTools?: Array<Record<string, unknown>>;
-  customTools?: Array<Record<string, unknown>>;
-  [key: string]: unknown;
+  builtInTools?: Array<Record<string, any>>;
+  customTools?: Array<Record<string, any>>;
+  [key: string]: any;
 }
 
 interface WorkflowEdge {
@@ -55,15 +55,15 @@ interface WorkflowEdge {
   targetNodeId: string;
   sourceModality: string;
   targetModality: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 interface WorkflowCallbacks {
   onNodeStart?: (nodeId: string) => void;
   onNodeComplete?: (nodeId: string, outputs: WorkflowOutputs) => void;
-  onNodeError?: (nodeId: string, error: unknown) => void;
+  onNodeError?: (nodeId: string, error: any) => void;
   onViewerPartial?: (nodeId: string, outputs: WorkflowOutputs) => void;
-  onNodeContentUpdate?: (nodeId: string, data: unknown) => void;
+  onNodeContentUpdate?: (nodeId: string, data: any) => void;
 }
 
 /**
@@ -96,7 +96,7 @@ function resolveEndpoint(node: WorkflowModelNode, inputData: WorkflowInputDatum[
  * Resolve a minio:// or other file ref to a fetchable URL, then convert to base64 data URL.
  * Also handles object refs like { imageData, mimeType } from chat API responses.
  */
-async function resolveToDataUrl(ref: unknown): Promise<string | null> {
+async function resolveToDataUrl(ref: any): Promise<string | null> {
   if (!ref) return null;
   // Object with inline base64 data (chat API image format: { data, mimeType, minioRef })
   if (typeof ref === "object" && ref !== null) {
@@ -124,7 +124,7 @@ async function resolveToDataUrl(ref: unknown): Promise<string | null> {
 async function executeModelNode(
   node: WorkflowModelNode,
   inputData: WorkflowInputDatum[],
-  { onNodeContentUpdate, toolSchemas, customToolMap }: { onNodeContentUpdate?: WorkflowCallbacks['onNodeContentUpdate']; toolSchemas?: unknown[] | null; customToolMap?: Map<string, unknown> | null } = {},
+  { onNodeContentUpdate, toolSchemas, customToolMap }: { onNodeContentUpdate?: WorkflowCallbacks['onNodeContentUpdate']; toolSchemas?: any[] | null; customToolMap?: Map<string, any> | null } = {},
 ) {
   const endpoint = resolveEndpoint(node, inputData);
   const outputs: WorkflowOutputs = {};
@@ -673,7 +673,7 @@ export async function executeWorkflow(
             },
           })),
           ...custom.map((t: any) => {
-            const props: Record<string, unknown> = {};
+            const props: Record<string, any> = {};
             const required = [];
             for (const p of t.parameters || []) {
               if (!p.name) continue;
@@ -711,7 +711,7 @@ export async function executeWorkflow(
         const incomingConns = edges.filter(
           (c) => c.targetNodeId === nodeId,
         );
-        const collectedOutputs: Record<string, unknown> = {};
+        const collectedOutputs: Record<string, any> = {};
 
         for (const conn of incomingConns) {
           const sourceOutputs = nodeOutputs[conn.sourceNodeId];
@@ -800,7 +800,7 @@ export async function executeWorkflow(
           }
         }
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       erroredNodeIds.add(nodeId);
       onNodeError?.(nodeId, error);
       // Put empty outputs so downstream nodes don't hang

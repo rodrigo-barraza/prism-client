@@ -389,7 +389,7 @@ export default function ToolSelectionComponent({
   }, [filteredTools]);
 
   // -- Collapse toggling ----------------------------------------
-  const toggleDomain = useCallback((domain: unknown) => {
+  const toggleDomain = useCallback((domain: any) => {
     setCollapsedDomains((prev) => {
       const next = new Set(prev);
       if (next.has(domain)) next.delete(domain);

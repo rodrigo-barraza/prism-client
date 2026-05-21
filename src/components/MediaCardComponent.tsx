@@ -22,7 +22,7 @@ import type { MediaItem } from "./MediaPageComponent";
 
 /* -- Helpers -- */
 
-function resolveUrl(url: unknown) {
+function resolveUrl(url: any) {
   if (!url || typeof url !== "string") return null;
   if (url.startsWith("minio://")) return PrismService.getFileUrl(url);
   if (url.startsWith("data:")) return url;

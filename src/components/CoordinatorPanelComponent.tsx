@@ -47,7 +47,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
   const [toast, setToast] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  const showToast = useCallback((type: unknown, text: unknown) => {
+  const showToast = useCallback((type: any, text: any) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, []);

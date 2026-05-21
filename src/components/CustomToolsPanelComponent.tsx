@@ -74,10 +74,10 @@ function resolveShorthands(entries: any, allTools: any) {
 }
 
 export default function CustomToolsPanel({
-  tools = [] as unknown[],
+  tools = [] as any[],
   onToolsChange,
   project,
-  builtInTools = [] as unknown[],
+  builtInTools = [] as any[],
   disabledBuiltIns = new Set(),
   onToggleBuiltIn,
   agent = true,
@@ -166,7 +166,7 @@ export default function CustomToolsPanel({
       setEditingTool(null);
       setIsNew(false);
       onToolsChange();
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to save tool:", error);
     } finally {
       setSaving(false);
@@ -183,7 +183,7 @@ export default function CustomToolsPanel({
         await PrismService.deleteCustomTool(id);
         setConfirmingDeleteId(null);
         onToolsChange();
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to delete tool:", error);
       }
     },
@@ -197,7 +197,7 @@ export default function CustomToolsPanel({
           enabled: !tool.enabled,
         });
         onToolsChange();
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to toggle tool:", error);
       }
     },
@@ -353,7 +353,7 @@ export default function CustomToolsPanel({
         ),
       );
       onToolsChange();
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to toggle all custom tools:", error);
     }
   }, [allCustomEnabled, tools, onToolsChange]);

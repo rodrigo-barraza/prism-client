@@ -11,7 +11,7 @@
  * the underlying connection is closed.
  */
 
-type SSEListener = (data: unknown) => void;
+type SSEListener = (data: any) => void;
 
 interface PoolEntry {
   es: EventSource;
@@ -33,7 +33,7 @@ export function subscribe(url: string, onMessage: SSEListener): { unsubscribe: (
     pools.set(url, entry);
 
     es.onmessage = (event: MessageEvent) => {
-      let data: unknown;
+      let data: any;
       try {
         data = JSON.parse(event.data);
       } catch {

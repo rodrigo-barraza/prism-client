@@ -30,7 +30,7 @@ export function WorkspaceProvider({ children }: any) {
   const [mounted, setMounted] = useState(false);
 
   /** Set the active workspace and persist to localStorage. */
-  const setCurrentWorkspace = useCallback((workspace: unknown) => {
+  const setCurrentWorkspace = useCallback((workspace: any) => {
     _setCurrentWorkspace(workspace);
     if (typeof window !== "undefined") {
       if ((workspace as any)?.path) {

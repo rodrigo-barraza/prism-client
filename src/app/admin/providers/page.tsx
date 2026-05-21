@@ -67,7 +67,7 @@ export default function ProvidersPage() {
     async function load() {
       try {
         const params = {};
-        if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
+        if (projectFilter) (params as Record<string, any>).project = projectFilter;
         Object.assign(params, buildDateRangeParams(dateRange));
         const [models, limits] = await Promise.all([
           IrisService.getModelStats(params),
@@ -77,7 +77,7 @@ export default function ProvidersPage() {
         ]);
         setModelStats((models || []) as unknown as ModelStat[]);
         setRateLimits((limits || {}) as Record<string, RateLimitPanelData>);
-      } catch (error: unknown) {
+      } catch (error: any) {
         setError(error instanceof Error ? error.message : String(error));
       } finally {
         setLoading(false);

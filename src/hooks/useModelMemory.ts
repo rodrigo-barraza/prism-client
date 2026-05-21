@@ -53,8 +53,8 @@ export default function useModelMemory(storageKey: string) {
       }
 
       // If the saved model is local but local models aren't merged yet, wait.
-      const textToText = config.textToText as Record<string, unknown> | undefined;
-      const models = (textToText?.models ?? {}) as Record<string, Array<Record<string, unknown>>>;
+      const textToText = config.textToText as Record<string, any> | undefined;
+      const models = (textToText?.models ?? {}) as Record<string, Array<Record<string, any>>>;
 
       if (saved.isLocal) {
         const localModels = models[saved.provider] || [];

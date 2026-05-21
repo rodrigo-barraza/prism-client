@@ -93,10 +93,10 @@ export const TOOL_ICON_MAP = {
  * Falls back to Wrench / "Tool Calling" amber for unknown tools.
  */
 export function resolveToolVisuals(name: string) {
-  if ((TOOL_ICON_MAP as Record<string, unknown>)[name]) {
+  if ((TOOL_ICON_MAP as Record<string, any>)[name]) {
     return {
-      Icon: (TOOL_ICON_MAP as Record<string, unknown>)[name],
-      color: (TOOL_COLORS as Record<string, unknown>)[name] || "#f59e0b",
+      Icon: (TOOL_ICON_MAP as Record<string, any>)[name],
+      color: (TOOL_COLORS as Record<string, any>)[name] || "#f59e0b",
     };
   }
   return {

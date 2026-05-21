@@ -120,7 +120,7 @@ export default function WorkflowComponent({
 
   // On mobile, close sidebar when selecting a node (opening inspector)
   const handleSelectNode = useCallback(
-    (nodeId: unknown) => {
+    (nodeId: any) => {
       if (nodeId && window.innerWidth < 768) {
         setSidebarVisible(false);
       }

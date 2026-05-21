@@ -61,7 +61,7 @@ import styles from "../components/TableComponentsComponent.module.css";
  * (conversations, sessions, requests, benchmarks, etc.) so we use
  * a wide index type. Individual column renderers narrow via field access.
  */
-export type TableRow = Record<string, unknown>;
+export type TableRow = Record<string, any>;
 
 /* -- Helpers ---------------------------------------------- */
 
@@ -76,7 +76,7 @@ export const valueOrDash = <T,>(value: T | undefined | null, render: (v: T) => R
 export function mergeModalities(conversations: TableRow[]) {
   const merged: Record<string, boolean> = {};
   for (const c of conversations) {
-    const modalities = c.modalities as Record<string, unknown> | undefined;
+    const modalities = c.modalities as Record<string, any> | undefined;
     if (!modalities) continue;
     for (const [key, value] of Object.entries(modalities)) {
       if (value) merged[key] = true;
@@ -159,7 +159,7 @@ export const modelCountColumn = () => ({
   key: "modelCount",
   label: "Models",
   description: "Number of distinct models used",
-  sortValue: (row: TableRow) => (row.models as unknown[] | undefined)?.length ?? (row.modelCount as number | undefined) ?? 0,
+  sortValue: (row: TableRow) => (row.models as any[] | undefined)?.length ?? (row.modelCount as number | undefined) ?? 0,
   render: (row: TableRow) => (
     <ModelBadgeComponent models={(row.models as string[] | undefined) ?? []} providers={row.providers as string[] | undefined} />
   ),
@@ -179,7 +179,7 @@ export const providerCountColumn = () => ({
   key: "providerCount",
   label: "Providers",
   description: "Number of distinct API providers used",
-  sortValue: (row: TableRow) => ((row.providers as unknown[] | undefined) ?? []).length,
+  sortValue: (row: TableRow) => ((row.providers as any[] | undefined) ?? []).length,
   render: (row: TableRow) => (
     <ProvidersBadgeComponent providers={(row.providers as string[] | undefined) ?? []} />
   ),
@@ -439,7 +439,7 @@ export const conversationCountColumn = () => ({
   render: (row: TableRow) => {
     const count =
       (row.conversationCount as number | undefined) ??
-      ((row.conversations as unknown[] | undefined) ?? []).length;
+      ((row.conversations as any[] | undefined) ?? []).length;
     return (
       <span className={styles.countCell}>
         <MessageSquare size={10} />
@@ -892,10 +892,10 @@ export const benchmarkTokensInColumn = () => ({
   label: "Tokens In",
   description: "Input (prompt) tokens consumed by this model",
   sortable: true,
-  sortValue: (r: TableRow) => getTotalInputTokens(r.usage as Record<string, unknown> | undefined) ?? 0,
+  sortValue: (r: TableRow) => getTotalInputTokens(r.usage as Record<string, any> | undefined) ?? 0,
   align: "right",
   render: (r: TableRow) => {
-    const v = getTotalInputTokens(r.usage as Record<string, unknown> | undefined);
+    const v = getTotalInputTokens(r.usage as Record<string, any> | undefined);
     return v > 0 ? (
       <TokenCountBadgeComponent value={v} label="in" mini />
     ) : (

@@ -51,7 +51,7 @@ export default function ApprovalCardComponent({
 
       {argEntries.length > 0 && (
         <div className={styles.args}>
-          {argEntries.map(([key, value]: [string, unknown]) => {
+          {argEntries.map(([key, value]: [string, any]) => {
             const strVal =
               typeof value === "string" ? value : JSON.stringify(value);
             const truncated =

@@ -44,7 +44,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
     try {
       const { benchmarks: data } = await PrismService.getBenchmarks();
       setBenchmarks(data || []);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load benchmarks:", error);
     } finally {
       setLoading(false);

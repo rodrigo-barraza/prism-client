@@ -37,7 +37,7 @@ export const BENCHMARK_MODES = [
  */
 export default function BenchmarkModeSelector({ value, onChange }: any) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [pillStyle, setPillStyle] = useState<Record<string, unknown>>({});
+  const [pillStyle, setPillStyle] = useState<Record<string, any>>({});
 
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;

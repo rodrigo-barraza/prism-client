@@ -290,8 +290,8 @@ export default function UserQuestionCardComponent({
           header={q.header}
           options={q.options || []}
           multiSelect={q.multiSelect || false}
-          isPending={isPending && !(collectedAnswers as Record<string, unknown>)[i]}
-          onAnswer={(answerData: unknown) => handleQuestionAnswer(i, answerData)}
+          isPending={isPending && !(collectedAnswers as Record<string, any>)[i]}
+          onAnswer={(answerData: any) => handleQuestionAnswer(i, answerData)}
           answeredWith={
             !isPending
               ? (answeredWith as any)?.[i]?.answer || (answeredWith as any)?.[i]

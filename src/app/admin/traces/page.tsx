@@ -33,7 +33,7 @@ export default function TracesPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
-  const [traces, setTraces] = useState<Record<string, unknown>[]>([]);
+  const [traces, setTraces] = useState<Record<string, any>[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("createdAt");
@@ -62,14 +62,14 @@ export default function TracesPage() {
         order,
         ...dateParams,
       };
-      if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
+      if (projectFilter) (params as Record<string, any>).project = projectFilter;
 
       const data = await IrisService.getTraces(params);
       // Discard stale responses from previous filter/page generations
       if (fetchGeneration !== fetchGenRef.current) return;
       setTraces(data.data || []);
       setTotal(data.total || 0);
-    } catch (error: unknown) {
+    } catch (error: any) {
       if (fetchGeneration !== fetchGenRef.current) return;
       console.error("Failed to load traces:", error);
     } finally {
@@ -98,7 +98,7 @@ export default function TracesPage() {
       debounceTimer = setTimeout(loadTraces, 800);
     };
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: Record<string, unknown>) => {
+      onStatus: (data: Record<string, any>) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
           if (!pollInterval) {
@@ -106,7 +106,7 @@ export default function TracesPage() {
           }
         }
       },
-      onChange: (event: Record<string, unknown>) => {
+      onChange: (event: Record<string, any>) => {
         if (event.collection === "requests") {
           // Request changes update trace data — debounce to batch streaming updates
           debouncedLoad();
@@ -130,7 +130,7 @@ export default function TracesPage() {
     let cancelled = false;
     setLoadingAssociations(true);
     IrisService.getRequestAssociations(selectedRequest.requestId)
-      .then((data: Record<string, unknown>) => {
+      .then((data: Record<string, any>) => {
         if (!cancelled) setAssociations(data);
       })
       .catch(() => {
@@ -400,19 +400,19 @@ export default function TracesPage() {
                 </div>
               );
             })()}
-            {(selectedRequest as Record<string, unknown>).requestPayload && (
+            {(selectedRequest as Record<string, any>).requestPayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, unknown>).requestPayload}
+                  data={(selectedRequest as Record<string, any>).requestPayload}
                   label="Request Payload"
                   maxHeight="400px"
                 />
               </div>
             )}
-            {(selectedRequest as Record<string, unknown>).responsePayload && (
+            {(selectedRequest as Record<string, any>).responsePayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, unknown>).responsePayload}
+                  data={(selectedRequest as Record<string, any>).responsePayload}
                   label="Response Payload"
                   maxHeight="400px"
                 />

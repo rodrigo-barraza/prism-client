@@ -57,7 +57,7 @@ const TYPE_FILTERS = [
   { key: "pdf", label: "PDF", icon: FileText, color: MODALITY_COLORS.pdf },
 ];
 
-function resolveUrl(url: unknown) {
+function resolveUrl(url: any) {
   if (!url || typeof url !== "string") return null;
   if (url.startsWith("minio://")) return PrismService.getFileUrl(url);
   if (url.startsWith("data:")) return url;
@@ -177,7 +177,7 @@ export default function MediaPageComponent({
       if (result.usernames) setUsernames(result.usernames);
       if (result.providers) setProviders(result.providers);
       if (result.models) setModels(result.models);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load media:", error);
     } finally {
       setLoading(false);

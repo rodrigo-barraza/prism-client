@@ -137,7 +137,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
       >
         <div className={styles.audioRecWrap}>
           <AudioPlayerRecorderComponent
-            onRecordingComplete={(dataUrl: unknown) => {
+            onRecordingComplete={(dataUrl: any) => {
               onFile?.(dataUrl, "audio/webm");
               setShowAudioRec(false);
             }}
@@ -230,7 +230,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
       {showDrawing && (
         <DrawingCanvas
           onClose={() => setShowDrawing(false)}
-          onSave={(dataUrl: unknown) => {
+          onSave={(dataUrl: any) => {
             onFile?.(dataUrl, "image/png");
             setShowDrawing(false);
           }}

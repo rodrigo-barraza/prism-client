@@ -125,7 +125,7 @@ export default function AdminAgentViewerComponent() {
       });
       setSessions(data.data || []);
       setTotal(data.total || 0);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Failed to load admin agent sessions:", error);
     } finally {
       setLoading(false);
@@ -181,7 +181,7 @@ export default function AdminAgentViewerComponent() {
       const fcModels = (models as any[]).filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );
-      if (fcModels.length > 0) (filteredTextModels as Record<string, unknown>)[provider] = fcModels;
+      if (fcModels.length > 0) (filteredTextModels as Record<string, any>)[provider] = fcModels;
     }
 
     const filteredProviderList = ((config as any).providerList || []).filter(
@@ -268,7 +268,7 @@ export default function AdminAgentViewerComponent() {
         PrismService.getCoordinatorWorkers(conversation.id)
           .then((r: any) => setWorkersCount((r.workers || []).length))
           .catch(() => {});
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to load agent session:", error);
       }
     },
@@ -279,7 +279,7 @@ export default function AdminAgentViewerComponent() {
   const allToolCount = builtInTools.length + customTools.length;
 
   // -- Badge helper ---------------------------------------------
-  const badgeProps = (count: unknown) => ({
+  const badgeProps = (count: any) => ({
     badge: count,
     badgeDisabled: count === 0,
   });

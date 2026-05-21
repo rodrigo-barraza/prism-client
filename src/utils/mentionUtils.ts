@@ -140,8 +140,8 @@ export function parseMentionTokens(text: string) {
     const segment = { type: "mention", value: match[1] };
     // Extract line range if present
     if (match[2]) {
-      (segment as Record<string, unknown>).lineStart = parseInt(match[2], 10);
-      if (match[3]) (segment as Record<string, unknown>).lineEnd = parseInt(match[3], 10);
+      (segment as Record<string, any>).lineStart = parseInt(match[2], 10);
+      if (match[3]) (segment as Record<string, any>).lineEnd = parseInt(match[3], 10);
     }
     segments.push(segment);
     lastIndex = mentionRe.lastIndex;
@@ -162,42 +162,42 @@ export function parseMentionTokens(text: string) {
 /**
  * Create a mention badge DOM element for use in contentEditable.
  */
-export function createMentionBadge(path: string, name: string, type: string | undefined, opts: Record<string, unknown> = {}) {
+export function createMentionBadge(path: string, name: string, type: string | undefined, opts: Record<string, any> = {}) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
   const classes = [badgeStyles.mentionBadge];
-  if ((opts as Record<string, unknown>).stale) classes.push(badgeStyles.mentionBadgeStale);
+  if ((opts as Record<string, any>).stale) classes.push(badgeStyles.mentionBadgeStale);
   badge.className = classes.join(" ");
   badge.dataset.mentionPath = path;
   badge.dataset.mentionType = type || "file";
   // Store line range in data attributes for serialization
-  if ((opts as Record<string, unknown>).lineStart != null) {
-    badge.dataset.mentionLineStart = String((opts as Record<string, unknown>).lineStart);
+  if ((opts as Record<string, any>).lineStart != null) {
+    badge.dataset.mentionLineStart = String((opts as Record<string, any>).lineStart);
     if (
-      (opts as Record<string, unknown>).lineEnd != null &&
-      (opts as Record<string, unknown>).lineEnd !== (opts as Record<string, unknown>).lineStart
+      (opts as Record<string, any>).lineEnd != null &&
+      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
     ) {
-      badge.dataset.mentionLineEnd = String((opts as Record<string, unknown>).lineEnd);
+      badge.dataset.mentionLineEnd = String((opts as Record<string, any>).lineEnd);
     }
   }
   // Build display name with line suffix (#L format — GitHub convention)
   let displayName = name;
-  if ((opts as Record<string, unknown>).lineStart != null) {
+  if ((opts as Record<string, any>).lineStart != null) {
     displayName +=
-      (opts as Record<string, unknown>).lineEnd != null &&
-      (opts as Record<string, unknown>).lineEnd !== (opts as Record<string, unknown>).lineStart
-        ? `#L${(opts as Record<string, unknown>).lineStart}-${(opts as Record<string, unknown>).lineEnd}`
-        : `#L${(opts as Record<string, unknown>).lineStart}`;
+      (opts as Record<string, any>).lineEnd != null &&
+      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
+        ? `#L${(opts as Record<string, any>).lineStart}-${(opts as Record<string, any>).lineEnd}`
+        : `#L${(opts as Record<string, any>).lineStart}`;
   }
   // Native title attribute — used as tooltip fallback inside overflow-clipped
   // contentEditable containers where the ::after CSS tooltip gets cut off.
   let titleText = path;
-  if ((opts as Record<string, unknown>).lineStart != null) {
+  if ((opts as Record<string, any>).lineStart != null) {
     titleText +=
-      (opts as Record<string, unknown>).lineEnd != null &&
-      (opts as Record<string, unknown>).lineEnd !== (opts as Record<string, unknown>).lineStart
-        ? `#L${(opts as Record<string, unknown>).lineStart}-${(opts as Record<string, unknown>).lineEnd}`
-        : `#L${(opts as Record<string, unknown>).lineStart}`;
+      (opts as Record<string, any>).lineEnd != null &&
+      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
+        ? `#L${(opts as Record<string, any>).lineStart}-${(opts as Record<string, any>).lineEnd}`
+        : `#L${(opts as Record<string, any>).lineStart}`;
   }
   badge.title = titleText;
   const icon = type === "directory" ? "📁" : "📄";

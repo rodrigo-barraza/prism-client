@@ -121,8 +121,8 @@ export interface ConversationMeta {
   provider?: string;
   systemPrompt?: string;
   synthetic?: boolean;
-  settings?: Record<string, unknown>;
-  [key: string]: unknown;
+  settings?: Record<string, any>;
+  [key: string]: any;
 }
 
 export interface Message {
@@ -146,7 +146,7 @@ export interface Message {
     cacheReadInputTokens?: number;
     cacheCreationInputTokens?: number;
     requests?: number;
-    [key: string]: unknown;
+    [key: string]: any;
   };
   estimatedCost?: number;
   /** Time from request to first token (seconds) */
@@ -168,13 +168,13 @@ export interface Message {
     cacheReadInputTokens?: number;
     cacheCreationInputTokens?: number;
     requests?: number;
-    [key: string]: unknown;
+    [key: string]: any;
   };
   /** Backend-computed tok/s from SessionGenerationTracker */
   _liveGenProgress?: {
     outputTokens?: number;
     tokensPerSecond?: number;
-    [key: string]: unknown;
+    [key: string]: any;
   };
   _streamingStartTime?: number;
   _streamingLastChunkTime?: number;
@@ -193,7 +193,7 @@ export interface Message {
     totalOutputTokens?: number;
     tokensPerSecond?: number;
     toolNames?: Record<string, number>;
-    [key: string]: unknown;
+    [key: string]: any;
   }>;
   /** Accumulated worker tokens (from worker_status complete events) */
   _workerTokens?: {
@@ -202,9 +202,9 @@ export interface Message {
     requests?: number;
   };
   /** Server-side generation parameters snapshot */
-  generationSettings?: Record<string, unknown>;
+  generationSettings?: Record<string, any>;
   /** Incremental background usage (memory extraction, embedding) */
-  _backgroundUsage?: Record<string, unknown>;
+  _backgroundUsage?: Record<string, any>;
   deleted?: boolean;
   _liveStreaming?: boolean;
   contentSegments?: ContentSegment[];
@@ -218,7 +218,7 @@ export interface Message {
   voice?: string;
   tool_call_id?: string;
   toolCallId?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface Conversation {
@@ -232,15 +232,15 @@ export interface Conversation {
   provider?: string;
   traceId?: string;
   systemPrompt?: string;
-  stats?: Record<string, unknown>;
-  settings?: Record<string, unknown>;
+  stats?: Record<string, any>;
+  settings?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
   messageCount?: number;
   totalCost?: number;
   isGenerating?: boolean;
   username?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface ConversationListResponse {
@@ -263,10 +263,10 @@ export interface AgentSession {
   title?: string;
   traceId?: string;
   systemPrompt?: string;
-  stats?: Record<string, unknown>;
+  stats?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface AgentSessionListResponse {
@@ -308,8 +308,8 @@ export interface SSEToolCallEvent {
   type: "toolCall";
   id: string;
   name: string;
-  args: Record<string, unknown>;
-  result?: unknown;
+  args: Record<string, any>;
+  result?: any;
   status?: string;
   thoughtSignature?: string;
   _sourceModel?: string;
@@ -319,9 +319,9 @@ export interface SSEToolExecutionEvent {
   type: "tool_execution";
   toolCallId: string;
   name: string;
-  args: Record<string, unknown>;
+  args: Record<string, any>;
   iteration?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface SSEToolOutputEvent {
@@ -329,20 +329,20 @@ export interface SSEToolOutputEvent {
   toolCallId: string;
   name: string;
   result: unknown;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface SSEApprovalRequiredEvent {
   type: "approval_required";
   agentSessionId: string;
-  toolCalls: Array<{ id: string; name: string; args: Record<string, unknown> }>;
-  [key: string]: unknown;
+  toolCalls: Array<{ id: string; name: string; args: Record<string, any> }>;
+  [key: string]: any;
 }
 
 export interface SSEPlanProposalEvent {
   type: "plan_proposal";
   plan: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface SSEUserQuestionEvent {
@@ -354,14 +354,14 @@ export interface SSEUserQuestionEvent {
     options?: string[];
     annotations?: string;
   }>;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface SSEWorkerStatusEvent {
   type: "worker_status";
   workerId: string;
   status: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface SSEUsageUpdateEvent {
@@ -369,13 +369,13 @@ export interface SSEUsageUpdateEvent {
   inputTokens?: number;
   outputTokens?: number;
   estimatedCost?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface SSEDoneEvent {
   type: "done";
   conversationId?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface SSEErrorEvent {
@@ -402,7 +402,7 @@ export type SSEEvent =
 // ─── SSE Callback Interfaces ────────────────────────────────
 
 /** Wire-format SSE event — parsed JSON with a discriminant `type` field. */
-export type SSEData = Record<string, unknown> & { type: string };
+export type SSEData = Record<string, any> & { type: string };
 
 export interface SSECallbacks {
   onChunk?: (content: string, sourceModel?: string, outputCharacters?: number) => void;
@@ -444,8 +444,8 @@ export interface ContentSegment {
 export interface ToolCallEvent {
   id: string;
   name: string;
-  args: Record<string, unknown>;
-  result?: unknown;
+  args: Record<string, any>;
+  result?: any;
   status?: string;
   thoughtSignature?: string;
   _sourceModel?: string;
@@ -541,7 +541,7 @@ export interface Skill {
   enabled?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Agent Memories ─────────────────────────────────────────
@@ -555,7 +555,7 @@ export interface AgentMemory {
   source?: string;
   createdAt: string;
   updatedAt?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface AgentMemoryListResponse {
@@ -593,7 +593,7 @@ export interface PrismSettings {
   functionCallingEnabled?: boolean;
   urlContextEnabled?: boolean;
   codeExecutionEnabled?: boolean;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── MCP Servers ────────────────────────────────────────────
@@ -627,7 +627,7 @@ export interface CoordinatorWorker {
   completedAt?: string;
   phase?: string;
   currentTool?: string | null;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Favorites ──────────────────────────────────────────────
@@ -636,7 +636,7 @@ export interface Favorite {
   _id?: ObjectId;
   type: string;
   key: string;
-  meta?: Record<string, unknown>;
+  meta?: Record<string, any>;
   createdAt?: string;
 }
 
@@ -647,11 +647,11 @@ export interface ToolSchema {
   description: string;
   domain?: string;
   labels?: string[];
-  parameters?: Record<string, unknown>;
+  parameters?: Record<string, any>;
   function?: {
     name: string;
     description?: string;
-    parameters?: Record<string, unknown>;
+    parameters?: Record<string, any>;
   };
 }
 
@@ -672,7 +672,7 @@ export interface Benchmark {
   latestRun?: BenchmarkRun;
   createdAt: string;
   updatedAt?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface BenchmarkRunResult {
@@ -696,7 +696,7 @@ export interface BenchmarkRun {
   status: "pending" | "running" | "completed" | "failed" | "aborted";
   startedAt: string;
   completedAt?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface BenchmarkListResponse {
@@ -705,7 +705,7 @@ export interface BenchmarkListResponse {
 }
 
 export interface BenchmarkModelStats {
-  models: Array<Record<string, unknown>>;
+  models: Array<Record<string, any>>;
   totalModels: number;
   totalBenchmarks: number;
 }
@@ -717,7 +717,7 @@ export interface VramBenchmarkGpuTelemetry {
   temp?: number;
   power?: string;
   utilization?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface VramBenchmarkEntry {
@@ -735,16 +735,16 @@ export interface VramBenchmarkEntry {
   estimatedGiB?: number;
   fitsInVram?: boolean;
   tokensPerSecond?: number;
-  ttft?: { ms: number; prefillTokPerSec?: number; [key: string]: unknown };
+  ttft?: { ms: number; prefillTokPerSec?: number; [key: string]: any };
   loadTimeMs?: number;
   hostname?: string;
   gpu?: string;
   gpuVramGB?: number;
-  system?: { hostname: string; gpu?: VramBenchmarkGpuTelemetry; [key: string]: unknown };
-  settings?: { label: string; [key: string]: unknown };
-  vramDuringGen?: { peakGiB?: number; [key: string]: unknown };
+  system?: { hostname: string; gpu?: VramBenchmarkGpuTelemetry; [key: string]: any };
+  settings?: { label: string; [key: string]: any };
+  vramDuringGen?: { peakGiB?: number; [key: string]: any };
   createdAt?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface VramBenchmarkMachine {
@@ -765,7 +765,7 @@ export interface WorkflowNode {
   id: string;
   type?: string;
   label?: string;
-  config?: Record<string, unknown>;
+  config?: Record<string, any>;
   position?: { x: number; y: number };
   inputTypes?: string[];
   outputTypes?: string[];
@@ -773,11 +773,11 @@ export interface WorkflowNode {
   builtInTools?: string[];
   customTools?: string[];
   disabledTools?: string[];
-  receivedOutputs?: Record<string, unknown>;
+  receivedOutputs?: Record<string, any>;
   nodeType?: string;
   provider?: string;
   modelName?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface WorkflowEdge {
@@ -789,7 +789,7 @@ export interface WorkflowEdge {
   targetNodeId?: string;
   sourceModality?: string;
   targetModality?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface Workflow {
@@ -803,13 +803,13 @@ export interface Workflow {
   edges: WorkflowEdge[];
   connections?: WorkflowEdge[];
   conversationIds?: string[];
-  nodeResults?: Record<string, unknown>;
-  nodeStatuses?: Record<string, unknown>;
+  nodeResults?: Record<string, any>;
+  nodeStatuses?: Record<string, any>;
   userContent?: string;
   createdAt?: string;
   updatedAt?: string;
   workflowName?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Synthesis ──────────────────────────────────────────────
@@ -825,7 +825,7 @@ export interface SynthesisRun {
   category?: string;
   targetTurns?: number;
   seedMessages?: Array<{ role: string; content: string }>;
-  settings?: Record<string, unknown>;
+  settings?: Record<string, any>;
   conversationId?: string;
   models: Array<{ provider: string; model: string }>;
   results?: Array<{
@@ -840,7 +840,7 @@ export interface SynthesisRun {
   synthesis?: string;
   status?: string;
   createdAt: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Media ──────────────────────────────────────────────────
@@ -868,7 +868,7 @@ export interface MediaListResponse {
   models: string[];
   projects?: string[];
   usernames?: string[];
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Text Content ───────────────────────────────────────────
@@ -903,13 +903,13 @@ export interface LmStudioModel {
   contextLength?: number;
   architecture?: string;
   vramGiB?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface LmStudioVramEstimate {
   gpuGiB: number;
   totalGiB: number;
-  archParams: Record<string, unknown>;
+  archParams: Record<string, any>;
   totalLayers: number;
 }
 
@@ -926,7 +926,7 @@ export interface ToolUsageStat {
   totalCalls: number;
   totalRequests: number;
   totalCost?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Chat Payloads ──────────────────────────────────────────
@@ -936,7 +936,7 @@ export interface ChatGenerationResult {
   content?: string;
   images?: string[];
   messages?: Message[];
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface ChatPayload {
@@ -960,7 +960,7 @@ export interface ChatPayload {
   thinkingLevel?: string;
   thinkingBudget?: string | number;
   webSearchEnabled?: boolean;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface ImageGenerationResult {
@@ -969,7 +969,7 @@ export interface ImageGenerationResult {
   mimeType?: string;
   minioRef?: string;
   text?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface ImageGenerationPayload {
@@ -980,7 +980,7 @@ export interface ImageGenerationPayload {
   systemPrompt?: string;
   conversationId?: string;
   conversationMeta?: ConversationMeta;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 // ─── Audio ──────────────────────────────────────────────────
@@ -990,7 +990,7 @@ export interface TTSPayload {
   model: string;
   provider: string;
   voice?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface TTSResponse {
@@ -1002,12 +1002,12 @@ export interface TranscriptionPayload {
   audio: string;
   model?: string;
   provider?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface TranscriptionResponse {
   text: string;
-  usage?: Record<string, unknown>;
+  usage?: Record<string, any>;
   estimatedCost?: number;
   totalTime?: number;
 }
@@ -1021,7 +1021,7 @@ export interface EmbeddingPayload {
   audio?: string;
   model?: string;
   provider?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface EmbeddingResponse {
@@ -1074,7 +1074,7 @@ export interface IrisProjectStat {
   project: string;
   totalRequests: number;
   totalCost?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisModelStat {
@@ -1089,14 +1089,14 @@ export interface IrisModelStat {
   conversationCount?: number;
   workflowCount?: number;
   sessionCount?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisTimelineEntry {
   hour?: string;
   totalRequests: number;
   totalCost?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisProviderStat {
@@ -1112,7 +1112,7 @@ export interface IrisProviderStat {
   conversationCount?: number;
   workflowCount?: number;
   sessionCount?: number;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 

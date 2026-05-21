@@ -79,7 +79,7 @@ interface RequestAssociations {
     updatedAt?: string;
     createdAt?: string;
     totalCost?: number;
-    modalities?: Record<string, unknown>;
+    modalities?: Record<string, any>;
     model?: string;
     username?: string;
   }>;
@@ -192,9 +192,9 @@ export default function RequestsPage() {
     const fetchGeneration = fetchGenRef.current;
     try {
       const params = { page, limit: LIMIT, sort, order };
-      if (projectFilter) (params as Record<string, unknown>).project = projectFilter;
+      if (projectFilter) (params as Record<string, any>).project = projectFilter;
       Object.entries(filters).forEach(([k, v]) => {
-        if (v) (params as Record<string, unknown>)[k] = v;
+        if (v) (params as Record<string, any>)[k] = v;
       });
       Object.assign(params, buildDateRangeParams(dateRange));
 
@@ -202,7 +202,7 @@ export default function RequestsPage() {
       if (fetchGeneration !== fetchGenRef.current) return;
       setRequests((data.data || []) as RequestItem[]);
       setTotal(data.total || 0);
-    } catch (error: unknown) {
+    } catch (error: any) {
       if (fetchGeneration !== fetchGenRef.current) return;
       setError(error instanceof Error ? error.message : String(error));
     } finally {
@@ -231,7 +231,7 @@ export default function RequestsPage() {
       debounceTimer = setTimeout(loadRequests, 800);
     };
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: Record<string, unknown>) => {
+      onStatus: (data: Record<string, any>) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
           if (!pollInterval) {
@@ -239,7 +239,7 @@ export default function RequestsPage() {
           }
         }
       },
-      onChange: (event: Record<string, unknown>) => {
+      onChange: (event: Record<string, any>) => {
         if (event.collection === "requests") {
           debouncedLoad();
         }
@@ -314,7 +314,7 @@ export default function RequestsPage() {
       "Latency",
       "Status",
     ].join(",");
-    const rows = requests.map((r: Record<string, unknown>) =>
+    const rows = requests.map((r: Record<string, any>) =>
       [
         r.timestamp || "",
         r.project || "",
@@ -674,19 +674,19 @@ export default function RequestsPage() {
                 </div>
               );
             })()}
-            {(selectedRequest as Record<string, unknown>).requestPayload && (
+            {(selectedRequest as Record<string, any>).requestPayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, unknown>).requestPayload}
+                  data={(selectedRequest as Record<string, any>).requestPayload}
                   label="Request Payload"
                   maxHeight="400px"
                 />
               </div>
             )}
-            {(selectedRequest as Record<string, unknown>).responsePayload && (
+            {(selectedRequest as Record<string, any>).responsePayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, unknown>).responsePayload}
+                  data={(selectedRequest as Record<string, any>).responsePayload}
                   label="Response Payload"
                   maxHeight="400px"
                 />

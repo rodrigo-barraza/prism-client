@@ -227,7 +227,7 @@ export default function BenchmarkDashboardComponent({
     `${s?.provider}:${s?.model}:${s?.thinkingEnabled || false}:${s?.toolsEnabled || false}:${s?.agent || ""}`;
 
   // -- Row click → select model for sidebar detail -----------
-  const handleRowClick = useCallback((stat: unknown) => {
+  const handleRowClick = useCallback((stat: any) => {
     setSelectedModel((prev: any) =>
       statId(prev) === statId(stat) ? null : stat,
     );
@@ -235,7 +235,7 @@ export default function BenchmarkDashboardComponent({
 
   // -- Row class for selected highlight ----------------------
   const getRowClassName = useCallback(
-    (stat: unknown) => {
+    (stat: any) => {
       if (selectedModel && statId(stat) === statId(selectedModel)) {
         return styles.selectedRow;
       }

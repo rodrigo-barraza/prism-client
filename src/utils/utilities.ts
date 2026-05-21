@@ -48,8 +48,8 @@ export function buildLmStudioLoadBody(
     offloadKvCache?: boolean;
     evalBatchSize?: number;
   } = {},
-): Record<string, unknown> {
-  const body: Record<string, unknown> = { model };
+): Record<string, any> {
+  const body: Record<string, any> = { model };
   if (options.contextLength != null)
     body.context_length = options.contextLength;
   if (options.flashAttention != null)
@@ -66,7 +66,7 @@ export function buildLmStudioLoadBody(
  * Providers like Anthropic and Google split prompt tokens into
  * new + cache_read + cache_write. This aggregates all three.
  */
-export function getTotalInputTokens(usage: { inputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number; [key: string]: unknown } | null | undefined): number {
+export function getTotalInputTokens(usage: { inputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number; [key: string]: any } | null | undefined): number {
   if (!usage) return 0;
   return (
     (usage.inputTokens || 0) +
@@ -156,12 +156,12 @@ export interface SessionTokenStats {
   liveStreamingBurstTokens: number;
   liveStreamingBurstElapsed: number;
   liveOutputCharacters: number;
-  workerGenerationProgress: Record<string, unknown> | null;
+  workerGenerationProgress: Record<string, any> | null;
   lastTimeToGeneration: number | null;
   liveProcessingStartTime: number | null;
   liveProcessingPhase: string | null;
   liveTtftSamples: number[] | null;
-  liveGenProgress: Record<string, unknown> | null;
+  liveGenProgress: Record<string, any> | null;
 }
 
 export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
@@ -261,7 +261,7 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
       // in real-time during worker generation (before completion).
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
       // so the count doesn't reset when workers transition between phases.
-      for (const wp of Object.values(m._workerGenerationProgress) as Record<string, unknown>[]) {
+      for (const wp of Object.values(m._workerGenerationProgress) as Record<string, any>[]) {
         const count = (wp.totalOutputTokens || wp.outputTokens || 0) as number;
         if (count > 0) {
           output += count;

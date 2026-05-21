@@ -34,7 +34,7 @@ export interface IrisRequestListResponse {
 }
 
 export interface IrisStatsResponse {
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface IrisConversationListResponse {
@@ -95,7 +95,7 @@ function toSearchParams(params: QueryParams): string {
 /**
  * Shared fetch helper for IrisService.
  */
-async function fetchJSON<T = unknown>(path: string, options: RequestInit = {}, admin = true): Promise<T> {
+async function fetchJSON<T = any>(path: string, options: RequestInit = {}, admin = true): Promise<T> {
   const prefix = admin ? "/admin" : "";
   const response = await fetch(`${API_BASE}${prefix}${path}`, {
     headers: getAdminHeaders(),
@@ -119,8 +119,8 @@ export default class IrisService {
     return fetchJSON<IrisRequestEntry>(`/requests/${id}`);
   }
 
-  static async getRequestAssociations(id: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/requests/${id}/associations`);
+  static async getRequestAssociations(id: string): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>(`/requests/${id}/associations`);
   }
 
   // -- Stats -------------------------------------------------
@@ -139,9 +139,9 @@ export default class IrisService {
     return fetchJSON<IrisModelStat[]>(`/stats/models${query ? `?${query}` : ""}`);
   }
 
-  static async getEndpointStats(params: QueryParams = {}): Promise<Array<Record<string, unknown>>> {
+  static async getEndpointStats(params: QueryParams = {}): Promise<Array<Record<string, any>>> {
     const query = toSearchParams(params);
-    return fetchJSON<Array<Record<string, unknown>>>(`/stats/endpoints${query ? `?${query}` : ""}`);
+    return fetchJSON<Array<Record<string, any>>>(`/stats/endpoints${query ? `?${query}` : ""}`);
   }
 
   static async getTimeline(hours = 24, params: QueryParams = {}): Promise<IrisTimelineResponse> {
@@ -165,8 +165,8 @@ export default class IrisService {
     return fetchJSON<Conversation>(`/conversations/${id}`);
   }
 
-  static async getConversationFilters(): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>("/conversations/filters");
+  static async getConversationFilters(): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>("/conversations/filters");
   }
 
   static async getConversationWorkflows(id: string): Promise<Workflow[]> {
@@ -174,8 +174,8 @@ export default class IrisService {
   }
 
   // -- Live --------------------------------------------------
-  static async getLiveActivity(minutes = 5): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/live?minutes=${minutes}`);
+  static async getLiveActivity(minutes = 5): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>(`/live?minutes=${minutes}`);
   }
 
   static async getConversationStats(project: string | null = null): Promise<IrisConversationStatsResponse> {
@@ -233,16 +233,16 @@ export default class IrisService {
   static async loadLmStudioModel(
     model: string,
     options: { contextLength?: number; flashAttention?: boolean; offloadKvCache?: boolean; evalBatchSize?: number } = {},
-  ): Promise<Record<string, unknown>> {
+  ): Promise<Record<string, any>> {
     const body = buildLmStudioLoadBody(model, options);
-    return fetchJSON<Record<string, unknown>>("/lm-studio/load", {
+    return fetchJSON<Record<string, any>>("/lm-studio/load", {
       method: "POST",
       body: JSON.stringify(body),
     });
   }
 
-  static async unloadLmStudioModel(instanceId: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>("/lm-studio/unload", {
+  static async unloadLmStudioModel(instanceId: string): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>("/lm-studio/unload", {
       method: "POST",
       body: JSON.stringify({ instance_id: instanceId }),
     });
@@ -250,7 +250,7 @@ export default class IrisService {
 
   static async estimateLmStudioMemory(
     model: string,
-    config: Record<string, unknown> = {},
+    config: Record<string, any> = {},
   ): Promise<LmStudioVramEstimate> {
     return fetchJSON<LmStudioVramEstimate>("/lm-studio/estimate", {
       method: "POST",
@@ -264,8 +264,8 @@ export default class IrisService {
     return fetchJSON<IrisPaginatedResponse>(`/workflows${query ? `?${query}` : ""}`);
   }
 
-  static async getWorkflow(id: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/workflows/${id}`);
+  static async getWorkflow(id: string): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>(`/workflows/${id}`);
   }
 
   // -- Traces ----------------------------------------------
@@ -274,16 +274,16 @@ export default class IrisService {
     return fetchJSON<IrisPaginatedResponse>(`/traces${query ? `?${query}` : ""}`);
   }
 
-  static async getTrace(id: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/traces/${id}`);
+  static async getTrace(id: string): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>(`/traces/${id}`);
   }
 
-  static async getSessionStats(agentSessionId: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/sessions/${agentSessionId}/stats`);
+  static async getSessionStats(agentSessionId: string): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>(`/sessions/${agentSessionId}/stats`);
   }
 
-  static async getSessionRequests(agentSessionId: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/sessions/${agentSessionId}/requests`);
+  static async getSessionRequests(agentSessionId: string): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>(`/sessions/${agentSessionId}/requests`);
   }
 
   // -- Agent Sessions (admin) --------------------------------
@@ -292,8 +292,8 @@ export default class IrisService {
     return fetchJSON<IrisPaginatedResponse>(`/agent-sessions${query ? `?${query}` : ""}`);
   }
 
-  static async getAgentSession(id: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/agent-sessions/${id}`);
+  static async getAgentSession(id: string): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>(`/agent-sessions/${id}`);
   }
 
   // -- Media -------------------------------------------------
@@ -317,12 +317,12 @@ export default class IrisService {
     return config;
   }
 
-  static async getLocalConfig(): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>("/config-local", {}, false);
+  static async getLocalConfig(): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>("/config-local", {}, false);
   }
 
   // -- Rate Limits -------------------------------------------
-  static async getRateLimits(): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>("/config/rate-limits", {}, false);
+  static async getRateLimits(): Promise<Record<string, any>> {
+    return fetchJSON<Record<string, any>>("/config/rate-limits", {}, false);
   }
 }

@@ -39,11 +39,11 @@ export default function AgentCardComponent({
       const fcModels = models.filter((m: any) =>
         m.tools?.includes("Tool Calling"),
       );
-      if (fcModels.length > 0) (filteredTextModels as Record<string, unknown>)[provider] = fcModels;
+      if (fcModels.length > 0) (filteredTextModels as Record<string, any>)[provider] = fcModels;
     }
 
     const filteredProviderList = (config.providerList || []).filter(
-      (p: any) => (filteredTextModels as Record<string, unknown>)[p],
+      (p: any) => (filteredTextModels as Record<string, any>)[p],
     );
 
     return {
@@ -69,7 +69,7 @@ export default function AgentCardComponent({
     [agent.provider, agent.modelName],
   );
 
-  const handlePickerSelect = (provider: unknown, name: unknown) => {
+  const handlePickerSelect = (provider: any, name: any) => {
     onChangeModel?.(agent.instanceId, provider, name);
   };
 

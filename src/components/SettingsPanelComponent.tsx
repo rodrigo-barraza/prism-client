@@ -764,8 +764,8 @@ export default function SettingsPanel({
                     onChange: (value: boolean) => {
                       const updates = { codeExecutionEnabled: value };
                       if (value) {
-                        (updates as unknown as Record<string, unknown>).webSearchEnabled = false;
-                        (updates as unknown as Record<string, unknown>).urlContextEnabled = false;
+                        (updates as unknown as Record<string, any>).webSearchEnabled = false;
+                        (updates as unknown as Record<string, any>).urlContextEnabled = false;
                       }
                       onChange(updates);
                     },

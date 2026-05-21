@@ -30,7 +30,7 @@ const AGENT_IMAGES: Record<string, string> = {
  * Icon mapping per agent ID — built-in agents only.
  * Custom agents use the `icon` field stored in their data.
  */
-const AGENT_ICONS: Record<string, unknown> = {
+const AGENT_ICONS: Record<string, any> = {
   NONE: MessageSquare,
   CODING: Bot,
   OMNI: Infinity,
@@ -90,7 +90,7 @@ export default function AgentPickerComponent({
     : agents.find((a: any) => a.id === activeAgentId) || agents[0];
 
   const handleSelect = useCallback(
-    (agentId: unknown) => {
+    (agentId: any) => {
       if (agentId !== activeAgentId) {
         onSelect?.(agentId);
       }

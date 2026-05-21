@@ -148,7 +148,7 @@ export default function StatusBarComponent({
       : null;
 
   // Strip trailing " 45%" / " done" from label when structured progress is shown via chip
-  const rawLabel = label || (PHASE_LABELS as Record<string, unknown>)[phase] || "Starting...";
+  const rawLabel = label || (PHASE_LABELS as Record<string, any>)[phase] || "Starting...";
   const hasEffectiveProgress =
     effectiveProgress != null && effectiveProgress >= 0;
   const resolvedLabel = hasEffectiveProgress
@@ -157,7 +157,7 @@ export default function StatusBarComponent({
         .replace(/[\u2026.]+\s*done$/i, "\u2026")
     : rawLabel;
   const resolvedIcon =
-    icon !== undefined ? icon : (PHASE_ICONS as Record<string, unknown>)[phase] || null;
+    icon !== undefined ? icon : (PHASE_ICONS as Record<string, any>)[phase] || null;
 
   // Rainbow visuals: colour when the model is actively producing tokens (text or reasoning)
   const isColorPhase =
@@ -169,7 +169,7 @@ export default function StatusBarComponent({
 
   // Resolve per-phase canvas palette (null = default rainbow)
   const activePalette =
-    active && isColorPhase ? (PHASE_PALETTES as Record<string, unknown>)[phase] || null : null;
+    active && isColorPhase ? (PHASE_PALETTES as Record<string, any>)[phase] || null : null;
 
   // Progress percentage
   const progressPct = hasEffectiveProgress

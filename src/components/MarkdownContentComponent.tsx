@@ -55,7 +55,7 @@ function FencedCodeBlock({ language, children }: FencedCodeBlockProps) {
 }
 
 interface CodeBlockProps extends React.ComponentPropsWithoutRef<"code"> {
-  node?: unknown;
+  node?: any;
 }
 
 function CodeBlock({ children, className, node, ...rest }: CodeBlockProps) {
@@ -117,7 +117,7 @@ function AutoResizeEmbed({ src, title, fallbackHeight, className }: AutoResizeEm
 }
 
 interface ImageOrEmbedProps extends React.ComponentPropsWithoutRef<"img"> {
-  node?: unknown;
+  node?: any;
 }
 
 function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
