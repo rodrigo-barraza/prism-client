@@ -6,6 +6,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import { WorkspaceProvider } from "../components/WorkspaceContextComponent";
 import "./globals.css";
+import SessionTrackerComponent from "@/components/SessionTrackerComponent";
 
 // Force all pages to render dynamically — prevents SSG prerender
 // failures during Docker builds when Vault/Prism APIs are unreachable
@@ -44,7 +45,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={inter.variable}>
         <ThemeProvider storageKey="prism:theme" defaultTheme="light">
           <ComponentsProvider sound>
-            <WorkspaceProvider>{children}</WorkspaceProvider>
+            <WorkspaceProvider>
+              {children}
+              <SessionTrackerComponent />
+            </WorkspaceProvider>
           </ComponentsProvider>
         </ThemeProvider>
       </body>
