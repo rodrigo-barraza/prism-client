@@ -20,6 +20,22 @@ import styles from "./SpinningCatComponent.module.css";
  *   className – optional extra class
  */
 
+interface DecodedFrame {
+  dims: { width: number; height: number; left: number; top: number };
+  disposalType: number;
+  delay: number;
+  patch: ArrayBuffer;
+}
+
+interface AnimationState {
+  frameIndex: number;
+  elapsed: number;
+  accelTime: number;
+  speedMultiplier: number;
+  lastTimestamp: number;
+  windingDown: boolean;
+}
+
 const BASE_SPEED = 0.2; // Start at 20% of original GIF speed
 const ACCEL_COEFFICIENT = 0.08; // Quadratic ramp: speedMultiplier = BASE_SPEED + ACCEL × t²
 const DECEL_SMOOTHING = 0.03; // Exponential decay back to base when stopping
@@ -34,10 +50,11 @@ const MAX_GLOW_OPACITY = 0.9; // Maximum glow drop-shadow opacity
  * Render a single pre-decoded ImageBitmap frame onto the canvas.
  * GPU-composited — no pixel data manipulation at draw time.
  */
-function renderFrame(canvas: HTMLCanvasElement, frames: Array<{dims: {width: number; height: number; left: number; top: number}; disposalType: number}>, bitmaps: ImageBitmap[], index: number) {
+function renderFrame(canvas: HTMLCanvasElement | null, frames: DecodedFrame[], bitmaps: ImageBitmap[], index: number) {
   if (!canvas || !bitmaps?.length) return;
 
   const context = canvas.getContext("2d");
+  if (!context) return;
   const frame = frames[index];
   const bitmap = bitmaps[index];
   if (!frame || !bitmap) return;
@@ -52,14 +69,17 @@ function renderFrame(canvas: HTMLCanvasElement, frames: Array<{dims: {width: num
 export default function SpinningCatComponent({
   animate = false,
   className = "",
-}: unknown) {
+}: {
+  animate?: boolean;
+  className?: string;
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const framesRef = useRef<HTMLCanvasElement | null>(null); // Raw frame metadata (dims, delay, disposalType)
-  const bitmapsRef = useRef<HTMLCanvasElement | null>(null); // Pre-decoded ImageBitmap textures
+  const framesRef = useRef<DecodedFrame[] | null>(null);
+  const bitmapsRef = useRef<ImageBitmap[] | null>(null);
   const rafRef = useRef<number | null>(null);
   // visuallyActive stays true during the wind-down deceleration
   const [visuallyActive, setVisuallyActive] = useState(false);
-  const stateRef = useRef<{frameIndex: number; timer: ReturnType<typeof setTimeout> | null; running: boolean}>({
+  const stateRef = useRef<AnimationState>({
     frameIndex: 0,
     elapsed: 0,
     accelTime: 0,
@@ -67,7 +87,7 @@ export default function SpinningCatComponent({
     lastTimestamp: 0,
     windingDown: false,
   });
-  const animateRef = useRef<(() => void)>(animate);
+  const animateRef = useRef<boolean>(animate);
 
   useEffect(() => {
     animateRef.current = animate;
@@ -111,14 +131,14 @@ export default function SpinningCatComponent({
           return;
         }
 
-        framesRef.current = frames;
+        framesRef.current = frames as DecodedFrame[];
         bitmapsRef.current = bitmaps;
 
         const canvas = canvasRef.current;
         if (canvas && frames.length > 0) {
-          (canvas as HTMLCanvasElement).width = frames[0].dims.width;
-          (canvas as HTMLCanvasElement).height = frames[0].dims.height;
-          renderFrame(canvas, frames, bitmaps, 0);
+          canvas.width = frames[0].dims.width;
+          canvas.height = frames[0].dims.height;
+          renderFrame(canvas, frames as DecodedFrame[], bitmaps, 0);
         }
       } catch (error: unknown) {
         console.error("SpinningCatComponent: failed to decode GIF", error);
@@ -128,19 +148,21 @@ export default function SpinningCatComponent({
     return () => {
       cancelled = true;
       // Release ImageBitmap GPU resources on unmount
-      (bitmapsRef.current as ImageBitmap[]).forEach((b) => b.close());
+      bitmapsRef.current?.forEach((b) => b.close());
       bitmapsRef.current = null;
     };
   }, []);
 
   // -- Main animation loop (always running, speed-controlled) ---
-  const tickRef = useRef<unknown>(null);
+  const tickRef = useRef<((now: number) => void) | null>(null);
 
   useEffect(() => {
-    const loop = (now: unknown) => {
+    const loop = (now: number) => {
       const frames = framesRef.current;
       const bitmaps = bitmapsRef.current;
-      if (!(frames as unknown[]).length || !(bitmaps as unknown[]).length) {
+
+      // Refs not populated yet — GIF still decoding, retry next frame
+      if (!frames?.length || !bitmaps?.length) {
         rafRef.current = requestAnimationFrame(loop);
         return;
       }
@@ -164,7 +186,7 @@ export default function SpinningCatComponent({
         s.windingDown = false;
         setVisuallyActive(false);
         // Reset inline FX styles
-        const wrapper = (canvasRef.current as HTMLCanvasElement).parentElement;
+        const wrapper = canvasRef.current?.parentElement;
         if (wrapper) {
           wrapper.style.transform = "translate(-50%, -50%)";
           wrapper.style.filter = "";
@@ -172,25 +194,25 @@ export default function SpinningCatComponent({
       }
 
       const frame = frames[s.frameIndex];
-      const baseDelay = (frame as Record<string, unknown>).delay || 100;
+      if (!frame) {
+        s.frameIndex = 0;
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
+      const baseDelay = frame.delay || 100;
       const effectiveDelay = baseDelay / s.speedMultiplier;
 
       s.elapsed += dt;
 
       if (s.elapsed >= effectiveDelay) {
         s.elapsed = 0;
-        s.frameIndex = (s.frameIndex + 1) % (frames as unknown[]).length;
+        s.frameIndex = (s.frameIndex + 1) % frames.length;
 
         if (s.frameIndex === 0) {
           const canvas = canvasRef.current;
           if (canvas) {
-            const context = (canvas as HTMLCanvasElement).getContext("2d");
-            context.clearRect(
-              0,
-              0,
-              (canvas as HTMLCanvasElement).width,
-              (canvas as HTMLCanvasElement).height,
-            );
+            const context = canvas.getContext("2d");
+            context?.clearRect(0, 0, canvas.width, canvas.height);
           }
         }
 
@@ -212,7 +234,7 @@ export default function SpinningCatComponent({
         const glowRadius = intensity * MAX_GLOW_RADIUS;
         const glowOpacity = intensity * MAX_GLOW_OPACITY;
 
-        const wrapper = (canvasRef.current as HTMLCanvasElement).parentElement;
+        const wrapper = canvasRef.current?.parentElement;
         if (wrapper) {
           wrapper.style.transform = `translate(-50%, -50%) scale(${scale})`;
           wrapper.style.filter = `brightness(${brightness}) drop-shadow(0 0 ${glowRadius}px rgba(255,255,255,${glowOpacity}))`;
