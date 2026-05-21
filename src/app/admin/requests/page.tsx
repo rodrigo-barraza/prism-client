@@ -100,7 +100,7 @@ export default function RequestsPage() {
   // Detect transitions: was "just now" → no longer → trigger fade
   useEffect(() => {
     const previousJustNowIds = prevJustNowIds.current;
-    for (const id of prev) {
+    for (const id of previousJustNowIds) {
       if (!justNowIds.has(id) && !fadingTimers.current.has(id)) {
         setFadingIds((s: Set<string>) => {
           const n = new Set(s);
