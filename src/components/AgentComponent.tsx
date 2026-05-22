@@ -295,6 +295,8 @@ interface ClientMessage extends Message {
   _snapshot?: any;
   statusPhase?: string;
   synthetic?: boolean;
+  /** UI-only status marker for in-flight messages (e.g. 'thinking', 'processing') */
+  status?: string;
 }
 
 export interface AgentComponentProps {

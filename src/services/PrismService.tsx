@@ -80,7 +80,7 @@ export default class PrismService {
 
 
    */
-  static async _request<T = any>(endpoint: string, { method = "POST", body }: { method?: string; body?: any } = {}): Promise<T> {
+  static async _request<T = unknown>(endpoint: string, { method = "POST", body }: { method?: string; body?: unknown } = {}): Promise<T> {
     const response = await fetch(`${API_BASE}${endpoint}`, {
       method,
       headers: getHeaders(),
@@ -352,7 +352,7 @@ export default class PrismService {
 
 
    */
-  static async addFavorite(type: string, key: string, meta: Record<string, any> = {}): Promise<Favorite> {
+  static async addFavorite(type: string, key: string, meta: Record<string, string | number | boolean> = {}): Promise<Favorite> {
     return PrismService._request<Favorite>("/favorites", { body: { type, key, meta } });
   }
 
@@ -536,8 +536,8 @@ export default class PrismService {
    * Trigger memory consolidation for a project.
 
    */
-  static async consolidateMemories(project: string, agent?: string): Promise<Record<string, any>> {
-    return PrismService._request<Record<string, any>>("/agent-memories/consolidate", {
+  static async consolidateMemories(project: string, agent?: string): Promise<{ merged: number; created: number }> {
+    return PrismService._request<{ merged: number; created: number }>("/agent-memories/consolidate", {
       method: "POST",
       body: { project, ...(agent ? { agent } : {}) },
     });
@@ -548,11 +548,11 @@ export default class PrismService {
 
 
    */
-  static async getConsolidationHistory(project?: string, limit = 10): Promise<{ history: Record<string, any>[] }> {
+  static async getConsolidationHistory(project?: string, limit = 10): Promise<{ history: Array<{ _id: string; project: string; createdAt: string; merged: number; created: number }> }> {
     const qs = new URLSearchParams();
     if (project) qs.set("project", project);
     if (limit) qs.set("limit", String(limit));
-    return PrismService._request<{ history: Record<string, any>[] }>(
+    return PrismService._request<{ history: Array<{ _id: string; project: string; createdAt: string; merged: number; created: number }> }>(
       `/agent-memories/consolidation-history?${qs}`,
       { method: "GET" },
     );
@@ -737,7 +737,7 @@ export default class PrismService {
     answerOrAnswers: string | Array<{ answer: string | string[]; annotations?: string }>,
   ): Promise<{ ok: boolean }> {
     // Normalize: structured array vs simple string
-    const body: Record<string, any> = { agentSessionId };
+    const body: { agentSessionId: string; answer?: string; answers?: Array<{ answer: string | string[]; annotations?: string }> } = { agentSessionId };
     if (Array.isArray(answerOrAnswers)) {
       body.answers = answerOrAnswers;
     } else {
@@ -758,7 +758,7 @@ export default class PrismService {
    */
   static _streamSSE(
     endpoint: string,
-    { method = "POST", body }: { method?: string; body?: any } = {},
+    { method = "POST", body }: { method?: string; body?: unknown } = {},
     callbacks: SSECallbacks = {},
   ): () => void {
     const { onError } = callbacks;
@@ -802,7 +802,7 @@ export default class PrismService {
             try {
               const data = JSON.parse(json);
               PrismService._dispatchSSE(data, callbacks);
-            } catch (parseErr: any) {
+            } catch (parseErr: unknown) {
               if (json.length > 0) {
                 console.warn(
                   `[PrismService] SSE JSON parse failed (${json.length} chars):`,
@@ -813,7 +813,7 @@ export default class PrismService {
             }
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         if ((error as Error).name === "AbortError") return;
         if (onError) onError(error as Error);
       }
@@ -883,7 +883,7 @@ export default class PrismService {
         onToolCall?.({
           id: data.id as string,
           name: data.name as string,
-          args: data.args as Record<string, any>,
+          args: data.args as Record<string, unknown>,
           result: data.result,
           status: data.status as string | undefined,
           thoughtSignature: data.thoughtSignature as string | undefined,
@@ -987,7 +987,7 @@ export default class PrismService {
       conversationMeta,
       ...rest
     } = payload;
-    const userMessage: Record<string, any> = {
+    const userMessage: { role: string; content: string; images?: string[] } = {
       role: "user",
       content: prompt || "",
     };
@@ -999,7 +999,14 @@ export default class PrismService {
       });
     }
 
-    const body: Record<string, any> = {
+    const body: {
+      model: string;
+      provider: string;
+      messages: typeof userMessage[];
+      systemPrompt?: string;
+      conversationId?: string;
+      conversationMeta?: ConversationMeta;
+    } & Record<string, unknown> = {
       ...rest,
       messages: [userMessage],
     };
@@ -1007,15 +1014,15 @@ export default class PrismService {
     if (conversationId) body.conversationId = conversationId;
     if (conversationMeta) body.conversationMeta = conversationMeta;
 
-    return PrismService._request<Record<string, any>>("/chat?stream=false", { body });
+    return PrismService._request<ImageGenerationResult>("/chat?stream=false", { body });
   }
 
   /**
    * Caption / describe an image (image-to-text).
 
    */
-  static async captionImage(payload: ChatPayload): Promise<Record<string, any>> {
-    return PrismService._request<Record<string, any>>("/chat?stream=false", { body: payload });
+  static async captionImage(payload: ChatPayload): Promise<ChatGenerationResult> {
+    return PrismService._request<ChatGenerationResult>("/chat?stream=false", { body: payload });
   }
 
   /**
@@ -1185,8 +1192,8 @@ export default class PrismService {
 
 
    */
-  static async loadLmStudioModel(model: string, options: Record<string, any> = {}): Promise<Record<string, any>> {
-    return PrismService._request<Record<string, any>>("/lm-studio/load", {
+  static async loadLmStudioModel(model: string, options: Record<string, unknown> = {}): Promise<{ success: boolean; instance_id?: string }> {
+    return PrismService._request<{ success: boolean; instance_id?: string }>("/lm-studio/load", {
       body: buildLmStudioLoadBody(model, options),
     });
   }
@@ -1196,8 +1203,8 @@ export default class PrismService {
 
 
    */
-  static async unloadLmStudioModel(instanceId: string): Promise<Record<string, any>> {
-    return PrismService._request<Record<string, any>>("/lm-studio/unload", {
+  static async unloadLmStudioModel(instanceId: string): Promise<{ success: boolean }> {
+    return PrismService._request<{ success: boolean }>("/lm-studio/unload", {
       body: { instance_id: instanceId },
     });
   }
@@ -1205,7 +1212,7 @@ export default class PrismService {
   /**
    * Estimate VRAM usage for an LM Studio model.
    */
-  static async estimateLmStudioMemory(model: string, config: Record<string, any> = {}): Promise<LmStudioVramEstimate> {
+  static async estimateLmStudioMemory(model: string, config: Record<string, unknown> = {}): Promise<LmStudioVramEstimate> {
     return PrismService._request<LmStudioVramEstimate>("/lm-studio/estimate", {
       body: { model, ...config },
     });
@@ -1216,7 +1223,7 @@ export default class PrismService {
    */
   static loadLmStudioModelStream(
     model: string,
-    options: Record<string, any> = {},
+    options: Record<string, unknown> = {},
     callbacks: { onProgress?: (pct: number) => void; onComplete?: () => void; onError?: (err: Error) => void } = {},
   ): () => void {
     const { onProgress, onComplete, onError } = callbacks;
@@ -1263,7 +1270,7 @@ export default class PrismService {
 
         if (onProgress) onProgress(1);
         if (onComplete) onComplete();
-      } catch (error: any) {
+      } catch (error: unknown) {
         clearInterval(progressInterval);
         if ((error as Error).name === "AbortError") return;
         if (onError) onError(error as Error);
@@ -1390,8 +1397,8 @@ export default class PrismService {
    * Check if a benchmark has an active (in-progress) run.
 
    */
-  static async getBenchmarkActive(id: string): Promise<Record<string, any>> {
-    return PrismService._request<Record<string, any>>(`/benchmark/${id}/active`, { method: "GET" });
+  static async getBenchmarkActive(id: string): Promise<{ active: boolean; runId?: string }> {
+    return PrismService._request<{ active: boolean; runId?: string }>(`/benchmark/${id}/active`, { method: "GET" });
   }
 
   /**

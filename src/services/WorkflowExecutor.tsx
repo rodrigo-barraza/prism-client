@@ -7,9 +7,19 @@ import { generateUUID } from "../utils/utilities";
 
 // ─── Local types ─────────────────────────────────────────────
 
+/** Loose message shape used during workflow execution — covers piped/merged messages */
+interface WorkflowMessage {
+  role?: string;
+  content?: string;
+  images?: string[];
+  audio?: string[];
+  video?: string[];
+  pdf?: string[];
+}
+
 interface WorkflowInputDatum {
   type: string;
-  data: any;
+  data: unknown;
   sourceNodeId: string | null;
 }
 
@@ -18,9 +28,28 @@ interface WorkflowOutputs {
   image?: string;
   audio?: string;
   embedding?: number[];
-  conversation?: any[];
-  tools?: { schemas: any[]; customMap: Map<string, any> };
-  [key: string]: any;
+  conversation?: unknown[];
+  tools?: { schemas: ToolSchemaEntry[]; customMap: Map<string, WorkflowCustomTool> };
+  [key: string]: unknown;
+}
+
+/** OpenAI-format tool schema entry used inside workflow tool nodes */
+interface ToolSchemaEntry {
+  type: string;
+  function: {
+    name: string;
+    description?: string;
+    parameters?: Record<string, unknown>;
+  };
+}
+
+/** Minimal custom tool representation used in workflow executor */
+interface WorkflowCustomTool {
+  name: string;
+  description?: string;
+  parameters?: Array<{ name: string; type?: string; description?: string; required?: boolean; enum?: string[] }>;
+  implementation?: string;
+  _id?: string;
 }
 
 interface MediaRef {
@@ -36,17 +65,16 @@ interface WorkflowModelNode {
   label?: string;
   provider?: string;
   modelName?: string;
-  modality?: string;
+  modality?: string | null;
   content?: string;
   systemPrompt?: string;
   userPrompt?: string;
   outputTypes?: string[];
-  messages?: Array<Record<string, any>>;
-  staticInputs?: Record<string, any>;
+  messages?: WorkflowMessage[];
+  staticInputs?: Record<string, unknown>;
   disabledTools?: string[];
-  builtInTools?: Array<Record<string, any>>;
-  customTools?: Array<Record<string, any>>;
-  [key: string]: any;
+  builtInTools?: Array<{ name: string; description?: string; parameters?: Record<string, unknown> }>;
+  customTools?: WorkflowCustomTool[];
 }
 
 interface WorkflowEdge {
@@ -55,15 +83,14 @@ interface WorkflowEdge {
   targetNodeId: string;
   sourceModality: string;
   targetModality: string;
-  [key: string]: any;
 }
 
 interface WorkflowCallbacks {
   onNodeStart?: (nodeId: string) => void;
   onNodeComplete?: (nodeId: string, outputs: WorkflowOutputs) => void;
-  onNodeError?: (nodeId: string, error: any) => void;
+  onNodeError?: (nodeId: string, error: unknown) => void;
   onViewerPartial?: (nodeId: string, outputs: WorkflowOutputs) => void;
-  onNodeContentUpdate?: (nodeId: string, data: any) => void;
+  onNodeContentUpdate?: (nodeId: string, data: unknown) => void;
 }
 
 /**
@@ -96,7 +123,7 @@ function resolveEndpoint(node: WorkflowModelNode, inputData: WorkflowInputDatum[
  * Resolve a minio:// or other file ref to a fetchable URL, then convert to base64 data URL.
  * Also handles object refs like { imageData, mimeType } from chat API responses.
  */
-async function resolveToDataUrl(ref: any): Promise<string | null> {
+async function resolveToDataUrl(ref: unknown): Promise<string | null> {
   if (!ref) return null;
   // Object with inline base64 data (chat API image format: { data, mimeType, minioRef })
   if (typeof ref === "object" && ref !== null) {
@@ -124,7 +151,7 @@ async function resolveToDataUrl(ref: any): Promise<string | null> {
 async function executeModelNode(
   node: WorkflowModelNode,
   inputData: WorkflowInputDatum[],
-  { onNodeContentUpdate, toolSchemas, customToolMap }: { onNodeContentUpdate?: WorkflowCallbacks['onNodeContentUpdate']; toolSchemas?: any[] | null; customToolMap?: Map<string, any> | null } = {},
+  { onNodeContentUpdate, toolSchemas, customToolMap }: { onNodeContentUpdate?: WorkflowCallbacks['onNodeContentUpdate']; toolSchemas?: ToolSchemaEntry[] | null; customToolMap?: Map<string, WorkflowCustomTool> | null } = {},
 ) {
   const endpoint = resolveEndpoint(node, inputData);
   const outputs: WorkflowOutputs = {};
@@ -179,33 +206,33 @@ async function executeModelNode(
       return fields;
     };
 
-    let finalMessages: any[];
+    let finalMessages: WorkflowMessage[];
 
     // Priority: conversation input > node.messages > legacy systemPrompt/userPrompt
     if (conversationParts.length > 0) {
       // Use the first conversation input as the base messages, filtering out empty ones
-      finalMessages = (conversationParts[0] as any[])
-        .map((m: any) => ({
+      finalMessages = (conversationParts[0] as WorkflowMessage[])
+        .map((m) => ({
           role: m.role,
           content: m.content || "",
-          ...(m.images?.length > 0 ? { images: m.images } : {}),
-          ...(m.audio?.length > 0 ? { audio: m.audio } : {}),
-          ...(m.video?.length > 0 ? { video: m.video } : {}),
-          ...(m.pdf?.length > 0 ? { pdf: m.pdf } : {}),
+          ...(m.images && m.images.length > 0 ? { images: m.images } : {}),
+          ...(m.audio && m.audio.length > 0 ? { audio: m.audio } : {}),
+          ...(m.video && m.video.length > 0 ? { video: m.video } : {}),
+          ...(m.pdf && m.pdf.length > 0 ? { pdf: m.pdf } : {}),
         }))
         .filter(
-          (m: any) =>
+          (m) =>
             m.content ||
-            m.images?.length > 0 ||
-            m.audio?.length > 0 ||
-            m.video?.length > 0 ||
-            m.pdf?.length > 0,
+            (m.images && m.images.length > 0) ||
+            (m.audio && m.audio.length > 0) ||
+            (m.video && m.video.length > 0) ||
+            (m.pdf && m.pdf.length > 0),
         );
 
       // Append piped text/media to the last user message (or add a new one)
       const lastUserIdx = finalMessages
-        .map((m: any, i: number) => ({ m, i }))
-        .filter(({ m }: any) => m.role === "user")
+        .map((m, i: number) => ({ m, i }))
+        .filter(({ m }) => (m as Record<string, unknown>).role === "user")
         .pop()?.i;
       if (lastUserIdx !== undefined && (pipedText || hasMedia)) {
         const lastUser = finalMessages[lastUserIdx];
@@ -227,19 +254,19 @@ async function executeModelNode(
       }
     } else if (node.messages && node.messages.length > 0) {
       // Use the full conversation messages array, preserving all media
-      finalMessages = node.messages.map((m: any) => ({
+      finalMessages = node.messages.map((m) => ({
         role: m.role,
         content: m.content || "",
-        ...(m.images?.length > 0 ? { images: m.images } : {}),
-        ...(m.audio?.length > 0 ? { audio: m.audio } : {}),
-        ...(m.video?.length > 0 ? { video: m.video } : {}),
-        ...(m.pdf?.length > 0 ? { pdf: m.pdf } : {}),
+        ...(m.images && m.images.length > 0 ? { images: m.images } : {}),
+        ...(m.audio && m.audio.length > 0 ? { audio: m.audio } : {}),
+        ...(m.video && m.video.length > 0 ? { video: m.video } : {}),
+        ...(m.pdf && m.pdf.length > 0 ? { pdf: m.pdf } : {}),
       }));
 
       // Append piped text/media to the last user message (or add a new one)
       const lastUserIdx = finalMessages
-        .map((m: any, i: number) => ({ m, i }))
-        .filter(({ m }: any) => m.role === "user")
+        .map((m, i: number) => ({ m, i }))
+        .filter(({ m }) => m.role === "user")
         .pop()?.i;
       if (lastUserIdx !== undefined && (pipedText || hasMedia)) {
         const lastUser = finalMessages[lastUserIdx];
@@ -277,9 +304,9 @@ async function executeModelNode(
       conversationId,
       conversationMeta,
       ...(toolSchemas != null && {
-        enabledTools: toolSchemas.map((t: any) => t.name || t.function?.name),
+        enabledTools: toolSchemas.map((t) => t.function?.name || ''),
       }),
-    } as import("../types/types").ChatPayload;
+    } as unknown as import("../types/types").ChatPayload;
 
     // Route through /agent for tool-enabled runs, /chat for simple text
     const result =
@@ -328,7 +355,7 @@ async function executeModelNode(
     }
   } else if (endpoint === "textToImage") {
     const pipedPrompt =
-      inputData.find((d) => d.type === "text")?.data || "";
+      (inputData.find((d) => d.type === "text")?.data as string) || "";
     const rawImages = inputData
       .filter((d) => d.type === "image")
       .map((d) => d.data);
@@ -342,15 +369,15 @@ async function executeModelNode(
 
     if (conversationParts.length > 0) {
       // Extract from conversation input: system message → systemPrompt, user messages → prompt + images
-      const convMessages = (conversationParts[0] as any[]).filter(
-        (m: any) => m.content || m.images?.length > 0 || m.audio,
+      const convMessages = (conversationParts[0] as WorkflowMessage[]).filter(
+        (m) => m.content || (m.images && m.images.length > 0) || m.audio,
       );
-      const systemMsg = convMessages.find((m: any) => m.role === "system");
+      const systemMsg = convMessages.find((m) => m.role === "system");
       const userMsgs = convMessages.filter((m) => m.role === "user");
-      const lastUser: any = userMsgs[userMsgs.length - 1];
+      const lastUser = userMsgs[userMsgs.length - 1];
 
-      systemPrompt = systemMsg?.content || undefined;
-      const userContent = lastUser?.content || "";
+      systemPrompt = (systemMsg?.content as string) || undefined;
+      const userContent = (lastUser?.content as string) || "";
       prompt = pipedPrompt
         ? userContent
           ? `${userContent}\n\n${pipedPrompt}`
@@ -358,17 +385,17 @@ async function executeModelNode(
         : userContent;
 
       // Collect images from all user messages
-      userMsgs.forEach((m: any) => {
-        if (m.images?.length > 0) messageImages.push(...m.images);
+      userMsgs.forEach((m) => {
+        if (m.images && m.images.length > 0) messageImages.push(...m.images);
       });
     } else if (node.messages && node.messages.length > 0) {
       // Extract from messages array: last user message = prompt, system message = systemPrompt
-      const systemMsg = node.messages.find((m: any) => m.role === "system");
+      const systemMsg = node.messages.find((m) => m.role === "system");
       const userMsgs = node.messages.filter((m) => m.role === "user");
-      const lastUser: any = userMsgs[userMsgs.length - 1];
+      const lastUser = userMsgs[userMsgs.length - 1];
 
-      systemPrompt = systemMsg?.content || undefined;
-      const userContent = lastUser?.content || "";
+      systemPrompt = (systemMsg?.content as string) || undefined;
+      const userContent = (lastUser?.content as string) || "";
       prompt = pipedPrompt
         ? userContent
           ? `${userContent}\n\n${pipedPrompt}`
@@ -376,8 +403,8 @@ async function executeModelNode(
         : userContent;
 
       // Collect images from all user messages
-      userMsgs.forEach((m: any) => {
-        if (m.images?.length > 0) messageImages.push(...m.images);
+      userMsgs.forEach((m) => {
+        if (m.images && m.images.length > 0) messageImages.push(...m.images);
       });
     } else {
       // No messages — use piped input only
@@ -398,15 +425,15 @@ async function executeModelNode(
       }
       // Already an object or fallback
       return typeof image === "object"
-        ? (image as any)
-        : { imageData: image, mimeType: "image/jpeg" };
-    }) as any[];
+        ? (image as { imageData?: string; mimeType?: string })
+        : { imageData: image as string, mimeType: "image/jpeg" };
+    }) as Array<string | { imageData: string; mimeType?: string }>;
 
     const result = await PrismService.generateImage({
       provider: node.provider as string,
       model: node.modelName as string,
-      prompt,
-      systemPrompt,
+      prompt: prompt as string,
+      systemPrompt: systemPrompt as string | undefined,
       images: images.length > 0 ? images : undefined,
       conversationId,
       conversationMeta,
@@ -425,7 +452,7 @@ async function executeModelNode(
       outputs.text = result.text;
     }
   } else if (endpoint === "audioToText") {
-    const audio = inputData.find((d) => d.type === "audio")?.data || "";
+    const audio = (inputData.find((d) => d.type === "audio")?.data as string) || "";
     const result = await PrismService.transcribeAudio({
       provider: node.provider as string,
       model: node.modelName as string,
@@ -441,7 +468,7 @@ async function executeModelNode(
 
     outputs.text = result.text || "";
   } else if (endpoint === "textToSpeech") {
-    const text = inputData.find((d) => d.type === "text")?.data || "";
+    const text = (inputData.find((d) => d.type === "text")?.data as string) || "";
     const result = await PrismService.generateSpeech({
       provider: node.provider as string,
       model: node.modelName as string,
@@ -460,7 +487,7 @@ async function executeModelNode(
       .map((d) => d.data);
     const audioPart = inputData.find((d) => d.type === "audio")?.data;
 
-    const payload: any = {
+    const payload: import("../types/types").EmbeddingPayload = {
       provider: node.provider,
       model: node.modelName,
     };
@@ -473,8 +500,8 @@ async function executeModelNode(
         : node.userPrompt
       : pipedText;
     if (combinedText) payload.text = combinedText;
-    if (imageParts.length > 0) payload.images = imageParts;
-    if (audioPart) payload.audio = audioPart;
+    if (imageParts.length > 0) payload.images = imageParts as string[];
+    if (audioPart) payload.audio = audioPart as string;
 
     const result = await PrismService.generateEmbedding(payload);
     outputs.embedding = result.embedding;
@@ -610,7 +637,7 @@ export async function executeWorkflow(
             if (modality === "text") {
               message.content = message.content
                 ? `${message.content}\n\n${data}`
-                : data;
+                : data as string;
             } else if (modality === "image") {
               message.images = [...((message.images as string[]) || []), data as string];
             } else if (modality === "audio") {
@@ -652,10 +679,10 @@ export async function executeWorkflow(
       if (node.nodeType === "tools") {
         const disabled = new Set(node.disabledTools || []);
         const builtIn = (node.builtInTools || []).filter(
-          (t: any) => !disabled.has(t.name),
+          (t) => !disabled.has(t.name),
         );
         const custom = (node.customTools || []).filter(
-          (t: any) => !disabled.has(t.name || t._id),
+          (t) => !disabled.has(t.name || t._id || ''),
         );
 
         // Build OpenAI-format tool schemas
@@ -672,15 +699,15 @@ export async function executeWorkflow(
               },
             },
           })),
-          ...custom.map((t: any) => {
-            const props: Record<string, any> = {};
+          ...custom.map((t) => {
+            const props: Record<string, unknown> = {};
             const required = [];
             for (const p of t.parameters || []) {
               if (!p.name) continue;
               props[p.name] = {
                 type: p.type || "string",
                 description: p.description || "",
-                ...(p.enum?.length > 0 ? { enum: p.enum } : {}),
+                ...(p.enum && p.enum.length > 0 ? { enum: p.enum } : {}),
               };
               if (p.required) required.push(p.name);
             }
@@ -711,7 +738,7 @@ export async function executeWorkflow(
         const incomingConns = edges.filter(
           (c) => c.targetNodeId === nodeId,
         );
-        const collectedOutputs: Record<string, any> = {};
+        const collectedOutputs: Record<string, unknown> = {};
 
         for (const conn of incomingConns) {
           const sourceOutputs = nodeOutputs[conn.sourceNodeId];
@@ -755,7 +782,7 @@ export async function executeWorkflow(
         toolSchemas = [];
         customToolMap = new Map();
         for (const ti of toolInputs) {
-          const tiData = ti.data as any;
+          const tiData = ti.data as { schemas?: ToolSchemaEntry[]; customMap?: Map<string, WorkflowCustomTool> };
           if (tiData?.schemas) toolSchemas.push(...tiData.schemas);
           if (tiData?.customMap) {
             for (const [k, v] of tiData.customMap) customToolMap.set(k, v);
@@ -800,7 +827,7 @@ export async function executeWorkflow(
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       erroredNodeIds.add(nodeId);
       onNodeError?.(nodeId, error);
       // Put empty outputs so downstream nodes don't hang
