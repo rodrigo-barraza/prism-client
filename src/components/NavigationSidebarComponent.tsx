@@ -42,7 +42,7 @@ import { generateUUID } from "../utils/utilities";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
 
-function RainbowCanvas({ turbo = false, greyscale = false }: any) {
+function RainbowCanvas({ turbo = false, greyscale = false }: { turbo?: boolean; greyscale?: boolean; }) {
   return (
     <RainbowCanvasComponent
       turbo={turbo}
@@ -134,6 +134,19 @@ const ADMIN_NAV_SECTIONS = [
   },
 ];
 
+interface NavigationProps {
+  mode?: "user" | "admin";
+  liveCount?: number;
+  tracesCount?: number;
+  requestsCount?: number;
+  mediaCount?: number;
+  textCount?: number;
+  systemStatus?: string;
+  isGenerating?: boolean;
+  activeApiCount?: number;
+  onNavClick?: (href: string) => void;
+}
+
 export default function NavigationSidebarComponent({
   mode = "user",
   liveCount = 0,
@@ -145,7 +158,7 @@ export default function NavigationSidebarComponent({
   isGenerating = false,
   activeApiCount = 0,
   onNavClick,
-}: any) {
+}: NavigationProps) {
   const badgeCounts = {
     conversations: liveCount,
     traces: tracesCount,
@@ -167,7 +180,7 @@ export default function NavigationSidebarComponent({
     if (mode !== "user") return;
     PrismService.getSettings()
       .then((s) => {
-        const mem = (s?.memory || {}) as any;
+        const mem = (s?.memory || {}) as Record<string, string>;
         setMemoryConfigured(
           Boolean(
             mem.extractionProvider &&
@@ -225,13 +238,31 @@ export default function NavigationSidebarComponent({
 
   // -- Bouncing mini cats for concurrent API calls ----------------
   // Lifecycle: active → windingDown → idle → fading → removed
-  const bannerRef = useRef<any>(null);
-  const catStateRef = useRef<Map<string, any>>(new Map());
-  const catElsRef = useRef<Map<string, any>>(new Map());
+  interface MiniCat {
+  id: string;
+  size: number;
+  initVx: number;
+  initVy: number;
+  retired: boolean;
+}
+
+interface CatState {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  accelTime: number;
+  phase: string;
+  fadeStart: number | null;
+}
+
+  const bannerRef = useRef<HTMLDivElement>(null);
+  const catStateRef = useRef<Map<string, CatState>>(new Map());
+  const catElsRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const isGenRef = useRef<boolean>(isGenerating);
   const prevIsGenRef = useRef<boolean>(false);
-  const miniCatsRef = useRef<any>([]);
-  const [miniCats, setMiniCats] = useState<any[]>([]);
+  const miniCatsRef = useRef<MiniCat[]>([]);
+  const [miniCats, setMiniCats] = useState<MiniCat[]>([]);
 
   // Mirror props into refs for RAF access
   useEffect(() => {
@@ -245,7 +276,7 @@ export default function NavigationSidebarComponent({
   useEffect(() => {
     const needed = Math.max(0, (activeApiCount || 0) - 1);
     setMiniCats((prev) => {
-      const activeCount = prev.filter((c: any) => !c.retired).length;
+      const activeCount = prev.filter((c: MiniCat) => !c.retired).length;
       if (needed === activeCount) return prev;
 
       if (needed < activeCount) {
@@ -282,9 +313,9 @@ export default function NavigationSidebarComponent({
   // Always-on RAF: movement, bouncing, FX, lifecycle phases
   useEffect(() => {
     let lastTime = 0;
-    let rafId: any;
+    let rafId: number;
 
-    const tick = (now: any) => {
+    const tick = (now: number) => {
       const cats = miniCatsRef.current;
       if (cats.length === 0) {
         lastTime = 0;
@@ -306,8 +337,8 @@ export default function NavigationSidebarComponent({
         rafId = requestAnimationFrame(tick);
         return;
       }
-      const bw = (banner as any).offsetWidth;
-      const bh = (banner as any).offsetHeight;
+      const bw = banner.offsetWidth;
+      const bh = banner.offsetHeight;
       const isGen = isGenRef.current;
 
       // Detect primary cat stop: isGenerating true → false → fade ALL cats
@@ -324,30 +355,30 @@ export default function NavigationSidebarComponent({
       const toRemove = [];
 
       for (const cat of cats) {
-        let p = catStateRef.current.get((cat as any).id);
+        let p = catStateRef.current.get(cat.id);
         if (!p) {
           p = {
             x: bw / 2,
             y: bh / 2,
-            vx: (cat as any).initVx,
-            vy: (cat as any).initVy,
+            vx: cat.initVx,
+            vy: cat.initVy,
             accelTime: 0,
             phase: "active",
             fadeStart: null,
           };
-          catStateRef.current.set((cat as any).id, p);
+          catStateRef.current.set(cat.id, p);
         }
 
-        const element = catElsRef.current.get((cat as any).id);
+        const element = catElsRef.current.get(cat.id);
         if (!element) continue;
 
         // Phase transition: worker finished → start winding down
-        if ((cat as any).retired && p.phase === "active") {
+        if (cat.retired && p.phase === "active") {
           p.phase = "windingDown";
         }
 
         // Bounce helper (specular reflection)
-        const hs = (cat as any).size / 2;
+        const hs = cat.size / 2;
         const bounce = () => {
           if (p.x < hs) {
             p.x = hs;
@@ -434,7 +465,7 @@ export default function NavigationSidebarComponent({
           p.accelTime = Math.max(0, p.accelTime - dt * 3);
           const fx = computeFx();
 
-          const elapsed = (now - p.fadeStart) / 1000;
+          const elapsed = (now - (p.fadeStart ?? now)) / 1000;
           const progress = Math.min(elapsed / 3, 1);
           const opacity = 0.85 * (1 - progress);
           const scale = 1 - progress * 0.3;
@@ -453,7 +484,7 @@ export default function NavigationSidebarComponent({
             element.src = "/cat.gif";
           }
 
-          if (progress >= 1) toRemove.push((cat as any).id);
+          if (progress >= 1) toRemove.push(cat.id);
         }
       }
 
@@ -465,7 +496,7 @@ export default function NavigationSidebarComponent({
           catElsRef.current.delete(id);
         }
         setMiniCats((prev) =>
-          prev.filter((c: any) => !removeSet.has(c.id)),
+          prev.filter((c: MiniCat) => !removeSet.has(c.id)),
         );
       }
 
@@ -518,7 +549,7 @@ export default function NavigationSidebarComponent({
 
               {/* Navigation links */}
               <nav className={styles.mobilePopoverNav}>
-                {navSections.map((section: any, sectionIdx: any) => (
+                {navSections.map((section: { label: string | null, items: any[] }, sectionIdx: number) => (
                   <React.Fragment key={section.label || sectionIdx}>
                     {/* Section divider */}
                     {section.label && (
@@ -526,13 +557,13 @@ export default function NavigationSidebarComponent({
                         <span>{section.label}</span>
                       </div>
                     )}
-                    {section.items.map((item: any) => {
+                    {section.items.map((item: typeof USER_NAV_SECTIONS[0]['items'][0] & { exact?: boolean, alsoMatches?: string[], showBadge?: string }) => {
                       const Icon = item.icon;
                       const isActive =
                         (item.exact
                           ? pathname === item.href
                           : pathname.startsWith(item.href)) ||
-                        item.alsoMatches?.some((p: any) =>
+                        item.alsoMatches?.some((p: string) =>
                           pathname.startsWith(p),
                         );
 
@@ -564,11 +595,11 @@ export default function NavigationSidebarComponent({
                             </span>
                           )}
                           {item.showBadge &&
-                            (badgeCounts as Record<string, any>)[item.showBadge] > 0 && (
+                            (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
                               <span
                                 className={`${styles.badge} ${styles.live}`}
                               >
-                                {(badgeCounts as Record<string, any>)[item.showBadge]}
+                                {(badgeCounts as Record<string, number>)[item.showBadge]}
                               </span>
                             )}
                         </Link>
@@ -627,7 +658,7 @@ export default function NavigationSidebarComponent({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={cat.id}
-              ref={(element: any) => {
+              ref={(element: HTMLImageElement | null) => {
                 if (element) catElsRef.current.set(cat.id, element);
                 else catElsRef.current.delete(cat.id);
               }}
@@ -649,7 +680,7 @@ export default function NavigationSidebarComponent({
 
         {/* Navigation */}
         <nav className={styles.nav}>
-          {navSections.map((section: any, sectionIdx: any) => (
+          {navSections.map((section: { label: string | null, items: any[] }, sectionIdx: number) => (
             <React.Fragment key={section.label || sectionIdx}>
               {/* Section divider */}
               {section.label && (
@@ -657,13 +688,13 @@ export default function NavigationSidebarComponent({
                   <span>{section.label}</span>
                 </div>
               )}
-              {section.items.map((item: any) => {
+              {section.items.map((item: typeof USER_NAV_SECTIONS[0]['items'][0] & { exact?: boolean, alsoMatches?: string[], showBadge?: string }) => {
                 const Icon = item.icon;
                 const isActive =
                   (item.exact
                     ? pathname === item.href
                     : pathname.startsWith(item.href)) ||
-                  item.alsoMatches?.some((p: any) => pathname.startsWith(p));
+                  item.alsoMatches?.some((p: string) => pathname.startsWith(p));
 
                 const link = (
                   <Link
@@ -689,9 +720,9 @@ export default function NavigationSidebarComponent({
                       </span>
                     )}
                     {item.showBadge &&
-                      (badgeCounts as Record<string, any>)[item.showBadge] > 0 && (
+                      (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
                         <span className={`${styles.badge} ${styles.live}`}>
-                          {(badgeCounts as Record<string, any>)[item.showBadge]}
+                          {(badgeCounts as Record<string, number>)[item.showBadge]}
                         </span>
                       )}
                   </Link>

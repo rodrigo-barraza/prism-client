@@ -83,7 +83,7 @@ export interface RawModel {
   architecture?: string;
   publisher?: string;
   loaded?: boolean;
-  loaded_instances?: any[];
+  loaded_instances?: Record<string, string | number | boolean>[];
   pricing?: {
     inputPerMillion?: number;
     outputPerMillion?: number;
@@ -96,10 +96,10 @@ export interface RawModel {
   totalOutputTokens?: number;
   _benchThinkingEnabled?: boolean;
   _benchToolsEnabled?: boolean;
-  _benchAgent?: any;
+  _benchAgent?: string | null;
   inputTypes?: string[];
   outputTypes?: string[];
-  _benchStat?: Record<string, any>;
+  _benchStat?: Record<string, string | number | boolean | null>;
   _benchTotal?: number;
   _benchPassed?: number;
   _benchFailed?: number;
@@ -107,6 +107,11 @@ export interface RawModel {
   _benchPassRate?: number;
   _benchAvgLatency?: number;
   _benchTotalCost?: number;
+  totalRequests?: number;
+  totalCost?: number;
+  avgLatency?: number;
+  avgTokensPerSec?: number;
+  model?: string;
 }
 
 export interface NormalizedModel {
@@ -153,7 +158,7 @@ export interface RowData {
   _benchThinking: boolean;
   _benchTools: boolean;
   _benchAgent: unknown;
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined | RawModel | NormalizedModel | unknown;
 }
 
 /**
@@ -211,12 +216,12 @@ function ModalityCell({ inputTypes, outputTypes }: { inputTypes?: string[]; outp
   return (
     <span className={styles.modalities}>
       {(inputTypes || []).map((t: string) => {
-        const m = (MODALITY_ICONS as Record<string, any>)[t];
+        const m = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
         if (!m) return null;
         const Icon = m.icon;
         return (
           <TooltipComponent key={`in-${t}`} label={m.label} position="top">
-            <Icon size={12} style={{ color: (MODALITY_COLORS as Record<string, any>)[t] }} />
+            <Icon size={12} style={{ color: (MODALITY_COLORS as Record<string, string>)[t] }} />
           </TooltipComponent>
         );
       })}
@@ -224,12 +229,12 @@ function ModalityCell({ inputTypes, outputTypes }: { inputTypes?: string[]; outp
         <ArrowRight size={10} className={styles.modalityArrow} />
       )}
       {(outputTypes || []).map((t: string) => {
-        const m = (MODALITY_ICONS as Record<string, any>)[t];
+        const m = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
         if (!m) return null;
         const Icon = m.icon;
         return (
           <TooltipComponent key={`out-${t}`} label={m.label} position="top">
-            <Icon size={12} style={{ color: (MODALITY_COLORS as Record<string, any>)[t] }} />
+            <Icon size={12} style={{ color: (MODALITY_COLORS as Record<string, string>)[t] }} />
           </TooltipComponent>
         );
       })}
@@ -342,13 +347,13 @@ function buildRow(rawModel: RawModel, favorites: string[] = []): RowData {
 /* -- Stats mode helpers --------------------------------------- */
 
 interface BuildStatsColumnsParams {
-  configModels: Record<string, any>;
+  configModels: Record<string, string[]>;
   totalRequests: number;
   totalCost: number;
   compact?: boolean;
 }
 
-export interface TableColumn {
+export interface TableColumn<T = any> {
   key: string;
   label: React.ReactNode;
   description?: string;
@@ -357,8 +362,8 @@ export interface TableColumn {
   hideable?: boolean;
   defaultHidden?: boolean;
   width?: string;
-  sortValue?: (row: any) => number | string;
-  render?: (row: any) => React.ReactNode;
+  sortValue?: (row: T) => number | string;
+  render?: (row: T) => React.ReactNode;
 }
 
 /**
@@ -376,7 +381,7 @@ function buildStatsColumns({
       key: "model",
       label: "Model",
       description: "The AI model identifier used for the request",
-      render: (row: any) => (
+      render: (row: RowData) => (
         <ModelBadgeComponent models={row.model ? [row.model] : []} />
       ),
     },
@@ -386,7 +391,7 @@ function buildStatsColumns({
       key: "provider",
       label: "Provider",
       description: "The API provider hosting this model",
-      render: (row: any) => (
+      render: (row: RowData) => (
         <ProvidersBadgeComponent
           providers={row.provider ? [row.provider] : []}
         />
@@ -397,7 +402,7 @@ function buildStatsColumns({
     ...(tokenColumns() as TableColumn[]),
     ...(costColumns(totalCost) as TableColumn[]),
     latencyColumn() as TableColumn,
-    ...(countLinkColumns("model", (row: any) => row.model) as TableColumn[]),
+    ...(countLinkColumns("model", (row: { model?: string }) => row.model || "") as TableColumn[]),
   ];
 
   if (compact) {
@@ -431,7 +436,7 @@ function buildStatsColumns({
  *                       Other model columns are hidden by default but toggleable.
  */
 export interface ModelsTableComponentProps {
-  models?: any[];
+  models?: RawModel[];
   mode?: "model" | "stats" | "full" | "benchmark";
   onSelect?: (model: RawModel) => void;
   renderActions?: (row: RowData) => React.ReactNode;
@@ -443,7 +448,7 @@ export interface ModelsTableComponentProps {
   highlightedRowKey?: string | null;
   highlightedRowRef?: React.RefObject<HTMLTableRowElement | null> | ((element: HTMLTableRowElement | null) => void);
   loadingModelKey?: string | null;
-  configModels?: Record<string, any>;
+  configModels?: Record<string, string[]>;
   totalRequests?: number;
   totalCost?: number;
   emptyText?: string;
@@ -468,7 +473,7 @@ export default function ModelsTableComponent({
   highlightedRowKey,
   highlightedRowRef,
   loadingModelKey,
-  configModels = {},
+  configModels = {} as Record<string, string[]>,
   totalRequests: totalRequestsProp,
   totalCost: totalCostProp,
   emptyText,
@@ -483,11 +488,11 @@ export default function ModelsTableComponent({
   if (mode === "stats") {
     const totalRequests =
       (totalRequestsProp ??
-        models.reduce((s: number, m: any) => s + m.totalRequests, 0)) ||
+        models.reduce((s: number, m: RawModel) => s + (m.totalRequests || 0), 0)) ||
       1;
     const totalCost =
       (totalCostProp ??
-        models.reduce((s: number, m: any) => s + (m.totalCost || 0), 0)) ||
+        models.reduce((s: number, m: RawModel) => s + (m.totalCost || 0), 0)) ||
       1;
 
     const columns = buildStatsColumns({
@@ -503,7 +508,7 @@ export default function ModelsTableComponent({
         maxHeight={maxHeight ?? 420}
         columns={columns}
         data={models}
-        getRowKey={(m: Record<string, any>, i: number) => `${m.provider}-${m.model}-${i}`}
+        getRowKey={(m: RawModel, i: number) => `${m.provider}-${m.model}-${i}`}
         emptyText={emptyText || "No data yet"}
         storageKey="models-stats"
       />
@@ -555,7 +560,7 @@ interface ModelsTableInnerProps {
   highlightedRowKey?: string | null;
   highlightedRowRef?: React.RefObject<HTMLTableRowElement | null> | ((element: HTMLTableRowElement | null) => void);
   loadingModelKey?: string | null;
-  configModels?: Record<string, any>;
+  configModels?: Record<string, string[]>;
   totalRequests?: number;
   totalCost?: number;
   emptyText?: string;
@@ -785,7 +790,7 @@ function ModelsTableInner({
         align: "center",
         sortable: false,
         hideable: false,
-        render: (row: any) => {
+        render: (row: RowData) => {
           const key = `${row._model.provider}:${row._model.key}`;
           const isSelected = selectedKeys.has(key);
           return (
@@ -815,8 +820,8 @@ function ModelsTableInner({
         description: "Percentage of benchmark tests this model passed",
         sortable: true,
         width: "100px",
-        sortValue: (row: any) => row._raw._benchPassRate || 0,
-        render: (row: any) => {
+        sortValue: (row: RowData) => row._raw._benchPassRate || 0,
+        render: (row: RowData) => {
           const pct = Math.round((row._raw._benchPassRate || 0) * 100);
           const color =
             pct >= 80
@@ -845,8 +850,8 @@ function ModelsTableInner({
         description: "Number of benchmark tests this model passed",
         sortable: true,
         align: "right",
-        sortValue: (row: any) => row._raw._benchPassed || 0,
-        render: (row: any) => (
+        sortValue: (row: RowData) => row._raw._benchPassed || 0,
+        render: (row: RowData) => (
           <span className={styles.benchPassedCell}>
             <CheckCircle2 size={12} />
             {row._raw._benchPassed || 0}
@@ -859,9 +864,9 @@ function ModelsTableInner({
         description: "Number of benchmark tests this model failed or errored",
         sortable: true,
         align: "right",
-        sortValue: (row: any) =>
+        sortValue: (row: RowData) =>
           (row._raw._benchFailed || 0) + (row._raw._benchErrored || 0),
-        render: (row: any) => (
+        render: (row: RowData) => (
           <span className={styles.benchFailedCell}>
             <XCircle size={12} />
             {(row._raw._benchFailed || 0) + (row._raw._benchErrored || 0)}
@@ -877,7 +882,7 @@ function ModelsTableInner({
       description: "Star models to pin them to the top of your list",
       align: "center",
       sortable: true,
-      render: (row: any) => {
+      render: (row: RowData) => {
         const isFav = favorites.includes(row._favKey);
         if (!onToggleFavorite) return "—";
         return (
@@ -907,8 +912,8 @@ function ModelsTableInner({
           "Whether this entry is a direct model call or an agentic run",
         sortable: true,
         align: "center",
-        sortValue: (row: any) => (row._benchAgent ? 1 : 0),
-        render: (row: any) => {
+        sortValue: (row: RowData) => (row._benchAgent ? 1 : 0),
+        render: (row: RowData) => {
           if (row._benchAgent) {
             return (
               <span className={styles.benchAgentBadge}>
@@ -928,8 +933,8 @@ function ModelsTableInner({
       label: "Name",
       description: "Display name of the model",
       align: "left",
-      sortValue: (row: any) => row._model.name.toLowerCase(),
-      render: (row: any) => {
+      sortValue: (row: RowData) => row._model.name.toLowerCase(),
+      render: (row: RowData) => {
         const model = row._model;
         const rawModel = row._raw;
         return (
@@ -955,7 +960,7 @@ function ModelsTableInner({
                 className={styles.inlineActions}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
-                {renderActions(rawModel)}
+                {renderActions(row)}
               </span>
             )}
           </span>
@@ -969,7 +974,7 @@ function ModelsTableInner({
       label: "Model",
       description: "Unique model identifier used in API calls",
       align: "left",
-      render: (row: any) => <ModelBadgeComponent models={[row._model.key]} />,
+      render: (row: RowData) => <ModelBadgeComponent models={[row._model.key]} />,
     });
 
     // 6. PROVIDER — provider badge
@@ -978,9 +983,9 @@ function ModelsTableInner({
       label: "Provider",
       description: "The API provider hosting this model",
       align: "left",
-      sortValue: (row: any) =>
+      sortValue: (row: RowData) =>
         (resolveProviderLabel(row._model.provider) || "").toLowerCase(),
-      render: (row: any) => (
+      render: (row: RowData) => (
         <ProvidersBadgeComponent providers={[row._model.provider]} />
       ),
     });
@@ -993,8 +998,8 @@ function ModelsTableInner({
         description:
           "Endpoint-based model category: conversation, audio, or embed",
         align: "left",
-        render: (row: any) => (
-          <ModelTypeBadgeComponent modelType={row._model.modelType} />
+        render: (row: RowData) => (
+          <ModelTypeBadgeComponent modelType={row._model.modelType || undefined} />
         ),
       });
     }
@@ -1005,7 +1010,7 @@ function ModelsTableInner({
         label: "Year",
         description: "Release year of this model",
         align: "right",
-        render: (row: any) => row._raw.year || "—",
+        render: (row: RowData) => row._raw.year || "—",
         ...benchmarkHide,
       });
     }
@@ -1018,8 +1023,8 @@ function ModelsTableInner({
         description: "Whether thinking/reasoning mode was enabled for this run",
         sortable: true,
         align: "center",
-        sortValue: (row: any) => (row._benchThinking ? 1 : 0),
-        render: (row: any) =>
+        sortValue: (row: RowData) => (row._benchThinking ? 1 : 0),
+        render: (row: RowData) =>
           row._benchThinking ? (
             <span className={styles.benchThinkingOn}>
               <Brain size={12} /> On
@@ -1034,8 +1039,8 @@ function ModelsTableInner({
         description: "Whether tool calling was enabled for this run",
         sortable: true,
         align: "center",
-        sortValue: (row: any) => (row._benchTools ? 1 : 0),
-        render: (row: any) =>
+        sortValue: (row: RowData) => (row._benchTools ? 1 : 0),
+        render: (row: RowData) =>
           row._benchTools ? (
             <span className={styles.benchToolsOn}>
               <Wrench size={12} /> On
@@ -1054,8 +1059,8 @@ function ModelsTableInner({
         description: "Total number of benchmark tests run for this model",
         sortable: true,
         align: "right",
-        sortValue: (row: any) => row._raw._benchTotal || 0,
-        render: (row: any) => {
+        sortValue: (row: RowData) => row._raw._benchTotal || 0,
+        render: (row: RowData) => {
           const v = row._raw._benchTotal || 0;
           return v > 0 ? formatNumber(v) : "—";
         },
@@ -1066,8 +1071,8 @@ function ModelsTableInner({
         description: "Average response latency across all benchmark tests",
         sortable: true,
         align: "right",
-        sortValue: (row: any) => row._raw._benchAvgLatency || 0,
-        render: (row: any) => {
+        sortValue: (row: RowData) => row._raw._benchAvgLatency || 0,
+        render: (row: RowData) => {
           const v = row._raw._benchAvgLatency;
           if (!v || v <= 0) return emptyDash();
           return (
@@ -1085,10 +1090,10 @@ function ModelsTableInner({
           "Total estimated cost across all benchmark tests for this model",
         sortable: true,
         align: "right",
-        sortValue: (row: any) => row._raw._benchTotalCost || 0,
-        render: (row: any) => {
+        sortValue: (row: RowData) => row._raw._benchTotalCost || 0,
+        render: (row: RowData) => {
           const v = row._raw._benchTotalCost;
-          return v > 0 ? <CostBadgeComponent cost={v} /> : emptyDash();
+          return v != null && v > 0 ? <CostBadgeComponent cost={v} /> : emptyDash();
         },
       });
     }
@@ -1096,14 +1101,14 @@ function ModelsTableInner({
     // -- Stats columns (full mode only) --
     if (isFull && hasUsage) {
       const usageTotal =
-        filtered.reduce((s: number, m: any) => s + (m.usageCount || 0), 0) || 1;
+        filtered.reduce((s: number, m: RawModel) => s + (m.usageCount || 0), 0) || 1;
       cols.push({
         key: "requests",
         label: "Requests",
         description: "Total API requests made with this model",
         align: "right",
-        sortValue: (row: any) => row._raw.usageCount || 0,
-        render: (row: any) => {
+        sortValue: (row: RowData) => row._raw.usageCount || 0,
+        render: (row: RowData) => {
           const count = row._raw.usageCount || 0;
           return count > 0 ? formatNumber(count) : "—";
         },
@@ -1112,8 +1117,8 @@ function ModelsTableInner({
         key: "usagePct",
         label: "Usage %",
         description: "Proportional share of total requests",
-        sortValue: (row: any) => row._raw.usageCount || 0,
-        render: (row: any) => (
+        sortValue: (row: RowData) => row._raw.usageCount || 0,
+        render: (row: RowData) => (
           <ProportionBarComponent
             value={row._raw.usageCount || 0}
             total={usageTotal}
@@ -1124,14 +1129,14 @@ function ModelsTableInner({
 
     if (hasUsage && !isFull) {
       const usageTotal =
-        filtered.reduce((s: number, m: any) => s + (m.usageCount || 0), 0) || 1;
+        filtered.reduce((s: number, m: RawModel) => s + (m.usageCount || 0), 0) || 1;
       cols.push({
         key: "requests",
         label: "Requests",
         description: "Total API requests made with this model",
         align: "right",
-        sortValue: (row: any) => row._raw.usageCount || 0,
-        render: (row: any) => {
+        sortValue: (row: RowData) => row._raw.usageCount || 0,
+        render: (row: RowData) => {
           const count = row._raw.usageCount || 0;
           return count > 0 ? formatNumber(count) : "—";
         },
@@ -1140,8 +1145,8 @@ function ModelsTableInner({
         key: "usagePct",
         label: "Usage %",
         description: "Proportional share of total requests",
-        sortValue: (row: any) => row._raw.usageCount || 0,
-        render: (row: any) => (
+        sortValue: (row: RowData) => row._raw.usageCount || 0,
+        render: (row: RowData) => (
           <ProportionBarComponent
             value={row._raw.usageCount || 0}
             total={usageTotal}
@@ -1156,7 +1161,7 @@ function ModelsTableInner({
         label: "Tokens In",
         description: "Total input (prompt) tokens consumed",
         align: "right",
-        render: (row: any) => {
+        render: (row: RowData) => {
           const v = row._raw.totalInputTokens || 0;
           return v > 0 ? (
             <TokenCountBadgeComponent value={v} label="in" mini />
@@ -1170,7 +1175,7 @@ function ModelsTableInner({
         label: "Tokens Out",
         description: "Total output (completion) tokens generated",
         align: "right",
-        render: (row: any) => {
+        render: (row: RowData) => {
           const v = row._raw.totalOutputTokens || 0;
           return v > 0 ? (
             <TokenCountBadgeComponent value={v} label="out" mini />
@@ -1184,9 +1189,9 @@ function ModelsTableInner({
         label: "Tokens",
         description: "Combined input + output token count",
         align: "right",
-        sortValue: (row: any) =>
+        sortValue: (row: RowData) =>
           (row._raw.totalInputTokens || 0) + (row._raw.totalOutputTokens || 0),
-        render: (row: any) => {
+        render: (row: RowData) => {
           const total =
             (row._raw.totalInputTokens || 0) +
             (row._raw.totalOutputTokens || 0);
@@ -1201,7 +1206,7 @@ function ModelsTableInner({
         label: "Modalities",
         description: "Input/output types supported (text, image, audio, video)",
         sortable: false,
-        render: (row: any) => (
+        render: (row: RowData) => (
           <ModalityCell
             inputTypes={row._raw.inputTypes}
             outputTypes={row._raw.outputTypes}
@@ -1217,7 +1222,7 @@ function ModelsTableInner({
         description: "Capabilities like thinking, web search, code execution",
         align: "left",
         ...benchmarkHide,
-        render: (row: any) => {
+        render: (row: RowData) => {
           const tools = row._raw.tools;
           if (!tools?.length) return "—";
           return <ToolIconComponent toolDisplayNames={tools} />;
@@ -1232,7 +1237,7 @@ function ModelsTableInner({
         description: "Maximum context window size in tokens",
         align: "right",
         ...benchmarkHide,
-        render: (row: any) =>
+        render: (row: RowData) =>
           row._model.contextLength
             ? formatContextTokens(row._model.contextLength)
             : "—",
@@ -1246,7 +1251,7 @@ function ModelsTableInner({
         description: "Model file size on disk",
         align: "right",
         ...benchmarkHide,
-        render: (row: any) => row._model.size || "—",
+        render: (row: RowData) => row._model.size || "—",
       });
     }
 
@@ -1257,7 +1262,7 @@ function ModelsTableInner({
         description: "Total parameter count (e.g. 7B, 70B)",
         align: "right",
         ...benchmarkHide,
-        render: (row: any) => row._model.params || "—",
+        render: (row: RowData) => row._model.params || "—",
       });
     }
 
@@ -1268,7 +1273,7 @@ function ModelsTableInner({
         description: "Quantization method (e.g. Q4_K_M, Q8_0)",
         align: "right",
         ...benchmarkHide,
-        render: (row: any) => row._model.quantization || "—",
+        render: (row: RowData) => row._model.quantization || "—",
       });
     }
 
@@ -1279,7 +1284,7 @@ function ModelsTableInner({
         description: "Bits per weight — lower means more compression",
         align: "right",
         ...benchmarkHide,
-        render: (row: any) =>
+        render: (row: RowData) =>
           row._model.bitsPerWeight != null ? row._model.bitsPerWeight : "—",
       });
     }
@@ -1290,7 +1295,7 @@ function ModelsTableInner({
         label: "Arch",
         description: "Model architecture (e.g. LLaMA, Mistral, Qwen)",
         ...benchmarkHide,
-        render: (row: any) => row._model.architecture || "—",
+        render: (row: RowData) => row._model.architecture || "—",
       });
     }
 
@@ -1301,7 +1306,7 @@ function ModelsTableInner({
         description: "Organization that published the model weights",
         align: "left",
         ...benchmarkHide,
-        render: (row: any) => row._model.publisher || "—",
+        render: (row: RowData) => row._model.publisher || "—",
       });
     }
 
@@ -1312,7 +1317,7 @@ function ModelsTableInner({
         description: "Cost per million input tokens (USD)",
         align: "right",
         ...benchmarkHide,
-        render: (row: any) =>
+        render: (row: RowData) =>
           row._raw.pricing?.inputPerMillion != null ? (
             <CostBadgeComponent
               cost={row._raw.pricing.inputPerMillion}
@@ -1333,7 +1338,7 @@ function ModelsTableInner({
         description: "Cost per million output tokens (USD)",
         align: "right",
         ...benchmarkHide,
-        render: (row: any) =>
+        render: (row: RowData) =>
           row._raw.pricing?.outputPerMillion != null ? (
             <CostBadgeComponent
               cost={row._raw.pricing.outputPerMillion}
@@ -1354,10 +1359,10 @@ function ModelsTableInner({
         label: "Cost",
         description: "Total estimated cost in USD",
         align: "right",
-        sortValue: (row: any) => row._raw.totalCost || 0,
-        render: (row: any) => {
+        sortValue: (row: RowData) => row._raw.totalCost || 0,
+        render: (row: RowData) => {
           const cost = row._raw.totalCost;
-          return cost > 0 ? <CostBadgeComponent cost={cost} /> : emptyDash();
+          return typeof cost === "number" && cost > 0 ? <CostBadgeComponent cost={cost} /> : emptyDash();
         },
       });
       cols.push({
@@ -1365,10 +1370,10 @@ function ModelsTableInner({
         label: "Avg Latency",
         description: "Average round-trip response time",
         align: "right",
-        sortValue: (row: any) => row._raw.avgLatency || 0,
-        render: (row: any) => {
+        sortValue: (row: RowData) => row._raw.avgLatency || 0,
+        render: (row: RowData) => {
           const v = row._raw.avgLatency;
-          return v > 0 ? formatLatency(v) : emptyDash();
+          return typeof v === "number" && v > 0 ? formatLatency(v) : emptyDash();
         },
       });
       cols.push({
@@ -1376,7 +1381,7 @@ function ModelsTableInner({
         label: "Tok/s",
         description: "Average output throughput in tokens per second",
         align: "right",
-        render: (row: any) => formatTokensPerSec(row._raw.avgTokensPerSec),
+        render: (row: RowData) => formatTokensPerSec(row._raw.avgTokensPerSec),
       });
     }
 
@@ -1387,7 +1392,7 @@ function ModelsTableInner({
           label: arenaCol.label,
           description: `LMArena ${arenaCol.label} benchmark ELO score`,
           align: "right",
-          render: (row: any) => row._raw.arena?.[arenaCol.dataKey] ?? "—",
+          render: (row: RowData) => row._raw.arena?.[arenaCol.dataKey] ?? "—",
         });
       }
     }
@@ -1461,12 +1466,12 @@ function ModelsTableInner({
                     label: "Modality",
                     items: allModalities
                       .map((t: string) => {
-                        const m = (MODALITY_ICONS as Record<string, any>)[t];
+                        const m = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
                         return m
                           ? {
                               key: t,
-                              icon: m.icon,
-                              color: (MODALITY_COLORS as Record<string, any>)[t],
+                              icon: m.icon as React.ComponentType<any>,
+                              color: (MODALITY_COLORS as Record<string, string>)[t],
                               title: m.label,
                             }
                           : null;
@@ -1484,12 +1489,12 @@ function ModelsTableInner({
                     label: "Tools",
                     items: allTools
                       .map((t: string) => {
-                        const Icon = (TOOL_ICONS as Record<string, any>)[t];
+                        const Icon = (TOOL_ICONS as Record<string, React.ElementType>)[t];
                         return Icon
                           ? {
                               key: t,
-                              icon: Icon,
-                              color: (TOOL_COLORS as Record<string, any>)[t],
+                              icon: Icon as React.ComponentType<any>,
+                              color: (TOOL_COLORS as Record<string, string>)[t],
                               title: t,
                             }
                           : null;
@@ -1552,7 +1557,7 @@ function ModelsTableInner({
         getRowClassName={
           getRowClassNameProp
             ? (row: RowData) =>
-                getRowClassNameProp(isBenchmark ? (row._raw._benchStat as unknown as RowData) : row)
+                getRowClassNameProp(isBenchmark ? (row._raw._benchStat as any) : row)
             : hasSelection && selectedKeys
               ? (row: RowData) => {
                   const key = `${row._model.provider}:${row._model.key}`;

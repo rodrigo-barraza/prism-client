@@ -38,6 +38,7 @@ import MessageList from "./MessageListComponent";
 
 import JsonViewerComponent from "./JsonViewerComponent";
 import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent";
+import { Message, SynthesisRun, PrismConfig } from "../types/types";
 import { SETTINGS_DEFAULTS, SK_MODEL_MEMORY_SYNTHESIS } from "../constants";
 import { generateUUID } from "../utils/utilities";
 import styles from "./SynthesisComponent.module.css";
@@ -143,7 +144,7 @@ const CATEGORY_OPTIONS = [
 
 export default function SynthesisComponent() {
   // -- Config & model state --------------------------------------
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<PrismConfig | null>(null);
   const [settings, setSettings] = useState({
     ...SETTINGS_DEFAULTS,
     maxTokens: 4096,
@@ -165,23 +166,21 @@ export default function SynthesisComponent() {
   });
   const [targetTurns, setTargetTurns] = useState(DEFAULT_TURNS);
   const [category, setCategory] = useState("Chat");
-  const [seedMessages, setSeedMessages] = useState<any[]>([]);
-  const [generatedMessages, setGeneratedMessages] = useState<any[]>([]);
+  const [seedMessages, setSeedMessages] = useState<Message[]>([]);
+  const [generatedMessages, setGeneratedMessages] = useState<(Message & { _streaming?: boolean })[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
   const [seedsExpanded, setSeedsExpanded] = useState(true);
   const [templateExpanded, setTemplateExpanded] = useState(false);
 
-  const abortRef = useRef<any>(null);
+  const abortRef = useRef<(() => void) | null>(null);
   const abortedRef = useRef<boolean>(false);
-  const messagesEndRef = useRef<any>(null);
-  const [conversationId, setConversationId] = useState(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   // -- History state ---------------------------------------------
-  const [synthesisConversations, setSynthesisConversations] = useState<any[]>(
-    [],
-  );
-  const [activeHistoryId, setActiveHistoryId] = useState(null);
+  const [synthesisConversations, setSynthesisConversations] = useState<SynthesisRun[]>([]);
+  const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   // -- Load synthesis history -------------------------------------
@@ -189,7 +188,7 @@ export default function SynthesisComponent() {
     try {
       const runs = await PrismService.getSynthesisRuns();
       setSynthesisConversations(runs);
-    } catch (error: any) {
+    } catch (error: unknown | Error) {
       console.error("Failed to load synthesis history:", error);
     }
   }, []);
@@ -197,7 +196,7 @@ export default function SynthesisComponent() {
   // -- Load config -----------------------------------------------
   useEffect(() => {
     PrismService.getConfigWithLocalModels({
-      onConfig: (config: any) => {
+      onConfig: (config: PrismConfig) => {
         setConfig(config);
         restoreModel(config, setSettings, {
           fallback: (config) => {
@@ -214,7 +213,7 @@ export default function SynthesisComponent() {
           },
         });
       },
-      onLocalMerge: (merged: any) => {
+      onLocalMerge: (merged: PrismConfig) => {
         setConfig(merged);
         restoreModel(merged, setSettings);
       },
@@ -223,7 +222,7 @@ export default function SynthesisComponent() {
 
     // Load favorites
     PrismService.getFavorites("model")
-      .then((favs: any[]) => setFavoriteKeys(favs.map((f: any) => f.key)))
+      .then((favs: {key: string}[]) => setFavoriteKeys(favs.map((f: {key: string}) => f.key)))
       .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -231,7 +230,7 @@ export default function SynthesisComponent() {
   const handleToggleFavorite = useCallback(
     async (key: string) => {
       if (favoriteKeys.includes(key)) {
-        setFavoriteKeys((prev) => prev.filter((k: any) => k !== key));
+        setFavoriteKeys((prev) => prev.filter((k: string) => k !== key));
         PrismService.removeFavorite("model", key).catch(() => {});
       } else {
         setFavoriteKeys((prev) => [...prev, key]);
@@ -253,7 +252,7 @@ export default function SynthesisComponent() {
       textToImage: { models: {} },
       textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
       audioToText: { models: {} },
-    };
+    } as unknown as PrismConfig;
   }, [config]);
 
   // -- Model selection handler -----------------------------------
@@ -277,7 +276,7 @@ export default function SynthesisComponent() {
     }
     // Filter out any internal _streaming flag
     for (const m of generatedMessages) {
-      msgs.push({ role: (m as any).role, content: (m as any).content });
+      msgs.push({ role: m.role, content: m.content });
     }
     return msgs;
   }, [systemPrompt, generatedMessages]);
@@ -303,14 +302,14 @@ export default function SynthesisComponent() {
   }, [generatedMessages, generationProgress]);
 
   // -- Seed message management -----------------------------------
-  const addSeedMessage = useCallback((role = "user") => {
+  const addSeedMessage = useCallback((role: Message['role'] = "user") => {
     setSeedMessages((prev) => [...prev, { role, content: "" }]);
   }, []);
 
   const updateSeedMessage = useCallback(
-    (index: any, field: any, value: any) => {
+    (index: number, field: keyof Message, value: string) => {
       setSeedMessages((prev) =>
-        prev.map((m: any, i: any) =>
+        prev.map((m: Message, i: number) =>
           i === index ? { ...m, [field]: value } : m,
         ),
       );
@@ -318,16 +317,16 @@ export default function SynthesisComponent() {
     [],
   );
 
-  const removeSeedMessage = useCallback((index: any) => {
+  const removeSeedMessage = useCallback((index: number) => {
     setSeedMessages((prev) =>
-      prev.filter((_: any, i: any) => i !== index),
+      prev.filter((_: unknown, i: number) => i !== index),
     );
   }, []);
 
-  const loadSeedTemplate = useCallback((seed: any) => {
+  const loadSeedTemplate = useCallback((seed: { system: string; messages: Message[]; category: string }) => {
     setSystemPrompt(seed.system);
 
-    setSeedMessages(seed.messages.map((m: any) => ({ ...m })));
+    setSeedMessages(seed.messages.map((m: Message) => ({ ...m })));
     setCategory(seed.category);
     setGeneratedMessages([]);
     setTemplateExpanded(false);
@@ -348,8 +347,8 @@ export default function SynthesisComponent() {
 
     // Start with seed messages as the conversation so far
     const conversation = seedMessages
-      .filter((m: any) => m.content.trim())
-      .map((m: any) => ({ role: m.role, content: m.content }));
+      .filter((m: Message) => m.content && m.content.trim())
+      .map((m: Message) => ({ role: m.role, content: m.content }));
 
     setGeneratedMessages([...conversation]);
 
@@ -413,7 +412,7 @@ export default function SynthesisComponent() {
             settings,
             systemPrompt.trim(),
             conversation,
-            (partial: any) => {
+            (partial: string) => {
               setGeneratedMessages([
                 ...conversation,
                 {
@@ -429,7 +428,7 @@ export default function SynthesisComponent() {
             convId,
             turnMeta,
             {
-              onThinking: (chunk: any) => {
+              onThinking: (chunk: string) => {
                 turnThinking += chunk;
                 setGeneratedMessages([
                   ...conversation,
@@ -451,7 +450,7 @@ export default function SynthesisComponent() {
             role: "assistant",
             content: assistantContent,
             thinking: turnThinking || undefined,
-          } as any);
+          } as Message);
           setGeneratedMessages([...conversation]);
           setGenerationProgress("");
           nextRole = "user";
@@ -469,10 +468,10 @@ export default function SynthesisComponent() {
           // We fix this by ensuring the first message is always role "user".
           let simulatorHistory;
           if (conversation.length > 0) {
-            const swapped = conversation.map((m: any) => ({
+            const swapped = conversation.map((m: Message) => ({
               role: m.role === "user" ? "assistant" : "user",
               content: m.content,
-            }));
+            } as Message));
             // If the swapped history starts with "assistant", prepend a
             // contextual user message so the template stays happy.
             if (swapped[0].role === "assistant") {
@@ -508,7 +507,7 @@ export default function SynthesisComponent() {
             userTurnSettings,
             userSystemPrompt,
             simulatorHistory,
-            (partial: any) => {
+            (partial: string) => {
               setGeneratedMessages([
                 ...conversation,
                 { role: "user", content: partial, _streaming: true },
@@ -556,7 +555,7 @@ export default function SynthesisComponent() {
           settings,
           systemPrompt.trim(),
           conversation,
-          (partial: any) => {
+          (partial: string) => {
             setGeneratedMessages([
               ...conversation,
               {
@@ -572,7 +571,7 @@ export default function SynthesisComponent() {
           convId,
           undefined,
           {
-            onThinking: (chunk: any) => {
+            onThinking: (chunk: string) => {
               finalThinking += chunk;
               setGeneratedMessages([
                 ...conversation,
@@ -592,7 +591,7 @@ export default function SynthesisComponent() {
             role: "assistant",
             content: assistantContent,
             thinking: finalThinking || undefined,
-          } as any);
+          } as Message);
           setGeneratedMessages([...conversation]);
         }
       }
@@ -611,7 +610,7 @@ export default function SynthesisComponent() {
             userPersona,
             category,
             targetTurns,
-            seedMessages: seedMessages.filter((m: any) => m.content.trim()),
+            seedMessages: seedMessages.filter((m: Message) => m.content && m.content.trim()),
             settings: {
               provider: settings.provider,
               model: settings.model,
@@ -620,19 +619,19 @@ export default function SynthesisComponent() {
             conversationId: convId,
           });
           setActiveHistoryId(synthesisRunId);
-        } catch (error: any) {
+        } catch (error: unknown | Error) {
           console.error("Failed to save synthesis run:", error);
         }
 
         loadSynthesisHistory();
       }
-    } catch (error: any) {
-      if ((error as any).name !== "AbortError" && !abortedRef.current) {
+    } catch (error: unknown | Error) {
+      if ((error as Error).name !== "AbortError" && !abortedRef.current) {
         setGeneratedMessages((prev) => [
-          ...prev.filter((m: any) => !m._streaming),
+          ...prev.filter((m: any) => !(m as Message & { _streaming?: boolean })._streaming),
           {
             role: "assistant",
-            content: `⚠️ Generation error: ${(error as any).message}`,
+            content: `⚠️ Generation error: ${(error as Error).message}`,
           },
         ]);
       }
@@ -662,7 +661,7 @@ export default function SynthesisComponent() {
     abortRef.current = null;
     setIsGenerating(false);
     // Clean up any in-flight streaming messages
-    setGeneratedMessages((prev) => prev.filter((m: any) => !m._streaming));
+    setGeneratedMessages((prev) => prev.filter((m: any) => !(m as Message & { _streaming?: boolean })._streaming));
   }, []);
 
   const handleReset = useCallback(() => {
@@ -682,7 +681,7 @@ export default function SynthesisComponent() {
   }, []);
 
   // -- History selection -----------------------------------------
-  const handleSelectHistory = useCallback(async (run: any) => {
+  const handleSelectHistory = useCallback(async (run: SynthesisRun) => {
     try {
       // Restore the synthesis config
       if (run.systemPrompt) setSystemPrompt(run.systemPrompt);
@@ -690,17 +689,17 @@ export default function SynthesisComponent() {
       if (run.userPersona !== undefined) setUserPersona(run.userPersona);
       if (run.category) setCategory(run.category);
       if (run.targetTurns) setTargetTurns(run.targetTurns);
-      if (run.seedMessages) setSeedMessages(run.seedMessages);
+      if (run.seedMessages) setSeedMessages(run.seedMessages as Message[]);
       if (run.settings) {
         setSettings((s) => ({
           ...s,
-          provider: run.settings.provider || s.provider,
-          model: run.settings.model || s.model,
-          temperature: run.settings.temperature ?? s.temperature,
+          provider: run.settings?.provider || s.provider,
+          model: run.settings?.model || s.model,
+          temperature: run.settings?.temperature ?? s.temperature,
         }));
       }
 
-      setActiveHistoryId(run.id);
+      if (run.id) setActiveHistoryId(run.id);
       setConversationId(run.conversationId || null);
 
       // Load the generated conversation if it exists
@@ -721,7 +720,7 @@ export default function SynthesisComponent() {
         setGeneratedMessages([]);
         setLeftTab("config");
       }
-    } catch (error: any) {
+    } catch (error: unknown | Error) {
       console.error("Failed to load synthesis run:", error);
     }
   }, []);
@@ -730,7 +729,7 @@ export default function SynthesisComponent() {
     try {
       await PrismService.deleteSynthesisRun(id);
       setSynthesisConversations((prev) =>
-        prev.filter((c: any) => c.id !== id),
+        prev.filter((c: SynthesisRun) => c.id !== id),
       );
       // If the deleted run is currently active, clear the view
       setActiveHistoryId((prev) => {
@@ -742,7 +741,7 @@ export default function SynthesisComponent() {
         }
         return prev;
       });
-    } catch (error: any) {
+    } catch (error: unknown | Error) {
       console.error("Failed to delete synthesis run:", error);
     }
   }, []);
@@ -758,15 +757,15 @@ export default function SynthesisComponent() {
   }, [sftJsonString]);
 
   // -- Edit generated message ------------------------------------
-  const updateGeneratedMessage = useCallback((index: any, content: any) => {
+  const updateGeneratedMessage = useCallback((index: number, content: string) => {
     setGeneratedMessages((prev) =>
-      prev.map((m: any, i: any) => (i === index ? { ...m, content } : m)),
+      prev.map((m: Message, i: number) => (i === index ? { ...m, content } : m)),
     );
   }, []);
 
-  const removeGeneratedMessage = useCallback((index: any) => {
+  const removeGeneratedMessage = useCallback((index: number) => {
     setGeneratedMessages((prev) =>
-      prev.filter((_: any, i: any) => i !== index),
+      prev.filter((_: unknown, i: number) => i !== index),
     );
   }, []);
 
@@ -796,8 +795,8 @@ export default function SynthesisComponent() {
           <SettingsPanel
             config={filteredConfig}
             settings={settings}
-            onChange={(updates: any) =>
-              setSettings((s: any) => ({ ...s, ...updates }))
+            onChange={(updates: Record<string, unknown>) =>
+              setSettings((s: typeof settings) => ({ ...s, ...updates }))
             }
             _hasAssistantImages={false}
           />
@@ -1115,16 +1114,16 @@ export default function SynthesisComponent() {
               <MessageList
                 messages={[
                   ...(systemPrompt.trim()
-                    ? [{ role: "system", content: systemPrompt.trim() }]
+                    ? [{ role: "system" as const, content: systemPrompt.trim() }]
                     : []),
                   ...generatedMessages,
                 ]}
                 isGenerating={isGenerating}
-                onDelete={(index) => {
+                onDelete={(index: number) => {
                   const offset = systemPrompt.trim() ? 1 : 0;
                   if (index >= offset) removeGeneratedMessage(index - offset);
                 }}
-                onEdit={(index: any, content: any) => {
+                onEdit={(index: number, content: string) => {
                   const offset = systemPrompt.trim() ? 1 : 0;
                   if (index >= offset)
                     updateGeneratedMessage(index - offset, content);

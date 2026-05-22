@@ -143,7 +143,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     if (initialId) {
       setLoadingDetail(true);
       IrisService.getConversation(initialId)
-        .then((conv) => setSelectedConv(conv as unknown as Conversation))
+        .then((conv) => setSelectedConv(conv as Conversation))
         .catch(() => setSelectedConv(null))
         .finally(() => setLoadingDetail(false));
     }
@@ -281,7 +281,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   const refreshSelectedConv = useCallback(async (id: string) => {
     if (!id) return;
     try {
-      const full = (await IrisService.getConversation(id)) as unknown as Conversation;
+      const full = (await IrisService.getConversation(id)) as Conversation;
       setSelectedConv((prev) => {
         const oldMsgs = prev?.messages || [];
         const newMsgs = full?.messages || [];

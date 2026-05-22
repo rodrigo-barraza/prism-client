@@ -75,7 +75,7 @@ export default function ProvidersPage() {
           // Side-effect: registers local provider nicknames
           PrismService.getConfig().catch(() => null),
         ]);
-        setModelStats((models || []) as unknown as ModelStat[]);
+        setModelStats((models || []) as ModelStat[]);
         setRateLimits((limits || {}) as Record<string, RateLimitPanelData>);
       } catch (error: any) {
         setError(error instanceof Error ? error.message : String(error));

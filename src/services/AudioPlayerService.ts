@@ -24,7 +24,7 @@ export default class AudioPlayerService {
   init(): void {
     if (!this.audioContext) {
       this.audioContext = new (
-        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+        window.AudioContext || (window as any).webkitAudioContext
       )({
         sampleRate: DEFAULT_SAMPLE_RATE,
       });

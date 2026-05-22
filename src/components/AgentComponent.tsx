@@ -1015,7 +1015,7 @@ export default function AgentComponent({
 
   // Tools that are force-disabled because a prerequisite isn't met
   const lockedOffTools = useMemo(() => {
-    const set = new Set();
+    const set = new Set<string>();
     if (!memoryConfigured) set.add("upsert_memory");
     return set;
   }, [memoryConfigured]);

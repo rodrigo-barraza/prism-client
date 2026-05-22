@@ -762,10 +762,10 @@ export default function SettingsPanel({
                   return {
                     checked: settings.codeExecutionEnabled || false,
                     onChange: (value: boolean) => {
-                      const updates = { codeExecutionEnabled: value };
+                      const updates: Partial<PrismSettings> = { codeExecutionEnabled: value };
                       if (value) {
-                        (updates as unknown as Record<string, any>).webSearchEnabled = false;
-                        (updates as unknown as Record<string, any>).urlContextEnabled = false;
+                        updates.webSearchEnabled = false;
+                        updates.urlContextEnabled = false;
                       }
                       onChange(updates);
                     },

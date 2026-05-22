@@ -163,14 +163,7 @@ export default function MediaPageComponent({
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result = (await service.getMedia(params)) as unknown as {
-        data?: MediaItem[];
-        total?: number;
-        projects?: string[];
-        usernames?: string[];
-        providers?: string[];
-        models?: string[];
-      };
+      const result = (await service.getMedia(params)) as any;
       setMedia(result.data || []);
       setTotal(result.total || 0);
       if (result.projects) setProjects(result.projects);

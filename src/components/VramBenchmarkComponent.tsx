@@ -263,9 +263,9 @@ function makeDatalabelsPlugin({
         if (!meta.visible) continue;
         for (let i = 0; i < meta.data.length; i++) {
           if (labelCount >= maxLabels) break;
-          const element = meta.data[i] as unknown as { x: number; y: number; height?: number; options?: { radius?: number } };
+          const element = meta.data[i] as any;
           const raw = chart.data.datasets[di].data[i];
-          const label = getLabel(raw as unknown as VramBenchmarkEntry, i, di);
+          const label = getLabel(raw as any, i, di);
           if (!label) continue;
 
           let x = element.x;
@@ -317,12 +317,12 @@ function makeConnectorHighlightPlugin() {
         }
       }
 
-      const prev = (chart as unknown as Record<string, any>)._hoveredConnectorModel;
-      (chart as unknown as Record<string, any>)._hoveredConnectorModel = hoveredModel;
+      const prev = (chart as any)._hoveredConnectorModel;
+      (chart as any)._hoveredConnectorModel = hoveredModel;
       if (prev !== hoveredModel) args.changed = true;
     },
     afterDraw(chart: Chart) {
-      const hoveredModel = (chart as unknown as Record<string, any>)._hoveredConnectorModel as string | null;
+      const hoveredModel = (chart as any)._hoveredConnectorModel as string | null;
       if (!hoveredModel) return;
 
       const context = chart.ctx;
@@ -345,7 +345,7 @@ function makeConnectorHighlightPlugin() {
           bubblePoints.push({
             x: element.x,
             y: element.y,
-            r: element.options?.radius || ('r' in raw ? (raw as unknown as { r?: number }).r : 0) || 5,
+            r: element.options?.radius || ('r' in raw ? (raw as any).r : 0) || 5,
             borderColor: ds.borderColor as string | undefined,
           });
         }

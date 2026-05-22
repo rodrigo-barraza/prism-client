@@ -41,6 +41,30 @@ import {
 } from "@rodrigo-barraza/components-library";
 import styles from "./SettingsPageComponent.module.css";
 
+import { PrismSettings, AgenticHarness } from "../types/types";
+
+interface LocalWorkspace {
+  id?: string;
+  name?: string;
+  path: string;
+  isPinned?: boolean;
+  isAgentServed?: boolean;
+}
+
+interface LocalAgent {
+  id: string;
+  name: string;
+  project?: string;
+  path?: string;
+  capabilities?: string[];
+  roots?: { path: string; isAgentServed?: boolean }[];
+  version?: string;
+  clientIp?: string;
+  connectedAt?: string;
+  pendingRpcs?: number;
+}
+
+
 /**
  * SettingsPageComponent — server-side settings management.
  *
@@ -73,15 +97,15 @@ export default function SettingsPageComponent() {
   const wsValidateTimer = useRef<any>(null);
 
   /** Detect Windows-style path for instant client-side preview */
-  const isWindowsPath = (p: any) => /^[A-Za-z]:[/\\]/.test(p);
-  const windowsToWslPreview = (p: any) => {
+  const isWindowsPath = (p: string) => /^[A-Za-z]:[/\\]/.test(p);
+  const windowsToWslPreview = (p: string) => {
     const m = p.match(/^([A-Za-z]):[/\\](.*)/);
     if (!m) return null;
     return `/mnt/${m[1].toLowerCase()}/${m[2].replace(/\\/g, "/")}`;
   };
 
   /** Format uptime duration from ISO date */
-  const formatUptime = (isoDate: any) => {
+  const formatUptime = (isoDate: string) => {
     if (!isoDate) return "";
     const ms = Date.now() - new Date(isoDate).getTime();
     const seconds = Math.floor(ms / 1000);
@@ -118,7 +142,7 @@ export default function SettingsPageComponent() {
 
     // Fetch full workspace config (workspaces + agents)
     WorkspaceService.listFull()
-      .then(({ workspaces, agents }: any) => {
+      .then(({ workspaces, agents }: { workspaces: LocalWorkspace[]; agents: LocalAgent[] }) => {
         setWsWorkspaces(workspaces || []);
         setWsAgents(agents || []);
       })
@@ -126,7 +150,7 @@ export default function SettingsPageComponent() {
   }, []);
 
   // -- Persist changes ------------------------------------------------
-  const persistSettings = useCallback(async (updatedSettings: any) => {
+  const persistSettings = useCallback(async (updatedSettings: Partial<PrismSettings>) => {
     setSaving(true);
     try {
       const result = await PrismService.updateSettings(updatedSettings);
@@ -137,7 +161,7 @@ export default function SettingsPageComponent() {
         () => setSaved(false),
         FEEDBACK_STANDARD_MS,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to save settings:", error);
     } finally {
       setSaving(false);
@@ -149,12 +173,12 @@ export default function SettingsPageComponent() {
     (provider: string, model: string) => {
       const updated = {
         memory: {
-          ...(settings as any)?.memory,
+          ...settings?.memory,
           extractionProvider: provider || "",
           extractionModel: model || "",
         },
       };
-      setSettings((s: any) => ({ ...s, ...updated }));
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -164,12 +188,12 @@ export default function SettingsPageComponent() {
     (provider: string, model: string) => {
       const updated = {
         memory: {
-          ...(settings as any)?.memory,
+          ...settings?.memory,
           consolidationProvider: provider || "",
           consolidationModel: model || "",
         },
       };
-      setSettings((s: any) => ({ ...s, ...updated }));
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -179,12 +203,12 @@ export default function SettingsPageComponent() {
     (provider: string, model: string) => {
       const updated = {
         memory: {
-          ...(settings as any)?.memory,
+          ...settings?.memory,
           embeddingProvider: provider || "",
           embeddingModel: model || "",
         },
       };
-      setSettings((s: any) => ({ ...s, ...updated }));
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -195,12 +219,12 @@ export default function SettingsPageComponent() {
     (provider: string, model: string) => {
       const updated = {
         agents: {
-          ...(settings as any)?.agents,
+          ...settings?.agents,
           subagentProvider: provider || "",
           subagentModel: model || "",
         },
       };
-      setSettings((s: any) => ({ ...s, ...updated }));
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -208,14 +232,14 @@ export default function SettingsPageComponent() {
 
   // -- Harness change handler -----------------------------------------
   const handleHarnessSelect = useCallback(
-    (harnessId: any) => {
+    (harnessId: string) => {
       const updated = {
         agents: {
-          ...(settings as any)?.agents,
+          ...settings?.agents,
           harness: harnessId,
         },
       };
-      setSettings((s: any) => ({ ...s, ...updated }));
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -223,14 +247,14 @@ export default function SettingsPageComponent() {
 
   // -- Reset to defaults ----------------------------------------------
   const handleResetMemory = useCallback(async () => {
-    if (!(defaults as any)?.memory) return;
-    const updated = { memory: { ...(defaults as any).memory } };
-    setSettings((s: any) => ({ ...s, ...updated }));
+    if (!defaults?.memory) return;
+    const updated = { memory: { ...(defaults?.memory || {}) } };
+    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
   // -- Workspace handlers ---------------------------------------------
-  const handleWsPathChange = useCallback((value: any) => {
+  const handleWsPathChange = useCallback((value: string) => {
     setWsAddPath(value);
     setWsValidation(null);
     clearTimeout(wsValidateTimer.current);
@@ -250,8 +274,8 @@ export default function SettingsPageComponent() {
     setWsAdding(true);
     try {
       const currentUserRoots = wsWorkspaces
-        .filter((w: any) => !w.isPinned)
-        .map((w: any) => w.path);
+        .filter((w: LocalWorkspace) => !w.isPinned)
+        .map((w: LocalWorkspace) => w.path);
       // Resolve the new path — if Windows, the backend will translate
       const newPath = wsAddPath.trim();
       await WorkspaceService.update([...currentUserRoots, newPath]);
@@ -262,7 +286,7 @@ export default function SettingsPageComponent() {
       setWsAddPath("");
       setWsValidation(null);
       await refreshWorkspaces();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to add workspace:", error);
       setWsValidation({ valid: false, error: "Failed to add workspace" });
     } finally {
@@ -271,17 +295,17 @@ export default function SettingsPageComponent() {
   }, [wsAddPath, wsAdding, wsWorkspaces, refreshWorkspaces]);
 
   const handleRemoveWorkspace = useCallback(
-    async (pathToRemove: any) => {
+    async (pathToRemove: string) => {
       try {
         const remainingUserRoots = wsWorkspaces
-          .filter((w: any) => !w.isPinned && w.path !== pathToRemove)
-          .map((w: any) => w.path);
+          .filter((w: LocalWorkspace) => !w.isPinned && w.path !== pathToRemove)
+          .map((w: LocalWorkspace) => w.path);
         await WorkspaceService.update(remainingUserRoots);
         const { workspaces, agents } = await WorkspaceService.listFull();
         setWsWorkspaces(workspaces || []);
         setWsAgents(agents || []);
         await refreshWorkspaces();
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to remove workspace:", error);
       }
     },
@@ -289,9 +313,9 @@ export default function SettingsPageComponent() {
   );
 
   const handleResetAgents = useCallback(async () => {
-    if (!(defaults as any)?.agents) return;
-    const updated = { agents: { ...(defaults as any).agents } };
-    setSettings((s: any) => ({ ...s, ...updated }));
+    if (!defaults?.agents) return;
+    const updated = { agents: { ...(defaults?.agents || {}) } };
+    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
@@ -300,17 +324,17 @@ export default function SettingsPageComponent() {
     try {
       const list = await PrismService.getCustomAgents();
       setCustomAgents(list);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load custom agents:", error);
     }
   }, []);
 
   // -- Derived workspace data -----------------------------------------
   const localStaticRoots = wsWorkspaces.filter(
-    (w: Record<string, any>) => w.isPinned && !w.isAgentServed,
+    (w: LocalWorkspace) => w.isPinned && !w.isAgentServed,
   );
   const userRoots = wsWorkspaces.filter(
-    (w: Record<string, any>) => !w.isPinned && !w.isAgentServed,
+    (w: LocalWorkspace) => !w.isPinned && !w.isAgentServed,
   );
 
   // -- Loading state --------------------------------------------------
@@ -329,8 +353,8 @@ export default function SettingsPageComponent() {
     );
   }
 
-  const mem = (settings as any).memory || {};
-  const agentDefaults = (settings as any).agents || {};
+  const mem = (settings?.memory || {}) || {};
+  const agentDefaults = (settings?.agents || {}) || {};
   const hasAgents = wsAgents.length > 0;
   const hasAnyWorkspaces = wsWorkspaces.length > 0;
 
@@ -385,7 +409,7 @@ export default function SettingsPageComponent() {
                 <Server size={10} />
                 Remote Agents
               </div>
-              {wsAgents.map((agent: any) => (
+              {wsAgents.map((agent: LocalAgent) => (
                 <div key={agent.id} className={styles.agentCard}>
                   <div className={styles.agentCardHeader}>
                     <div className={styles.agentIcon}>
@@ -405,10 +429,12 @@ export default function SettingsPageComponent() {
                           {agent.clientIp}
                         </span>
                         <span className={styles.agentMetaSeparator} />
-                        <span className={styles.agentMetaItem}>
-                          up {formatUptime(agent.connectedAt)}
-                        </span>
-                        {agent.pendingRpcs > 0 && (
+                        {agent.connectedAt && (
+                          <span className={styles.agentMetaItem}>
+                            up {formatUptime(agent.connectedAt)}
+                          </span>
+                        )}
+                        {(agent.pendingRpcs ?? 0) > 0 && (
                           <>
                             <span className={styles.agentMetaSeparator} />
                             <span className={styles.agentMetaItem}>
@@ -419,7 +445,7 @@ export default function SettingsPageComponent() {
                       </div>
                     </div>
                     <div className={styles.agentCapabilities}>
-                      {(agent.capabilities || []).map((cap: any) => (
+                      {(agent.capabilities || []).map((cap: string) => (
                         <span key={cap} className={styles.capabilityTag}>
                           {cap}
                         </span>
@@ -428,15 +454,12 @@ export default function SettingsPageComponent() {
                   </div>
 
                   {/* Roots served by this agent */}
-                  {agent.roots?.length > 0 && (
+                  {agent.roots && agent.roots.length > 0 && (
                     <div className={styles.agentRoots}>
-                      {agent.roots.map((root: any) => (
-                        <div key={root} className={styles.agentRootItem}>
-                          <FolderTree
-                            size={11}
-                            className={styles.agentRootIcon}
-                          />
-                          {root}
+                      {agent.roots.map((root: { path: string; isAgentServed?: boolean }) => (
+                        <div key={root.path} className={styles.agentRootItem}>
+                          <FolderOpen size={13} className={styles.dimIcon} />
+                          {root.path}
                         </div>
                       ))}
                     </div>
@@ -454,7 +477,7 @@ export default function SettingsPageComponent() {
                 <Settings2 size={10} />
                 Static Roots
               </div>
-              {localStaticRoots.map((ws: any) => (
+              {localStaticRoots.map((ws: LocalWorkspace) => (
                 <div key={ws.id} className={styles.workspaceItem}>
                   <div className={styles.workspaceItemInfo}>
                     <FolderOpen
@@ -487,7 +510,7 @@ export default function SettingsPageComponent() {
                 <FolderOpen size={10} />
                 User Workspaces
               </div>
-              {userRoots.map((ws: any) => (
+              {userRoots.map((ws: LocalWorkspace) => (
                 <div key={ws.id} className={styles.workspaceItem}>
                   <div className={styles.workspaceItemInfo}>
                     <FolderOpen
@@ -538,18 +561,18 @@ export default function SettingsPageComponent() {
           <div className={styles.addWorkspaceRow}>
             <input
               type="text"
-              className={`${styles.addWorkspaceInput} ${wsValidation ? ((wsValidation as any).valid ? styles.valid : styles.invalid) : ""}`}
+              className={`${styles.addWorkspaceInput} ${wsValidation ? ((wsValidation as { valid: boolean; error?: string }).valid ? styles.valid : styles.invalid) : ""}`}
               placeholder="Add workspace path (e.g. /home/user/projects or C:\Users\...)"
               value={wsAddPath}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => handleWsPathChange(e.target.value)}
-              onKeyDown={(e: any) => {
-                if (e.key === "Enter" && (wsValidation as any)?.valid)
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === "Enter" && (wsValidation as { valid: boolean; error?: string })?.valid)
                   handleAddWorkspace();
               }}
             />
             <button
               className={styles.addButton}
-              disabled={!(wsValidation as any)?.valid || wsAdding}
+              disabled={!(wsValidation as { valid: boolean; error?: string })?.valid || wsAdding}
               onClick={handleAddWorkspace}
             >
               <Plus size={14} />
@@ -560,15 +583,15 @@ export default function SettingsPageComponent() {
           {/* Validation feedback */}
           {wsAddPath.trim() && wsValidation && (
             <div
-              className={`${styles.validationRow} ${(wsValidation as any).valid ? styles.success : styles.error}`}
+              className={`${styles.validationRow} ${(wsValidation as { valid: boolean; error?: string }).valid ? styles.success : styles.error}`}
             >
-              {(wsValidation as any).valid ? (
+              {(wsValidation as { valid: boolean; error?: string }).valid ? (
                 <>
                   <CheckCircle2 size={12} /> Valid directory
                 </>
               ) : (
                 <>
-                  <XCircle size={12} /> {(wsValidation as any).error}
+                  <XCircle size={12} /> {(wsValidation as { valid: boolean; error?: string }).error}
                 </>
               )}
             </div>
@@ -1146,7 +1169,7 @@ export default function SettingsPageComponent() {
             </div>
           </div>
           <div className={styles.harnessGrid}>
-            {harnesses.map((h: any) => {
+            {harnesses.map((h: AgenticHarness) => {
               const isActive = (agentDefaults.harness || "standard") === h.id;
               return (
                 <button

@@ -262,7 +262,7 @@ export default class LiveSessionService {
       // polyphase resampler, eliminating manual downsampling.
       if (!this.audioContext) {
         this.audioContext = new (
-          window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+          window.AudioContext || (window as any).webkitAudioContext
         )({
           sampleRate: 16000,
         });
@@ -351,7 +351,7 @@ export default class LiveSessionService {
     if (!this._playbackInitPromise) {
       this._playbackInitPromise = (async () => {
         this.playbackContext = new (
-          window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+          window.AudioContext || (window as any).webkitAudioContext
         )({
           sampleRate: 24000,
         });

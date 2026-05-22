@@ -131,14 +131,14 @@ export default function SpinningCatComponent({
           return;
         }
 
-        framesRef.current = frames as unknown as DecodedFrame[];
+        framesRef.current = frames as any;
         bitmapsRef.current = bitmaps;
 
         const canvas = canvasRef.current;
         if (canvas && frames.length > 0) {
           canvas.width = frames[0].dims.width;
           canvas.height = frames[0].dims.height;
-          renderFrame(canvas, frames as unknown as DecodedFrame[], bitmaps, 0);
+          renderFrame(canvas, frames as any, bitmaps, 0);
         }
       } catch (error: any) {
         console.error("SpinningCatComponent: failed to decode GIF", error);

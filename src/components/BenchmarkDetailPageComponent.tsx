@@ -386,7 +386,7 @@ export default function BenchmarkDetailPageComponent({
   const buildBenchmarkSSECallbacks = useCallback(
     (overrides: Partial<SSECallbacks> = {}) => ({
       onRunInfo: (data: SSEData) => {
-        setStreamingTotal((data as unknown as { totalModels?: number }).totalModels || 0);
+        setStreamingTotal((data as { totalModels?: number }).totalModels || 0);
       },
 
       // -- Model lifecycle — supports concurrent models across providers --
@@ -429,7 +429,7 @@ export default function BenchmarkDetailPageComponent({
         const initialPhase = isLocal ? "Loading model" : "Connecting";
         setActiveModels((prev) => {
           const next = new Map(prev);
-          next.set(modelKey, { model: data as unknown, progress: 0, phase: initialPhase });
+          next.set(modelKey, { model: data as any, progress: 0, phase: initialPhase });
           return next;
         });
 

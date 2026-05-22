@@ -492,7 +492,7 @@ export default function RequestsPage() {
             setSelectedRequest(req as RequestItem);
             try {
               const full = await IrisService.getRequest(req.requestId);
-              setSelectedRequest(full as unknown as RequestItem);
+              setSelectedRequest(full as RequestItem);
             } catch {
               /* keep partial data */
             }
