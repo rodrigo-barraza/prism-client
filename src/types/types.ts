@@ -25,6 +25,7 @@ export interface ArenaScores {
 export interface ModelOption {
   name: string;
   label?: string;
+  display_name?: string;
   provider?: string;
   description?: string;
   contextLength?: number;
@@ -140,6 +141,7 @@ export interface WorkerGenerationProgress {
   outputTokens?: number;
   totalOutputTokens?: number;
   tokensPerSecond?: number;
+  tokPerSec?: number;
   toolNames?: Record<string, number>;
 }
 
@@ -155,6 +157,13 @@ export interface SessionStats {
   modalities?: Record<string, number>;
   toolCounts?: Record<string, number>;
   totalElapsedTime?: number;
+  avgTokensPerSec?: number;
+  avgTimeToGeneration?: number;
+  totalCacheReadInputTokens?: number;
+  totalCacheCreationInputTokens?: number;
+  totalReasoningOutputTokens?: number;
+  orchestrator?: Record<string, unknown>;
+  workers?: Record<string, unknown>;
 }
 
 // ─── Token Usage ────────────────────────────────────────────
@@ -713,6 +722,14 @@ export interface BenchmarkAssertion {
   matchMode: string;
 }
 
+export interface AgentBenchmarkAssertion {
+  type?: string;
+  operator?: string;
+  operand?: string | number;
+  expectedValue?: string;
+  matchMode?: string;
+}
+
 export interface Benchmark {
   _id: ObjectId;
   id?: string;
@@ -731,8 +748,9 @@ export interface Benchmark {
   matchMode?: string;
   assertions?: BenchmarkAssertion[];
   assertionOperator?: string;
-  agentAssertions?: BenchmarkAssertion[];
+  agentAssertions?: AgentBenchmarkAssertion[];
   agentAssertionOperator?: string;
+  tags?: string[];
 }
 
 export interface BenchmarkRunResult {
@@ -746,17 +764,37 @@ export interface BenchmarkRunResult {
   ttftMs?: number;
   tokensPerSecond?: number;
   error?: string;
+  label?: string;
+  display_name?: string;
+  passed?: boolean;
+  thinking?: string;
+  toolCalls?: Array<{ id?: string; name?: string; args?: unknown; result?: unknown; status?: string }>;
+  thinkingEnabled?: boolean;
+  toolsEnabled?: boolean;
+  agent?: string;
+}
+
+export interface BenchmarkRunSummary {
+  total: number;
+  passed: number;
+  failed: number;
+  errored: number;
+  totalCost?: number;
 }
 
 export interface BenchmarkRun {
   _id: ObjectId;
   id?: string;
   benchmarkId: ObjectId;
-  results: BenchmarkRunResult[];
-  status: "pending" | "running" | "completed" | "failed" | "aborted";
-  startedAt: string;
+  results?: BenchmarkRunResult[];
+  models?: BenchmarkRunResult[];
+  status?: "pending" | "running" | "completed" | "failed" | "aborted";
+  startedAt?: string;
   completedAt?: string;
+  aborted?: boolean;
+  summary?: BenchmarkRunSummary;
 }
+
 
 export interface BenchmarkListResponse {
   benchmarks: Benchmark[];

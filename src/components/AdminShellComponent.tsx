@@ -30,11 +30,11 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   // Track conversations by ID → messageCount to detect both new convos and updates
-  const knownConvsRef = useRef<any>(null); // null = not initialized
-  const knownSessionsRef = useRef<any>(null);
-  const knownRequestsRef = useRef<any>(null);
-  const knownMediaRef = useRef<any>(null);
-  const knownTextRef = useRef<any>(null);
+  const knownConvsRef = useRef<Map<string, number> | null>(null);
+  const knownSessionsRef = useRef<Set<string> | null>(null);
+  const knownRequestsRef = useRef<Set<string> | null>(null);
+  const knownMediaRef = useRef<number | null>(null);
+  const knownTextRef = useRef<number | null>(null);
   const isOnConversationsRef = useRef<boolean>(
     pathname.startsWith("/admin/conversations"),
   );
@@ -67,7 +67,8 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   // so it's visible (Change Streams push transitions faster than old polling).
   const generatingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    const es = IrisService.subscribeConversationStats((data) => {
+    const es = IrisService.subscribeConversationStats((raw) => {
+      const data = raw as { generatingCount?: number };
       const count = data.generatingCount || 0;
       if (count > 0) {
         // Clear any pending "stop generating" timer
@@ -98,15 +99,15 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
     async function fetchSessions() {
       try {
         const data = await IrisService.getTraces({ page: 1, limit: 50 });
-        const list = data.data || data.traces || [];
-        const currentIds = new Set(list.map((s) => s.id));
+        const list = data.data || [];
+        const currentIds = new Set(list.map((s) => (s as { id?: string }).id || (s as { _id: string })._id));
 
         if (knownSessionsRef.current === null) {
           knownSessionsRef.current = currentIds;
         } else if (!isOnSessionsRef.current) {
           let newOnes = 0;
           for (const id of currentIds) {
-            if (!(knownSessionsRef.current as Set<string>).has(id)) newOnes++;
+            if (!knownSessionsRef.current.has(id as string)) newOnes++;
           }
           if (newOnes > 0) setNewTracesCount((prev) => prev + newOnes);
           knownSessionsRef.current = currentIds;
@@ -137,7 +138,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         } else if (!isOnConversationsRef.current) {
           let changes = 0;
           for (const [id, msgCount] of currentMap) {
-            const known = (knownConvsRef.current as Map<string, any>).get(id);
+            const known = knownConvsRef.current.get(id);
             if (known === undefined) {
               changes++;
             } else if (msgCount > known) {
@@ -180,7 +181,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         } else if (!isOnRequestsRef.current) {
           let newOnes = 0;
           for (const id of currentIds) {
-            if (!(knownRequestsRef.current as Set<string>).has(id)) newOnes++;
+            if (!knownRequestsRef.current.has(id as string)) newOnes++;
           }
           if (newOnes > 0) setNewRequestsCount((prev) => prev + newOnes);
           knownRequestsRef.current = currentIds;
@@ -201,7 +202,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           knownMediaRef.current = total;
         } else if (!isOnMediaRef.current && total > knownMediaRef.current) {
           setNewMediaCount(
-            (prev) => prev + (total - knownMediaRef.current),
+            (prev) => prev + (total - (knownMediaRef.current ?? 0)),
           );
           knownMediaRef.current = total;
         } else {
@@ -220,7 +221,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         if (knownTextRef.current === null) {
           knownTextRef.current = total;
         } else if (!isOnTextRef.current && total > knownTextRef.current) {
-          setNewTextCount((prev) => prev + (total - knownTextRef.current));
+          setNewTextCount((prev) => prev + (total - (knownTextRef.current ?? 0)));
           knownTextRef.current = total;
         } else {
           knownTextRef.current = total;
@@ -272,7 +273,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const handleNavClick = useCallback((href: any) => {
+  const handleNavClick = useCallback((href: string) => {
     if (href.startsWith("/admin/conversations")) setNewCount(0);
     if (href.startsWith("/admin/traces")) setNewTracesCount(0);
     if (href.startsWith("/admin/requests")) setNewRequestsCount(0);

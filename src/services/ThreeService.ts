@@ -209,7 +209,7 @@ function disposeSceneGraph(object: Object3D): void {
     for (const mat of materials) {
       // Dispose all texture properties
       for (const key of Object.keys(mat)) {
-        const value = (mat as Record<string, any>)[key];
+        const value = (mat as Record<string, unknown>)[key];
         if (value && value instanceof THREE.Texture) {
           (value as Texture).dispose();
         }

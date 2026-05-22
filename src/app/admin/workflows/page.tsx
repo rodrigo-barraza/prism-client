@@ -61,9 +61,9 @@ function AdminWorkflowsPageInner() {
       const list = data.data || [];
       setWorkflows(list);
       if (list.length > 0 && !selectedId && !initialId) {
-        selectWorkflow(list[0]._id);
+        selectWorkflow((list[0] as { _id: string })._id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError((error as Error).message);
     } finally {
       setLoading(false);
@@ -136,7 +136,7 @@ function AdminWorkflowsPageInner() {
 
   const handleUpdateNodePosition = useCallback((nodeId: any, position: any) => {
     setLocalNodes((prev) =>
-      prev.map((n: { id: string; [key: string]: any }) => (n.id === nodeId ? { ...n, position } : n)),
+      prev.map((n: { id: string; [key: string]: unknown }) => (n.id === nodeId ? { ...n, position } : n)),
     );
   }, []);
 
@@ -154,7 +154,7 @@ function AdminWorkflowsPageInner() {
       a.click();
       URL.revokeObjectURL(url);
       addToast("Workflow downloaded");
-    } catch (error: any) {
+    } catch (error: unknown) {
       addToast(`Download failed: ${(error as Error).message}`, "error");
     }
   }, []);
@@ -167,7 +167,7 @@ function AdminWorkflowsPageInner() {
       const data = JSON.stringify(wf, null, 2);
       await copyToClipboard(data);
       addToast("Workflow copied to clipboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       addToast(`Copy failed: ${(error as Error).message}`, "error");
     }
   }, []);

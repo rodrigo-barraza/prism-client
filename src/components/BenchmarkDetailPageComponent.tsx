@@ -37,7 +37,62 @@ import { SK_MODEL_MEMORY_BENCHMARKS } from "../constants";
 import { formatCost, generateUUID } from "../utils/utilities";
 import styles from "./BenchmarkPageComponent.module.css";
 import type { ReactNode } from "react";
-import type { Benchmark, BenchmarkRun, BenchmarkRunResult, AgentPersona } from "../types/types";
+import type { Benchmark, BenchmarkRun, BenchmarkRunResult, AgentPersona, PrismConfig, ModelOption, ToolCallEvent, SSECallbacks, SSEData, Message, AgentBenchmarkAssertion } from "../types/types";
+
+export interface ModelInstance {
+  instanceId: string;
+  provider: string;
+  name: string;
+}
+
+export interface AgentInstance {
+  instanceId: string;
+  agentId: string;
+  name: string;
+  provider?: string;
+  modelName?: string;
+  description?: string;
+}
+
+export interface ModelOptionWithProvider extends ModelOption {
+  provider: string;
+}
+
+/** Per-model accumulated live data during streaming */
+interface LiveModelData {
+  text: string;
+  thinking: string;
+  toolCalls: Array<{ id?: string; name?: string; args?: unknown; status?: string; result?: unknown }>;
+}
+
+/** SSE tool call event shape — alias for ToolCallEvent from types.ts */
+type LiveToolCallEvent = ToolCallEvent;
+
+/** SSE tool execution event shape */
+interface LiveToolExecutionEvent {
+  status?: string;
+  tool?: { id?: string; name?: string; args?: unknown; result?: unknown };
+  _sourceModel?: string;
+}
+
+/** Benchmark run target shape */
+interface BenchmarkTarget {
+  provider: string;
+  model: string;
+  display_name?: string;
+  thinkingEnabled?: boolean;
+  toolsEnabled?: boolean;
+  agent?: string;
+}
+
+/** localStorage shape for benchmark storage */
+interface BenchmarkStorage {
+  selectedKeys?: string[];
+  instances?: ModelInstance[];
+  thinkingMap?: Record<string, boolean>;
+  toolsMap?: Record<string, boolean>;
+  agents?: AgentInstance[];
+}
 
 const MATCH_MODES = [
   { value: "contains", label: "Contains" },
@@ -49,14 +104,14 @@ const MATCH_MODES = [
 /**
  * Flatten config into a flat array for deriving selectedModels and modelConfigMap.
  */
-function flattenAllModels(config: any) {
+function flattenAllModels(config: PrismConfig | null): ModelOptionWithProvider[] {
   if (!config) return [];
-  const seen = new Map();
+  const seen = new Map<string, ModelOptionWithProvider>();
   const sections = ["textToText", "textToImage", "audioToText", "textToSpeech"];
   for (const key of sections) {
-    const modelsMap = (config[key]?.models || {}) as any;
-    for (const [provider, models] of Object.entries(modelsMap)) {
-      for (const m of models as any[]) {
+    const modelsMap = (config[key as keyof PrismConfig] as Record<string, unknown>)?.models || {};
+    for (const [provider, models] of Object.entries(modelsMap as Record<string, ModelOption[]>)) {
+      for (const m of models) {
         const id = `${provider}:${m.name}`;
         if (!seen.has(id)) seen.set(id, { ...m, provider });
       }
@@ -70,11 +125,14 @@ function flattenAllModels(config: any) {
  * If the event carries a `_sourceModel` tag (provider + model), use that directly.
  * Otherwise fall back to the last active key in the live data map.
  */
-function resolveModelKeyForContent(liveDataMap: any, sourceModel: any) {
+function resolveModelKeyForContent(liveDataMap: Map<string, LiveModelData>, sourceModel: string | { provider?: string; model?: string } | null | undefined) {
   // Prefer explicit source tag (set by backend for concurrent benchmark runs)
-  if (sourceModel?.provider && sourceModel?.model) {
+  if (typeof sourceModel === 'object' && sourceModel?.provider && sourceModel?.model) {
     const key = `${sourceModel.provider}:${sourceModel.model}`;
     if (liveDataMap.has(key)) return key;
+  } else if (typeof sourceModel === 'string' && sourceModel.includes(':')) {
+    // String format: "provider:model"
+    if (liveDataMap.has(sourceModel)) return sourceModel;
   }
   // Fallback: last key in the map (most recently started model)
   let lastKey = null;
@@ -96,7 +154,7 @@ interface BenchmarkFormState {
   benchmarkMode: string;
   assertions: Array<{ expectedValue: string; matchMode: string }>;
   assertionOperator: string;
-  agentAssertions: Array<{ expectedValue: string; matchMode: string }>;
+  agentAssertions: AgentBenchmarkAssertion[];
   agentAssertionOperator: string;
 }
 
@@ -137,13 +195,13 @@ export default function BenchmarkDetailPageComponent({
 
   // Model selection — instance-based: each entry has a unique instanceId
   // so the same model can be selected multiple times with different settings.
-  const [prismConfig, setPrismConfig] = useState<any>(null);
-  const [selectedInstances, setSelectedInstances] = useState(() => {
-    const saved = StorageService.get<any>(SK_MODEL_MEMORY_BENCHMARKS);
+  const [prismConfig, setPrismConfig] = useState<PrismConfig | null>(null);
+  const [selectedInstances, setSelectedInstances] = useState<ModelInstance[]>(() => {
+    const saved = StorageService.get<BenchmarkStorage>(SK_MODEL_MEMORY_BENCHMARKS);
     // Migration: if saved data uses the old Set-based selectedKeys format,
     // convert each key into an instance object.
     if (saved?.selectedKeys && Array.isArray(saved.selectedKeys)) {
-      return saved.selectedKeys.map((key: any) => {
+      return saved.selectedKeys.map((key: string) => {
         const [provider, ...rest] = key.split(":");
         return { instanceId: generateUUID(), provider, name: rest.join(":") };
       });
@@ -157,28 +215,28 @@ export default function BenchmarkDetailPageComponent({
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   // Available agent personas (fetched dynamically)
-  const [availableAgents, setAvailableAgents] = useState<any[]>([]);
+  const [availableAgents, setAvailableAgents] = useState<AgentPersona[]>([]);
 
   // Selected result (for chat preview)
-  const [selectedResult, setSelectedResult] = useState<any>(null);
+  const [selectedResult, setSelectedResult] = useState<BenchmarkRunResult | null>(null);
 
   // Per-model thinking toggle: Map<instanceId, boolean>
-  const [thinkingMap, setThinkingMap] = useState(() => {
-    const saved = StorageService.get<any>(SK_MODEL_MEMORY_BENCHMARKS);
+  const [thinkingMap, setThinkingMap] = useState<Record<string, boolean>>(() => {
+    const saved = StorageService.get<BenchmarkStorage>(SK_MODEL_MEMORY_BENCHMARKS);
     return saved?.thinkingMap && typeof saved.thinkingMap === "object"
       ? saved.thinkingMap
       : {};
   });
-  const [toolsMap, setToolsMap] = useState(() => {
-    const saved = StorageService.get<any>(SK_MODEL_MEMORY_BENCHMARKS);
+  const [toolsMap, setToolsMap] = useState<Record<string, boolean>>(() => {
+    const saved = StorageService.get<BenchmarkStorage>(SK_MODEL_MEMORY_BENCHMARKS);
     return saved?.toolsMap && typeof saved.toolsMap === "object"
       ? saved.toolsMap
       : {};
   });
 
   // Agent instances — same instance-based pattern as models
-  const [agentInstances, setAgentInstances] = useState(() => {
-    const saved = StorageService.get<any>(SK_MODEL_MEMORY_BENCHMARKS);
+  const [agentInstances, setAgentInstances] = useState<AgentInstance[]>(() => {
+    const saved = StorageService.get<BenchmarkStorage>(SK_MODEL_MEMORY_BENCHMARKS);
     if (saved?.agents && Array.isArray(saved.agents)) {
       return saved.agents;
     }
@@ -187,17 +245,17 @@ export default function BenchmarkDetailPageComponent({
 
   // Compute the active row key for table highlight
   const getActiveKey = useCallback(
-    (results: any) => {
+    (results: BenchmarkRunResult[]) => {
       if (!selectedResult) return undefined;
       const index = results.indexOf(selectedResult);
       if (index === -1) return undefined;
-      return `${(selectedResult as any).provider}:${(selectedResult as any).label}:${index}`;
+      return `${selectedResult.provider}:${selectedResult.label || selectedResult.model}:${index}`;
     },
     [selectedResult],
   );
 
   // Smart row click: running rows switch the live preview, completed rows set selectedResult
-  const handleStreamingRowClick = useCallback((row: any) => {
+  const handleStreamingRowClick = useCallback((row: BenchmarkRunResult & { _running?: boolean; _pending?: boolean }) => {
     if (row._running) {
       // Switch live preview to this model
       const key = `${row.provider}:${row.model}`;
@@ -222,23 +280,23 @@ export default function BenchmarkDetailPageComponent({
   }, []);
 
   // Streaming progress — supports concurrent model execution across provider buckets
-  const [streamingResults, setStreamingResults] = useState<any[]>([]);
+  const [streamingResults, setStreamingResults] = useState<BenchmarkRunResult[]>([]);
   const [streamingTotal, setStreamingTotal] = useState(0);
   // Map<modelKey, { model, progress, phase }> for all concurrently-running models
   const [activeModels, setActiveModels] = useState(new Map());
-  const [pendingTargets, setPendingTargets] = useState<any[]>([]);
-  const abortRef = useRef<any>(null);
+  const [pendingTargets, setPendingTargets] = useState<BenchmarkTarget[]>([]);
+  const abortRef = useRef<(() => void) | null>(null);
   // Per-model progress intervals: Map<modelKey, intervalId>
-  const progressIntervalsRef = useRef<Map<string, any>>(new Map());
+  const progressIntervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
 
   // The model key the user is currently viewing in live preview (sticky — doesn't auto-switch)
-  const [viewedModelKey, setViewedModelKey] = useState<any>(null);
+  const [viewedModelKey, setViewedModelKey] = useState<string | null>(null);
 
   // Live streaming text for the currently-viewed model
   // Map<modelKey, { text, thinking, toolCalls }> — accumulates per model
-  const liveDataRef = useRef<Map<string, any>>(new Map());
-  const liveFlushRef = useRef<any>(null);
-  const [liveSnapshot, setLiveSnapshot] = useState<any>({
+  const liveDataRef = useRef<Map<string, LiveModelData>>(new Map());
+  const liveFlushRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [liveSnapshot, setLiveSnapshot] = useState<LiveModelData>({
     text: "",
     thinking: "",
     toolCalls: [],
@@ -277,7 +335,7 @@ export default function BenchmarkDetailPageComponent({
         setLatestRun(detail.latestRun);
         setActiveRunId(detail.latestRun.id || null);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load benchmark detail:", error);
     } finally {
       setLoading(false);
@@ -286,7 +344,7 @@ export default function BenchmarkDetailPageComponent({
     try {
       const { runs } = await PrismService.getBenchmarkRuns(benchmarkId);
       setRunHistory(runs || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load run history:", error);
     }
   }, [benchmarkId]);
@@ -312,7 +370,7 @@ export default function BenchmarkDetailPageComponent({
   }, []);
 
   /** Reset live state for a single model on completion. */
-  const resetModelLiveState = useCallback((modelKey: any) => {
+  const resetModelLiveState = useCallback((modelKey: string) => {
     const intervalId = progressIntervalsRef.current.get(modelKey);
     if (intervalId) {
       clearInterval(intervalId);
@@ -326,14 +384,15 @@ export default function BenchmarkDetailPageComponent({
    * and `followBenchmarkRun`. Identical event handling — no duplication.
    */
   const buildBenchmarkSSECallbacks = useCallback(
-    (overrides = {}) => ({
-      onRunInfo: (data: any) => {
-        setStreamingTotal(data.totalModels || 0);
+    (overrides: Partial<SSECallbacks> = {}) => ({
+      onRunInfo: (data: SSEData) => {
+        setStreamingTotal((data as unknown as { totalModels?: number }).totalModels || 0);
       },
 
       // -- Model lifecycle — supports concurrent models across providers --
-      onModelStart: (data: any) => {
-        const modelKey = `${data.provider}:${data.model}`;
+      onModelStart: (data: SSEData) => {
+        const { provider, model, isLocal } = data as unknown as { provider: string; model: string; isLocal?: boolean };
+        const modelKey = `${provider}:${model}`;
 
         // Initialize live data refs for this model
         liveDataRef.current.set(modelKey, {
@@ -343,7 +402,7 @@ export default function BenchmarkDetailPageComponent({
         });
 
         // Set this as the viewed model only if nothing is currently being viewed
-        setViewedModelKey((prev: any) => {
+        setViewedModelKey((prev: string | null) => {
           if (prev) return prev; // Don't auto-switch
           return modelKey;
         });
@@ -351,7 +410,7 @@ export default function BenchmarkDetailPageComponent({
         // Start periodic flush of the VIEWED model's refs → React state
         if (!liveFlushRef.current) {
           liveFlushRef.current = setInterval(() => {
-            setViewedModelKey((currentKey: any) => {
+            setViewedModelKey((currentKey: string | null) => {
               if (!currentKey) return currentKey;
               const d = liveDataRef.current.get(currentKey);
               if (d) {
@@ -367,10 +426,10 @@ export default function BenchmarkDetailPageComponent({
         }
 
         // Add to active models map
-        const initialPhase = data.isLocal ? "Loading model" : "Connecting";
+        const initialPhase = isLocal ? "Loading model" : "Connecting";
         setActiveModels((prev) => {
           const next = new Map(prev);
-          next.set(modelKey, { model: data, progress: 0, phase: initialPhase });
+          next.set(modelKey, { model: data as unknown, progress: 0, phase: initialPhase });
           return next;
         });
 
@@ -379,7 +438,7 @@ export default function BenchmarkDetailPageComponent({
         if (oldInterval) clearInterval(oldInterval);
 
         const startTime = Date.now();
-        const phases = data.isLocal
+        const phases = isLocal
           ? [
               { end: 0.3, duration: 5000, label: "Loading model" },
               { end: 0.6, duration: 2000, label: "Processing prompt" },
@@ -419,8 +478,9 @@ export default function BenchmarkDetailPageComponent({
         progressIntervalsRef.current.set(modelKey, intervalId);
       },
 
-      onModelComplete: (result: any) => {
-        const modelKey = `${result.provider}:${result.model}`;
+      onModelComplete: (result: SSEData) => {
+        const bmResult = result as unknown as BenchmarkRunResult;
+        const modelKey = `${bmResult.provider}:${bmResult.model}`;
         resetModelLiveState(modelKey);
 
         // Remove from active models
@@ -431,15 +491,15 @@ export default function BenchmarkDetailPageComponent({
         });
 
         // If the completed model was the viewed one, move view to next active
-        setViewedModelKey((prev: any) => {
+        setViewedModelKey((prev: string | null) => {
           if (prev === modelKey) return null; // Will auto-pick next active via useMemo
           return prev;
         });
 
-        setStreamingResults((prev) => [...prev, result]);
+        setStreamingResults((prev) => [...prev, bmResult]);
 
         // Stop live flush if no active models remain
-        setActiveModels((latest: any) => {
+        setActiveModels((latest) => {
           if (latest.size === 0 && liveFlushRef.current) {
             clearInterval(liveFlushRef.current);
             liveFlushRef.current = null;
@@ -450,14 +510,14 @@ export default function BenchmarkDetailPageComponent({
       },
 
       // -- Live content events — route to the correct model via _sourceModel tag --
-      onChunk: (content: any, sourceModel: any) => {
+      onChunk: (content: string, sourceModel?: string) => {
         const key = resolveModelKeyForContent(liveDataRef.current, sourceModel);
         if (key) {
           const d = liveDataRef.current.get(key);
           if (d) d.text += content;
         }
       },
-      onThinking: (content: any, sourceModel: any) => {
+      onThinking: (content: string, sourceModel?: string) => {
         const key = resolveModelKeyForContent(liveDataRef.current, sourceModel);
         if (key) {
           const d = liveDataRef.current.get(key);
@@ -466,7 +526,7 @@ export default function BenchmarkDetailPageComponent({
       },
 
       // -- Tool call events (same pattern as /coding-agent) ---
-      onToolCall: (tc: any) => {
+      onToolCall: (tc: ToolCallEvent) => {
         const key = resolveModelKeyForContent(
           liveDataRef.current,
           tc._sourceModel,
@@ -480,7 +540,7 @@ export default function BenchmarkDetailPageComponent({
             { id: tc.id, name: tc.name, args: tc.args, status: "calling" },
           ];
         } else {
-          d.toolCalls = d.toolCalls.map((t: any) =>
+          d.toolCalls = d.toolCalls.map((t) =>
             t.id === tc.id
               ? {
                   ...t,
@@ -492,16 +552,16 @@ export default function BenchmarkDetailPageComponent({
           );
         }
       },
-      onToolExecution: (data: any) => {
+      onToolExecution: (data: SSEData) => {
         const key = resolveModelKeyForContent(
           liveDataRef.current,
-          data._sourceModel,
+          (data as { _sourceModel?: string })._sourceModel,
         );
         if (!key) return;
         const d = liveDataRef.current.get(key);
         if (!d) return;
-        const tool = data.tool || {};
-        if (data.status === "calling") {
+        const tool = (data as Record<string, unknown>).tool as { id?: string; name?: string; args?: unknown; result?: unknown } || {};
+        if ((data as Record<string, unknown>).status === "calling") {
           d.toolCalls = [
             ...d.toolCalls,
             {
@@ -512,13 +572,13 @@ export default function BenchmarkDetailPageComponent({
             },
           ];
         } else {
-          d.toolCalls = d.toolCalls.map((t: any) =>
+          d.toolCalls = d.toolCalls.map((t) =>
             t.id === tool.id
               ? {
                   ...t,
-                  status: data.status,
+                  status: (data as Record<string, unknown>).status as string,
                   result: tool.result,
-                  ...(tool.args && { args: tool.args }),
+                  ...(tool.args ? { args: tool.args } : {}),
                 }
               : t,
           );
@@ -550,10 +610,11 @@ export default function BenchmarkDetailPageComponent({
         abortRef.current = PrismService.followBenchmarkRun(
           benchmarkId,
           buildBenchmarkSSECallbacks({
-            onRunComplete: async (run: any) => {
+            onRunComplete: async (event: SSEData) => {
+              const run = event as unknown as BenchmarkRun;
               resetLiveState();
               setLatestRun(run);
-              setActiveRunId(run.id);
+              setActiveRunId(run.id || null);
               setRunning(false);
               setStreamingResults([]);
               setActiveModels(new Map());
@@ -568,7 +629,7 @@ export default function BenchmarkDetailPageComponent({
                 /* noop */
               }
             },
-            onError: (error: any) => {
+            onError: (error: Error) => {
               if (
                 error?.name === "AbortError" ||
                 error?.message?.includes("abort")
@@ -601,14 +662,14 @@ export default function BenchmarkDetailPageComponent({
 
         if (config?.localProviders?.length > 0) {
           PrismService.getLocalConfig()
-            .then(({ models: localModels }: any) => {
-              setPrismConfig((prev: any) =>
-                PrismService.mergeLocalModels(prev, localModels),
+            .then(({ models: localModels }) => {
+              setPrismConfig((prev) =>
+                prev ? PrismService.mergeLocalModels(prev, localModels) : prev,
               );
             })
             .catch(() => {});
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to load config:", error);
       }
     })();
@@ -652,7 +713,7 @@ export default function BenchmarkDetailPageComponent({
   const selectedModels = useMemo(() => {
     const configMap = new Map();
     for (const m of allModels) configMap.set(`${m.provider}:${m.name}`, m);
-    return selectedInstances.map((inst: any) => {
+    return selectedInstances.map((inst: { instanceId: string; provider: string; name: string }) => {
       const config = configMap.get(`${inst.provider}:${inst.name}`) || {};
       return { ...config, ...inst };
     });
@@ -660,15 +721,15 @@ export default function BenchmarkDetailPageComponent({
 
   // Derive a selectedKeys Set for the model picker checkmarks
   const selectedModelKeys = useMemo(
-    () => new Set<string>(selectedInstances.map((i: any) => `${i.provider}:${i.name}`)),
+    () => new Set<string>(selectedInstances.map((i: { provider: string; name: string }) => `${i.provider}:${i.name}`)),
     [selectedInstances],
   );
 
   // Build provider:name → config lookup for size column
   const modelConfigMap = useMemo(() => {
-    const map = {};
+    const map: Record<string, ModelOptionWithProvider> = {};
     for (const m of allModels) {
-      (map as Record<string, any>)[`${m.provider}:${m.name}`] = m;
+      map[`${m.provider}:${m.name}`] = m;
     }
     return map;
   }, [allModels]);
@@ -677,24 +738,24 @@ export default function BenchmarkDetailPageComponent({
   const openClone = useCallback(() => {
     if (!benchmark) return;
     const assertions =
-      (benchmark as any).assertions?.length > 0
-        ? (benchmark as any).assertions
+      benchmark.assertions?.length
+        ? benchmark.assertions
         : [
             {
-              expectedValue: (benchmark as any).expectedValue || "",
-              matchMode: (benchmark as any).matchMode || "contains",
+              expectedValue: benchmark.expectedValue || "",
+              matchMode: benchmark.matchMode || "contains",
             },
           ];
     setForm({
-      name: `${(benchmark as any).name} (copy)`,
-      prompt: (benchmark as any).prompt,
-      systemPrompt: (benchmark as any).systemPrompt || "",
-      benchmarkMode: (benchmark as any).benchmarkMode || "model",
+      name: `${benchmark.name} (copy)`,
+      prompt: benchmark.prompt || "",
+      systemPrompt: benchmark.systemPrompt || "",
+      benchmarkMode: benchmark.benchmarkMode || "model",
       assertions,
-      assertionOperator: (benchmark as any).assertionOperator || "AND",
-      agentAssertions: (benchmark as any).agentAssertions || [],
+      assertionOperator: benchmark.assertionOperator || "AND",
+      agentAssertions: benchmark.agentAssertions || [],
       agentAssertionOperator:
-        (benchmark as any).agentAssertionOperator || "AND",
+        benchmark.agentAssertionOperator || "AND",
     });
     setShowModal(true);
   }, [benchmark]);
@@ -725,7 +786,7 @@ export default function BenchmarkDetailPageComponent({
       if (created?.id) {
         router.push(`/benchmarks/${created.id}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to clone benchmark:", error);
     } finally {
       setSaving(false);
@@ -744,7 +805,7 @@ export default function BenchmarkDetailPageComponent({
     if (selectedModels.length === 0 && agentInstances.length === 0) return;
 
     // Build model targets from selected model instances
-    const modelTargets = selectedModels.map((m: any) => ({
+    const modelTargets = selectedModels.map((m) => ({
       provider: m.provider,
       model: m.name,
       display_name: m.display_name || m.label || m.name,
@@ -754,10 +815,10 @@ export default function BenchmarkDetailPageComponent({
 
     // Append agent instances — each agent uses its own backing model
     const agentTargets = agentInstances
-      .filter((a: any) => a.provider && a.modelName) // skip agents without a backing model
-      .map((a: any) => {
+      .filter((a) => a.provider && a.modelName) // skip agents without a backing model
+      .map((a) => {
         const modelDef = allModels.find(
-          (m: any) => m.provider === a.provider && m.name === a.modelName,
+          (m) => m.provider === a.provider && m.name === a.modelName,
         );
         return {
           provider: a.provider,
@@ -781,10 +842,11 @@ export default function BenchmarkDetailPageComponent({
       benchmarkId,
       models,
       buildBenchmarkSSECallbacks({
-        onRunComplete: async (run: any) => {
+        onRunComplete: async (event: SSEData) => {
+          const run = event as unknown as BenchmarkRun;
           resetLiveState();
           setLatestRun(run);
-          setActiveRunId(run.id);
+          setActiveRunId(run.id || null);
           setRunning(false);
           setStreamingResults([]);
           setActiveModels(new Map());
@@ -799,7 +861,7 @@ export default function BenchmarkDetailPageComponent({
             /* noop */
           }
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
           // AbortError means user clicked Stop — handleStop already handled cleanup
           if (error?.name === "AbortError" || error?.message?.includes("abort"))
             return;
@@ -856,7 +918,7 @@ export default function BenchmarkDetailPageComponent({
       ).length;
       const errored = streamingResults.filter((r) => r.error).length;
       const totalCost = streamingResults.reduce(
-        (s: any, r: any) => s + (r.estimatedCost || 0),
+        (s: number, r: BenchmarkRunResult) => s + (r.estimatedCost || 0),
         0,
       );
       setLatestRun({
@@ -871,7 +933,7 @@ export default function BenchmarkDetailPageComponent({
           errored,
           totalCost,
         },
-      } as any as BenchmarkRun);
+      } as BenchmarkRun);
       setStreamingResults([]);
     }
 
@@ -886,22 +948,22 @@ export default function BenchmarkDetailPageComponent({
 
   // -- View a past run ----------------------------------------
   const viewRun = useCallback(
-    (run: any) => {
+    (run: BenchmarkRun) => {
       setLatestRun(run);
-      setActiveRunId(run.id);
+      setActiveRunId(run.id || null);
       setSelectedResult(null);
 
       // Hydrate model/agent selection from this run's results
-      if (run.models?.length > 0) {
-        const configMap = new Map();
+      if ((run.models?.length ?? 0) > 0) {
+        const configMap = new Map<string, ModelOptionWithProvider>();
         for (const m of allModels) configMap.set(`${m.provider}:${m.name}`, m);
 
-        const nextInstances = [];
-        const nextAgents = [];
-        const nextThinking = {};
-        const nextTools = {};
+        const nextInstances: ModelInstance[] = [];
+        const nextAgents: AgentInstance[] = [];
+        const nextThinking: Record<string, boolean> = {};
+        const nextTools: Record<string, boolean> = {};
 
-        for (const result of run.models) {
+        for (const result of run.models!) {
           const key = `${result.provider}:${result.model}`;
           const available = configMap.has(key);
           if (!available) continue;
@@ -920,7 +982,7 @@ export default function BenchmarkDetailPageComponent({
             };
             nextAgents.push(instanceData);
             if (result.thinkingEnabled)
-              (nextThinking as Record<string, any>)[instanceData.instanceId] = true;
+              nextThinking[instanceData.instanceId] = true;
           } else {
             // Regular model entry
             const instanceData = {
@@ -930,8 +992,8 @@ export default function BenchmarkDetailPageComponent({
             };
             nextInstances.push(instanceData);
             if (result.thinkingEnabled)
-              (nextThinking as Record<string, any>)[instanceData.instanceId] = true;
-            if (result.toolsEnabled) (nextTools as Record<string, any>)[instanceData.instanceId] = true;
+              nextThinking[instanceData.instanceId] = true;
+            if (result.toolsEnabled) nextTools[instanceData.instanceId] = true;
           }
         }
 
@@ -951,14 +1013,14 @@ export default function BenchmarkDetailPageComponent({
   );
 
   const handleAddAgent = useCallback(
-    (agentDef: any) => {
-      const instance = {
+    (agentDef: AgentPersona) => {
+      const instance: AgentInstance = {
         instanceId: generateUUID(),
         agentId: agentDef.id,
         name: agentDef.name,
         description: agentDef.description,
       };
-      setAgentInstances((prev: any) => {
+      setAgentInstances((prev) => {
         const next = [...prev, instance];
         // Persist both model + agent instances together
         StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
@@ -974,9 +1036,9 @@ export default function BenchmarkDetailPageComponent({
   );
 
   const removeAgent = useCallback(
-    (instanceId: any) => {
-      setAgentInstances((prev: any) => {
-        const next = prev.filter((i: any) => i.instanceId !== instanceId);
+    (instanceId: string) => {
+      setAgentInstances((prev) => {
+        const next = prev.filter((i) => i.instanceId !== instanceId);
         StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
           instances: selectedInstances,
           agents: next,
@@ -985,7 +1047,7 @@ export default function BenchmarkDetailPageComponent({
         });
         return next;
       });
-      setThinkingMap((prev: any) => {
+      setThinkingMap((prev) => {
         const n = { ...prev };
         delete n[instanceId];
         return n;
@@ -995,9 +1057,9 @@ export default function BenchmarkDetailPageComponent({
   );
 
   const handleChangeAgentModel = useCallback(
-    (instanceId: any, provider: any, modelName: any) => {
-      setAgentInstances((prev: any) => {
-        const next = prev.map((a: any) =>
+    (instanceId: string, provider: string, modelName: string) => {
+      setAgentInstances((prev) => {
+        const next = prev.map((a) =>
           a.instanceId === instanceId ? { ...a, provider, modelName } : a,
         );
         StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
@@ -1014,13 +1076,13 @@ export default function BenchmarkDetailPageComponent({
 
   // -- Add model instance to selection (always adds, never toggles) ----
   const handleModelSelect = useCallback(
-    (rawModel: any) => {
-      const instance = {
+    (rawModel: ModelOptionWithProvider) => {
+      const instance: ModelInstance = {
         instanceId: generateUUID(),
         provider: rawModel.provider,
         name: rawModel.name,
       };
-      setSelectedInstances((prev: any) => {
+      setSelectedInstances((prev) => {
         const next = [...prev, instance];
         StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
           instances: next,
@@ -1035,9 +1097,9 @@ export default function BenchmarkDetailPageComponent({
   );
 
   const removeModel = useCallback(
-    (instanceId: any) => {
-      setSelectedInstances((prev: any) => {
-        const next = prev.filter((i: any) => i.instanceId !== instanceId);
+    (instanceId: string) => {
+      setSelectedInstances((prev) => {
+        const next = prev.filter((i) => i.instanceId !== instanceId);
         StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
           instances: next,
           agents: agentInstances,
@@ -1047,12 +1109,12 @@ export default function BenchmarkDetailPageComponent({
         return next;
       });
       // Clean up thinking/tools state for removed instance
-      setThinkingMap((prev: any) => {
+      setThinkingMap((prev) => {
         const n = { ...prev };
         delete n[instanceId];
         return n;
       });
-      setToolsMap((prev: any) => {
+      setToolsMap((prev) => {
         const n = { ...prev };
         delete n[instanceId];
         return n;
@@ -1062,9 +1124,9 @@ export default function BenchmarkDetailPageComponent({
   );
 
   const handleChangeModel = useCallback(
-    (instanceId: any, provider: any, modelName: any) => {
-      setSelectedInstances((prev: any) => {
-        const next = prev.map((i: any) =>
+    (instanceId: string, provider: string, modelName: string) => {
+      setSelectedInstances((prev) => {
+        const next = prev.map((i) =>
           i.instanceId === instanceId ? { ...i, provider, name: modelName } : i,
         );
         StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
@@ -1093,8 +1155,8 @@ export default function BenchmarkDetailPageComponent({
   }, []);
 
   // -- Toggle thinking per instance --------------------------
-  const handleToggleThinking = useCallback((instanceId: any) => {
-    setThinkingMap((prev: any) => {
+  const handleToggleThinking = useCallback((instanceId: string) => {
+    setThinkingMap((prev) => {
       const next = { ...prev, [instanceId]: !prev[instanceId] };
       // Persist updated toggle state
       const saved = StorageService.get(SK_MODEL_MEMORY_BENCHMARKS) || {};
@@ -1107,8 +1169,8 @@ export default function BenchmarkDetailPageComponent({
   }, []);
 
   // -- Toggle tools per instance -----------------------------
-  const handleToggleTools = useCallback((instanceId: any) => {
-    setToolsMap((prev: any) => {
+  const handleToggleTools = useCallback((instanceId: string) => {
+    setToolsMap((prev) => {
       const next = { ...prev, [instanceId]: !prev[instanceId] };
       // Persist updated toggle state
       const saved = StorageService.get(SK_MODEL_MEMORY_BENCHMARKS) || {};
@@ -1126,7 +1188,7 @@ export default function BenchmarkDetailPageComponent({
     try {
       await PrismService.deleteBenchmark(benchmarkId);
       router.push("/benchmarks");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to delete benchmark:", error);
       setDeleting(false);
     }
@@ -1200,7 +1262,7 @@ export default function BenchmarkDetailPageComponent({
       }
       rightPanel={rightSidebar}
       rightTitle="Benchmarks"
-      headerTitle={(benchmark as any).name}
+      headerTitle={benchmark.name}
       headerCenter={
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <ModelPickerPopoverComponent
@@ -1261,31 +1323,31 @@ export default function BenchmarkDetailPageComponent({
         <div className={styles.detailPanel}>
           {/* -- Benchmark Info -- */}
           <div className={styles.detailHeader}>
-            <div className={styles.detailTitle}>{(benchmark as any).name}</div>
+            <div className={styles.detailTitle}>{benchmark.name}</div>
             <div className={styles.detailMeta}>
               <BadgeComponent variant="info">
-                {(benchmark as any).benchmarkMode === "agent"
+                {benchmark.benchmarkMode === "agent"
                   ? "Agent"
-                  : (benchmark as any).benchmarkMode === "combined"
+                  : benchmark.benchmarkMode === "combined"
                     ? "Combined"
                     : "Model"}
               </BadgeComponent>
               {/* Model assertions (text match) */}
-              {((benchmark as any).benchmarkMode || "model") !== "agent" &&
+              {(benchmark.benchmarkMode || "model") !== "agent" &&
                 (() => {
                   const assertions =
-                    (benchmark as any).assertions?.length > 0
-                      ? (benchmark as any).assertions
+                    (benchmark.assertions?.length ?? 0) > 0
+                      ? benchmark.assertions!
                       : [
                           {
-                            expectedValue: (benchmark as any).expectedValue,
+                            expectedValue: benchmark.expectedValue || "",
                             matchMode:
-                              (benchmark as any).matchMode || "contains",
+                              benchmark.matchMode || "contains",
                           },
                         ];
                   const operator =
-                    (benchmark as any).assertionOperator || "AND";
-                  return assertions.map((a: any, i: any) => (
+                    benchmark.assertionOperator || "AND";
+                  return assertions.map((a, i) => (
                     <span key={i} style={{ display: "contents" }}>
                       {i > 0 && (
                         <BadgeComponent
@@ -1304,22 +1366,22 @@ export default function BenchmarkDetailPageComponent({
                   ));
                 })()}
               {/* Agent assertions (behavioral) */}
-              {((benchmark as any).benchmarkMode === "agent" ||
-                (benchmark as any).benchmarkMode === "combined") &&
-                (benchmark as any).agentAssertions?.map((a: any, i: any) => (
+              {(benchmark.benchmarkMode === "agent" ||
+                benchmark.benchmarkMode === "combined") &&
+                benchmark.agentAssertions?.map((a, i) => (
                   <span key={`agent-${i}`} style={{ display: "contents" }}>
                     {(i > 0 ||
-                      ((benchmark as any).benchmarkMode === "combined" &&
-                        (benchmark as any).assertions?.length > 0)) && (
+                      (benchmark.benchmarkMode === "combined" &&
+                        (benchmark.assertions?.length ?? 0) > 0)) && (
                       <BadgeComponent
                         variant={
-                          ((benchmark as any).agentAssertionOperator ||
+                          (benchmark.agentAssertionOperator ||
                             "AND") === "OR"
                             ? "warning"
                             : "info"
                         }
                       >
-                        {(benchmark as any).agentAssertionOperator || "AND"}
+                        {benchmark.agentAssertionOperator || "AND"}
                       </BadgeComponent>
                     )}
                     <BadgeComponent variant="accent">
@@ -1328,7 +1390,7 @@ export default function BenchmarkDetailPageComponent({
                     </BadgeComponent>
                   </span>
                 ))}
-              {(benchmark as any).tags?.map((tag: any) => (
+              {benchmark.tags?.map((tag) => (
                 <span key={tag} className={styles.tag}>
                   {tag}
                 </span>
@@ -1352,7 +1414,7 @@ export default function BenchmarkDetailPageComponent({
               ).length;
               const runningCount = activeModelCount;
               const totalCost = streamingResults.reduce(
-                (s: any, r: any) => s + (r.estimatedCost || 0),
+                (s: number, r: BenchmarkRunResult) => s + (r.estimatedCost || 0),
                 0,
               );
               const passRate = completed > 0 ? (passed / completed) * 100 : 0;
@@ -1446,10 +1508,10 @@ export default function BenchmarkDetailPageComponent({
                   <div className={styles.streamingTableWrapper}>
                     <BenchmarksTableComponent
                       results={streamingResults}
-                      expectedValue={(benchmark as any).expectedValue}
+                      expectedValue={benchmark.expectedValue}
                       modelConfigMap={modelConfigMap}
-                      onRowClick={handleStreamingRowClick as any}
-                      activeRowKey={getActiveKey(streamingResults) as any}
+                      onRowClick={handleStreamingRowClick}
+                      activeRowKey={getActiveKey(streamingResults)}
                       activeModels={activeModels}
                       pendingTargets={pendingTargets}
                     />
@@ -1464,7 +1526,7 @@ export default function BenchmarkDetailPageComponent({
               <div className={styles.resultsSectionHeader}>
                 <div className={styles.resultsSectionTitle}>
                   Results
-                  {(latestRun as any).aborted && (
+                  {latestRun.aborted && (
                     <BadgeComponent variant="warning" style={{ marginLeft: 8 }}>
                       Stopped
                     </BadgeComponent>
@@ -1473,14 +1535,14 @@ export default function BenchmarkDetailPageComponent({
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {(() => {
                     const totalDuration = (
-                      (latestRun as any).models || []
-                    ).reduce((sum: any, r: any) => sum + (r.latency || 0), 0);
+                      latestRun.models || []
+                    ).reduce((sum: number, r: BenchmarkRunResult) => sum + (r.latencyMs || 0), 0);
                     return totalDuration > 0 ? (
                       <StopwatchBadgeComponent seconds={totalDuration} />
                     ) : null;
                   })()}
                   <DateTimeBadgeComponent
-                    date={(latestRun as any).completedAt}
+                    date={latestRun.completedAt}
                   />
                 </div>
               </div>
@@ -1489,26 +1551,26 @@ export default function BenchmarkDetailPageComponent({
               <SummaryBarComponent
                 items={[
                   {
-                    value: (latestRun as any).summary.total,
+                    value: latestRun.summary?.total ?? 0,
                     label: "Total",
                     icon: <Hash size={14} />,
                   },
                   {
-                    value: (latestRun as any).summary.passed,
+                    value: latestRun.summary?.passed ?? 0,
                     label: "Passed",
                     color: "var(--success)",
                     icon: <CircleCheck size={14} />,
                   },
                   {
-                    value: (latestRun as any).summary.failed,
+                    value: latestRun.summary?.failed ?? 0,
                     label: "Failed",
                     color: "var(--danger)",
                     icon: <CircleX size={14} />,
                   },
-                  ...((latestRun as any).summary.errored > 0
+                  ...((latestRun.summary?.errored ?? 0) > 0
                     ? [
                         {
-                          value: (latestRun as any).summary.errored,
+                          value: latestRun.summary!.errored,
                           label: "Errors",
                           color: "var(--warning)",
                         },
@@ -1516,23 +1578,23 @@ export default function BenchmarkDetailPageComponent({
                     : []),
                   {
                     bar:
-                      ((latestRun as any).summary.passed /
-                        (latestRun as any).summary.total) *
+                      ((latestRun.summary?.passed ?? 0) /
+                        (latestRun.summary?.total || 1)) *
                       100,
-                    barPassed: (latestRun as any).summary.passed,
-                    barTotal: (latestRun as any).summary.total,
-                    label: `${Math.round(((latestRun as any).summary.passed / (latestRun as any).summary.total) * 100)}%`,
+                    barPassed: latestRun.summary?.passed ?? 0,
+                    barTotal: latestRun.summary?.total ?? 0,
+                    label: `${Math.round(((latestRun.summary?.passed ?? 0) / (latestRun.summary?.total || 1)) * 100)}%`,
                   },
-                  ...((latestRun as any).summary.totalCost > 0 ||
-                  (latestRun as any).models?.some(
-                    (r: any) => r.estimatedCost > 0,
+                  ...((latestRun.summary?.totalCost ?? 0) > 0 ||
+                  latestRun.models?.some(
+                    (r) => (r.estimatedCost ?? 0) > 0,
                   )
                     ? [
                         {
                           value: formatCost(
-                            (latestRun as any).summary.totalCost ??
-                              (latestRun as any).models.reduce(
-                                (s: any, r: any) => s + (r.estimatedCost || 0),
+                            latestRun.summary?.totalCost ??
+                              (latestRun.models || []).reduce(
+                                (s: number, r: BenchmarkRunResult) => s + (r.estimatedCost || 0),
                                 0,
                               ),
                           ),
@@ -1547,11 +1609,11 @@ export default function BenchmarkDetailPageComponent({
 
               {/* Results Table */}
               <BenchmarksTableComponent
-                results={(latestRun as any).models}
-                expectedValue={(benchmark as any).expectedValue}
+                results={latestRun.models}
+                expectedValue={benchmark.expectedValue}
                 modelConfigMap={modelConfigMap}
-                onRowClick={setSelectedResult as any}
-                activeRowKey={getActiveKey((latestRun as any).models) as any}
+                onRowClick={setSelectedResult}
+                activeRowKey={getActiveKey(latestRun.models || [])}
               />
             </div>
           )}
@@ -1559,28 +1621,28 @@ export default function BenchmarkDetailPageComponent({
           {/* -- Chat Preview: selected result or live streaming -- */}
           {selectedResult || viewedActiveModel ? (
             <ChatPreviewComponent
-              systemPrompt={(benchmark as any).systemPrompt}
+              systemPrompt={benchmark.systemPrompt}
               messages={[
-                { role: "user", content: (benchmark as any).prompt },
-                ...((selectedResult as any)?.response
+                { role: "user", content: benchmark.prompt || "" },
+                ...(selectedResult?.response
                   ? [
                       {
-                        role: "assistant",
-                        content: (selectedResult as any).response,
-                        thinking: (selectedResult as any).thinking || undefined,
+                        role: "assistant" as const,
+                        content: selectedResult.response,
+                        thinking: selectedResult.thinking || undefined,
                         toolCalls:
-                          (selectedResult as any).toolCalls || undefined,
+                          selectedResult.toolCalls || undefined,
                         model:
-                          (selectedResult as any).label ||
-                          (selectedResult as any).model,
-                        provider: (selectedResult as any).provider,
+                          selectedResult.label ||
+                          selectedResult.model,
+                        provider: selectedResult.provider,
                       },
                     ]
                   : []),
                 ...(!selectedResult && viewedActiveModel
                   ? [
                       {
-                        role: "assistant",
+                        role: "assistant" as const,
                         content: liveSnapshot.text || "",
                         thinking: liveSnapshot.thinking || undefined,
                         toolCalls:
@@ -1594,7 +1656,7 @@ export default function BenchmarkDetailPageComponent({
                       },
                     ]
                   : []),
-              ] as any}
+              ] as Message[]}
             />
           ) : null}
         </div>
@@ -1678,7 +1740,7 @@ export default function BenchmarkDetailPageComponent({
           >
             Are you sure you want to delete{" "}
             <strong style={{ color: "var(--text-primary)" }}>
-              {(benchmark as any).name}
+              {benchmark.name}
             </strong>
             ? This will permanently remove the benchmark and all{" "}
             {runHistory.length > 0 ? `${runHistory.length} ` : ""}associated

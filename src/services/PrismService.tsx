@@ -1348,7 +1348,7 @@ export default class PrismService {
 
 
    */
-  static streamBenchmarkRun(id: string, models?: string[], callbacks: SSECallbacks = {}): () => void {
+  static streamBenchmarkRun(id: string, models?: Array<{ provider: string; model: string; display_name?: string; thinkingEnabled?: boolean; toolsEnabled?: boolean; agent?: string }>, callbacks: SSECallbacks = {}): () => void {
     return PrismService._streamSSE(
       `/benchmark/${id}/run`,
       { body: models ? { models } : {} },

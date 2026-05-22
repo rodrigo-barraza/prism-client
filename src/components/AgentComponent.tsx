@@ -41,6 +41,9 @@ import {
   Conversation,
   AgentPersona,
   ToolSchema,
+  WorkerGenerationProgress,
+  BackgroundUsage,
+  SessionStats,
 } from "../types/types";
 import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -266,12 +269,7 @@ interface ViewerOpenFile {
 interface ClientMessage extends Message {
   _liveModelNames?: string[];
   _liveModalities?: Record<string, number>;
-  _backgroundUsage?: {
-    inputTokens?: number;
-    outputTokens?: number;
-    requests?: number;
-    [key: string]: any;
-  };
+  _backgroundUsage?: BackgroundUsage & { requests?: number };
   _streamingOutputCharacters?: number;
   _streamingStartTime?: number;
   _streamingLastChunkTime?: number;
@@ -279,8 +277,8 @@ interface ClientMessage extends Message {
   _streamingBurstElapsed?: number;
   _processingStartTime?: number;
   _ttftSamples?: number[];
-  _statusProgress?: any;
-  _workerGenerationProgress?: any;
+  _statusProgress?: Record<string, unknown>;
+  _workerGenerationProgress?: Record<string, WorkerGenerationProgress>;
   _workerTokens?: {
     input?: number;
     output?: number;
@@ -289,10 +287,17 @@ interface ClientMessage extends Message {
   _liveGenProgress?: {
     inputTokens?: number;
     outputTokens?: number;
-    [key: string]: any;
+    tokPerSec?: number;
+    totalOutputTokens?: number;
+    cost?: number;
+    requests?: number;
+    activeRequests?: number;
+    totalTokens?: number;
+    avgTtft?: number;
+    timestamp?: number;
   };
   _fromSnapshot?: boolean;
-  _snapshot?: any;
+  _snapshot?: Record<string, unknown>;
   statusPhase?: string;
   synthetic?: boolean;
   /** UI-only status marker for in-flight messages (e.g. 'thinking', 'processing') */
@@ -381,7 +386,7 @@ export default function AgentComponent({
 
   // -- File viewer pane state (VS Code-style read-only viewer) --
   const [viewerOpenFiles, setViewerOpenFiles] = useState<ViewerOpenFile[]>([]);
-  const [viewerActiveFileId, setViewerActiveFileId] = useState<any>(null);
+  const [viewerActiveFileId, setViewerActiveFileId] = useState<string | null>(null);
   const [viewerRefreshKey, setViewerRefreshKey] = useState(0);
   const viewerOpenFilesRef = useRef<ViewerOpenFile[]>(viewerOpenFiles);
   viewerOpenFilesRef.current = viewerOpenFiles;
@@ -475,7 +480,7 @@ export default function AgentComponent({
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   const [pendingImages, setPendingImages] = useState<string[]>([]);
-  const [lightboxSrc, setLightboxSrc] = useState<any>(null);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef<number>(0);
 
@@ -499,13 +504,13 @@ export default function AgentComponent({
     if (workerIter != null) setMaxWorkerIterations(workerIter);
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
-  const [pendingApprovals, setPendingApprovals] = useState<Array<any>>([]);
-  const [pendingUserQuestion, setPendingUserQuestion] = useState<any | null>(null); // { question, choices, context }
+  const [pendingApprovals, setPendingApprovals] = useState<Array<Record<string, unknown>>>([]);
+  const [pendingUserQuestion, setPendingUserQuestion] = useState<{ question?: string; questions?: unknown[]; choices?: string[]; context?: string } | null>(null);
   const [planProposal, setPlanProposal] = useState<{plan: string; steps?: string[]; status?: string} | null>(null); // { plan, steps, status }
   const [agenticProgress, setAgenticProgress] = useState<{iteration: number; maxIterations: number} | null>(null); // { iteration, maxIterations }
   const [_contextTruncated, setContextTruncated] = useState<{strategy: string; estimatedTokens?: number} | null>(null); // { strategy, estimatedTokens }
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
-  const [backendSessionStats, setBackendSessionStats] = useState<any | null>(null); // aggregate from /admin/sessions/:id/stats
+  const [backendSessionStats, setBackendSessionStats] = useState<SessionStats | null>(null);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
 
   // Frontend-side high-water marks for token display.
@@ -561,7 +566,7 @@ export default function AgentComponent({
   );
   // Snapshot cache: stores UI state for sessions that are generating in the background
   // so the user can switch back without waiting for backend persistence.
-  const backgroundSessionsRef = useRef<Map<string, any>>(new Map());
+  const backgroundSessionsRef = useRef<Map<string, Record<string, unknown>>>(new Map());
 
   const handleStop = useCallback(() => {
     if (abortRef.current) {
@@ -843,7 +848,7 @@ export default function AgentComponent({
       setSessions(result.items);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load sessions:", error);
     } finally {
       setSessionsLoading(false);
@@ -861,7 +866,7 @@ export default function AgentComponent({
       setSessions((prev) => [...prev, ...result.items]);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load more sessions:", error);
     } finally {
       setSessionsLoading(false);
@@ -922,7 +927,7 @@ export default function AgentComponent({
         }
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to preload session from URL:", error);
       }
     })();
@@ -933,7 +938,7 @@ export default function AgentComponent({
     try {
       const tools = await PrismService.getCustomTools(agentProject);
       setCustomTools(tools);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load custom tools:", error);
     }
   }, [agentProject]);
@@ -947,7 +952,7 @@ export default function AgentComponent({
     try {
       const s = await PrismService.getSkills(agentProject);
       setSkills(s);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load skills:", error);
     }
   }, [agentProject]);
@@ -961,7 +966,7 @@ export default function AgentComponent({
     try {
       const s = await PrismService.getMCPServers(agentProject);
       setMcpServers(s);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load MCP servers:", error);
     }
   }, [agentProject]);
@@ -3540,15 +3545,15 @@ export default function AgentComponent({
                     // Use the larger of backend stats or live progress to prevent
                     // dips during the gap between stream end and backend refresh.
                     const tokenOutput = Math.max(
-                      backendSessionStats.totalOutputTokens,
+                      backendSessionStats.totalOutputTokens || 0,
                       liveOutput,
                     );
                     const tokenInput = Math.max(
-                      backendSessionStats.totalInputTokens,
+                      backendSessionStats.totalInputTokens || 0,
                       liveInput,
                     );
                     const tokenTotal = Math.max(
-                      backendSessionStats.totalTokens,
+                      backendSessionStats.totalTokens || 0,
                       liveTotal,
                     );
 
@@ -3568,13 +3573,13 @@ export default function AgentComponent({
                           output: Math.max(hwm.output, tokenOutput),
                           total: Math.max(hwm.total, tokenTotal),
                           cacheRead:
-                            (backendSessionStats as any)
+                            backendSessionStats
                               .totalCacheReadInputTokens || 0,
                           cacheWrite:
-                            (backendSessionStats as any)
+                            backendSessionStats
                               .totalCacheCreationInputTokens || 0,
                           reasoning:
-                            (backendSessionStats as any)
+                            backendSessionStats
                               .totalReasoningOutputTokens || 0,
                         };
                         tokenHwmRef.current = {

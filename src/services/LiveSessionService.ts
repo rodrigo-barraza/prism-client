@@ -16,22 +16,22 @@ export interface LiveSessionCallbacks {
   onAudio?: (data: string, mimeType: string) => void;
   onText?: (text: string) => void;
   onThinking?: (content: string) => void;
-  onToolCall?: (functionCalls: Array<Record<string, any>>) => void;
-  onToolExecution?: (event: Record<string, any>) => void;
-  onToolOutput?: (event: Record<string, any>) => void;
+  onToolCall?: (functionCalls: Array<{ name: string; args?: Record<string, unknown>; id?: string }>) => void;
+  onToolExecution?: (event: { type: string; name?: string; status?: string; result?: unknown }) => void;
+  onToolOutput?: (event: { type: string; name?: string; output?: unknown }) => void;
   onInputTranscription?: (text: string) => void;
   onOutputTranscription?: (text: string) => void;
   onUserAudioReady?: (userAudioRef: string) => void;
-  onTurnComplete?: (data: Record<string, any>) => void;
-  onInterrupted?: (data: Record<string, any>) => void;
-  onUsage?: (usage: Record<string, any>) => void;
+  onTurnComplete?: (data: { type: string; totalTokens?: number }) => void;
+  onInterrupted?: (data: { type: string }) => void;
+  onUsage?: (usage: { inputTokens?: number; outputTokens?: number; totalTokens?: number }) => void;
   onError?: (message: string) => void;
   onClose?: () => void;
 }
 
 export interface LiveConnectParams {
   model: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   callbacks?: LiveSessionCallbacks;
 }
 
@@ -117,7 +117,7 @@ export default class LiveSessionService {
     };
   }
 
-  _handleMessage(data: Record<string, any> & { type: string }) {
+  _handleMessage(data: { type: string; [key: string]: unknown }) {
     switch (data.type) {
       case "setupComplete":
         this.connected = true;
@@ -145,7 +145,7 @@ export default class LiveSessionService {
 
       case "toolCall":
         if (this.callbacks.onToolCall)
-          this.callbacks.onToolCall(data.functionCalls as Array<Record<string, any>>);
+          this.callbacks.onToolCall(data.functionCalls as Array<{ name: string; args?: Record<string, unknown>; id?: string }>);
         break;
 
       case "tool_execution":
@@ -191,7 +191,7 @@ export default class LiveSessionService {
 
       case "usage":
         if (this.callbacks.onUsage)
-          this.callbacks.onUsage(data.usage as Record<string, any>);
+          this.callbacks.onUsage(data.usage as { inputTokens?: number; outputTokens?: number; totalTokens?: number });
         break;
 
       case "error":
@@ -316,7 +316,7 @@ export default class LiveSessionService {
       source.connect(this.audioWorkletNode);
 
       this.isRecording = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[LiveSession] Microphone error:", error);
       throw error;
     }
@@ -393,7 +393,7 @@ export default class LiveSessionService {
 
       // Post directly to the worklet's ring buffer queue
       this.playbackWorkletNode!.port.postMessage(float32);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[LiveSession] Audio playback error:", error);
     }
   }
