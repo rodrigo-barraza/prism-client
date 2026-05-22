@@ -11,6 +11,7 @@ import {
   formatTokensPerSec,
   buildDateRangeParams,
 } from "../../../utils/utilities";
+import { getErrorMessage } from "../../../utils/errorMessage";
 import {
   extractMediaAssets,
   getMediaTypeFromRef,
@@ -57,9 +58,9 @@ interface RequestItem {
   totalTime?: number;
   success?: boolean;
   conversationId?: string;
-  requestPayload?: any;
-  responsePayload?: any;
-  [key: string]: any;
+  requestPayload?: Record<string, unknown>;
+  responsePayload?: Record<string, unknown>;
+  [key: string]: string | number | boolean | Record<string, unknown> | undefined;
 }
 
 interface RequestFilters {
@@ -79,7 +80,7 @@ interface RequestAssociations {
     updatedAt?: string;
     createdAt?: string;
     totalCost?: number;
-    modalities?: Record<string, any>;
+    modalities?: Record<string, number>;
     model?: string;
     username?: string;
   }>;
@@ -191,10 +192,10 @@ export default function RequestsPage() {
   const loadRequests = useCallback(async () => {
     const fetchGeneration = fetchGenRef.current;
     try {
-      const params = { page, limit: LIMIT, sort, order };
-      if (projectFilter) (params as Record<string, any>).project = projectFilter;
+      const params: Record<string, string | number | boolean> = { page, limit: LIMIT, sort, order };
+      if (projectFilter) params.project = projectFilter;
       Object.entries(filters).forEach(([k, v]) => {
-        if (v) (params as Record<string, any>)[k] = v;
+        if (v) params[k] = v;
       });
       Object.assign(params, buildDateRangeParams(dateRange));
 
@@ -202,9 +203,9 @@ export default function RequestsPage() {
       if (fetchGeneration !== fetchGenRef.current) return;
       setRequests((data.data || []) as RequestItem[]);
       setTotal(data.total || 0);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (fetchGeneration !== fetchGenRef.current) return;
-      setError(error instanceof Error ? error.message : String(error));
+      setError(getErrorMessage(error));
     } finally {
       if (fetchGeneration !== fetchGenRef.current) return;
       if (!initialLoadDone.current) {
@@ -231,7 +232,7 @@ export default function RequestsPage() {
       debounceTimer = setTimeout(loadRequests, 800);
     };
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: Record<string, any>) => {
+      onStatus: (data: { changeStreams?: boolean }) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
           if (!pollInterval) {
@@ -239,7 +240,7 @@ export default function RequestsPage() {
           }
         }
       },
-      onChange: (event: Record<string, any>) => {
+      onChange: (event: { collection?: string }) => {
         if (event.collection === "requests") {
           debouncedLoad();
         }
@@ -262,8 +263,8 @@ export default function RequestsPage() {
     let cancelled = false;
     setLoadingAssociations(true);
     IrisService.getRequestAssociations(selectedRequest.requestId)
-      .then((data: any) => {
-        if (!cancelled) setAssociations(data as RequestAssociations);
+      .then((data) => {
+        if (!cancelled) setAssociations(data as unknown as RequestAssociations);
       })
       .catch(() => {
         if (!cancelled)
@@ -314,7 +315,7 @@ export default function RequestsPage() {
       "Latency",
       "Status",
     ].join(",");
-    const rows = requests.map((r: Record<string, any>) =>
+    const rows = requests.map((r: RequestItem) =>
       [
         r.timestamp || "",
         r.project || "",
@@ -470,12 +471,12 @@ export default function RequestsPage() {
           sortDir={order}
           onSort={handleSort}
           maxHeight={null}
-          onRowMouseEnter={(row: any) => {
+          onRowMouseEnter={(row: RequestItem) => {
             if (row.conversationId)
               setHoveredConversationId(row.conversationId);
           }}
           onRowMouseLeave={() => setHoveredConversationId(null)}
-          getRowClassName={(row: any) => {
+          getRowClassName={(row: RequestItem) => {
             const id = row.requestId || row._id;
             const classes = [];
             if (
@@ -488,7 +489,7 @@ export default function RequestsPage() {
             else if (fadingIds.has(id)) classes.push(styles.newRowFadeOut);
             return classes.join(" ");
           }}
-          onRowClick={async (req: any) => {
+          onRowClick={async (req: RequestItem) => {
             setSelectedRequest(req as RequestItem);
             try {
               const full = await IrisService.getRequest(req.requestId);
@@ -530,7 +531,7 @@ export default function RequestsPage() {
                     </span>
                     {associations?.conversations && associations.conversations.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.conversations?.map((c: any) => (
+                        {associations?.conversations?.map((c) => (
                           <HistoryItemComponent
                             key={c.id}
                             item={{
@@ -572,7 +573,7 @@ export default function RequestsPage() {
                     </span>
                     {associations?.workflows && associations.workflows.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.workflows?.map((w: any) => (
+                        {associations?.workflows?.map((w) => (
                           <HistoryItemComponent
                             key={w.id}
                             item={{
@@ -606,7 +607,7 @@ export default function RequestsPage() {
                     </span>
                     {associations?.sessions && associations.sessions.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.sessions?.map((s: any) => (
+                        {associations?.sessions?.map((s) => (
                           <HistoryItemComponent
                             key={s.id}
                             item={{
@@ -642,14 +643,14 @@ export default function RequestsPage() {
                 <div className={styles.detailSection}>
                   <div className={styles.detailSectionTitle}>Media Assets</div>
                   <div className={styles.mediaGrid}>
-                    {mediaAssets.map((asset: any, index: number) => (
+                    {mediaAssets.map((asset, index: number) => (
                       <MediaCardComponent
                         key={index}
                         media={{
                           convId: selectedRequest?.conversationId || "",
-                          url: asset.url,
-                          mediaType: getMediaTypeFromRef(asset.url),
-                          origin: asset.origin,
+                          url: String(asset.url || ""),
+                          mediaType: getMediaTypeFromRef(String(asset.url || "")),
+                          origin: String(asset.origin || ""),
                         }}
                         compact
                         showInfo={false}
@@ -674,19 +675,19 @@ export default function RequestsPage() {
                 </div>
               );
             })()}
-            {(selectedRequest as Record<string, any>).requestPayload && (
+            {selectedRequest.requestPayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, any>).requestPayload}
+                  data={selectedRequest.requestPayload}
                   label="Request Payload"
                   maxHeight="400px"
                 />
               </div>
             )}
-            {(selectedRequest as Record<string, any>).responsePayload && (
+            {selectedRequest.responsePayload && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent
-                  data={(selectedRequest as Record<string, any>).responsePayload}
+                  data={selectedRequest.responsePayload}
                   label="Response Payload"
                   maxHeight="400px"
                 />

@@ -1,6 +1,7 @@
 import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
+import { getErrorMessage } from "../utils/errorMessage";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
 import type {
   PrismConfig,
@@ -806,7 +807,7 @@ export default class PrismService {
               if (json.length > 0) {
                 console.warn(
                   `[PrismService] SSE JSON parse failed (${json.length} chars):`,
-                  (parseErr as Error).message,
+                  getErrorMessage(parseErr),
                   json.slice(0, 120),
                 );
               }
@@ -814,8 +815,8 @@ export default class PrismService {
           }
         }
       } catch (error: unknown) {
-        if ((error as Error).name === "AbortError") return;
-        if (onError) onError(error as Error);
+        if ((error instanceof Error) && error.name === "AbortError") return;
+        if (onError) onError(error instanceof Error ? error : new Error(getErrorMessage(error)));
       }
     })();
 
@@ -1192,7 +1193,7 @@ export default class PrismService {
 
 
    */
-  static async loadLmStudioModel(model: string, options: Record<string, unknown> = {}): Promise<{ success: boolean; instance_id?: string }> {
+  static async loadLmStudioModel(model: string, options: { contextLength?: number; flashAttention?: boolean; offloadKvCache?: boolean; evalBatchSize?: number } = {}): Promise<{ success: boolean; instance_id?: string }> {
     return PrismService._request<{ success: boolean; instance_id?: string }>("/lm-studio/load", {
       body: buildLmStudioLoadBody(model, options),
     });
@@ -1212,7 +1213,7 @@ export default class PrismService {
   /**
    * Estimate VRAM usage for an LM Studio model.
    */
-  static async estimateLmStudioMemory(model: string, config: Record<string, unknown> = {}): Promise<LmStudioVramEstimate> {
+  static async estimateLmStudioMemory(model: string, config: { contextLength?: number; flashAttention?: boolean; offloadKvCache?: boolean; evalBatchSize?: number } = {}): Promise<LmStudioVramEstimate> {
     return PrismService._request<LmStudioVramEstimate>("/lm-studio/estimate", {
       body: { model, ...config },
     });
@@ -1223,7 +1224,7 @@ export default class PrismService {
    */
   static loadLmStudioModelStream(
     model: string,
-    options: Record<string, unknown> = {},
+    options: { contextLength?: number; flashAttention?: boolean; offloadKvCache?: boolean; evalBatchSize?: number } = {},
     callbacks: { onProgress?: (pct: number) => void; onComplete?: () => void; onError?: (err: Error) => void } = {},
   ): () => void {
     const { onProgress, onComplete, onError } = callbacks;
@@ -1272,8 +1273,8 @@ export default class PrismService {
         if (onComplete) onComplete();
       } catch (error: unknown) {
         clearInterval(progressInterval);
-        if ((error as Error).name === "AbortError") return;
-        if (onError) onError(error as Error);
+        if ((error instanceof Error) && error.name === "AbortError") return;
+        if (onError) onError(error instanceof Error ? error : new Error(getErrorMessage(error)));
       }
     })();
 

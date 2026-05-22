@@ -9,6 +9,7 @@ import {
   Suspense,
 } from "react";
 import { buildDateRangeParams } from "../../../utils/utilities";
+import { getErrorMessage } from "../../../utils/errorMessage";
 import useSessionStats from "../../../hooks/useSessionStats";
 import { useSearchParams } from "next/navigation";
 import {
@@ -151,7 +152,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
 
   const loadConversations = useCallback(async () => {
     try {
-      const params = {
+      const params: Record<string, string | number | boolean> = {
         page: 1,
         limit: 200,
         sort: "updatedAt",
@@ -159,13 +160,13 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       };
       // When filtering by session, skip date/project filters
       if (activeSession) {
-        (params as Record<string, any>).trace = activeSession;
+        params.trace = activeSession;
       } else {
         Object.assign(params, buildDateRangeParams(dateRange));
-        if (projectFilter) (params as Record<string, any>).project = projectFilter;
+        if (projectFilter) params.project = projectFilter;
       }
-      if (providerFilter) (params as Record<string, any>).provider = providerFilter;
-      if (modelFilter) (params as Record<string, any>).model = modelFilter;
+      if (providerFilter) params.provider = providerFilter;
+      if (modelFilter) params.model = modelFilter;
       const data = await IrisService.getConversations(params);
       const list = (data.data || []) as Conversation[];
 
@@ -214,8 +215,8 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       }
 
       setError((prev) => (prev !== null ? null : prev));
-    } catch (error: any) {
-      setError(error instanceof Error ? error.message : String(error));
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
     }
   }, [projectFilter, providerFilter, modelFilter, dateRange, activeSession]);
 
@@ -224,20 +225,20 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     try {
       setConversationsLoading(true);
       const nextPage = conversationsPageRef.current + 1;
-      const params = {
+      const params: Record<string, string | number | boolean> = {
         page: nextPage,
         limit: 200,
         sort: "updatedAt",
         order: "desc",
       };
       if (activeSession) {
-        (params as Record<string, any>).trace = activeSession;
+        params.trace = activeSession;
       } else {
         Object.assign(params, buildDateRangeParams(dateRange));
-        if (projectFilter) (params as Record<string, any>).project = projectFilter;
+        if (projectFilter) params.project = projectFilter;
       }
-      if (providerFilter) (params as Record<string, any>).provider = providerFilter;
-      if (modelFilter) (params as Record<string, any>).model = modelFilter;
+      if (providerFilter) params.provider = providerFilter;
+      if (modelFilter) params.model = modelFilter;
       const data = await IrisService.getConversations(params);
       const list = (data.data || []) as Conversation[];
       conversationsPageRef.current = nextPage;
@@ -245,7 +246,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
       setConversationsHasMore(
         conversations.length + list.length < (data.total || 0),
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load more conversations:", error);
     } finally {
       setConversationsLoading(false);
@@ -293,7 +294,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
         if (prev?.isGenerating !== full?.isGenerating) return full;
         return prev;
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to refresh selected conversation:", error);
     }
   }, []);
@@ -302,7 +303,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
   useEffect(() => {
     if (!changeStreamsActive) return;
 
-    const onEvent = (event: Record<string, any>) => {
+    const onEvent = (event: { collection?: string; id?: string }) => {
       if (
         event.collection === "conversations" &&
         selectedIdRef.current &&
@@ -343,7 +344,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
     // Subscribe to change stream SSE for real-time updates
     let pollInterval: NodeJS.Timeout | null = null;
     const es = IrisService.subscribeCollectionChanges({
-      onStatus: (data: Record<string, any>) => {
+      onStatus: (data: { changeStreams?: boolean }) => {
         setChangeStreamsActive(!!data.changeStreams);
         if (!data.changeStreams) {
           // No Change Streams — fall back to polling
@@ -352,7 +353,7 @@ function ConversationsPageInner({ initialId = null, traceId = null }: { initialI
           }
         }
       },
-      onChange: (event: Record<string, any>) => {
+      onChange: (event: { collection?: string }) => {
         if (event.collection === "conversations") {
           loadConversations();
         }

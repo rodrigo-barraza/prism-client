@@ -1,3 +1,4 @@
+import type { IrisRequestEntry } from "../../services/IrisService";
 import ToolIconComponent from "../../components/ToolIconComponent";
 import {
   modelColumn,
@@ -39,7 +40,7 @@ export const getRequestsColumns = ({
     label: "Tools",
     sortable: true,
     align: "left",
-    render: (r: any) => {
+    render: (r: IrisRequestEntry) => {
       if (!r.toolsUsed || !r.toolDisplayNames?.length) return emptyDash();
       return (
         <ToolIconComponent
@@ -61,16 +62,16 @@ export const getRequestsColumns = ({
     key: "duration",
     label: "Duration",
     sortable: true,
-    sortValue: (r: any) => r.totalTime || 0,
+    sortValue: (r: IrisRequestEntry) => r.totalTime || 0,
     align: "right",
-    render: (r: any) => valueOrDash(r.totalTime, (v: number) => formatLatency(v)),
+    render: (r: IrisRequestEntry) => valueOrDash(r.totalTime, (v: number) => formatLatency(v)),
   },
   {
     key: "durationShare",
     label: "Duration %",
     sortable: true,
-    sortValue: (r: any) => r.totalTime || 0,
-    render: (r: any) => (
+    sortValue: (r: IrisRequestEntry) => r.totalTime || 0,
+    render: (r: IrisRequestEntry) => (
       <ProportionBarComponent
         value={r.totalTime || 0}
         total={totalDuration}

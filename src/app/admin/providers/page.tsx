@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import IrisService from "../../../services/IrisService";
+import IrisService, { type RateLimitData, type ModelRateLimitData } from "../../../services/IrisService";
 import PrismService from "../../../services/PrismService";
 import {
   SelectComponent,
@@ -56,7 +56,7 @@ export default function ProvidersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
-  const [rateLimits, setRateLimits] = useState<Record<string, RateLimitPanelData>>({});
+  const [rateLimits, setRateLimits] = useState<Record<string, RateLimitData>>({});
 
   useEffect(() => {
     // Immediately enter loading state and clear stale data when filters change
@@ -66,8 +66,8 @@ export default function ProvidersPage() {
 
     async function load() {
       try {
-        const params = {};
-        if (projectFilter) (params as Record<string, any>).project = projectFilter;
+        const params: Record<string, string | number | boolean> = {};
+        if (projectFilter) params.project = projectFilter;
         Object.assign(params, buildDateRangeParams(dateRange));
         const [models, limits] = await Promise.all([
           IrisService.getModelStats(params),
@@ -76,8 +76,8 @@ export default function ProvidersPage() {
           PrismService.getConfig().catch(() => null),
         ]);
         setModelStats((models || []) as ModelStat[]);
-        setRateLimits((limits || {}) as Record<string, RateLimitPanelData>);
-      } catch (error: any) {
+        setRateLimits((limits || {}) as Record<string, RateLimitData>);
+      } catch (error: unknown) {
         setError(error instanceof Error ? error.message : String(error));
       } finally {
         setLoading(false);
@@ -282,34 +282,9 @@ export default function ProvidersPage() {
 
 // -- Rate Limit Panel ------------------------------------------
 
-interface RateLimitDetail {
-  limit?: number;
-  remaining?: number;
-  reset?: string;
-}
+// Rate limit interfaces imported from IrisService
 
-interface ModelRateLimit {
-  requests?: RateLimitDetail;
-  tokens?: RateLimitDetail;
-  inputTokens?: RateLimitDetail;
-  outputTokens?: RateLimitDetail;
-}
-
-interface ModelRateLimitData {
-  rpm?: number;
-  tpm?: number;
-  rpd?: number;
-  rateLimits?: ModelRateLimit;
-  updatedAt?: string;
-}
-
-interface RateLimitPanelData {
-  dynamic?: boolean;
-  models?: Record<string, ModelRateLimitData>;
-  note?: string;
-}
-
-function RateLimitPanel({ data }: { data: RateLimitPanelData }) {
+function RateLimitPanel({ data }: { data: RateLimitData }) {
   const { dynamic, models, note } = data;
 
   if (!models || Object.keys(models).length === 0) return null;

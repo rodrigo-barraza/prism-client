@@ -3,7 +3,7 @@ import { getBaseHeaders } from "./serviceHeaders";
 import { subscribe as sseSubscribe } from "./SSEManager";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
-import type { PrismConfig, LmStudioModel, LmStudioVramEstimate, Conversation, Workflow, IrisDashboardStats, IrisProjectStat, IrisModelStat, IrisTimelineEntry } from "../types/types";
+import type { PrismConfig, LmStudioModel, LmStudioVramEstimate, Conversation, Workflow, AgentSession, SessionStats, ModelsMap, IrisDashboardStats, IrisProjectStat, IrisModelStat, IrisTimelineEntry } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
 
@@ -29,6 +29,16 @@ export interface IrisRequestEntry {
   project?: string;
   requestId?: string;
   error?: string;
+  totalTime?: number;
+  tokensPerSec?: number;
+  toolsUsed?: boolean;
+  toolDisplayNames?: string[];
+  toolApiNames?: string[];
+  modalities?: Record<string, number>;
+  requestPayload?: Record<string, unknown>;
+  responsePayload?: Record<string, unknown>;
+  agent?: string;
+  username?: string;
 }
 
 export interface IrisRequestListResponse {
@@ -56,8 +66,8 @@ export interface IrisTimelineResponse {
 /**
  * Generic paginated list response — shared by traces, media, text, agent-sessions, workflows.
  */
-export interface IrisPaginatedResponse {
-  data: Array<Record<string, unknown>>;
+export interface IrisPaginatedResponse<T = Record<string, unknown>> {
+  data: T[];
   total: number;
 }
 
@@ -79,6 +89,33 @@ export interface IrisHealthResponse {
   mongo?: string;
   uptime?: number;
   version?: string;
+}
+
+export interface RateLimitDetail {
+  limit?: number;
+  remaining?: number;
+  reset?: string;
+}
+
+export interface ModelRateLimit {
+  requests?: RateLimitDetail;
+  tokens?: RateLimitDetail;
+  inputTokens?: RateLimitDetail;
+  outputTokens?: RateLimitDetail;
+}
+
+export interface ModelRateLimitData {
+  rpm?: number;
+  tpm?: number;
+  rpd?: number;
+  rateLimits?: ModelRateLimit;
+  updatedAt?: string;
+}
+
+export interface RateLimitData {
+  dynamic?: boolean;
+  models?: Record<string, ModelRateLimitData>;
+  note?: string;
 }
 
 // ─── Service ────────────────────────────────────────────────
@@ -189,12 +226,12 @@ export default class IrisService {
    * Uses a shared singleton connection per URL (SSEManager).
    */
   static subscribeConversationStats(
-    onStats: (data: unknown) => void,
+    onStats: (data: IrisConversationStatsResponse) => void,
     project: string | null = null,
   ): { close: () => void } {
     const params = project ? `?project=${encodeURIComponent(project)}` : "";
     const url = `${API_BASE}/admin/conversations/stream${params}`;
-    const { unsubscribe } = sseSubscribe(url, (data) => onStats(data));
+    const { unsubscribe } = sseSubscribe(url, (data) => onStats(data as IrisConversationStatsResponse));
     return { close: unsubscribe };
   }
 
@@ -251,7 +288,7 @@ export default class IrisService {
 
   static async estimateLmStudioMemory(
     model: string,
-    config: Record<string, unknown> = {},
+    config: { contextLength?: number; flashAttention?: boolean; offloadKvCache?: boolean; evalBatchSize?: number } = {},
   ): Promise<LmStudioVramEstimate> {
     return fetchJSON<LmStudioVramEstimate>("/lm-studio/estimate", {
       method: "POST",
@@ -260,9 +297,9 @@ export default class IrisService {
   }
 
   // -- Workflows ---------------------------------------------
-  static async getWorkflows(params: QueryParams = {}): Promise<IrisPaginatedResponse> {
+  static async getWorkflows(params: QueryParams = {}): Promise<IrisPaginatedResponse<Workflow>> {
     const query = toSearchParams(params);
-    return fetchJSON<IrisPaginatedResponse>(`/workflows${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisPaginatedResponse<Workflow>>(`/workflows${query ? `?${query}` : ""}`);
   }
 
   static async getWorkflow(id: string): Promise<Workflow> {
@@ -270,17 +307,17 @@ export default class IrisService {
   }
 
   // -- Traces ----------------------------------------------
-  static async getTraces(params: QueryParams = {}): Promise<IrisPaginatedResponse> {
+  static async getTraces(params: QueryParams = {}): Promise<IrisPaginatedResponse<IrisRequestEntry>> {
     const query = toSearchParams(params);
-    return fetchJSON<IrisPaginatedResponse>(`/traces${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisPaginatedResponse<IrisRequestEntry>>(`/traces${query ? `?${query}` : ""}`);
   }
 
-  static async getTrace(id: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/traces/${id}`);
+  static async getTrace(id: string): Promise<IrisRequestEntry> {
+    return fetchJSON<IrisRequestEntry>(`/traces/${id}`);
   }
 
-  static async getSessionStats(agentSessionId: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/sessions/${agentSessionId}/stats`);
+  static async getSessionStats(agentSessionId: string): Promise<SessionStats> {
+    return fetchJSON<SessionStats>(`/sessions/${agentSessionId}/stats`);
   }
 
   static async getSessionRequests(agentSessionId: string): Promise<{ requests: IrisRequestEntry[] }> {
@@ -288,13 +325,13 @@ export default class IrisService {
   }
 
   // -- Agent Sessions (admin) --------------------------------
-  static async getAgentSessions(params: QueryParams = {}): Promise<IrisPaginatedResponse> {
+  static async getAgentSessions(params: QueryParams = {}): Promise<IrisPaginatedResponse<AgentSession>> {
     const query = toSearchParams(params);
-    return fetchJSON<IrisPaginatedResponse>(`/agent-sessions${query ? `?${query}` : ""}`);
+    return fetchJSON<IrisPaginatedResponse<AgentSession>>(`/agent-sessions${query ? `?${query}` : ""}`);
   }
 
-  static async getAgentSession(id: string): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>(`/agent-sessions/${id}`);
+  static async getAgentSession(id: string): Promise<AgentSession> {
+    return fetchJSON<AgentSession>(`/agent-sessions/${id}`);
   }
 
   // -- Media -------------------------------------------------
@@ -318,12 +355,12 @@ export default class IrisService {
     return config;
   }
 
-  static async getLocalConfig(): Promise<{ models: Record<string, unknown> }> {
-    return fetchJSON<{ models: Record<string, unknown> }>("/config-local", {}, false);
+  static async getLocalConfig(): Promise<{ models: ModelsMap }> {
+    return fetchJSON<{ models: ModelsMap }>("/config-local", {}, false);
   }
 
   // -- Rate Limits -------------------------------------------
-  static async getRateLimits(): Promise<Record<string, unknown>> {
-    return fetchJSON<Record<string, unknown>>("/config/rate-limits", {}, false);
+  static async getRateLimits(): Promise<Record<string, RateLimitData>> {
+    return fetchJSON<Record<string, RateLimitData>>("/config/rate-limits", {}, false);
   }
 }

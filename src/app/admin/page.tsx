@@ -1,6 +1,6 @@
 "use client";
 
-import type { PrismConfig, ModelOption, IrisDashboardStats, IrisProjectStat, IrisModelStat, IrisTimelineEntry, Conversation } from "@/types/types";
+import type { PrismConfig, ModelOption, ModelsMap, IrisDashboardStats, IrisProjectStat, IrisModelStat, IrisTimelineEntry, Conversation } from "@/types/types";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
@@ -25,7 +25,7 @@ import {
   POLL_LAZY,
   FEEDBACK_STANDARD_MS,
 } from "@rodrigo-barraza/utilities-library";
-import IrisService from "../../services/IrisService";
+import IrisService, { type IrisRequestEntry } from "../../services/IrisService";
 import PrismService from "../../services/PrismService";
 import {
   formatNumber,
@@ -35,6 +35,7 @@ import {
   formatElapsedTime,
   buildDateRangeParams,
 } from "../../utils/utilities";
+import { getErrorMessage } from "../../utils/errorMessage";
 import {
   SelectComponent,
   StatsCardComponent as StatsCard,
@@ -55,6 +56,27 @@ import useProjectFilter from "../../hooks/useProjectFilter";
 import ResourceCardComponent from "../../components/ResourceCardComponent";
 import styles from "./page.module.css";
 
+interface ProviderAggregation {
+  provider: string;
+  totalRequests: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalCost: number;
+  latencySum: number;
+  tpsSum: number;
+  tpsCount: number;
+  modelCount: number;
+  models: string[];
+  conversationCount: number;
+  workflowCount: number;
+  sessionCount: number;
+}
+
+interface ProviderAggregationComputed extends ProviderAggregation {
+  avgLatency: number;
+  avgTokensPerSec: number | null;
+}
+
 export default function DashboardPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
@@ -62,11 +84,11 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<IrisDashboardStats | null>(null);
   const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
   const [modelStats, setModelStats] = useState<IrisModelStat[]>([]);
-  const [configModels, setConfigModels] = useState<Record<string, any>>({});
+  const [configModels, setConfigModels] = useState<Record<string, string[]>>({});
 
   const [timeline, setTimeline] = useState<IrisTimelineEntry[]>([]);
-  const [recentRequests, setRecentRequests] = useState<Record<string, any>[]>([]);
-  const [recentTraces, setRecentTraces] = useState<Record<string, any>[]>([]);
+  const [recentRequests, setRecentRequests] = useState<IrisRequestEntry[]>([]);
+  const [recentTraces, setRecentTraces] = useState<IrisRequestEntry[]>([]);
   const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -130,7 +152,7 @@ export default function DashboardPage() {
       // Build model→tools lookup from Prism config
       if (prismConfig?.textToText?.models) {
         const buildLookup = (config: PrismConfig) => {
-          const lookup: Record<string, any> = {};
+          const lookup: Record<string, string[]> = {};
           for (const [provider, models] of Object.entries(
             config.textToText?.models || {},
           ) as [string, ModelOption[]][]) {
@@ -146,9 +168,8 @@ export default function DashboardPage() {
         // Progressive loading: merge local provider model tools when they arrive
         if (prismConfig.localProviders?.length > 0) {
           PrismService.getLocalConfig()
-            .then((localConfig: any) => {
-              const models = localConfig?.models || [];
-              const merged = PrismService.mergeLocalModels(prismConfig, models);
+            .then(({ models: localModels }: { models: ModelsMap }) => {
+              const merged = PrismService.mergeLocalModels(prismConfig, localModels);
               if (merged !== prismConfig) setConfigModels(buildLookup(merged));
             })
             .catch(() => {});
@@ -156,11 +177,11 @@ export default function DashboardPage() {
       }
 
       setTimeline(timelineData.data || timelineData);
-      setRecentRequests((requestsData.data || []) as Record<string, any>[]);
-      setRecentTraces((tracesData.data || []) as Record<string, any>[]);
+      setRecentRequests(requestsData.data || []);
+      setRecentTraces(tracesData.data || []);
       setRecentConversations((conversationsData.data || []) as Conversation[]);
-    } catch (error: any) {
-      setError(error.message || String(error));
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -230,7 +251,7 @@ export default function DashboardPage() {
   }, [setControls]);
 
   // Build provider distribution from model stats
-  const providerAgg: Record<string, any> = {};
+  const providerAgg: Record<string, ProviderAggregation> = {};
   modelStats.forEach((m) => {
     if (!providerAgg[m.provider]) {
       providerAgg[m.provider] = {
@@ -265,7 +286,7 @@ export default function DashboardPage() {
       p.tpsCount += m.totalRequests;
     }
   });
-  const providerData: any[] = Object.values(providerAgg)
+  const providerData: ProviderAggregationComputed[] = Object.values(providerAgg)
     .map((p) => ({
       ...p,
       avgLatency: p.totalRequests > 0 ? p.latencySum / p.totalRequests : 0,

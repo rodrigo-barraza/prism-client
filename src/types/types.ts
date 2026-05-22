@@ -434,7 +434,7 @@ export type SSEEvent =
 // ─── SSE Callback Interfaces ────────────────────────────────
 
 /** Wire-format SSE event — parsed JSON with a discriminant `type` field. */
-export type SSEData = Record<string, any> & { type: string };
+export type SSEData = Record<string, unknown> & { type: string };
 
 export interface SSECallbacks {
   onChunk?: (content: string, sourceModel?: string, outputCharacters?: number) => void;
@@ -513,7 +513,7 @@ export interface CustomToolParameter {
 }
 
 export interface CustomTool {
-  _id?: any;
+  _id?: ObjectId;
   id?: string;
   name: string;
   description: string;
