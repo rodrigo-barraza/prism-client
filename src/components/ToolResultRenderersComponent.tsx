@@ -473,19 +473,43 @@ function OutputResultToggle({ result }: { result: unknown }) {
   );
 }
 
+/**
+ * Normalize toolNames variants into a Record<string, number> for ToolBadgeRow.
+ * Handles: string[] → { name: 1 }, Record<string, string> → { name: 1 },
+ * Record<string, number> → pass through.
+ */
+function normalizeToolCounts(
+  toolNames: string[] | Record<string, number> | Record<string, string> | undefined,
+): Record<string, number> | undefined {
+  if (!toolNames) return undefined;
+  if (Array.isArray(toolNames)) {
+    const counts: Record<string, number> = {};
+    for (const name of toolNames) {
+      counts[name] = (counts[name] || 0) + 1;
+    }
+    return counts;
+  }
+  // Record<string, number | string> — coerce string values to 1
+  const counts: Record<string, number> = {};
+  for (const [key, value] of Object.entries(toolNames)) {
+    counts[key] = typeof value === "number" ? value : 1;
+  }
+  return counts;
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // RENDERERS
 // ═══════════════════════════════════════════════════════════════════════
 
 // -- 1. File Read ------------------------------------------------------
 
-function FileReadRenderer({ result, args }: any) {
+function FileReadRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
   const filePath = parsed.path || args?.path || "";
   const content = parsed.content || "";
-  const _lang = (EXT_LANG as Record<string, any>)[extensionOf(filePath)] || "";
+  const _lang = (EXT_LANG as Record<string, string>)[extensionOf(filePath)] || "";
 
   return (
     <div className={styles.rendererBlock}>
@@ -505,7 +529,7 @@ function FileReadRenderer({ result, args }: any) {
 
 // -- 2. File Write -----------------------------------------------------
 
-function FileWriteRenderer({ result, args }: any) {
+function FileWriteRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -530,7 +554,7 @@ function FileWriteRenderer({ result, args }: any) {
 
 // -- 3. String Replace -------------------------------------------------
 
-function StrReplaceRenderer({ result, args }: any) {
+function StrReplaceRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -638,14 +662,15 @@ function GrepSearchRenderer({ result, args }: RendererProps) {
 
 // -- 5. Directory List -------------------------------------------------
 
-function DirectoryListRenderer({ result, args }: any) {
+function DirectoryListRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
   const rawEntries = parsed.entries || parsed.items || parsed.files || [];
-  const entries = Array.isArray(rawEntries)
+  type DirEntry = string | { name?: string; path?: string; type?: string; isDirectory?: boolean };
+  const entries: DirEntry[] = (Array.isArray(rawEntries)
     ? rawEntries
-    : Object.values(rawEntries);
+    : Object.values(rawEntries)) as DirEntry[];
   const dirPath = parsed.path || args?.path || "";
 
   return (
@@ -657,7 +682,7 @@ function DirectoryListRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.dirList}>
-        {entries.slice(0, 40).map((entry: any, i: any) => {
+        {entries.slice(0, 40).map((entry, i) => {
           const name =
             typeof entry === "string" ? entry : entry.name || entry.path || "";
           const isDir =
@@ -681,11 +706,12 @@ function DirectoryListRenderer({ result, args }: any) {
 
 // -- 6. Glob Files -----------------------------------------------------
 
-function GlobFilesRenderer({ result, args }: any) {
+function GlobFilesRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
-  const files = parsed.files || parsed.matches || [];
+  type FileEntry = string | { path?: string; name?: string };
+  const files = (parsed.files || parsed.matches || []) as FileEntry[];
   const pattern = args?.pattern || "";
 
   return (
@@ -698,7 +724,7 @@ function GlobFilesRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.dirList}>
-        {files.slice(0, 40).map((f: any, i: any) => {
+        {files.slice(0, 40).map((f, i) => {
           const path = typeof f === "string" ? f : f.path || f.name || "";
           return (
             <div key={i} className={styles.dirEntry}>
@@ -714,11 +740,12 @@ function GlobFilesRenderer({ result, args }: any) {
 
 // -- 7. Web Search -----------------------------------------------------
 
-function WebSearchRenderer({ result, args }: any) {
+function WebSearchRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
-  const results = parsed.results || parsed.items || [];
+  type SearchResult = { title?: string; url?: string; link?: string; snippet?: string; name?: string };
+  const results = (parsed.results || parsed.items || []) as SearchResult[];
   const query = args?.query || "";
 
   return (
@@ -731,7 +758,7 @@ function WebSearchRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.searchResults}>
-        {results.slice(0, 8).map((r: any, i: any) => (
+        {results.slice(0, 8).map((r, i) => (
           <div key={i} className={styles.searchResult}>
             <a
               href={r.url || r.link}
@@ -751,7 +778,7 @@ function WebSearchRenderer({ result, args }: any) {
 
 // -- 8. Fetch URL ------------------------------------------------------
 
-function FetchUrlRenderer({ result, args }: any) {
+function FetchUrlRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -789,16 +816,16 @@ const PROMPT_PREFIXES = { bash: "$ ", python: ">>> ", javascript: "> " };
 const CONTINUATION_PREFIXES = { python: "... ", javascript: ".. " };
 const DEFAULT_CWD = { bash: "/tmp", python: "python3", javascript: "node" };
 
-function formatInputPrompt(input: any, language: any, cwd: any) {
+function formatInputPrompt(input: string | null, language: string | undefined, cwd: string | null) {
   if (!input) return "";
-  const prompt = (PROMPT_PREFIXES as Record<string, any>)[language] || "$ ";
-  const contPrompt = (CONTINUATION_PREFIXES as Record<string, any>)[language] || "  ";
+  const prompt = (PROMPT_PREFIXES as Record<string, string>)[language || ""] || "$ ";
+  const contPrompt = (CONTINUATION_PREFIXES as Record<string, string>)[language || ""] || "  ";
   const lines = input.split("\n");
-  const resolvedCwd = cwd || (DEFAULT_CWD as Record<string, any>)[language] || "";
+  const resolvedCwd = cwd || (DEFAULT_CWD as Record<string, string>)[language || ""] || "";
   const pathPrefix = resolvedCwd ? `${resolvedCwd} ` : "";
   return lines
     .map(
-      (line: any, i: any) =>
+      (line: string, i: number) =>
         `${i === 0 ? pathPrefix + prompt : contPrompt}${line}`,
     )
     .join("\n");
@@ -829,7 +856,7 @@ const ANSI_BRIGHT_COLORS = [
   "#ffffff", // 7 – bright white
 ];
 
-function ansi256ToHex(n: any) {
+function ansi256ToHex(n: number): string | null | undefined {
   if (n < 8) return ANSI_COLORS[n];
   if (n < 16) return ANSI_BRIGHT_COLORS[n - 8];
   if (n < 232) {
@@ -843,11 +870,11 @@ function ansi256ToHex(n: any) {
   return `#${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}`;
 }
 
-function stripAnsi(text: any) {
+function stripAnsi(text: string): string {
   return text.replace(/\x1b\[[0-9;]*m/g, "");
 }
 
-function parseAnsi(text: any) {
+function parseAnsi(text: string): string | React.ReactNode | React.ReactNode[] {
   if (!text.includes("\x1b")) return text;
   const parts = [];
   let lastIndex = 0;
@@ -864,13 +891,13 @@ function parseAnsi(text: any) {
     if (match.index > lastIndex) {
       const chunk = text.slice(lastIndex, match.index);
       if (color || bgColor || bold || dim || italic || underline) {
-        const style = {};
-        if (color) (style as any).color = color;
-        if (bgColor) (style as any).backgroundColor = bgColor;
-        if (bold) (style as any).fontWeight = 700;
-        if (dim) (style as any).opacity = 0.6;
-        if (italic) (style as any).fontStyle = "italic";
-        if (underline) (style as any).textDecoration = "underline";
+        const style: React.CSSProperties = {};
+        if (color) style.color = color;
+        if (bgColor) style.backgroundColor = bgColor;
+        if (bold) style.fontWeight = 700;
+        if (dim) style.opacity = 0.6;
+        if (italic) style.fontStyle = "italic";
+        if (underline) style.textDecoration = "underline";
         parts.push(
           <span key={key++} style={style}>
             {chunk}
@@ -918,13 +945,13 @@ function parseAnsi(text: any) {
   if (lastIndex < text.length) {
     const chunk = text.slice(lastIndex);
     if (color || bgColor || bold || dim || italic || underline) {
-      const style = {};
-      if (color) (style as any).color = color;
-      if (bgColor) (style as any).backgroundColor = bgColor;
-      if (bold) (style as any).fontWeight = 700;
-      if (dim) (style as any).opacity = 0.6;
-      if (italic) (style as any).fontStyle = "italic";
-      if (underline) (style as any).textDecoration = "underline";
+      const style: React.CSSProperties = {};
+      if (color) style.color = color;
+      if (bgColor) style.backgroundColor = bgColor;
+      if (bold) style.fontWeight = 700;
+      if (dim) style.opacity = 0.6;
+      if (italic) style.fontStyle = "italic";
+      if (underline) style.textDecoration = "underline";
       parts.push(
         <span key={key++} style={style}>
           {chunk}
@@ -937,7 +964,7 @@ function parseAnsi(text: any) {
   return parts.length === 1 ? parts[0] : parts;
 }
 
-function detectTerminalLevel(text: any) {
+function detectTerminalLevel(text: string): string | null {
   const clean = stripAnsi(text);
   if (/\bERR(?:OR)?\b/i.test(clean)) return "error";
   if (/\bWARN(?:ING)?\b/i.test(clean)) return "warn";
@@ -961,8 +988,8 @@ const TERM_CONTENT_LEVEL_CLASS = {
   debug: styles.termContentDebug,
 };
 
-function TerminalRenderer({ result, args, streamingOutput, language }: any) {
-  const bodyRef = useRef<any>(null);
+function TerminalRenderer({ result, args, streamingOutput, language }: RendererProps) {
+  const bodyRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
   const input = args?.command || args?.code || null;
   const cwd = args?.cwd || null;
@@ -1039,7 +1066,7 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
         onScroll={handleScroll}
       >
         {/* Input command lines */}
-        {inputLines.map((line: any, i: any) => (
+        {inputLines.map((line: string, i: number) => (
           <div key={`in-${i}`} className={styles.termLine}>
             <span className={styles.termLineNum}>{i + 1}</span>
             <span
@@ -1050,17 +1077,17 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
           </div>
         ))}
         {/* Output lines */}
-        {outputLines.map((line: any, i: any) => {
+        {outputLines.map((line: string, i: number) => {
           const level = detectTerminalLevel(line);
           const lineNum = inputLines.length + i + 1;
           return (
             <div
               key={`out-${i}`}
-              className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as Record<string, any>)[level] || "" : ""}`}
+              className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as Record<string, string>)[level] || "" : ""}`}
             >
               <span className={styles.termLineNum}>{lineNum}</span>
               <span
-                className={`${styles.termLineContent} ${level ? TERM_CONTENT_LEVEL_CLASS[level] || "" : ""}`}
+                className={`${styles.termLineContent} ${level ? (TERM_CONTENT_LEVEL_CLASS as Record<string, string>)[level] || "" : ""}`}
               >
                 {parseAnsi(line)}
               </span>
@@ -1122,7 +1149,7 @@ function GitStatusRenderer({ result }: RendererProps) {
   );
 }
 
-function GitDiffRenderer({ result }: any) {
+function GitDiffRenderer({ result }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1141,7 +1168,7 @@ function GitDiffRenderer({ result }: any) {
             {diff
               .split("\n")
               .slice(0, 80)
-              .map((line: any, i: any) => {
+              .map((line: string, i: number) => {
                 let cls = "";
                 if (line.startsWith("+") && !line.startsWith("+++"))
                   cls = styles.diffAdded;
@@ -1162,11 +1189,11 @@ function GitDiffRenderer({ result }: any) {
   );
 }
 
-function GitLogRenderer({ result }: any) {
+function GitLogRenderer({ result }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
-
-  const commits = parsed.commits || parsed.log || [];
+  type CommitEntry = { hash?: string; sha?: string; message?: string; subject?: string; author?: string };
+  const commits = (parsed.commits || parsed.log || []) as CommitEntry[];
 
   return (
     <div className={styles.rendererBlock}>
@@ -1177,7 +1204,7 @@ function GitLogRenderer({ result }: any) {
         </span>
       </div>
       <div className={styles.gitLog}>
-        {commits.slice(0, 15).map((c: any, i: any) => (
+        {commits.slice(0, 15).map((c, i) => (
           <div key={i} className={styles.gitCommit}>
             <span className={styles.gitHash}>
               {(c.hash || c.sha || "").slice(0, 7)}
@@ -1195,7 +1222,7 @@ function GitLogRenderer({ result }: any) {
 
 // -- 11. File Delete / Move --------------------------------------------
 
-function FileDeleteRenderer({ result, args }: any) {
+function FileDeleteRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
   const filePath = parsed.path || args?.path || "";
@@ -1213,7 +1240,7 @@ function FileDeleteRenderer({ result, args }: any) {
   );
 }
 
-function FileMoveRenderer({ result, args }: any) {
+function FileMoveRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
   const source = parsed.source || args?.source || "";
@@ -1249,12 +1276,12 @@ const BROWSER_ACTION_LABELS = {
   close: "Close",
 };
 
-function BrowserActionRenderer({ result, args }: any) {
+function BrowserActionRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
   const action = parsed.action || args?.action || "";
-  const label = (BROWSER_ACTION_LABELS as Record<string, any>)[action] || action;
+  const label = (BROWSER_ACTION_LABELS as Record<string, string>)[action] || action;
   const hasError = !!parsed.error;
 
   // Resolve screenshot ref (minio:// or base64 fallback)
@@ -1315,7 +1342,7 @@ function BrowserActionRenderer({ result, args }: any) {
 
       {action === "get_elements" && parsed.elements && (
         <div className={styles.dirList}>
-          {parsed.elements.slice(0, 30).map((element: any, i: any) => (
+          {parsed.elements.slice(0, 30).map((element: { selector: string; text?: string }, i: number) => (
             <div key={i} className={styles.dirEntry}>
               <code className={styles.inlineCode}>{element.selector}</code>
 
@@ -1330,7 +1357,7 @@ function BrowserActionRenderer({ result, args }: any) {
 
 // -- 13. Turtle Graphics -----------------------------------------------------
 
-function TurtleDrawRenderer({ result, args }: any) {
+function TurtleDrawRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1361,7 +1388,7 @@ function TurtleDrawRenderer({ result, args }: any) {
  * Mini status bar for an individual spawned worker agent.
  * Uses the shared StatusBarComponent.
  */
-function WorkerStatusBar({ activity }: any) {
+function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
   if (!activity) return null;
   const {
     currentTool,
@@ -1429,8 +1456,8 @@ function WorkerStatusBar({ activity }: any) {
   );
 }
 
-function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
-  const [expandedMembers, setExpandedMembers] = useState(new Set());
+function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps) {
+  const [expandedMembers, setExpandedMembers] = useState<Set<number>>(new Set());
   const parsed = tryParse(result);
 
   // Extract members from args (calling state) or result (done state)
@@ -1446,20 +1473,20 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   const hasActiveWorkers = useMemo(() => {
     if (!workerToolActivity) return false;
     return Object.values(workerToolActivity).some(
-      (a: any) => a.phase === "generating" || a.phase === "thinking",
+      (a) => a.phase === "generating" || a.phase === "thinking",
     );
   }, [workerToolActivity]);
 
   const [, setTick] = useState(0);
   useEffect(() => {
     if (!hasActiveWorkers) return;
-    const id = setInterval(() => setTick((t: any) => t + 1), 500);
+    const id = setInterval(() => setTick((t) => t + 1), 500);
     return () => clearInterval(id);
   }, [hasActiveWorkers]);
 
   // Use backend-computed per-worker tok/s directly. Only show when the
   // worker is in an active generation phase.
-  const getWorkerTokPerSec = (activity: any) => {
+  const getWorkerTokPerSec = (activity: WorkerActivity | null) => {
     if (!activity?.tokPerSec) return null;
     if (activity.phase !== "generating" && activity.phase !== "thinking")
       return null;
@@ -1479,7 +1506,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   // strategy for the "calling" state (before tool result arrives and
   // agent_id is available), because workers with identical descriptions
   // would all resolve to the first match via description.includes().
-  const getActivity = (member: any, memberIndex: any) => {
+  const getActivity = (member: { agent_id?: string; description?: string; [key: string]: unknown }, memberIndex: number) => {
     if (!workerToolActivity) return null;
     // 1. Exact match by agent_id (available in result/done state)
     if (member.agent_id) return workerToolActivity[member.agent_id] || null;
@@ -1491,15 +1518,15 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
     if (member.description) {
       return (
         Object.values(workerToolActivity).find(
-          (v: any) =>
-            v.description && v.description.includes(member.description),
+          (v) =>
+            v.description && member.description && v.description.includes(member.description),
         ) || null
       );
     }
     return null;
   };
 
-  const toggleMember = (index: any) => {
+  const toggleMember = (index: number) => {
     setExpandedMembers((prev) => {
       const next = new Set(prev);
       if (next.has(index)) next.delete(index);
@@ -1520,7 +1547,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
           </span>
           <StatusBadge success={true} label="running" />
         </div>
-        {argMembers.map((member: any, i: any) => {
+        {argMembers.map((member: { description?: string; [key: string]: unknown }, i: number) => {
           const activity = getActivity(member, i);
           const tokPerSec = getWorkerTokPerSec(activity);
           return (
@@ -1544,7 +1571,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
               </div>
               {activity?.toolNames && (
                 <ToolBadgeRow
-                  tools={activity.toolNames}
+                  tools={normalizeToolCounts(activity.toolNames)}
                   activeTool={activity.currentTool}
                   variant="compact"
                 />
@@ -1561,10 +1588,10 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   const hasError = !!parsed.error;
   const succeeded =
     parsed.succeeded ??
-    resultMembers.filter((m: any) => m.status === "completed").length;
+    resultMembers.filter((m) => m.status === "completed").length;
   const failed =
     parsed.failed ??
-    resultMembers.filter((m: any) => m.status === "failed").length;
+    resultMembers.filter((m) => m.status === "failed").length;
   const allDone = resultMembers.every(
     (m) =>
       m.status === "completed" ||
@@ -1593,7 +1620,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
 
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
 
-      {resultMembers.map((member: any, i: any) => {
+      {resultMembers.map((member, i) => {
         const activity = getActivity(member, i);
         const isTerminal =
           member.status === "completed" ||
@@ -1635,7 +1662,7 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
                 return null;
               return (
                 <ToolBadgeRow
-                  tools={toolNames}
+                  tools={normalizeToolCounts(toolNames)}
                   activeTool={!isTerminal ? activity?.currentTool : null}
                   variant="compact"
                 />
@@ -1670,12 +1697,12 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
                       {durationLabel}
                     </span>
                   )}
-                  {member.toolUses > 0 && (
+                  {(member.toolUses ?? 0) > 0 && (
                     <span className={styles.workerResultMeta}>
                       {member.toolUses} tools
                     </span>
                   )}
-                  {member.iterations > 0 && (
+                  {(member.iterations ?? 0) > 0 && (
                     <span className={styles.workerResultMeta}>
                       {member.iterations} iteration
                       {member.iterations !== 1 ? "s" : ""}
@@ -1689,15 +1716,15 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
                 </button>
                 {memberExpanded && (
                   <div className={styles.workerResultBody}>
-                    {member.messages?.length > 0 ? (
+                    {(member.messages?.length ?? 0) > 0 ? (
                       <Suspense fallback={null}>
                         <LazyMessageList
-                          messages={prepareDisplayMessages(member.messages)}
+                          messages={prepareDisplayMessages(member.messages as import('../types/types').Message[])}
                           readOnly
                         />
                       </Suspense>
                     ) : member.result ? (
-                      <MarkdownContent content={member.result} />
+                      <MarkdownContent content={String(member.result)} />
                     ) : null}
                   </div>
                 )}
@@ -1733,7 +1760,7 @@ function SendMessageRenderer({ result, args }: RendererProps) {
   );
 }
 
-function StopAgentRenderer({ result, args }: any) {
+function StopAgentRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
@@ -1759,7 +1786,7 @@ function StopAgentRenderer({ result, args }: any) {
 
 // -- 14. Generic Fallback ----------------------------------------------------
 
-function GenericRenderer({ result }: any) {
+function GenericRenderer({ result }: RendererProps) {
   return <RawResultToggle result={result} />;
 }
 
@@ -1817,9 +1844,9 @@ const TOOL_RESULT_REGISTRY = {
 /**
  * Resolve the appropriate result renderer for a tool call.
  */
-export function resolveToolResultRenderer(toolName: any) {
+export function resolveToolResultRenderer(toolName: string): { Renderer: React.ComponentType<RendererProps>; language?: string } {
   return (
-    (TOOL_RESULT_REGISTRY as Record<string, any>)[toolName] || { Renderer: GenericRenderer }
+    (TOOL_RESULT_REGISTRY as Record<string, { Renderer: React.ComponentType<RendererProps>; language?: string }>)[toolName] || { Renderer: GenericRenderer }
   );
 }
 
@@ -1830,7 +1857,7 @@ export function ToolResultView({
   toolCall,
   streamingOutput,
   workerToolActivity,
-}: any) {
+}: ToolResultViewProps) {
   const { Renderer, language } = resolveToolResultRenderer(toolCall.name);
 
   return (

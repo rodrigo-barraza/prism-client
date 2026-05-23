@@ -112,11 +112,18 @@ export function filterMentionResults(entries: WorkspaceEntry[] | null, query: st
 // Parse serialized `@path` tokens out of a plain text string so
 // they can be rendered as styled badges in the message list.
 
+interface MentionSegment {
+  type: string;
+  value: string;
+  lineStart?: number;
+  lineEnd?: number;
+}
+
 /**
  * Parse a text string into segments of plain text and @-mention tokens.
  * Mention tokens match `@non-whitespace` sequences at word boundaries.
  */
-export function parseMentionTokens(text: string) {
+export function parseMentionTokens(text: string): MentionSegment[] {
   if (!text) return [{ type: "text", value: "" }];
 
   // Match @path tokens — path must contain at least one `/` or `.` to
@@ -125,7 +132,7 @@ export function parseMentionTokens(text: string) {
   const mentionRe =
     /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+?)(?:#L(\d+)(?:-(\d+))?)?)(?=\s|$)/g;
 
-  const segments = [];
+  const segments: MentionSegment[] = [];
   let lastIndex = 0;
   let match;
 
@@ -137,11 +144,11 @@ export function parseMentionTokens(text: string) {
         value: text.slice(lastIndex, match.index),
       });
     }
-    const segment = { type: "mention", value: match[1] };
+    const segment: MentionSegment = { type: "mention", value: match[1] };
     // Extract line range if present
     if (match[2]) {
-      (segment as Record<string, any>).lineStart = parseInt(match[2], 10);
-      if (match[3]) (segment as Record<string, any>).lineEnd = parseInt(match[3], 10);
+      segment.lineStart = parseInt(match[2], 10);
+      if (match[3]) segment.lineEnd = parseInt(match[3], 10);
     }
     segments.push(segment);
     lastIndex = mentionRe.lastIndex;
@@ -159,45 +166,51 @@ export function parseMentionTokens(text: string) {
 // Uses the shared MentionBadgeComponent CSS module so both the
 // contentEditable input and the message list render identical badges.
 
+interface MentionBadgeOpts {
+  stale?: boolean;
+  lineStart?: number;
+  lineEnd?: number;
+}
+
 /**
  * Create a mention badge DOM element for use in contentEditable.
  */
-export function createMentionBadge(path: string, name: string, type: string | undefined, opts: Record<string, any> = {}) {
+export function createMentionBadge(path: string, name: string, type: string | undefined, opts: MentionBadgeOpts = {}) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
   const classes = [badgeStyles.mentionBadge];
-  if ((opts as Record<string, any>).stale) classes.push(badgeStyles.mentionBadgeStale);
+  if (opts.stale) classes.push(badgeStyles.mentionBadgeStale);
   badge.className = classes.join(" ");
   badge.dataset.mentionPath = path;
   badge.dataset.mentionType = type || "file";
   // Store line range in data attributes for serialization
-  if ((opts as Record<string, any>).lineStart != null) {
-    badge.dataset.mentionLineStart = String((opts as Record<string, any>).lineStart);
+  if (opts.lineStart != null) {
+    badge.dataset.mentionLineStart = String(opts.lineStart);
     if (
-      (opts as Record<string, any>).lineEnd != null &&
-      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
+      opts.lineEnd != null &&
+      opts.lineEnd !== opts.lineStart
     ) {
-      badge.dataset.mentionLineEnd = String((opts as Record<string, any>).lineEnd);
+      badge.dataset.mentionLineEnd = String(opts.lineEnd);
     }
   }
   // Build display name with line suffix (#L format — GitHub convention)
   let displayName = name;
-  if ((opts as Record<string, any>).lineStart != null) {
+  if (opts.lineStart != null) {
     displayName +=
-      (opts as Record<string, any>).lineEnd != null &&
-      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
-        ? `#L${(opts as Record<string, any>).lineStart}-${(opts as Record<string, any>).lineEnd}`
-        : `#L${(opts as Record<string, any>).lineStart}`;
+      opts.lineEnd != null &&
+      opts.lineEnd !== opts.lineStart
+        ? `#L${opts.lineStart}-${opts.lineEnd}`
+        : `#L${opts.lineStart}`;
   }
   // Native title attribute — used as tooltip fallback inside overflow-clipped
   // contentEditable containers where the ::after CSS tooltip gets cut off.
   let titleText = path;
-  if ((opts as Record<string, any>).lineStart != null) {
+  if (opts.lineStart != null) {
     titleText +=
-      (opts as Record<string, any>).lineEnd != null &&
-      (opts as Record<string, any>).lineEnd !== (opts as Record<string, any>).lineStart
-        ? `#L${(opts as Record<string, any>).lineStart}-${(opts as Record<string, any>).lineEnd}`
-        : `#L${(opts as Record<string, any>).lineStart}`;
+      opts.lineEnd != null &&
+      opts.lineEnd !== opts.lineStart
+        ? `#L${opts.lineStart}-${opts.lineEnd}`
+        : `#L${opts.lineStart}`;
   }
   badge.title = titleText;
   const icon = type === "directory" ? "📁" : "📄";

@@ -297,6 +297,22 @@ interface WorkerActivityEntry {
   [key: string]: string | number | boolean | null | undefined | Record<string, number>;
 }
 
+/** Snapshot of UI state stored when a background-generating session is paused. */
+interface SessionSnapshot {
+  messages: ClientMessage[];
+  title: string;
+  toolActivity: ToolCallEvent[];
+  workerToolActivity: Record<string, WorkerActivityEntry>;
+  streamingOutputs: Map<string, string>;
+  pendingApprovals: Array<Record<string, unknown>>;
+  pendingUserQuestion: { question?: string; questions?: unknown[]; choices?: string[]; context?: string } | null;
+  planProposal: { plan: string; steps?: string[]; status?: string } | null;
+  agenticProgress: { iteration: number; maxIterations: number } | null;
+  settings: Record<string, unknown>;
+  backendSessionStats: SessionStats | null;
+  workspaceRoot: string | null;
+}
+
 interface ClientMessage extends Message {
   _liveModelNames?: string[];
   _liveModalities?: Record<string, number>;
@@ -597,7 +613,7 @@ export default function AgentComponent({
   );
   // Snapshot cache: stores UI state for sessions that are generating in the background
   // so the user can switch back without waiting for backend persistence.
-  const backgroundSessionsRef = useRef<Map<string, Record<string, unknown>>>(new Map());
+  const backgroundSessionsRef = useRef<Map<string, SessionSnapshot>>(new Map());
 
   const handleStop = useCallback(() => {
     if (abortRef.current) {
@@ -932,7 +948,7 @@ export default function AgentComponent({
         }
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to preload session from URL:", error);
       }
     })();
@@ -1209,8 +1225,8 @@ export default function AgentComponent({
 
   /** Create a styled mention badge span (wraps the pure fn). */
   const createMentionBadge = useCallback(
-    (path: string, name: string, type: string | undefined, fetchOptions?: Record<string, string | number>) => {
-      return _createMentionBadge(path, name, type, fetchOptions);
+    (path: string, name: string, type: string | undefined, badgeOpts?: Parameters<typeof _createMentionBadge>[3]) => {
+      return _createMentionBadge(path, name, type, badgeOpts);
     },
     [],
   );
@@ -1389,7 +1405,7 @@ export default function AgentComponent({
 
   /** Detect @query from cursor position inside contentEditable. */
   const detectMentionQuery = useCallback(
-    (element: any) => {
+    (element: HTMLDivElement) => {
       const sel = window.getSelection();
       if (!sel || !sel.rangeCount || !element.contains(sel.anchorNode)) {
         setMentionOpen(false);
@@ -1420,7 +1436,7 @@ export default function AgentComponent({
     },
     [ensureMentionCache],
   );
-  const detectMentionQueryRef = useRef<any>(detectMentionQuery);
+  const detectMentionQueryRef = useRef<((el: HTMLDivElement) => void) | null>(detectMentionQuery);
   detectMentionQueryRef.current = detectMentionQuery;
 
   const mentionResults = useMemo(() => {
@@ -1430,13 +1446,13 @@ export default function AgentComponent({
 
   /** Apply mention — replace @query text with a badge span. */
   const applyMention = useCallback(
-    (entry: any) => {
+    (entry: { path?: string; name: string; type?: string }) => {
       const element = textareaRef.current;
       if (!element || !mentionAnchorRef.current) return;
       const { node, offset } = mentionAnchorRef.current;
       const sel = window.getSelection();
       if (!sel || !sel.rangeCount) return;
-      const badge = createMentionBadge(entry.path, entry.name, entry.type);
+      const badge = createMentionBadge(entry.path || '', entry.name, entry.type);
       const space = applyMentionToTextNode(
         node,
         offset,
@@ -1457,9 +1473,9 @@ export default function AgentComponent({
     const files = Array.from(e.target.files || []);
     for (const file of files) {
       const reader = new FileReader();
-      reader.onload = (ev: any) => {
+      reader.onload = (ev: ProgressEvent<FileReader>) => {
         if (ev.target?.result) {
-          setPendingImages((prev) => [...prev, ev.target.result]);
+          setPendingImages((prev) => [...prev, ev.target?.result as string]);
         }
       };
       reader.readAsDataURL(file);
@@ -1474,7 +1490,7 @@ export default function AgentComponent({
   }, []);
 
   const handleDragEnter = useCallback(
-    (e: React.DragEvent<any>) => {
+    (e: React.DragEvent<HTMLElement>) => {
       e.preventDefault();
       e.stopPropagation();
       dragCounter.current++;
@@ -1485,7 +1501,7 @@ export default function AgentComponent({
     [supportsImageInput],
   );
 
-  const handleDragLeave = useCallback((e: React.DragEvent<any>) => {
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
     dragCounter.current--;
@@ -1494,13 +1510,13 @@ export default function AgentComponent({
     }
   }, []);
 
-  const handleDragOver = useCallback((e: React.DragEvent<any>) => {
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
   }, []);
 
   const handleDrop = useCallback(
-    (e: React.DragEvent<any>) => {
+    (e: React.DragEvent<HTMLElement>) => {
       e.preventDefault();
       e.stopPropagation();
       setIsDragging(false);
@@ -1510,9 +1526,9 @@ export default function AgentComponent({
       const images = files.filter((f) => f.type.startsWith("image/"));
       for (const file of images) {
         const reader = new FileReader();
-        reader.onload = (ev: any) => {
+        reader.onload = (ev: ProgressEvent<FileReader>) => {
           if (ev.target?.result) {
-            setPendingImages((prev) => [...prev, ev.target.result]);
+            setPendingImages((prev) => [...prev, ev.target?.result as string]);
           }
         };
         reader.readAsDataURL(file);
@@ -1522,7 +1538,7 @@ export default function AgentComponent({
   );
 
   const handlePaste = useCallback(
-    (e: React.ClipboardEvent<any>) => {
+    (e: React.ClipboardEvent<HTMLElement>) => {
       if (!supportsImageInput) return;
       const items = Array.from(e.clipboardData?.items || []);
       const files = items
@@ -1535,9 +1551,9 @@ export default function AgentComponent({
       e.preventDefault();
       for (const file of files) {
         const reader = new FileReader();
-        reader.onload = (ev: any) => {
+        reader.onload = (ev: ProgressEvent<FileReader>) => {
           if (ev.target?.result) {
-            setPendingImages((prev) => [...prev, ev.target.result]);
+            setPendingImages((prev) => [...prev, ev.target?.result as string]);
           }
         };
         reader.readAsDataURL(file);
@@ -2711,7 +2727,7 @@ export default function AgentComponent({
   titleRef.current = title;
 
   const handleSend = useCallback(
-    async (e?: React.FormEvent<HTMLFormElement> | null, fetchOptions: Record<string, any> = {}) => {
+    async (e?: React.FormEvent<HTMLFormElement> | null, fetchOptions: { isQueueing?: boolean; overridePayload?: { text: string; images: string[] } | null } = {}) => {
       if (e && typeof e.preventDefault === "function") e.preventDefault();
 
       const { isQueueing = false, overridePayload = null } = fetchOptions;
@@ -2780,7 +2796,7 @@ export default function AgentComponent({
             title: resolvedTitle,
             updatedAt: now,
             createdAt: now,
-          } as any,
+          } as AgentSession,
           ...prev,
         ]);
       }
@@ -2810,12 +2826,12 @@ export default function AgentComponent({
         await runOrchestrationLoop(updatedMessages, resolvedTitle);
         // Messages are already updated by the streaming callbacks — just reload history
         loadSessions();
-      } catch (error: any) {
+      } catch (error: unknown) {
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: `⚠️ Error: ${error.message}`,
+            content: `⚠️ Error: ${error instanceof Error ? error.message : String(error)}`,
             isError: true,
           },
         ]);
@@ -3018,8 +3034,8 @@ export default function AgentComponent({
 
   /* ── Chat header "New Session" glitch effect ────────────────── */
   const chatNewBtnRef = useRef<HTMLButtonElement | null>(null);
-  const chatRainbowTimer = useRef<any>(null);
-  const chatGlitchInterval = useRef<any>(null);
+  const chatRainbowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const chatGlitchInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const [chatGlitchLabel, setChatGlitchLabel] = useState<string | null>(null);
 
   const handleNewChatGlitch = useCallback(() => {
@@ -3030,15 +3046,15 @@ export default function AgentComponent({
       element.classList.add(chatStyles.chatHeaderNewBtnRainbow);
 
       setChatGlitchLabel(glitchText());
-      clearInterval(chatGlitchInterval.current);
+      if (chatGlitchInterval.current) clearInterval(chatGlitchInterval.current);
       chatGlitchInterval.current = setInterval(() => {
         setChatGlitchLabel(glitchText());
       }, 30);
 
-      clearTimeout(chatRainbowTimer.current);
+      if (chatRainbowTimer.current) clearTimeout(chatRainbowTimer.current);
       chatRainbowTimer.current = setTimeout(() => {
         element.classList.remove(chatStyles.chatHeaderNewBtnRainbow);
-        clearInterval(chatGlitchInterval.current);
+        if (chatGlitchInterval.current) clearInterval(chatGlitchInterval.current);
         chatGlitchInterval.current = null;
         setChatGlitchLabel(null);
       }, 1000);
@@ -3048,7 +3064,7 @@ export default function AgentComponent({
 
   /** Apply fetched/snapshot session data to component state immediately. */
   const applySessionData = useCallback(
-    (full: any) => {
+    (full: (AgentSession | Conversation) & { workspaceRoot?: string; _fromSnapshot?: boolean; _snapshot?: SessionSnapshot }) => {
       if (!full) return;
 
       // ── Restore workspace selection from the session document ──
@@ -3056,7 +3072,7 @@ export default function AgentComponent({
       // switch to it so the workspace tree and tool routing match.
       if (full.workspaceRoot) {
         const match = workspaces.find(
-          (w: Record<string, any>) => w.path === full.workspaceRoot,
+          (w) => w.path === full.workspaceRoot,
         );
         if (match) {
           if (match.path !== currentWorkspace?.path) {
@@ -3066,7 +3082,7 @@ export default function AgentComponent({
         } else {
           // Workspace not currently connected — surface in the UI
           // instead of silently failing and looping errors.
-          setUnavailableWorkspace(full.workspaceRoot);
+          setUnavailableWorkspace(full.workspaceRoot ?? null);
         }
       } else {
         setUnavailableWorkspace(null);
@@ -3077,15 +3093,15 @@ export default function AgentComponent({
         const snap = full._snapshot;
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
-        setMessages(snap.messages);
-        setAgentSessionId(full.id);
-        setActiveId(full.id);
+        setMessages(snap.messages as ClientMessage[]);
+        setAgentSessionId(full.id || generateUUID());
+        setActiveId(full.id || null);
         window.dispatchEvent(
           new CustomEvent("conversation:change", {
             detail: { conversationId: full.id },
           }),
         );
-        setTitle(snap.title);
+        setTitle(snap.title || "");
         setToolActivity(snap.toolActivity || []);
         setWorkerToolActivity(snap.workerToolActivity || {});
         setStreamingOutputs(snap.streamingOutputs || new Map());
@@ -3093,13 +3109,13 @@ export default function AgentComponent({
         setPendingUserQuestion(snap.pendingUserQuestion || null);
         setPlanProposal(snap.planProposal || null);
         setAgenticProgress(snap.agenticProgress || null);
-        setSettings((prev) => ({ ...prev, ...snap.settings }));
+        setSettings((prev) => ({ ...prev, ...(snap.settings as Partial<typeof prev>) }));
         setBackendSessionStats(snap.backendSessionStats || null);
         // Re-attach: mark as generating so the UI shows the active state
         setIsGenerating(true);
         // Remove the snapshot — the SSE callbacks will resume updating React state
         // now that agentSessionIdRef matches again (isStale() → false)
-        backgroundSessionsRef.current.delete(full.id);
+        backgroundSessionsRef.current.delete(full.id || '');
       } else {
         // Normal backend-loaded session
         const displayMessages = prepareDisplayMessages(full.messages || []);
@@ -3152,7 +3168,7 @@ export default function AgentComponent({
   );
 
   const handleSelectSession = useCallback(
-    async (conversation: any) => {
+    async (conversation: AgentSession | Conversation) => {
       // If generating, snapshot the current session so user can switch back to it
       if (isGenerating) {
         const currentId = agentSessionIdRef.current;
@@ -3169,7 +3185,7 @@ export default function AgentComponent({
           settings: { ...settings },
           backendSessionStats,
           workspaceRoot: currentWorkspace?.path || null,
-        });
+        } as SessionSnapshot);
         setIsGenerating(false);
       }
       // Already viewing this session — just scroll to bottom instantly
@@ -3187,17 +3203,17 @@ export default function AgentComponent({
       // If the target session is still generating in the background,
       // restore from the in-memory snapshot instead of hitting the backend
       // (which would 404 because the session hasn't been persisted yet).
-      const snapshot = backgroundSessionsRef.current.get(conversation.id) as any;
+      const snapshot = backgroundSessionsRef.current.get(conversation.id!);
       if (snapshot && generatingSessionIds.has(conversation.id)) {
         applySessionData({
           id: conversation.id,
           title: snapshot.title,
           messages: snapshot.messages,
-          stats: snapshot.backendSessionStats,
-          workspaceRoot: snapshot.workspaceRoot,
+          stats: snapshot.backendSessionStats ?? undefined,
+          workspaceRoot: snapshot.workspaceRoot || undefined,
           _fromSnapshot: true,
           _snapshot: snapshot,
-        });
+        } as Parameters<typeof applySessionData>[0]);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
         return;
@@ -3205,15 +3221,16 @@ export default function AgentComponent({
 
       try {
         const full = isNoAgent
-          ? await PrismService.getConversation(conversation.id)
-          : await PrismService.getAgentSession(conversation.id, agentProject!);
+          ? await PrismService.getConversation(conversation.id!)
+          : await PrismService.getAgentSession(conversation.id!, agentProject!);
         applySessionData(full);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
         const is404 =
-          error.message?.includes("404") ||
-          error.message?.includes("not found");
+          errMsg.includes("404") ||
+          errMsg.includes("not found");
         if (is404) {
           console.warn(
             `Session ${conversation.id} not yet persisted (still generating?) — skipping switch`,
@@ -3260,7 +3277,7 @@ export default function AgentComponent({
         if (activeId === convId) {
           handleNewChat();
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to delete session:", error);
       }
     },
@@ -3272,7 +3289,7 @@ export default function AgentComponent({
     (absPath: string) => {
       const existingTab = viewerOpenFiles.find((f) => f.path === absPath);
       if (existingTab) {
-        setViewerActiveFileId((existingTab as any).id);
+        setViewerActiveFileId(existingTab.id);
       } else {
         const id = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         setViewerOpenFiles((prev) => [...prev, { id, path: absPath }]);
@@ -3374,7 +3391,7 @@ export default function AgentComponent({
                   icon: <BotMessageSquare size={14} />,
                   ...badgeProps(workersCount, "workers"),
                   badgeRainbow: Object.values(workerToolActivity).some(
-                    (w: Record<string, any>) =>
+                    (w: WorkerActivityEntry) =>
                       w.currentTool ||
                       w.phase === "generating" ||
                       w.phase === "thinking",
@@ -3502,7 +3519,7 @@ export default function AgentComponent({
               ? backendSessionStats
                 ? (() => {
                     // Map a backend sub-stats object to the display shape
-                    const mapSubStats = (sub: any) => {
+                    const mapSubStats = (sub: SessionStats | undefined) => {
                       if (!sub) return null;
                       return {
                         messageCount: sub.requestCount,
@@ -3714,7 +3731,7 @@ export default function AgentComponent({
                       liveGenProgress,
                     };
                   })()
-              : null) as any
+              : null) as Record<string, unknown> | null
           }
         />
       )}
@@ -3728,7 +3745,7 @@ export default function AgentComponent({
           onOpenFile={(relativePath: string) => {
             // Build absolute path from workspace root + relative path
             const absPath = currentWorkspace?.path
-              ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
+              ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
             handleOpenFileInViewer(absPath);
           }}
@@ -3863,7 +3880,7 @@ export default function AgentComponent({
         ref={messagesListRef}
         style={
           agentBackgroundImage
-            ? ({ "--agent-bg-image": `url(${agentBackgroundImage})` } as any)
+            ? ({ "--agent-bg-image": `url(${agentBackgroundImage})` } as React.CSSProperties)
             : undefined
         }
       >
@@ -3890,7 +3907,7 @@ export default function AgentComponent({
           knownPaths={knownPaths}
           onMentionFileOpen={(relativePath: string) => {
             const absPath = currentWorkspace?.path
-              ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
+              ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
             handleOpenFileInViewer(absPath);
           }}
@@ -3959,10 +3976,10 @@ export default function AgentComponent({
         {/* Pending user question card */}
         {pendingUserQuestion && (
           <UserQuestionCardComponent
-            questions={(pendingUserQuestion as any).questions}
-            question={(pendingUserQuestion as any).question}
-            choices={(pendingUserQuestion as any).choices}
-            context={(pendingUserQuestion as any).context}
+            questions={pendingUserQuestion.questions}
+            question={pendingUserQuestion.question}
+            choices={pendingUserQuestion.choices}
+            context={pendingUserQuestion.context}
             onAnswer={(answers: Array<{ answer: string | string[]; annotations?: string }>) => {
               setPendingUserQuestion(null);
               PrismService.sendUserQuestionAnswer(
@@ -3983,11 +4000,11 @@ export default function AgentComponent({
           ? lastMsg?.statusPhase || "starting"
           : null;
         const hasActiveTools = toolActivity.some(
-          (t: any) => t.status === "calling",
+          (t) => t.status === "calling",
         );
         // Detect awaiting-approval state (plan proposal or tool approval pending)
         const isAwaitingApproval =
-          (planProposal as any)?.status === "pending" ||
+          planProposal?.status === "pending" ||
           pendingApprovals.some((a) => a.status === "pending") ||
           pendingUserQuestion !== null;
 
@@ -4001,7 +4018,7 @@ export default function AgentComponent({
         if (hasActiveTools && Object.keys(workerToolActivity).length > 0) {
           const workers = Object.values(workerToolActivity);
           const activeWorkers = workers.filter(
-            (w: Record<string, any>) =>
+            (w: WorkerActivityEntry) =>
               w.phase &&
               w.phase !== "complete" &&
               w.phase !== "failed" &&
@@ -4018,7 +4035,7 @@ export default function AgentComponent({
             ];
             for (const p of phasePriority) {
               const count = activeWorkers.filter(
-                (w: Record<string, any>) => w.phase === p,
+                (w: WorkerActivityEntry) => w.phase === p,
               ).length;
               if (count > 0) {
                 workerDerivedPhase = p;
@@ -4084,7 +4101,7 @@ export default function AgentComponent({
             label={label}
             progress={progress}
             tokPerSec={orchestratorTokPerSec}
-            iteration={(agenticProgress as any)?.iteration || 0}
+            iteration={agenticProgress?.iteration || 0}
             maxIterations={
               Number.isFinite(maxIterations) ? maxIterations : undefined
             }
@@ -4129,8 +4146,8 @@ export default function AgentComponent({
                 <button
                   type="button"
                   onClick={() => {
-                    setTextareaValue((queuedNextTurn as any).text);
-                    setPendingImages((queuedNextTurn as any).images);
+                    setTextareaValue(queuedNextTurn.text);
+                    setPendingImages(queuedNextTurn.images);
                     setQueuedNextTurn(null);
                   }}
                   className={chatStyles.removeAttachment}
@@ -4139,15 +4156,15 @@ export default function AgentComponent({
                   <X size={14} />
                 </button>
               </div>
-              {(queuedNextTurn as any).text && (
+              {queuedNextTurn.text && (
                 <div className={chatStyles.queuedText}>
-                  {(queuedNextTurn as any).text}
+                  {queuedNextTurn.text}
                 </div>
               )}
-              {(queuedNextTurn as any).images?.length > 0 && (
+              {queuedNextTurn.images?.length > 0 && (
                 <div className={chatStyles.queuedImagesCount}>
                   <Paperclip size={12} />{" "}
-                  {(queuedNextTurn as any).images.length} image(s)
+                  {queuedNextTurn.images.length} image(s)
                 </div>
               )}
             </div>
