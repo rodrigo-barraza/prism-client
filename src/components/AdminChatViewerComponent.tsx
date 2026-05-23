@@ -990,7 +990,13 @@ export default function AdminChatViewerComponent({
               <MessageList
                 messages={prepareDisplayMessages(selectedEntry?.messages || [])}
                 readOnly
-                systemPrompt={selectedEntry?.systemPrompt}
+                systemPrompt={
+                  selectedEntry?.systemPrompt ||
+                  (selectedEntry as any)?.settings?.systemPrompt ||
+                  selectedEntry?.messages?.find(
+                    (m) => m.role === "system" && !m.deleted
+                  )?.content
+                }
               />
             )}
           </div>
