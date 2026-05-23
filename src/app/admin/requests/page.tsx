@@ -558,7 +558,7 @@ export default function RequestsPage() {
                             icon={MessageSquare}
                             admin
                             onClick={() =>
-                              router.push(`/admin/conversations/${c.id}`)
+                              router.push(`/admin/chat/${c.id}`)
                             }
                           />
                         ))}

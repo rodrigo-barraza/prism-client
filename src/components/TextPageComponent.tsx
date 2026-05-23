@@ -37,7 +37,7 @@ export default function TextPageComponent({
   onCountChange,
 }: any) {
   const isAdmin = mode === "admin";
-  const convBasePath = "/admin/conversations";
+  const convBasePath = "/admin/chat";
 
   const [texts, setTexts] = useState<any[]>([]);
   const [total, setTotal] = useState(0);

@@ -63,7 +63,7 @@ export function AdminHeaderProvider({ children }: { children: React.ReactNode })
   // own state is set during render, so the new page never sees the old page's
   // controls or badge — eliminating the cross-page flicker entirely.
   // Compare only the top-level route segment so sub-route navigations
-  // (e.g. /admin/conversations → /admin/conversations/[id]) don't wipe the badge.
+  // (e.g. /admin/chat → /admin/chat/[id]) don't wipe the badge.
   const routeSegment =
     pathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
   const prevRouteSegment =

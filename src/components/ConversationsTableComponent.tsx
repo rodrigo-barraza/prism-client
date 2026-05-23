@@ -101,7 +101,7 @@ export default function ConversationsTableComponent({
       getRowKey={(c: any, i: number) => c.id || c._id || `conv-${i}`}
       onRowClick={(c: any) => {
         const traceQs = traceId ? `?trace=${traceId}` : "";
-        router.push(`/admin/conversations/${c.id}${traceQs}`);
+        router.push(`/admin/chat/${c.id}${traceQs}`);
       }}
       emptyText={emptyText}
       maxHeight={maxHeight || (compact ? "300px" : undefined)}

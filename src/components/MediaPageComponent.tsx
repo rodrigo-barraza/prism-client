@@ -116,7 +116,7 @@ export default function MediaPageComponent({
   onCountChange,
 }: MediaPageComponentProps) {
   const isAdmin = mode === "admin";
-  const convBasePath = "/admin/conversations";
+  const convBasePath = "/admin/chat";
 
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [total, setTotal] = useState(0);

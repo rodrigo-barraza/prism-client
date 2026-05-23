@@ -102,8 +102,8 @@ const ADMIN_NAV_ITEMS = [
   { href: "/admin/tool-requests", label: "Tool Requests", icon: Wrench },
   { href: "/admin/tool-calls", label: "Tool Calls", icon: BarChart3 },
   {
-    href: "/admin/conversations",
-    label: "Conversations",
+    href: "/admin/chat",
+    label: "Chat",
     icon: MessageSquare,
     showBadge: "conversations",
   },
@@ -113,7 +113,6 @@ const ADMIN_NAV_ITEMS = [
     icon: FolderOpen,
     showBadge: "traces",
   },
-  { href: "/admin/agent-sessions", label: "Agent Sessions", icon: Bot },
   { href: "/admin/providers", label: "Providers", icon: Layers },
   { href: "/admin/media", label: "Media", icon: ImageIcon, showBadge: "media" },
   { href: "/admin/text", label: "Text", icon: Type, showBadge: "text" },

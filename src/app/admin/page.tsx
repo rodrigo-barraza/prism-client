@@ -18,7 +18,7 @@ import {
   MessageSquare,
   Timer,
   Wrench,
-  Bot,
+
   FolderKanban,
 } from "lucide-react";
 import {
@@ -422,24 +422,18 @@ export default function DashboardPage() {
           label="Sessions"
         />
         <ResourceCardComponent
-          href="/admin/conversations"
+          href="/admin/chat"
           icon={MessageSquare}
           count={
-            loading ? "—" : formatNumber(stats?.conversationCount || 0)
+            loading ? "—" : formatNumber((stats?.conversationCount || 0) + (stats?.agentCount || 0))
           }
-          label="Conversations"
+          label="Chat"
         />
         <ResourceCardComponent
           href="/admin/requests"
           icon={ScrollText}
           count={loading ? "—" : formatNumber(stats?.totalRequests || 0)}
           label="Requests"
-        />
-        <ResourceCardComponent
-          href="/admin/agent-sessions"
-          icon={Bot}
-          count={loading ? "—" : formatNumber(stats?.agentCount || 0)}
-          label="Agents"
         />
         <ResourceCardComponent
           href="#"
@@ -617,7 +611,7 @@ export default function DashboardPage() {
             }}
           >
             Conversations
-            <Link href="/admin/conversations" className={styles.sectionAction}>
+            <Link href="/admin/chat" className={styles.sectionAction}>
               View all →
             </Link>
           </span>

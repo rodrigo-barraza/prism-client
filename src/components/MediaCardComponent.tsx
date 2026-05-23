@@ -73,7 +73,7 @@ export interface MediaCardProps {
  */
 export default function MediaCardComponent({
   media,
-  convBasePath = "/admin/conversations",
+  convBasePath = "/admin/chat",
   compact = false,
   showInfo = true,
   showOrigin = true,

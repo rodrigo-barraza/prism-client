@@ -408,7 +408,7 @@ export const countLinkColumns = (entityKey: string, entityValue: (row: TableRow)
     render: (row: TableRow) => (
       <CountLinkComponent
         count={row.conversationCount as number | undefined}
-        href={`/admin/conversations?${entityKey}=${encodeURIComponent(entityValue(row))}`}
+        href={`/admin/chat?${entityKey}=${encodeURIComponent(entityValue(row))}`}
         icon={MessageSquare}
       />
     ),
@@ -520,7 +520,7 @@ export const traceIdColumn = () => ({
   sortable: false,
   render: (s: TableRow) => (
     <a
-      href={`/admin/conversations?trace=${s.id as string}`}
+      href={`/admin/chat?trace=${s.id as string}`}
       className={styles.sessionIdCell}
       title={`View conversations for trace ${s.id as string}`}
       onClick={(e: React.MouseEvent) => e.stopPropagation()}

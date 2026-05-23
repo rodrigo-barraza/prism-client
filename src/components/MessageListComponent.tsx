@@ -413,7 +413,7 @@ function ToolCallsBlock({
  * and merges tool results into the preceding assistant's toolCalls.
  * Soft-deleted messages are always included (with their `deleted` flag)
  * so they render in-place as ghostly apparitions.
- * Use this in both /chat and /admin/conversations for consistency.
+ * Use this in both /chat and /admin/chat for consistency.
  */
 export function prepareDisplayMessages(rawMessages: Message[] | undefined | null): Message[] {
   if (!rawMessages || rawMessages.length === 0) return [];

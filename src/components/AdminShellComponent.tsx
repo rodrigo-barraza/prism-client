@@ -36,7 +36,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   const knownMediaRef = useRef<number | null>(null);
   const knownTextRef = useRef<number | null>(null);
   const isOnConversationsRef = useRef<boolean>(
-    pathname.startsWith("/admin/conversations"),
+    pathname.startsWith("/admin/chat"),
   );
   const isOnSessionsRef = useRef<boolean>(pathname.startsWith("/admin/traces"));
   const isOnRequestsRef = useRef<boolean>(pathname.startsWith("/admin/requests"));
@@ -45,7 +45,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
 
   // Keep refs in sync with pathname
   useEffect(() => {
-    const onConvs = pathname.startsWith("/admin/conversations");
+    const onConvs = pathname.startsWith("/admin/chat");
     const onSessions = pathname.startsWith("/admin/traces");
     const onRequests = pathname.startsWith("/admin/requests");
     const onMedia = pathname.startsWith("/admin/media");
@@ -274,7 +274,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleNavClick = useCallback((href: string) => {
-    if (href.startsWith("/admin/conversations")) setNewCount(0);
+    if (href.startsWith("/admin/chat")) setNewCount(0);
     if (href.startsWith("/admin/traces")) setNewTracesCount(0);
     if (href.startsWith("/admin/requests")) setNewRequestsCount(0);
     if (href.startsWith("/admin/media")) setNewMediaCount(0);
@@ -294,7 +294,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
 
   const handleClearSession = useCallback(() => {
     setSessionFilter(null);
-    router.push("/admin/conversations");
+    router.push("/admin/chat");
   }, [setSessionFilter, router]);
 
   // Derive page title from pathname (first segment only)
