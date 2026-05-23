@@ -61,6 +61,29 @@ export default function HistoryItemComponent({
   const hasModalities = mod && Object.keys(mod).length > 0;
   const hasModel = item.modelNames?.length > 0 || item.modelName;
 
+  const AGENT_DISPLAY_NAMES: Record<string, string> = {
+    CODING: "Coding Agent",
+    LUPOS: "Lupos",
+    STICKERS: "Clankerbox",
+    LIGHTS: "Lights",
+    OOG: "Oog",
+    OMNI: "Omni",
+  };
+
+  const getAgentDisplayName = (agent: any): string => {
+    if (!agent) return "";
+    const id = typeof agent === "string" ? agent : agent.id || "";
+    const name = typeof agent === "object" ? agent.name : "";
+
+    if (AGENT_DISPLAY_NAMES[id]) {
+      return AGENT_DISPLAY_NAMES[id];
+    }
+    if (name && name !== id) {
+      return name;
+    }
+    return id.charAt(0).toUpperCase() + id.slice(1).toLowerCase();
+  };
+
   return (
     <div
       className={`${styles.item} ${isActive ? styles.active : ""} ${className || ""}`}
@@ -98,13 +121,25 @@ export default function HistoryItemComponent({
             {admin && item.username && item.username !== "unknown" && item.username !== "anonymous" && (
               <span className={styles.usernameTag}>{item.username}</span>
             )}
-            {item.agent && (
-              <AgentBadgeComponent
-                agent={typeof item.agent === "string" ? { id: item.agent, name: item.agent } : item.agent}
-                size={16}
-                iconSize={10}
-              />
-            )}
+            {item.agent && (() => {
+              const agentId = typeof item.agent === "string" ? item.agent : item.agent.id || "";
+              if (!agentId || agentId === "NONE") return null;
+
+              const resolvedAgent = typeof item.agent === "string" ? { id: item.agent, name: item.agent } : item.agent;
+
+              return (
+                <span className={styles.agentBadge} data-agent={agentId}>
+                  <AgentBadgeComponent
+                    agent={resolvedAgent}
+                    size={14}
+                    iconSize={9}
+                  />
+                  <span className={styles.agentBadgeName}>
+                    {getAgentDisplayName(item.agent)}
+                  </span>
+                </span>
+              );
+            })()}
             {item.tags?.map((tag: any) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>
                 {tag.label}
