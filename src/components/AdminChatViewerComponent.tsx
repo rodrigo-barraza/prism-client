@@ -169,6 +169,7 @@ export default function AdminChatViewerComponent({
   const [workersCount, setWorkersCount] = useState(0);
   const [tasksCount, setTasksCount] = useState(0);
   const [backendSessionStats, setBackendSessionStats] = useState<SessionStats | null>(null);
+  const [sessionSystemPrompt, setSessionSystemPrompt] = useState<string | null>(null);
 
   const knownIdsRef = useRef<Set<string> | null>(null);
   const lastFingerprintRef = useRef<string>("");
@@ -257,6 +258,30 @@ export default function AdminChatViewerComponent({
       })
       .finally(() => setLoadingDetail(false));
   }, [initialId]);
+
+  // ── Lazy load system prompt for agent sessions ───────────────
+  useEffect(() => {
+    setSessionSystemPrompt(null);
+    if (!selectedId || selectedSource !== "agent_session") return;
+
+    let cancelled = false;
+    IrisService.getRequests({ agentSessionId: selectedId, limit: 1 })
+      .then((res) => {
+        if (cancelled) return;
+        const firstReq = res.data?.[0] as any;
+        const sysMsg = firstReq?.requestPayload?.messages?.find(
+          (m: any) => m.role === "system"
+        );
+        if (sysMsg?.content) {
+          setSessionSystemPrompt(sysMsg.content);
+        }
+      })
+      .catch(console.error);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedId, selectedSource]);
 
   // ── Load entries (conversations / agent sessions / both) ─────
   const loadEntries = useCallback(async () => {
@@ -992,6 +1017,7 @@ export default function AdminChatViewerComponent({
                 readOnly
                 systemPrompt={
                   selectedEntry?.systemPrompt ||
+                  sessionSystemPrompt ||
                   (selectedEntry as any)?.settings?.systemPrompt ||
                   selectedEntry?.messages?.find(
                     (m) => m.role === "system" && !m.deleted
