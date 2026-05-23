@@ -306,7 +306,7 @@ async function executeModelNode(
       ...(toolSchemas != null && {
         enabledTools: toolSchemas.map((t) => t.function?.name || ''),
       }),
-    } as any;
+    } as unknown as import("../types/types").ChatPayload;
 
     // Route through /agent for tool-enabled runs, /chat for simple text
     const result =

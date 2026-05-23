@@ -282,6 +282,18 @@ export interface Conversation {
   totalCost?: number;
   isGenerating?: boolean;
   username?: string;
+  /** Marker for synthetic / test sessions */
+  synthetic?: boolean;
+  /** Backend-enriched: unique model names from request logs */
+  modelNames?: string[];
+  /** Live-patched model names during active generation */
+  _liveModelNames?: string[];
+  /** Backend-enriched: unique providers from request logs */
+  providers?: string[];
+  /** Backend-enriched: modality usage counts (textIn, imageOut, etc.) */
+  modalities?: Record<string, number>;
+  /** Backend-enriched: tool call counts by tool name */
+  toolCounts?: Record<string, number>;
 }
 
 export interface ConversationListResponse {

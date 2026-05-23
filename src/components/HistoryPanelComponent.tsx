@@ -1,94 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useCallback, useState } from "react";
-import { MessageSquare, Plus } from "lucide-react";
+import { useMemo } from "react";
+import { MessageSquare } from "lucide-react";
 import HistoryList from "./HistoryListComponent";
-import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import { getModalities } from "../utils/utilities";
 import styles from "./HistoryPanelComponent.module.css";
 
-/* -- Glitch text generator (ported from CycleButton) -------- */
-const SYMBOLS = "!@#$%^&*†‡§¶∆∇≈≠±×÷√∫∑∏⊗⊕⊘⊙◊♠♣♥♦★☆◈⬡⬢⟁⟐⧫⬟";
-const ZALGO = [
-  "\u0300",
-  "\u0301",
-  "\u0302",
-  "\u0303",
-  "\u0304",
-  "\u0305",
-  "\u0306",
-  "\u0307",
-  "\u0308",
-  "\u0309",
-  "\u030A",
-  "\u030B",
-  "\u030C",
-  "\u030D",
-  "\u030E",
-  "\u030F",
-  "\u0310",
-  "\u0311",
-  "\u0312",
-  "\u0313",
-  "\u0314",
-  "\u0315",
-  "\u0316",
-  "\u0317",
-  "\u0318",
-  "\u0319",
-  "\u031A",
-  "\u031B",
-  "\u0320",
-  "\u0321",
-  "\u0322",
-  "\u0323",
-  "\u0324",
-  "\u0325",
-  "\u0326",
-  "\u0327",
-  "\u0328",
-  "\u0329",
-  "\u032A",
-  "\u032B",
-  "\u032C",
-  "\u032D",
-  "\u0330",
-  "\u0331",
-  "\u0332",
-  "\u0333",
-  "\u0334",
-  "\u0335",
-  "\u0336",
-  "\u0340",
-  "\u0341",
-  "\u0342",
-  "\u0343",
-  "\u0344",
-  "\u0345",
-  "\u0346",
-  "\u0350",
-  "\u0351",
-  "\u0352",
-  "\u0353",
-  "\u0354",
-  "\u0355",
-  "\u0356",
-];
-const GLITCH_POOL = SYMBOLS + "ΣΩΨΞΘΔΛΠΦψξθδλπφ¿¡«»░▒▓█▄▀■□▪▫▬▲▼◆●○◎◇";
-
-function glitchText(len = 6) {
-  let result = "";
-  for (let i = 0; i < len; i++) {
-    result += GLITCH_POOL[Math.floor(Math.random() * GLITCH_POOL.length)];
-    const marks = 1 + Math.floor(Math.random() * 2);
-    for (let j = 0; j < marks; j++) {
-      result += ZALGO[Math.floor(Math.random() * ZALGO.length)];
-    }
-  }
-  return result;
-}
-
-import type { Conversation } from "../types/types";
+import type { Conversation, Message } from "../types/types";
+import type { LucideIcon } from "lucide-react";
 
 export interface HistoryPanelProps {
   sessions?: Conversation[];
@@ -108,7 +27,7 @@ export interface HistoryPanelProps {
   newLabel?: string;
   emptyText?: string;
   searchText?: string;
-  itemIcon?: any;
+  itemIcon?: LucideIcon;
   countLabel?: string;
   onOpenInNewTab?: (id: string) => void;
   generatingSessionIds?: Set<string>;
@@ -143,47 +62,17 @@ export default function HistoryPanel({
   loadingMore,
   onLoadMore,
 }: HistoryPanelProps) {
-  const newBtnRef = useRef<HTMLButtonElement | null>(null);
-  const rainbowTimer = useRef<any>(null);
-  const glitchInterval = useRef<any>(null);
-  const [glitchLabel, setGlitchLabel] = useState<string | null>(null);
-
-  const handleNew = useCallback(() => {
-    const element = newBtnRef.current;
-    if (element) {
-      // Rainbow hue-rotate
-      (element as HTMLElement).classList.remove(styles.newBtnRainbow);
-      void (element as HTMLElement).offsetWidth;
-      (element as HTMLElement).classList.add(styles.newBtnRainbow);
-
-      // Glitch text scramble — 30ms swaps for chaotic feel
-      setGlitchLabel(glitchText());
-      clearInterval(glitchInterval.current);
-      glitchInterval.current = setInterval(() => {
-        setGlitchLabel(glitchText());
-      }, 30);
-
-      clearTimeout(rainbowTimer.current);
-      rainbowTimer.current = setTimeout(() => {
-        (element as HTMLElement).classList.remove(styles.newBtnRainbow);
-        clearInterval(glitchInterval.current);
-        glitchInterval.current = null;
-        setGlitchLabel(null);
-      }, 1000);
-    }
-    onNew?.();
-  }, [onNew]);
 
   // Normalize sessions into HistoryList items
   const items = useMemo(() => {
-    return sessions.map((conversation: any) => {
+    return sessions.map((conversation: Conversation) => {
       // Prefer session-level totalCost (authoritative, from request logs
       // for agent sessions). Fall back to message-sum only for Direct Chat
       // sessions that carry messages inline with no precomputed total.
       const totalCost =
         conversation.totalCost ??
         (conversation.messages || []).reduce(
-          (sum: number, m: any) => sum + (m.estimatedCost || 0),
+          (sum: number, m: Message) => sum + (m.estimatedCost || 0),
           0,
         );
 
@@ -211,9 +100,9 @@ export default function HistoryPanel({
       // then backend-enriched modelNames (from request-log aggregation),
       // otherwise derive from messages
       let modelNames;
-      if (conversation._liveModelNames?.length > 0) {
+      if ((conversation._liveModelNames?.length ?? 0) > 0) {
         modelNames = conversation._liveModelNames;
-      } else if (conversation.modelNames?.length > 0) {
+      } else if ((conversation.modelNames?.length ?? 0) > 0) {
         // Backend enrichment: the list endpoint aggregates unique models
         // from request logs — available without fetching the full session.
         modelNames = conversation.modelNames;
@@ -238,14 +127,14 @@ export default function HistoryPanel({
 
       // Providers: prefer top-level (from backend or live patch), else derive from messages
       let derivedProviders;
-      if (conversation.providers?.length > 0) {
+      if ((conversation.providers?.length ?? 0) > 0) {
         derivedProviders = conversation.providers;
       } else {
         const msgs = conversation.messages || [];
-        const providersSet = new Set();
+        const providersSet = new Set<string>();
         for (let i = msgs.length - 1; i >= 0; i--) {
           if (msgs[i].role === "assistant" && msgs[i].provider) {
-            providersSet.add(msgs[i].provider);
+            providersSet.add(msgs[i].provider!);
           }
         }
         derivedProviders = Array.from(providersSet);
@@ -258,14 +147,14 @@ export default function HistoryPanel({
         ? {
             ...baseModalities,
             functionCalling: Object.values(conversation.toolCounts).reduce(
-              (s: number, c: any) => s + c,
+              (s: number, c: unknown) => s + (c as number),
               0,
             ),
           }
         : baseModalities;
 
       return {
-        id: conversation.id,
+        id: conversation.id || String(conversation._id),
         title: conversation.title || "Untitled Chat",
         updatedAt: conversation.updatedAt,
         createdAt: conversation.createdAt,
@@ -279,7 +168,7 @@ export default function HistoryPanel({
         searchText: [
           conversation.project || "",
           conversation.username || "",
-          ...(conversation.messages || []).map((m: any) => m.content || ""),
+          ...(conversation.messages || []).map((m: Message) => m.content || ""),
         ].join(" "),
       };
     });
@@ -287,23 +176,10 @@ export default function HistoryPanel({
 
   return (
     <div className={styles.container}>
-      {!readOnly && onNew && (
-        <ButtonComponent
-          ref={newBtnRef}
-          variant="primary"
-          icon={glitchLabel ? undefined : Plus}
-          onClick={handleNew}
-          disabled={disableNew !== undefined ? disableNew : !activeId}
-          className={`${styles.newBtn} ${glitchLabel ? styles.newBtnGlitch : ""}`}
-          data-panel-close
-        >
-          {glitchLabel || newLabel}
-        </ButtonComponent>
-      )}
       <HistoryList
         items={items}
         activeId={activeId}
-        onSelect={(item: any) => {
+        onSelect={(item: { id: string }) => {
           const conversation = sessions.find((c) => c.id === item.id);
           if (conversation && onSelect) onSelect(conversation);
         }}
@@ -319,7 +195,7 @@ export default function HistoryPanel({
         initialProviders={initialProviders}
         initialSearch={initialSearch}
         countLabel={countLabel}
-        onOpenInNewTab={onOpenInNewTab}
+        onOpenInNewTab={onOpenInNewTab ? (item: { id: string }) => onOpenInNewTab(item.id) : undefined}
         generatingSessionIds={generatingSessionIds}
         hasMore={hasMore}
         loadingMore={loadingMore}

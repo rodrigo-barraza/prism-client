@@ -38,6 +38,7 @@ interface TraceConversation {
   modalities?: Record<string, number>;
   model?: string;
   username?: string;
+  agent?: string;
 }
 
 interface TraceWorkflow {
@@ -315,7 +316,7 @@ export default function TracesPage() {
                               modalities: c.modalities || {},
                               modelName: c.model || null,
                               username: c.username,
-                              agent: (c as any).agent,
+                              agent: c.agent,
                             }}
                             icon={MessageSquare}
                             admin

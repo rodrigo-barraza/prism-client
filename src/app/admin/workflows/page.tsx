@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import IrisService from "../../../services/IrisService";
+import type { Workflow, WorkflowNode } from "../../../types/types";
 import WorkflowComponent from "../../../components/WorkflowComponent";
 import WorkflowHeaderStatsComponent from "../../../components/WorkflowHeaderStatsComponent";
 import {
@@ -19,6 +20,7 @@ import {
   buildDateRangeParams,
 } from "../../../utils/utilities";
 import styles from "./page.module.css";
+import { getErrorMessage } from "../../../utils/errorMessage";
 
 export default function AdminWorkflowsPage() {
   return (
@@ -36,35 +38,35 @@ function AdminWorkflowsPageInner() {
   const initialId = searchParams.get("id") || null;
   const providerFilter = searchParams.get("provider") || null;
   const modelFilter = searchParams.get("model") || null;
-  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState(initialId);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const { toasts, addToast, removeToast } = useToast();
 
   const loadWorkflows = useCallback(async () => {
     try {
-      const params = {
+      const params: Record<string, string | number | boolean> = {
         page: 1,
         limit: 200,
         sort: "createdAt",
         order: "desc",
         ...buildDateRangeParams(dateRange),
       };
-      if (projectFilter) (params as any).project = projectFilter;
-      if (providerFilter) (params as any).provider = providerFilter;
-      if (modelFilter) (params as any).model = modelFilter;
+      if (projectFilter) params.project = projectFilter;
+      if (providerFilter) params.provider = providerFilter;
+      if (modelFilter) params.model = modelFilter;
       const data = await IrisService.getWorkflows(params);
       const list = data.data || [];
       setWorkflows(list);
       if (list.length > 0 && !selectedId && !initialId) {
-        selectWorkflow((list[0] as { _id: string })._id);
+        selectWorkflow(list[0]._id?.toString() || list[0].id || "");
       }
     } catch (error: unknown) {
-      setError((error as Error).message);
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -127,16 +129,16 @@ function AdminWorkflowsPageInner() {
   }, [selectedWorkflow]);
 
   // Local node state for drag-to-rearrange (not persisted)
-  const [localNodes, setLocalNodes] = useState<any[]>([]);
+  const [localNodes, setLocalNodes] = useState<WorkflowNode[]>([]);
 
   // Reset local nodes whenever the selected workflow changes
   useEffect(() => {
     setLocalNodes(selectedWorkflow?.nodes || []);
   }, [selectedWorkflow]);
 
-  const handleUpdateNodePosition = useCallback((nodeId: any, position: any) => {
+  const handleUpdateNodePosition = useCallback((nodeId: string, position: { x: number; y: number }) => {
     setLocalNodes((prev) =>
-      prev.map((n: { id: string; [key: string]: unknown }) => (n.id === nodeId ? { ...n, position } : n)),
+      prev.map((n) => (n.id === nodeId ? { ...n, position } : n)),
     );
   }, []);
 
@@ -155,7 +157,7 @@ function AdminWorkflowsPageInner() {
       URL.revokeObjectURL(url);
       addToast("Workflow downloaded");
     } catch (error: unknown) {
-      addToast(`Download failed: ${(error as Error).message}`, "error");
+      addToast(`Download failed: ${getErrorMessage(error)}`, "error");
     }
   }, []);
 
@@ -168,7 +170,7 @@ function AdminWorkflowsPageInner() {
       await copyToClipboard(data);
       addToast("Workflow copied to clipboard");
     } catch (error: unknown) {
-      addToast(`Copy failed: ${(error as Error).message}`, "error");
+      addToast(`Copy failed: ${getErrorMessage(error)}`, "error");
     }
   }, []);
 

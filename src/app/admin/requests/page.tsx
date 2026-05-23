@@ -83,6 +83,7 @@ interface RequestAssociations {
     modalities?: Record<string, number>;
     model?: string;
     username?: string;
+    agent?: string;
   }>;
   workflows?: Array<{
     id: string;
@@ -554,7 +555,7 @@ export default function RequestsPage() {
                               modalities: c.modalities || {},
                               modelName: c.model || null,
                               username: c.username,
-                              agent: (c as any).agent,
+                              agent: c.agent,
                             }}
                             icon={MessageSquare}
                             admin
