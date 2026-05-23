@@ -98,7 +98,7 @@ export default function HistoryItemComponent({
             {admin && item.username && item.username !== "unknown" && item.username !== "anonymous" && (
               <span className={styles.usernameTag}>{item.username}</span>
             )}
-            {admin && item.agent && (
+            {item.agent && (
               <AgentBadgeComponent
                 agent={typeof item.agent === "string" ? { id: item.agent, name: item.agent } : item.agent}
                 size={16}
