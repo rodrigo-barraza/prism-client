@@ -5,11 +5,12 @@ const API_BASE = PRISM_SERVICE_URL;
 
 // ─── Response Interfaces ────────────────────────────────────
 
-export interface WorkspaceRoot {
+export interface WorkspaceItem {
+  id: string;
+  name: string;
   path: string;
-  label?: string;
-  isWsl?: boolean;
-  exists?: boolean;
+  isPinned: boolean;
+  isAgentServed?: boolean;
 }
 
 export interface WorkspaceListResponse {
@@ -17,7 +18,7 @@ export interface WorkspaceListResponse {
 }
 
 export interface WorkspaceFullResponse {
-  workspaces: WorkspaceRoot[];
+  workspaces: WorkspaceItem[];
   agents: Array<{ id: string; name: string; project?: string; path?: string }>;
   staticRoots: string[];
 }
@@ -58,7 +59,7 @@ export interface WorkspaceTreeResponse {
  * and user-configured roots). Operations: list, update, validate.
  */
 export default class WorkspaceService {
-  static async list(): Promise<WorkspaceListResponse> {
+  static async list(): Promise<WorkspaceItem[]> {
     const response = await fetch(`${API_BASE}/workspaces`, {
       method: "GET",
       headers: getBaseHeaders(),

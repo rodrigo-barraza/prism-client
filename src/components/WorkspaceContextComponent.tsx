@@ -7,14 +7,21 @@ import {
   useState,
   useCallback,
 } from "react";
-import WorkspaceService from "../services/WorkspaceService";
+import WorkspaceService, { WorkspaceItem } from "../services/WorkspaceService";
 import { LS_WORKSPACE_ROOT } from "../constants";
 
-const WorkspaceContext = createContext<any>({
+export interface WorkspaceContextType {
+  workspaces: WorkspaceItem[];
+  currentWorkspace: WorkspaceItem | null;
+  setCurrentWorkspace: (workspace: WorkspaceItem | null) => void;
+  refreshWorkspaces: () => Promise<WorkspaceItem[]>;
+}
+
+const WorkspaceContext = createContext<WorkspaceContextType>({
   workspaces: [],
   currentWorkspace: null,
   setCurrentWorkspace: () => {},
-  refreshWorkspaces: async () => {},
+  refreshWorkspaces: async () => [],
 });
 
 /**
@@ -24,26 +31,26 @@ const WorkspaceContext = createContext<any>({
  * The selected workspace root is stored in localStorage and sent to Prism
  * via the x-workspace-root header (see serviceHeaders.js).
  */
-export function WorkspaceProvider({ children }: any) {
-  const [workspaces, setWorkspaces] = useState<any[]>([]);
-  const [currentWorkspace, _setCurrentWorkspace] = useState<any>(null);
+export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
+  const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([]);
+  const [currentWorkspace, _setCurrentWorkspace] = useState<WorkspaceItem | null>(null);
   const [mounted, setMounted] = useState(false);
 
   /** Set the active workspace and persist to localStorage. */
-  const setCurrentWorkspace = useCallback((workspace: any) => {
+  const setCurrentWorkspace = useCallback((workspace: WorkspaceItem | null) => {
     _setCurrentWorkspace(workspace);
     if (typeof window !== "undefined") {
-      if ((workspace as any)?.path) {
-        localStorage.setItem(LS_WORKSPACE_ROOT, (workspace as any).path);
+      if (workspace?.path) {
+        localStorage.setItem(LS_WORKSPACE_ROOT, workspace.path);
       } else {
         localStorage.removeItem(LS_WORKSPACE_ROOT);
       }
     }
   }, []);
 
-  const refreshWorkspaces = useCallback(async () => {
+  const refreshWorkspaces = useCallback(async (): Promise<WorkspaceItem[]> => {
     try {
-      const list: any[] = await WorkspaceService.list() as any;
+      const list = await WorkspaceService.list();
       setWorkspaces(list);
 
       // If the persisted workspace is in the list, restore it
@@ -104,6 +111,6 @@ export function WorkspaceProvider({ children }: any) {
   );
 }
 
-export function useWorkspace(): any {
+export function useWorkspace(): WorkspaceContextType {
   return useContext(WorkspaceContext);
 }

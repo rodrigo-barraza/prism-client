@@ -48,8 +48,8 @@ export default function WorkflowCanvas({
   onAddConnection: (conn: { sourceNodeId: string; sourceModality: string; targetNodeId: string; targetModality: string }) => void;
   onDeleteConnection: (connId: string) => void;
   onUpdateNodeContent?: (nodeId: string, content: string) => void;
-  onUpdateNodeConfig?: (nodeId: string, key: string, value: any) => void;
-  onUpdateFileInput?: (nodeId: string, content: string, mimeType: string) => void;
+  onUpdateNodeConfig?: (nodeId: string, key: string, value: unknown) => void;
+  onUpdateFileInput?: (nodeId: string, content: string | ArrayBuffer | null, mimeType: string | null) => void;
   onDuplicateNode?: (node: IWorkflowNode) => void;
   nodeStatuses?: Record<string, string>;
   nodeResults?: Record<string, unknown>;
@@ -98,7 +98,7 @@ export default function WorkflowCanvas({
   });
   const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef<{ x: number, y: number, panX: number, panY: number }>({ x: 0, y: 0, panX: 0, panY: 0 });
-  const [hoveredPort, setHoveredPort] = useState(null);
+  const [hoveredPort, setHoveredPort] = useState<{ nodeId: string; type: "input" | "output"; modality: string } | null>(null);
   const prevWorkflowIdRef = useRef<string | undefined>(activeWorkflowId);
 
   // Save current view whenever pan/zoom changes
@@ -952,8 +952,10 @@ export default function WorkflowCanvas({
             <WorkflowNode
               key={node.id}
               node={node}
+              inputTypes={node.inputTypes || []}
+              outputTypes={node.outputTypes || []}
               status={nodeStatuses[node.id]}
-              results={nodeResults[node.id]}
+              results={nodeResults[node.id] as { error?: string } | undefined}
               isSelected={selectedNodeId === node.id}
               isExpanded={isNodeExpanded(node)}
               connecting={connecting}

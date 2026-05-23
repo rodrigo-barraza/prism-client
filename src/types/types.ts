@@ -60,6 +60,10 @@ export interface ModelOption {
   verbosity?: boolean;
   jsonMode?: boolean;
   defaultTemperature?: number;
+  inputTypes?: string[];
+  outputTypes?: string[];
+  rawInputTypes?: string[];
+  modelType?: string;
 }
 
 export interface ModelDefaults {
@@ -212,7 +216,7 @@ export interface Message {
   completedAt?: string;
 
   // ─── Modality fields ──────────────────────────────────────
-  audio?: string;
+  audio?: string | string[];
   image?: string;
   documents?: Array<{ name?: string; data?: string; mimeType?: string }>;
   liveTranscription?: boolean;
@@ -924,19 +928,28 @@ export interface WorkflowNode {
   inputTypes?: string[];
   outputTypes?: string[];
   supportedModalities?: string[];
-  builtInTools?: string[];
-  customTools?: string[];
+  builtInTools?: Array<string | { name: string; [key: string]: unknown }>;
+  customTools?: Array<string | { name?: string; _id?: string; [key: string]: unknown }>;
   disabledTools?: string[];
   receivedOutputs?: Record<string, unknown>;
   nodeType?: string;
   provider?: string;
   modelName?: string;
+  modelType?: string;
+  supportsSystemPrompt?: boolean;
   /** Primary modality of this node (e.g. "text", "image", "audio") */
   modality?: string | null;
   /** Raw input type definitions before normalization */
   rawInputTypes?: string[];
   /** Accumulated messages from node execution */
   messages?: Message[];
+
+  // Dynamic/UI Fields
+  displayName?: string | null | unknown;
+  systemPrompt?: string;
+  staticInputs?: Record<string, unknown>;
+  customName?: string;
+  content?: string | null | unknown;
 }
 
 export interface WorkflowEdge {

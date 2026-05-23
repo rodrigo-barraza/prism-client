@@ -41,24 +41,189 @@ import PrismService from "../services/PrismService";
 import { formatLatency, renderToolName } from "../utils/utilities";
 import styles from "./ToolResultRenderersComponent.module.css";
 
+// --- Types & Interfaces ------------------------------------------------
+
+export interface WorkerActivity {
+  phase?: string | null;
+  currentTool?: string | null;
+  toolCount?: number;
+  iteration?: number;
+  maxIterations?: number;
+  phaseLabel?: string;
+  phaseProgress?: number | null;
+  tokPerSec?: number | null;
+  toolNames?: string[] | Record<string, number> | Record<string, string>;
+  description?: string;
+}
+
+export interface ToolArgs {
+  path?: string;
+  oldStr?: string;
+  newStr?: string;
+  pattern?: string;
+  query?: string;
+  url?: string;
+  command?: string;
+  code?: string;
+  cwd?: string;
+  source?: string;
+  destination?: string;
+  action?: string;
+  commands?: string[];
+  name?: string;
+  members?: Array<{
+    description?: string;
+    [key: string]: unknown;
+  }>;
+  to?: string;
+  agent_id?: string;
+  [key: string]: unknown;
+}
+
+export interface ParsedToolResult {
+  path?: string;
+  content?: string;
+  error?: string;
+  created?: boolean;
+  replacements?: number;
+  count?: number;
+  totalMatches?: number;
+  matches?: Array<{
+    file?: string;
+    path?: string;
+    line?: number | null;
+    content?: string;
+    text?: string;
+    match?: string;
+  }>;
+  results?: Array<{
+    title?: string;
+    url?: string;
+    link?: string;
+    snippet?: string;
+    name?: string;
+  }>;
+  entries?: Array<
+    | string
+    | {
+        name: string;
+        path?: string;
+        type?: string;
+        isDirectory?: boolean;
+      }
+  >;
+  items?: Array<unknown>;
+  files?: Array<
+    | string
+    | {
+        path?: string;
+        name?: string;
+      }
+  >;
+  url?: string;
+  title?: string;
+  text?: string;
+  markdown?: string;
+  exitCode?: number;
+  exit_code?: number;
+  success?: boolean;
+  stdout?: string;
+  stderr?: string;
+  branch?: string;
+  clean?: boolean;
+  status?:
+    | string
+    | Array<{
+        path?: string;
+        file?: string;
+        status?: string;
+        state?: string;
+      }>;
+  diff?: string;
+  output?: string;
+  commits?: Array<{
+    hash?: string;
+    sha?: string;
+    message?: string;
+    subject?: string;
+    author?: string;
+  }>;
+  log?: Array<unknown>;
+  source?: string;
+  destination?: string;
+  action?: string;
+  screenshotRef?: string;
+  screenshot?: string;
+  mimeType?: string;
+  elements?: Array<{
+    selector: string;
+    text?: string;
+  }>;
+  commandCount?: number;
+  canvasSize?: string;
+  succeeded?: number;
+  failed?: number;
+  members?: Array<{
+    agent_id?: string;
+    description?: string;
+    status?: string;
+    durationMs?: number;
+    toolUses?: number;
+    iterations?: number;
+    summary?: string;
+    result?: string;
+    error?: string;
+    toolNames?: string[] | Record<string, string>;
+    messages?: Array<unknown>;
+  }>;
+  team?: string;
+  agent_id?: string;
+  result?: unknown;
+}
+
+export interface RendererProps {
+  result: unknown;
+  args?: ToolArgs;
+  streamingOutput?: string;
+  language?: string;
+  workerToolActivity?: Record<string, WorkerActivity>;
+}
+
+export interface ToolResultViewProps {
+  toolCall: {
+    id?: string;
+    name: string;
+    args?: ToolArgs;
+    result?: unknown;
+    status?: string;
+  };
+  streamingOutput?: string;
+  workerToolActivity?: Record<string, WorkerActivity>;
+}
+
 // --- Helpers ----------------------------------------------------------
 
-function basename(filePath: any) {
+function basename(filePath: string | null | undefined): string {
   if (!filePath) return "";
   return filePath.split("/").pop() || filePath;
 }
 
-function extensionOf(filePath: any) {
+function extensionOf(filePath: string | null | undefined): string {
   const base = basename(filePath);
   const dot = base.lastIndexOf(".");
   return dot > 0 ? base.substring(dot + 1).toLowerCase() : "";
 }
 
-function tryParse(result: any) {
-  if (typeof result === "object" && result !== null) return result;
+function tryParse(result: unknown): ParsedToolResult | null {
+  if (typeof result === "object" && result !== null) {
+    return result as ParsedToolResult;
+  }
   if (typeof result === "string") {
     try {
-      return JSON.parse(result);
+      const parsed = JSON.parse(result);
+      if (typeof parsed === "object" && parsed !== null) {
+        return parsed as ParsedToolResult;
+      }
     } catch {
       return null;
     }
@@ -99,7 +264,12 @@ const EXT_LANG = {
 
 // --- Status Badge -----------------------------------------------------
 
-function StatusBadge({ success, label }: any) {
+interface StatusBadgeProps {
+  success: boolean;
+  label: string;
+}
+
+function StatusBadge({ success, label }: StatusBadgeProps) {
   return (
     <span
       className={`${styles.statusBadge} ${success ? styles.statusSuccess : styles.statusError}`}
@@ -112,7 +282,12 @@ function StatusBadge({ success, label }: any) {
 
 // --- File Path Pill ---------------------------------------------------
 
-function PathPill({ path, icon }: any) {
+interface PathPillProps {
+  path: string;
+  icon?: React.ComponentType<{ size?: number }>;
+}
+
+function PathPill({ path, icon }: PathPillProps) {
   const Icon = icon || FileText;
   return (
     <span className={styles.pathPill}>
@@ -124,7 +299,7 @@ function PathPill({ path, icon }: any) {
 
 // --- Collapsible Raw Result -------------------------------------------
 
-function RawResultToggle({ result }: any) {
+function RawResultToggle({ result }: { result: unknown }) {
   const [show, setShow] = useState(false);
   if (!result) return null;
 
@@ -165,13 +340,13 @@ function RawResultToggle({ result }: any) {
  * Collapsible panel that shows all input arguments passed to a tool call.
  * Renders key-value pairs in a clean, readable format.
  */
-function InputArgsToggle({ args }: any) {
+function InputArgsToggle({ args }: { args?: ToolArgs }) {
   const [show, setShow] = useState(false);
 
   const entries = useMemo(() => {
     if (!args || typeof args !== "object") return [];
     return Object.entries(args).filter(
-      ([, v]: [string, any]) => v !== undefined && v !== null,
+      ([, v]) => v !== undefined && v !== null,
     );
   }, [args]);
 
@@ -189,7 +364,7 @@ function InputArgsToggle({ args }: any) {
       </button>
       {show && (
         <div className={styles.inputArgsContent}>
-          {entries.map(([key, value]: [string, any]) => {
+          {entries.map(([key, value]) => {
             const isLong = typeof value === "string" && value.length > 80;
             const display =
               typeof value === "string"
@@ -219,7 +394,7 @@ function InputArgsToggle({ args }: any) {
  * Collapsible panel that shows the raw result returned to the model.
  * Helps users understand exactly what the agent receives back.
  */
-function OutputResultToggle({ result }: any) {
+function OutputResultToggle({ result }: { result: unknown }) {
   const [show, setShow] = useState(false);
 
   const display = useMemo(() => {
@@ -270,9 +445,9 @@ function OutputResultToggle({ result }: any) {
         <div className={styles.outputResultContent}>
           {display.type === "object" && !Array.isArray(display.data) ? (
             Object.entries(display.data)
-              .filter(([, v]: [string, any]) => v !== undefined && v !== null)
-              .map(([key, value]: [string, any]) => {
-                const isComplex = typeof value === "object";
+              .filter(([, v]) => v !== undefined && v !== null)
+              .map(([key, value]) => {
+                const isComplex = typeof value === "object" && value !== null;
                 const valStr = isComplex
                   ? JSON.stringify(value, null, 2)
                   : String(value);
@@ -398,20 +573,37 @@ function StrReplaceRenderer({ result, args }: any) {
 
 // -- 4. Grep Search ----------------------------------------------------
 
-function GrepSearchRenderer({ result, args }: any) {
+function GrepSearchRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
-  const matches = parsed.matches || parsed.results || [];
+  const matches = (parsed.matches || parsed.results || []) as Array<{
+    file?: string;
+    path?: string;
+    line?: number | null;
+    content?: string;
+    text?: string;
+    match?: string;
+  }>;
   const totalMatches = parsed.totalMatches ?? parsed.count ?? matches.length;
   const pattern = args?.pattern || "";
 
   // Group by file
-  const grouped = {};
+  const grouped: Record<
+    string,
+    Array<{
+      file?: string;
+      path?: string;
+      line?: number | null;
+      content?: string;
+      text?: string;
+      match?: string;
+    }>
+  > = {};
   for (const m of matches.slice(0, 30)) {
     const file = m.file || m.path || "unknown";
-    if (!(grouped as Record<string, any>)[file]) (grouped as Record<string, any>)[file] = [];
-    (grouped as Record<string, any>)[file].push(m);
+    if (!grouped[file]) grouped[file] = [];
+    grouped[file].push(m);
   }
 
   return (
@@ -424,10 +616,10 @@ function GrepSearchRenderer({ result, args }: any) {
         </span>
       </div>
       <div className={styles.grepList}>
-        {Object.entries(grouped).map(([file, fileMatches]: any) => (
+        {Object.entries(grouped).map(([file, fileMatches]) => (
           <div key={file} className={styles.grepFile}>
             <span className={styles.grepFilePath}>{file}</span>
-            {fileMatches.map((m: any, i: any) => (
+            {fileMatches.map((m, i) => (
               <div key={i} className={styles.grepLine}>
                 {m.line != null && (
                   <span className={styles.grepLineNum}>{m.line}</span>
@@ -888,13 +1080,16 @@ function TerminalRenderer({ result, args, streamingOutput, language }: any) {
   );
 }
 
-// -- 10. Git Operations ------------------------------------------------
-
-function GitStatusRenderer({ result }: any) {
+function GitStatusRenderer({ result }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
-  const files = parsed.files || parsed.status || [];
+  const files = (parsed.files || parsed.status || []) as Array<{
+    path?: string;
+    file?: string;
+    status?: string;
+    state?: string;
+  }>;
   const branch = parsed.branch || "";
   const clean = parsed.clean || files.length === 0;
 
@@ -910,10 +1105,10 @@ function GitStatusRenderer({ result }: any) {
       </div>
       {!clean && (
         <div className={styles.dirList}>
-          {files.slice(0, 30).map((f: any, i: any) => {
+          {files.slice(0, 30).map((f, i) => {
             const name = typeof f === "string" ? f : f.path || f.file || "";
             const status =
-              typeof f === "object" ? f.status || f.state || "" : "";
+              typeof f === "object" && f !== null ? f.status || f.state || "" : "";
             return (
               <div key={i} className={styles.dirEntry}>
                 {status && <span className={styles.gitStatus}>{status}</span>}
@@ -1515,12 +1710,12 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: any) {
   );
 }
 
-function SendMessageRenderer({ result, args }: any) {
+function SendMessageRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
   const agentId = args?.to || parsed.agent_id || "";
-  const status = parsed.status || "unknown";
+  const status = (typeof parsed.status === "string" ? parsed.status : null) || "unknown";
   const hasError = !!parsed.error;
 
   return (

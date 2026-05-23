@@ -6,6 +6,11 @@ import DrawingCanvas from "./DrawingCanvasComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import styles from "./AssetInputOptionsComponent.module.css";
 
+interface AssetInputOptionsProps {
+  onFile?: (dataUrl: string | ArrayBuffer | null, mimeType: string | null) => void;
+  compact?: boolean;
+}
+
 /**
  * Shared asset input options for empty file input nodes.
  * Shows icon buttons: Upload file, Create drawing, Record audio, Record webcam.
@@ -14,7 +19,7 @@ import styles from "./AssetInputOptionsComponent.module.css";
  *   onFile(dataUrl, mimeType) – called when a file/asset is ready
  *   compact – smaller icon buttons for node view (default false = sidebar view)
  */
-export default function AssetInputOptions({ onFile, compact = false }: any) {
+export default function AssetInputOptions({ onFile, compact = false }: AssetInputOptionsProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showDrawing, setShowDrawing] = useState(false);
   const [showAudioRec, setShowAudioRec] = useState(false);
@@ -31,7 +36,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
     e.target.value = "";
   };
 
-  const handleDrop = (e: React.DragEvent<any>) => {
+  const handleDrop = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
     const file = e.dataTransfer?.files?.[0];
@@ -41,7 +46,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
     reader.readAsDataURL(file);
   };
 
-  const handleDragOver = (e: React.DragEvent<any>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
   };
@@ -137,7 +142,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
       >
         <div className={styles.audioRecWrap}>
           <AudioPlayerRecorderComponent
-            onRecordingComplete={(dataUrl: any) => {
+            onRecordingComplete={(dataUrl: string | ArrayBuffer | null) => {
               onFile?.(dataUrl, "audio/webm");
               setShowAudioRec(false);
             }}
@@ -230,7 +235,7 @@ export default function AssetInputOptions({ onFile, compact = false }: any) {
       {showDrawing && (
         <DrawingCanvas
           onClose={() => setShowDrawing(false)}
-          onSave={(dataUrl: any) => {
+          onSave={(dataUrl: string | ArrayBuffer | null) => {
             onFile?.(dataUrl, "image/png");
             setShowDrawing(false);
           }}

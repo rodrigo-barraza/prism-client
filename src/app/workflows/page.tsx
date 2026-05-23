@@ -37,7 +37,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import { copyToClipboard } from "../../utils/utilities";
 import styles from "./page.module.css";
-import type { Workflow as IWorkflow, WorkflowNode, WorkflowEdge, PrismConfig, Message } from "../../types/types";
+import type { Workflow as IWorkflow, WorkflowNode, WorkflowEdge, PrismConfig, Message, ModelOption, WorkflowNodeStatus } from "../../types/types";
 import { getErrorMessage } from "../../utils/errorMessage";
 
 const MODEL_SECTIONS = [
@@ -53,20 +53,20 @@ const MODEL_SECTIONS = [
  * Flatten all model groups from the config into a single array with unique
  * provider:name entries, tagged with provider and modalities.
  */
-function flattenConfigModels(config: PrismConfig) {
+function flattenConfigModels(config: PrismConfig): ModelOption[] {
   if (!config) return [];
-  const modelsMap = new Map();
+  const modelsMap = new Map<string, ModelOption>();
 
   for (const section of MODEL_SECTIONS) {
     const providers = (config as any)[section]?.models || {};
-    for (const [provider, models] of Object.entries(providers) as [string, Record<string, unknown>[]][]) {
+    for (const [provider, models] of Object.entries(providers) as [string, ModelOption[]][]) {
       for (const m of models) {
         const key = `${provider}:${m.name}`;
         if (!modelsMap.has(key)) {
           modelsMap.set(key, { ...m, provider });
         } else {
           // Merge modalities and data from other sections
-          const existing = modelsMap.get(key);
+          const existing = modelsMap.get(key)!;
           const mergedInput = [
             ...new Set([
               ...(existing.inputTypes || []),
@@ -83,8 +83,8 @@ function flattenConfigModels(config: PrismConfig) {
             ...existing,
             inputTypes: mergedInput,
             outputTypes: mergedOutput,
-            modelType: existing.modelType || (m.modelType as string),
-            arena: { ...(existing.arena || {}), ...((m.arena as any) || {}) },
+            modelType: existing.modelType || m.modelType,
+            arena: { ...(existing.arena || {}), ...(m.arena || {}) },
           });
         }
       }
@@ -95,9 +95,9 @@ function flattenConfigModels(config: PrismConfig) {
   // the raw modalities preserved in rawInputTypes for header icons/filtering.
   const models = [...modelsMap.values()];
   for (const m of models) {
-    if ((m.modelType as string) === "conversation") {
-      (m.rawInputTypes as string[]) = (m.inputTypes as string[]) || [];
-      (m.inputTypes as string[]) = ["conversation"];
+    if (m.modelType === "conversation") {
+      m.rawInputTypes = m.inputTypes || [];
+      m.inputTypes = ["conversation"];
     }
   }
   return models;
@@ -147,7 +147,7 @@ interface UndoSnapshot {
 
 export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps) {
   const [_config, setConfig] = useState<PrismConfig | null>(null);
-  const [allModels, setAllModels] = useState<Record<string, unknown>[]>([]);
+  const [allModels, setAllModels] = useState<ModelOption[]>([]);
   const [savedWorkflows, setSavedWorkflows] = useState<IWorkflow[]>([]);
   const { toasts, addToast, removeToast } = useToast();
   const [wfFavoriteKeys, setWfFavoriteKeys] = useState<string[]>([]);
@@ -349,32 +349,28 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
       // Model node
       if (modality === "model") {
         const defaultModel = modelsWithModalities[0];
-        const isConversation =
-          (defaultModel as Record<string, unknown>)?.modelType === "conversation";
-        const supportsFC = ((defaultModel as Record<string, unknown>)?.tools as string[])?.includes(
-          "Tool Calling",
-        );
+        const isConversation = defaultModel?.modelType === "conversation";
+        const supportsFC = defaultModel?.tools?.includes("Tool Calling");
         const baseInputs = isConversation
           ? ["conversation"]
-          : (defaultModel as Record<string, unknown>)?.inputTypes || [];
-        const newNode = {
+          : defaultModel?.inputTypes || [];
+        const newNode: WorkflowNode = {
           id: generateNodeId(),
-          modelName: (defaultModel as Record<string, unknown>)?.name || "select-model",
-          provider: (defaultModel as Record<string, unknown>)?.provider || "",
+          modelName: defaultModel?.name || "select-model",
+          provider: defaultModel?.provider || "",
           displayName:
-            (defaultModel as Record<string, unknown>)?.display_name ||
-            (defaultModel as Record<string, unknown>)?.label ||
-            (defaultModel as Record<string, unknown>)?.name ||
+            defaultModel?.display_name ||
+            defaultModel?.label ||
+            defaultModel?.name ||
             "Select a Model",
-          modelType: (defaultModel as Record<string, unknown>)?.modelType || "conversation",
-          inputTypes: supportsFC ? [...(baseInputs as string[]), "tools"] : baseInputs,
+          modelType: defaultModel?.modelType || "conversation",
+          inputTypes: supportsFC ? [...baseInputs, "tools"] : baseInputs,
           rawInputTypes:
-            (defaultModel as Record<string, unknown>)?.rawInputTypes ||
-            (defaultModel as Record<string, unknown>)?.inputTypes ||
+            defaultModel?.rawInputTypes ||
+            defaultModel?.inputTypes ||
             [],
-          outputTypes: (defaultModel as Record<string, unknown>)?.outputTypes || [],
-          supportsSystemPrompt:
-            (defaultModel as Record<string, unknown>)?.supportsSystemPrompt !== false,
+          outputTypes: defaultModel?.outputTypes || [],
+          supportsSystemPrompt: defaultModel?.supportsSystemPrompt !== false,
           messages: [
             { role: "system", content: "" },
             { role: "user", content: "" },
@@ -384,7 +380,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             y: 80 + nodes.length * 40 + Math.random() * 40,
           },
         };
-        setNodes((prev) => [...prev, newNode as unknown as WorkflowNode]);
+        setNodes((prev) => [...prev, newNode]);
         setSelectedNodeId(newNode.id);
         return;
       }
@@ -482,7 +478,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
    * When content is cleared (removed), reset modality and outputTypes and remove all outgoing connections.
    */
   const handleUpdateFileInput = useCallback(
-    async (nodeId: string, content: string, mimeType: string) => {
+    async (nodeId: string, content: string | ArrayBuffer | null, mimeType: string | null) => {
       pushUndo();
       let newModality = null;
       if (content && mimeType) {
@@ -930,24 +926,24 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
   );
 
   // Change the model on an existing node
-  const handleChangeModel = useCallback((nodeId: string, newModel: Record<string, unknown>) => {
+  const handleChangeModel = useCallback((nodeId: string, newModel: ModelOption) => {
     const isConversation = newModel.modelType === "conversation";
-    const supportsFC = (newModel.tools as string[] | undefined)?.includes("Tool Calling");
+    const supportsFC = newModel.tools?.includes("Tool Calling");
     const baseInputs = isConversation
       ? ["conversation"]
-      : (newModel.inputTypes as string[]) || [];
+      : newModel.inputTypes || [];
     setNodes((prev) =>
       prev.map((n) => {
         if (n.id !== nodeId || n.nodeType) return n;
         return {
           ...n,
-          modelName: newModel.name as string,
-          provider: newModel.provider as string,
+          modelName: newModel.name,
+          provider: newModel.provider || "",
           displayName: newModel.display_name || newModel.label || newModel.name,
           modelType: newModel.modelType,
-          inputTypes: supportsFC ? [...(baseInputs as string[]), "tools"] : baseInputs,
-          rawInputTypes: (newModel.rawInputTypes as string[]) || (newModel.inputTypes as string[]) || [],
-          outputTypes: (newModel.outputTypes as string[]) || [],
+          inputTypes: supportsFC ? [...baseInputs, "tools"] : baseInputs,
+          rawInputTypes: newModel.rawInputTypes || newModel.inputTypes || [],
+          outputTypes: newModel.outputTypes || [],
           supportsSystemPrompt: newModel.supportsSystemPrompt !== false,
         };
       }),

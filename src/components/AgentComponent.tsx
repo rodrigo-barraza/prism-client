@@ -1346,15 +1346,15 @@ export default function AgentComponent({
   );
 
   // ── Mention Autocomplete ───────────────────────────────────────
-  const mentionCacheRef = useRef<any>(null);
+  const mentionCacheRef = useRef<ReturnType<typeof flattenTree> | null>(null);
   const mentionLoadingRef = useRef<boolean>(false);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionIndex, setMentionIndex] = useState(0);
-  const mentionAnchorRef = useRef<any>(null); // { node, offset } of the `@`
+  const mentionAnchorRef = useRef<{ node: Text; offset: number } | null>(null); // { node, offset } of the `@`
   const mentionListRef = useRef<HTMLDivElement | null>(null);
   // Set of known workspace paths — used for mention badge staleness detection
-  const [knownPaths, setKnownPaths] = useState<any>(null);
+  const [knownPaths, setKnownPaths] = useState<string[] | undefined>(undefined);
 
   const currentWorkspacePath = currentWorkspace?.path;
   const ensureMentionCache = useCallback(async () => {
@@ -1366,7 +1366,7 @@ export default function AgentComponent({
       if (data?.tree) {
         const flat = flattenTree(data.tree);
         mentionCacheRef.current = flat;
-        setKnownPaths(new Set(flat.map((e) => e.path)) as Set<string>);
+        setKnownPaths(flat.map((e) => e.path).filter((p): p is string => typeof p === "string"));
       }
     } catch {
       /* autocomplete unavailable */
@@ -1376,7 +1376,7 @@ export default function AgentComponent({
 
   useEffect(() => {
     mentionCacheRef.current = null;
-    setKnownPaths(null);
+    setKnownPaths(undefined);
     // Re-fetch immediately so knownPaths is available for badge staleness
     ensureMentionCache();
   }, [workspaceTreeRefreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1395,7 +1395,7 @@ export default function AgentComponent({
         setMentionOpen(false);
         return;
       }
-      const anchor = sel.anchorNode;
+      const anchor = sel.anchorNode as Text | null;
       if (
         !anchor ||
         anchor.nodeType !== Node.TEXT_NODE ||
