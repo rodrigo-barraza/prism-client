@@ -284,11 +284,12 @@ export default class PrismService {
    */
   static async getAgentSessions(project: string, { limit, cursor, agent }: { limit?: number; cursor?: string; agent?: string } = {}): Promise<AgentSessionListResponse> {
     const qs = new URLSearchParams();
+    qs.set("type", "agent");
     qs.set("project", project);
     if (agent) qs.set("agent", agent);
     if (limit) qs.set("limit", String(limit));
     if (cursor) qs.set("cursor", cursor);
-    return PrismService._request<AgentSessionListResponse>(`/agent-sessions?${qs}`, { method: "GET" });
+    return PrismService._request<AgentSessionListResponse>(`/conversations?${qs}`, { method: "GET" });
   }
 
   /**
@@ -298,7 +299,7 @@ export default class PrismService {
    */
   static async getAgentSession(id: string, project: string): Promise<AgentSession> {
     return PrismService._request<AgentSession>(
-      `/agent-sessions/${id}?project=${encodeURIComponent(project)}`,
+      `/conversations/${id}?project=${encodeURIComponent(project)}`,
       { method: "GET" },
     );
   }
@@ -310,7 +311,7 @@ export default class PrismService {
    */
   static async deleteAgentSession(id: string, project: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(
-      `/agent-sessions/${id}?project=${encodeURIComponent(project)}`,
+      `/conversations/${id}?project=${encodeURIComponent(project)}`,
       { method: "DELETE" },
     );
   }
