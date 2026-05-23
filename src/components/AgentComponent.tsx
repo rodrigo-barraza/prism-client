@@ -44,6 +44,9 @@ import {
   WorkerGenerationProgress,
   BackgroundUsage,
   SessionStats,
+  ModelOption,
+  SSEData,
+  ContentSegment,
 } from "../types/types";
 import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -256,8 +259,14 @@ const WORKSPACE_FS_TOOLS = new Set([
   "notebook_edit",
 ]);
 
+interface EmptyStateConfig {
+  title: string;
+  subtitle: string;
+  placeholder: string;
+}
+
 /** No-agent empty state — raw chat via /chat endpoint, no agentic loop. */
-const NONE_EMPTY_STATE = {
+const NONE_EMPTY_STATE: EmptyStateConfig = {
   title: "Direct Chat",
   subtitle: "Raw model interaction — no agentic loop, no persona.",
   placeholder: "Send a message...",
@@ -271,6 +280,21 @@ interface QueuedNextTurn {
 interface ViewerOpenFile {
   id: string;
   path: string;
+}
+
+interface WorkerActivityEntry {
+  phase?: string;
+  currentTool?: string | null;
+  iteration?: number;
+  workerId?: string;
+  toolName?: string;
+  error?: string;
+  phaseProgress?: number;
+  totalOutputTokens?: number;
+  tokPerSec?: number;
+  toolCount?: number;
+  toolNames?: Record<string, number>;
+  [key: string]: string | number | boolean | null | undefined | Record<string, number>;
 }
 
 interface ClientMessage extends Message {
@@ -340,11 +364,12 @@ export default function AgentComponent({
   // Agent modes use the persona's project so persistence goes to agent_conversations.
   const agentProject = isNoAgent
     ? undefined
-    : activeAgentData?.project || PROJECT_AGENT;
+    : activeAgentData?.project ||
+      (agentId.toUpperCase() === "CODING" ? "coding" : "prism-chat");
   const agentBackgroundImage = activeAgentData?.backgroundImage || "";
-  const rawEmptyState = (isNoAgent
+  const rawEmptyState: EmptyStateConfig = isNoAgent
     ? NONE_EMPTY_STATE
-    : (AGENT_EMPTY_STATE as Record<string, any>)[agentId] ||
+    : (AGENT_EMPTY_STATE as Record<string, EmptyStateConfig>)[agentId] ||
       (activeAgentData?.name
         ? {
             title: activeAgentData.name,
@@ -353,7 +378,7 @@ export default function AgentComponent({
               "AI-powered agent with tool access.",
             placeholder: `Talk to ${activeAgentData.name}...`,
           }
-        : DEFAULT_EMPTY_STATE)) as any;
+        : DEFAULT_EMPTY_STATE);
   const emptyState = {
     ...rawEmptyState,
     subtitle: activeAgentData?.description || rawEmptyState.subtitle,
@@ -404,7 +429,7 @@ export default function AgentComponent({
   });
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
-  const [workerToolActivity, setWorkerToolActivity] = useState<Record<string, any>>({});
+  const [workerToolActivity, setWorkerToolActivity] = useState<Record<string, WorkerActivityEntry>>({});
 
   // Track which tabs have received new data the user hasn't viewed yet
   const [newDataTabs, setNewDataTabs] = useState(new Set());
@@ -444,7 +469,7 @@ export default function AgentComponent({
   // Count concurrent API calls: main generation + active worker agents
   const activeApiCount = useMemo(() => {
     const activeWorkers = Object.values(workerToolActivity).filter(
-      (w: any) =>
+      (w: WorkerActivityEntry) =>
         w.currentTool || w.phase === "generating" || w.phase === "thinking",
     ).length;
     return (isGenerating ? 1 : 0) + activeWorkers;
@@ -466,13 +491,12 @@ export default function AgentComponent({
 
   // -- Model memory (persist last-used model per agent) ----------
   const { saveModel, restoreModel } = useModelMemory(modelMemoryKey);
-  const [settings, setSettings] = useState<{
+  const [settings, setSettings] = useState<PrismSettings & {
     maxTokens: number;
     functionCallingEnabled: boolean;
     thinkingEnabled: boolean;
     codeExecutionEnabled?: boolean;
     urlContextEnabled?: boolean;
-    [key: string]: any;
   }>({
     ...SETTINGS_DEFAULTS,
     maxTokens: 64000,
@@ -615,10 +639,10 @@ export default function AgentComponent({
     // could arrive, leaving activity entries stuck in active phases.
     setWorkerToolActivity((prev) => {
       const hasActive = Object.values(prev).some(
-        (w: any) => w.phase && w.phase !== "complete" && w.phase !== "failed",
+        (w: WorkerActivityEntry) => w.phase && w.phase !== "complete" && w.phase !== "failed",
       );
       if (!hasActive) return prev;
-      const next: Record<string, any> = {};
+      const next: Record<string, WorkerActivityEntry> = {};
       for (const [id, w] of Object.entries(prev)) {
         next[id] =
           w.phase && w.phase !== "complete" && w.phase !== "failed"
@@ -639,7 +663,7 @@ export default function AgentComponent({
   }, [isNoAgent]);
 
   // -- Filtered config: only tool-calling models for agents; all text models for Direct Chat ------------
-  const filteredConfig = useMemo<any>(() => {
+  const filteredConfig = useMemo(() => {
     if (!config) return null;
 
     // Direct Chat: show ALL text models — no FC restriction
@@ -649,16 +673,16 @@ export default function AgentComponent({
         textToImage: { models: {} },
         textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
         audioToText: { models: {} },
-      };
+      } as PrismConfig;
     }
 
     const textModelsMap = config.textToText?.models || {};
-    const filteredTextModels: Record<string, any> = {};
+    const filteredTextModels: Record<string, ModelOption[]> = {};
 
     for (const [provider, models] of Object.entries(
-      textModelsMap as Record<string, any[]>,
+      textModelsMap as Record<string, ModelOption[]>,
     )) {
-      const fcModels = models.filter((m: any) =>
+      const fcModels = models.filter((m: ModelOption) =>
         m.tools?.includes("Tool Calling"),
       );
       if (fcModels.length > 0) filteredTextModels[provider] = fcModels;
@@ -678,14 +702,14 @@ export default function AgentComponent({
       textToImage: { models: {} },
       textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
       audioToText: { models: {} },
-    };
+    } as PrismConfig;
   }, [config, isNoAgent]);
 
   // -- Model capability detection ------------------------------
   const supportsImageInput = useMemo(() => {
     if (!filteredConfig) return false;
-    const models = filteredConfig.textToText?.models?.[settings.provider] || [];
-    const modelDef = models.find((m: any) => m.name === settings.model);
+    const models = filteredConfig.textToText?.models?.[settings.provider ?? ""] || [];
+    const modelDef = models.find((m: ModelOption) => m.name === settings.model) as (ModelOption & { inputTypes?: string[] }) | undefined;
     return modelDef?.inputTypes?.includes("image") ?? false;
   }, [filteredConfig, settings.provider, settings.model]);
 
@@ -887,20 +911,20 @@ export default function AgentComponent({
           .reverse()
           .find((m) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
-          const gs: any = lastAssistant.generationSettings || {};
+          const gs = (lastAssistant.generationSettings || {}) as Record<string, string | number | boolean | undefined>;
           setSettings((prev) => ({
             ...prev,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
             ...(lastAssistant.model && { model: lastAssistant.model }),
             ...(gs.temperature !== undefined && {
-              temperature: gs.temperature,
+              temperature: Number(gs.temperature),
             }),
-            ...(gs.maxTokens !== undefined && { maxTokens: gs.maxTokens }),
+            ...(gs.maxTokens !== undefined && { maxTokens: Number(gs.maxTokens) }),
             ...(gs.thinkingEnabled !== undefined && {
-              thinkingEnabled: gs.thinkingEnabled,
+              thinkingEnabled: Boolean(gs.thinkingEnabled),
             }),
-            ...(gs.reasoningEffort && { reasoningEffort: gs.reasoningEffort }),
-            ...(gs.thinkingBudget && { thinkingBudget: gs.thinkingBudget }),
+            ...(gs.reasoningEffort && { reasoningEffort: String(gs.reasoningEffort) }),
+            ...(gs.thinkingBudget && { thinkingBudget: String(gs.thinkingBudget) }),
             ...(full.systemPrompt != null && {
               systemPrompt: full.systemPrompt,
             }),
@@ -908,7 +932,7 @@ export default function AgentComponent({
         }
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
-      } catch (error: unknown) {
+      } catch (error: any) {
         console.error("Failed to preload session from URL:", error);
       }
     })();
@@ -978,10 +1002,11 @@ export default function AgentComponent({
   // -- Fetch memory settings to determine if memories are configured --
   useEffect(() => {
     PrismService.getSettings()
-      .then((s: any) => {
-        const mem = ((s as any)?.memory || {}) as any;
+      .then((s: PrismSettings) => {
+        const mem = s?.memory;
         setMemoryConfigured(
           Boolean(
+            mem &&
             mem.extractionProvider &&
             mem.extractionModel &&
             mem.consolidationProvider &&
@@ -1059,11 +1084,11 @@ export default function AgentComponent({
     setSessions((prev) => {
       const index = prev.findIndex((s) => s.id === activeId);
       if (index === -1) return prev;
-      const existing: any = prev[index];
+      const existing = prev[index] as unknown as Record<string, unknown>;
       // Only patch if something actually changed to avoid churn
-      const resolvedCost = backendSessionStats?.totalCost ?? totalCost;
-      const resolvedModalities: any =
-        backendSessionStats?.modalities ?? modalities;
+      const resolvedCost = (backendSessionStats?.totalCost ?? totalCost) as number;
+      const resolvedModalities: Record<string, number> =
+        (backendSessionStats?.modalities ?? modalities) as Record<string, number>;
       const resolvedToolCounts =
         backendSessionStats?.toolCounts ?? undefined;
       const resolvedProviders =
@@ -1071,11 +1096,11 @@ export default function AgentComponent({
       const resolvedModels =
         uniqueModels.length > 0 ? uniqueModels : existing._liveModelNames;
       // Shallow equality check — skip update if nothing visually changed
-      const prevMod: any = existing._liveModalities;
+      const prevMod = existing._liveModalities as Record<string, number> | undefined;
       const modSame =
         prevMod &&
         Object.keys(resolvedModalities).every(
-          (k) => (prevMod as any)[k] === (resolvedModalities as any)[k],
+          (k) => prevMod[k] === resolvedModalities[k],
         );
       if (
         modSame &&
@@ -1087,20 +1112,20 @@ export default function AgentComponent({
       ) {
         return prev;
       }
-      const updated: any[] = [...prev];
+      const updated = [...prev] as unknown as Record<string, unknown>[];
       updated[index] = {
         ...existing,
         title,
         totalCost: resolvedCost,
         modalities: resolvedModalities,
         toolCounts: resolvedToolCounts,
-        providers: resolvedProviders,
-        _liveModelNames: resolvedModels,
+        providers: resolvedProviders as string[],
+        _liveModelNames: resolvedModels as string[],
         _liveModalities: resolvedModalities,
         // Preserve the original server-side updatedAt — overwriting it with
         // Date.now() causes the DateTimeBadge to flash "just now" on click.
       };
-      return updated;
+      return updated as unknown as Array<AgentSession | Conversation>;
     });
   }, [
     activeId,
@@ -1115,7 +1140,7 @@ export default function AgentComponent({
 
   // -- Fetch backend-aggregate session stats ----------------
   const fetchSessionStats = useCallback(
-    (sessionId: any) => {
+    (sessionId: string) => {
       if (!sessionId) return;
       // Direct Chat sessions live in the conversations collection which
       // doesn't have the stats aggregation endpoint — skip.
@@ -1184,14 +1209,14 @@ export default function AgentComponent({
 
   /** Create a styled mention badge span (wraps the pure fn). */
   const createMentionBadge = useCallback(
-    (path: any, name: any, type: any, fetchOptions?: any) => {
+    (path: string, name: string, type: string | undefined, fetchOptions?: Record<string, string | number>) => {
       return _createMentionBadge(path, name, type, fetchOptions);
     },
     [],
   );
 
   // -- Stable input change handler -----------------------------
-  const handleInputChange = useCallback((_e: any) => {
+  const handleInputChange = useCallback((_e: React.FormEvent<HTMLDivElement>) => {
     const element = textareaRef.current;
     if (!element) return;
     const value = serializeEditable(element);
@@ -1240,7 +1265,7 @@ export default function AgentComponent({
       const isDir = !name?.includes(".");
       const badge = createMentionBadge(
         filePath,
-        name,
+        name ?? "",
         isDir ? "directory" : "file",
       );
       const space = document.createTextNode(" ");
@@ -1283,7 +1308,7 @@ export default function AgentComponent({
       const element = textareaRef.current;
       if (!element) return;
       const name = filePath.split("/").pop();
-      const badge = createMentionBadge(filePath, name, "file", {
+      const badge = createMentionBadge(filePath, name ?? "", "file", {
         lineStart: startLine,
         lineEnd: endLine,
       });
@@ -1534,8 +1559,8 @@ export default function AgentComponent({
         const payload = isNoAgent
           ? {
               // Direct Chat: raw /chat endpoint — no agentic loop
-              provider: settings.provider,
-              model: settings.model,
+              provider: settings.provider ?? "",
+              model: settings.model ?? "",
               messages: [
                 ...(settings.systemPrompt
                   ? [{ role: "system", content: settings.systemPrompt }]
@@ -1585,8 +1610,8 @@ export default function AgentComponent({
             }
           : {
               // Agent mode: full /agent endpoint with AgenticLoopService
-              provider: settings.provider,
-              model: settings.model,
+              provider: settings.provider ?? "",
+              model: settings.model ?? "",
               messages: [
                 // System prompt placeholder — replaced server-side by SystemPromptAssembler
                 { role: "system", content: "" },
@@ -1626,7 +1651,7 @@ export default function AgentComponent({
 
         let streamedText = "";
         let streamedThinking = "";
-        let firstChunkTime: any = null;
+        let firstChunkTime: number | undefined;
         let prevChunkTime: any = null; // previous chunk's timestamp for delta accumulation
         let burstTokens = 0; // tokens in current generation burst (resets on gap)
         let burstElapsed = 0; // elapsed in current generation burst (resets on gap)
@@ -1635,9 +1660,9 @@ export default function AgentComponent({
         // contentSegments: ordered list of { type: "thinking", fragmentIndex } | { type: "text", fragmentIndex } | { type: "tools", toolIds: [...] }
         // textFragments: array of strings, one per text segment — the text delta between tool groups
         // thinkingFragments: array of strings, one per thinking segment — the thinking delta between tool groups
-        const contentSegments: any[] = [];
-        const textFragments: any[] = [];
-        const thinkingFragments: any[] = [];
+        const contentSegments: ContentSegment[] = [];
+        const textFragments: string[] = [];
+        const thinkingFragments: string[] = [];
         const segmentToolIdSet = new Set(); // Dedup: track tool IDs already in contentSegments
         let lastSegmentType: any = null; // "thinking" | "text" | "tools"
         let prevCleanLen = 0; // length of cleanTextRaw at last onChunk — used for computing deltas
@@ -1659,7 +1684,7 @@ export default function AgentComponent({
           ? PrismService.streamText
           : PrismService.streamAgentText;
         abortRef.current = streamFn(payload, {
-          onChunk: (content: any, _sourceModel: any, outputCharacters: any) => {
+          onChunk: (content: string, _sourceModel?: string, outputCharacters?: number) => {
             streamedText += content;
             // Backend sends authoritative running token count on each chunk
             burstTokens++;
@@ -1732,9 +1757,9 @@ export default function AgentComponent({
             });
           },
           onThinking: (
-            content: any,
-            _sourceModel: any,
-            outputCharacters: any,
+            content: string,
+            _sourceModel?: string,
+            outputCharacters?: number,
           ) => {
             streamedThinking += content;
             if (isStale()) return;
@@ -1800,7 +1825,7 @@ export default function AgentComponent({
               return updated;
             });
           },
-          onToolExecution: (data: any) => {
+          onToolExecution: (data: SSEData) => {
             if (isStale()) return;
             const tc = data.tool;
             setToolActivity((prev) => {
@@ -1939,7 +1964,7 @@ export default function AgentComponent({
             }
           },
           // LM Studio native MCP tool calls (toolCall events)
-          onToolCall: (tc: any) => {
+          onToolCall: (tc: ToolCallEvent) => {
             if (isStale()) return;
             setToolActivity((prev) => {
               let updated;
@@ -2074,7 +2099,7 @@ export default function AgentComponent({
               }
             }
           },
-          onToolOutput: (data: any) => {
+          onToolOutput: (data: SSEData) => {
             if (isStale()) return;
             if (data.event === "stdout" || data.event === "stderr") {
               setStreamingOutputs((prev: Map<string, string>) => {
@@ -2086,7 +2111,7 @@ export default function AgentComponent({
               });
             }
           },
-          onApprovalRequired: (data: any) => {
+          onApprovalRequired: (data: SSEData) => {
             if (isStale()) return;
             setPendingApprovals((prev) => [
               ...prev,
@@ -2117,7 +2142,7 @@ export default function AgentComponent({
               return updated;
             });
           },
-          onUserQuestion: (data: any) => {
+          onUserQuestion: (data: SSEData) => {
             if (isStale()) return;
             setPendingUserQuestion({
               // Multi-question payload (new)
@@ -2145,7 +2170,7 @@ export default function AgentComponent({
               return updated;
             });
           },
-          onPlanProposal: (data: any) => {
+          onPlanProposal: (data: SSEData) => {
             if (isStale()) return;
 
             // Inject plan as a content segment so it renders in-flow —
@@ -2184,7 +2209,7 @@ export default function AgentComponent({
               status: isPending ? "pending" : "approved",
             });
           },
-          onStatus: (statusData: any) => {
+          onStatus: (statusData: SSEData) => {
             if (isStale()) return;
             // statusData is now the full SSE data object { type, message, iteration?, maxIterations? }
             if (statusData?.message === "iteration_progress") {
@@ -2305,7 +2330,7 @@ export default function AgentComponent({
             }
           },
           // -- Worker agent live events -----------------------------
-          onWorkerToolExecution: (data: any) => {
+          onWorkerToolExecution: (data: SSEData) => {
             if (isStale()) return;
             setWorkerToolActivity((prev) => {
               const raw = prev[data.workerId];
@@ -2340,7 +2365,7 @@ export default function AgentComponent({
               };
             });
           },
-          onWorkerStatus: (data: any) => {
+          onWorkerStatus: (data: SSEData) => {
             if (isStale()) return;
             if (data.message === "spawned") {
               // Early mapping: store workerId indexed by description
@@ -2540,7 +2565,7 @@ export default function AgentComponent({
               }));
             }
           },
-          onUsageUpdate: (data: any) => {
+          onUsageUpdate: (data: SSEData) => {
             if (isStale()) return;
             setMessages((prev) => {
               const updated = [...prev];
@@ -2583,7 +2608,7 @@ export default function AgentComponent({
               return updated;
             });
           },
-          onDone: (data: any) => {
+          onDone: (data: SSEData) => {
             if (!isStale()) {
               setMessages((prev) => {
                 const updated = [...prev];
@@ -2678,11 +2703,11 @@ export default function AgentComponent({
   // -- Send handler ---------------------------------------------
   // Read inputValue from ref at send-time to avoid re-creating
   // handleSend on every keystroke (the main cause of input lag).
-  const pendingImagesRef = useRef<any>(pendingImages);
+  const pendingImagesRef = useRef<string[]>(pendingImages);
   pendingImagesRef.current = pendingImages;
-  const messagesRef = useRef<any>(messages);
+  const messagesRef = useRef<ClientMessage[]>(messages);
   messagesRef.current = messages;
-  const titleRef = useRef<any>(title);
+  const titleRef = useRef<string>(title);
   titleRef.current = title;
 
   const handleSend = useCallback(
@@ -2762,7 +2787,7 @@ export default function AgentComponent({
 
       setCurrentTurnStart(Date.now());
       const userMessage = {
-        role: "user",
+        role: "user" as const,
         content: text,
         timestamp: new Date().toISOString(),
         ...(currentImages.length > 0 ? { images: currentImages } : {}),
@@ -2839,7 +2864,7 @@ export default function AgentComponent({
   );
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<any>) => {
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
       // -- Mention autocomplete keyboard nav --
       if (mentionOpen && mentionResults.length > 0) {
         if (e.key === "ArrowDown") {
@@ -2995,7 +3020,7 @@ export default function AgentComponent({
   const chatNewBtnRef = useRef<HTMLButtonElement | null>(null);
   const chatRainbowTimer = useRef<any>(null);
   const chatGlitchInterval = useRef<any>(null);
-  const [chatGlitchLabel, setChatGlitchLabel] = useState<any>(null);
+  const [chatGlitchLabel, setChatGlitchLabel] = useState<string | null>(null);
 
   const handleNewChatGlitch = useCallback(() => {
     const element = chatNewBtnRef.current;
@@ -4346,7 +4371,7 @@ export default function AgentComponent({
           )}
           <ModelPickerPopoverComponent
             config={filteredConfig}
-            settings={settings}
+            settings={{ provider: settings.provider, model: settings.model }}
             disabled={isGenerating || isSessionLocked}
             onSelectModel={(provider: any, modelName: any) => {
               const modelDef = (

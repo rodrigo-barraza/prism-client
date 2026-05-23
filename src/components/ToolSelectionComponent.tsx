@@ -33,6 +33,7 @@ import {
   Trophy,
   Compass,
   FlaskConical,
+  Lock,
 } from "lucide-react";
 import { renderToolName } from "../utils/utilities";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
@@ -278,6 +279,21 @@ export default function ToolSelectionComponent({
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set());
   const [groupMode, setGroupMode] = useState("domain");
+  const [coreCollapsed, setCoreCollapsed] = useState(false);
+
+  // -- Split availableTools into Core System and Configurable ----
+  const { coreTools, configurableTools } = useMemo(() => {
+    const core: any[] = [];
+    const config: any[] = [];
+    for (const t of availableTools || []) {
+      if (t.system === true) {
+        core.push(t);
+      } else {
+        config.push(t);
+      }
+    }
+    return { coreTools: core, configurableTools: config };
+  }, [availableTools]);
 
   // -- Resolve enabledTools → flat Set of tool names ------------
   const resolveEnabledTools = useCallback(
@@ -307,7 +323,17 @@ export default function ToolSelectionComponent({
     () => resolveEnabledTools(enabledTools),
     [resolveEnabledTools, enabledTools],
   );
-  const enabledCount = resolvedEnabledSet.size;
+
+  // -- Configurable enabled count --------------------------------
+  const enabledConfigurableCount = useMemo(() => {
+    let count = 0;
+    for (const t of configurableTools) {
+      if (resolvedEnabledSet.has(t.name)) {
+        count++;
+      }
+    }
+    return count;
+  }, [configurableTools, resolvedEnabledSet]);
 
   // -- Tool toggling --------------------------------------------
   const toggleTool = useCallback(
@@ -329,8 +355,8 @@ export default function ToolSelectionComponent({
   );
 
   const selectAllTools = useCallback(() => {
-    onEnabledToolsChange(availableTools.map((t: any) => t.name));
-  }, [availableTools, onEnabledToolsChange]);
+    onEnabledToolsChange(configurableTools.map((t: any) => t.name));
+  }, [configurableTools, onEnabledToolsChange]);
 
   const deselectAllTools = useCallback(() => {
     onEnabledToolsChange([]);
@@ -339,15 +365,25 @@ export default function ToolSelectionComponent({
   // -- Filtering ------------------------------------------------
   const query = toolSearch.toLowerCase().trim();
 
-  const filteredTools = useMemo(() => {
-    if (!query) return availableTools;
-    return availableTools.filter(
+  const filteredCoreTools = useMemo(() => {
+    if (!query) return coreTools;
+    return coreTools.filter(
       (t: any) =>
         t.name?.toLowerCase().includes(query) ||
         renderToolName(t.name)?.toLowerCase().includes(query) ||
         t.description?.toLowerCase().includes(query),
     );
-  }, [availableTools, query]);
+  }, [coreTools, query]);
+
+  const filteredTools = useMemo(() => {
+    if (!query) return configurableTools;
+    return configurableTools.filter(
+      (t: any) =>
+        t.name?.toLowerCase().includes(query) ||
+        renderToolName(t.name)?.toLowerCase().includes(query) ||
+        t.description?.toLowerCase().includes(query),
+    );
+  }, [configurableTools, query]);
 
   // -- Group by domain ------------------------------------------
   const groupedTools = useMemo(() => {
@@ -462,7 +498,7 @@ export default function ToolSelectionComponent({
             </button>
           </div>
           <span className={styles.toolsSummary}>
-            {enabledCount} / {availableTools.length}
+            {enabledConfigurableCount} / {configurableTools.length}
           </span>
         </div>
       </div>
@@ -481,10 +517,10 @@ export default function ToolSelectionComponent({
 
         {/* Master select-all checkbox */}
         <MasterCheckbox
-          enabledCount={enabledCount}
-          totalCount={availableTools.length}
+          enabledCount={enabledConfigurableCount}
+          totalCount={configurableTools.length}
           onToggle={() => {
-            if (enabledCount === availableTools.length) {
+            if (enabledConfigurableCount === configurableTools.length) {
               deselectAllTools();
             } else {
               selectAllTools();
@@ -492,6 +528,56 @@ export default function ToolSelectionComponent({
           }}
           label="Select All"
         />
+
+        {/* Core System Tools Section */}
+        {filteredCoreTools.length > 0 && (
+          <div className={styles.coreGroup}>
+            <div
+              className={styles.coreHeader}
+              onClick={() => setCoreCollapsed(!coreCollapsed)}
+            >
+              {coreCollapsed ? (
+                <ChevronRight size={12} />
+              ) : (
+                <ChevronDown size={12} />
+              )}
+              <span className={styles.coreIcon}>
+                <Bot size={12} />
+              </span>
+              <span className={styles.coreLabel}>Core System Tools</span>
+              <span className={styles.coreBadge}>Locked On</span>
+            </div>
+
+            {!coreCollapsed && (
+              <div className={styles.coreToolsList}>
+                <span className={styles.coreHint}>
+                  Implicit agent capabilities required for cognitive reasoning and task orchestration.
+                </span>
+                {filteredCoreTools.map((tool: any) => (
+                  <TooltipComponent
+                    key={tool.name}
+                    label={tool.description || "Core capability"}
+                    position="right"
+                    delay={400}
+                  >
+                    <label className={`${styles.toolRow} ${styles.coreToolRow}`}>
+                      <input
+                        type="checkbox"
+                        className={`${styles.toolCheckbox} ${styles.coreCheckbox}`}
+                        checked={true}
+                        disabled={true}
+                      />
+                      <span className={`${styles.toolName} ${styles.coreToolName}`}>
+                        {renderToolName(tool.name)}
+                      </span>
+                      <Lock size={10} className={styles.lockIcon} />
+                    </label>
+                  </TooltipComponent>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Group rendering — domain or label mode */}
         {(groupMode === "domain" ? groupedTools : groupedByLabel).map(

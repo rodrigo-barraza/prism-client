@@ -223,3 +223,89 @@
   color: var(--text-secondary);
   letter-spacing: 0.02em;
 }
+
+/* ── Core System Tools Section ─────────────────────────────────── */
+
+.coreGroup {
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--accent-color) 2%, transparent);
+}
+
+.coreHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-fast);
+}
+
+.coreHeader:hover {
+  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+}
+
+.coreIcon {
+  display: flex;
+  align-items: center;
+  color: var(--accent-color);
+}
+
+.coreLabel {
+  flex: 1;
+}
+
+.coreBadge {
+  font-size: 9px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  color: var(--accent-color);
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.coreToolsList {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 6px;
+}
+
+.coreHint {
+  font-size: 10.5px;
+  color: var(--text-tertiary);
+  padding: 2px 12px 6px 32px;
+  line-height: 1.3;
+}
+
+.coreToolRow {
+  opacity: 0.85;
+  cursor: default !important;
+}
+
+.coreToolRow:hover {
+  background: transparent !important;
+}
+
+.coreCheckbox {
+  accent-color: var(--accent-color) !important;
+  cursor: default !important;
+  opacity: 0.7;
+}
+
+.coreToolName {
+  font-weight: 500;
+  color: var(--text-secondary) !important;
+}
+
+.lockIcon {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+  margin-left: auto;
+}

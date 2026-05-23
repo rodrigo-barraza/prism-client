@@ -446,7 +446,7 @@ export type SSEEvent =
 // ─── SSE Callback Interfaces ────────────────────────────────
 
 /** Wire-format SSE event — parsed JSON with a discriminant `type` field. */
-export type SSEData = Record<string, unknown> & { type: string };
+export type SSEData = Record<string, any> & { type: string };
 
 export interface SSECallbacks {
   onChunk?: (content: string, sourceModel?: string, outputCharacters?: number) => void;
@@ -479,7 +479,7 @@ export interface SSECallbacks {
 
 export interface ContentSegment {
   type: "thinking" | "tools" | "text" | "plan";
-  fragmentIndex: number;
+  fragmentIndex?: number;
   toolIds?: string[];
 }
 
