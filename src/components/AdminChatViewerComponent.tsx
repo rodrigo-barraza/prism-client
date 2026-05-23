@@ -239,22 +239,14 @@ export default function AdminChatViewerComponent({
   useEffect(() => {
     if (!initialId) return;
     setLoadingDetail(true);
-    // Try conversations first, fall back to agent_sessions
     IrisService.getConversation(initialId)
-      .then((conv) => {
+      .then((conv: any) => {
         setSelectedEntry(conv as UnifiedEntry);
-        setSelectedSource("conversation");
+        setSelectedSource(conv.type === "agent" ? "agent_session" : "conversation");
       })
       .catch(() => {
-        IrisService.getAgentSession(initialId)
-          .then((session) => {
-            setSelectedEntry(session as UnifiedEntry);
-            setSelectedSource("agent_session");
-          })
-          .catch(() => {
-            setSelectedEntry(null);
-            setSelectedSource(null);
-          });
+        setSelectedEntry(null);
+        setSelectedSource(null);
       })
       .finally(() => setLoadingDetail(false));
   }, [initialId]);
@@ -301,33 +293,18 @@ export default function AdminChatViewerComponent({
       if (providerFilter) params.provider = providerFilter;
       if (modelFilter) params.model = modelFilter;
 
-      let list: UnifiedEntry[] = [];
-      let total = 0;
-
       if (isNoAgent) {
-        // Direct chat only — conversations collection
-        const data = await IrisService.getConversations(params);
-        list = (data.data || []).map((c) => ({ ...c, _source: "conversation" as const }));
-        total = data.total || 0;
+        params.type = "direct";
       } else if (isAgentMode) {
-        // Specific agent — agent_sessions collection
-        const agentParams = { ...params, agent: activeAgentId };
-        const data = await IrisService.getAgentSessions(agentParams);
-        list = (data.data || []).map((s) => ({ ...s, _source: "agent_session" as const }));
-        total = data.total || 0;
-      } else {
-        // All mode — fetch both and merge by updatedAt
-        const [convData, agentData] = await Promise.all([
-          IrisService.getConversations(params),
-          IrisService.getAgentSessions(params),
-        ]);
-        const convs = (convData.data || []).map((c) => ({ ...c, _source: "conversation" as const }));
-        const sessions = (agentData.data || []).map((s) => ({ ...s, _source: "agent_session" as const }));
-        list = [...convs, ...sessions].sort(
-          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-        );
-        total = (convData.total || 0) + (agentData.total || 0);
+        params.agent = activeAgentId;
       }
+
+      const data = await IrisService.getConversations(params);
+      const list = (data.data || []).map((c: any) => ({
+        ...c,
+        _source: c.type === "agent" ? "agent_session" as const : "conversation" as const,
+      }));
+      const total = data.total || 0;
 
       // Fingerprint for dedup
       const fp = list
@@ -370,7 +347,7 @@ export default function AdminChatViewerComponent({
       }
 
       setError((prev) => (prev !== null ? null : prev));
-    } catch (error: unknown) {
+    } catch (error) {
       setError(getErrorMessage(error));
     }
   }, [projectFilter, providerFilter, modelFilter, dateRange, activeSession, activeAgentId, isNoAgent, isAgentMode]);
@@ -396,30 +373,22 @@ export default function AdminChatViewerComponent({
       if (providerFilter) params.provider = providerFilter;
       if (modelFilter) params.model = modelFilter;
 
-      let newItems: UnifiedEntry[] = [];
-
       if (isNoAgent) {
-        const data = await IrisService.getConversations(params);
-        newItems = (data.data || []).map((c) => ({ ...c, _source: "conversation" as const }));
+        params.type = "direct";
       } else if (isAgentMode) {
-        const data = await IrisService.getAgentSessions({ ...params, agent: activeAgentId });
-        newItems = (data.data || []).map((s) => ({ ...s, _source: "agent_session" as const }));
-      } else {
-        const [convData, agentData] = await Promise.all([
-          IrisService.getConversations(params),
-          IrisService.getAgentSessions(params),
-        ]);
-        const convs = (convData.data || []).map((c) => ({ ...c, _source: "conversation" as const }));
-        const sessions = (agentData.data || []).map((s) => ({ ...s, _source: "agent_session" as const }));
-        newItems = [...convs, ...sessions].sort(
-          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-        );
+        params.agent = activeAgentId;
       }
+
+      const data = await IrisService.getConversations(params);
+      const newItems = (data.data || []).map((c: any) => ({
+        ...c,
+        _source: c.type === "agent" ? "agent_session" as const : "conversation" as const,
+      }));
 
       entriesPageRef.current = nextPage;
       setEntries((prev) => [...prev, ...newItems]);
       setEntriesHasMore(entries.length + newItems.length < entriesTotalRef.current);
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Failed to load more entries:", error);
     } finally {
       setEntriesLoading(false);
@@ -438,7 +407,7 @@ export default function AdminChatViewerComponent({
     activeAgentId,
   ]);
 
-  // Generating count
+    // Generating count
   useEffect(() => {
     IrisService.getConversationStats(projectFilter)
       .then((data) => setGeneratingCount(data.generatingCount || 0))
@@ -480,7 +449,7 @@ export default function AdminChatViewerComponent({
 
     const onEvent = (event: { collection?: string; id?: string }) => {
       if (
-        (event.collection === "conversations" || event.collection === "agent_sessions") &&
+        (event.collection === "model_conversations" || event.collection === "agent_conversations") &&
         selectedIdRef.current &&
         event.id === selectedIdRef.current
       ) {
@@ -521,7 +490,7 @@ export default function AdminChatViewerComponent({
         }
       },
       onChange: (event: { collection?: string }) => {
-        if (event.collection === "conversations" || event.collection === "agent_sessions") {
+        if (event.collection === "model_conversations" || event.collection === "agent_conversations") {
           loadEntries();
         }
       },

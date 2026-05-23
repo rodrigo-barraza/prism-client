@@ -330,7 +330,7 @@ export default function AgentComponent({
   const activeAgentData = agents.find((a) => a.id === agentId);
   // Direct Chat omits project so it uses the default x-project header — this
   // routes persistence to the conversations collection.
-  // Agent modes use the persona's project so persistence goes to agent_sessions.
+  // Agent modes use the persona's project so persistence goes to agent_conversations.
   const agentProject = isNoAgent
     ? undefined
     : activeAgentData?.project || PROJECT_AGENT;
