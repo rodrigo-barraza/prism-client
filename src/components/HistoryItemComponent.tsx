@@ -8,6 +8,7 @@ import { ModelToolsRow } from "./ToolBadgeComponent";
 import styles from "./HistoryItemComponent.module.css";
 import CostBadgeComponent from "./CostBadgeComponent";
 import ModelBadgeComponent from "./ModelBadgeComponent";
+import AgentBadgeComponent from "./AgentBadgeComponent";
 import SoundService from "@/services/SoundService";
 import {
   IconButtonComponent,
@@ -94,8 +95,15 @@ export default function HistoryItemComponent({
         <div className={styles.topRow}>
           <div className={styles.topLeft}>
             <DateTimeBadgeComponent date={itemDate} />
-            {admin && item.username && item.username !== "unknown" && (
+            {admin && item.username && item.username !== "unknown" && item.username !== "anonymous" && (
               <span className={styles.usernameTag}>{item.username}</span>
+            )}
+            {admin && item.agent && (
+              <AgentBadgeComponent
+                agent={typeof item.agent === "string" ? { id: item.agent, name: item.agent } : item.agent}
+                size={16}
+                iconSize={10}
+              />
             )}
             {item.tags?.map((tag: any) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>

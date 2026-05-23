@@ -638,6 +638,36 @@ export default function AdminChatViewerComponent({
     [selectedEntry],
   );
 
+  // Resolve model/provider from multiple fallback sources:
+  // 1. Entry root (conversation.provider / conversation.model)
+  // 2. Entry settings (settings.provider / settings.model)
+  // 3. Last assistant message (message.provider / message.model)
+  // 4. Backend session stats (stats.models[0])
+  const resolvedModelSettings = useMemo(() => {
+    const s = settingsWithDefaults;
+    let provider = selectedEntry?.provider || s.provider || "";
+    let model = selectedEntry?.model || s.model || "";
+
+    // Fallback: extract from last assistant message
+    if (!model && selectedEntry?.messages?.length) {
+      for (let i = selectedEntry.messages.length - 1; i >= 0; i--) {
+        const msg = selectedEntry.messages[i];
+        if (msg.role === "assistant" && (msg as any).model) {
+          model = (msg as any).model;
+          provider = (msg as any).provider || provider;
+          break;
+        }
+      }
+    }
+
+    // Fallback: backend session stats
+    if (!model && backendSessionStats?.models?.length) {
+      model = backendSessionStats.models[0];
+    }
+
+    return { ...s, provider, model };
+  }, [settingsWithDefaults, selectedEntry, backendSessionStats]);
+
   // Resolve whether selected entry is an agent session
   const isSelectedAgent = selectedSource === "agent_session";
 
@@ -936,11 +966,7 @@ export default function AdminChatViewerComponent({
               />
               <ModelPickerPopoverComponent
                 config={config}
-                settings={{
-                  ...settingsWithDefaults,
-                  provider: selectedEntry?.provider || settingsWithDefaults.provider,
-                  model: selectedEntry?.model || settingsWithDefaults.model,
-                }}
+                settings={resolvedModelSettings}
                 disabled
                 favorites={favoriteKeys}
                 onSelectModel={() => {}}
