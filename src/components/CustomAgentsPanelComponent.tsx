@@ -77,9 +77,46 @@ import {
 } from "@rodrigo-barraza/components-library";
 import AgentBadgeComponent from "./AgentBadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
+import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./CustomAgentsPanelComponent.module.css";
+import type { LucideIcon } from "lucide-react";
+import type { CustomAgent } from "../types/types";
 
-const EMPTY_AGENT = {
+/** Extended agent shape used during editing — includes form fields
+ *  that are sent to the backend but not defined on the shared CustomAgent type. */
+interface EditableAgent extends CustomAgent {
+  identity?: string;
+  guidelines?: string;
+  toolPolicy?: string;
+  usesDirectoryTree?: boolean;
+  usesCodingGuidelines?: boolean;
+  agentId?: string;
+}
+
+interface IconOption {
+  name: string;
+  icon: LucideIcon;
+}
+
+interface ColorOption {
+  hex: string;
+  name: string;
+}
+
+interface AvailableTool {
+  name: string;
+  description?: string;
+  domain?: string;
+}
+
+interface CustomAgentsPanelProps {
+  agents?: EditableAgent[];
+  onAgentsChange?: () => void;
+  availableTools?: AvailableTool[];
+}
+
+const EMPTY_AGENT: EditableAgent = {
+  id: "",
   name: "",
   description: "",
   project: "coding",
@@ -181,9 +218,9 @@ const ICON_OPTIONS = [
 ];
 
 /** Resolve an icon name string to its lucide component. */
-export function resolveIconComponent(name: any) {
+export function resolveIconComponent(name: string): LucideIcon {
   if (!name) return Bot;
-  const found = ICON_OPTIONS.find((o: any) => o.name === name);
+  const found = ICON_OPTIONS.find((o: IconOption) => o.name === name);
   return found?.icon || Bot;
 }
 
@@ -194,13 +231,13 @@ export default function CustomAgentsPanel({
   agents = [],
   onAgentsChange,
   availableTools = [],
-}: any) {
-  const [editingAgent, setEditingAgent] = useState<any>(null);
+}: CustomAgentsPanelProps) {
+  const [editingAgent, setEditingAgent] = useState<EditableAgent | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
 
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // -- CRUD -----------------------------------------------------
 
@@ -210,7 +247,7 @@ export default function CustomAgentsPanel({
     setError(null);
   }, []);
 
-  const handleEdit = useCallback((agent: any) => {
+  const handleEdit = useCallback((agent: EditableAgent) => {
     setEditingAgent({
       ...agent,
       enabledTools: agent.enabledTools || [],
@@ -226,7 +263,7 @@ export default function CustomAgentsPanel({
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!editingAgent.name?.trim()) {
+    if (!editingAgent?.name?.trim()) {
       setError("Agent name is required");
       return;
     }
@@ -237,13 +274,13 @@ export default function CustomAgentsPanel({
       if (isNew) {
         await PrismService.createCustomAgent(editingAgent);
       } else {
-        await PrismService.updateCustomAgent(editingAgent._id, editingAgent);
+        await PrismService.updateCustomAgent(String(editingAgent._id || ""), editingAgent);
       }
       setEditingAgent(null);
       setIsNew(false);
       onAgentsChange?.();
-    } catch (error: any) {
-      setError(error.message || "Failed to save agent");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -259,8 +296,8 @@ export default function CustomAgentsPanel({
         await PrismService.deleteCustomAgent(id);
         setConfirmingDeleteId(null);
         onAgentsChange?.();
-      } catch (error: any) {
-        console.error("Failed to delete agent:", error);
+      } catch (err: unknown) {
+        console.error("Failed to delete agent:", getErrorMessage(err));
       }
     },
     [onAgentsChange],
@@ -268,8 +305,8 @@ export default function CustomAgentsPanel({
 
   // -- Form field updaters --------------------------------------
 
-  const updateField = useCallback((field: any, value: any) => {
-    setEditingAgent((a: any) => ({ ...a, [field]: value }));
+  const updateField = useCallback(<K extends keyof EditableAgent>(field: K, value: EditableAgent[K]) => {
+    setEditingAgent((a) => a ? { ...a, [field]: value } : a);
   }, []);
 
   // -- Edit form ------------------------------------------------
@@ -278,7 +315,7 @@ export default function CustomAgentsPanel({
     return (
       <div className={styles.formOverlay}>
         <div className={styles.formHeader}>
-          <h3>{isNew ? "New Agent" : `Edit: ${(editingAgent as any).name}`}</h3>
+          <h3>{isNew ? "New Agent" : `Edit: ${editingAgent.name}`}</h3>
           <button className={styles.cancelBtn} onClick={handleCancel}>
             <X size={16} />
           </button>
@@ -292,14 +329,14 @@ export default function CustomAgentsPanel({
               <input
                 type="text"
                 className={styles.input}
-                value={(editingAgent as any).name}
+                value={editingAgent.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("name", e.target.value)}
                 placeholder="My Agent"
               />
               <span className={styles.hint}>
                 Display name — will generate ID: CUSTOM_
-                {(editingAgent as any).name
-                  ? (editingAgent as any).name
+                {editingAgent.name
+                  ? editingAgent.name
                       .toUpperCase()
                       .replace(/[^A-Z0-9]+/g, "_")
                       .replace(/^_+|_+$/g, "")
@@ -311,7 +348,7 @@ export default function CustomAgentsPanel({
               <input
                 type="text"
                 className={styles.input}
-                value={(editingAgent as any).project}
+                value={editingAgent.project}
                 onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("project", e.target.value)}
                 placeholder="coding"
               />
@@ -325,7 +362,7 @@ export default function CustomAgentsPanel({
             <input
               type="text"
               className={styles.input}
-              value={(editingAgent as any).description}
+              value={editingAgent.description}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("description", e.target.value)}
               placeholder="Short description for the agent picker..."
             />
@@ -335,19 +372,19 @@ export default function CustomAgentsPanel({
           <div className={styles.formGroup}>
             <label>Icon</label>
             <div className={styles.iconGrid}>
-              {ICON_OPTIONS.map(({ name, icon: IconComp }: any) => (
+              {ICON_OPTIONS.map(({ name, icon: IconComp }: IconOption) => (
                 <button
                   key={name}
                   type="button"
                   className={styles.iconOption}
-                  data-selected={(editingAgent as any).icon === name}
+                  data-selected={editingAgent.icon === name}
                   onClick={() => updateField("icon", name)}
                   title={name}
                   style={
-                    (editingAgent as any).color
+                    editingAgent.color
                       ? ({
-                          "--agent-color": (editingAgent as any).color,
-                        } as any)
+                          "--agent-color": editingAgent.color,
+                        } as React.CSSProperties)
                       : undefined
                   }
                 >
@@ -356,8 +393,8 @@ export default function CustomAgentsPanel({
               ))}
             </div>
             <span className={styles.hint}>
-              {(editingAgent as any).icon
-                ? `Selected: ${(editingAgent as any).icon}`
+              {editingAgent.icon
+                ? `Selected: ${editingAgent.icon}`
                 : "Click an icon — defaults to Bot"}
             </span>
           </div>
@@ -372,16 +409,16 @@ export default function CustomAgentsPanel({
               Accent Color
             </label>
             <div className={styles.colorGrid}>
-              {COLOR_PALETTE.map(({ hex, name }: any) => (
+              {COLOR_PALETTE.map(({ hex, name }: ColorOption) => (
                 <button
                   key={hex}
                   type="button"
                   className={styles.colorSwatch}
-                  data-selected={(editingAgent as any).color === hex}
+                  data-selected={editingAgent.color === hex}
                   onClick={() =>
                     updateField(
                       "color",
-                      (editingAgent as any).color === hex ? "" : hex,
+                      editingAgent.color === hex ? "" : hex,
                     )
                   }
                   title={name}
@@ -390,16 +427,16 @@ export default function CustomAgentsPanel({
               ))}
             </div>
             <span className={styles.hint}>
-              {(editingAgent as any).color ? (
+              {editingAgent.color ? (
                 <>
                   Selected:{" "}
                   <span
                     className={styles.colorPreviewDot}
-                    style={{ background: (editingAgent as any).color }}
+                    style={{ background: editingAgent.color }}
                   />{" "}
                   {COLOR_PALETTE.find(
-                    (c) => c.hex === (editingAgent as any).color,
-                  )?.name || (editingAgent as any).color}
+                    (c) => c.hex === editingAgent.color,
+                  )?.name || editingAgent.color}
                 </>
               ) : (
                 "Click a color to brand your agent — used for icon backgrounds and UI accents"
@@ -419,7 +456,7 @@ export default function CustomAgentsPanel({
             <input
               type="text"
               className={styles.input}
-              value={(editingAgent as any).backgroundImage || ""}
+              value={editingAgent.backgroundImage || ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
                 updateField("backgroundImage", e.target.value)
               }
@@ -429,15 +466,15 @@ export default function CustomAgentsPanel({
               URL to a background image displayed behind the chat messages — use
               a subtle, dark image for best results
             </span>
-            {(editingAgent as any).backgroundImage && (
+            {editingAgent.backgroundImage && (
               <div className={styles.bgPreview}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={(editingAgent as any).backgroundImage}
+                  src={editingAgent.backgroundImage}
                   alt="Background preview"
                   className={styles.bgPreviewImg}
-                  onError={(e: any) => {
-                    e.target.style.display = "none";
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    e.currentTarget.style.display = "none";
                   }}
                 />
                 <button
@@ -457,7 +494,7 @@ export default function CustomAgentsPanel({
             <label>Identity Prompt</label>
             <textarea
               className={styles.textarea}
-              value={(editingAgent as any).identity}
+              value={editingAgent.identity}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("identity", e.target.value)}
               placeholder="You are a senior backend engineer specializing in..."
               rows={5}
@@ -473,7 +510,7 @@ export default function CustomAgentsPanel({
             <label>Response Guidelines</label>
             <textarea
               className={styles.textarea}
-              value={(editingAgent as any).guidelines}
+              value={editingAgent.guidelines}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("guidelines", e.target.value)}
               placeholder="## Guidelines&#10;- Always explain your reasoning...&#10;- Use bullet points for clarity..."
               rows={4}
@@ -489,7 +526,7 @@ export default function CustomAgentsPanel({
             <label>Tool Policy</label>
             <textarea
               className={styles.textarea}
-              value={(editingAgent as any).toolPolicy}
+              value={editingAgent.toolPolicy}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("toolPolicy", e.target.value)}
               placeholder="# Tool Usage&#10;- Use read_file before editing...&#10;- Always run tests after changes..."
               rows={4}
@@ -516,11 +553,11 @@ export default function CustomAgentsPanel({
                 </span>
               </div>
               <ToggleComponent
-                checked={(editingAgent as any).usesDirectoryTree}
+                checked={editingAgent.usesDirectoryTree}
                 onChange={() =>
                   updateField(
                     "usesDirectoryTree",
-                    !(editingAgent as any).usesDirectoryTree,
+                    !editingAgent.usesDirectoryTree,
                   )
                 }
               />
@@ -540,11 +577,11 @@ export default function CustomAgentsPanel({
                 </span>
               </div>
               <ToggleComponent
-                checked={(editingAgent as any).usesCodingGuidelines}
+                checked={editingAgent.usesCodingGuidelines}
                 onChange={() =>
                   updateField(
                     "usesCodingGuidelines",
-                    !(editingAgent as any).usesCodingGuidelines,
+                    !editingAgent.usesCodingGuidelines,
                   )
                 }
               />
@@ -554,8 +591,8 @@ export default function CustomAgentsPanel({
           {/* Tool Picker */}
           <ToolSelectionComponent
             availableTools={availableTools}
-            enabledTools={(editingAgent as any).enabledTools}
-            onEnabledToolsChange={(tools: any) =>
+            enabledTools={editingAgent.enabledTools}
+            onEnabledToolsChange={(tools: string[]) =>
               updateField("enabledTools", tools)
             }
           />
@@ -586,7 +623,7 @@ export default function CustomAgentsPanel({
             variant="primary"
             icon={Save}
             onClick={handleSave}
-            disabled={saving || !(editingAgent as any).name?.trim()}
+            disabled={saving || !editingAgent.name?.trim()}
           >
             {saving ? "Saving…" : isNew ? "Create Agent" : "Save Changes"}
           </ButtonComponent>
@@ -627,7 +664,7 @@ export default function CustomAgentsPanel({
         </div>
       ) : (
         <div className={styles.agentList}>
-          {agents.map((agent: any) => {
+          {(agents || []).map((agent: EditableAgent) => {
             const isConfirming = confirmingDeleteId === agent._id;
 
             return (
@@ -661,7 +698,7 @@ export default function CustomAgentsPanel({
                       <span className={styles.confirmText}>Delete?</span>
                       <ButtonComponent
                         variant="destructive"
-                        onClick={() => confirmDelete(agent._id)}
+                        onClick={() => confirmDelete(String(agent._id))}
                       >
                         Yes
                       </ButtonComponent>
@@ -683,7 +720,7 @@ export default function CustomAgentsPanel({
                       </button>
                       <button
                         className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
-                        onClick={() => handleDelete(agent._id)}
+                        onClick={() => handleDelete(String(agent._id))}
                         title="Delete"
                       >
                         <Trash2 size={14} />

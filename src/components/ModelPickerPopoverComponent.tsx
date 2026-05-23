@@ -13,6 +13,7 @@ import { ChevronDown, Search, X, Loader2 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import PrismService from "../services/PrismService";
 import ModelsTableComponent from "./ModelsTableComponent";
+import type { RawModel, RowData } from "./ModelsTableComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
 
@@ -93,7 +94,7 @@ import type { PrismConfig, ModelOption } from "../types/types";
 export interface ExtendedModelOption extends ModelOption {
   provider: string;
   label: string;
-  organization?: string;
+  organization?: string | null;
   usageCount?: number;
   totalInputTokens?: number;
   totalOutputTokens?: number;
@@ -102,7 +103,7 @@ export interface ExtendedModelOption extends ModelOption {
   inputTypes?: string[];
   outputTypes?: string[];
   tools?: string[];
-  [key: string]: any;
+  params?: string;
 }
 
 
@@ -111,17 +112,17 @@ export interface ModelPickerPopoverProps {
   settings?: {
     provider?: string;
     model?: string;
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined;
   } | null;
-  onSelectModel?: ((provider: string, model: string) => void) | ((model: any) => void);
-  onLmStudioSelect?: (model: any) => void;
+  onSelectModel?: ((provider: string, model: string) => void) | ((model: ExtendedModelOption) => void);
+  onLmStudioSelect?: (model: ExtendedModelOption) => void;
   loadingProgress?: number | null;
   favorites?: string[];
   onToggleFavorite?: (key: string) => void;
   disabled?: boolean;
   multiSelect?: boolean;
   selectedKeys?: Set<string>;
-  renderActions?: (model: any) => React.ReactNode;
+  renderActions?: (model: ExtendedModelOption) => React.ReactNode;
   triggerLabel?: string;
   triggerIcon?: React.ReactNode;
   modelTypeFilter?: string;
@@ -149,7 +150,7 @@ export default function ModelPickerPopoverComponent({
 }: ModelPickerPopoverProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useSharedModelSearch();
-  const [popoverStyle, setPopoverStyle] = useState<Record<string, any>>({});
+  const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
   const [flipped, setFlipped] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -179,13 +180,13 @@ export default function ModelPickerPopoverComponent({
           const existing = map.get(key);
           if (existing) {
             existing.totalRequests += s.totalRequests;
-            existing.totalInputTokens += ((s as any).totalInputTokens as number) || 0;
-            existing.totalOutputTokens += ((s as any).totalOutputTokens as number) || 0;
+            existing.totalInputTokens += (s as { totalInputTokens?: number }).totalInputTokens || 0;
+            existing.totalOutputTokens += (s as { totalOutputTokens?: number }).totalOutputTokens || 0;
           } else {
             map.set(key, {
               totalRequests: s.totalRequests,
-              totalInputTokens: ((s as any).totalInputTokens as number) || 0,
-              totalOutputTokens: ((s as any).totalOutputTokens as number) || 0,
+              totalInputTokens: (s as { totalInputTokens?: number }).totalInputTokens || 0,
+              totalOutputTokens: (s as { totalOutputTokens?: number }).totalOutputTokens || 0,
             });
           }
         }
@@ -196,7 +197,7 @@ export default function ModelPickerPopoverComponent({
 
   const allModels = useMemo(() => {
     if (!usageMap) return baseModels;
-    return baseModels.map((m: any) => {
+    return baseModels.map((m: ExtendedModelOption) => {
       const stats = usageMap.get(`${m.provider}:${m.name}`);
       if (!stats) return m;
       return {
@@ -210,7 +211,7 @@ export default function ModelPickerPopoverComponent({
 
   // -- Filter by search -------------------------------------------------
   const filteredModels = search.trim()
-    ? allModels.filter((m: any) => {
+    ? allModels.filter((m: ExtendedModelOption) => {
         const q = search.toLowerCase();
         return (
           (m.name || "").toLowerCase().includes(q) ||
@@ -257,7 +258,7 @@ export default function ModelPickerPopoverComponent({
     left = Math.max(pad, Math.min(left, viewportW - pad - popoverW));
 
     // -- Vertical: anchor to trigger, then clamp / center -----------
-    const style = { left, width: popoverW };
+    const style: Record<string, number | string> = { left, width: popoverW };
 
     if (shouldFlip) {
       // Prefer anchoring bottom edge just above the trigger
@@ -267,11 +268,11 @@ export default function ModelPickerPopoverComponent({
       if (impliedTop < pad) {
         // Not enough room even when flipped — center vertically
         const centeredTop = Math.max(pad, (viewportH - maxPopoverH) / 2);
-        (style as any).top = centeredTop;
-        (style as any).bottom = "auto";
-        (style as any).maxHeight = viewportH - centeredTop - pad;
+        style.top = centeredTop;
+        style.bottom = "auto";
+        style.maxHeight = viewportH - centeredTop - pad;
       } else {
-        (style as any).bottom = bottom;
+        style.bottom = bottom;
       }
     } else {
       // Prefer anchoring top edge just below the trigger
@@ -283,14 +284,14 @@ export default function ModelPickerPopoverComponent({
         if (availableH < 200) {
           // Barely any room below — center vertically instead
           const centeredTop = Math.max(pad, (viewportH - maxPopoverH) / 2);
-          (style as any).top = centeredTop;
-          (style as any).maxHeight = viewportH - centeredTop - pad;
+          style.top = centeredTop;
+          style.maxHeight = viewportH - centeredTop - pad;
         } else {
-          (style as any).top = top;
-          (style as any).maxHeight = availableH;
+          style.top = top;
+          style.maxHeight = availableH;
         }
       } else {
-        (style as any).top = top;
+        style.top = top;
       }
     }
 
@@ -317,31 +318,31 @@ export default function ModelPickerPopoverComponent({
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handler = (e: any) => {
+    const handler = (e: MouseEvent) => {
       if (
-        !e.target?.closest("[data-model-picker-popover]") &&
-        !e.target?.closest("[data-model-picker-trigger]") &&
-        !e.target?.closest("[data-column-filter]")
+        !(e.target as HTMLElement)?.closest?.("[data-model-picker-popover]") &&
+        !(e.target as HTMLElement)?.closest?.("[data-model-picker-trigger]") &&
+        !(e.target as HTMLElement)?.closest?.("[data-column-filter]")
       ) {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handler as any);
-    return () => document.removeEventListener("mousedown", handler as any);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
   // -- Handle model selection ---------------------------------------------
   const handleSelect = useCallback(
-    (rawModel: any) => {
+    (rawModel: ExtendedModelOption) => {
       if (multiSelect) {
         // Multi-select: toggle selection, keep popover open
-        (onSelectModel as any)?.(rawModel);
+        (onSelectModel as ((model: ExtendedModelOption) => void))?.(rawModel);
         return;
       }
 
       // Single-select: select and close
       const provider = rawModel.provider || "lm-studio";
-      const name = rawModel.name || rawModel.key;
+      const name = rawModel.name || rawModel.key || "";
 
       // Deselect: clicking the already-selected model clears the selection
       if (
@@ -349,7 +350,7 @@ export default function ModelPickerPopoverComponent({
         provider === settings?.provider &&
         name === settings?.model
       ) {
-        (onSelectModel as any)?.("", "");
+        (onSelectModel as ((provider: string, model: string) => void))?.("" , "");
         setOpen(false);
         setHighlightIndex(-1);
         document.dispatchEvent(new CustomEvent("panel:dismiss-sidebars"));
@@ -365,7 +366,7 @@ export default function ModelPickerPopoverComponent({
         return;
       }
 
-      (onSelectModel as any)?.(provider, name);
+      (onSelectModel as ((provider: string, model: string) => void))?.(provider, name);
       setOpen(false);
       setHighlightIndex(-1);
       document.dispatchEvent(new CustomEvent("panel:dismiss-sidebars"));
@@ -383,7 +384,7 @@ export default function ModelPickerPopoverComponent({
   // Keyboard navigation (Escape / ArrowUp / ArrowDown / Enter)
   useEffect(() => {
     if (!open) return;
-    const handler = (e: any) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setOpen(false);
         return;
@@ -434,7 +435,7 @@ export default function ModelPickerPopoverComponent({
 
     // Watch the ChatArea for size changes (sidebar open/close transitions)
     const chatArea = document.querySelector("[data-chat-area]");
-    let ro: any;
+    let ro: ResizeObserver | undefined;
     if (chatArea) {
       ro = new ResizeObserver(reposition);
       ro.observe(chatArea);
@@ -505,15 +506,18 @@ export default function ModelPickerPopoverComponent({
       "URL Context": "urlContext",
       "Image Generation": "imageGeneration",
     };
-    const mod = {};
+    const mod: Record<string, boolean> = {};
     for (const t of currentModel.inputTypes || []) {
-      if ((INPUT_MAP as Record<string, any>)[t]) (mod as Record<string, any>)[(INPUT_MAP as Record<string, any>)[t]] = true;
+      const mapped = (INPUT_MAP as Record<string, string>)[t];
+      if (mapped) mod[mapped] = true;
     }
     for (const t of currentModel.outputTypes || []) {
-      if ((OUTPUT_MAP as Record<string, any>)[t]) (mod as Record<string, any>)[(OUTPUT_MAP as Record<string, any>)[t]] = true;
+      const mapped = (OUTPUT_MAP as Record<string, string>)[t];
+      if (mapped) mod[mapped] = true;
     }
     for (const t of currentModel.tools || []) {
-      if ((TOOL_MAP as Record<string, any>)[t]) (mod as Record<string, any>)[(TOOL_MAP as Record<string, any>)[t]] = true;
+      const mapped = (TOOL_MAP as Record<string, string>)[t];
+      if (mapped) mod[mapped] = true;
     }
     return Object.keys(mod).length > 0 ? mod : null;
   }, [currentModel, multiSelect]);
@@ -548,13 +552,13 @@ export default function ModelPickerPopoverComponent({
       onMouseEnter={
         disabled
           ? undefined
-          : (e: any) => SoundService.playHoverButton({ event: e })
+          : (e: React.MouseEvent) => SoundService.playHoverButton({ event: e.nativeEvent })
       }
       onClick={
         disabled
           ? undefined
-          : (e: any) => {
-              SoundService.playClickButton({ event: e });
+          : (e: React.MouseEvent) => {
+              SoundService.playClickButton({ event: e.nativeEvent });
               togglePopover();
             }
       }
@@ -653,13 +657,13 @@ export default function ModelPickerPopoverComponent({
             {/* Body: ModelsTableComponent with search disabled (hoisted above) */}
             <div ref={bodyRef} className={styles.popoverBody}>
               <ModelsTableComponent
-                models={filteredModels}
-                onSelect={handleSelect}
+                models={filteredModels as unknown as RawModel[]}
+                onSelect={handleSelect as unknown as (model: RawModel) => void}
                 showSearch={false}
                 showProviderFilter
                 favorites={favorites}
                 onToggleFavorite={onToggleFavorite}
-                renderActions={renderActions}
+                renderActions={renderActions as unknown as ((row: RowData) => React.ReactNode) | undefined}
                 activeRowKey={activeRowKey}
                 highlightedRowKey={
                   highlightIndex >= 0 && filteredModels[highlightIndex]
@@ -668,7 +672,7 @@ export default function ModelPickerPopoverComponent({
                 }
                 highlightedRowRef={highlightedRowRef}
                 selectedKeys={multiSelect ? selectedKeys : undefined}
-                onToggleSelect={multiSelect ? onSelectModel as any : undefined}
+                onToggleSelect={multiSelect ? (onSelectModel as unknown as (model: RawModel) => void) : undefined}
               />
             </div>
           </div>,
@@ -767,11 +771,11 @@ const PROVIDER_ORG_MAP = {
   "llama-cpp": null,
 };
 
-function inferOrganization(modelName: any, provider: any) {
-  if ((PROVIDER_ORG_MAP as Record<string, any>)[provider])
-    return (PROVIDER_ORG_MAP as Record<string, any>)[provider];
+function inferOrganization(modelName: string, provider: string): string | null {
+  if ((PROVIDER_ORG_MAP as Record<string, string | null>)[provider])
+    return (PROVIDER_ORG_MAP as Record<string, string | null>)[provider];
   for (const [pattern, org] of ORG_MAP) {
-    if ((pattern as any).test(modelName)) return org;
+    if ((pattern as RegExp).test(modelName)) return org as string;
   }
   return null;
 }

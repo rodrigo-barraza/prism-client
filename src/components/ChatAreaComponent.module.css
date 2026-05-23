@@ -143,6 +143,22 @@
   position: relative;
 }
 
+/* Responsive spacing for mobile devices */
+@media (max-width: 767px) {
+  .messagesList {
+    padding: 16px 16px 40px;
+    gap: 16px;
+  }
+}
+
+/* Responsive spacing for short viewports */
+@media (max-height: 680px) {
+  .messagesList {
+    padding: 16px 16px 40px;
+    gap: 16px;
+  }
+}
+
 /* ── Agent background image overlay ─────────────────────────── */
 /* Uses a layered background with a semi-transparent color on top
    of the image to achieve the low-opacity watermark effect without

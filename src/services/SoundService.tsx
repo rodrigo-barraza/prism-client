@@ -45,7 +45,7 @@ let buttonClickBuffer: AudioBuffer | null = null;
  */
 function ensureContext(): AudioContext {
   if (!context) {
-    context = new (window.AudioContext || (window as any).webkitAudioContext)();
+    context = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
   }
   if (context.state === "suspended") {
     context.resume();

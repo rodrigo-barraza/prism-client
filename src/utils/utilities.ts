@@ -552,3 +552,122 @@ export function getSessionElapsedTime(messages: Message[]): number {
   }
   return total;
 }
+
+/**
+ * Resolve the default model and provider based on prioritized availability:
+ * 1. Gemini 3.5 Flash (google) if available.
+ * 2. Latest Haiku (anthropic) if available.
+ * 3. Latest Mini/Small GPT (openai) if available.
+ * 4. Fall back to the first available model that matches criteria.
+ */
+export function resolveDefaultModel(
+  config: any,
+  fcOnly = false
+): { provider: string; model: string; temperature: number } {
+  const textModels = config?.textToText?.models || {};
+
+  // Helper to check if model meets tool-calling requirement
+  const isEligible = (m: any) => {
+    if (!fcOnly) return true;
+    return (m.tools || []).includes("Tool Calling");
+  };
+
+  // 1. Gemini 3.5 Flash, if Google provider is available
+  if (textModels["google"]?.length > 0) {
+    const googleModels = textModels["google"];
+    // Look specifically for gemini-3.5-flash
+    const target = googleModels.find((m: any) => m.name === "gemini-3.5-flash" && isEligible(m));
+    if (target) {
+      return {
+        provider: "google",
+        model: target.name,
+        temperature: target.defaultTemperature ?? 1.0,
+      };
+    }
+    // Fallback: any other available google model that matches eligibility
+    const firstEligible = googleModels.find(isEligible);
+    if (firstEligible) {
+      return {
+        provider: "google",
+        model: firstEligible.name,
+        temperature: firstEligible.defaultTemperature ?? 1.0,
+      };
+    }
+  }
+
+  // 2. Next in line: latest Haiku, if Anthropic provider is available
+  if (textModels["anthropic"]?.length > 0) {
+    const anthropicModels = textModels["anthropic"];
+    // Look for a model containing "haiku"
+    const target = anthropicModels.find((m: any) => m.name.toLowerCase().includes("haiku") && isEligible(m));
+    if (target) {
+      return {
+        provider: "anthropic",
+        model: target.name,
+        temperature: target.defaultTemperature ?? 1.0,
+      };
+    }
+    // Fallback: any other available anthropic model that matches eligibility
+    const firstEligible = anthropicModels.find(isEligible);
+    if (firstEligible) {
+      return {
+        provider: "anthropic",
+        model: firstEligible.name,
+        temperature: firstEligible.defaultTemperature ?? 1.0,
+      };
+    }
+  }
+
+  // 3. then one of the small but performant models latest of GPT, if OpenAI is available
+  if (textModels["openai"]?.length > 0) {
+    const openaiModels = textModels["openai"];
+    // Try gpt-5.4-mini, gpt-5-mini, or any model containing "mini" or "nano"
+    const miniTarget = ["gpt-5.4-mini", "gpt-5-mini", "gpt-5.4-nano", "gpt-5-nano"];
+    for (const name of miniTarget) {
+      const target = openaiModels.find((m: any) => m.name === name && isEligible(m));
+      if (target) {
+        return {
+          provider: "openai",
+          model: target.name,
+          temperature: target.defaultTemperature ?? 1.0,
+        };
+      }
+    }
+    // Fallback search for any model containing "mini" or "nano"
+    const anyMini = openaiModels.find(
+      (m: any) => (m.name.toLowerCase().includes("mini") || m.name.toLowerCase().includes("nano")) && isEligible(m)
+    );
+    if (anyMini) {
+      return {
+        provider: "openai",
+        model: anyMini.name,
+        temperature: anyMini.defaultTemperature ?? 1.0,
+      };
+    }
+    // Fallback: any other available openai model that matches eligibility
+    const firstEligible = openaiModels.find(isEligible);
+    if (firstEligible) {
+      return {
+        provider: "openai",
+        model: firstEligible.name,
+        temperature: firstEligible.defaultTemperature ?? 1.0,
+      };
+    }
+  }
+
+  // 4. Absolute fallback: loop through available providers and find any matching model
+  for (const provider of Object.keys(textModels)) {
+    const models = textModels[provider] || [];
+    const firstEligible = models.find(isEligible);
+    if (firstEligible) {
+      return {
+        provider,
+        model: firstEligible.name,
+        temperature: firstEligible.defaultTemperature ?? 1.0,
+      };
+    }
+  }
+
+  return { provider: "", model: "", temperature: 1.0 };
+}
+

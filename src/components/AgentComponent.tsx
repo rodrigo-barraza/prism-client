@@ -78,6 +78,7 @@ import {
   mergeUsedToolsWithWorkers,
   toolCountsToUsedTools,
   generateUUID,
+  resolveDefaultModel,
 } from "../utils/utilities";
 import {
   PROJECT_AGENT,
@@ -761,40 +762,14 @@ export default function AgentComponent({
     };
 
     const fcFallback = (config: PrismConfig) => {
-      const textModels = config.textToText?.models || {};
-
-      // OMNI agent defaults to Anthropic Haiku — cheap, fast, FC-capable
-      if (agentId === "OMNI") {
-        const anthropicModels = textModels["anthropic"] || [];
-        const haiku = anthropicModels.find((m) =>
-          m.name?.includes("haiku") && m.tools?.includes("Tool Calling"),
-        );
-        if (haiku) {
-          setSettings((s) => ({
-            ...s,
-            provider: "anthropic",
-            model: haiku.name,
-            temperature: haiku.defaultTemperature ?? 1.0,
-          }));
-          return;
-        }
-      }
-
-      for (const provider of config.providerList || []) {
-        const models = textModels[provider] || [];
-        // Direct Chat: pick first model; agents: pick first FC-capable model
-        const fallbackModel = isNoAgent
-          ? models[0]
-          : models.find((m) => m.tools?.includes("Tool Calling"));
-        if (fallbackModel) {
-          setSettings((s) => ({
-            ...s,
-            provider,
-            model: fallbackModel.name,
-            temperature: fallbackModel.defaultTemperature ?? 1.0,
-          }));
-          break;
-        }
+      const { provider, model, temperature } = resolveDefaultModel(config, !isNoAgent);
+      if (provider && model) {
+        setSettings((s) => ({
+          ...s,
+          provider,
+          model,
+          temperature,
+        }));
       }
     };
 

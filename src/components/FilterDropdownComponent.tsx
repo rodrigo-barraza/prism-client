@@ -171,7 +171,7 @@ export default function FilterDropdownComponent({
             className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
             {...(SoundService.interactive(() =>
               setIsOpen((v) => !v),
-            ) as any)}
+            ) as Record<string, React.MouseEventHandler>)}
             style={fullWidth ? { width: "100%" } : undefined}
           >
             <span className={styles.triggerContent}>
@@ -196,7 +196,7 @@ export default function FilterDropdownComponent({
               {showDateRange && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
-                  {DATE_PRESETS.map((preset: any) => {
+                  {DATE_PRESETS.map((preset: { label: string; getValue: () => { from: string; to: string } }) => {
                     const isActive =
                       getActiveDatePreset(dateFrom, dateTo) === preset.label;
                     return (
@@ -206,7 +206,7 @@ export default function FilterDropdownComponent({
                         className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
                         {...(SoundService.interactive(() =>
                           onDateChange(preset.getValue()),
-                        ) as any)}
+                        ) as Record<string, React.MouseEventHandler>)}
                       >
                         <Calendar size={13} style={{ color: "#6366f1" }} />
                         <span>{preset.label}</span>
@@ -222,7 +222,7 @@ export default function FilterDropdownComponent({
                     {...(SoundService.interactive(() => {
                       setShowCustomDatePicker(true);
                       setIsOpen(false);
-                    }) as any)}
+                    }) as Record<string, React.MouseEventHandler>)}
                   >
                     <Calendar size={13} style={{ color: "#6366f1" }} />
                     <span>Custom…</span>
@@ -263,7 +263,7 @@ export default function FilterDropdownComponent({
                             onToggle(
                               isSingleSelect && isActive ? null : item.key,
                             ),
-                          ) as any)}
+                          ) as Record<string, React.MouseEventHandler>)}
                         >
                           {Icon && (
                             <Icon
@@ -292,7 +292,7 @@ export default function FilterDropdownComponent({
           <DatePickerComponent
             from={dateFrom}
             to={dateTo}
-            onChange={(value: any) => {
+            onChange={(value: { from: string; to: string }) => {
               onDateChange(value);
               setShowCustomDatePicker(false);
             }}

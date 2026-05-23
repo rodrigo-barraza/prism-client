@@ -27,6 +27,53 @@ import {
   getActiveDatePreset,
 } from "@rodrigo-barraza/components-library";
 import styles from "./SidebarFilterComponent.module.css";
+import type { LucideIcon } from "lucide-react";
+
+interface SidebarFilterItem {
+  key: string;
+  icon: LucideIcon;
+  title: string;
+  color?: string;
+}
+
+interface FilterBadge {
+  key: string;
+  label: string;
+  icon?: LucideIcon;
+  color?: string;
+  providerKey?: string;
+  onRemove: () => void;
+}
+
+interface DateRange {
+  from: string;
+  to: string;
+}
+
+interface DatePreset {
+  label: string;
+  getValue: () => DateRange;
+}
+
+interface SidebarFilterProps {
+  modalities?: SidebarFilterItem[];
+  tools?: SidebarFilterItem[];
+  providers?: string[];
+  activeModalities?: Set<string>;
+  activeTools?: Set<string>;
+  activeProviders?: Set<string>;
+  onModalityChange?: (next: Set<string>) => void;
+  onToolChange?: (next: Set<string>) => void;
+  onProviderChange?: (next: Set<string>) => void;
+  showFavoritesOnly?: boolean;
+  onFavoritesToggle?: () => void;
+  _hasFavorites?: boolean;
+  dateRange?: DateRange;
+  onDateChange?: (range: DateRange) => void;
+  dateStorageKey?: string;
+  triggerLabel?: string;
+  toolsGroupLabel?: string;
+}
 
 const MODALITY_FILTERS = [
   { key: "text", icon: Type, title: "Text", color: MODALITY_COLORS.text },
@@ -87,7 +134,7 @@ export default function SidebarFilterComponent({
   dateStorageKey,
   triggerLabel = "Filters",
   toolsGroupLabel = "Tools",
-}: any) {
+}: SidebarFilterProps) {
   const initializedDateRef = useRef<boolean>(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
@@ -162,28 +209,28 @@ export default function SidebarFilterComponent({
   }, [isOpen]);
 
   const toggleModality = useCallback(
-    (key: any) => {
+    (key: string) => {
       const next = new Set(activeModalities);
       next.has(key) ? next.delete(key) : next.add(key);
-      onModalityChange(next);
+      onModalityChange?.(next);
     },
     [activeModalities, onModalityChange],
   );
 
   const toggleTool = useCallback(
-    (key: any) => {
+    (key: string) => {
       const next = new Set(activeTools);
       next.has(key) ? next.delete(key) : next.add(key);
-      onToolChange(next);
+      onToolChange?.(next);
     },
     [activeTools, onToolChange],
   );
 
   const toggleProvider = useCallback(
-    (key: any) => {
+    (key: string) => {
       const next = new Set(activeProviders);
       next.has(key) ? next.delete(key) : next.add(key);
-      onProviderChange(next);
+      onProviderChange?.(next);
     },
     [activeProviders, onProviderChange],
   );
@@ -191,7 +238,7 @@ export default function SidebarFilterComponent({
   if (!hasAnyOptions) return null;
 
   // Collect active badges for display
-  const badges: any[] = [];
+  const badges: FilterBadge[] = [];
 
   if (showFavoritesOnly) {
     badges.push({
@@ -199,7 +246,7 @@ export default function SidebarFilterComponent({
       label: "Favorites",
       icon: Star,
       color: "#eab308",
-      onRemove: () => onFavoritesToggle(),
+      onRemove: () => onFavoritesToggle?.(),
     });
   }
 
@@ -231,7 +278,7 @@ export default function SidebarFilterComponent({
     if (activeProviders.has(p)) {
       badges.push({
         key: `prov-${p}`,
-        label: resolveProviderLabel(p),
+        label: resolveProviderLabel(p) || p,
         providerKey: p,
         onRemove: () => toggleProvider(p),
       });
@@ -248,7 +295,7 @@ export default function SidebarFilterComponent({
       label: dateLabel,
       icon: Calendar,
       color: "#6366f1",
-      onRemove: () => onDateChange({ from: "", to: "" }),
+      onRemove: () => onDateChange?.({ from: "", to: "" }),
     });
   }
 
@@ -284,7 +331,7 @@ export default function SidebarFilterComponent({
               {showDateRange && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
-                  {DATE_PRESETS.map((preset: any) => {
+                  {DATE_PRESETS.map((preset: DatePreset) => {
                     const isActive =
                       getActiveDatePreset(dateFrom, dateTo) === preset.label;
                     return (
@@ -342,7 +389,7 @@ export default function SidebarFilterComponent({
               {showModalityRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Modality</div>
-                  {modalities.map((m: any) => {
+                  {modalities.map((m: SidebarFilterItem) => {
                     const Icon = m.icon;
                     const isActive = activeModalities.has(m.key);
                     return (
@@ -369,7 +416,7 @@ export default function SidebarFilterComponent({
               {showToolRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>{toolsGroupLabel}</div>
-                  {tools.map((t: any) => {
+                  {tools.map((t: SidebarFilterItem) => {
                     const Icon = t.icon;
                     const isActive = activeTools.has(t.key);
                     return (
@@ -396,7 +443,7 @@ export default function SidebarFilterComponent({
               {showProviderRow && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Providers</div>
-                  {providers.map((p: any) => {
+                  {providers.map((p: string) => {
                     const isActive = activeProviders.has(p);
                     return (
                       <button
@@ -424,7 +471,7 @@ export default function SidebarFilterComponent({
           <DatePickerComponent
             from={dateFrom}
             to={dateTo}
-            onChange={(value: any) => {
+            onChange={(value: DateRange) => {
               onDateChange(value);
               setShowCustomDatePicker(false);
             }}
@@ -438,8 +485,8 @@ export default function SidebarFilterComponent({
         {/* -- Active filter badges (display-only) -- */}
         {badges.length > 0 && (
           <div className={styles.badgeList}>
-            {badges.map((b: any) => {
-              const Icon = b.icon as any;
+            {badges.map((b: FilterBadge) => {
+              const Icon = b.icon;
               return (
                 <span
                   key={b.key}

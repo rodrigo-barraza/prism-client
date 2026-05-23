@@ -40,7 +40,7 @@ import JsonViewerComponent from "./JsonViewerComponent";
 import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent";
 import { Message, SynthesisRun, PrismConfig } from "../types/types";
 import { SETTINGS_DEFAULTS, SK_MODEL_MEMORY_SYNTHESIS } from "../constants";
-import { generateUUID } from "../utils/utilities";
+import { generateUUID, resolveDefaultModel } from "../utils/utilities";
 import styles from "./SynthesisComponent.module.css";
 import useModelMemory from "../hooks/useModelMemory";
 
@@ -200,14 +200,12 @@ export default function SynthesisComponent() {
         setConfig(config);
         restoreModel(config, setSettings, {
           fallback: (config) => {
-            // Auto-select first text-to-text provider/model if none set
-            const textModels = config?.textToText?.models || {};
-            const firstProvider = Object.keys(textModels)[0];
-            if (firstProvider && textModels[firstProvider]?.length > 0) {
+            const { provider, model } = resolveDefaultModel(config, false);
+            if (provider && model) {
               setSettings((s) => ({
                 ...s,
-                provider: s.provider || firstProvider,
-                model: s.model || textModels[firstProvider][0].name,
+                provider,
+                model,
               }));
             }
           },

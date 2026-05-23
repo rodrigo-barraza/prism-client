@@ -30,7 +30,7 @@ interface HistoryListItem {
   tags?: Array<{ label: string; style?: React.CSSProperties }>;
   modelName?: string | null;
   username?: string;
-  agent?: string;
+  agent?: string | { id: string; name?: string };
 }
 
 interface FilterItem {

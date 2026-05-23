@@ -85,7 +85,7 @@ const OUTPUT_MODALITIES: ModalityDef[] = [
 ];
 
 export interface ModalityIconProps {
-  modalities?: Record<string, boolean> | null;
+  modalities?: Record<string, number | boolean> | null;
   size?: number;
   className?: string;
 }

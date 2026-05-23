@@ -14,6 +14,53 @@ import {
   IconButtonComponent,
   DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
+import type { LucideIcon } from "lucide-react";
+
+interface HistoryItemTag {
+  label: string;
+  style?: React.CSSProperties;
+}
+
+interface AgentRef {
+  id: string;
+  name?: string;
+}
+
+interface HistoryItem {
+  id: string;
+  title?: string;
+  subtitle?: string;
+  updatedAt?: string;
+  createdAt?: string;
+  totalCost?: number;
+  modalities?: Record<string, number | boolean>;
+  modelName?: string | null;
+  modelNames?: string[];
+  providers?: string[];
+  tags?: HistoryItemTag[];
+  username?: string;
+  agent?: string | AgentRef;
+}
+
+interface HistoryItemProps {
+  item: HistoryItem;
+  isActive?: boolean;
+  onClick?: (item: HistoryItem) => void;
+  onDelete?: (id: string) => void;
+  onDownload?: (id: string) => void;
+  onCopy?: (id: string) => void;
+  icon?: LucideIcon;
+  readOnly?: boolean;
+  admin?: boolean;
+  isNew?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: string) => void;
+  className?: string;
+  dataPanelClose?: boolean;
+  onOpenInNewTab?: (item: HistoryItem) => void;
+  isGenerating?: boolean;
+  children?: React.ReactNode;
+}
 
 /**
  * HistoryItemComponent — a single row within HistoryList or any list that
@@ -55,11 +102,11 @@ export default function HistoryItemComponent({
   onOpenInNewTab,
   isGenerating = false,
   children,
-}: any) {
+}: HistoryItemProps) {
   const itemDate = item.updatedAt || item.createdAt;
   const mod = item.modalities || {};
   const hasModalities = mod && Object.keys(mod).length > 0;
-  const hasModel = item.modelNames?.length > 0 || item.modelName;
+  const hasModel = (item.modelNames?.length ?? 0) > 0 || item.modelName;
 
   const AGENT_DISPLAY_NAMES: Record<string, string> = {
     CODING: "Coding Agent",
@@ -71,7 +118,7 @@ export default function HistoryItemComponent({
     IMAGE: "Image Agent",
   };
 
-  const getAgentDisplayName = (agent: any): string => {
+  const getAgentDisplayName = (agent: string | AgentRef): string => {
     if (!agent) return "";
     const id = typeof agent === "string" ? agent : agent.id || "";
     const name = typeof agent === "object" ? agent.name : "";
@@ -92,10 +139,10 @@ export default function HistoryItemComponent({
       {...(dataPanelClose ? { "data-panel-close": true } : {})}
       onContextMenu={
         onOpenInNewTab
-          ? (e: any) => {
+          ? (e: React.MouseEvent) => {
               // Only show custom context on right-click of the main item area
               // (not on action buttons which have their own handlers)
-              if (e.target.closest(`.${styles.actions}`)) return;
+              if ((e.target as HTMLElement).closest?.(`.${styles.actions}`)) return;
               e.preventDefault();
               onOpenInNewTab(item);
             }
@@ -122,13 +169,13 @@ export default function HistoryItemComponent({
             {admin && item.username && item.username !== "unknown" && item.username !== "anonymous" && (
               <span className={styles.usernameTag}>{item.username}</span>
             )}
-            {item.tags?.map((tag: any) => (
+            {item.tags?.map((tag: HistoryItemTag) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>
                 {tag.label}
               </span>
             ))}
           </div>
-          <CostBadgeComponent cost={item.totalCost} showIcon={false} />
+          <CostBadgeComponent cost={item.totalCost ?? 0} showIcon={false} />
         </div>
 
         {/* Row 2: title */}
@@ -142,7 +189,7 @@ export default function HistoryItemComponent({
         {hasModel && (
           <ModelBadgeComponent
             models={
-              item.modelNames?.length > 0 ? item.modelNames : [item.modelName]
+              (item.modelNames?.length ?? 0) > 0 ? item.modelNames!.filter(Boolean) as string[] : [item.modelName].filter(Boolean) as string[]
             }
             providers={item.providers}
             className={styles.modelBadge}
