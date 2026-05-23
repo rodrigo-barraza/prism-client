@@ -53,6 +53,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 
 import AgentPickerComponent from "./AgentPickerComponent";
+import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 
 import { ErrorMessage } from "./StateMessageComponent";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
@@ -897,6 +898,7 @@ export default function AdminChatViewerComponent({
               initialProviders={providerFilter ? [providerFilter] : undefined}
               initialSearch={modelFilter || ""}
               countLabel={isNoAgent ? "conversations" : isAgentMode ? "sessions" : "entries"}
+              searchText={isNoAgent ? "Search conversations..." : isAgentMode ? "Search sessions..." : "Search all..."}
               hasMore={entriesHasMore}
               loadingMore={entriesLoading}
               onLoadMore={loadMoreEntries}
@@ -926,11 +928,25 @@ export default function AdminChatViewerComponent({
             )
           }
           headerCenter={
-            <AgentPickerComponent
-              agents={agents}
-              activeAgentId={activeAgentId}
-              onSelect={handleAgentSelect}
-            />
+            <>
+              <AgentPickerComponent
+                agents={agents}
+                activeAgentId={activeAgentId}
+                onSelect={handleAgentSelect}
+              />
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  ...settingsWithDefaults,
+                  provider: selectedEntry?.provider || settingsWithDefaults.provider,
+                  model: selectedEntry?.model || settingsWithDefaults.model,
+                }}
+                disabled
+                favorites={favoriteKeys}
+                onSelectModel={() => {}}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            </>
           }
         >
           <div className={styles.viewerBody} ref={viewerBodyRef}>
