@@ -127,6 +127,7 @@ export default function AdminChatViewerComponent({
     setControls,
     setTitleBadge,
     dateRange,
+    setDateRange,
     sessionFilter,
     setSessionFilter,
   } = useAdminHeader();
@@ -926,6 +927,8 @@ export default function AdminChatViewerComponent({
               hasMore={entriesHasMore}
               loadingMore={entriesLoading}
               onLoadMore={loadMoreEntries}
+              dateRange={dateRange}
+              onDateChange={setDateRange}
             />
           }
           rightTitle={`${entries.length}${entriesHasMore ? "+" : ""} ${isNoAgent ? "Conversations" : isAgentMode ? "Sessions" : "Entries"}`}

@@ -34,6 +34,8 @@ export interface HistoryPanelProps {
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => Promise<void> | void;
+  dateRange?: { from: string; to: string };
+  onDateChange?: (range: { from: string; to: string }) => void;
 }
 
 export default function HistoryPanel({
@@ -61,6 +63,8 @@ export default function HistoryPanel({
   hasMore,
   loadingMore,
   onLoadMore,
+  dateRange,
+  onDateChange,
 }: HistoryPanelProps) {
 
   // Normalize sessions into HistoryList items
@@ -200,6 +204,8 @@ export default function HistoryPanel({
         hasMore={hasMore}
         loadingMore={loadingMore}
         onLoadMore={onLoadMore}
+        dateRange={dateRange}
+        onDateChange={onDateChange}
       />
     </div>
   );

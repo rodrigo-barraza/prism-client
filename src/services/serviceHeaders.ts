@@ -18,6 +18,11 @@ export function getBaseHeaders(): Record<string, string> {
     if (workspaceRoot) {
       headers["x-workspace-root"] = workspaceRoot;
     }
+
+    const username = localStorage.getItem("prism:username");
+    if (username) {
+      headers["x-username"] = username;
+    }
   }
 
   return headers;

@@ -65,6 +65,8 @@ interface HistoryListProps {
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => void;
+  dateRange?: { from: string; to: string };
+  onDateChange?: (range: { from: string; to: string }) => void;
 }
 
 /**
@@ -112,6 +114,8 @@ export default function HistoryList({
   hasMore = false,
   loadingMore = false,
   onLoadMore,
+  dateRange: controlledDateRange,
+  onDateChange: controlledOnDateChange,
 }: HistoryListProps) {
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
   const [activeModalities, setActiveModalities] = useState<Set<string>>(new Set());
@@ -120,7 +124,10 @@ export default function HistoryList({
     () => new Set(initialProviders || []),
   );
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [localDateRange, setLocalDateRange] = useState({ from: "", to: "" });
+
+  const dateRange = controlledDateRange !== undefined ? controlledDateRange : localDateRange;
+  const setDateRange = controlledOnDateChange !== undefined ? controlledOnDateChange : setLocalDateRange;
 
   // Discover modalities across all items
   const allModalities = useMemo(() => {
