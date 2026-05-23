@@ -7,6 +7,7 @@ import {
   FolderOpen,
   BookOpen,
   Search,
+  Network,
   ChevronRight,
   ChevronDown,
   Globe2,
@@ -193,6 +194,7 @@ const LABEL_ICONS: Record<string, LucideIcon> = {
   meta: Search,
   automation: CalendarDays,
   data_science: FlaskConical,
+  mcp: Network,
 };
 
 const LABEL_DISPLAY: Record<string, string> = {
@@ -208,6 +210,7 @@ const LABEL_DISPLAY: Record<string, string> = {
   sports: "Sports",
   maritime: "Maritime",
   energy: "Energy",
+  mcp: "Model Context Protocol",
   communication: "Communication",
   creative: "Creative",
   smart_home: "Smart Home",
@@ -613,10 +616,15 @@ export default function ToolSelectionComponent({
         {(groupMode === "domain" ? groupedTools : groupedByLabel).map(
           ([groupKey, tools]) => {
             const isDomain = groupMode === "domain";
-            const GroupIcon: LucideIcon = isDomain
+            const isMcp = isDomain && groupKey.startsWith("Model Context Protocol:");
+            const GroupIcon: LucideIcon = isMcp
+              ? Network
+              : isDomain
               ? DOMAIN_ICONS[groupKey] || Layers
               : LABEL_ICONS[groupKey] || Tag;
-            const label = isDomain
+            const label = isMcp
+              ? groupKey.replace("Model Context Protocol: ", "MCP: ")
+              : isDomain
               ? DOMAIN_LABELS[groupKey] || groupKey
               : LABEL_DISPLAY[groupKey] || groupKey;
             const collapsed = collapsedDomains.has(groupKey);
