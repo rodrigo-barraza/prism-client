@@ -47,7 +47,7 @@ const PDF_EXTENSIONS = new Set(["pdf"]);
 const SVG_EXTENSION = "svg";
 
 /** Determine the media type from a file extension. */
-function getMediaType(fileExtension: any) {
+function getMediaType(fileExtension: string | null | undefined): "image" | "audio" | "video" | "pdf" | null {
   if (!fileExtension) return null;
   if (IMAGE_EXTENSIONS.has(fileExtension)) return "image";
   if (AUDIO_EXTENSIONS.has(fileExtension)) return "audio";
@@ -193,9 +193,10 @@ const EXT_TO_LABEL = {
   hcl: "HCL",
 };
 
-function getFileExt(filepath: any) {
+function getFileExt(filepath: string | null | undefined): string | null {
   if (!filepath) return null;
   const basename = filepath.split("/").pop();
+  if (!basename) return null;
   if (basename === "Dockerfile" || basename.startsWith("Dockerfile."))
     return "dockerfile";
   if (basename.startsWith(".")) return basename.slice(1).toLowerCase();
@@ -203,21 +204,21 @@ function getFileExt(filepath: any) {
   return fileExtension || null;
 }
 
-function getPrismLanguage(filepath: any) {
+function getPrismLanguage(filepath: string | null | undefined): string {
   const fileExtension = getFileExt(filepath);
-  return fileExtension ? (EXT_TO_PRISM as Record<string, any>)[fileExtension] || "text" : "text";
+  return fileExtension ? (EXT_TO_PRISM as Record<string, string>)[fileExtension] || "text" : "text";
 }
 
-function getLanguageLabel(filepath: any) {
+function getLanguageLabel(filepath: string | null | undefined): string | null {
   const fileExtension = getFileExt(filepath);
-  return fileExtension ? (EXT_TO_LABEL as Record<string, any>)[fileExtension] || null : null;
+  return fileExtension ? (EXT_TO_LABEL as Record<string, string>)[fileExtension] || null : null;
 }
 
-function getBasename(filepath: any) {
-  return filepath?.split("/").pop() || filepath;
+function getBasename(filepath: string | null | undefined): string {
+  return filepath?.split("/").pop() || filepath || "";
 }
 
-function getPathSegments(filepath: any) {
+function getPathSegments(filepath: string | null | undefined): string[] {
   if (!filepath) return [];
   return filepath.split("/").filter(Boolean);
 }
@@ -227,12 +228,12 @@ function getPathSegments(filepath: any) {
  * The API returns content in the format: "1: line content\n2: line content\n..."
  * We strip the "N: " prefix from each line to get clean source code.
  */
-function stripLineNumberPrefixes(content: any) {
+function stripLineNumberPrefixes(content: string | null | undefined): string | null | undefined {
   if (!content) return content;
   const lines = content.split("\n");
   // Verify the first line matches the pattern — if not, return as-is
   if (!/^\d+: /.test((lines[0] as string)) && !/^\d+:$/.test((lines[0] as string))) return content;
-  return lines.map((line: any) => line.replace(/^\d+: ?/, "")).join("\n");
+  return lines.map((line: string) => line.replace(/^\d+: ?/, "")).join("\n");
 }
 
 // ─── VS Code Dark+ with true black background ──────────────
@@ -260,12 +261,19 @@ const codeTheme = {
 };
 
 // ─── Single file tab ────────────────────────────────────────
+interface FileTabProps {
+  file: { id: string; path: string };
+  isActive: boolean;
+  onSelect: (id: string) => void;
+  onClose: (id: string) => void;
+}
+
 const FileTab = memo(function FileTab({
   file,
   isActive,
   onSelect,
   onClose,
-}: any) {
+}: FileTabProps) {
   const basename = getBasename(file.path);
   return (
     <button
@@ -295,21 +303,53 @@ const FileTab = memo(function FileTab({
   );
 });
 
+export interface OpenFile {
+  id: string;
+  path: string;
+}
+
+export interface FileViewerPanelProps {
+  openFiles?: OpenFile[];
+  activeFileId?: string | null;
+  onSelectFile: (id: string) => void;
+  onCloseFile: (id: string) => void;
+  onFileNotFound?: (id: string, path: string) => void;
+  isOpen?: boolean;
+  width?: number;
+  onWidthChange?: (width: number) => void;
+  refreshKey?: number;
+  onMentionLines?: (path: string, startLine: number, endLine: number) => void;
+}
+
+interface CachedFile {
+  loading: boolean;
+  content: string | null;
+  totalLines: number;
+  language: string | null;
+  languageLabel: string | null;
+  error: string | null;
+  isBinary: boolean;
+  mediaType?: "image" | "audio" | "video" | "pdf" | null;
+  rawUrl?: string | null;
+  sizeBytes?: number;
+  isSvg?: boolean;
+}
+
+interface ReadFileResult {
+  content?: string;
+  contentBase64?: string;
+  isBinary?: boolean;
+  extension?: string;
+  totalLines?: number;
+  sizeBytes?: number;
+  error?: string;
+}
+
 /**
  * FileViewerPanelComponent — VS Code-style read-only file viewer.
  *
  * Opens between the left sidebar and the main content area.
  * Supports multiple files as tabs, read-only viewing with syntax highlighting.
- *
- * Props:
- *   openFiles    — Array of { id, path } objects
- *   activeFileId — Currently visible file ID
- *   onSelectFile — (id) => void — switch active tab
- *   onCloseFile  — (id) => void — close a tab
- *   isOpen       — Whether the panel is expanded
- *   width        — Panel width in px (default 500)
- *   onWidthChange — (newWidth) => void — resize callback
- *   onMentionLines — (path, startLine, endLine) => void — reference lines in chat input
  */
 export default function FileViewerPanelComponent({
   openFiles = [],
@@ -322,23 +362,23 @@ export default function FileViewerPanelComponent({
   onWidthChange,
   refreshKey = 0,
   onMentionLines,
-}: any) {
-  const [fileContents, setFileContents] = useState<Record<string, any>>({}); // { [id]: { content, totalLines, language, languageLabel, error, loading, isBinary?, mediaType?, rawUrl?, isSvg? } }
-  const [svgViewMode, setSvgViewMode] = useState<Record<string, any>>({}); // { [id]: "preview" | "source" }
+}: FileViewerPanelProps) {
+  const [fileContents, setFileContents] = useState<Record<string, CachedFile>>({});
+  const [svgViewMode, setSvgViewMode] = useState<Record<string, "preview" | "source">>({});
   const [wordWrap, setWordWrap] = useState(true);
   const codeScrollRef = useRef<HTMLDivElement | null>(null);
   const tabBarRef = useRef<HTMLDivElement | null>(null);
   const resizeRef = useRef<HTMLDivElement | null>(null);
 
-  const activeFile = openFiles.find((f: any) => f.id === activeFileId) || null;
-  const cached = activeFile ? (fileContents as Record<string, any>)[activeFile.id] : null;
+  const activeFile = openFiles.find((f) => f.id === activeFileId) || null;
+  const cached = activeFile ? fileContents[activeFile.id] : null;
 
   // Track in-flight fetches outside of React state to avoid cascading renders
-  const inflightRef = useRef<any>(new Set());
+  const inflightRef = useRef<Set<string>>(new Set());
 
   // Fetch file content when active file changes
   const fetchFileContent = useCallback(
-    (id: any, path: any) => {
+    (id: string, path: string) => {
       if (inflightRef.current.has(id)) return;
       inflightRef.current.add(id);
 
@@ -356,8 +396,9 @@ export default function FileViewerPanelComponent({
         },
       }));
 
-      ToolsApiService.readFile(path as any)
-        .then((result: any) => {
+      ToolsApiService.readFile(path)
+        .then((res: unknown) => {
+          const result = res as ReadFileResult;
           // File not found / deleted — notify parent so it can close the tab
           if (result.error) {
             const isNotFound =
@@ -375,7 +416,7 @@ export default function FileViewerPanelComponent({
                 totalLines: 0,
                 language: null,
                 languageLabel: null,
-                error: result.error,
+                error: result.error!,
                 isBinary: false,
               },
             }));
@@ -384,13 +425,13 @@ export default function FileViewerPanelComponent({
 
           // Binary file — render via data URI (base64) or raw URL
           if (result.isBinary) {
-            const fileExtension = result.extension?.replace(".", "") || getFileExt(path);
+            const fileExtension = result.extension?.replace(".", "") || getFileExt(path) || "";
             const mediaType = getMediaType(fileExtension);
             const rawUrl = ToolsApiService.getFileRawUrl(path);
             // Prefer inline base64 data URI when the backend provides it (works for remote workspaces)
             const dataUri =
-              result.contentBase64 && (EXT_TO_MIME as Record<string, any>)[fileExtension]
-                ? `data:${(EXT_TO_MIME as Record<string, any>)[fileExtension]};base64,${result.contentBase64}`
+              result.contentBase64 && (EXT_TO_MIME as Record<string, string>)[fileExtension]
+                ? `data:${(EXT_TO_MIME as Record<string, string>)[fileExtension]};base64,${result.contentBase64}`
                 : null;
             setFileContents((prev) => ({
               ...prev,
@@ -412,9 +453,9 @@ export default function FileViewerPanelComponent({
 
           const language = getPrismLanguage(path);
           const languageLabel =
-            getLanguageLabel(path) || result.language || null;
+            getLanguageLabel(path) || result.error || null;
           // Strip the "N: " line-number prefixes from the API response
-          const cleanContent = stripLineNumberPrefixes(result.content ?? "");
+          const cleanContent = stripLineNumberPrefixes(result.content ?? "") || "";
 
           // SVG files are text but also renderable — flag them for dual-view
           const fileExtension = getFileExt(path);
@@ -436,14 +477,15 @@ export default function FileViewerPanelComponent({
 
           // Default SVG view mode to preview
           if (isSvg) {
-            setSvgViewMode((prev: any) =>
+            setSvgViewMode((prev) =>
               prev[id] ? prev : { ...prev, [id]: "preview" },
             );
           }
         })
-        .catch((error) => {
+        .catch((error: { message?: string; toString?: () => string }) => {
+          const errMsg = error.message || error.toString?.() || "Failed to read file";
           const isNotFound =
-            /not found|no such file|ENOENT|does not exist/i.test(error.message);
+            /not found|no such file|ENOENT|does not exist/i.test(errMsg);
           if (isNotFound) {
             onFileNotFound?.(id, path);
           }
@@ -455,7 +497,8 @@ export default function FileViewerPanelComponent({
               totalLines: 0,
               language: null,
               languageLabel: null,
-              error: error.message,
+              error: errMsg,
+              isBinary: false,
             },
           }));
         })
@@ -470,16 +513,16 @@ export default function FileViewerPanelComponent({
     if (!activeFile) return;
     const { id, path } = activeFile;
     if (
-      (fileContents as Record<string, any>)[id]?.content != null ||
-      (fileContents as Record<string, any>)[id]?.isBinary ||
-      (fileContents as Record<string, any>)[id]?.loading
+      fileContents[id]?.content != null ||
+      fileContents[id]?.isBinary ||
+      fileContents[id]?.loading
     )
       return;
     fetchFileContent(id, path);
   }, [activeFile, fileContents, fetchFileContent]);
 
   // ── Live refresh: re-fetch all open files when refreshKey changes ─
-  const prevRefreshKeyRef = useRef<any>(refreshKey);
+  const prevRefreshKeyRef = useRef<number>(refreshKey);
   useEffect(() => {
     if (refreshKey === prevRefreshKeyRef.current) return;
     prevRefreshKeyRef.current = refreshKey;
@@ -492,9 +535,9 @@ export default function FileViewerPanelComponent({
   }, [refreshKey, openFiles, fetchFileContent]);
 
   // Clean up cache for closed files — use a ref to diff against previous openFiles
-  const prevOpenIdsRef = useRef<any>(new Set());
+  const prevOpenIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
-    const currentIds = new Set(openFiles.map((f: any) => f.id));
+    const currentIds = new Set(openFiles.map((f) => f.id));
     const prevIds = prevOpenIdsRef.current;
     prevOpenIdsRef.current = currentIds;
 
@@ -512,18 +555,18 @@ export default function FileViewerPanelComponent({
   // Scroll to top on tab change
   useEffect(() => {
     if (codeScrollRef.current) {
-      (codeScrollRef.current as HTMLElement).scrollTop = 0;
+      codeScrollRef.current.scrollTop = 0;
     }
   }, [activeFileId]);
 
   // ── Resize handle drag ──────────────────────────────────────
   const handleResizeStart = useCallback(
-    (e: any) => {
+    (e: React.MouseEvent<HTMLDivElement>) => {
       e.preventDefault();
       const startX = e.clientX;
       const startWidth = width;
 
-      const onMove = (ev: any) => {
+      const onMove = (ev: MouseEvent) => {
         const delta = ev.clientX - startX;
         const newWidth = Math.max(300, Math.min(startWidth + delta, 1200));
         onWidthChange?.(newWidth);
@@ -548,13 +591,13 @@ export default function FileViewerPanelComponent({
   useEffect(() => {
     const element = tabBarRef.current;
     if (!element) return;
-    const onWheel = (e: any) => {
+    const onWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) < 1) return;
       e.preventDefault();
-      (element as HTMLElement).scrollLeft += e.deltaY;
+      element.scrollLeft += e.deltaY;
     };
-    (element as HTMLElement).addEventListener("wheel", onWheel, { passive: false });
-    return () => (element as HTMLElement).removeEventListener("wheel", onWheel);
+    element.addEventListener("wheel", onWheel, { passive: false });
+    return () => element.removeEventListener("wheel", onWheel);
   }, []);
 
   const isCollapsed = !isOpen || openFiles.length === 0;
@@ -575,8 +618,8 @@ export default function FileViewerPanelComponent({
 
   // ── Line selection state ──────────────────────────────────────
   // No hover state — all hover effects use pure CSS via .codeLine:hover
-  const [selectedLines, setSelectedLines] = useState(new Set());
-  const lastClickedLineRef = useRef<any>(null);
+  const [selectedLines, setSelectedLines] = useState<Set<number>>(new Set());
+  const lastClickedLineRef = useRef<number | null>(null);
 
   // Reset selection when switching tabs
   useEffect(() => {
@@ -587,7 +630,7 @@ export default function FileViewerPanelComponent({
   // Derived range from selection
   const selectionRange = useMemo(() => {
     if (selectedLines.size === 0) return null;
-    const sorted = [...selectedLines].sort((a: any, b: any) => a - b);
+    const sorted = [...selectedLines].sort((a, b) => a - b);
     return { start: sorted[0], end: sorted[sorted.length - 1] };
   }, [selectedLines]);
 
@@ -602,7 +645,7 @@ export default function FileViewerPanelComponent({
   // lineProps — adds selection styles + data attribute + CSS class
   // Hover highlighting is handled by CSS .codeLine:hover (zero re-renders)
   const linePropsBuilder = useCallback(
-    (lineNumber: any) => {
+    (lineNumber: number) => {
       const isSelected = selectedLines.has(lineNumber);
       return {
         style: {
@@ -622,14 +665,16 @@ export default function FileViewerPanelComponent({
 
   // Event delegation — handles line number clicks, inline @ button, and clears selection
   const handleCodeAreaClick = useCallback(
-    (e: any) => {
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const target = e.target as HTMLElement;
+
       // ── Inline @ mention button click ──
-      const mentionBtn = e.target.closest(`.${styles.lineMentionBtn}`);
+      const mentionBtn = target.closest(`.${styles.lineMentionBtn}`);
       if (mentionBtn) {
         e.stopPropagation();
-        const lineEl = mentionBtn.closest("[data-line-number]");
+        const lineEl = mentionBtn.closest("[data-line-number]") as HTMLElement | null;
         if (lineEl && activeFile && onMentionLines) {
-          const lineNum = parseInt(lineEl.dataset.lineNumber, 10);
+          const lineNum = parseInt(lineEl.dataset.lineNumber || "", 10);
           if (!isNaN(lineNum)) {
             // If lines are selected, mention the full range; otherwise mention the hovered line
             if (selectedLines.size > 0) {
@@ -643,20 +688,20 @@ export default function FileViewerPanelComponent({
       }
 
       // Detect click on a line number span (react-syntax-highlighter uses this class)
-      const lineNumEl = e.target.closest(
+      const lineNumEl = target.closest(
         ".react-syntax-highlighter-line-number",
       );
       if (lineNumEl) {
-        const lineEl = lineNumEl.closest("[data-line-number]");
+        const lineEl = lineNumEl.closest("[data-line-number]") as HTMLElement | null;
         if (!lineEl) return;
-        const lineNum = parseInt(lineEl.dataset.lineNumber, 10);
+        const lineNum = parseInt(lineEl.dataset.lineNumber || "", 10);
         if (isNaN(lineNum)) return;
 
         if (e.shiftKey && lastClickedLineRef.current != null) {
           // Shift+click: select range
           const from = Math.min(lastClickedLineRef.current, lineNum);
           const to = Math.max(lastClickedLineRef.current, lineNum);
-          const newSet = new Set();
+          const newSet = new Set<number>();
           for (let i = from; i <= to; i++) newSet.add(i);
           setSelectedLines(newSet);
         } else if (e.altKey && onMentionLines && activeFile) {
@@ -691,9 +736,9 @@ export default function FileViewerPanelComponent({
     const container = codeScrollRef.current;
     if (!container || !onMentionLines) return;
 
-    const lineEls = (container as any).querySelectorAll("[data-line-number]");
-    const injected: any[] = [];
-    for (const element of lineEls as any) {
+    const lineEls = container.querySelectorAll("[data-line-number]");
+    const injected: HTMLButtonElement[] = [];
+    for (const element of Array.from(lineEls)) {
       // Skip if already injected
       if (element.querySelector(`.${styles.lineMentionBtn}`)) continue;
       const button = document.createElement("button");
@@ -706,7 +751,7 @@ export default function FileViewerPanelComponent({
     }
 
     return () => {
-      for (const button of injected as any) button.remove();
+      for (const button of injected) button.remove();
     };
   }, [cached?.content, onMentionLines]);
 
@@ -724,24 +769,24 @@ export default function FileViewerPanelComponent({
         <span className={styles.titleBarLabel}>File Viewer</span>
         <div className={styles.titleBarActions}>
           {/* SVG preview / source toggle */}
-          {cached?.isSvg && (
+          {cached?.isSvg && activeFileId && (
             <button
               type="button"
               className={`${styles.titleBarBtn} ${styles.titleBarBtnActive}`}
               onClick={() => {
-                setSvgViewMode((prev: any) => ({
+                setSvgViewMode((prev) => ({
                   ...prev,
                   [activeFileId]:
                     prev[activeFileId] === "preview" ? "source" : "preview",
                 }));
               }}
               title={
-                (svgViewMode as Record<string, any>)[activeFileId] === "preview"
+                svgViewMode[activeFileId] === "preview"
                   ? "Show SVG source"
                   : "Show SVG preview"
               }
             >
-              {(svgViewMode as Record<string, any>)[activeFileId] === "preview" ? (
+              {svgViewMode[activeFileId] === "preview" ? (
                 <Code2 size={14} />
               ) : (
                 <Eye size={14} />
@@ -769,7 +814,7 @@ export default function FileViewerPanelComponent({
 
       {/* Tab bar */}
       <div className={styles.tabBar} ref={tabBarRef}>
-        {openFiles.map((file: any) => (
+        {openFiles.map((file) => (
           <FileTab
             key={file.id}
             file={file}
@@ -786,7 +831,7 @@ export default function FileViewerPanelComponent({
         {activeFile && (
           <div className={styles.breadcrumb}>
             {getPathSegments(activeFile.path).map(
-              (seg: any, i: any, array: any) => (
+              (seg, i, array) => (
                 <span key={i}>
                   {i > 0 && (
                     <ChevronRight size={8} className={styles.breadcrumbSep} />
@@ -868,7 +913,8 @@ export default function FileViewerPanelComponent({
         {/* SVG preview mode — rendered from content via data URI */}
         {cached?.isSvg &&
           cached?.content &&
-          (svgViewMode as Record<string, any>)[activeFileId] === "preview" && (
+          activeFileId &&
+          svgViewMode[activeFileId] === "preview" && (
             <div className={styles.mediaViewer}>
               <div className={styles.mediaImageWrap}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -885,8 +931,9 @@ export default function FileViewerPanelComponent({
         {/* Syntax-highlighted content — stay visible during refresh (stale-while-revalidate) */}
         {cached?.content != null &&
           !cached?.isBinary &&
+          activeFileId &&
           !(
-            cached?.isSvg && (svgViewMode as Record<string, any>)[activeFileId] === "preview"
+            cached?.isSvg && svgViewMode[activeFileId] === "preview"
           ) && (
             <div
               className={`${styles.codeScroll} ${!wordWrap ? styles.codeScrollNoWrap : ""}`}
@@ -964,7 +1011,7 @@ export default function FileViewerPanelComponent({
           {cached.isBinary ? (
             <>
               <span>{cached.mediaType || "Binary"}</span>
-              {cached.sizeBytes > 0 && (
+              {cached.sizeBytes && cached.sizeBytes > 0 ? (
                 <>
                   <span className={styles.metaDot} />
                   <span>
@@ -973,12 +1020,12 @@ export default function FileViewerPanelComponent({
                       : `${(cached.sizeBytes / 1024).toFixed(1)} KB`}
                   </span>
                 </>
-              )}
+              ) : null}
             </>
           ) : (
             <>
               <span>
-                {cached.totalLines || cached.content.split("\n").length} lines
+                {cached.totalLines || cached.content?.split("\n").length} lines
               </span>
               {cached.languageLabel && (
                 <>

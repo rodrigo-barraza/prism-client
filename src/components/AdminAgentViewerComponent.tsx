@@ -39,7 +39,8 @@ import { useAdminHeader } from "./AdminHeaderContextComponent";
 import { formatNumber } from "../utils/utilities";
 import useSessionStats from "../hooks/useSessionStats";
 import { PROJECT_AGENT } from "../constants";
-import type { PrismConfig } from "../types/types";
+import type { PrismConfig, Message, Conversation, CustomTool, ToolSchema, Skill, MCPServer, SessionStats, ModelOption } from "../types/types";
+import { getErrorMessage } from "../utils/errorMessage";
 import chatStyles from "./ChatAreaComponent.module.css";
 import styles from "./AdminAgentViewerComponent.module.css";
 import {
@@ -57,24 +58,24 @@ export default function AdminAgentViewerComponent() {
   const { setTitleBadge, setControls } = useAdminHeader();
 
   // -- State ----------------------------------------------------
-  const [messages, setMessages] = useState<any[]>([]);
-  const [agentSessionId, setAgentSessionId] = useState(null);
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [agentSessionId, setAgentSessionId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<Conversation[]>([]);
   const [total, setTotal] = useState(0);
   const [page, _setPage] = useState(1);
-  const [activeId, setActiveId] = useState(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState("");
   const [leftTab, setLeftTab] = useState("settings");
-  const [customTools, setCustomTools] = useState<any[]>([]);
-  const [builtInTools, setBuiltInTools] = useState<any[]>([]);
-  const [skills, setSkills] = useState<any[]>([]);
-  const [mcpServers, setMcpServers] = useState<any[]>([]);
+  const [customTools, setCustomTools] = useState<CustomTool[]>([]);
+  const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [memoriesRefreshKey] = useState(0);
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
   const [tasksCount, setTasksCount] = useState(0);
-  const [backendSessionStats, setBackendSessionStats] = useState<any>(null);
+  const [backendSessionStats, setBackendSessionStats] = useState<SessionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(true);
@@ -86,7 +87,7 @@ export default function AdminAgentViewerComponent() {
     functionCallingEnabled: true,
   });
 
-  const endRef = useRef<any>(null);
+  const endRef = useRef<HTMLDivElement | null>(null);
 
   // -- Effects --------------------------------------------------
 
@@ -123,10 +124,10 @@ export default function AdminAgentViewerComponent() {
         sort: "updatedAt",
         order: "desc",
       });
-      setSessions(data.data || []);
+      setSessions((data.data as Conversation[]) || []);
       setTotal(data.total || 0);
-    } catch (error: any) {
-      console.error("Failed to load admin agent sessions:", error);
+    } catch (error: unknown) {
+      console.error("Failed to load admin agent sessions:", getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -139,65 +140,67 @@ export default function AdminAgentViewerComponent() {
   // Load custom tools (read-only display)
   useEffect(() => {
     PrismService.getCustomTools(PROJECT_AGENT)
-      .then((tools: any) => setCustomTools(tools))
+      .then((tools: CustomTool[]) => setCustomTools(tools))
       .catch(() => {});
   }, []);
 
   // Load skills (read-only display)
   useEffect(() => {
     PrismService.getSkills(PROJECT_AGENT)
-      .then((s: any) => setSkills(s))
+      .then((s: Skill[]) => setSkills(s))
       .catch(() => {});
   }, []);
 
   // Load MCP servers (read-only display)
   useEffect(() => {
     PrismService.getMCPServers(PROJECT_AGENT)
-      .then((s: any) => setMcpServers(s))
+      .then((s: MCPServer[]) => setMcpServers(s))
       .catch(() => {});
   }, []);
 
   // Load built-in tools
   useEffect(() => {
     PrismService.getBuiltInToolSchemas("CODING")
-      .then((tools: any) => setBuiltInTools(tools))
+      .then((tools: ToolSchema[]) => setBuiltInTools(tools))
       .catch(() => {});
   }, []);
 
   // Fetch memory count
   useEffect(() => {
     PrismService.getAgentMemories(PROJECT_AGENT, 1, undefined)
-      .then((r: any) => setTotalMemoriesCount(r.total || 0))
+      .then((r: { total?: number }) => setTotalMemoriesCount(r.total || 0))
       .catch(() => {});
   }, []);
 
   // -- Filtered config: only function-calling models ------------
-  const filteredConfig = useMemo(() => {
+  const filteredConfig = useMemo((): PrismConfig | null => {
     if (!config) return null;
-    const textModelsMap = (config as any).textToText?.models || {};
-    const filteredTextModels = {};
+    const textModelsMap = config.textToText?.models || {};
+    const filteredTextModels: Record<string, ModelOption[]> = {};
 
     for (const [provider, models] of Object.entries(textModelsMap)) {
-      const fcModels = (models as any[]).filter((m: any) =>
+      const fcModels = models.filter((m) =>
         m.tools?.includes("Tool Calling"),
       );
-      if (fcModels.length > 0) (filteredTextModels as Record<string, any>)[provider] = fcModels;
+      if (fcModels.length > 0) filteredTextModels[provider] = fcModels;
     }
 
-    const filteredProviderList = ((config as any).providerList || []).filter(
-      (p: any) => (filteredTextModels as any)[p],
+    const filteredProviderList = (config.providerList || []).filter(
+      (p) => filteredTextModels[p],
     );
 
     return {
-      ...(config as any),
+      ...config,
       providerList: filteredProviderList,
       textToText: {
-        ...((config as any).textToText || {}),
+        ...(config.textToText || {}),
         models: filteredTextModels,
       },
-      textToImage: { models: {} },
-      textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
-      audioToText: { models: {} },
+      textToImage: { models: {}, defaults: {} },
+      textToSpeech: { models: {}, voices: {}, defaultVoices: {}, defaults: {} },
+      audioToText: { models: {}, defaults: {} },
+      imageToText: { models: {}, defaults: {} },
+      embedding: { models: {}, defaults: {} },
     };
   }, [config]);
 
@@ -214,22 +217,23 @@ export default function AdminAgentViewerComponent() {
   } = useSessionStats(messages);
 
   // Fetch backend stats when session changes
-  const fetchSessionStats = useCallback((sessionId: any) => {
+  const fetchSessionStats = useCallback((sessionId: string) => {
     if (!sessionId) return;
     IrisService.getSessionStats(sessionId)
-      .then((stats) => setBackendSessionStats(stats))
+      .then((stats: SessionStats) => setBackendSessionStats(stats))
       .catch(() => {});
   }, []);
 
   // -- Session selection ----------------------------------------
   const handleSelectSession = useCallback(
-    async (conversation: any) => {
+    async (conversation: Conversation) => {
       try {
-        const full: any = await IrisService.getAgentSession(conversation.id);
+        const cId = conversation.id || "";
+        const full = await IrisService.getAgentSession(cId);
         const displayMessages = prepareDisplayMessages(full.messages || []);
         setMessages(displayMessages);
-        setAgentSessionId(conversation.id);
-        setActiveId(conversation.id);
+        setAgentSessionId(cId || null);
+        setActiveId(cId || null);
         setTitle(full.title || "Agent Session");
 
         // Restore settings from the last assistant message
@@ -237,39 +241,33 @@ export default function AdminAgentViewerComponent() {
           .reverse()
           .find((m) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
-          const gs = lastAssistant.generationSettings || {};
-          setSettings((prev) => ({
-            ...prev,
-            ...(lastAssistant.provider && { provider: lastAssistant.provider }),
-            ...(lastAssistant.model && { model: lastAssistant.model }),
-            ...(gs.temperature !== undefined && {
-              temperature: gs.temperature,
-            }),
-            ...(gs.maxTokens !== undefined && { maxTokens: gs.maxTokens }),
-            ...(gs.thinkingEnabled !== undefined && {
-              thinkingEnabled: gs.thinkingEnabled,
-            }),
-            ...(gs.reasoningEffort && { reasoningEffort: gs.reasoningEffort }),
-            ...(gs.thinkingBudget && { thinkingBudget: gs.thinkingBudget }),
-          }));
+          const gs = (lastAssistant.generationSettings || {}) as Record<string, unknown>;
+          setSettings((prev) => {
+            const next = { ...prev };
+            if (lastAssistant.provider) next.provider = lastAssistant.provider;
+            if (lastAssistant.model) next.model = lastAssistant.model;
+            if (gs.temperature !== undefined) next.temperature = gs.temperature as number;
+            if (gs.maxTokens !== undefined) next.maxTokens = gs.maxTokens as number;
+            return next;
+          });
         }
 
         // Fetch backend aggregate stats
-        fetchSessionStats(conversation.id);
+        fetchSessionStats(cId);
 
         // Fetch tasks count for this session
-        ToolsApiService.getAllAgenticTasks({ agentSessionId: conversation.id })
-          .then((r: any) =>
+        ToolsApiService.getAllAgenticTasks({ agentSessionId: cId })
+          .then((r: { summary?: { total?: number }; tasks?: unknown[] }) =>
             setTasksCount(r.summary?.total || (r.tasks || []).length),
           )
           .catch(() => {});
 
         // Fetch workers count
-        PrismService.getCoordinatorWorkers(conversation.id)
-          .then((r: any) => setWorkersCount((r.workers || []).length))
+        PrismService.getCoordinatorWorkers(cId)
+          .then((r: { workers?: unknown[] }) => setWorkersCount((r.workers || []).length))
           .catch(() => {});
-      } catch (error: any) {
-        console.error("Failed to load agent session:", error);
+      } catch (error: unknown) {
+        console.error("Failed to load agent session:", getErrorMessage(error));
       }
     },
     [fetchSessionStats],
@@ -279,7 +277,7 @@ export default function AdminAgentViewerComponent() {
   const allToolCount = builtInTools.length + customTools.length;
 
   // -- Badge helper ---------------------------------------------
-  const badgeProps = (count: any) => ({
+  const badgeProps = (count: number) => ({
     badge: count,
     badgeDisabled: count === 0,
   });
@@ -359,22 +357,25 @@ export default function AdminAgentViewerComponent() {
                   uniqueModels:
                     (backendSessionStats?.models?.length || 0) >
                     uniqueModels.length
-                      ? backendSessionStats.models
+                      ? backendSessionStats!.models || []
                       : uniqueModels,
                   uniqueProviders,
                   totalTokens: backendSessionStats
                     ? {
-                        input: backendSessionStats.totalInputTokens,
-                        output: backendSessionStats.totalOutputTokens,
-                        total: backendSessionStats.totalTokens,
+                        input: backendSessionStats.totalInputTokens || 0,
+                        output: backendSessionStats.totalOutputTokens || 0,
+                        total: backendSessionStats.totalTokens || 0,
                       }
                     : totalTokens,
                   totalCost:
                     backendSessionStats?.totalCost ?? totalCost,
                   originalTotalCost: 0,
                   usedTools,
-                  modalities:
-                    backendSessionStats?.modalities || modalities,
+                  modalities: (backendSessionStats?.modalities
+                    ? Object.fromEntries(
+                        Object.entries(backendSessionStats.modalities).map(([k, v]) => [k, Boolean(v)])
+                      )
+                    : modalities) as Record<string, boolean>,
                   completedElapsedTime:
                     backendSessionStats?.totalElapsedTime ||
                     completedElapsedTime,

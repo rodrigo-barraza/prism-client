@@ -164,7 +164,7 @@ export default function SynthesisComponent() {
     model: "",
     temperature: 0.9,
   });
-  const [targetTurns, setTargetTurns] = useState(DEFAULT_TURNS);
+  const [targetTurns, setTargetTurns] = useState<number | "">(DEFAULT_TURNS);
   const [category, setCategory] = useState("Chat");
   const [seedMessages, setSeedMessages] = useState<Message[]>([]);
   const [generatedMessages, setGeneratedMessages] = useState<(Message & { _streaming?: boolean })[]>([]);
@@ -386,7 +386,7 @@ export default function SynthesisComponent() {
     let conversationCreated = conversation.length > 0;
 
     // targetTurns = total user/assistant pairs; each turn = 2 messages
-    const totalMessages = targetTurns * 2;
+    const totalMessages = Number(targetTurns) * 2;
     const remaining = totalMessages - conversation.length;
 
     // Figure out what role the next message should be
@@ -464,12 +464,12 @@ export default function SynthesisComponent() {
           // "user".  After role-swapping, the history may start with
           // "assistant" (when the real conversation started with a user msg).
           // We fix this by ensuring the first message is always role "user".
-          let simulatorHistory;
+          let simulatorHistory: Message[];
           if (conversation.length > 0) {
             const swapped = conversation.map((m: Message) => ({
-              role: m.role === "user" ? "assistant" : "user",
+              role: m.role === "user" ? ("assistant" as const) : ("user" as const),
               content: m.content,
-            } as Message));
+            }));
             // If the swapped history starts with "assistant", prepend a
             // contextual user message so the template stays happy.
             if (swapped[0].role === "assistant") {
@@ -479,7 +479,7 @@ export default function SynthesisComponent() {
                   "Continue the conversation. Generate the next natural user message.",
               });
             }
-            simulatorHistory = swapped;
+            simulatorHistory = swapped as Message[];
           } else {
             simulatorHistory = [
               {
@@ -487,7 +487,7 @@ export default function SynthesisComponent() {
                 content:
                   "Start the conversation. Send the first message as the user.",
               },
-            ];
+            ] as Message[];
           }
 
           // Use separate model for user simulation when enabled
@@ -607,7 +607,7 @@ export default function SynthesisComponent() {
 
             userPersona,
             category,
-            targetTurns,
+            targetTurns: Number(targetTurns),
             seedMessages: seedMessages.filter((m: Message) => m.content && m.content.trim()),
             settings: {
               provider: settings.provider,
@@ -837,7 +837,7 @@ export default function SynthesisComponent() {
   return (
     <main className={styles.appContainer}>
       <ThreePanelLayout
-        leftTitle={null as any}
+        leftTitle={undefined}
         leftPanel={leftPanel}
         rightTitle="History"
         rightPanel={
@@ -922,10 +922,10 @@ export default function SynthesisComponent() {
                   min={MIN_TURNS}
                   max={MAX_TURNS}
                   step={1}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const raw = e.target.value;
                     if (raw === "") {
-                      setTargetTurns("" as any);
+                      setTargetTurns("");
                       return;
                     }
                     const v = parseInt(raw, 10);
@@ -986,11 +986,11 @@ export default function SynthesisComponent() {
             className={styles.collapsibleSection}
           >
             <div className={styles.templateGrid}>
-              {SAMPLE_SEEDS.map((seed: any) => (
+              {SAMPLE_SEEDS.map((seed) => (
                 <button
                   key={seed.label}
                   className={styles.templateCard}
-                  onClick={() => loadSeedTemplate(seed)}
+                  onClick={() => loadSeedTemplate(seed as unknown as { system: string; messages: Message[]; category: string })}
                 >
                   <span className={styles.templateLabel}>{seed.label}</span>
                   <span className={styles.templateCategory}>
@@ -1016,7 +1016,7 @@ export default function SynthesisComponent() {
             className={styles.collapsibleSection}
           >
             <div className={styles.seedMessages}>
-              {seedMessages.map((message: any, i: any) => (
+              {seedMessages.map((message: Message, i: number) => (
                 <div key={i} className={styles.seedMessage}>
                   <div className={styles.seedMessageHeader}>
                     <button
@@ -1157,22 +1157,22 @@ export default function SynthesisComponent() {
  * When conversationId is provided, the messages are persisted to that conversation.
  */
 function streamTurn(
-  settings: any,
-  turnSystemPrompt: any,
-  history: any,
-  onPartial: any,
-  abortRef: any,
-  conversationId: any,
-  conversationMeta: any,
-  { skipConversation = false, onThinking }: any = {},
-) {
-  return new Promise((resolve: any, reject: any) => {
+  settings: { provider: string; model: string; temperature?: number; maxTokens?: number; thinkingEnabled?: boolean; reasoningEffort?: string; thinkingLevel?: string; thinkingBudget?: string | number },
+  turnSystemPrompt: string,
+  history: Message[],
+  onPartial: (partial: string) => void,
+  abortRef: React.MutableRefObject<(() => void) | null>,
+  conversationId?: string | null,
+  conversationMeta?: Record<string, unknown>,
+  { skipConversation = false, onThinking }: { skipConversation?: boolean; onThinking?: (chunk: string) => void } = {},
+): Promise<string> {
+  return new Promise((resolve, reject) => {
     let collected = "";
 
     const payload = {
       provider: settings.provider,
       model: settings.model,
-      messages: [{ role: "system", content: turnSystemPrompt }, ...history],
+      messages: [{ role: "system" as const, content: turnSystemPrompt }, ...history],
       temperature: settings.temperature,
       maxTokens: settings.maxTokens,
     };
@@ -1181,28 +1181,28 @@ function streamTurn(
     const thinkingOn =
       settings.thinkingEnabled ?? settings.provider === "lm-studio";
     if (thinkingOn) {
-      (payload as any).thinkingEnabled = true;
+      (payload as Record<string, unknown>).thinkingEnabled = true;
       if (settings.reasoningEffort)
-        (payload as any).reasoningEffort = settings.reasoningEffort;
+        (payload as Record<string, unknown>).reasoningEffort = settings.reasoningEffort;
       if (settings.thinkingLevel)
-        (payload as any).thinkingLevel = settings.thinkingLevel;
+        (payload as Record<string, unknown>).thinkingLevel = settings.thinkingLevel;
       if (settings.thinkingBudget)
-        (payload as any).thinkingBudget = settings.thinkingBudget;
+        (payload as Record<string, unknown>).thinkingBudget = settings.thinkingBudget;
     } else {
-      (payload as any).thinkingEnabled = false;
+      (payload as Record<string, unknown>).thinkingEnabled = false;
     }
 
     // Skip conversation persistence entirely (used for user-simulation turns)
     if (skipConversation) {
-      (payload as any).skipConversation = true;
+      (payload as Record<string, unknown>).skipConversation = true;
     } else if (conversationId) {
-      (payload as any).conversationId = conversationId;
+      (payload as Record<string, unknown>).conversationId = conversationId;
       if (conversationMeta)
-        (payload as any).conversationMeta = conversationMeta;
+        (payload as Record<string, unknown>).conversationMeta = conversationMeta;
     }
 
     const cancel = PrismService.streamText(payload, {
-      onChunk: (content: any) => {
+      onChunk: (content: string) => {
         collected += content;
         onPartial(collected);
       },
@@ -1220,7 +1220,7 @@ function streamTurn(
  * Instructs the model to role-play as the user persona and
  * generate a single natural follow-up user message.
  */
-function buildUserSimulationPrompt(userPersona: any) {
+function buildUserSimulationPrompt(userPersona: string) {
   let prompt = `You are simulating a human user in a conversation with an AI assistant. Your job is to generate the NEXT single message that this user would naturally say.
 
 `;
