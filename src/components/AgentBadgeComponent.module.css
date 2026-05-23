@@ -70,12 +70,16 @@
   background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
 }
 
+.badgeInner[data-agent="IMAGE"] {
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+}
+
 /* Custom agents — fallback gradient for any agent not in the hardcoded list */
 .badgeInner:not([data-agent="CODING"]):not([data-agent="OMNI"]):not(
     [data-agent="LUPOS"]
   ):not([data-agent="STICKERS"]):not([data-agent="DIGEST"]):not(
     [data-agent="OOG"]
-  ):not([data-agent="LIGHTS"]) {
+  ):not([data-agent="LIGHTS"]):not([data-agent="IMAGE"]) {
   background: linear-gradient(
     135deg,
     var(--color-violet) 0%,

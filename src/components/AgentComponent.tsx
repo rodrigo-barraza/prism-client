@@ -146,6 +146,12 @@ const AGENT_EMPTY_STATE = {
     placeholder:
       "Ask about nutrition, exercises, meal plans, or calorie targets...",
   },
+  IMAGE: {
+    title: "Image Agent",
+    subtitle:
+      "A visionary AI artist. Creative prompt design, image generation, visual styles, and inspiration.",
+    placeholder: "Describe the image or concept you want to create...",
+  },
 };
 
 const DEFAULT_EMPTY_STATE = {

@@ -15,6 +15,7 @@ const AGENT_GRADIENTS: Record<string, string[]> = {
   DIGEST: ["#f59e0b", "#ef4444"],
   LIGHTS: ["#eab308", "#f59e0b"],
   OOG: ["#78716c", "#a8a29e"],
+  IMAGE: ["#ec4899", "#8b5cf6"],
 };
 const FALLBACK_GRADIENT = ["#8b5cf6", "#06b6d4"];
 

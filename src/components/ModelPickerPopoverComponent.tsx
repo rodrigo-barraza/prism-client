@@ -541,64 +541,79 @@ export default function ModelPickerPopoverComponent({
     return undefined;
   })();
 
-  const triggerContent = (
-    <>
-      {/* -- Trigger pill + modalities row --------------------------- */}
-      <div className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}>
-        <button
-          ref={triggerRef}
-          className={`${styles.trigger} ${open ? styles.triggerOpen : ""} ${disabled ? styles.triggerReadOnly : ""} ${loadingProgress != null ? styles.triggerLoading : ""} ${multiSelect && (selectedKeys?.size ?? 0) > 0 ? styles.triggerActive : ""}`}
-          onMouseEnter={
-            disabled
-              ? undefined
-              : (e: any) => SoundService.playHoverButton({ event: e })
-          }
-          onClick={
-            disabled
-              ? undefined
-              : (e: any) => {
-                  SoundService.playClickButton({ event: e });
-                  togglePopover();
-                }
-          }
-          data-model-picker-trigger
-          title={
-            disabled
-              ? displayLabel
-              : multiSelect
-                ? "Select models"
-                : "Switch model"
-          }
-          style={disabled ? { cursor: "default" } : undefined}
-        >
-          <span className={styles.triggerContent}>
-            {triggerIconElement}
-            <span className={styles.triggerLabel}>
-              {loadingProgress != null
-                ? `Loading… ${Math.round((loadingProgress ?? 0) * 100)}%`
-                : displayLabel}
-            </span>
-          </span>
-          {!disabled && loadingProgress == null && (
-            <ChevronDown
-              size={14}
-              className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
-            />
-          )}
-          {/* Progress bar overlay */}
-          {loadingProgress != null && (
-            <span
-              className={styles.triggerProgressBar}
-              style={{ transform: `scaleX(${loadingProgress ?? 0})` }}
-            />
-          )}
-        </button>
-        {triggerCapabilities && loadingProgress == null && (
-          <div className={styles.triggerCapabilities}>
+  let buttonElement = (
+    <button
+      ref={triggerRef}
+      className={`${styles.trigger} ${open ? styles.triggerOpen : ""} ${disabled ? styles.triggerReadOnly : ""} ${loadingProgress != null ? styles.triggerLoading : ""} ${multiSelect && (selectedKeys?.size ?? 0) > 0 ? styles.triggerActive : ""}`}
+      onMouseEnter={
+        disabled
+          ? undefined
+          : (e: any) => SoundService.playHoverButton({ event: e })
+      }
+      onClick={
+        disabled
+          ? undefined
+          : (e: any) => {
+              SoundService.playClickButton({ event: e });
+              togglePopover();
+            }
+      }
+      data-model-picker-trigger
+      title={
+        disabled
+          ? displayLabel
+          : multiSelect
+            ? "Select models"
+            : "Switch model"
+      }
+      style={disabled ? { cursor: "default" } : undefined}
+    >
+      <span className={styles.triggerContent}>
+        {triggerIconElement}
+        <span className={styles.triggerLabel}>
+          {loadingProgress != null
+            ? `Loading… ${Math.round((loadingProgress ?? 0) * 100)}%`
+            : displayLabel}
+        </span>
+      </span>
+      {!disabled && loadingProgress == null && (
+        <ChevronDown
+          size={14}
+          className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
+        />
+      )}
+      {/* Progress bar overlay */}
+      {loadingProgress != null && (
+        <span
+          className={styles.triggerProgressBar}
+          style={{ transform: `scaleX(${loadingProgress ?? 0})` }}
+        />
+      )}
+    </button>
+  );
+
+  if (!disabled && triggerCapabilities && loadingProgress == null) {
+    buttonElement = (
+      <TooltipComponent
+        label={
+          <div className={styles.tooltipCapabilities}>
             <ModalityIconComponent modalities={triggerCapabilities} size={10} />
             <ModelToolsRow tools={triggerCapabilities} variant="condensed" />
           </div>
-        )}
+        }
+        position="bottom"
+        enterDelay={150}
+      >
+        {buttonElement}
+      </TooltipComponent>
+    );
+  }
+
+  const triggerContent = (
+    <>
+      {/* -- Trigger pill --------------------------- */}
+      <div className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}>
+        {buttonElement}
       </div>
 
       {/* -- Popover portal ------------------------------------------- */}

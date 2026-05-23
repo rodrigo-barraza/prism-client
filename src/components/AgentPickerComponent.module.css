@@ -231,3 +231,10 @@
   border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
   color: var(--accent-color);
 }
+
+.tooltipCapabilities {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 2px;
+}

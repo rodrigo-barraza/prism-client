@@ -144,6 +144,14 @@
   flex-wrap: wrap;
 }
 
+.tooltipCapabilities {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+}
+
 .chevron {
   color: var(--text-secondary);
   flex-shrink: 0;

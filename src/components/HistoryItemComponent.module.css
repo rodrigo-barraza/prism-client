@@ -119,6 +119,13 @@
   gap: 6px;
 }
 
+.bottomLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 /* ── Tags ── */
 .tag {
   display: inline-flex;
@@ -239,12 +246,23 @@
   box-shadow: 0 2px 8px rgba(185, 28, 28, 0.15);
 }
 
+.agentBadge[data-agent="IMAGE"] {
+  background: rgba(236, 72, 153, 0.06);
+  border-color: rgba(236, 72, 153, 0.18);
+  color: #f472b6;
+}
+.agentBadge[data-agent="IMAGE"]:hover {
+  background: rgba(236, 72, 153, 0.1);
+  border-color: rgba(236, 72, 153, 0.25);
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.15);
+}
+
 /* Fallback for other custom agents */
 .agentBadge:not([data-agent="CODING"]):not([data-agent="OMNI"]):not(
     [data-agent="LUPOS"]
   ):not([data-agent="STICKERS"]):not([data-agent="OOG"]):not(
     [data-agent="LIGHTS"]
-  ) {
+  ):not([data-agent="IMAGE"]) {
   background: rgba(139, 92, 246, 0.06);
   border-color: rgba(139, 92, 246, 0.18);
   color: #a78bfa;
@@ -253,7 +271,7 @@
     [data-agent="LUPOS"]
   ):not([data-agent="STICKERS"]):not([data-agent="OOG"]):not(
     [data-agent="LIGHTS"]
-  ):hover {
+  ):not([data-agent="IMAGE"]):hover {
   background: rgba(139, 92, 246, 0.1);
   border-color: rgba(139, 92, 246, 0.25);
   box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);

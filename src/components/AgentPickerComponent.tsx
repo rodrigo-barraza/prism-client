@@ -14,6 +14,7 @@ import {
   Hammer,
   MessageSquare,
   Infinity,
+  Palette,
 } from "lucide-react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
@@ -39,6 +40,7 @@ const AGENT_ICONS: Record<string, any> = {
   DIGEST: Apple,
   LIGHTS: Lightbulb,
   OOG: Hammer,
+  IMAGE: Palette,
 };
 
 /** Render the correct icon for an agent — image logo > custom icon field > built-in map. */
@@ -152,34 +154,51 @@ export default function AgentPickerComponent({
           </button>
         ) : (
           /* -- Default trigger (active agent) -- */
-          <>
-            <button
-              ref={triggerRef}
-              className={styles.trigger}
-              onClick={() => !disabled && setOpen((v) => !v)}
-              title={`Active agent: ${activeAgent?.name || activeAgentId}`}
-              disabled={disabled}
-              type="button"
-            >
-              <AgentBadgeComponent agent={activeAgent} />
-              <span className={styles.triggerLabel}>
-                {activeAgent?.name || activeAgentId}
-              </span>
-              <ChevronDown
-                size={13}
-                className={styles.triggerChevron}
-                data-open={open}
-              />
-            </button>
-            {activeAgent?.id !== "NONE" && (
-              <ToolBadgeComponent
-                name="Tool Calling"
-                count={activeAgent?.toolCount}
-                variant="condensed"
-                tooltip={`${activeAgent?.toolCount || 0} Tools available`}
-              />
-            )}
-          </>
+          (() => {
+            let buttonElement = (
+              <button
+                ref={triggerRef}
+                className={styles.trigger}
+                onClick={() => !disabled && setOpen((v) => !v)}
+                title={`Active agent: ${activeAgent?.name || activeAgentId}`}
+                disabled={disabled}
+                type="button"
+              >
+                <AgentBadgeComponent agent={activeAgent} />
+                <span className={styles.triggerLabel}>
+                  {activeAgent?.name || activeAgentId}
+                </span>
+                <ChevronDown
+                  size={13}
+                  className={styles.triggerChevron}
+                  data-open={open}
+                />
+              </button>
+            );
+
+            if (!disabled && activeAgent?.id !== "NONE") {
+              buttonElement = (
+                <TooltipComponent
+                  label={
+                    <div className={styles.tooltipCapabilities}>
+                      <ToolBadgeComponent
+                        name="Tool Calling"
+                        count={activeAgent?.toolCount}
+                        variant="condensed"
+                        tooltip={`${activeAgent?.toolCount || 0} Tools available`}
+                      />
+                    </div>
+                  }
+                  position="bottom"
+                  enterDelay={150}
+                >
+                  {buttonElement}
+                </TooltipComponent>
+              );
+            }
+
+            return buttonElement;
+          })()
         )}
       </div>
 

@@ -107,6 +107,7 @@ const AGENT_COLORS = {
   STICKERS: "#f59e0b",
   LIGHTS: "#22c55e",
   DIGEST: "#14b8a6",
+  IMAGE: "#ec4899",
 };
 
 function getAgentColor(agentId: string) {

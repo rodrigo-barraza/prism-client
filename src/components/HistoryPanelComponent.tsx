@@ -275,6 +275,7 @@ export default function HistoryPanel({
         tags,
         username: conversation.username,
         modelNames,
+        agent: conversation.agent,
         searchText: [
           conversation.project || "",
           conversation.username || "",

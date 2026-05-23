@@ -68,6 +68,7 @@ export default function HistoryItemComponent({
     LIGHTS: "Lights",
     OOG: "Oog",
     OMNI: "Omni",
+    IMAGE: "Image Agent",
   };
 
   const getAgentDisplayName = (agent: any): string => {
@@ -121,25 +122,6 @@ export default function HistoryItemComponent({
             {admin && item.username && item.username !== "unknown" && item.username !== "anonymous" && (
               <span className={styles.usernameTag}>{item.username}</span>
             )}
-            {item.agent && (() => {
-              const agentId = typeof item.agent === "string" ? item.agent : item.agent.id || "";
-              if (!agentId || agentId === "NONE") return null;
-
-              const resolvedAgent = typeof item.agent === "string" ? { id: item.agent, name: item.agent } : item.agent;
-
-              return (
-                <span className={styles.agentBadge} data-agent={agentId}>
-                  <AgentBadgeComponent
-                    agent={resolvedAgent}
-                    size={14}
-                    iconSize={9}
-                  />
-                  <span className={styles.agentBadgeName}>
-                    {getAgentDisplayName(item.agent)}
-                  </span>
-                </span>
-              );
-            })()}
             {item.tags?.map((tag: any) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>
                 {tag.label}
@@ -168,10 +150,31 @@ export default function HistoryItemComponent({
         )}
 
         {/* Row 4: modalities (left) · tools (right) */}
-        {hasModalities && (
+        {(hasModalities || (item.agent && (typeof item.agent === "string" ? item.agent : item.agent.id || "") !== "NONE")) && (
           <div className={styles.bottomRow}>
-            <ModalityIconComponent modalities={mod} />
-            <ModelToolsRow tools={mod} variant="condensed" />
+            <div className={styles.bottomLeft}>
+              {hasModalities && <ModalityIconComponent modalities={mod} />}
+              {item.agent && (() => {
+                const agentId = typeof item.agent === "string" ? item.agent : item.agent.id || "";
+                if (!agentId || agentId === "NONE") return null;
+
+                const resolvedAgent = typeof item.agent === "string" ? { id: item.agent, name: item.agent } : item.agent;
+
+                return (
+                  <span className={styles.agentBadge} data-agent={agentId}>
+                    <AgentBadgeComponent
+                      agent={resolvedAgent}
+                      size={14}
+                      iconSize={9}
+                    />
+                    <span className={styles.agentBadgeName}>
+                      {getAgentDisplayName(item.agent)}
+                    </span>
+                  </span>
+                );
+              })()}
+            </div>
+            {hasModalities && <ModelToolsRow tools={mod} variant="condensed" />}
           </div>
         )}
 

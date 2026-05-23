@@ -554,6 +554,7 @@ export default function RequestsPage() {
                               modalities: c.modalities || {},
                               modelName: c.model || null,
                               username: c.username,
+                              agent: (c as any).agent,
                             }}
                             icon={MessageSquare}
                             admin
