@@ -1461,7 +1461,7 @@ export default function MessageList({
                             if (seg.type === "thinking") {
                               const fragment =
                                 message.thinkingFragments?.[
-                                  seg.fragmentIndex
+                                  seg.fragmentIndex ?? 0
                                 ]?.trim();
                               if (!fragment) return null;
                               return (
@@ -1498,7 +1498,7 @@ export default function MessageList({
                             if (seg.type === "text") {
                               const fragmentText =
                                 message.textFragments?.[
-                                  seg.fragmentIndex
+                                  seg.fragmentIndex ?? 0
                                 ]?.trim();
                               const isLastTextSeg = !!opts.isLastText;
                               const showCursor =

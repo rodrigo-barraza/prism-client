@@ -1548,7 +1548,7 @@ export default function AgentComponent({
 
   // -- Orchestration loop ---------------------------------------
   const runOrchestrationLoop = useCallback(
-    async (sessionMessages: any, resolvedTitle: any) => {
+    async (sessionMessages: ClientMessage[], resolvedTitle: string) => {
       const currentMessages = [...sessionMessages];
       // Capture which session this generation belongs to — if the user
       // switches sessions, streaming callbacks will skip UI updates.
@@ -1563,7 +1563,7 @@ export default function AgentComponent({
               model: settings.model ?? "",
               messages: [
                 ...(settings.systemPrompt
-                  ? [{ role: "system", content: settings.systemPrompt }]
+                  ? [{ role: "system" as const, content: settings.systemPrompt }]
                   : []),
                 ...currentMessages,
               ],
@@ -1614,7 +1614,7 @@ export default function AgentComponent({
               model: settings.model ?? "",
               messages: [
                 // System prompt placeholder — replaced server-side by SystemPromptAssembler
-                { role: "system", content: "" },
+                { role: "system" as const, content: "" },
                 ...currentMessages,
               ],
               functionCallingEnabled: true,
@@ -1652,7 +1652,7 @@ export default function AgentComponent({
         let streamedText = "";
         let streamedThinking = "";
         let firstChunkTime: number | undefined;
-        let prevChunkTime: any = null; // previous chunk's timestamp for delta accumulation
+        let prevChunkTime: number | null = null; // previous chunk's timestamp for delta accumulation
         let burstTokens = 0; // tokens in current generation burst (resets on gap)
         let burstElapsed = 0; // elapsed in current generation burst (resets on gap)
         const CHUNK_GAP_THRESHOLD = 500; // ms — gaps larger than this are processing/tool pauses
@@ -1664,7 +1664,7 @@ export default function AgentComponent({
         const textFragments: string[] = [];
         const thinkingFragments: string[] = [];
         const segmentToolIdSet = new Set(); // Dedup: track tool IDs already in contentSegments
-        let lastSegmentType: any = null; // "thinking" | "text" | "tools"
+        let lastSegmentType: string | null = null; // "thinking" | "text" | "tools"
         let prevCleanLen = 0; // length of cleanTextRaw at last onChunk — used for computing deltas
         let prevThinkingLen = 0; // length of thinking text at last onThinking — used for computing deltas
 
@@ -1852,7 +1852,7 @@ export default function AgentComponent({
                   segmentToolIdSet.add(resolvedId);
                   if (lastSegmentType === "tools") {
                     // Append to current tools segment
-                    contentSegments[contentSegments.length - 1].toolIds.push(
+                    contentSegments[contentSegments.length - 1].toolIds!.push(
                       resolvedId,
                     );
                   } else {
@@ -1883,7 +1883,7 @@ export default function AgentComponent({
                   return activity;
                 });
               }
-              setMessages((msgPrev: any) => {
+              setMessages((msgPrev: ClientMessage[]) => {
                 const array = [...msgPrev];
                 const last = array[array.length - 1];
                 if (last?.role === "assistant") {
@@ -1937,17 +1937,17 @@ export default function AgentComponent({
                 // delete_file and move_file both remove the source path
                 if (tc.name === "delete_file" || tc.name === "move_file") {
                   const deleted = openFiles.find(
-                    (f: any) => f.path === mutatedPath,
+                    (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
                   if (deleted) {
                     setViewerOpenFiles((prev) => {
                       const next = prev.filter(
-                        (f: any) => f.path !== mutatedPath,
+                        (f: ViewerOpenFile) => f.path !== mutatedPath,
                       );
-                      setViewerActiveFileId((activeId: any) => {
+                      setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
                         const closedIdx = prev.findIndex(
-                          (f: any) => f.id === deleted.id,
+                          (f: ViewerOpenFile) => f.id === deleted.id,
                         );
                         const newActive =
                           next[Math.min(closedIdx, next.length - 1)];
@@ -1989,7 +1989,7 @@ export default function AgentComponent({
                 if (!segmentToolIdSet.has(resolvedId)) {
                   segmentToolIdSet.add(resolvedId);
                   if (lastSegmentType === "tools") {
-                    contentSegments[contentSegments.length - 1].toolIds.push(
+                    contentSegments[contentSegments.length - 1].toolIds!.push(
                       resolvedId,
                     );
                   } else {
@@ -2021,7 +2021,7 @@ export default function AgentComponent({
                   return activity;
                 });
               }
-              setMessages((msgPrev: any) => {
+              setMessages((msgPrev: ClientMessage[]) => {
                 const array = [...msgPrev];
                 const last = array[array.length - 1];
                 if (last?.role === "assistant") {
@@ -2074,17 +2074,17 @@ export default function AgentComponent({
                 // delete_file and move_file both remove the source path
                 if (tc.name === "delete_file" || tc.name === "move_file") {
                   const deleted = openFiles.find(
-                    (f: any) => f.path === mutatedPath,
+                    (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
                   if (deleted) {
                     setViewerOpenFiles((prev) => {
                       const next = prev.filter(
-                        (f: any) => f.path !== mutatedPath,
+                        (f: ViewerOpenFile) => f.path !== mutatedPath,
                       );
-                      setViewerActiveFileId((activeId: any) => {
+                      setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
                         const closedIdx = prev.findIndex(
-                          (f: any) => f.id === deleted.id,
+                          (f: ViewerOpenFile) => f.id === deleted.id,
                         );
                         const newActive =
                           next[Math.min(closedIdx, next.length - 1)];
@@ -2711,7 +2711,7 @@ export default function AgentComponent({
   titleRef.current = title;
 
   const handleSend = useCallback(
-    async (e?: any, fetchOptions: any = {}) => {
+    async (e?: React.FormEvent<HTMLFormElement> | null, fetchOptions: Record<string, any> = {}) => {
       if (e && typeof e.preventDefault === "function") e.preventDefault();
 
       const { isQueueing = false, overridePayload = null } = fetchOptions;
@@ -3248,7 +3248,7 @@ export default function AgentComponent({
   );
 
   const handleDeleteSession = useCallback(
-    async (convId: any) => {
+    async (convId: string) => {
       try {
         // Direct Chat sessions live in the conversations collection
         if (isNoAgent) {
@@ -3269,7 +3269,7 @@ export default function AgentComponent({
 
   // -- Open file in the FileViewerPanel (shared by workspace tree & mention badges) --
   const handleOpenFileInViewer = useCallback(
-    (absPath: any) => {
+    (absPath: string) => {
       const existingTab = viewerOpenFiles.find((f) => f.path === absPath);
       if (existingTab) {
         setViewerActiveFileId((existingTab as any).id);
@@ -3284,7 +3284,7 @@ export default function AgentComponent({
 
   // -- Left sidebar: tab bar + content --------------------------
   // Badge helper — 0 = greyed-out, >0 = lit, "new" if tab has unseen data
-  const badgeProps = (count: any, tabKey: any) => ({
+  const badgeProps = (count: number, tabKey: string) => ({
     badge: count,
     badgeDisabled: count === 0,
     badgeState: newDataTabs.has(tabKey) ? "new" : "default",
@@ -3403,7 +3403,7 @@ export default function AgentComponent({
             : []),
         ]}
         activeTab={leftTab}
-        onChange={(tab: any) => {
+        onChange={(tab: string) => {
           setLeftTab(tab);
           // User manually switched — cancel any pending ephemeral revert
           if (tabRevertTimerRef.current) {
@@ -3426,9 +3426,9 @@ export default function AgentComponent({
           settings={settings}
           onChange={
             isNoAgent
-              ? (updates: any) =>
+              ? (updates: Partial<PrismSettings>) =>
                   setSettings((s) => ({ ...s, ...updates }))
-              : (updates: any) =>
+              : (updates: Partial<PrismSettings>) =>
                   setSettings((s) => ({
                     ...s,
                     ...updates,
@@ -3725,7 +3725,7 @@ export default function AgentComponent({
           onMentionFile={handleMentionFile}
           locked={messages.length > 0}
           unavailableWorkspace={unavailableWorkspace}
-          onOpenFile={(relativePath: any) => {
+          onOpenFile={(relativePath: string) => {
             // Build absolute path from workspace root + relative path
             const absPath = currentWorkspace?.path
               ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
@@ -3759,7 +3759,7 @@ export default function AgentComponent({
       {leftTab === "params" && (
         <ParametersPanelComponent
           settings={settings}
-          onChange={(updates: any) =>
+          onChange={(updates: Partial<PrismSettings>) =>
             setSettings((s) => ({ ...s, ...updates }))
           }
           config={filteredConfig}
@@ -3888,7 +3888,7 @@ export default function AgentComponent({
           streamingOutputs={streamingOutputs}
           workerToolActivity={workerToolActivity}
           knownPaths={knownPaths}
-          onMentionFileOpen={(relativePath: any) => {
+          onMentionFileOpen={(relativePath: string) => {
             const absPath = currentWorkspace?.path
               ? `${(currentWorkspace as any).path.replace(/\/$/, "")}/${relativePath}`
               : relativePath;
@@ -3963,7 +3963,7 @@ export default function AgentComponent({
             question={(pendingUserQuestion as any).question}
             choices={(pendingUserQuestion as any).choices}
             context={(pendingUserQuestion as any).context}
-            onAnswer={(answers: any) => {
+            onAnswer={(answers: Array<{ answer: string | string[]; annotations?: string }>) => {
               setPendingUserQuestion(null);
               PrismService.sendUserQuestionAnswer(
                 agentSessionId,
@@ -4268,7 +4268,7 @@ export default function AgentComponent({
         <ImagePreviewComponent
           src={lightboxSrc}
           onClose={() => setLightboxSrc(null)}
-          onUseAnnotated={(dataUrl: any) => {
+          onUseAnnotated={(dataUrl: string) => {
             setPendingImages((prev) => [...prev, dataUrl]);
             setLightboxSrc(null);
           }}
@@ -4296,25 +4296,25 @@ export default function AgentComponent({
             openFiles={viewerOpenFiles}
             activeFileId={viewerActiveFileId}
             onSelectFile={setViewerActiveFileId}
-            onCloseFile={(id: any) => {
+            onCloseFile={(id: string) => {
               setViewerOpenFiles((prev) => {
                 const next = prev.filter((f) => f.id !== id);
                 // If the closed tab was active, switch to the nearest tab
                 if (id === viewerActiveFileId) {
-                  const closedIdx = prev.findIndex((f: any) => f.id === id);
+                  const closedIdx = prev.findIndex((f: ViewerOpenFile) => f.id === id);
                   const newActive = next[Math.min(closedIdx, next.length - 1)];
                   setViewerActiveFileId(newActive?.id || null);
                 }
                 return next;
               });
             }}
-            onFileNotFound={(id: any) => {
+            onFileNotFound={(id: string) => {
               // Auto-close tabs for files that no longer exist
               setViewerOpenFiles((prev) => {
                 const next = prev.filter((f) => f.id !== id);
-                setViewerActiveFileId((activeId: any) => {
+                setViewerActiveFileId((activeId: string | null) => {
                   if (activeId !== id) return activeId;
-                  const closedIdx = prev.findIndex((f: any) => f.id === id);
+                  const closedIdx = prev.findIndex((f: ViewerOpenFile) => f.id === id);
                   const newActive = next[Math.min(closedIdx, next.length - 1)];
                   return newActive?.id || null;
                 });
@@ -4323,7 +4323,7 @@ export default function AgentComponent({
             }}
             isOpen={viewerOpenFiles.length > 0}
             width={viewerWidth}
-            onWidthChange={(w: any) => {
+            onWidthChange={(w: number) => {
               setViewerWidth(w);
               localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(w));
             }}
@@ -4359,7 +4359,7 @@ export default function AgentComponent({
             <AgentPickerComponent
               agents={agents}
               activeAgentId={agentId}
-              onSelect={(id: any) => {
+              onSelect={(id: string) => {
                 // Agent switching is handled by the parent page via URL/state
                 // Emit a custom event or call a callback
                 window.dispatchEvent(
@@ -4373,10 +4373,10 @@ export default function AgentComponent({
             config={filteredConfig}
             settings={{ provider: settings.provider, model: settings.model }}
             disabled={isGenerating || isSessionLocked}
-            onSelectModel={(provider: any, modelName: any) => {
+            onSelectModel={(provider: string, modelName: string) => {
               const modelDef = (
                 filteredConfig?.textToText?.models?.[provider] || []
-              ).find((m: any) => m.name === modelName);
+              ).find((m: ModelOption) => m.name === modelName);
               const temp = modelDef?.defaultTemperature ?? 1.0;
               setSettings((s) => ({
                 ...s,

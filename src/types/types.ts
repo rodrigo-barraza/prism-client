@@ -493,6 +493,7 @@ export interface ToolCallEvent {
   status?: string;
   thoughtSignature?: string;
   _sourceModel?: string;
+  timestamp?: number;
 }
 
 // ─── Web Search ─────────────────────────────────────────────
