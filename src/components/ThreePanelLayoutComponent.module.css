@@ -20,8 +20,8 @@
 /* ── Full-width header ─────────────────────────────── */
 
 .pageHeader {
-  height: 80px;
-  min-height: 80px;
+  height: 50px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -273,7 +273,7 @@
     position: relative;
     z-index: 201;
     height: auto;
-    min-height: 80px;
+    min-height: 50px;
     flex-wrap: wrap;
   }
 
