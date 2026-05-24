@@ -2878,6 +2878,20 @@ export default function AgentComponent({
         await runOrchestrationLoop(updatedMessages, resolvedTitle);
         // Messages are already updated by the streaming callbacks — just reload history
         loadSessions();
+
+        // Refresh conversation messages from database to sync the user's message
+        // with the server-side injected system context, enabling Clean/Raw View toggles.
+        try {
+          const full = isNoAgent
+            ? await PrismService.getConversation(agentSessionId)
+            : await PrismService.getAgentSession(agentSessionId, agentProject!);
+          if (full && full.messages && agentSessionIdRef.current === genId) {
+            const displayMessages = prepareDisplayMessages(full.messages);
+            setMessages(displayMessages);
+          }
+        } catch (e) {
+          console.error("Failed to refresh session messages after done:", e);
+        }
       } catch (error: unknown) {
         setMessages((prev) => [
           ...prev,
