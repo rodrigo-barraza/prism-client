@@ -119,6 +119,10 @@
   padding: 28px 32px;
 }
 
+.main.noScroll {
+  overflow: hidden;
+}
+
 @media (max-width: 767px) {
   .main {
     padding: 16px;

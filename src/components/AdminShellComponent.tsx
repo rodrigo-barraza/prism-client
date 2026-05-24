@@ -354,7 +354,9 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           </div>
           {controls && <div className={styles.headerControls}>{controls}</div>}
         </header>
-        <div className={styles.main}>{children}</div>
+        <div className={`${styles.main} ${pathname.startsWith("/admin/chat") ? styles.noScroll : ""}`}>
+          {children}
+        </div>
       </div>
     </div>
   );
