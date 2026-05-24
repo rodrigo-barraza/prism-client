@@ -50,6 +50,7 @@ import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import {
   SelectComponent,
   TabBarComponent,
+  ButtonComponent,
 } from "@rodrigo-barraza/components-library";
 
 import AgentPickerComponent from "./AgentPickerComponent";
@@ -79,6 +80,7 @@ import type {
   Message,
 } from "../types/types";
 import styles from "../app/admin/chat/page.module.css";
+import chatStyles from "./ChatAreaComponent.module.css";
 
 const POLL_INTERVAL = 5000;
 
@@ -153,6 +155,7 @@ export default function AdminChatViewerComponent({
   const [selectedEntry, setSelectedEntry] = useState<UnifiedEntry | null>(null);
   const [selectedSource, setSelectedSource] = useState<"conversation" | "agent_session" | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [showRaw, setShowRaw] = useState(false);
   const [config, setConfig] = useState<PrismConfig | null>(null);
 
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
@@ -672,6 +675,17 @@ export default function AdminChatViewerComponent({
   // Resolve whether selected entry is an agent session
   const isSelectedAgent = selectedSource === "agent_session";
 
+  const hasSystemContextMessage = useMemo(() => {
+    return (selectedEntry?.messages || []).some(
+      (m) =>
+        m.role === "user" &&
+        (m.content?.startsWith("[System Context]") ||
+          m.rawContent?.startsWith("[System Context]") ||
+          m.content?.startsWith("[System Context - Local Time:") ||
+          m.rawContent?.startsWith("[System Context - Local Time:"))
+    );
+  }, [selectedEntry?.messages]);
+
   // ── Admin header controls ────────────────────────────────────
   useEffect(() => {
     setControls(
@@ -983,31 +997,63 @@ export default function AdminChatViewerComponent({
             </>
           }
         >
-          <div className={styles.viewerBody} ref={viewerBodyRef}>
-            {!selectedEntry && !loadingDetail ? (
-              <div className={styles.emptyViewer}>
-                <MessageSquare
-                  size={40}
-                  style={{ opacity: 0.3, marginBottom: 12 }}
-                />
-                <div>Select a conversation to view</div>
+          <div className={chatStyles.container}>
+            {/* -- Chat header bar -- */}
+            <div className={chatStyles.chatHeader}>
+              <div className={chatStyles.chatHeaderTitle}>
+                <span className={chatStyles.chatHeaderTitleText}>{convTitle}</span>
               </div>
-            ) : loadingDetail ? (
-              <div className={styles.emptyViewer}>Loading conversation...</div>
-            ) : (
-              <MessageList
-                messages={prepareDisplayMessages(selectedEntry?.messages || [])}
-                readOnly
-                systemPrompt={
-                  selectedEntry?.systemPrompt ||
-                  sessionSystemPrompt ||
-                  (selectedEntry as Conversation)?.settings?.systemPrompt ||
-                  selectedEntry?.messages?.find(
-                    (m) => m.role === "system" && !m.deleted
-                  )?.content
-                }
-              />
-            )}
+              <div className={chatStyles.chatHeaderActions}>
+                {hasSystemContextMessage && (
+                  <div className={chatStyles.debugToggleContainer}>
+                    <ButtonComponent
+                      variant={!showRaw ? "tonal" : "text"}
+                      size="small"
+                      onClick={() => setShowRaw(false)}
+                      className={chatStyles.debugToggleBtn}
+                    >
+                      Clean View
+                    </ButtonComponent>
+                    <ButtonComponent
+                      variant={showRaw ? "tonal" : "text"}
+                      size="small"
+                      onClick={() => setShowRaw(true)}
+                      className={chatStyles.debugToggleBtn}
+                    >
+                      Raw View
+                    </ButtonComponent>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.viewerBody} ref={viewerBodyRef}>
+              {!selectedEntry && !loadingDetail ? (
+                <div className={styles.emptyViewer}>
+                  <MessageSquare
+                    size={40}
+                    style={{ opacity: 0.3, marginBottom: 12 }}
+                  />
+                  <div>Select a conversation to view</div>
+                </div>
+              ) : loadingDetail ? (
+                <div className={styles.emptyViewer}>Loading conversation...</div>
+              ) : (
+                <MessageList
+                  messages={prepareDisplayMessages(selectedEntry?.messages || [])}
+                  readOnly
+                  showRaw={showRaw}
+                  systemPrompt={
+                    selectedEntry?.systemPrompt ||
+                    sessionSystemPrompt ||
+                    (selectedEntry as Conversation)?.settings?.systemPrompt ||
+                    selectedEntry?.messages?.find(
+                      (m) => m.role === "system" && !m.deleted
+                    )?.content
+                  }
+                />
+              )}
+            </div>
           </div>
         </ThreePanelLayout>
       </div>
