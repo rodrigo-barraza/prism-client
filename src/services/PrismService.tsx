@@ -246,9 +246,9 @@ export default class PrismService {
    */
   static async getConversations({ limit, cursor }: { limit?: number; cursor?: string } = {}): Promise<ConversationListResponse> {
     const queryString = new URLSearchParams();
-    if (limit) qs.set("limit", String(limit));
-    if (cursor) qs.set("cursor", cursor);
-    const query = qs.toString();
+    if (limit) queryString.set("limit", String(limit));
+    if (cursor) queryString.set("cursor", cursor);
+    const query = queryString.toString();
     return PrismService._request<ConversationListResponse>(`/conversations${query ? `?${query}` : ""}`, {
       method: "GET",
     });
@@ -284,11 +284,11 @@ export default class PrismService {
    */
   static async getAgentSessions(project: string, { limit, cursor, agent }: { limit?: number; cursor?: string; agent?: string } = {}): Promise<AgentSessionListResponse> {
     const queryString = new URLSearchParams();
-    qs.set("type", "agent");
-    qs.set("project", project);
-    if (agent) qs.set("agent", agent);
-    if (limit) qs.set("limit", String(limit));
-    if (cursor) qs.set("cursor", cursor);
+    queryString.set("type", "agent");
+    queryString.set("project", project);
+    if (agent) queryString.set("agent", agent);
+    if (limit) queryString.set("limit", String(limit));
+    if (cursor) queryString.set("cursor", cursor);
     return PrismService._request<AgentSessionListResponse>(`/conversations?${queryString}`, { method: "GET" });
   }
 
@@ -520,9 +520,9 @@ export default class PrismService {
    */
   static async getAgentMemories(project?: string, limit = 100, agent?: string): Promise<AgentMemoryListResponse> {
     const queryString = new URLSearchParams();
-    if (project) qs.set("project", project);
-    if (limit) qs.set("limit", String(limit));
-    if (agent) qs.set("agent", agent);
+    if (project) queryString.set("project", project);
+    if (limit) queryString.set("limit", String(limit));
+    if (agent) queryString.set("agent", agent);
     return PrismService._request<AgentMemoryListResponse>(`/agent-memories?${queryString}`, { method: "GET" });
   }
 
@@ -552,8 +552,8 @@ export default class PrismService {
    */
   static async getConsolidationHistory(project?: string, limit = 10): Promise<{ history: Array<{ _id: string; project: string; createdAt: string; merged: number; created: number }> }> {
     const queryString = new URLSearchParams();
-    if (project) qs.set("project", project);
-    if (limit) qs.set("limit", String(limit));
+    if (project) queryString.set("project", project);
+    if (limit) queryString.set("limit", String(limit));
     return PrismService._request<{ history: Array<{ _id: string; project: string; createdAt: string; merged: number; created: number }> }>(
       `/agent-memories/consolidation-history?${queryString}`,
       { method: "GET" },

@@ -105,7 +105,7 @@ export default function HistoryItemComponent({
 }: HistoryItemProps) {
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
-  const hasModalities = mod && Object.keys(mod).length > 0;
+  const hasModalities = modalities && Object.keys(modalities).length > 0;
   const hasModel = (item.modelNames?.length ?? 0) > 0 || item.modelName;
 
   const AGENT_DISPLAY_NAMES: Record<string, string> = {
@@ -234,9 +234,9 @@ export default function HistoryItemComponent({
         {hasModalities && (
           <div className={styles.bottomRow}>
             <div className={styles.bottomLeft}>
-              <ModalityIconComponent modalities={mod} />
+              <ModalityIconComponent modalities={modalities} />
             </div>
-            {hasModalities && <ModelToolsRow tools={mod} variant="condensed" />}
+            {hasModalities && <ModelToolsRow tools={modalities} variant="condensed" />}
           </div>
         )}
 

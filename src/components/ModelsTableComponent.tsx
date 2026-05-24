@@ -169,7 +169,7 @@ function formatPricingRate(n: number | null | undefined): string {
   if (n == null) return "—";
   // Use up to 4 decimals but strip unnecessary trailing zeros, min 2 decimals
   const formatted = n.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
-  const [int, dec = ""] = str.split(".");
+  const [int, dec = ""] = formatted.split(".");
   const padded = dec.padEnd(2, "0");
   return `$${int}.${padded}`;
 }

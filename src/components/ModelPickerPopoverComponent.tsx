@@ -519,7 +519,7 @@ export default function ModelPickerPopoverComponent({
       const mapped = (TOOL_MAP as Record<string, string>)[t];
       if (mapped) modalityToggles[mapped] = true;
     }
-    return Object.keys(modalityToggles).length > 0 ? mod : null;
+    return Object.keys(modalityToggles).length > 0 ? modalityToggles : null;
   }, [currentModel, multiSelect]);
 
   // Trigger icon

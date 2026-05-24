@@ -415,7 +415,7 @@ export default function WorkflowInspector({
                               {(m.rawInputTypes || m.inputTypes || []).map(
                                 (t: string) => {
                                   const modalityIcon = getModalityIcon(t);
-                                  if (!mod) return null;
+                                  if (!modalityIcon) return null;
                                   const Icon = modalityIcon.icon;
                                   return (
                                     <Icon
@@ -431,7 +431,7 @@ export default function WorkflowInspector({
                               </span>
                               {(m.outputTypes || []).map((t: string) => {
                                 const modalityIcon = getModalityIcon(t);
-                                if (!mod) return null;
+                                if (!modalityIcon) return null;
                                 const Icon = modalityIcon.icon;
                                 return (
                                   <Icon

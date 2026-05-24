@@ -613,7 +613,7 @@ function ModelNode(props: ModelNodeProps) {
       {/* Modality icons from model's input types */}
       {modalityIcons.map((modality: string) => {
         const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>; label?: string; color?: string }>)[modality];
-        if (!mod) return null;
+        if (!modalityEntry) return null;
         const Icon = modalityEntry.icon;
         return (
           <Icon
@@ -915,7 +915,7 @@ function AssetNode(props: AssetNodeProps) {
         conversationModalities.length > 0 &&
         conversationModalities.map((modality: string) => {
           const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>; label?: string; color?: string }>)[modality];
-          if (!mod) return null;
+          if (!modalityEntry) return null;
           const Icon = modalityEntry.icon;
           return (
             <Icon

@@ -2015,6 +2015,7 @@ export default function AgentComponent({
           // LM Studio native MCP tool calls (toolCall events)
           onToolCall: (tc: ToolCallEvent) => {
             if (isStale()) return;
+            const toolData = tc;
             setToolActivity((prev) => {
               let updated;
               const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
