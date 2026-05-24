@@ -51,7 +51,7 @@ import {
 import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import HistoryPanel from "./HistoryPanelComponent";
-import SettingsPanel from "./SettingsPanelComponent";
+import SettingsPanel, { SessionStats as DisplaySessionStats } from "./SettingsPanelComponent";
 import ModelInfoPanel from "./ModelInfoPanelComponent";
 import CustomToolsPanel from "./CustomToolsPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
@@ -3149,7 +3149,7 @@ export default function AgentComponent({
         setMessages(displayMessages);
         setAgentSessionId(full.id || generateUUID());
         setTraceId(full.traceId || null);
-        setActiveId(full.id);
+        setActiveId(full.id ?? null);
         window.dispatchEvent(
           new CustomEvent("conversation:change", {
             detail: { conversationId: full.id },
@@ -3176,7 +3176,7 @@ export default function AgentComponent({
               thinkingEnabled: gs.thinkingEnabled,
             }),
             ...(gs.reasoningEffort && { reasoningEffort: gs.reasoningEffort }),
-            ...(gs.thinkingBudget && { thinkingBudget: gs.thinkingBudget }),
+            ...(gs.thinkingBudget !== undefined && { thinkingBudget: String(gs.thinkingBudget) }),
             // Conversations store systemPrompt at root — restore for Direct Chat
             ...(full.systemPrompt != null && {
               systemPrompt: full.systemPrompt,
@@ -3543,30 +3543,29 @@ export default function AgentComponent({
             (messages.length > 0
               ? backendSessionStats
                 ? (() => {
-                    // Map a backend sub-stats object to the display shape
                     const mapSubStats = (sub: SessionStats | undefined) => {
-                      if (!sub) return null;
+                      if (!sub) return undefined;
                       return {
-                        messageCount: sub.requestCount,
+                        messageCount: sub.requestCount || 0,
                         deletedCount: 0,
-                        requestCount: sub.requestCount,
+                        requestCount: sub.requestCount || 0,
                         uniqueModels: sub.models || [],
                         uniqueProviders: sub.providers || [],
                         totalTokens: {
-                          input: sub.totalInputTokens,
-                          output: sub.totalOutputTokens,
-                          total: sub.totalTokens,
+                          input: sub.totalInputTokens || 0,
+                          output: sub.totalOutputTokens || 0,
+                          total: sub.totalTokens || 0,
                           cacheRead: sub.totalCacheReadInputTokens || 0,
                           cacheWrite: sub.totalCacheCreationInputTokens || 0,
                           reasoning: sub.totalReasoningOutputTokens || 0,
                         },
-                        totalCost: sub.totalCost,
+                        totalCost: sub.totalCost || 0,
                         originalTotalCost: 0,
                         usedTools: toolCountsToUsedTools(sub.toolCounts),
-                        modalities: sub.modalities || {},
+                        modalities: {},
                         completedElapsedTime: sub.totalElapsedTime || 0,
-                        avgTokensPerSec: sub.avgTokensPerSec || null,
-                        avgTimeToGeneration: sub.avgTimeToGeneration || null,
+                        avgTokensPerSec: sub.avgTokensPerSec || undefined,
+                        avgTimeToGeneration: sub.avgTimeToGeneration || undefined,
                       };
                     };
                     // -- Token counts come exclusively from the backend --
@@ -3648,8 +3647,14 @@ export default function AgentComponent({
                         backendSessionStats.toolCounts,
                         workerToolActivity,
                       ),
-                      modalities:
-                        backendSessionStats.modalities || modalities,
+                      modalities: (() => {
+                        const raw = backendSessionStats.modalities || modalities || {};
+                        const mapped: Record<string, boolean> = {};
+                        for (const [key, value] of Object.entries(raw)) {
+                          mapped[key] = !!value;
+                        }
+                        return mapped;
+                      })(),
                       completedElapsedTime:
                         backendSessionStats.totalElapsedTime ||
                         completedElapsedTime,
@@ -3676,7 +3681,7 @@ export default function AgentComponent({
                       workers: mapSubStats(
                         backendSessionStats.workers,
                       ),
-                    };
+                    } as DisplaySessionStats;
                   })()
                 : (() => {
                     // -- Client-side fallback (live generation, no backend data yet) --
@@ -3740,7 +3745,14 @@ export default function AgentComponent({
                         null,
                         workerToolActivity,
                       ),
-                      modalities,
+                      modalities: (() => {
+                        const original = modalities || {};
+                        const mapped: Record<string, boolean> = {};
+                        for (const [key, value] of Object.entries(original)) {
+                          mapped[key] = !!value;
+                        }
+                        return mapped;
+                      })(),
                       completedElapsedTime,
                       currentTurnStart,
                       liveStreamingTokens,
@@ -3754,9 +3766,9 @@ export default function AgentComponent({
                       liveProcessingPhase,
                       liveTtftSamples,
                       liveGenProgress,
-                    };
+                    } as DisplaySessionStats;
                   })()
-              : null) as Record<string, unknown> | null
+              : null) as DisplaySessionStats | null
           }
         />
       )}

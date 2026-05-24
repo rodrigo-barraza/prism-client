@@ -137,6 +137,7 @@ export interface GenerationSettings {
   thinkingLevel?: string;
   thinkingBudget?: string | number;
   webSearchEnabled?: boolean;
+  thinkingEnabled?: boolean;
 }
 
 // ─── Worker Generation Progress ─────────────────────────────
@@ -166,8 +167,9 @@ export interface SessionStats {
   totalCacheReadInputTokens?: number;
   totalCacheCreationInputTokens?: number;
   totalReasoningOutputTokens?: number;
-  orchestrator?: Record<string, unknown>;
-  workers?: Record<string, unknown>;
+  orchestrator?: SessionStats;
+  workers?: SessionStats;
+  providers?: string[];
 }
 
 // ─── Token Usage ────────────────────────────────────────────
@@ -546,6 +548,24 @@ export interface CustomTool {
 
 // ─── Custom Agents ──────────────────────────────────────────
 
+/**
+ * Serialized policy format — stored in MongoDB and sent over the wire.
+ * The `when` predicate function is reconstructed on the backend from
+ * the `pattern` and `field` values.
+ */
+export interface SerializedPolicy {
+  /** Tool name this policy targets, or "*" for all tools. */
+  tool: string;
+  /** The outcome: APPROVE, DENY, or ASK_USER. */
+  decision: "APPROVE" | "DENY" | "ASK_USER";
+  /** Human-readable label. */
+  name?: string;
+  /** Regex pattern to test against the argument field. */
+  pattern?: string;
+  /** Which argument field to test the pattern against (default: "command"). */
+  field?: string;
+}
+
 export interface CustomAgent {
   _id?: ObjectId;
   id: string;
@@ -557,6 +577,8 @@ export interface CustomAgent {
   backgroundImage?: string;
   project?: string;
   enabledTools?: string[];
+  /** Declarative tool call policies for this agent. */
+  policies?: SerializedPolicy[];
   custom?: boolean;
   createdAt?: string;
   updatedAt?: string;

@@ -31,10 +31,8 @@ import {
   Zap,
 } from "lucide-react";
 import MarkdownContent from "./MarkdownContentComponent";
-// Lazy-load MessageList to break circular dependency:
-// MessageList → ToolResultRenderers → MessageList
 const LazyMessageList = lazy(() => import("./MessageListComponent"));
-import { prepareDisplayMessages } from "./MessageListComponent";
+import { prepareDisplayMessages, type WorkerToolActivityItem } from "./MessageListComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent";
 import PrismService from "../services/PrismService";
@@ -186,7 +184,7 @@ export interface RendererProps {
   args?: ToolArgs;
   streamingOutput?: string;
   language?: string;
-  workerToolActivity?: Record<string, WorkerActivity>;
+  workerToolActivity?: Record<string, WorkerActivity | WorkerToolActivityItem> | null;
 }
 
 export interface ToolResultViewProps {
@@ -198,7 +196,7 @@ export interface ToolResultViewProps {
     status?: string;
   };
   streamingOutput?: string;
-  workerToolActivity?: Record<string, WorkerActivity>;
+  workerToolActivity?: Record<string, WorkerActivity | WorkerToolActivityItem> | null;
 }
 
 // --- Helpers ----------------------------------------------------------

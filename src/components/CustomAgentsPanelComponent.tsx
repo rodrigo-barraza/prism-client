@@ -80,7 +80,7 @@ import ToolSelectionComponent from "./ToolSelectionComponent";
 import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./CustomAgentsPanelComponent.module.css";
 import type { LucideIcon } from "lucide-react";
-import type { CustomAgent } from "../types/types";
+import type { CustomAgent, SerializedPolicy } from "../types/types";
 
 /** Extended agent shape used during editing — includes form fields
  *  that are sent to the backend but not defined on the shared CustomAgent type. */
@@ -90,6 +90,7 @@ interface EditableAgent extends CustomAgent {
   toolPolicy?: string;
   usesDirectoryTree?: boolean;
   usesCodingGuidelines?: boolean;
+  policies?: SerializedPolicy[];
   agentId?: string;
 }
 
@@ -127,6 +128,7 @@ const EMPTY_AGENT: EditableAgent = {
   guidelines: "",
   toolPolicy: "",
   enabledTools: [],
+  policies: [],
   usesDirectoryTree: false,
   usesCodingGuidelines: false,
 };
@@ -596,6 +598,107 @@ export default function CustomAgentsPanel({
               updateField("enabledTools", tools)
             }
           />
+
+          {/* Policy Editor */}
+          <div className={styles.formGroup}>
+            <label>
+              <Shield
+                size={12}
+                style={{ marginRight: 4, verticalAlign: -1 }}
+              />
+              Tool Policies
+            </label>
+            <span className={styles.hint}>
+              Define allow/deny/ask rules for specific tools. Policies are
+              evaluated before the default approval tier system — deny rules
+              take highest priority.
+            </span>
+
+            {(editingAgent.policies || []).map((policy: SerializedPolicy, idx: number) => (
+              <div key={idx} className={styles.policyRow}>
+                <select
+                  className={styles.policySelect}
+                  value={policy.decision}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const updated = [...(editingAgent.policies || [])];
+                    updated[idx] = { ...updated[idx], decision: e.target.value as SerializedPolicy["decision"] };
+                    updateField("policies", updated);
+                  }}
+                >
+                  <option value="DENY">Deny</option>
+                  <option value="ASK_USER">Ask User</option>
+                  <option value="APPROVE">Allow</option>
+                </select>
+
+                <input
+                  type="text"
+                  className={styles.policyInput}
+                  value={policy.tool}
+                  placeholder="Tool name or *"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const updated = [...(editingAgent.policies || [])];
+                    updated[idx] = { ...updated[idx], tool: e.target.value };
+                    updateField("policies", updated);
+                  }}
+                />
+
+                <input
+                  type="text"
+                  className={styles.policyInput}
+                  value={policy.pattern || ""}
+                  placeholder="Regex pattern (optional)"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const updated = [...(editingAgent.policies || [])];
+                    updated[idx] = { ...updated[idx], pattern: e.target.value || undefined };
+                    updateField("policies", updated);
+                  }}
+                />
+
+                <input
+                  type="text"
+                  className={styles.policyInput}
+                  value={policy.field || ""}
+                  placeholder="Field (default: command)"
+                  style={{ maxWidth: 140 }}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const updated = [...(editingAgent.policies || [])];
+                    updated[idx] = { ...updated[idx], field: e.target.value || undefined };
+                    updateField("policies", updated);
+                  }}
+                />
+
+                <button
+                  type="button"
+                  className={styles.policyRemoveBtn}
+                  onClick={() => {
+                    const updated = (editingAgent.policies || []).filter((_: SerializedPolicy, i: number) => i !== idx);
+                    updateField("policies", updated);
+                  }}
+                  title="Remove policy"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              className={styles.policyAddBtn}
+              onClick={() => {
+                const newPolicy: SerializedPolicy = {
+                  tool: "*",
+                  decision: "ASK_USER",
+                };
+                updateField("policies", [
+                  ...(editingAgent.policies || []),
+                  newPolicy,
+                ]);
+              }}
+            >
+              <Plus size={12} />
+              Add Policy Rule
+            </button>
+          </div>
 
           {/* Error */}
           {error && (
