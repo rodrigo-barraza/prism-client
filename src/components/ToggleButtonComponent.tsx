@@ -22,7 +22,7 @@ export default function ToggleButtonComponent({
   active = false,
   title,
   onClick,
-}: any) {
+}: { icon?: React.ReactNode; label?: string; active?: boolean; title?: string; onClick?: (e: React.MouseEvent) => void }) {
   return (
     <button
       className={`${styles.toggle} ${active ? styles.active : ""}`}

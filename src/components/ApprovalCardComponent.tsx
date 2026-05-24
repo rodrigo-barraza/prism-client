@@ -9,6 +9,18 @@ const TIER_CONFIG = {
   3: { label: "Danger", color: "var(--color-error)", icon: ShieldAlert },
 };
 
+type TierLevel = keyof typeof TIER_CONFIG;
+
+interface ApprovalCardProps {
+  toolName: string;
+  toolArgs?: Record<string, unknown>;
+  tier?: TierLevel;
+  onApprove?: () => void;
+  onReject?: () => void;
+  onApproveAll?: () => void;
+  isPending?: boolean;
+}
+
 /**
  * Inline approval card for tool calls that need user permission.
  */
@@ -20,8 +32,8 @@ export default function ApprovalCardComponent({
   onReject,
   onApproveAll,
   isPending = true,
-}: any) {
-  const tierInfo: any = (TIER_CONFIG as any)[tier] || TIER_CONFIG[2];
+}: ApprovalCardProps) {
+  const tierInfo = TIER_CONFIG[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
 
   // Format args for preview (truncate long values)
@@ -51,7 +63,7 @@ export default function ApprovalCardComponent({
 
       {argEntries.length > 0 && (
         <div className={styles.args}>
-          {argEntries.map(([key, value]: [string, any]) => {
+          {argEntries.map(([key, value]) => {
             const strVal =
               typeof value === "string" ? value : JSON.stringify(value);
             const truncated =

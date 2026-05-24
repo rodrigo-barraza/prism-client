@@ -4,6 +4,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronDown, X } from "lucide-react";
 import styles from "./ComboboxFilterComponent.module.css";
 
+interface ComboboxFilterProps {
+  options?: string[];
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  allLabel?: string;
+}
+
 /**
  * Combobox filter: an input that shows a filtered dropdown as you type.
  *
@@ -19,14 +27,14 @@ export default function ComboboxFilter({
   onChange,
   placeholder = "Search...",
   allLabel = "All",
-}: any) {
+}: ComboboxFilterProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const filtered = query
-    ? options.filter((o: any) => o.toLowerCase().includes(query.toLowerCase()))
+    ? options.filter((o: string) => o.toLowerCase().includes(query.toLowerCase()))
     : options;
 
   const handleSelect = useCallback(
@@ -66,10 +74,10 @@ onChange(value);
   // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handleClick = (e: any) => {
+    const handleClick = (e: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current!.contains(e.target)
+        !containerRef.current!.contains(e.target as Node)
       ) {
         setOpen(false);
         setQuery("");
@@ -122,7 +130,7 @@ onChange(value);
           {filtered.length === 0 && (
             <div className={styles.noResults}>No matches</div>
           )}
-          {filtered.map((opt: any) => (
+          {filtered.map((opt: string) => (
             <button
               key={opt}
               type="button"

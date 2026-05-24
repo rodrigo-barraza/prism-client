@@ -21,6 +21,7 @@ import CostBadgeComponent from "./CostBadgeComponent";
 
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
 import SoundService from "@/services/SoundService";
+import type { Benchmark, BenchmarkAssertion } from "@/types/types";
 import styles from "./BenchmarkSidebarComponent.module.css";
 
 /**
@@ -30,11 +31,11 @@ import styles from "./BenchmarkSidebarComponent.module.css";
  * Props:
  *   activeBenchmarkId — highlight the currently viewed benchmark
  */
-export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
+export default function BenchmarkSidebarComponent({ activeBenchmarkId }: { activeBenchmarkId?: string }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [benchmarks, setBenchmarks] = useState<any[]>([]);
+  const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeBenchmarkIds, setActiveBenchmarkIds] = useState(new Set());
@@ -44,7 +45,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
     try {
       const { benchmarks: data } = await PrismService.getBenchmarks();
       setBenchmarks(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load benchmarks:", error);
     } finally {
       setLoading(false);
@@ -58,7 +59,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
   // -- Adaptive poll: only keep polling while benchmarks are active --
   useEffect(() => {
     let cancelled = false;
-    let interval: any = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
 
     const poll = async () => {
       try {
@@ -101,7 +102,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
         b.name.toLowerCase().includes(q) ||
         b.prompt?.toLowerCase().includes(q) ||
         b.expectedValue?.toLowerCase().includes(q) ||
-        b.assertions?.some((a: any) =>
+        b.assertions?.some((a: BenchmarkAssertion) =>
           a.expectedValue?.toLowerCase().includes(q),
         ),
     );
@@ -109,7 +110,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
 
   // -- Navigate -----------------------------------------------
   const navigate = useCallback(
-    (benchmark: any) => {
+    (benchmark: Benchmark) => {
       router.push(`/benchmarks/${benchmark.id}`);
     },
     [router],
@@ -176,7 +177,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
               <div
                 key={b.id}
                 className={`${styles.item} ${isActive ? styles.itemActive : ""} ${isRunning ? styles.itemRunning : ""}`}
-                {...(SoundService as any).interactive(() => navigate(b))}
+                {...SoundService.interactive(() => navigate(b))}
                 data-panel-close
               >
                 {/* Row 1: date (left) · cost (right) */}
@@ -200,16 +201,16 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: any) {
                     <div className={styles.statsLeft}>
                       <span className={styles.statPassed}>
                         <CheckCircle2 size={10} />
-                        {run.summary.passed}
+                        {run.summary?.passed}
                       </span>
                       <span className={styles.statFailed}>
                         <XCircle size={10} />
-                        {run.summary.failed + (run.summary.errored || 0)}
+                        {(run.summary?.failed ?? 0) + (run.summary?.errored || 0)}
                       </span>
                     </div>
                     <BenchmarkBarComponent
-                      passed={run.summary.passed}
-                      total={run.summary.total}
+                      passed={run.summary?.passed ?? 0}
+                      total={run.summary?.total ?? 0}
                       mini
                     />
                   </div>

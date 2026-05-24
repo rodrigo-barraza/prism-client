@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import styles from "./MCPServersPanelComponent.module.css";
+import type { MCPServer } from "@/types/types";
+import { getErrorMessage } from "../utils/errorMessage";
 
 /**
  * MCPServersPanel — Manage MCP (Model Context Protocol) server connections.
@@ -24,13 +26,19 @@ export default function MCPServersPanel({
   servers,
   onServersChange,
   project,
-}: any) {
-  const [editingServer, setEditingServer] = useState<any>(null);
+  readOnly = false,
+}: {
+  servers: MCPServer[];
+  onServersChange: () => void;
+  project?: string;
+  readOnly?: boolean;
+}) {
+  const [editingServer, setEditingServer] = useState<MCPServer | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [connecting, setConnecting] = useState<any>(null); // server ID being connected
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
-  const [error, setError] = useState<any>(null);
+  const [connecting, setConnecting] = useState<string | null>(null); // server ID being connected
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // -- CRUD -----------------------------------------------------
 
@@ -50,7 +58,7 @@ export default function MCPServersPanel({
     setError(null);
   }, []);
 
-  const handleEdit = useCallback((server: any) => {
+  const handleEdit = useCallback((server: MCPServer) => {
     setEditingServer({ ...server });
     setIsNew(false);
     setError(null);
@@ -63,6 +71,7 @@ export default function MCPServersPanel({
   }, []);
 
   const handleSave = useCallback(async () => {
+    if (!editingServer) return;
     if (!editingServer.name?.trim()) return;
     setSaving(true);
     setError(null);
@@ -74,7 +83,7 @@ export default function MCPServersPanel({
           typeof editingServer.args === "string"
             ? editingServer.args
                 .split(",")
-                .map((a: any) => a.trim())
+                .map((a: string) => a.trim())
                 .filter(Boolean)
             : editingServer.args,
         ...(project ? { project } : {}),
@@ -84,7 +93,7 @@ export default function MCPServersPanel({
         await PrismService.createMCPServer(payload);
       } else {
         await PrismService.updateMCPServer(
-          editingServer.id || editingServer._id,
+          editingServer.id || editingServer._id?.toString() || "",
           payload,
         );
       }
@@ -92,8 +101,8 @@ export default function MCPServersPanel({
       setEditingServer(null);
       setIsNew(false);
       onServersChange();
-    } catch (error: any) {
-      setError(error.message || "Failed to save server");
+    } catch (error: unknown) {
+      setError(getErrorMessage(error) || "Failed to save server");
     } finally {
       setSaving(false);
     }
@@ -109,7 +118,7 @@ export default function MCPServersPanel({
         await PrismService.deleteMCPServer(id);
         setConfirmingDeleteId(null);
         onServersChange();
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to delete MCP server:", error);
       }
     },
@@ -119,15 +128,16 @@ export default function MCPServersPanel({
   // -- Connect / Disconnect -------------------------------------
 
   const handleConnect = useCallback(
-    async (server: any) => {
-      const serverId = server.id || server._id;
+    async (server: MCPServer) => {
+      const serverId = server.id || server._id || "";
+      if (!serverId) return;
       setConnecting(serverId);
       setError(null);
       try {
         await PrismService.connectMCPServer(serverId);
         onServersChange();
-      } catch (error: any) {
-        setError(`Connect failed: ${error.message || "Unknown error"}`);
+      } catch (error: unknown) {
+        setError(`Connect failed: ${getErrorMessage(error) || "Unknown error"}`);
       } finally {
         setConnecting(null);
       }
@@ -136,13 +146,14 @@ export default function MCPServersPanel({
   );
 
   const handleDisconnect = useCallback(
-    async (server: any) => {
-      const serverId = server.id || server._id;
+    async (server: MCPServer) => {
+      const serverId = server.id || server._id || "";
+      if (!serverId) return;
       setConnecting(serverId);
       try {
         await PrismService.disconnectMCPServer(serverId);
         onServersChange();
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Disconnect failed:", error);
       } finally {
         setConnecting(null);
@@ -173,12 +184,12 @@ export default function MCPServersPanel({
               className={styles.input}
               value={editingServer.name}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingServer((s: any) => ({
+                setEditingServer((s: MCPServer | null) => s ? ({
                   ...s,
                   name: e.target.value
                     .replace(/[^a-zA-Z0-9_-]/g, "-")
                     .toLowerCase(),
-                }))
+                }) : null)
               }
               placeholder="filesystem"
             />
@@ -194,10 +205,10 @@ export default function MCPServersPanel({
               className={styles.input}
               value={editingServer.displayName}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingServer((s: any) => ({
+                setEditingServer((s: MCPServer | null) => s ? ({
                   ...s,
                   displayName: e.target.value,
-                }))
+                }) : null)
               }
               placeholder="Filesystem Access"
             />
@@ -209,7 +220,7 @@ export default function MCPServersPanel({
               <button
                 className={`${styles.transportTab} ${isStdio ? styles.transportTabActive : ""}`}
                 onClick={() =>
-                  setEditingServer((s: any) => ({ ...s, transport: "stdio" }))
+                  setEditingServer((s: MCPServer | null) => s ? ({ ...s, transport: "stdio" }) : null)
                 }
               >
                 stdio
@@ -217,10 +228,10 @@ export default function MCPServersPanel({
               <button
                 className={`${styles.transportTab} ${!isStdio ? styles.transportTabActive : ""}`}
                 onClick={() =>
-                  setEditingServer((s: any) => ({
+                  setEditingServer((s: MCPServer | null) => s ? ({
                     ...s,
                     transport: "streamable-http",
-                  }))
+                  }) : null)
                 }
               >
                 HTTP
@@ -237,10 +248,10 @@ export default function MCPServersPanel({
                   className={styles.input}
                   value={editingServer.command}
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                    setEditingServer((s: any) => ({
+                    setEditingServer((s: MCPServer | null) => s ? ({
                       ...s,
                       command: e.target.value,
-                    }))
+                    }) : null)
                   }
                   placeholder="npx"
                 />
@@ -256,10 +267,10 @@ export default function MCPServersPanel({
                       : editingServer.args
                   }
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                    setEditingServer((s: any) => ({
+                    setEditingServer((s: MCPServer | null) => s ? ({
                       ...s,
                       args: e.target.value,
-                    }))
+                    }) : null)
                   }
                   placeholder="-y, @modelcontextprotocol/server-filesystem, /home"
                 />
@@ -274,7 +285,7 @@ export default function MCPServersPanel({
                 className={styles.input}
                 value={editingServer.url}
                 onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                  setEditingServer((s: any) => ({ ...s, url: e.target.value }))
+                  setEditingServer((s: MCPServer | null) => s ? ({ ...s, url: e.target.value }) : null)
                 }
                 placeholder="https://mcp-server.example.com/mcp"
               />
@@ -303,7 +314,7 @@ export default function MCPServersPanel({
 
   // -- List View ------------------------------------------------
 
-  const connectedCount = servers.filter((s: any) => s.connected).length;
+  const connectedCount = servers.filter((s: MCPServer) => s.connected).length;
 
   return (
     <div className={styles.container}>
@@ -311,12 +322,14 @@ export default function MCPServersPanel({
         <span className={styles.headerTitle}>
           MCP ({connectedCount}/{servers.length})
         </span>
-        <div className={styles.headerActions}>
-          <button className={styles.addBtn} onClick={handleCreate}>
-            <Plus size={12} />
-            Add
-          </button>
-        </div>
+        {!readOnly && (
+          <div className={styles.headerActions}>
+            <button className={styles.addBtn} onClick={handleCreate}>
+              <Plus size={12} />
+              Add
+            </button>
+          </div>
+        )}
       </div>
 
       {error && <div className={styles.errorMsg}>{error}</div>}
@@ -331,15 +344,17 @@ export default function MCPServersPanel({
             Connect external tool providers via the Model Context Protocol. Add
             servers to give the agent access to databases, APIs, and more.
           </div>
-          <button className={styles.addBtn} onClick={handleCreate}>
-            <Plus size={12} />
-            Add your first server
-          </button>
+          {!readOnly && (
+            <button className={styles.addBtn} onClick={handleCreate}>
+              <Plus size={12} />
+              Add your first server
+            </button>
+          )}
         </div>
       )}
 
-      {servers.map((server: any) => {
-        const serverId = server.id || server._id;
+      {servers.map((server: MCPServer) => {
+        const serverId = server.id || server._id?.toString() || "";
         const isConfirming = confirmingDeleteId === serverId;
         const isConnecting = connecting === serverId;
 
@@ -357,7 +372,7 @@ export default function MCPServersPanel({
                   <span className={styles.transportBadge}>
                     {server.transport}
                   </span>
-                  {server.connected && server.toolCount > 0 && (
+                  {server.connected && (server.toolCount ?? 0) > 0 && (
                     <span className={styles.toolCountBadge}>
                       <Wrench size={9} />
                       {server.toolCount} tools
@@ -365,47 +380,49 @@ export default function MCPServersPanel({
                   )}
                 </div>
               </div>
-              <div className={styles.serverActions}>
-                {server.connected ? (
+              {!readOnly && (
+                <div className={styles.serverActions}>
+                  {server.connected ? (
+                    <button
+                      className={styles.disconnectBtn}
+                      onClick={() => handleDisconnect(server)}
+                      disabled={isConnecting}
+                    >
+                      <Unplug size={11} />
+                      {isConnecting ? "..." : "Disconnect"}
+                    </button>
+                  ) : (
+                    <button
+                      className={styles.connectBtn}
+                      onClick={() => handleConnect(server)}
+                      disabled={isConnecting}
+                    >
+                      <Plug size={11} />
+                      {isConnecting ? "Connecting..." : "Connect"}
+                    </button>
+                  )}
                   <button
-                    className={styles.disconnectBtn}
-                    onClick={() => handleDisconnect(server)}
-                    disabled={isConnecting}
+                    className={styles.actionBtn}
+                    onClick={() => handleEdit(server)}
+                    title="Edit server"
                   >
-                    <Unplug size={11} />
-                    {isConnecting ? "..." : "Disconnect"}
+                    <Edit3 size={13} />
                   </button>
-                ) : (
                   <button
-                    className={styles.connectBtn}
-                    onClick={() => handleConnect(server)}
-                    disabled={isConnecting}
+                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                    onClick={() => handleDelete(serverId)}
+                    title="Delete server"
                   >
-                    <Plug size={11} />
-                    {isConnecting ? "Connecting..." : "Connect"}
+                    <Trash2 size={13} />
                   </button>
-                )}
-                <button
-                  className={styles.actionBtn}
-                  onClick={() => handleEdit(server)}
-                  title="Edit server"
-                >
-                  <Edit3 size={13} />
-                </button>
-                <button
-                  className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                  onClick={() => handleDelete(serverId)}
-                  title="Delete server"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Show discovered tools when connected */}
-            {server.connected && server.tools?.length > 0 && (
+            {server.connected && (server.tools?.length ?? 0) > 0 && (
               <div className={styles.toolList}>
-                {server.tools.map((tool: any) => (
+                {server.tools?.map((tool: { name: string; description?: string }) => (
                   <span key={tool.name} className={styles.toolTag}>
                     {tool.name}
                   </span>

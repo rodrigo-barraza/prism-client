@@ -1,5 +1,5 @@
 import { useState, useEffect, useReducer, useMemo } from "react";
-import type { SessionTokenStats } from "../utils/utilities";
+import type { SessionTokenStats, WorkerProgress, GenProgress } from "../utils/utilities";
 
 /**
  * Staleness threshold: if the most recent backend-emitted
@@ -86,13 +86,13 @@ const TOK_PER_SEC_INITIAL: TokPerSecState = { current: null, lastComputed: null 
  * The aggregate shown in the SettingsPanel should be the **additive sum**
  * of all concurrent workers (e.g. 3 × 40 = 120 tok/s), not the average.
  */
-function sumWorkerThroughput(workerGenerationProgress: Record<string, any> | null): { sum: number; count: number } {
+function sumWorkerThroughput(workerGenerationProgress: Record<string, WorkerProgress> | null): { sum: number; count: number } {
   let sum = 0;
   let count = 0;
   if (!workerGenerationProgress) return { sum: 0, count: 0 };
-  for (const wp of Object.values(workerGenerationProgress) as Array<Record<string, any>>) {
-    if (wp.tokPerSec != null && (wp.tokPerSec as number) > 0) {
-      sum += wp.tokPerSec as number;
+  for (const wp of Object.values(workerGenerationProgress)) {
+    if (wp.tokPerSec != null && wp.tokPerSec > 0) {
+      sum += wp.tokPerSec;
       count++;
     }
   }
@@ -194,15 +194,15 @@ export default function useTokenRate(sessionStats: ExtendedSessionStats | null):
   } else {
     // Priority 2: Backend-sourced generation_progress from
     // SessionGenerationTracker (for solo orchestrator sessions).
-    const genProgress = sessionStats?.liveGenProgress as Record<string, any> | null;
+    const genProgress = sessionStats?.liveGenProgress as GenProgress | null;
     const genProgressFresh =
       genProgress &&
       genProgress.timestamp &&
-      perfNow - (genProgress.timestamp as number) < PROGRESS_STALE_MS;
+      perfNow - genProgress.timestamp < PROGRESS_STALE_MS;
 
     if (genProgressFresh && genProgress.tokPerSec != null) {
-      computedTokPerSec = genProgress.tokPerSec as number;
-      hasActiveWorkers = ((genProgress.activeRequests as number) || 0) > 1;
+      computedTokPerSec = genProgress.tokPerSec;
+      hasActiveWorkers = (genProgress.activeRequests || 0) > 1;
     } else {
       // Priority 3: Frontend chunk-counting fallback for non-agentic
       // sessions (Direct Chat) that don't go through the agentic loop.

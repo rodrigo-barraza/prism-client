@@ -13,7 +13,7 @@ function easeOutCubic(t: number): number {
 }
 
 export interface CostBadgeProps {
-  cost: number;
+  cost?: number;
   showIcon?: boolean;
   className?: string;
   mini?: boolean;
@@ -27,7 +27,7 @@ export interface CostBadgeProps {
  * on the text while the tween is active.
  */
 export default function CostBadgeComponent({
-  cost,
+  cost = 0,
   showIcon = true,
   className = "",
   mini = false,
@@ -76,8 +76,9 @@ export default function CostBadgeComponent({
   }, [cost]);
 
   if (!cost || cost <= 0) return null;
+  const safeCost = cost;
 
-  const tooltipLabel = `Estimated cost: ${formatCost(cost)}`;
+  const tooltipLabel = `Estimated cost: ${formatCost(safeCost)}`;
 
   return (
     <TooltipComponent label={tooltipLabel} position="top">

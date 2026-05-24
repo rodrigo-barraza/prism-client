@@ -22,6 +22,12 @@ import ModalityIconComponent from "../components/ModalityIconComponent";
 import CostBadgeComponent from "../components/CostBadgeComponent";
 import ToolIconComponent from "../components/ToolIconComponent";
 import { prepareDisplayMessages } from "../components/MessageListComponent";
+import type { TransformedRequestItem, Message } from "../types/types";
+
+export interface TransformedMediaAsset {
+  url: string;
+  origin: string;
+}
 
 /* -- Media extraction -------------------------------------------- */
 
@@ -30,24 +36,24 @@ import { prepareDisplayMessages } from "../components/MessageListComponent";
  * (minio://, data:image/…, https://…jpg, etc.) with their origin
  * ("user" for request, "ai" for response).
  */
-export function extractMediaAssets(object: any) {
-  const seen = new Set();
-  const assets: Record<string, any>[] = [];
+export function extractMediaAssets(object: TransformedRequestItem | null | undefined): TransformedMediaAsset[] {
+  const seen = new Set<string>();
+  const assets: TransformedMediaAsset[] = [];
   const search = (node: any, origin: string) => {
     if (!node) return;
     if (typeof node === "string") {
       if (seen.has(node)) return;
       if (
-        (typeof node === "string" && node.startsWith("minio://")) ||
-        (typeof node === "string" && node.startsWith("data:image/")) ||
-        (typeof node === "string" && node.startsWith("data:audio/")) ||
-        (typeof node === "string" && node.startsWith("data:video/")) ||
-        (typeof node === "string" && node.startsWith("data:application/pdf"))
+        node.startsWith("minio://") ||
+        node.startsWith("data:image/") ||
+        node.startsWith("data:audio/") ||
+        node.startsWith("data:video/") ||
+        node.startsWith("data:application/pdf")
       ) {
         seen.add(node);
         assets.push({ url: node, origin });
-      } else if ((typeof node === "string" && node.startsWith("http://")) || (typeof node === "string" && node.startsWith("https://"))) {
-        const fileExtension = (node as string).split("?")[0].split(".").pop()?.toLowerCase();
+      } else if (node.startsWith("http://") || node.startsWith("https://")) {
+        const fileExtension = node.split("?")[0].split(".").pop()?.toLowerCase();
         if (
           [
             "png",
@@ -108,7 +114,7 @@ export function getMediaTypeFromRef(ref: string) {
  * Both /admin/requests and /admin/traces pass the exact same
  * section definitions — this function is the single source of truth.
  */
-export function buildRequestDetailSections(req: any) {
+export function buildRequestDetailSections(req: TransformedRequestItem | null | undefined) {
   if (!req) return [];
   return [
     {
@@ -240,54 +246,54 @@ export function buildRequestDetailSections(req: any) {
         {
           label: "Input Tokens",
           value:
-            req.inputTokens > 0 ? (
-              <TokenCountBadgeComponent value={req.inputTokens} label="in" />
+            (req.inputTokens ?? 0) > 0 ? (
+              <TokenCountBadgeComponent value={req.inputTokens ?? 0} label="in" />
             ) : (
-              formatNumber(req.inputTokens)
+              formatNumber(req.inputTokens ?? 0)
             ),
         },
         {
           label: "Output Tokens",
           value:
-            req.outputTokens > 0 ? (
-              <TokenCountBadgeComponent value={req.outputTokens} label="out" />
+            (req.outputTokens ?? 0) > 0 ? (
+              <TokenCountBadgeComponent value={req.outputTokens ?? 0} label="out" />
             ) : (
-              formatNumber(req.outputTokens)
+              formatNumber(req.outputTokens ?? 0)
             ),
         },
-        ...(req.cacheReadInputTokens > 0
+        ...((req.cacheReadInputTokens ?? 0) > 0
           ? [
               {
                 label: "Cache Read Tokens",
                 value: (
                   <TokenCountBadgeComponent
-                    value={req.cacheReadInputTokens}
+                    value={req.cacheReadInputTokens ?? 0}
                     label="cached read"
                   />
                 ),
               },
             ]
           : []),
-        ...(req.cacheCreationInputTokens > 0
+        ...((req.cacheCreationInputTokens ?? 0) > 0
           ? [
               {
                 label: "Cache Write Tokens",
                 value: (
                   <TokenCountBadgeComponent
-                    value={req.cacheCreationInputTokens}
+                    value={req.cacheCreationInputTokens ?? 0}
                     label="cached write"
                   />
                 ),
               },
             ]
           : []),
-        ...(req.reasoningOutputTokens > 0
+        ...((req.reasoningOutputTokens ?? 0) > 0
           ? [
               {
                 label: "Reasoning Tokens",
                 value: (
                   <TokenCountBadgeComponent
-                    value={req.reasoningOutputTokens}
+                    value={req.reasoningOutputTokens ?? 0}
                     label="reasoning"
                   />
                 ),
@@ -296,26 +302,26 @@ export function buildRequestDetailSections(req: any) {
           : []),
         {
           label: "Estimated Cost",
-          value: <CostBadgeComponent cost={req.estimatedCost} />,
+          value: <CostBadgeComponent cost={req.estimatedCost ?? 0} />,
         },
         {
           label: "Tokens/sec",
           value:
-            req.tokensPerSec > 0 ? (
+            (req.tokensPerSec ?? 0) > 0 ? (
               <BadgeComponent variant="accent">
-                {formatTokensPerSec(req.tokensPerSec)}
+                {formatTokensPerSec(req.tokensPerSec ?? 0)}
               </BadgeComponent>
             ) : (
-              formatTokensPerSec(req.tokensPerSec)
+              formatTokensPerSec(req.tokensPerSec ?? 0)
             ),
         },
         {
           label: "Input Chars",
-          value: formatNumber(req.inputCharacters),
+          value: formatNumber(req.inputCharacters ?? 0),
         },
         {
           label: "Output Chars",
-          value: formatNumber(req.outputCharacters),
+          value: formatNumber(req.outputCharacters ?? 0),
         },
         {
           label: "Messages",
@@ -329,28 +335,28 @@ export function buildRequestDetailSections(req: any) {
         {
           label: "Time to Generation",
           value:
-            req.timeToGeneration > 0 ? (
-              <StopwatchBadgeComponent seconds={req.timeToGeneration} />
+            (req.timeToGeneration ?? 0) > 0 ? (
+              <StopwatchBadgeComponent seconds={req.timeToGeneration ?? 0} />
             ) : (
-              formatLatency(req.timeToGeneration)
+              formatLatency(req.timeToGeneration ?? 0)
             ),
         },
         {
           label: "Generation Time",
           value:
-            req.generationTime > 0 ? (
-              <StopwatchBadgeComponent seconds={req.generationTime} />
+            (req.generationTime ?? 0) > 0 ? (
+              <StopwatchBadgeComponent seconds={req.generationTime ?? 0} />
             ) : (
-              formatLatency(req.generationTime)
+              formatLatency(req.generationTime ?? 0)
             ),
         },
         {
           label: "Total Time",
           value:
-            req.totalTime > 0 ? (
-              <StopwatchBadgeComponent seconds={req.totalTime} />
+            (req.totalTime ?? 0) > 0 ? (
+              <StopwatchBadgeComponent seconds={req.totalTime ?? 0} />
             ) : (
-              formatLatency(req.totalTime)
+              formatLatency(req.totalTime ?? 0)
             ),
         },
       ],
@@ -390,7 +396,7 @@ export function buildRequestDetailSections(req: any) {
  * Returns { messages, systemPrompt } or null if there's nothing
  * to display.
  */
-export function reconstructChatMessages(selectedRequest: any) {
+export function reconstructChatMessages(selectedRequest: TransformedRequestItem | null | undefined) {
   const reqPayload = selectedRequest?.requestPayload;
   const resPayload = selectedRequest?.responsePayload;
   if (!reqPayload?.messages?.length) return null;
@@ -400,7 +406,7 @@ export function reconstructChatMessages(selectedRequest: any) {
 
   // Append the assistant response
   if (resPayload) {
-    const assistantMsg = {
+    const assistantMsg: Message = {
       role: "assistant",
       content: "",
       model: selectedRequest.model,
@@ -410,17 +416,17 @@ export function reconstructChatMessages(selectedRequest: any) {
     // Handle different response formats
     if (resPayload.text) {
       // Prism standardized format
-      assistantMsg.content = resPayload.text;
+      assistantMsg.content = resPayload.text as string;
     } else if (resPayload.content) {
-      assistantMsg.content = resPayload.content;
-    } else if (resPayload.candidates?.[0]?.content?.parts) {
+      assistantMsg.content = resPayload.content as string;
+    } else if (Array.isArray(resPayload.candidates?.[0]?.content?.parts)) {
       // Google format
       assistantMsg.content = resPayload.candidates[0].content.parts
-        .map((p: Record<string, any>) => p.text || "")
+        .map((p: { text?: string }) => p.text || "")
         .join("");
     } else if (resPayload.choices?.[0]?.message?.content) {
       // OpenAI format
-      assistantMsg.content = resPayload.choices[0].message.content;
+      assistantMsg.content = resPayload.choices[0].message.content as string;
     } else if (typeof resPayload === "string") {
       assistantMsg.content = resPayload;
     }
@@ -428,10 +434,15 @@ export function reconstructChatMessages(selectedRequest: any) {
     // Extract tool calls if present
     const toolCalls =
       resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls;
-    if (toolCalls?.length) {
-      (assistantMsg as Record<string, any>).toolCalls = toolCalls.map((tc: any) => ({
+    if (Array.isArray(toolCalls) && toolCalls.length) {
+      assistantMsg.toolCalls = toolCalls.map((tc: {
+        id: string;
+        name?: string;
+        args?: Record<string, unknown>;
+        function?: { name: string; arguments: string | Record<string, unknown> };
+      }) => ({
         id: tc.id,
-        name: tc.function?.name || tc.name,
+        name: tc.function?.name || tc.name || "",
         args:
           typeof tc.function?.arguments === "string"
             ? JSON.parse(tc.function.arguments)
@@ -440,19 +451,19 @@ export function reconstructChatMessages(selectedRequest: any) {
     }
 
     // Extract generated images
-    if (resPayload.images?.length) {
-      (assistantMsg as Record<string, any>).images = resPayload.images;
+    if (Array.isArray(resPayload.images) && resPayload.images.length) {
+      assistantMsg.images = resPayload.images as string[];
     }
 
     // Extract thinking content
-    if (resPayload.thinking) {
-      (assistantMsg as Record<string, any>).thinking = resPayload.thinking;
+    if (typeof resPayload.thinking === "string") {
+      assistantMsg.thinking = resPayload.thinking;
     }
 
     if (
       assistantMsg.content ||
-      (assistantMsg as any).toolCalls?.length ||
-      (assistantMsg as any).images?.length
+      assistantMsg.toolCalls?.length ||
+      assistantMsg.images?.length
     ) {
       chatMessages.push(assistantMsg);
     }
@@ -460,7 +471,7 @@ export function reconstructChatMessages(selectedRequest: any) {
 
   const messages = prepareDisplayMessages(chatMessages);
   const systemPrompt = chatMessages.find(
-    (m: Record<string, any>) => m.role === "system",
+    (m: Message) => m.role === "system",
   )?.content;
   if (!messages.length) return null;
 

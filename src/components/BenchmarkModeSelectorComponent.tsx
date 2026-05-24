@@ -35,9 +35,9 @@ export const BENCHMARK_MODES = [
 /**
  * BenchmarkModeSelector — Segmented control for picking the benchmark mode.
  */
-export default function BenchmarkModeSelector({ value, onChange }: any) {
+export default function BenchmarkModeSelector({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [pillStyle, setPillStyle] = useState<Record<string, any>>({});
+  const [pillStyle, setPillStyle] = useState<React.CSSProperties>({});
 
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;

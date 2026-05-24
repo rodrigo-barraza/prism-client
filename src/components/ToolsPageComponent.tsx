@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import PrismService from "../services/PrismService";
 import { ToolSchema, CustomAgent, ToolUsageStat } from "../types/types";
+import { getErrorMessage } from "../utils/errorMessage";
 
 interface ClientToolSchema extends ToolSchema {
   emoji?: string;
@@ -675,7 +676,7 @@ export default function ToolsPageComponent() {
       setTools(schemas || []);
       setAgents((agentList as AgentMinimal[]) || []);
     } catch (error: unknown) {
-      setError((error as Error).message);
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -707,7 +708,7 @@ export default function ToolsPageComponent() {
       await PrismService.refreshBuiltInToolSchemas();
       await fetchTools();
     } catch (error: unknown) {
-      setError((error as Error).message);
+      setError(getErrorMessage(error));
     } finally {
       setRefreshing(false);
     }

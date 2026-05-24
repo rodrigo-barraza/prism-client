@@ -7,7 +7,9 @@ import BenchmarkDetailPageComponent from "../../../components/BenchmarkDetailPag
 import BenchmarkSidebarComponent from "../../../components/BenchmarkSidebarComponent";
 
 export default function BenchmarkDetailPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const rawId = params?.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const [isRunning, setIsRunning] = useState(false);
   return (
     <BenchmarkDetailPageComponent

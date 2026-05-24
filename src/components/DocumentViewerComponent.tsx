@@ -17,7 +17,7 @@ function decodeDataUrl(dataUrl: string) {
   }
 }
 
-export default function DocumentViewer({ dataUrl, onClose }: any) {
+export default function DocumentViewer({ dataUrl, onClose }: { dataUrl: string; onClose: () => void }) {
   const { mimeType } = decodeDataUrl(dataUrl);
   const isPdf = mimeType === "application/pdf";
   const content = useMemo(

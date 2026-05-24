@@ -4,6 +4,21 @@ import { CircleCheck, Circle, Lock } from "lucide-react";
 import styles from "./ToolCardComponent.module.css";
 import SoundService from "@/services/SoundService";
 
+interface ToolCardProps {
+  icon?: React.ReactNode;
+  title?: string;
+  subtitle?: string;
+  color?: string;
+  count?: number;
+  enabled?: boolean;
+  onClick?: () => void;
+  glowing?: boolean;
+  onHover?: (hovering: boolean) => void;
+  locked?: boolean;
+  enabledLabel?: string;
+  disabledLabel?: string;
+}
+
 /**
  * ToolCardComponent — A compact card showing a tool's icon, name, and description.
  * Used in the empty state to display which tools are actively enabled.
@@ -21,7 +36,7 @@ export default function ToolCardComponent({
   locked = false,
   enabledLabel = "Enabled",
   disabledLabel = "Disabled",
-}: any) {
+}: ToolCardProps) {
   return (
     <div
       className={`${styles.card}${!enabled ? ` ${styles.cardDisabled}` : ""}${glowing ? ` ${styles.cardGlow}` : ""}${locked ? ` ${styles.cardLocked}` : ""}`}
@@ -29,8 +44,8 @@ export default function ToolCardComponent({
       onClick={
         locked
           ? undefined
-          : (e: any) => {
-              SoundService.playClickButton({ event: e });
+          : (e: React.MouseEvent) => {
+              SoundService.playClickButton({ event: e.nativeEvent });
               onClick?.();
             }
       }
@@ -38,7 +53,7 @@ export default function ToolCardComponent({
       tabIndex={onClick && !locked ? 0 : undefined}
       onKeyDown={
         onClick && !locked
-          ? (e: any) => {
+          ? (e: React.KeyboardEvent) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 onClick();
@@ -46,8 +61,8 @@ export default function ToolCardComponent({
             }
           : undefined
       }
-      onMouseEnter={(e: any) => {
-        SoundService.playHoverButton({ event: e });
+      onMouseEnter={(e: React.MouseEvent) => {
+        SoundService.playHoverButton({ event: e.nativeEvent });
         onHover?.(true);
       }}
       onMouseLeave={() => onHover?.(false)}

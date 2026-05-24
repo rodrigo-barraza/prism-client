@@ -13,7 +13,7 @@ export default function CountLinkComponent({
   href,
   icon: Icon,
   className,
-}: any) {
+}: { count?: number; href: string; icon: React.ComponentType<{ size?: number }>; className?: string }) {
   if (!count || count <= 0) {
     return <span className={styles.countLinkZero}>0</span>;
   }

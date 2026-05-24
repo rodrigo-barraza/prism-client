@@ -961,11 +961,11 @@ export default function MessageList({
       <div
         className={styles.stickyUserMsg}
         onMouseEnter={(e: React.MouseEvent) =>
-          stickyUserMsg && SoundService.playHoverButton({ event: e as any })
+          stickyUserMsg && SoundService.playHoverButton({ event: e.nativeEvent })
         }
         onClick={(e: React.MouseEvent) => {
           if (stickyUserMsg) {
-            SoundService.playClickButton({ event: e as any });
+            SoundService.playClickButton({ event: e.nativeEvent });
             handleStickyClick();
           }
         }}

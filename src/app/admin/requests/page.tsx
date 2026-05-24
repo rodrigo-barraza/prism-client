@@ -42,26 +42,9 @@ import useProjectFilter from "../../../hooks/useProjectFilter";
 import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000;
-interface RequestItem {
-  _id: string;
-  requestId: string;
-  timestamp: string;
-  project?: string;
-  endpoint?: string;
-  operation?: string;
-  provider?: string;
-  model?: string;
-  inputTokens?: number;
-  outputTokens?: number;
-  estimatedCost?: number;
-  tokensPerSec?: number;
-  totalTime?: number;
-  success?: boolean;
-  conversationId?: string;
-  requestPayload?: Record<string, unknown>;
-  responsePayload?: Record<string, unknown>;
-  [key: string]: string | number | boolean | Record<string, unknown> | undefined;
-}
+import { TransformedRequestItem } from "../../../types/types";
+
+type RequestItem = TransformedRequestItem;
 
 interface RequestFilters {
   provider: string;
@@ -492,6 +475,7 @@ export default function RequestsPage() {
           }}
           onRowClick={async (req: RequestItem) => {
             setSelectedRequest(req as RequestItem);
+            if (!req.requestId) return;
             try {
               const full = await IrisService.getRequest(req.requestId);
               setSelectedRequest(full as RequestItem);

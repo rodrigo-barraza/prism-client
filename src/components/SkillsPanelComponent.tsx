@@ -8,6 +8,7 @@ import {
   ToggleComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./SkillsPanelComponent.module.css";
+import type { Skill } from "@/types/types";
 
 const CONTENT_WARN_CHARS = 2000;
 const CONTENT_MAX_CHARS = 10000;
@@ -20,11 +21,11 @@ const CONTENT_MAX_CHARS = 10000;
  * the LLM domain-specific context, coding conventions, or project
  * rules without consuming tool call slots.
  */
-export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
-  const [editingSkill, setEditingSkill] = useState<any>(null);
+export default function SkillsPanel({ skills, onSkillsChange, project, readOnly }: { skills: Skill[]; onSkillsChange: () => void; project?: string; readOnly?: boolean }) {
+  const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
 
   // -- CRUD -----------------------------------------------------
 
@@ -32,13 +33,14 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
     setEditingSkill({
       name: "",
       description: "",
+      template: "",
       content: "",
       enabled: true,
     });
     setIsNew(true);
   }, []);
 
-  const handleEdit = useCallback((skill: any) => {
+  const handleEdit = useCallback((skill: Skill) => {
     setEditingSkill({ ...skill });
     setIsNew(false);
   }, []);
@@ -49,11 +51,16 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
   }, []);
 
   const handleSave = useCallback(async () => {
+    if (!editingSkill) return;
     if (!editingSkill.name?.trim() || !editingSkill.content?.trim()) return;
     setSaving(true);
     try {
       const payload = {
-        ...editingSkill,
+        name: editingSkill.name,
+        template: editingSkill.content || editingSkill.template || "",
+        description: editingSkill.description,
+        enabled: editingSkill.enabled,
+        content: editingSkill.content,
         ...(project ? { project } : {}),
       };
 
@@ -61,7 +68,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
         await PrismService.createSkill(payload);
       } else {
         await PrismService.updateSkill(
-          editingSkill.id || editingSkill._id,
+          editingSkill.id || editingSkill._id?.toString() || "",
           payload,
         );
       }
@@ -69,7 +76,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
       setEditingSkill(null);
       setIsNew(false);
       onSkillsChange();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to save skill:", error);
     } finally {
       setSaving(false);
@@ -86,7 +93,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
         await PrismService.deleteSkill(id);
         setConfirmingDeleteId(null);
         onSkillsChange();
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to delete skill:", error);
       }
     },
@@ -94,16 +101,16 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
   );
 
   const handleToggleAll = useCallback(async () => {
-    const allEnabled = skills.length > 0 && skills.every((s: any) => s.enabled);
+    const allEnabled = skills.length > 0 && skills.every((s: Skill) => s.enabled);
     const newEnabled = !allEnabled;
     try {
       await Promise.all(
-        skills.map((s: any) =>
-          PrismService.updateSkill(s.id || s._id, { enabled: newEnabled }),
+        skills.map((s: Skill) =>
+          PrismService.updateSkill(s.id || s._id?.toString() || "", { enabled: newEnabled }),
         ),
       );
       onSkillsChange();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to toggle all skills:", error);
     }
   }, [skills, onSkillsChange]);
@@ -111,7 +118,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
   // -- Edit / Create Form ---------------------------------------
 
   if (editingSkill) {
-    const contentLen = (editingSkill as any).content?.length || 0;
+    const contentLen = editingSkill.content?.length || 0;
     const isOverWarn = contentLen > CONTENT_WARN_CHARS;
     const isOverMax = contentLen > CONTENT_MAX_CHARS;
 
@@ -130,14 +137,14 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             <input
               type="text"
               className={styles.input}
-              value={(editingSkill as any).name}
+              value={editingSkill.name}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingSkill((s: any) => ({
+                setEditingSkill((s: Skill | null) => s ? ({
                   ...s,
                   name: e.target.value
                     .replace(/[^a-zA-Z0-9_-]/g, "-")
                     .toLowerCase(),
-                }))
+                }) : null)
               }
               placeholder="javascript-conventions"
             />
@@ -151,12 +158,12 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             <input
               type="text"
               className={styles.input}
-              value={(editingSkill as any).description}
+              value={editingSkill.description || ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingSkill((s: any) => ({
+                setEditingSkill((s: Skill | null) => s ? ({
                   ...s,
                   description: e.target.value,
-                }))
+                }) : null)
               }
               placeholder="Coding style rules and project conventions"
             />
@@ -169,11 +176,11 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
             <label>Content (Markdown)</label>
             <textarea
               className={`${styles.textarea} ${styles.contentTextarea}`}
-              value={(editingSkill as any).content}
+              value={editingSkill.content || ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
                 const value = e.target.value;
                 if (value.length <= CONTENT_MAX_CHARS) {
-                  setEditingSkill((s: any) => ({ ...s, content: value }));
+                  setEditingSkill((s: Skill | null) => s ? ({ ...s, content: value }) : null);
                 }
               }}
               placeholder={`## Coding Guidelines\n\n- Always use const over let\n- Prefer async/await over .then()\n- Use JSDoc comments for public functions\n- ...`}
@@ -193,8 +200,8 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
               onClick={handleSave}
               disabled={
                 saving ||
-                !(editingSkill as any).name?.trim() ||
-                !(editingSkill as any).content?.trim()
+                !editingSkill.name?.trim() ||
+                !editingSkill.content?.trim()
               }
             >
               <Save size={14} />
@@ -218,7 +225,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
         <div className={styles.headerActions}>
           {skills.length > 0 && (
             <ToggleComponent
-              checked={skills.length > 0 && skills.every((s: any) => s.enabled)}
+              checked={skills.length > 0 && skills.every((s: Skill) => s.enabled)}
               onChange={handleToggleAll}
               size="mini"
             />
@@ -254,8 +261,8 @@ export default function SkillsPanel({ skills, onSkillsChange, project }: any) {
         </div>
       )}
 
-      {skills.map((skill: any) => {
-        const skillId = skill.id || skill._id;
+      {skills.map((skill: Skill) => {
+        const skillId = skill.id || skill._id?.toString() || "";
         const isConfirming = confirmingDeleteId === skillId;
 
         return (

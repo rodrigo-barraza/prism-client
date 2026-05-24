@@ -4,6 +4,22 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { X, Undo2, Eraser, Send, Pen } from "lucide-react";
 import styles from "./ImagePreviewComponent.module.css";
 
+interface Point { x: number; y: number }
+
+interface Stroke {
+  points: Point[];
+  width: number;
+  color: string;
+  eraser?: boolean;
+}
+
+interface ImagePreviewProps {
+  src: string;
+  onClose: () => void;
+  onUseAnnotated?: (dataUrl: string) => void;
+  readOnly?: boolean;
+}
+
 const COLORS = [
   { value: "#000000", label: "Black" },
   { value: "#ef4444", label: "Red" },
@@ -25,15 +41,15 @@ export default function ImagePreviewComponent({
   onClose,
   onUseAnnotated,
   readOnly = false,
-}: any) {
+}: ImagePreviewProps) {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [color, setColor] = useState(COLORS[0].value);
   const [sizeIdx, setSizeIdx] = useState(1);
   const [isEraser, setIsEraser] = useState(false);
   const [drawing, setDrawing] = useState(false);
-  const [strokes, setStrokes] = useState<any[]>([]);
-  const [currentStroke, setCurrentStroke] = useState<any>(null);
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
   const [canvasReady, setCanvasReady] = useState(false);
 
   // Resize canvas to match image display size
@@ -110,16 +126,16 @@ export default function ImagePreviewComponent({
     context.restore();
   };
 
-  const getPos = (e: any) => {
+  const getPos = (e: React.MouseEvent | React.TouchEvent): Point => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     return { x: clientX - rect.left, y: clientY - rect.top };
   };
 
-  const handlePointerDown = (e: any) => {
+  const handlePointerDown = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     const pos = getPos(e);
     const stroke = {
@@ -132,13 +148,13 @@ export default function ImagePreviewComponent({
     setDrawing(true);
   };
 
-  const handlePointerMove = (e: any) => {
+  const handlePointerMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!drawing || !currentStroke) return;
     e.preventDefault();
     const pos = getPos(e);
-    const updated = {
+    const updated: Stroke = {
       ...currentStroke,
-      points: [...(currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points, pos],
+      points: [...currentStroke.points, pos],
     };
     setCurrentStroke(updated);
 
@@ -153,7 +169,7 @@ export default function ImagePreviewComponent({
 
   const handlePointerUp = () => {
     if (!drawing || !currentStroke) return;
-    if ((currentStroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points.length >= 2) {
+    if (currentStroke.points.length >= 2) {
       setStrokes((prev) => [...prev, currentStroke]);
     }
     setCurrentStroke(null);
@@ -196,9 +212,9 @@ export default function ImagePreviewComponent({
       context!.save();
       context!.lineCap = "round";
       context!.lineJoin = "round";
-      context!.lineWidth = (stroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).width * Math.max(scaleX, scaleY);
+      context!.lineWidth = stroke.width * Math.max(scaleX, scaleY);
 
-      if ((stroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).eraser) {
+      if (stroke.eraser) {
         // For eraser in the composite, we just skip — strokes won't look right
         // Instead we re-draw the image underneath by not erasing it.
         // The composite approach: draw strokes only (non-eraser).
@@ -206,16 +222,16 @@ export default function ImagePreviewComponent({
         continue;
       }
 
-      context!.strokeStyle = (stroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).color;
+      context!.strokeStyle = stroke.color;
       context!.beginPath();
       context!.moveTo(
-        (stroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points[0].x * scaleX,
-        (stroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points[0].y * scaleY,
+        stroke.points[0].x * scaleX,
+        stroke.points[0].y * scaleY,
       );
-      for (let i = 1; i < (stroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points.length; i++) {
+      for (let i = 1; i < stroke.points.length; i++) {
         context!.lineTo(
-          (stroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points[i].x * scaleX,
-          (stroke as { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }).points[i].y * scaleY,
+          stroke.points[i].x * scaleX,
+          stroke.points[i].y * scaleY,
         );
       }
       context!.stroke();
@@ -223,7 +239,7 @@ export default function ImagePreviewComponent({
     }
 
     const dataUrl = offscreen.toDataURL("image/png");
-    onUseAnnotated(dataUrl);
+    onUseAnnotated?.(dataUrl);
   };
 
   // Close on Escape

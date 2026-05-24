@@ -1,6 +1,7 @@
 import { useCallback, useRef, type Dispatch, type SetStateAction } from "react";
 import StorageService from "../services/StorageService";
 import { LOCAL_PROVIDERS } from "../constants";
+import type { PrismConfig, ModelOption } from "../types/types";
 
 /**
  * useModelMemory — Persist and restore the last-used model per page context.
@@ -40,7 +41,7 @@ export default function useModelMemory(storageKey: string) {
    * Safe to call multiple times (idempotent after first successful restore).
    */
   const restoreModel = useCallback(
-    (config: any, setSettings: Dispatch<SetStateAction<any>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: any) => void } = {}) => {
+    <T>(config: PrismConfig, setSettings: Dispatch<SetStateAction<T>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: PrismConfig) => void } = {}) => {
       if (!config) return;
       if (restoredRef.current) return;
 
@@ -53,8 +54,8 @@ export default function useModelMemory(storageKey: string) {
       }
 
       // If the saved model is local but local models aren't merged yet, wait.
-      const textToText = config.textToText as Record<string, any> | undefined;
-      const models = (textToText?.models ?? {}) as Record<string, Array<Record<string, any>>>;
+      const textToText = config.textToText;
+      const models = textToText?.models ?? {};
 
       if (saved.isLocal) {
         const localModels = models[saved.provider] || [];
@@ -83,13 +84,13 @@ export default function useModelMemory(storageKey: string) {
         return;
       }
 
-      const temp = (modelDef.defaultTemperature as number) ?? 1.0;
-      setSettings((s: any) => ({
+      const temp = modelDef.defaultTemperature ?? 1.0;
+      setSettings((s) => ({
         ...s,
         provider: saved.provider,
         model: saved.model,
         temperature: temp,
-      }));
+      }) as T);
       restoredRef.current = true;
     },
     [storageKey],

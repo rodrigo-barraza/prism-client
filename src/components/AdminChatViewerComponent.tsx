@@ -75,6 +75,8 @@ import type {
   MCPServer,
   ToolSchema,
   SessionStats,
+  TransformedRequestItem,
+  Message,
 } from "../types/types";
 import styles from "../app/admin/chat/page.module.css";
 
@@ -133,7 +135,7 @@ export default function AdminChatViewerComponent({
   } = useAdminHeader();
 
   // -- Agent state --
-  const [agents, setAgents] = useState<Array<typeof ALL_AGENT | typeof NONE_AGENT | AgentPersona>>([]);
+  const [agents, setAgents] = useState<Array<Partial<AgentPersona> & { id: string; name: string; description: string; project?: string; toolCount: number; custom: boolean; icon: string; color: string }>>([]);
   const activeAgentId = agentParam || "ALL";
   const isAllMode = activeAgentId === "ALL";
   const isNoAgent = activeAgentId === "NONE";
@@ -182,7 +184,7 @@ export default function AdminChatViewerComponent({
   // ── Fetch agent personas ─────────────────────────────────────
   useEffect(() => {
     PrismService.getAgentPersonas()
-      .then((list: AgentPersona[]) => setAgents([ALL_AGENT as any, NONE_AGENT as any, ...list]))
+      .then((list: AgentPersona[]) => setAgents([ALL_AGENT, NONE_AGENT, ...list]))
       .catch(console.error);
   }, []);
 
@@ -241,9 +243,10 @@ export default function AdminChatViewerComponent({
     if (!initialId) return;
     setLoadingDetail(true);
     IrisService.getConversation(initialId)
-      .then((conv: any) => {
-        setSelectedEntry(conv as UnifiedEntry);
-        setSelectedSource(conv.type === "agent" ? "agent_session" : "conversation");
+      .then((conv: unknown) => {
+        const c = conv as UnifiedEntry & { type?: string };
+        setSelectedEntry(c);
+        setSelectedSource(c.type === "agent" ? "agent_session" : "conversation");
       })
       .catch(() => {
         setSelectedEntry(null);
@@ -261,12 +264,12 @@ export default function AdminChatViewerComponent({
     IrisService.getRequests({ agentSessionId: selectedId, limit: 1 })
       .then((res) => {
         if (cancelled) return;
-        const firstReq = res.data?.[0] as any;
+        const firstReq = res.data?.[0] as TransformedRequestItem | undefined;
         const sysMsg = firstReq?.requestPayload?.messages?.find(
-          (m: any) => m.role === "system"
+          (m: Message) => m.role === "system"
         );
         if (sysMsg?.content) {
-          setSessionSystemPrompt(sysMsg.content);
+          setSessionSystemPrompt(sysMsg.content as string);
         }
       })
       .catch(console.error);
@@ -301,15 +304,15 @@ export default function AdminChatViewerComponent({
       }
 
       const data = await IrisService.getConversations(params);
-      const list = (data.data || []).map((c: any) => ({
+      const list = (data.data || []).map((c: Conversation & { type?: string }) => ({
         ...c,
-        _source: c.type === "agent" ? "agent_session" as const : "conversation" as const,
+        _source: c.type === "agent" ? ("agent_session" as const) : ("conversation" as const),
       }));
       const total = data.total || 0;
 
       // Fingerprint for dedup
       const fp = list
-        .map((c) => `${c.id}:${c.messages?.length || (c as any).messageCount || 0}`)
+        .map((c) => `${c.id}:${c.messages?.length || (c as Conversation).messageCount || 0}`)
         .join("|");
 
       if (fp !== lastFingerprintRef.current) {
@@ -381,9 +384,9 @@ export default function AdminChatViewerComponent({
       }
 
       const data = await IrisService.getConversations(params);
-      const newItems = (data.data || []).map((c: any) => ({
+      const newItems = (data.data || []).map((c: Conversation & { type?: string }) => ({
         ...c,
-        _source: c.type === "agent" ? "agent_session" as const : "conversation" as const,
+        _source: c.type === "agent" ? ("agent_session" as const) : ("conversation" as const),
       }));
 
       entriesPageRef.current = nextPage;
@@ -436,7 +439,9 @@ export default function AdminChatViewerComponent({
         const oldLast = oldMsgs[oldMsgs.length - 1];
         const newLast = newMsgs[newMsgs.length - 1];
         if (oldLast?.content?.length !== newLast?.content?.length) return full;
-        if ((prev as any)?.isGenerating !== (full as any)?.isGenerating) return full;
+        const prevGen = (prev as Conversation | null)?.isGenerating;
+        const fullGen = (full as Conversation | null)?.isGenerating;
+        if (prevGen !== fullGen) return full;
         return prev;
       });
     } catch (error: unknown) {
@@ -628,7 +633,7 @@ export default function AdminChatViewerComponent({
   const settingsWithDefaults = useMemo(
     () => ({
       ...SETTINGS_DEFAULTS,
-      ...((selectedEntry as any)?.settings || {}),
+      ...((selectedEntry as Conversation | null)?.settings || {}),
     }),
     [selectedEntry],
   );
@@ -647,9 +652,9 @@ export default function AdminChatViewerComponent({
     if (!model && selectedEntry?.messages?.length) {
       for (let i = selectedEntry.messages.length - 1; i >= 0; i--) {
         const msg = selectedEntry.messages[i];
-        if (msg.role === "assistant" && (msg as any).model) {
-          model = (msg as any).model;
-          provider = (msg as any).provider || provider;
+        if (msg.role === "assistant" && msg.model) {
+          model = msg.model;
+          provider = msg.provider || provider;
           break;
         }
       }
@@ -718,7 +723,13 @@ export default function AdminChatViewerComponent({
 
   // ── Left panel tab definitions (adaptive) ────────────────────
   const leftTabs = useMemo(() => {
-    const tabs: any[] = [
+    const tabs: Array<{
+      key: string;
+      icon: React.ReactNode;
+      tooltip: string;
+      badge?: number;
+      badgeDisabled?: boolean;
+    }> = [
       { key: "settings", icon: <Settings size={14} />, tooltip: "Settings" },
       { key: "info", icon: <Info size={14} />, tooltip: "Info" },
     ];
@@ -777,14 +788,14 @@ export default function AdminChatViewerComponent({
     return {
       messageCount: displayMessages.length,
       deletedCount:
-        (((selectedEntry as any).messageCount || selectedEntry.messages.length) -
+        (((selectedEntry as Conversation).messageCount || selectedEntry.messages.length) -
           selectedEntry.messages.length),
       requestCount,
       uniqueModels,
       uniqueProviders,
       totalTokens,
       totalCost,
-      originalTotalCost: (selectedEntry as any).totalCost || 0,
+      originalTotalCost: (selectedEntry as Conversation).totalCost || 0,
       usedTools,
       modalities,
     };
@@ -808,7 +819,7 @@ export default function AdminChatViewerComponent({
       <div className={styles.chatContainer}>
         <ThreePanelLayout
           leftPanel={
-            (selectedEntry as any)?.settings || isSelectedAgent ? (
+            (selectedEntry as Conversation)?.settings || isSelectedAgent ? (
               <>
                 <TabBarComponent
                   tabs={leftTabs}
@@ -913,7 +924,7 @@ export default function AdminChatViewerComponent({
             <HistoryPanel
               sessions={entries}
               activeId={selectedId}
-              onSelect={(entry: any) =>
+              onSelect={(entry: UnifiedEntry) =>
                 selectEntry(entry.id || "", entry._source || "conversation")
               }
               readOnly
@@ -938,13 +949,13 @@ export default function AdminChatViewerComponent({
                 <ProjectBadgeComponent
                   project={selectedEntry.project}
                 />
-                <UserBadgeComponent username={(selectedEntry as any).username} />
+                <UserBadgeComponent username={(selectedEntry as Conversation).username} />
                 {isSelectedAgent && (
                   <AgentBadgeComponent
-                    agent={agents.find((a) => a.id === selectedEntry.agent)}
+                    agent={agents.find((a) => a.id === selectedEntry.agent) as AgentPersona | undefined}
                   />
                 )}
-                {(selectedEntry as any).isGenerating && (
+                {(selectedEntry as Conversation).isGenerating && (
                   <span className={styles.generatingBadge}>
                     <Loader size={12} className={styles.spinning} />
                     Generating
@@ -962,7 +973,7 @@ export default function AdminChatViewerComponent({
               />
               <ModelPickerPopoverComponent
                 config={config}
-                settings={resolvedModelSettings}
+                settings={resolvedModelSettings as unknown as { [key: string]: string | number | boolean | undefined }}
                 disabled
                 favorites={favoriteKeys}
                 onSelectModel={() => {}}
@@ -989,7 +1000,7 @@ export default function AdminChatViewerComponent({
                 systemPrompt={
                   selectedEntry?.systemPrompt ||
                   sessionSystemPrompt ||
-                  (selectedEntry as any)?.settings?.systemPrompt ||
+                  (selectedEntry as Conversation)?.settings?.systemPrompt ||
                   selectedEntry?.messages?.find(
                     (m) => m.role === "system" && !m.deleted
                   )?.content

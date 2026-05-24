@@ -34,6 +34,14 @@ import type { Message, TokenUsage, PrismConfig, ModelOption } from "../types/typ
 
 // -- Prism-specific utilities ---------------------------------
 
+export interface LmStudioLoadBody {
+  model: string;
+  context_length?: number;
+  flash_attention?: boolean;
+  offload_kv_cache_to_gpu?: boolean;
+  eval_batch_size?: number;
+}
+
 /**
  * Build the JSON body for LM Studio load requests.
  * Maps camelCase options to the snake_case API contract.
@@ -48,8 +56,8 @@ export function buildLmStudioLoadBody(
     offloadKvCache?: boolean;
     evalBatchSize?: number;
   } = {},
-): Record<string, any> {
-  const body: Record<string, any> = { model };
+): LmStudioLoadBody {
+  const body: LmStudioLoadBody = { model };
   if (options.contextLength != null)
     body.context_length = options.contextLength;
   if (options.flashAttention != null)
@@ -147,6 +155,21 @@ export function getSessionCost(messages: Message[]): number {
  * Aggregate input/output tokens and request count from assistant messages.
  * Returns { totalTokens: { input, output, total }, requestCount }.
  */
+export interface WorkerProgress {
+  tokPerSec?: number;
+  outputTokens?: number;
+  totalOutputTokens?: number;
+  status?: string;
+}
+
+export interface GenProgress {
+  tokPerSec?: number;
+  tokensPerSecond?: number;
+  timestamp?: number;
+  activeRequests?: number;
+  outputTokens?: number;
+}
+
 export interface SessionTokenStats {
   totalTokens: { input: number; output: number; total: number };
   requestCount: number;
@@ -156,12 +179,12 @@ export interface SessionTokenStats {
   liveStreamingBurstTokens: number;
   liveStreamingBurstElapsed: number;
   liveOutputCharacters: number;
-  workerGenerationProgress: Record<string, any> | null;
+  workerGenerationProgress: Record<string, WorkerProgress> | null;
   lastTimeToGeneration: number | null;
   liveProcessingStartTime: number | null;
   liveProcessingPhase: string | null;
   liveTtftSamples: number[] | null;
-  liveGenProgress: Record<string, any> | null;
+  liveGenProgress: GenProgress | null;
 }
 
 export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
@@ -261,8 +284,8 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
       // in real-time during worker generation (before completion).
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
       // so the count doesn't reset when workers transition between phases.
-      for (const wp of Object.values(m._workerGenerationProgress) as Record<string, any>[]) {
-        const count = (wp.totalOutputTokens || wp.outputTokens || 0) as number;
+      for (const wp of Object.values(m._workerGenerationProgress) as WorkerProgress[]) {
+        const count = wp.totalOutputTokens || wp.outputTokens || 0;
         if (count > 0) {
           output += count;
         }

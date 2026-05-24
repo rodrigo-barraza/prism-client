@@ -10,7 +10,7 @@ export default function SectionHeaderComponent({
   children,
   action,
   className,
-}: any) {
+}: { icon?: React.ReactNode; children?: React.ReactNode; action?: React.ReactNode; className?: string }) {
   return (
     <div
       className={`${styles.sectionHeader}${className ? ` ${className}` : ""}`}

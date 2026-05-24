@@ -16,6 +16,9 @@ import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ChatInputButtonComponent.module.css";
 import SoundService from "@/services/SoundService";
 
+type UploadType = keyof typeof TYPE_ICON_MAP;
+type IconName = keyof typeof ICON_MAP;
+
 const TYPE_ICON_MAP = {
   paperclip: Paperclip,
   image: ImageIcon,
@@ -24,7 +27,12 @@ const TYPE_ICON_MAP = {
   pdf: FileText,
 };
 
-function RotatingUploadIcon({ types, size = 18 }: any) {
+interface RotatingUploadIconProps {
+  types: UploadType[];
+  size?: number;
+}
+
+function RotatingUploadIcon({ types, size = 18 }: RotatingUploadIconProps) {
   const allTypes = ["paperclip", ...types];
   const [activeIndex, setActiveIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -42,14 +50,14 @@ function RotatingUploadIcon({ types, size = 18 }: any) {
   }, [allTypes.length]);
 
   if (allTypes.length === 1) {
-    const Icon = (TYPE_ICON_MAP as any)[allTypes[0]] || Paperclip;
+    const Icon = TYPE_ICON_MAP[allTypes[0] as UploadType] || Paperclip;
     return <Icon size={size} />;
   }
 
   const currentType = allTypes[activeIndex];
   const nextType = allTypes[(activeIndex + 1) % allTypes.length];
-  const CurrentIcon = (TYPE_ICON_MAP as any)[currentType] || Paperclip;
-  const NextIcon = (TYPE_ICON_MAP as any)[nextType] || Paperclip;
+  const CurrentIcon = TYPE_ICON_MAP[currentType as UploadType] || Paperclip;
+  const NextIcon = TYPE_ICON_MAP[nextType as UploadType] || Paperclip;
 
   return (
     <div className={styles.rotatingIconContainer}>
@@ -76,6 +84,19 @@ const ICON_MAP = {
 /**
  * Unified input button for the ChatArea input row.
  */
+interface ChatInputButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  icon?: IconName | "upload" | React.ReactNode;
+  uploadTypes?: UploadType[];
+  onClick?: (e: React.MouseEvent) => void;
+  label?: string;
+  isActive?: boolean;
+  disabled?: boolean;
+  className?: string;
+  tooltipPosition?: string;
+  variant?: "button" | "submit";
+  isGenerating?: boolean;
+}
+
 export default function ChatInputButton({
   icon,
   uploadTypes,
@@ -88,7 +109,7 @@ export default function ChatInputButton({
   variant = "button",
   isGenerating = false,
   ...props
-}: any) {
+}: ChatInputButtonProps) {
   const isSubmit = variant === "submit";
 
   const classes = [
@@ -111,7 +132,7 @@ export default function ChatInputButton({
   } else if (icon === "upload" && uploadTypes) {
     IconElement = <RotatingUploadIcon types={uploadTypes} size={18} />;
   } else if (typeof icon === "string") {
-    const Comp = (ICON_MAP as any)[icon];
+    const Comp = typeof icon === "string" && icon in ICON_MAP ? ICON_MAP[icon as IconName] : null;
     if (Comp) IconElement = <Comp size={18} />;
   } else {
     IconElement = icon;
@@ -122,10 +143,10 @@ export default function ChatInputButton({
       type={isSubmit ? "submit" : "button"}
       className={classes}
       onClick={(e: React.MouseEvent) => {
-        SoundService.playClickButton({ event: e as any });
+        SoundService.playClickButton({ event: e.nativeEvent });
         onClick?.(e);
       }}
-      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e as any })}
+      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e.nativeEvent })}
       disabled={disabled}
       aria-label={label}
       {...props}

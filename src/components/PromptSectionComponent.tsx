@@ -18,7 +18,16 @@ export default function PromptSectionComponent({
   placeholder,
   rows = 2,
   className,
-}: any) {
+}: {
+  icon?: React.ReactNode;
+  label?: string;
+  badge?: React.ReactNode;
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  rows?: number;
+  className?: string;
+}) {
   return (
     <div className={`${styles.section} ${className || ""}`}>
       <div className={styles.header}>

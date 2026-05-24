@@ -623,13 +623,13 @@ export default function SynthesisComponent() {
 
         loadSynthesisHistory();
       }
-    } catch (error: unknown | Error) {
-      if ((error as Error).name !== "AbortError" && !abortedRef.current) {
+    } catch (error: unknown) {
+      if ((!(error instanceof Error) || error.name !== "AbortError") && !abortedRef.current) {
         setGeneratedMessages((prev) => [
           ...prev.filter((m: any) => !(m as Message & { _streaming?: boolean })._streaming),
           {
             role: "assistant",
-            content: `⚠️ Generation error: ${(error as Error).message}`,
+            content: `⚠️ Generation error: ${error instanceof Error ? error.message : String(error)}`,
           },
         ]);
       }

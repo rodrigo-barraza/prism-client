@@ -451,8 +451,93 @@ export type SSEEvent =
 
 // ─── SSE Callback Interfaces ────────────────────────────────
 
+export interface TransformedSSEData {
+  type: string;
+  id?: string;
+  name?: string;
+  args?: Record<string, any>;
+  content?: string;
+  data?: string;
+  mimeType?: string;
+  minioRef?: string;
+  result?: any;
+  status?: string;
+  toolCallId?: string;
+  iteration?: number;
+  maxIterations?: number;
+  agentSessionId?: string;
+  toolCalls?: Array<{ id: string; name: string; args: Record<string, any> }>;
+  plan?: string;
+  steps?: string[];
+  autoApproved?: boolean;
+  questions?: Array<{
+    question: string;
+    type?: "text" | "single_select" | "multi_select";
+    options?: string[];
+    annotations?: string;
+  }>;
+  workerId?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  estimatedCost?: number;
+  message?: string;
+  conversationId?: string;
+  event?: string;
+  tool?: {
+    id?: string;
+    name?: string;
+    args?: Record<string, any>;
+    result?: any;
+  };
+  toolCall?: {
+    id?: string;
+    name?: string;
+    args?: Record<string, any>;
+  };
+  tier?: 1 | 2 | 3 | undefined;
+  question?: string;
+  choices?: string[];
+  context?: string | null;
+  skills?: Skill[];
+  strategy?: string;
+  timeToFirstToken?: number;
+  tokPerSec?: number;
+  activeRequests?: number;
+  totalTokens?: number;
+  avgTtft?: number;
+  progress?: number;
+  label?: string;
+  description?: string;
+  firstChunkTime?: number;
+  lastChunkTime?: number;
+  totalOutputTokens?: number;
+  phase?: string;
+  [key: string]: any;
+}
+
 /** Wire-format SSE event — parsed JSON with a discriminant `type` field. */
-export type SSEData = Record<string, any> & { type: string };
+export type SSEData = TransformedSSEData;
+
+export interface TransformedRequestItem {
+  _id: string;
+  requestId?: string;
+  timestamp?: string;
+  project?: string;
+  endpoint?: string;
+  operation?: string;
+  provider?: string;
+  model?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  estimatedCost?: number;
+  tokensPerSec?: number;
+  totalTime?: number;
+  success?: boolean;
+  conversationId?: string;
+  requestPayload?: Record<string, any>;
+  responsePayload?: Record<string, any>;
+  [key: string]: any;
+}
 
 export interface SSECallbacks {
   onChunk?: (content: string, sourceModel?: string, outputCharacters?: number) => void;
@@ -611,6 +696,8 @@ export interface Skill {
   description?: string;
   project?: string;
   template: string;
+  /** Alias used by the skills panel for the template body */
+  content?: string;
   variables?: Record<string, string>;
   enabled?: boolean;
   createdAt?: string;
@@ -695,16 +782,20 @@ export interface PrismSettings {
 
 export interface MCPServer {
   _id?: ObjectId;
+  id?: string;
   name: string;
+  displayName?: string;
   url: string;
   project?: string;
-  transport?: "stdio" | "sse";
+  transport?: "stdio" | "sse" | "streamable-http";
   command?: string;
-  args?: string[];
+  args?: string[] | string;
   env?: Record<string, string>;
   connected?: boolean;
   toolCount?: number;
   tools?: Array<{ name: string; description?: string }>;
+  enabled?: boolean;
+  headers?: Record<string, string>;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -793,6 +884,8 @@ export interface Benchmark {
   agentAssertions?: AgentBenchmarkAssertion[];
   agentAssertionOperator?: string;
   tags?: string[];
+  /** Aggregated cost across all runs (enriched at list time) */
+  cumulativeCost?: number;
 }
 
 export interface BenchmarkRunResult {

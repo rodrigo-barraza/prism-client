@@ -297,6 +297,15 @@ interface WorkerActivityEntry {
   [key: string]: string | number | boolean | null | undefined | Record<string, number>;
 }
 
+/** Approval request from an agentic tool call. */
+interface PendingApproval {
+  id: string;
+  toolName: string;
+  toolArgs?: Record<string, unknown>;
+  tier?: 1 | 2 | 3;
+  status: "pending" | "approved" | "rejected";
+}
+
 /** Snapshot of UI state stored when a background-generating session is paused. */
 interface SessionSnapshot {
   messages: ClientMessage[];
@@ -304,7 +313,7 @@ interface SessionSnapshot {
   toolActivity: ToolCallEvent[];
   workerToolActivity: Record<string, WorkerActivityEntry>;
   streamingOutputs: Map<string, string>;
-  pendingApprovals: Array<Record<string, unknown>>;
+  pendingApprovals: PendingApproval[];
   pendingUserQuestion: { question?: string; questions?: unknown[]; choices?: string[]; context?: string } | null;
   planProposal: { plan: string; steps?: string[]; status?: string } | null;
   agenticProgress: { iteration: number; maxIterations: number } | null;
@@ -324,7 +333,7 @@ interface ClientMessage extends Message {
   _streamingBurstElapsed?: number;
   _processingStartTime?: number;
   _ttftSamples?: number[];
-  _statusProgress?: Record<string, unknown>;
+  _statusProgress?: number | Record<string, unknown>;
   _workerGenerationProgress?: Record<string, WorkerGenerationProgress>;
   _workerTokens?: {
     input?: number;
@@ -551,7 +560,7 @@ export default function AgentComponent({
     if (workerIter != null) setMaxWorkerIterations(workerIter);
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
-  const [pendingApprovals, setPendingApprovals] = useState<Array<Record<string, unknown>>>([]);
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
   const [pendingUserQuestion, setPendingUserQuestion] = useState<{ question?: string; questions?: unknown[]; choices?: string[]; context?: string } | null>(null);
   const [planProposal, setPlanProposal] = useState<{plan: string; steps?: string[]; status?: string} | null>(null); // { plan, steps, status }
   const [agenticProgress, setAgenticProgress] = useState<{iteration: number; maxIterations: number} | null>(null); // { iteration, maxIterations }
@@ -1869,8 +1878,9 @@ export default function AgentComponent({
           onToolExecution: (data: SSEData) => {
             if (isStale()) return;
             const tc = data.tool;
-            setToolActivity((prev) => {
-              let updated = [];
+            if (!tc) return;
+            setToolActivity((prev: ToolCallEvent[]) => {
+              let updated: ToolCallEvent[] = [];
               const resolvedId = tc.id || `tc-${Date.now()}-${Math.random()}`;
               if (data.status === "calling") {
                 // Deduplicate: skip if this tool ID was already registered
@@ -1881,8 +1891,8 @@ export default function AgentComponent({
                   ...prev,
                   {
                     id: resolvedId,
-                    name: tc.name,
-                    args: tc.args,
+                    name: tc.name || "unknown",
+                    args: tc.args || {},
                     status: "calling",
                     timestamp: Date.now(),
                   },
@@ -1909,16 +1919,14 @@ export default function AgentComponent({
                   if (
                     (tc.id && activity.id === tc.id) ||
                     (!tc.id &&
-                      activity.name === tc.name &&
+                      activity.name === (tc.name || "unknown") &&
                       activity.status === "calling")
                   ) {
                     return {
                       ...activity,
                       status: data.status,
                       result: tc.result,
-                      ...(tc.args && Object.keys(tc.args).length > 0
-                        ? { args: tc.args }
-                        : {}),
+                      args: tc.args || {},
                     };
                   }
                   return activity;
@@ -1952,7 +1960,7 @@ export default function AgentComponent({
             });
 
             // Auto-refresh tasks panel when any task tool completes
-            if (data.status !== "calling" && tc.name?.startsWith("task_")) {
+            if (data.status !== "calling" && (tc.name || "").startsWith("task_")) {
               setTasksRefreshKey((k) => k + 1);
             }
 
@@ -1968,11 +1976,11 @@ export default function AgentComponent({
             }
 
             // Auto-refresh workspace tree when filesystem-mutating tools complete
-            if (data.status !== "calling" && WORKSPACE_FS_TOOLS.has(tc.name)) {
+            if (data.status !== "calling" && WORKSPACE_FS_TOOLS.has(tc.name || "")) {
               setWorkspaceTreeRefreshKey((k) => k + 1);
 
               // Live-update file viewer: refresh open tabs whose path was touched
-              const mutatedPath = tc.args?.path || tc.args?.source || null;
+              const mutatedPath = (tc.args?.path as string) || (tc.args?.source as string) || null;
               const openFiles = viewerOpenFilesRef.current;
               if (mutatedPath && openFiles.length > 0) {
                 // delete_file and move_file both remove the source path
@@ -2145,7 +2153,7 @@ export default function AgentComponent({
             if (data.event === "stdout" || data.event === "stderr") {
               setStreamingOutputs((prev: Map<string, string>) => {
                 const updated = new Map<string, string>(prev);
-                const key = data.toolCallId || data.name;
+                const key = data.toolCallId || data.name || "";
                 const existing = updated.get(key) || "";
                 updated.set(key, existing + (data.data || ""));
                 return updated;
@@ -2154,12 +2162,14 @@ export default function AgentComponent({
           },
           onApprovalRequired: (data: SSEData) => {
             if (isStale()) return;
+            const toolCall = data.toolCall;
+            if (!toolCall) return;
             setPendingApprovals((prev) => [
               ...prev,
               {
-                id: data.toolCall.id || `ap-${Date.now()}`,
-                toolName: data.toolCall.name,
-                toolArgs: data.toolCall.args,
+                id: toolCall.id || `ap-${Date.now()}`,
+                toolName: toolCall.name || "",
+                toolArgs: toolCall.args || {},
                 tier: data.tier,
                 status: "pending",
               },
@@ -2189,9 +2199,9 @@ export default function AgentComponent({
               // Multi-question payload (new)
               questions: data.questions || [],
               // Backward-compat single-question fields
-              question: data.question,
+              question: data.question || "",
               choices: data.choices || [],
-              context: data.context || null,
+              context: data.context || undefined,
             });
             // Clear processing metadata — user deliberation time should
             // not inflate TTFT (same pattern as approval gates).
@@ -2245,7 +2255,7 @@ export default function AgentComponent({
             });
 
             setPlanProposal({
-              plan: data.plan,
+              plan: data.plan || "",
               steps: data.steps || [],
               status: isPending ? "pending" : "approved",
             });
@@ -2255,14 +2265,14 @@ export default function AgentComponent({
             // statusData is now the full SSE data object { type, message, iteration?, maxIterations? }
             if (statusData?.message === "iteration_progress") {
               setAgenticProgress({
-                iteration: statusData.iteration,
-                maxIterations: statusData.maxIterations,
+                iteration: statusData.iteration ?? 0,
+                maxIterations: statusData.maxIterations ?? 0,
               });
             } else if (statusData?.message === "skills_injected") {
               setInjectedSkills(statusData.skills || []);
             } else if (statusData?.message === "context_truncated") {
               setContextTruncated({
-                strategy: statusData.strategy,
+                strategy: statusData.strategy || "",
                 estimatedTokens: statusData.estimatedTokens,
               });
             } else if (statusData?.message === "tasks_updated") {
@@ -2296,7 +2306,7 @@ export default function AgentComponent({
                     ...last,
                     _ttftSamples: [
                       ...(last._ttftSamples || []),
-                      statusData.timeToFirstToken,
+                      statusData.timeToFirstToken ?? 0,
                     ],
                   };
                 }
@@ -2373,48 +2383,52 @@ export default function AgentComponent({
           // -- Worker agent live events -----------------------------
           onWorkerToolExecution: (data: SSEData) => {
             if (isStale()) return;
+            const workerId = data.workerId;
+            if (!workerId) return;
             setWorkerToolActivity((prev) => {
-              const raw = prev[data.workerId];
+              const raw = prev[workerId];
               const entry = {
                 toolCount: 0,
-                currentTool: null,
+                currentTool: null as string | null,
                 iteration: 0,
-                toolNames: {},
+                toolNames: {} as Record<string, number>,
                 ...raw,
               };
               if (data.status === "calling") {
                 const toolName = data.tool?.name || "unknown";
-                const updatedToolNames = {
+                const updatedToolNames: Record<string, number> = {
                   ...entry.toolNames,
                   [toolName]: (entry.toolNames[toolName] || 0) + 1,
                 };
                 return {
                   ...prev,
-                  [data.workerId]: {
+                  [workerId]: {
                     ...entry,
                     currentTool: toolName,
                     toolCount: entry.toolCount + 1,
                     toolNames: updatedToolNames,
-                    phase: null, // Clear phase — tool is now active
+                    phase: undefined, // Clear phase — tool is now active
                   },
                 };
               }
               // done/error — clear currentTool, phase will be set by next chunk event
               return {
                 ...prev,
-                [data.workerId]: { ...entry, currentTool: null, phase: null },
+                [workerId]: { ...entry, currentTool: null, phase: undefined },
               };
             });
           },
           onWorkerStatus: (data: SSEData) => {
             if (isStale()) return;
+            const workerId = data.workerId;
+            if (!workerId) return;
             if (data.message === "spawned") {
               // Early mapping: store workerId indexed by description
               // so SpawnAgentRenderer can look up activity before tool result arrives
               setWorkerToolActivity((prev) => ({
                 ...prev,
-                [data.workerId]: {
-                  ...(prev[data.workerId] || {
+                [workerId]: {
+                  ...(prev[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                     iteration: 0,
@@ -2427,8 +2441,8 @@ export default function AgentComponent({
             } else if (data.message === "iteration_progress") {
               setWorkerToolActivity((prev) => ({
                 ...prev,
-                [data.workerId]: {
-                  ...(prev[data.workerId] || {
+                [workerId]: {
+                  ...(prev[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                   }),
@@ -2440,8 +2454,8 @@ export default function AgentComponent({
               // Worker LLM phase updates (generating, thinking, processing, loading)
               setWorkerToolActivity((prev) => ({
                 ...prev,
-                [data.workerId]: {
-                  ...(prev[data.workerId] || {
+                [workerId]: {
+                  ...(prev[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                     iteration: 0,
@@ -2451,7 +2465,7 @@ export default function AgentComponent({
                   phaseProgress:
                     data.progress != null
                       ? data.progress
-                      : (prev[data.workerId]?.phaseProgress ?? null),
+                      : (prev[workerId]?.phaseProgress ?? undefined),
                 },
               }));
             } else if (data.message === "generation_started") {
@@ -2464,7 +2478,7 @@ export default function AgentComponent({
                     ...last,
                     _ttftSamples: [
                       ...(last._ttftSamples || []),
-                      data.timeToFirstToken,
+                      data.timeToFirstToken ?? 0,
                     ],
                   };
                 }
@@ -2476,12 +2490,12 @@ export default function AgentComponent({
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   const wp = last._workerGenerationProgress || {};
-                  const existing = wp[data.workerId] || {};
+                  const existing = wp[workerId] || {};
                   updated[updated.length - 1] = {
                     ...last,
                     _workerGenerationProgress: {
                       ...wp,
-                      [data.workerId]: {
+                      [workerId]: {
                         ...existing,
                         // Burst-scoped values for tok/s computation — only update when present
                         ...(data.outputTokens != null && {
@@ -2516,7 +2530,7 @@ export default function AgentComponent({
               // Also store on workerToolActivity so TeamCreateRenderer can
               // display live per-worker metrics on each worker's header
               setWorkerToolActivity((prev) => {
-                const existing = prev[data.workerId] || {
+                const existing = prev[workerId] || {
                   toolCount: 0,
                   currentTool: null,
                   iteration: 0,
@@ -2524,7 +2538,7 @@ export default function AgentComponent({
                 };
                 return {
                   ...prev,
-                  [data.workerId]: {
+                  [workerId]: {
                     ...existing,
                     // Burst-scoped values — only update when present to prevent undefined overwrites
                     ...(data.outputTokens != null && {
@@ -2556,12 +2570,12 @@ export default function AgentComponent({
               // Worker finished — clear phase so StatusBar stops showing "Generating..."
               setWorkerToolActivity((prev) => ({
                 ...prev,
-                [data.workerId]: {
-                  ...(prev[data.workerId] || {}),
+                [workerId]: {
+                  ...(prev[workerId] || {}),
                   phase: "complete",
                   currentTool: null,
                   durationMs: data.durationMs,
-                  toolCount: data.toolCount ?? prev[data.workerId]?.toolCount,
+                  toolCount: data.toolCount ?? prev[workerId]?.toolCount,
                 },
               }));
               // Accumulate worker usage into the streaming assistant message
@@ -2578,7 +2592,7 @@ export default function AgentComponent({
                     };
                     // Remove completed worker from live progress so stale tok/s doesn't linger
                     const wp = { ...(last._workerGenerationProgress || {}) };
-                    delete wp[data.workerId];
+                    delete wp[workerId];
                     updated[updated.length - 1] = {
                       ...last,
                       _workerTokens: {
@@ -2597,8 +2611,8 @@ export default function AgentComponent({
               // Worker errored — mark as failed
               setWorkerToolActivity((prev) => ({
                 ...prev,
-                [data.workerId]: {
-                  ...(prev[data.workerId] || {}),
+                [workerId]: {
+                  ...(prev[workerId] || {}),
                   phase: "failed",
                   currentTool: null,
                   error: data.error,
