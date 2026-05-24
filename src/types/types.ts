@@ -199,6 +199,7 @@ export interface ConversationMeta {
 export interface Message {
   role: "user" | "assistant" | "system" | "tool";
   content: string;
+  rawContent?: string;
   images?: string[];
   files?: FileAttachment[];
   model?: string;

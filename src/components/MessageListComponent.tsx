@@ -753,6 +753,55 @@ export default function MessageList({
   const [expandedDeletedSet, setExpandedDeletedSet] = useState<Set<number>>(new Set());
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
+  // -- Dynamic context clean-up and Raw/Debug view toggle ──
+  const [showRaw, setShowRaw] = useState(false);
+
+  const cleanMessageContent = (content: string | undefined | null): string => {
+    if (!content) return "";
+    if (content.startsWith("[System Context]")) {
+      const splitIdx = content.indexOf("\n\n[User Message]\n");
+      if (splitIdx !== -1) {
+        return content.substring(splitIdx + "\n\n[User Message]\n".length);
+      }
+      const altSplit = content.indexOf("[User Message]\n");
+      if (altSplit !== -1) {
+        return content.substring(altSplit + "[User Message]\n".length);
+      }
+    }
+    return content;
+  };
+
+  const hasSystemContextMessage = useMemo(() => {
+    return messages.some(
+      (m) => m.role === "user" && (m.rawContent || m.content?.startsWith("[System Context]"))
+    );
+  }, [messages]);
+
+  const displayMessages = useMemo(() => {
+    return messages.map((m) => {
+      if (m.role === "user") {
+        if (showRaw) {
+          // In raw debug view, show rawContent if available, else content
+          return {
+            ...m,
+            content: m.rawContent || m.content || "",
+          };
+        } else {
+          // In clean view, if rawContent is present, content is already clean!
+          // If rawContent is not present, content might have legacy context so we clean it.
+          if (m.rawContent) {
+            return m;
+          }
+          return {
+            ...m,
+            content: cleanMessageContent(m.content),
+          };
+        }
+      }
+      return m;
+    });
+  }, [messages, showRaw]);
+
   // -- Sticky last user message (pinned header) -------------
   const [isUserMsgScrolledPast, setIsUserMsgScrolledPast] = useState(false);
   const lastUserMsgRef = useRef<HTMLDivElement | null>(null);
@@ -761,16 +810,16 @@ export default function MessageList({
 
   // Find the last user message
   const lastUserMsgIndex = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
+    for (let i = displayMessages.length - 1; i >= 0; i--) {
       if (
-        messages[i].role === "user" &&
-        !messages[i].deleted &&
-        !parseTaskNotification(messages[i].content)
+        displayMessages[i].role === "user" &&
+        !displayMessages[i].deleted &&
+        !parseTaskNotification(displayMessages[i].content)
       )
         return i;
     }
     return -1;
-  }, [messages]);
+  }, [displayMessages]);
 
   // IntersectionObserver for scroll-past detection
   useEffect(() => {
@@ -818,14 +867,14 @@ export default function MessageList({
   // Derive sticky message data from the boolean flag
   const stickyUserMsg = useMemo(() => {
     if (!isUserMsgScrolledPast || lastUserMsgIndex < 0) return null;
-    const message = messages[lastUserMsgIndex];
+    const message = displayMessages[lastUserMsgIndex];
     if (!message) return null;
     return {
       content: message.content,
       images: message.images,
       index: lastUserMsgIndex,
     };
-  }, [isUserMsgScrolledPast, lastUserMsgIndex, messages]);
+  }, [isUserMsgScrolledPast, lastUserMsgIndex, displayMessages]);
 
   const handleStickyClick = useCallback(() => {
     const node = lastUserMsgRef.current;
@@ -870,12 +919,12 @@ export default function MessageList({
   };
 
   const swapBefore = useMemo(() => {
-    const array = new Array(messages.length).fill(false);
+    const array = new Array(displayMessages.length).fill(false);
     let lastModel = null;
     let prospectiveSwapIndex = null;
 
-    for (let i = 0; i < messages.length; i++) {
-      const message = messages[i];
+    for (let i = 0; i < displayMessages.length; i++) {
+      const message = displayMessages[i];
       if (message.role === "user") {
         if (prospectiveSwapIndex === null) {
           prospectiveSwapIndex = i; // The start of the user's turn
@@ -893,7 +942,7 @@ export default function MessageList({
       }
     }
     return array;
-  }, [messages]);
+  }, [displayMessages]);
 
   // -- Coalesce consecutive deleted messages into groups ------
   // Each group is keyed by the index of the first deleted message
@@ -902,11 +951,11 @@ export default function MessageList({
   const deletedGroups = useMemo(() => {
     const map = new Map(); // index → { isLeader, groupIndices }
     let i = 0;
-    while (i < messages.length) {
-      if (messages[i].deleted) {
+    while (i < displayMessages.length) {
+      if (displayMessages[i].deleted) {
         const start = i;
         const indices = [];
-        while (i < messages.length && messages[i].deleted) {
+        while (i < displayMessages.length && displayMessages[i].deleted) {
           indices.push(i);
           i++;
         }
@@ -920,7 +969,7 @@ export default function MessageList({
       }
     }
     return map;
-  }, [messages]);
+  }, [displayMessages]);
 
   // -- Coalesce consecutive assistant messages into groups ----
   // Each group shares a single avatar + header. Only the first
@@ -929,34 +978,52 @@ export default function MessageList({
   // previous assistant msg's visual container.
   // "isLastInGroup" means metadata (tokens, cost) should render.
   const coalesceMeta = useMemo(() => {
-    const meta = new Array(messages.length).fill(null);
-    for (let i = 0; i < messages.length; i++) {
-      if (messages[i].role !== "assistant") continue;
+    const meta = new Array(displayMessages.length).fill(null);
+    for (let i = 0; i < displayMessages.length; i++) {
+      if (displayMessages[i].role !== "assistant") continue;
       // Deleted messages always break the coalesce chain —
       // they render as their own standalone block.
-      if (messages[i].deleted) {
+      if (displayMessages[i].deleted) {
         meta[i] = { isContinuation: false, isLastInGroup: true };
         continue;
       }
       const prevIsAssistant =
         i > 0 &&
-        messages[i - 1].role === "assistant" &&
-        !messages[i - 1].deleted;
+        displayMessages[i - 1].role === "assistant" &&
+        !displayMessages[i - 1].deleted;
       const nextIsAssistant =
-        i < messages.length - 1 &&
-        messages[i + 1].role === "assistant" &&
-        !messages[i + 1].deleted;
+        i < displayMessages.length - 1 &&
+        displayMessages[i + 1].role === "assistant" &&
+        !displayMessages[i + 1].deleted;
       meta[i] = {
         isContinuation: prevIsAssistant && !swapBefore[i],
         isLastInGroup:
-          !nextIsAssistant || (i < messages.length - 1 && swapBefore[i + 1]),
+          !nextIsAssistant || (i < displayMessages.length - 1 && swapBefore[i + 1]),
       };
     }
     return meta;
-  }, [messages, swapBefore]);
+  }, [displayMessages, swapBefore]);
 
   return (
     <div className={styles.messagesList}>
+      {/* -- Raw / Formatted Toggle (Only shown when system context is present) -- */}
+      {hasSystemContextMessage && (
+        <div className={styles.debugToggleContainer}>
+          <button
+            className={`${styles.debugTab} ${!showRaw ? styles.activeTab : ""}`}
+            onClick={() => setShowRaw(false)}
+          >
+            Formatted View
+          </button>
+          <button
+            className={`${styles.debugTab} ${showRaw ? styles.activeTab : ""}`}
+            onClick={() => setShowRaw(true)}
+          >
+            Raw View (Debug)
+          </button>
+        </div>
+      )}
+
       {/* -- Sticky pinned user message -- */}
       <div
         className={styles.stickyUserMsg}
@@ -1026,7 +1093,7 @@ export default function MessageList({
         </div>
       )}
       {headerContent}
-      {messages.map((message, i) => {
+      {displayMessages.map((message, i) => {
         const roleClass =
           message.role === "user"
             ? styles.userNode
@@ -1036,7 +1103,7 @@ export default function MessageList({
         const isStreaming =
           (isGenerating &&
             message.role === "assistant" &&
-            i === messages.length - 1) ||
+            i === displayMessages.length - 1) ||
           (message.role === "assistant" && message._liveStreaming === true);
         const coalesce = coalesceMeta[i];
 
@@ -1044,8 +1111,8 @@ export default function MessageList({
         const isFadedSwap =
           showModelChange &&
           i > 0 &&
-          messages[i - 1].deleted &&
-          messages[i].deleted;
+          displayMessages[i - 1].deleted &&
+          displayMessages[i].deleted;
         const swapDividerClass =
           `${styles.modelChangeDivider} ${isFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
 
@@ -1123,13 +1190,13 @@ export default function MessageList({
                         {groupCount > 1 && (
                           <>
                             <DateTimeBadgeComponent
-                              date={messages[groupIndices[0]].timestamp}
+                              date={displayMessages[groupIndices[0]].timestamp}
                               mini
                             />
                             <span style={{ opacity: 0.5 }}>—</span>
                             <DateTimeBadgeComponent
                               date={
-                                messages[groupIndices[groupCount - 1]].timestamp
+                                displayMessages[groupIndices[groupCount - 1]].timestamp
                               }
                               mini
                             />
@@ -1165,7 +1232,7 @@ export default function MessageList({
                       </button>
                     </div>
                     {groupIndices.map((gi: number) => {
-                      const gMsg = messages[gi];
+                      const gMsg = displayMessages[gi];
                       const gRoleClass =
                         gMsg.role === "user"
                           ? styles.userNode
@@ -1177,8 +1244,8 @@ export default function MessageList({
                       const gIsFadedSwap =
                         gShowModelChange &&
                         gi > 0 &&
-                        messages[gi - 1].deleted &&
-                        messages[gi].deleted;
+                        displayMessages[gi - 1].deleted &&
+                        displayMessages[gi].deleted;
                       const gSwapDividerClass =
                         `${styles.modelChangeDivider} ${gIsFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
                       const shouldRenderInnerSwap =
