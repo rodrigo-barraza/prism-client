@@ -172,8 +172,8 @@ export default function SettingsPageComponent() {
   const handleExtractionModelSelect = useCallback(
     (provider: string, model: string) => {
       const updated = {
-        memorySettings?ory: {
-          ...settings?.memorySettings?ory,
+        memory: {
+          ...settings?.memory,
           extractionProvider: provider || "",
           extractionModel: model || "",
         },
@@ -187,8 +187,8 @@ export default function SettingsPageComponent() {
   const handleConsolidationModelSelect = useCallback(
     (provider: string, model: string) => {
       const updated = {
-        memorySettings?ory: {
-          ...settings?.memorySettings?ory,
+        memory: {
+          ...settings?.memory,
           consolidationProvider: provider || "",
           consolidationModel: model || "",
         },
@@ -202,8 +202,8 @@ export default function SettingsPageComponent() {
   const handleEmbeddingModelSelect = useCallback(
     (provider: string, model: string) => {
       const updated = {
-        memorySettings?ory: {
-          ...settings?.memorySettings?ory,
+        memory: {
+          ...settings?.memory,
           embeddingProvider: provider || "",
           embeddingModel: model || "",
         },
@@ -247,8 +247,8 @@ export default function SettingsPageComponent() {
 
   // -- Reset to defaults ----------------------------------------------
   const handleResetMemory = useCallback(async () => {
-    if (!defaults?.memorySettings?ory) return;
-    const updated = { memorySettings?ory: { ...(defaults?.memorySettings?ory || {}) } };
+    if (!defaults?.memory) return;
+    const updated = { memory: { ...(defaults?.memory || {}) } };
     setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
@@ -353,7 +353,7 @@ export default function SettingsPageComponent() {
     );
   }
 
-  const memorySettings?orySettings = (settings?.memorySettings?ory || {}) || {};
+  const memorySettings = (settings?.memory || {}) || {};
   const agentDefaults = (settings?.agents || {}) || {};
   const hasAgents = wsAgents.length > 0;
   const hasAnyWorkspaces = wsWorkspaces.length > 0;
@@ -1065,7 +1065,7 @@ export default function SettingsPageComponent() {
         <CardComponent.Header
           icon={Brain}
           title="Memory Models"
-          subtitle="Models used for memorySettings?ory extraction, consolidation, and embedding"
+          subtitle="Models used for memory extraction, consolidation, and embedding"
         />
 
         <CardComponent.Body>
@@ -1081,8 +1081,8 @@ export default function SettingsPageComponent() {
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
-                  provider: memorySettings?orySettings.extractionProvider || "",
-                  model: memorySettings?orySettings.extractionModel || "",
+                  provider: memorySettings.extractionProvider || "",
+                  model: memorySettings.extractionModel || "",
                 }}
                 onSelectModel={handleExtractionModelSelect}
                 modelTypeFilter="conversation"
@@ -1096,15 +1096,15 @@ export default function SettingsPageComponent() {
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Consolidation Model</span>
               <span className={styles.rowDescription}>
-                Merges, deduplicates, and prunes stored memorySettings?ories
+                Merges, deduplicates, and prunes stored memories
               </span>
             </div>
             <div className={styles.rowControl}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
-                  provider: memorySettings?orySettings.consolidationProvider || "",
-                  model: memorySettings?orySettings.consolidationModel || "",
+                  provider: memorySettings.consolidationProvider || "",
+                  model: memorySettings.consolidationModel || "",
                 }}
                 onSelectModel={handleConsolidationModelSelect}
                 modelTypeFilter="conversation"
@@ -1118,15 +1118,15 @@ export default function SettingsPageComponent() {
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Embedding Model</span>
               <span className={styles.rowDescription}>
-                Generates vector embeddings for semantic memorySettings?ory search
+                Generates vector embeddings for semantic memory search
               </span>
             </div>
             <div className={styles.rowControl}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
-                  provider: memorySettings?orySettings.embeddingProvider || "",
-                  model: memorySettings?orySettings.embeddingModel || "",
+                  provider: memorySettings.embeddingProvider || "",
+                  model: memorySettings.embeddingModel || "",
                 }}
                 onSelectModel={handleEmbeddingModelSelect}
                 modelTypeFilter="embed"
