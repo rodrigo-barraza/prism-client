@@ -12,6 +12,10 @@
     border-color 0.2s;
   position: relative;
 
+  &:nth-child(even):not(.active) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
   &:hover {
     background: var(--accent-glow);
     border-left-color: rgba(255, 255, 255, 0.15);
