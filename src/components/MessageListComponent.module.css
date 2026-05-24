@@ -1073,39 +1073,4 @@
   }
 }
 
-/* ── Debug Toggle Container ── */
-.debugToggleContainer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  max-width: 800px;
-  margin: 0 auto 4px auto;
-  width: 100%;
-}
 
-.debugTab {
-  padding: 4px 12px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-
-.debugTab:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.debugTab.activeTab {
-  background: var(--accent-glow);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  box-shadow: 0 0 8px var(--accent-glow);
-}

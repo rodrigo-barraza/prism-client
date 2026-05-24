@@ -568,6 +568,7 @@ export default function AgentComponent({
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
   const [backendSessionStats, setBackendSessionStats] = useState<SessionStats | null>(null);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
+  const [showRaw, setShowRaw] = useState(false);
 
   // Frontend-side high-water marks for token display.
   // Ensures the token badges never show a lower number than previously
@@ -1225,6 +1226,17 @@ export default function AgentComponent({
       messages.filter((m) => m.role === "user" || m.role === "assistant"),
     [messages],
   );
+
+  const hasSystemContextMessage = useMemo(() => {
+    return messages.some(
+      (m) =>
+        m.role === "user" &&
+        (m.content?.startsWith("[System Context]") ||
+          m.rawContent?.startsWith("[System Context]") ||
+          m.content?.startsWith("[System Context - Local Time:") ||
+          m.rawContent?.startsWith("[System Context - Local Time:"))
+    );
+  }, [messages]);
 
   // ── Editable serialization ─────────────────────────────────────
   // The input is a contentEditable div. Mention badges are non-editable
@@ -3899,6 +3911,26 @@ export default function AgentComponent({
           <span className={chatStyles.chatHeaderTitleText}>{title || ""}</span>
         </div>
         <div className={chatStyles.chatHeaderActions}>
+          {hasSystemContextMessage && (
+            <div className={chatStyles.debugToggleContainer}>
+              <ButtonComponent
+                variant={!showRaw ? "tonal" : "text"}
+                size="small"
+                onClick={() => setShowRaw(false)}
+                className={chatStyles.debugToggleBtn}
+              >
+                Clean View
+              </ButtonComponent>
+              <ButtonComponent
+                variant={showRaw ? "tonal" : "text"}
+                size="small"
+                onClick={() => setShowRaw(true)}
+                className={chatStyles.debugToggleBtn}
+              >
+                Raw View
+              </ButtonComponent>
+            </div>
+          )}
           <ButtonComponent
             ref={chatNewBtnRef}
             variant="primary"
@@ -3953,6 +3985,7 @@ export default function AgentComponent({
 
         <MessageList
           messages={filteredMessages}
+          showRaw={showRaw}
           isGenerating={isGenerating}
           streamingOutputs={streamingOutputs}
           workerToolActivity={workerToolActivity}

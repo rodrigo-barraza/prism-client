@@ -713,6 +713,7 @@ export interface MessageListProps {
   onPlanApprove?: () => void;
   onPlanReject?: () => void;
   knownPaths?: string[];
+  showRaw?: boolean;
 
   onDelete?: (index: number) => void;
   onRestore?: (index: number) => void;
@@ -739,6 +740,7 @@ export default function MessageList({
   onPlanApprove,
   onPlanReject,
   knownPaths,
+  showRaw = false,
 
   onDelete,
   onRestore,
@@ -753,9 +755,6 @@ export default function MessageList({
   const [expandedDeletedSet, setExpandedDeletedSet] = useState<Set<number>>(new Set());
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
-  // -- Dynamic context clean-up and Raw/Debug view toggle ──
-  const [showRaw, setShowRaw] = useState(false);
-
   const cleanMessageContent = (content: string | undefined | null): string => {
     if (!content) return "";
     if (content.startsWith("[System Context]")) {
@@ -767,36 +766,59 @@ export default function MessageList({
       if (altSplit !== -1) {
         return content.substring(altSplit + "[User Message]\n".length);
       }
+    } else if (content.startsWith("[System Context - Local Time:")) {
+      const index = content.indexOf("]\n\n");
+      if (index !== -1) {
+        return content.slice(index + 3);
+      }
     }
     return content;
   };
 
+  const getCleanAndRaw = (content: string, rawContent?: string) => {
+    let cleanVal = content || "";
+    let rawVal = rawContent || content || "";
+
+    const contentIsDirty = cleanVal.startsWith("[System Context]") || cleanVal.startsWith("[System Context - Local Time:");
+    const rawIsDirty = rawVal.startsWith("[System Context]") || rawVal.startsWith("[System Context - Local Time:");
+
+    if (contentIsDirty && !rawIsDirty) {
+      cleanVal = rawVal;
+      rawVal = content;
+    } else if (!contentIsDirty && rawIsDirty) {
+      cleanVal = content;
+      rawVal = rawVal;
+    } else if (contentIsDirty && rawIsDirty) {
+      // Both are dirty, clean one for cleanVal
+      cleanVal = cleanMessageContent(content);
+    } else {
+      // Neither is dirty
+      cleanVal = content;
+      rawVal = rawContent || content;
+    }
+
+    return { clean: cleanVal, raw: rawVal };
+  };
+
   const hasSystemContextMessage = useMemo(() => {
     return messages.some(
-      (m) => m.role === "user" && (m.rawContent || m.content?.startsWith("[System Context]"))
+      (m) =>
+        m.role === "user" &&
+        (m.content?.startsWith("[System Context]") ||
+          m.rawContent?.startsWith("[System Context]") ||
+          m.content?.startsWith("[System Context - Local Time:") ||
+          m.rawContent?.startsWith("[System Context - Local Time:"))
     );
   }, [messages]);
 
   const displayMessages = useMemo(() => {
     return messages.map((m) => {
       if (m.role === "user") {
-        if (showRaw) {
-          // In raw debug view, show rawContent if available, else content
-          return {
-            ...m,
-            content: m.rawContent || m.content || "",
-          };
-        } else {
-          // In clean view, if rawContent is present, content is already clean!
-          // If rawContent is not present, content might have legacy context so we clean it.
-          if (m.rawContent) {
-            return m;
-          }
-          return {
-            ...m,
-            content: cleanMessageContent(m.content),
-          };
-        }
+        const { clean, raw } = getCleanAndRaw(m.content || "", m.rawContent);
+        return {
+          ...m,
+          content: showRaw ? raw : clean,
+        };
       }
       return m;
     });
@@ -1006,23 +1028,6 @@ export default function MessageList({
 
   return (
     <div className={styles.messagesList}>
-      {/* -- Raw / Formatted Toggle (Only shown when system context is present) -- */}
-      {hasSystemContextMessage && (
-        <div className={styles.debugToggleContainer}>
-          <button
-            className={`${styles.debugTab} ${!showRaw ? styles.activeTab : ""}`}
-            onClick={() => setShowRaw(false)}
-          >
-            Formatted View
-          </button>
-          <button
-            className={`${styles.debugTab} ${showRaw ? styles.activeTab : ""}`}
-            onClick={() => setShowRaw(true)}
-          >
-            Raw View (Debug)
-          </button>
-        </div>
-      )}
 
       {/* -- Sticky pinned user message -- */}
       <div

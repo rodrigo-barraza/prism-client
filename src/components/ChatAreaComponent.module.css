@@ -48,6 +48,29 @@
   color: var(--text-primary);
 }
 
+.debugToggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 2px;
+  border-radius: var(--border-radius-sm);
+  margin-right: 6px;
+}
+
+.debugToggleBtn {
+  height: 24px !important;
+  min-height: 24px !important;
+  padding: 0 8px !important;
+  font-size: 10px !important;
+  border-radius: calc(var(--border-radius-sm) - 2px) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: none !important;
+}
+
 .chatHeaderActions {
   display: flex;
   align-items: center;
