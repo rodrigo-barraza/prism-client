@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
+import type { CSSProperties } from "react";
 
 /**
  * StarfieldComponent — Deep-field starry sky with Milky Way band,
@@ -9,9 +10,41 @@ import { useRef, useEffect, useCallback } from "react";
  * Sharp pinpoint stars, subtle twinkling, parallax offset.
  */
 
+// ── Type Definitions ──────────────────────────────────────────
+
+interface StarfieldProps {
+  className?: string;
+  style?: CSSProperties;
+  panX?: number;
+  panY?: number;
+}
+
+interface FieldStar {
+  x: number;
+  y: number;
+  radius: number;
+  brightness: number;
+  r: number;
+  g: number;
+  b: number;
+  twinkleSpeed: number;
+  twinklePhase: number;
+  twinkleAmount: number;
+}
+
+interface ConstellationStar extends FieldStar {}
+
+interface ConstellationData {
+  name: string;
+  stars: ConstellationStar[];
+  edges: number[][];
+}
+
+type SeededRng = () => number;
+
 // -- Seeded RNG --
 
-function seededRandom(seed: any) {
+function seededRandom(seed: number): SeededRng {
   let s = seed;
   return () => {
     s = (s * 16807 + 0) % 2147483647;
@@ -370,8 +403,8 @@ const CONSTELLATIONS = [
 
 // -- Star generation --
 
-function generateFieldStars(count: any, w: any, h: any, rng: any) {
-  const stars = [];
+function generateFieldStars(count: number, w: number, h: number, rng: SeededRng): FieldStar[] {
+  const stars: FieldStar[] = [];
   const padX = w * 0.35;
   const padY = h * 0.35;
   const totalW = w + padX * 2;
@@ -456,7 +489,7 @@ function generateFieldStars(count: any, w: any, h: any, rng: any) {
 
 // -- Nebula & galactic core pre-render --
 
-function renderNebulaLayer(w: any, h: any, rng: any) {
+function renderNebulaLayer(w: number, h: number, rng: SeededRng): HTMLCanvasElement {
   const offscreen = document.createElement("canvas");
   offscreen.width = w;
   offscreen.height = h;
@@ -570,14 +603,14 @@ export default function StarfieldComponent({
   style,
   panX = 0,
   panY = 0,
-}: any) {
+}: StarfieldProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const starsRef = useRef<any>(null);
-  const constellationStarsRef = useRef<any>(null);
+  const starsRef = useRef<FieldStar[] | null>(null);
+  const constellationStarsRef = useRef<ConstellationData[] | null>(null);
   const nebulaCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rafRef = useRef<any>(null);
-  const sizeRef = useRef<any>({ w: 0, h: 0 });
-  const panRef = useRef<any>({ x: panX, y: panY });
+  const rafRef = useRef<number | null>(null);
+  const sizeRef = useRef({ w: 0, h: 0 });
+  const panRef = useRef({ x: panX, y: panY });
 
   useEffect(() => {
     panRef.current = { x: panX, y: panY };
@@ -585,7 +618,7 @@ export default function StarfieldComponent({
 
   const PARALLAX_FACTOR = 0.04;
 
-  const ensureStars = useCallback((w: any, h: any) => {
+  const ensureStars = useCallback((w: number, h: number) => {
     if (
       starsRef.current &&
       Math.abs(sizeRef.current.w - w) < 100 &&
@@ -627,16 +660,16 @@ export default function StarfieldComponent({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as HTMLCanvasElement).getContext("2d");
+    const context = canvas.getContext("2d");
     if (!context) return;
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      const rect = (canvas as HTMLCanvasElement).getBoundingClientRect();
+      const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      (canvas as HTMLCanvasElement).width = w * dpr;
-      (canvas as HTMLCanvasElement).height = h * dpr;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       ensureStars(w, h);
     };
@@ -645,7 +678,7 @@ export default function StarfieldComponent({
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
 
-    const draw = (time: any) => {
+    const draw = (time: number) => {
       const t = time / 1000;
       const w = sizeRef.current.w;
       const h = sizeRef.current.h;

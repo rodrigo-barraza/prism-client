@@ -287,7 +287,8 @@ export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasPro
         points: [...currentStroke.points, position],
       };
     } else {
-      updated = { ...currentStroke, end: position };
+      const shape = currentStroke as ShapeStroke;
+      updated = { ...shape, end: position };
     }
     setCurrentStroke(updated);
 
