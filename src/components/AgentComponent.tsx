@@ -1841,6 +1841,31 @@ export default function AgentComponent({
               return updated;
             });
           },
+          onImage: (dataStr: string, mimeType: string, minioRef?: string) => {
+            if (isStale()) return;
+            const imgRef = minioRef || dataStr;
+            if (!imgRef) return;
+            setMessages((prev) => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last?.role === "assistant") {
+                const existingImages = last.images || [];
+                if (!existingImages.includes(imgRef)) {
+                  updated[updated.length - 1] = {
+                    ...last,
+                    images: [...existingImages, imgRef],
+                  };
+                }
+              } else {
+                updated.push({
+                  role: "assistant",
+                  content: "",
+                  images: [imgRef],
+                });
+              }
+              return updated;
+            });
+          },
           onToolExecution: (data: SSEData) => {
             if (isStale()) return;
             const tc = data.tool;
