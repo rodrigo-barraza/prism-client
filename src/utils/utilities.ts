@@ -30,7 +30,7 @@ export {
   formatDateTime,
 } from "@rodrigo-barraza/utilities-library";
 
-import type { Message } from "../types/types";
+import type { Message, TokenUsage, PrismConfig, ModelOption } from "../types/types";
 
 // -- Prism-specific utilities ---------------------------------
 
@@ -66,7 +66,7 @@ export function buildLmStudioLoadBody(
  * Providers like Anthropic and Google split prompt tokens into
  * new + cache_read + cache_write. This aggregates all three.
  */
-export function getTotalInputTokens(usage: { inputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number; [key: string]: any } | null | undefined): number {
+export function getTotalInputTokens(usage: TokenUsage | null | undefined): number {
   if (!usage) return 0;
   return (
     (usage.inputTokens || 0) +
@@ -561,13 +561,17 @@ export function getSessionElapsedTime(messages: Message[]): number {
  * 4. Fall back to the first available model that matches criteria.
  */
 export function resolveDefaultModel(
-  config: any,
+  config: {
+    textToText?: {
+      models?: Record<string, ModelOption[]>;
+    };
+  } | null | undefined,
   fcOnly = false
 ): { provider: string; model: string; temperature: number } {
   const textModels = config?.textToText?.models || {};
 
   // Helper to check if model meets tool-calling requirement
-  const isEligible = (m: any) => {
+  const isEligible = (m: ModelOption) => {
     if (!fcOnly) return true;
     return (m.tools || []).includes("Tool Calling");
   };
@@ -576,7 +580,7 @@ export function resolveDefaultModel(
   if (textModels["google"]?.length > 0) {
     const googleModels = textModels["google"];
     // Look specifically for gemini-3.5-flash
-    const target = googleModels.find((m: any) => m.name === "gemini-3.5-flash" && isEligible(m));
+    const target = googleModels.find((m: ModelOption) => m.name === "gemini-3.5-flash" && isEligible(m));
     if (target) {
       return {
         provider: "google",
@@ -599,7 +603,7 @@ export function resolveDefaultModel(
   if (textModels["anthropic"]?.length > 0) {
     const anthropicModels = textModels["anthropic"];
     // Look for a model containing "haiku"
-    const target = anthropicModels.find((m: any) => m.name.toLowerCase().includes("haiku") && isEligible(m));
+    const target = anthropicModels.find((m: ModelOption) => m.name.toLowerCase().includes("haiku") && isEligible(m));
     if (target) {
       return {
         provider: "anthropic",
@@ -624,7 +628,7 @@ export function resolveDefaultModel(
     // Try gpt-5.4-mini, gpt-5-mini, or any model containing "mini" or "nano"
     const miniTarget = ["gpt-5.4-mini", "gpt-5-mini", "gpt-5.4-nano", "gpt-5-nano"];
     for (const name of miniTarget) {
-      const target = openaiModels.find((m: any) => m.name === name && isEligible(m));
+      const target = openaiModels.find((m: ModelOption) => m.name === name && isEligible(m));
       if (target) {
         return {
           provider: "openai",
@@ -635,7 +639,7 @@ export function resolveDefaultModel(
     }
     // Fallback search for any model containing "mini" or "nano"
     const anyMini = openaiModels.find(
-      (m: any) => (m.name.toLowerCase().includes("mini") || m.name.toLowerCase().includes("nano")) && isEligible(m)
+      (m: ModelOption) => (m.name.toLowerCase().includes("mini") || m.name.toLowerCase().includes("nano")) && isEligible(m)
     );
     if (anyMini) {
       return {

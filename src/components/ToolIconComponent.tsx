@@ -16,12 +16,19 @@ import styles from "./ToolIconComponent.module.css";
  *   size           — icon size in px (default 12)
  *   className      — extra root class name
  */
+interface ToolIconProps {
+  toolDisplayNames?: string[];
+  toolApiNames?: string[];
+  size?: number;
+  className?: string;
+}
+
 export default function ToolIconComponent({
   toolDisplayNames,
   toolApiNames,
   size = 12,
   className,
-}: any) {
+}: ToolIconProps) {
   if (!toolDisplayNames || toolDisplayNames.length === 0) {
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
@@ -55,7 +62,7 @@ export default function ToolIconComponent({
 
   return (
     <span className={`${styles.toolPills} ${className || ""}`}>
-      {[...resolved.entries()].map(([label, Icon]: any) => {
+      {[...resolved.entries()].map(([label, Icon]: [string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>]) => {
         // Build rich tooltip for "Tool Calling" showing actual tool names
         const tooltipLabel =
           label === "Tool Calling" && fcRawDisplay.length > 0

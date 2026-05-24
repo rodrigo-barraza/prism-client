@@ -16,12 +16,27 @@ import {
  * is rendered through `MarkdownContent` to support full markdown
  * formatting (code blocks, lists, links, etc.).
  */
+export interface TaskNotification {
+  status?: "completed" | "failed" | "running" | string | null;
+  durationMs?: number | string | null;
+  summary?: string | null;
+  toolUses?: number | string | null;
+  result?: string | null;
+}
+
+interface WorkerNotificationProps {
+  taskNotif: TaskNotification;
+  timestamp?: string | Date;
+  readOnly?: boolean;
+  onDelete?: () => void;
+}
+
 export default function WorkerNotificationComponent({
   taskNotif,
   timestamp,
   readOnly,
   onDelete,
-}: any) {
+}: WorkerNotificationProps) {
   const statusIcon =
     taskNotif.status === "completed"
       ? "✓"

@@ -1,0 +1,15 @@
+
+> prism-client@0.1.0 test
+> vitest run --passWithNoTests
+
+
+ RUN  v4.1.5 /home/rodrigo/development/prism-client
+
+ ✓ tests/resolveDefaultModel.test.ts (5 tests) 12ms
+ ✓ tests/mentionUtils.test.ts (49 tests) 58ms
+
+ Test Files  2 passed (2)
+      Tests  54 passed (54)
+   Start at  19:31:54
+   Duration  1.68s (transform 484ms, setup 211ms, import 490ms, tests 70ms, environment 1.94s)
+

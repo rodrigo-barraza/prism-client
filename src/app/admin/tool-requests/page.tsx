@@ -76,21 +76,19 @@ export default function ToolRequestsPage() {
 
   const loadToolCalls = useCallback(async () => {
     try {
-      const params = { limit: LIMIT, skip: (page - 1) * LIMIT };
+      const params: Record<string, string | number | boolean> = { limit: LIMIT, skip: (page - 1) * LIMIT };
       Object.entries(filters).forEach(([k, v]) => {
-        if (v) (params as Record<string, any>)[k] = v;
+        if (v) params[k] = v;
       });
       // Date range
-      const dateParams = buildDateRangeParams(dateRange);
-      if ((dateParams as Record<string, string>).since)
-        (params as Record<string, any>).since = (dateParams as Record<string, string>).since;
-      if ((dateParams as Record<string, string>).until)
-        (params as Record<string, any>).until = (dateParams as Record<string, string>).until;
+      const dateParams = buildDateRangeParams(dateRange) as Record<string, string>;
+      if (dateParams.since) params.since = dateParams.since;
+      if (dateParams.until) params.until = dateParams.until;
 
       const data = await ToolsApiService.getToolCalls(params);
       setToolCalls(data.toolCalls || []);
       setTotal(data.total || 0);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
