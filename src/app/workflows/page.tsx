@@ -1200,7 +1200,6 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
           />
         </div>
       }
-      headerTitle="Workflows"
       headerCenter={
         selectedNode && !(selectedNode as WorkflowNode).nodeType ? (
           <ModelPickerPopoverComponent

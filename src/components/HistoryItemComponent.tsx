@@ -142,7 +142,8 @@ export default function HistoryItemComponent({
           ? (e: React.MouseEvent) => {
               // Only show custom context on right-click of the main item area
               // (not on action buttons which have their own handlers)
-              if ((e.target as HTMLElement).closest?.(`.${styles.actions}`)) return;
+              if ((e.target as HTMLElement).closest?.(`.${styles.actions}`))
+                return;
               e.preventDefault();
               onOpenInNewTab(item);
             }
@@ -162,50 +163,35 @@ export default function HistoryItemComponent({
         </button>
       )}
       <div className={styles.content}>
-        {/* Row 1: time + tags (left) · cost (right) */}
+        {/* Row 1: time + tags (left) · agentBadge + cost (right) */}
         <div className={styles.topRow}>
           <div className={styles.topLeft}>
             <DateTimeBadgeComponent date={itemDate} />
-            {admin && item.username && item.username !== "unknown" && item.username !== "anonymous" && (
-              <span className={styles.usernameTag}>{item.username}</span>
-            )}
+            {admin &&
+              item.username &&
+              item.username !== "unknown" &&
+              item.username !== "anonymous" && (
+                <span className={styles.usernameTag}>{item.username}</span>
+              )}
             {item.tags?.map((tag: HistoryItemTag) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>
                 {tag.label}
               </span>
             ))}
           </div>
-          <CostBadgeComponent cost={item.totalCost ?? 0} showIcon={false} />
-        </div>
-
-        {/* Row 2: title */}
-        <div className={styles.title}>
-          {isGenerating && <span className={styles.generatingDot} />}
-          {item.title || "Untitled"}
-          {isNew && <span className={styles.newBadge}>NEW</span>}
-        </div>
-
-        {/* Row 3: model badge */}
-        {hasModel && (
-          <ModelBadgeComponent
-            models={
-              (item.modelNames?.length ?? 0) > 0 ? item.modelNames!.filter(Boolean) as string[] : [item.modelName].filter(Boolean) as string[]
-            }
-            providers={item.providers}
-            className={styles.modelBadge}
-          />
-        )}
-
-        {/* Row 4: modalities (left) · tools (right) */}
-        {(hasModalities || (item.agent && (typeof item.agent === "string" ? item.agent : item.agent.id || "") !== "NONE")) && (
-          <div className={styles.bottomRow}>
-            <div className={styles.bottomLeft}>
-              {hasModalities && <ModalityIconComponent modalities={mod} />}
-              {item.agent && (() => {
-                const agentId = typeof item.agent === "string" ? item.agent : item.agent.id || "";
+          <div className={styles.topRight}>
+            {item.agent &&
+              (() => {
+                const agentId =
+                  typeof item.agent === "string"
+                    ? item.agent
+                    : item.agent.id || "";
                 if (!agentId || agentId === "NONE") return null;
 
-                const resolvedAgent = typeof item.agent === "string" ? { id: item.agent, name: item.agent } : item.agent;
+                const resolvedAgent =
+                  typeof item.agent === "string"
+                    ? { id: item.agent, name: item.agent }
+                    : item.agent;
 
                 return (
                   <span className={styles.agentBadge} data-agent={agentId}>
@@ -220,6 +206,35 @@ export default function HistoryItemComponent({
                   </span>
                 );
               })()}
+            <CostBadgeComponent cost={item.totalCost ?? 0} showIcon={false} />
+          </div>
+        </div>
+
+        {/* Row 2: title */}
+        <div className={styles.title}>
+          {isGenerating && <span className={styles.generatingDot} />}
+          {item.title || "Untitled"}
+          {isNew && <span className={styles.newBadge}>NEW</span>}
+        </div>
+
+        {/* Row 3: model badge */}
+        {hasModel && (
+          <ModelBadgeComponent
+            models={
+              (item.modelNames?.length ?? 0) > 0
+                ? (item.modelNames!.filter(Boolean) as string[])
+                : ([item.modelName].filter(Boolean) as string[])
+            }
+            providers={item.providers}
+            className={styles.modelBadge}
+          />
+        )}
+
+        {/* Row 4: modalities (left) · tools (right) */}
+        {hasModalities && (
+          <div className={styles.bottomRow}>
+            <div className={styles.bottomLeft}>
+              <ModalityIconComponent modalities={mod} />
             </div>
             {hasModalities && <ModelToolsRow tools={mod} variant="condensed" />}
           </div>

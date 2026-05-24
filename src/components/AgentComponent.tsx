@@ -4394,7 +4394,6 @@ export default function AgentComponent({
       }
       rightTitle={`${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`}
       sessionType="agent"
-      headerTitle={title}
       headerCenter={
         <div className={layoutStyles.headerCenterGroup}>
           {agents.length > 1 && (

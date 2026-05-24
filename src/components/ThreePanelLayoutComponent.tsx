@@ -19,7 +19,6 @@ import { LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
  *   leftTitle      — Title for the left sidebar (default: "Settings")
  *   rightPanel     — React node for the right sidebar content (e.g. HistoryPanel)
  *   rightTitle     — Title for the right sidebar (default: "History")
- *   headerTitle    — Title displayed in the header
  *   headerMeta     — React node for meta info in the header (badges, counts)
  *   headerControls — React node for extra controls in the header (theme toggle, etc.)
  *   headerCenter   — React node absolutely centered in the header (over the chat area)
@@ -32,7 +31,6 @@ export interface ThreePanelLayoutProps {
   rightPanel?: React.ReactNode;
   rightTitle?: string;
   sessionType?: string;
-  headerTitle?: string | React.ReactNode;
   headerMeta?: React.ReactNode;
   headerControls?: React.ReactNode;
   headerCenter?: React.ReactNode;
@@ -47,7 +45,6 @@ export default function ThreePanelLayout({
   rightPanel,
   rightTitle,
   sessionType = "conversation",
-  headerTitle = "",
   headerMeta = null,
   headerControls = null,
   headerCenter = null,
@@ -194,7 +191,6 @@ export default function ThreePanelLayout({
           >
             {showLeft ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
           </button>
-          <span className={styles.headerTitle}>{headerTitle}</span>
           {!isMobile && headerMeta}
           {headerCenter && (
             <div className={styles.headerCenter}>{headerCenter}</div>

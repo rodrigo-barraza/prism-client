@@ -93,7 +93,6 @@ export default function BenchmarkPageComponent({
       leftTitle="Preview"
       rightPanel={rightSidebar}
       rightTitle="Benchmarks"
-      headerTitle="New Benchmark"
       headerControls={
         <ButtonComponent
           variant="primary"

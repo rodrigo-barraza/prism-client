@@ -848,7 +848,6 @@ export default function SynthesisComponent() {
             onDelete={handleDeleteHistory}
           />
         }
-        headerTitle="Synthesis"
         navSidebar={
           <NavigationSidebarComponent mode="user" isGenerating={isGenerating} />
         }

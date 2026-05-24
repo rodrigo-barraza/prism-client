@@ -55,6 +55,13 @@
   min-width: 0;
 }
 
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 /* ── Row 2: title ── */
 .title {
   font-size: 0.8125rem;

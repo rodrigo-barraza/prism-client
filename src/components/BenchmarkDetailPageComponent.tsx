@@ -1202,7 +1202,6 @@ export default function BenchmarkDetailPageComponent({
         leftPanel={null}
         rightPanel={rightSidebar}
         rightTitle="Benchmarks"
-        headerTitle="Loading…"
       >
         <div className={styles.contentMain}>
           <div className={styles.runProgress}>
@@ -1221,7 +1220,6 @@ export default function BenchmarkDetailPageComponent({
         leftPanel={null}
         rightPanel={rightSidebar}
         rightTitle="Benchmarks"
-        headerTitle="Not found"
       >
         <div className={styles.contentMain}>
           <div className={styles.runProgress}>
@@ -1262,7 +1260,6 @@ export default function BenchmarkDetailPageComponent({
       }
       rightPanel={rightSidebar}
       rightTitle="Benchmarks"
-      headerTitle={benchmark.name}
       headerCenter={
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <ModelPickerPopoverComponent

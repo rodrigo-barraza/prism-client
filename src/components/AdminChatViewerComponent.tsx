@@ -932,7 +932,6 @@ export default function AdminChatViewerComponent({
             />
           }
           rightTitle={`${entries.length}${entriesHasMore ? "+" : ""} ${isNoAgent ? "Conversations" : isAgentMode ? "Sessions" : "Entries"}`}
-          headerTitle={convTitle}
           headerMeta={
             selectedEntry && (
               <div className={styles.headerMeta}>

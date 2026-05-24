@@ -41,15 +41,6 @@
   position: relative;
 }
 
-.headerTitle {
-  flex: 0 1 auto;
-  max-width: 30%;
-  margin-right: auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
 
 .headerCenter {
   flex: 1;
@@ -60,6 +51,7 @@
   gap: 8px;
   pointer-events: none;
   overflow: visible;
+  height: 50px;
 }
 
 .headerCenter > * {
@@ -193,8 +185,8 @@
 }
 
 .sidebarHeader {
-  height: 48px;
-  min-height: 48px;
+  height: 42px;
+  min-height: 42px;
   display: flex;
   align-items: center;
   padding: 0 20px;
@@ -285,9 +277,6 @@
     flex-wrap: wrap;
   }
 
-  .headerTitle {
-    display: none;
-  }
 
   .headerCenter {
     overflow: visible;

@@ -318,7 +318,6 @@ export default function BenchmarkDashboardComponent({
       leftTitle={selectedModel?.model || ""}
       rightPanel={rightSidebar}
       rightTitle="Benchmarks"
-      headerTitle="Benchmarks"
       headerControls={
         <ButtonComponent
           variant="primary"
