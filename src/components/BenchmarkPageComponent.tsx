@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Target } from "lucide-react";
 import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import BenchmarkPreviewSidebarComponent from "./BenchmarkPreviewSidebarComponent";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
-import BenchmarkFormComponent from "./BenchmarkFormComponent";
+import BenchmarkFormComponent, { BenchmarkFormState } from "./BenchmarkFormComponent";
 import styles from "./BenchmarkPageComponent.module.css";
 
 const MATCH_MODES = [
@@ -17,7 +17,7 @@ const MATCH_MODES = [
   { value: "regex", label: "Regex" },
 ];
 
-const INITIAL_FORM = {
+const INITIAL_FORM: BenchmarkFormState = {
   name: "",
   prompt: "",
   systemPrompt: "",
@@ -28,14 +28,19 @@ const INITIAL_FORM = {
   agentAssertionOperator: "AND",
 };
 
+interface BenchmarkPageComponentProps {
+  navSidebar: ReactNode;
+  rightSidebar: ReactNode;
+}
+
 export default function BenchmarkPageComponent({
   navSidebar,
   rightSidebar,
-}: any) {
+}: BenchmarkPageComponentProps) {
   const router = useRouter();
 
   // -- State --------------------------------------------------
-  const [form, setForm] = useState(INITIAL_FORM);
+  const [form, setForm] = useState<BenchmarkFormState>(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
 
   // -- Validation ---------------------------------------------
@@ -78,7 +83,7 @@ export default function BenchmarkPageComponent({
       if (created?.id) {
         router.push(`/benchmarks/${created.id}`);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to save benchmark:", error);
     } finally {
       setSaving(false);

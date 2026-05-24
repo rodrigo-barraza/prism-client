@@ -18,6 +18,7 @@ const eslintConfig = defineConfig([
       "no-console": "off",
       "prefer-const": "error",
       "no-var": "error",
+      "@next/next/no-img-element": "off",
     },
   },
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),

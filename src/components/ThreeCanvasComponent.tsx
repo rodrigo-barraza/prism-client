@@ -75,6 +75,34 @@ export default function ThreeCanvasComponent({
     }
   }, [paused]);
 
+  const propsRef = useRef({
+    onSetup,
+    cameraFov,
+    cameraNear,
+    cameraFar,
+    cameraPosition,
+    antialias,
+    alpha,
+    toneMapping,
+    toneMappingExposure,
+    shadowMap,
+  });
+
+  useEffect(() => {
+    propsRef.current = {
+      onSetup,
+      cameraFov,
+      cameraNear,
+      cameraFar,
+      cameraPosition,
+      antialias,
+      alpha,
+      toneMapping,
+      toneMappingExposure,
+      shadowMap,
+    };
+  });
+
   // Stable tick wrapper that always calls the latest onTick ref
   const tickWrapper = useCallback((state: any) => {
     onTickRef.current?.(state);
@@ -85,17 +113,30 @@ export default function ThreeCanvasComponent({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const {
+      onSetup: currentSetup,
+      cameraFov: fov,
+      cameraNear: near,
+      cameraFar: far,
+      cameraPosition: pos,
+      antialias: anti,
+      alpha: alp,
+      toneMapping: tone,
+      toneMappingExposure: exp,
+      shadowMap: shadow,
+    } = propsRef.current;
+
     // Create the Three.js instance
     const id = ThreeService.create(canvas, {
-      cameraFov,
-      cameraNear,
-      cameraFar,
-      cameraPosition,
-      antialias,
-      alpha,
-      toneMapping,
-      toneMappingExposure,
-      shadowMap,
+      cameraFov: fov,
+      cameraNear: near,
+      cameraFar: far,
+      cameraPosition: pos,
+      antialias: anti,
+      alpha: alp,
+      toneMapping: tone,
+      toneMappingExposure: exp,
+      shadowMap: shadow,
     });
 
     instanceIdRef.current = id;
@@ -105,8 +146,8 @@ export default function ThreeCanvasComponent({
 
     // Fire the setup callback — pass THREE so consumers don't import it
     const instance = ThreeService.getInstance(id);
-    if (instance && onSetup) {
-      const cleanup = onSetup({
+    if (instance && currentSetup) {
+      const cleanup = currentSetup({
         ...instance,
         THREE: ThreeService.THREE,
       });
@@ -124,9 +165,7 @@ export default function ThreeCanvasComponent({
       ThreeService.destroy(id);
       instanceIdRef.current = null;
     };
-    // Intentionally only run on mount — renderer config is static
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [tickWrapper]);
 
   return (
     <div

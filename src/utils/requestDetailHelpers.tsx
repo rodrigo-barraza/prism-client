@@ -397,8 +397,18 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
  * to display.
  */
 export function reconstructChatMessages(selectedRequest: TransformedRequestItem | null | undefined) {
-  const reqPayload = selectedRequest?.requestPayload;
-  const resPayload = selectedRequest?.responsePayload;
+  if (!selectedRequest) return null;
+  const reqPayload = selectedRequest.requestPayload as { messages?: Message[] } | undefined;
+  const resPayload = selectedRequest.responsePayload as {
+    text?: string;
+    content?: string;
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    choices?: Array<{ message?: { content?: string; tool_calls?: any[] } }>;
+    toolCalls?: any[];
+    images?: string[];
+    thinking?: string;
+  } | string | undefined;
+  
   if (!reqPayload?.messages?.length) return null;
 
   // Start with the prompt messages from the request
@@ -414,11 +424,13 @@ export function reconstructChatMessages(selectedRequest: TransformedRequestItem 
     };
 
     // Handle different response formats
-    if (resPayload.text) {
+    if (typeof resPayload === "string") {
+      assistantMsg.content = resPayload;
+    } else if (resPayload.text) {
       // Prism standardized format
-      assistantMsg.content = resPayload.text as string;
+      assistantMsg.content = resPayload.text;
     } else if (resPayload.content) {
-      assistantMsg.content = resPayload.content as string;
+      assistantMsg.content = resPayload.content;
     } else if (Array.isArray(resPayload.candidates?.[0]?.content?.parts)) {
       // Google format
       assistantMsg.content = resPayload.candidates[0].content.parts
@@ -427,13 +439,13 @@ export function reconstructChatMessages(selectedRequest: TransformedRequestItem 
     } else if (resPayload.choices?.[0]?.message?.content) {
       // OpenAI format
       assistantMsg.content = resPayload.choices[0].message.content as string;
-    } else if (typeof resPayload === "string") {
-      assistantMsg.content = resPayload;
     }
 
     // Extract tool calls if present
     const toolCalls =
-      resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls;
+      typeof resPayload === "object" && resPayload
+        ? resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls
+        : undefined;
     if (Array.isArray(toolCalls) && toolCalls.length) {
       assistantMsg.toolCalls = toolCalls.map((tc: {
         id: string;
@@ -451,12 +463,12 @@ export function reconstructChatMessages(selectedRequest: TransformedRequestItem 
     }
 
     // Extract generated images
-    if (Array.isArray(resPayload.images) && resPayload.images.length) {
-      assistantMsg.images = resPayload.images as string[];
+    if (typeof resPayload === "object" && resPayload && Array.isArray(resPayload.images) && resPayload.images.length) {
+      assistantMsg.images = resPayload.images;
     }
 
     // Extract thinking content
-    if (typeof resPayload.thinking === "string") {
+    if (typeof resPayload === "object" && resPayload && typeof resPayload.thinking === "string") {
       assistantMsg.thinking = resPayload.thinking;
     }
 

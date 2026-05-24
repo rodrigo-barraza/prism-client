@@ -2596,9 +2596,9 @@ export default function AgentComponent({
                     updated[updated.length - 1] = {
                       ...last,
                       _workerTokens: {
-                        input: wt.input + (data.usage.inputTokens || 0),
-                        output: wt.output + (data.usage.outputTokens || 0),
-                        requests: wt.requests + (data.usage.requests || 1),
+                        input: (wt.input || 0) + (data.usage?.inputTokens || 0),
+                        output: (wt.output || 0) + (data.usage?.outputTokens || 0),
+                        requests: (wt.requests || 0) + (data.usage?.requests || 1),
                       },
                       _workerGenerationProgress:
                         Object.keys(wp).length > 0 ? wp : undefined,
@@ -2631,7 +2631,7 @@ export default function AgentComponent({
               // emit incremental usage_update events. Accumulate them separately so
               // the token badge grows smoothly instead of jumping when
               // fetchSessionStats discovers them all at once.
-              const op = data.operation || "";
+              const op = (data.operation as string) || "";
               const isBackground =
                 op.startsWith("memory:") || op.startsWith("embed:");
               if (isBackground) {
@@ -2644,11 +2644,11 @@ export default function AgentComponent({
                   ...last,
                   _backgroundUsage: {
                     inputTokens:
-                      bg.inputTokens + (data.usage?.inputTokens || 0),
+                      (bg.inputTokens || 0) + (data.usage?.inputTokens || 0),
                     outputTokens:
-                      bg.outputTokens + (data.usage?.outputTokens || 0),
+                      (bg.outputTokens || 0) + (data.usage?.outputTokens || 0),
                     requests: (bg.requests || 0) + (data.usage?.requests || 1),
-                    cost: bg.cost + (data.usage?.estimatedCost || 0),
+                    cost: (bg.cost || 0) + (data.estimatedCost || 0),
                   },
                 };
               } else if (!last.usage) {

@@ -5,6 +5,7 @@ import { FolderOpen, MessageSquare, GitBranch } from "lucide-react";
 import { LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import { useRouter } from "next/navigation";
 import IrisService, { type IrisRequestEntry } from "../../../services/IrisService";
+import { type TransformedRequestItem } from "../../../types/types";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import {
   extractMediaAssets,
@@ -277,7 +278,7 @@ export default function TracesPage() {
         open={!!selectedRequest}
         onClose={() => setSelectedRequest(null)}
         title="Request Detail"
-        sections={buildRequestDetailSections(selectedRequest)}
+        sections={buildRequestDetailSections(selectedRequest as TransformedRequestItem)}
       >
         {selectedRequest && (
           <>
@@ -400,7 +401,7 @@ export default function TracesPage() {
               )}
             </div>
             {(() => {
-              const mediaAssets = extractMediaAssets(selectedRequest);
+              const mediaAssets = extractMediaAssets(selectedRequest as TransformedRequestItem);
               if (!mediaAssets.length) return null;
               return (
                 <div className={styles.detailSection}>
@@ -424,7 +425,7 @@ export default function TracesPage() {
               );
             })()}
             {(() => {
-              const chat = reconstructChatMessages(selectedRequest);
+              const chat = reconstructChatMessages(selectedRequest as TransformedRequestItem);
               if (!chat) return null;
               return (
                 <div className={styles.detailSection}>

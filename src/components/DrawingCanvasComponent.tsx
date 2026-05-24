@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from "react";
 import { createPortal } from "react-dom";
 import {
   X,
@@ -13,6 +14,42 @@ import {
   Circle as CircleIcon,
 } from "lucide-react";
 import styles from "./DrawingCanvasComponent.module.css";
+
+// ── Type Definitions ──────────────────────────────────────────
+
+interface DrawingCanvasProps {
+  src?: string;
+  onSave: (dataUrl: string) => void;
+  onClose: () => void;
+}
+
+interface Point2D {
+  x: number;
+  y: number;
+}
+
+interface PenStroke {
+  tool: "pen" | "eraser";
+  color: string;
+  width: number;
+  eraser: boolean;
+  points: Point2D[];
+}
+
+interface ShapeStroke {
+  tool: "line" | "rect" | "circle";
+  color: string;
+  width: number;
+  eraser: false;
+  start: Point2D;
+  end: Point2D;
+}
+
+type Stroke = PenStroke | ShapeStroke;
+
+type CanvasPointerEvent = ReactMouseEvent<HTMLCanvasElement> | ReactTouchEvent<HTMLCanvasElement>;
+
+// ── Constants ─────────────────────────────────────────────────
 
 const COLORS = [
   { value: "#000000", label: "Black" },
@@ -36,7 +73,9 @@ const TOOLS = [
   { id: "rect", label: "Rectangle", icon: Square },
   { id: "circle", label: "Circle", icon: CircleIcon },
   { id: "eraser", label: "Eraser", icon: Eraser },
-];
+] as const;
+
+type ToolId = (typeof TOOLS)[number]["id"];
 
 const CANVAS_W = 800;
 const CANVAS_H = 600;
@@ -51,17 +90,17 @@ const CANVAS_H = 600;
  *   onSave(url)  – called with PNG data URL on save
  *   onClose()    – close without saving
  */
-export default function DrawingCanvas({ src, onSave, onClose }: any) {
+export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const [tool, setTool] = useState("pen");
+  const [tool, setTool] = useState<ToolId>("pen");
   const [color, setColor] = useState(COLORS[0].value);
   const [sizeIdx, setSizeIdx] = useState(1);
   const [drawing, setDrawing] = useState(false);
-  const [strokes, setStrokes] = useState<any[]>([]);
-  const [currentStroke, setCurrentStroke] = useState<any>(null);
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
   const [canvasSize, setCanvasSize] = useState({ w: CANVAS_W, h: CANVAS_H });
   const [displaySize, setDisplaySize] = useState({ w: 0, h: 0 });
   const [bgReady, setBgReady] = useState(!src);
@@ -98,10 +137,10 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
       requestAnimationFrame(() => {
         const bgCanvas = bgCanvasRef.current;
         if (!bgCanvas) return;
-        (bgCanvas as any).width = image.naturalWidth;
-        (bgCanvas as any).height = image.naturalHeight;
-        const context = (bgCanvas as any).getContext("2d");
-        context.drawImage(image, 0, 0);
+        bgCanvas.width = image.naturalWidth;
+        bgCanvas.height = image.naturalHeight;
+        const context = bgCanvas.getContext("2d");
+        context?.drawImage(image, 0, 0);
       });
     };
     image.src = src;
@@ -111,8 +150,8 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    (canvas as HTMLCanvasElement).width = canvasSize.w;
-    (canvas as HTMLCanvasElement).height = canvasSize.h;
+    canvas.width = canvasSize.w;
+    canvas.height = canvasSize.h;
   }, [canvasSize]);
 
   // Escape key
@@ -124,7 +163,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
-  const renderStroke = (context: any, stroke: any) => {
+  const renderStroke = (context: CanvasRenderingContext2D, stroke: Stroke) => {
     context.save();
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -150,29 +189,17 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
       }
       context.stroke();
     } else if (stroke.tool === "line") {
-      if (!stroke.start || !stroke.end) {
-        context.restore();
-        return;
-      }
       context.beginPath();
       context.moveTo(stroke.start.x, stroke.start.y);
       context.lineTo(stroke.end.x, stroke.end.y);
       context.stroke();
     } else if (stroke.tool === "rect") {
-      if (!stroke.start || !stroke.end) {
-        context.restore();
-        return;
-      }
       const x = Math.min(stroke.start.x, stroke.end.x);
       const y = Math.min(stroke.start.y, stroke.end.y);
       const w = Math.abs(stroke.end.x - stroke.start.x);
       const h = Math.abs(stroke.end.y - stroke.start.y);
       context.strokeRect(x, y, w, h);
     } else if (stroke.tool === "circle") {
-      if (!stroke.start || !stroke.end) {
-        context.restore();
-        return;
-      }
       const cx = (stroke.start.x + stroke.end.x) / 2;
       const cy = (stroke.start.y + stroke.end.y) / 2;
       const rx = Math.abs(stroke.end.x - stroke.start.x) / 2;
@@ -187,11 +214,12 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
   /* -- Drawing helpers -- */
 
-  const redrawAll = useCallback((strokeList: any[]) => {
+  const redrawAll = useCallback((strokeList: Stroke[]) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as HTMLCanvasElement).getContext("2d") as any;
-    context.clearRect(0, 0, (canvas as HTMLCanvasElement).width, (canvas as HTMLCanvasElement).height);
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.clearRect(0, 0, canvas.width, canvas.height);
     for (const s of strokeList) {
       renderStroke(context, s);
     }
@@ -203,15 +231,16 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
   /* -- Coordinate helpers -- */
 
-  const getPos = (e: any) => {
+  const getPos = (e: CanvasPointerEvent): Point2D => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
-    const rect = (canvas as HTMLCanvasElement).getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = canvas.getBoundingClientRect();
+    const isTouchEvent = "touches" in e;
+    const clientX = isTouchEvent ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouchEvent ? e.touches[0].clientY : e.clientY;
     // Scale from display coordinates to canvas internal coordinates
-    const scaleX = (canvas as HTMLCanvasElement).width / rect.width;
-    const scaleY = (canvas as HTMLCanvasElement).height / rect.height;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
     return {
       x: (clientX - rect.left) * scaleX,
       y: (clientY - rect.top) * scaleY,
@@ -220,7 +249,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
   /* -- Pointer handlers -- */
 
-  const handlePointerDown = (e: any) => {
+  const handlePointerDown = (e: CanvasPointerEvent) => {
     e.preventDefault();
     const position = getPos(e);
     const isEraser = tool === "eraser";
@@ -246,19 +275,16 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     setDrawing(true);
   };
 
-  const handlePointerMove = (e: any) => {
+  const handlePointerMove = (e: CanvasPointerEvent) => {
     if (!drawing || !currentStroke) return;
     e.preventDefault();
     const position = getPos(e);
 
-    let updated;
-    if (
-      (currentStroke as any).tool === "pen" ||
-      (currentStroke as any).tool === "eraser"
-    ) {
+    let updated: Stroke;
+    if (currentStroke.tool === "pen" || currentStroke.tool === "eraser") {
       updated = {
         ...currentStroke,
-        points: [...((currentStroke as any).points || []), position],
+        points: [...currentStroke.points, position],
       };
     } else {
       updated = { ...currentStroke, end: position };
@@ -267,7 +293,8 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const context = (canvas as HTMLCanvasElement).getContext("2d");
+    const context = canvas.getContext("2d");
+    if (!context) return;
     redrawAll(strokes);
     renderStroke(context, updated);
   };
@@ -276,10 +303,9 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     if (!drawing || !currentStroke) return;
 
     const isValid =
-      (currentStroke as any).tool === "pen" ||
-      (currentStroke as any).tool === "eraser"
-        ? ((currentStroke as any).points || []).length >= 2
-        : (currentStroke as any).start && (currentStroke as any).end;
+      currentStroke.tool === "pen" || currentStroke.tool === "eraser"
+        ? currentStroke.points.length >= 2
+        : true; // shape strokes always have start & end set
 
     if (isValid) {
       setStrokes((prev) => [...prev, currentStroke]);
@@ -298,19 +324,20 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
     offscreen.width = canvasSize.w;
     offscreen.height = canvasSize.h;
     const context = offscreen.getContext("2d");
+    if (!context) return;
 
     // Draw background
     if (src && bgCanvasRef.current) {
-      context!.drawImage(bgCanvasRef.current, 0, 0);
+      context.drawImage(bgCanvasRef.current, 0, 0);
     } else {
-      context!.fillStyle = "#ffffff";
-      context!.fillRect(0, 0, offscreen.width, offscreen.height);
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, offscreen.width, offscreen.height);
     }
 
     // Draw strokes
     const drawCanvas = canvasRef.current;
     if (drawCanvas) {
-      context!.drawImage(drawCanvas, 0, 0);
+      context.drawImage(drawCanvas, 0, 0);
     }
 
     onSave(offscreen.toDataURL("image/png"));
@@ -414,7 +441,6 @@ export default function DrawingCanvas({ src, onSave, onClose }: any) {
         >
           {/* Background: show source image or white */}
           {src ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={src}
               alt="Background"

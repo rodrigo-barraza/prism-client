@@ -253,7 +253,6 @@ export default function SpinningCatComponent({
 
   return (
     <div className={`${styles.wrapper} ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/cat.gif"
         alt="Cat"

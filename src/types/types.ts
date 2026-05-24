@@ -45,6 +45,7 @@ export interface ModelOption {
   supportsJsonMode?: boolean;
   free?: boolean;
   arena?: ArenaScores;
+  pricing?: Record<string, number>;
   loaded?: boolean;
   path?: string;
   quantization?: string;
@@ -455,18 +456,18 @@ export interface TransformedSSEData {
   type: string;
   id?: string;
   name?: string;
-  args?: Record<string, any>;
+  args?: Record<string, unknown>;
   content?: string;
   data?: string;
   mimeType?: string;
   minioRef?: string;
-  result?: any;
+  result?: unknown;
   status?: string;
   toolCallId?: string;
   iteration?: number;
   maxIterations?: number;
   agentSessionId?: string;
-  toolCalls?: Array<{ id: string; name: string; args: Record<string, any> }>;
+  toolCalls?: Array<{ id: string; name: string; args: Record<string, unknown> }>;
   plan?: string;
   steps?: string[];
   autoApproved?: boolean;
@@ -486,13 +487,13 @@ export interface TransformedSSEData {
   tool?: {
     id?: string;
     name?: string;
-    args?: Record<string, any>;
-    result?: any;
+    args?: Record<string, unknown>;
+    result?: unknown;
   };
   toolCall?: {
     id?: string;
     name?: string;
-    args?: Record<string, any>;
+    args?: Record<string, unknown>;
   };
   tier?: 1 | 2 | 3 | undefined;
   question?: string;
@@ -512,7 +513,18 @@ export interface TransformedSSEData {
   lastChunkTime?: number;
   totalOutputTokens?: number;
   phase?: string;
-  [key: string]: any;
+  estimatedTokens?: number;
+  toolCount?: number;
+  toolName?: string;
+  error?: string;
+  phaseProgress?: number;
+  toolNames?: Record<string, number>;
+  durationMs?: number;
+  usage?: TokenUsage;
+  totalTime?: number;
+  tokensPerSec?: number;
+  timeToGeneration?: number;
+  [key: string]: unknown;
 }
 
 /** Wire-format SSE event — parsed JSON with a discriminant `type` field. */
@@ -534,9 +546,18 @@ export interface TransformedRequestItem {
   totalTime?: number;
   success?: boolean;
   conversationId?: string;
-  requestPayload?: Record<string, any>;
-  responsePayload?: Record<string, any>;
-  [key: string]: any;
+  requestPayload?: Record<string, unknown>;
+  responsePayload?: Record<string, unknown>;
+  modalities?: Record<string, number | boolean> | null;
+  toolDisplayNames?: string[];
+  toolApiNames?: string[];
+  errorMessage?: string | null;
+  cacheReadInputTokens?: number;
+  cacheCreationInputTokens?: number;
+  reasoningOutputTokens?: number;
+  timeToGeneration?: number;
+  generationTime?: number;
+  [key: string]: unknown;
 }
 
 export interface SSECallbacks {

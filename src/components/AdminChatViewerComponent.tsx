@@ -265,7 +265,8 @@ export default function AdminChatViewerComponent({
       .then((res) => {
         if (cancelled) return;
         const firstReq = res.data?.[0] as TransformedRequestItem | undefined;
-        const sysMsg = firstReq?.requestPayload?.messages?.find(
+        const payload = firstReq?.requestPayload as { messages?: Message[] } | undefined;
+        const sysMsg = payload?.messages?.find(
           (m: Message) => m.role === "system"
         );
         if (sysMsg?.content) {

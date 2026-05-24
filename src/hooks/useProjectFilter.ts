@@ -37,7 +37,7 @@ export default function useProjectFilter() {
         /* localStorage unavailable */
       }
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [urlProject, pathname, router, searchParams]);
 
   useEffect(() => {
     IrisService.getConversationFilters()

@@ -87,6 +87,11 @@ export default function ThreePanelLayout({
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  const sidebarStateRef = useRef({ showLeft, showRight });
+  useEffect(() => {
+    sidebarStateRef.current = { showLeft, showRight };
+  }, [showLeft, showRight]);
+
   /* Narrow ↔ wide transitions: enforce exclusivity or restore both.
      Skip on initial mount — the mount effect handles initial panel state. */
   const isNarrowMountRef = useRef<boolean>(true);
@@ -95,9 +100,10 @@ export default function ThreePanelLayout({
       isNarrowMountRef.current = false;
       return;
     }
+    const { showLeft: currentLeft, showRight: currentRight } = sidebarStateRef.current;
     if (isNarrow) {
       // Entering narrow: if both are open, close the right
-      if (showLeft && showRight) {
+      if (currentLeft && currentRight) {
         setShowRight(false);
         localStorage.setItem(LS_PANEL_RIGHT, "false");
       }
@@ -108,7 +114,6 @@ export default function ThreePanelLayout({
       localStorage.setItem(LS_PANEL_LEFT, "true");
       localStorage.setItem(LS_PANEL_RIGHT, "true");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNarrow]);
 
   const toggleLeft = useCallback(() => {

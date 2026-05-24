@@ -64,10 +64,10 @@ export default function FilterDropdownComponent({
         const parsed = JSON.parse(stored);
         if (parsed.from || parsed.to) onDateChange(parsed);
       }
-    } catch {
+    } catch (e) {
       /* ignore */
     }
-  }, [dateStorageKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dateStorageKey, onDateChange]);
 
   // Persist date range to localStorage
   useEffect(() => {

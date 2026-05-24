@@ -26,9 +26,10 @@ export interface ModelInfoPanelProps {
  *
  * Extracted from SettingsPanel to live in its own "Info" tab.
  */
+import type { ModelOption, VoiceOption, ArenaScores } from "../types/types";
+
 export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps) {
-  const { textToText = {} } = config || {};
-  const textModelsMap = (textToText as any).models || {};
+  const textModelsMap = config?.textToText?.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
   const ttsModelsMap = config?.textToSpeech?.models || {};
   const imageModelsMap = config?.textToImage?.models || {};
@@ -40,27 +41,31 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
     ...Object.keys(audioToTextModelsMap),
     ...Object.keys(ttsModelsMap),
   ]);
-  const modelsMap = {} as any;
+  
+  const modelsMap: Record<string, ModelOption[]> = {};
   for (const p of allProviderKeys) {
-    const textModels = (textModelsMap as any)[p] || [];
-    const imgModels = ((imageModelsMap as any)[p] || []).map((m: any) => ({
+    const textModels = textModelsMap[p] || [];
+    const imgModels = (imageModelsMap[p] || []).map((m) => ({
       ...m,
-      label: `${m.label} (Image)`,
+      label: `${m.label || m.name} (Image)`,
       _isImageGen: true,
     }));
-    const sttModels = ((audioToTextModelsMap as any)[p] || []).map((m: any) => ({
+    const sttModels = (audioToTextModelsMap[p] || []).map((m) => ({
       ...m,
-      label: `${m.label} (Transcribe)`,
+      label: `${m.label || m.name} (Transcribe)`,
       _isTranscription: true,
     }));
-    const ttsModels = ((ttsModelsMap as any)[p] || []).map((m: any) => ({
+    // Note: ttsModelsMap has VoiceOption[] or ModelOption[], we map it to ModelOption compatible shape
+    const ttsModels = (ttsModelsMap[p] || []).map((m: VoiceOption | ModelOption) => ({
       ...m,
-      label: `${m.label} (TTS)`,
+      label: `${m.name} (TTS)`,
+      name: 'id' in m ? m.id : m.name,
       _isTTS: true,
-    }));
-    const seen = new Set();
-    const merged = [];
-    for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels] as any[]) {
+    })) as unknown as ModelOption[];
+
+    const seen = new Set<string>();
+    const merged: ModelOption[] = [];
+    for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
       if (!seen.has(m.name)) {
         seen.add(m.name);
         merged.push(m);
@@ -69,9 +74,9 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
     modelsMap[p] = merged;
   }
 
-  const currentProviderModels = (modelsMap as any)[(settings as any).provider] || [];
+  const currentProviderModels = modelsMap[settings.provider || ""] || [];
   const selectedModelDef = currentProviderModels.find(
-    (m: any) => m.name === (settings as any).model,
+    (m) => m.name === settings.model,
   );
 
   if (!selectedModelDef) {
@@ -101,7 +106,7 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
         const allTypes = ["text", "image", "audio", "video", "pdf"];
         const inputs = selectedModelDef.inputTypes || [];
         const outputs = selectedModelDef.outputTypes || [];
-        const iconMap = {
+        const iconMap: Record<string, React.ReactNode> = {
           text: <Type size={12} />,
           image: <ImageIcon size={12} />,
           audio: <Volume2 size={12} />,
@@ -123,13 +128,13 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
         return (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Modalities</div>
-            {mods.map((m: any) => (
+            {mods.map((m) => (
               <div key={m.type} className={styles.modalityRow}>
                 <span
                   className={styles.modalityIcon}
-                  style={{ color: (MODALITY_COLORS as any)[m.type] }}
+                  style={{ color: MODALITY_COLORS[m.type as keyof typeof MODALITY_COLORS] }}
                 >
-                  {(iconMap as any)[m.type]}
+                  {iconMap[m.type]}
                 </span>
                 <span className={styles.modalityName}>{m.type}</span>
                 <span
@@ -172,7 +177,7 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
 
       {/* Pricing */}
       {(() => {
-        const PRICING_LABELS = {
+        const PRICING_LABELS: Record<string, { label: string; unit: string }> = {
           inputPerMillion: { label: "Input", unit: "/ 1M tokens" },
           cachedInputPerMillion: { label: "Cached Input", unit: "/ 1M tokens" },
           outputPerMillion: { label: "Output", unit: "/ 1M tokens" },
@@ -198,15 +203,15 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
         };
         if (!selectedModelDef.pricing) return null;
         const entries = Object.entries(selectedModelDef.pricing)
-          .filter(([key]: [string, any]) => (PRICING_LABELS as any)[key])
-          .map(([key, value]: [string, any]) => ({
-            ...(PRICING_LABELS as any)[key],
+          .filter(([key]) => PRICING_LABELS[key])
+          .map(([key, value]) => ({
+            ...PRICING_LABELS[key],
             value,
           }));
         return entries.length > 0 ? (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Pricing</div>
-            {entries.map((e: any) => (
+            {entries.map((e) => (
               <div key={e.label} className={styles.modalityRow}>
                 <span className={styles.modalityIcon}>
                   <DollarSign size={12} />
@@ -227,7 +232,7 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
       {(() => {
         const arena = selectedModelDef.arena;
         if (!arena) return null;
-        const arenaLabels = {
+        const arenaLabels: Record<string, string> = {
           text: "Text",
           code: "Code",
           vision: "Vision",
@@ -236,18 +241,18 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
           imageEdit: "Image Edit",
           search: "Search",
         };
-        const entries = Object.entries(arena).filter(([, v]: [string, any]) => v != null);
+        const entries = Object.entries(arena).filter(([, v]) => v != null) as [keyof ArenaScores, number][];
         if (entries.length === 0) return null;
         return (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>Arena Scores</div>
-            {entries.map(([key, value]: [string, any]) => (
+            {entries.map(([key, value]) => (
               <div key={key} className={styles.modalityRow}>
                 <span className={styles.modalityIcon}>
                   <Brain size={12} />
                 </span>
                 <span className={styles.modalityName}>
-                  {(arenaLabels as any)[key] || key}
+                  {arenaLabels[key] || key}
                 </span>
                 <span
                   className={`${styles.modalityStatus} ${styles.arenaValue}`}

@@ -83,14 +83,9 @@ export default function ImagePreviewComponent({
     return () => window.removeEventListener("resize", syncCanvas);
   }, [syncCanvas]);
 
-  // Redraw all strokes whenever strokes array or canvas changes
-  useEffect(() => {
-    if (!canvasReady) return;
-    redrawAll(strokes);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strokes, canvasReady]);
 
-  const redrawAll = (strokeList: Array<{ points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }>) => {
+
+  const redrawAll = useCallback((strokeList: Array<{ points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const context = (canvas as HTMLCanvasElement).getContext("2d");
@@ -100,7 +95,7 @@ export default function ImagePreviewComponent({
     for (const stroke of strokeList) {
       drawStroke(context, stroke);
     }
-  };
+  }, []);
 
   const drawStroke = (context: CanvasRenderingContext2D, stroke: { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }) => {
     if (stroke.points.length < 2) return;
@@ -125,6 +120,12 @@ export default function ImagePreviewComponent({
     context.stroke();
     context.restore();
   };
+
+  // Redraw all strokes whenever strokes array or canvas changes
+  useEffect(() => {
+    if (!canvasReady) return;
+    redrawAll(strokes);
+  }, [strokes, canvasReady, redrawAll]);
 
   const getPos = (e: React.MouseEvent | React.TouchEvent): Point => {
     const canvas = canvasRef.current;
@@ -337,7 +338,6 @@ export default function ImagePreviewComponent({
 
       {/* Canvas */}
       <div className={styles.canvasArea}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img ref={imgRef} src={src} alt="Annotate" crossOrigin="anonymous" />
         {!readOnly && (
           <canvas

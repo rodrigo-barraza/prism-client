@@ -14,6 +14,7 @@ import {
   Scan,
   Video,
 } from "lucide-react";
+import type { PrismConfig, ModelOption } from "../types/types";
 import PrismService from "../services/PrismService";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ProviderLogo from "./ProviderLogosComponent";
@@ -43,23 +44,33 @@ const DEFAULT_PROMPT =
  * Frames are captured to a hidden <canvas>, converted to base64, and
  * sent to PrismService.generateText() with multimodal image input.
  */
+interface VisionAnalysisResult {
+  id: number;
+  timestamp: Date;
+  thumbnail: string;
+  text: string;
+  streaming: boolean;
+  provider: string;
+  model: string;
+}
+
 export default function VisionPageComponent() {
   // ── Config state ────────────────────────────────────────────────
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<PrismConfig | null>(null);
   const [settings, setSettings] = useState({ provider: "", model: "" });
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   // ── Source state ────────────────────────────────────────────────
-  const [sourceType, setSourceType] = useState<any>(null);
+  const [sourceType, setSourceType] = useState<string | null>(null);
   const [ipCamUrl, setIpCamUrl] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [resolution, setResolution] = useState<any>(null);
+  const [resolution, setResolution] = useState<string | null>(null);
 
   // ── Analysis state ─────────────────────────────────────────────
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [intervalSec, setIntervalSec] = useState(10);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<VisionAnalysisResult[]>([]);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [snapshotCount, setSnapshotCount] = useState(0);
@@ -70,12 +81,12 @@ export default function VisionPageComponent() {
   // ── Refs ────────────────────────────────────────────────────────
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const streamRef = useRef<any>(null);
-  const intervalRef = useRef<any>(null);
-  const progressRef = useRef<any>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | number | null>(null);
+  const progressRef = useRef<number | null>(null);
   const resultsAreaRef = useRef<HTMLDivElement | null>(null);
   const isAnalyzingRef = useRef<boolean>(false);
-  const abortRef = useRef<any>(null);
+  const abortRef = useRef<(() => void) | null>(null);
 
   // ── Load Prism config ──────────────────────────────────────────
   useEffect(() => {
@@ -93,14 +104,14 @@ export default function VisionPageComponent() {
     if (!config) return null;
     const filtered = { ...config };
     const textModels = config.textToText?.models || {};
-    const filteredModels = {};
+    const filteredModels: Record<string, ModelOption[]> = {};
 
     for (const [provider, models] of Object.entries(textModels)) {
-      const visionModels = (models as any).filter((m: any) =>
+      const visionModels = models.filter((m) =>
         m.inputTypes?.includes("image"),
       );
       if (visionModels.length > 0) {
-        (filteredModels as any)[provider] = visionModels;
+        filteredModels[provider] = visionModels;
       }
     }
 
@@ -109,21 +120,13 @@ export default function VisionPageComponent() {
       models: filteredModels,
     };
     // Clear other sections so only vision text models appear
-    filtered.textToImage = { models: {} };
-    filtered.textToSpeech = { models: {} };
-    filtered.audioToText = { models: {} };
-    filtered.embedding = { models: {} };
+    filtered.textToImage = { models: {}, defaults: {} };
+    filtered.textToSpeech = { models: {}, defaults: {}, voices: {}, defaultVoices: {} };
+    filtered.audioToText = { models: {}, defaults: {} };
+    filtered.embedding = { models: {}, defaults: {} };
     return filtered;
   }, [config]);
 
-  // ── Cleanup on unmount ─────────────────────────────────────────
-  useEffect(() => {
-    return () => {
-      stopSource();
-      stopAnalysis();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // ── Source management ──────────────────────────────────────────
 
@@ -142,7 +145,7 @@ export default function VisionPageComponent() {
     setResolution(null);
   }, []);
 
-  const attachStream = useCallback((stream: any) => {
+  const attachStream = useCallback((stream: MediaStream) => {
     streamRef.current = stream;
     const video = videoRef.current;
     if (video) {
@@ -153,8 +156,9 @@ export default function VisionPageComponent() {
         .then(() => {
           setIsStreaming(true);
         })
-        .catch((error: any) => {
-          console.warn("Video play() interrupted:", error.message);
+        .catch((error: unknown) => {
+          const msg = error instanceof Error ? error.message : String(error);
+          console.warn("Video play() interrupted:", msg);
         });
     }
 
@@ -173,7 +177,7 @@ export default function VisionPageComponent() {
         audio: false,
       });
       attachStream(stream);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Webcam error:", error);
     }
   }, [stopSource, attachStream]);
@@ -199,13 +203,13 @@ export default function VisionPageComponent() {
         stopSource();
         setSourceType(null);
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Screen capture error:", error);
     }
   }, [stopSource, attachStream]);
 
   const startIpCamera = useCallback(
-    (url: any) => {
+    (url: string) => {
       stopSource();
       if (!url) return;
       if (videoRef.current) {
@@ -219,7 +223,7 @@ export default function VisionPageComponent() {
   );
 
   const handleSourceSelect = useCallback(
-    async (type: any) => {
+    async (type: string | null) => {
       // Toggle off if clicking same source
       if (type === sourceType) {
         stopSource();
@@ -319,7 +323,7 @@ export default function VisionPageComponent() {
           temperature: 0.5,
         },
         {
-          onChunk: (content: any) => {
+          onChunk: (content: string) => {
             setResults((prev) =>
               prev.map((r) =>
                 r.id === resultId ? { ...r, text: r.text + content } : r,
@@ -334,7 +338,7 @@ export default function VisionPageComponent() {
             );
             setIsCapturing(false);
           },
-          onError: (error: any) => {
+          onError: (error: Error) => {
             setResults((prev) =>
               prev.map((r) =>
                 r.id === resultId
@@ -352,11 +356,12 @@ export default function VisionPageComponent() {
       );
 
       abortRef.current = abort;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
       setResults((prev) =>
         prev.map((r) =>
           r.id === resultId
-            ? { ...r, text: `Error: ${error.message}`, streaming: false }
+            ? { ...r, text: `Error: ${msg}`, streaming: false }
             : r,
         ),
       );
@@ -415,6 +420,14 @@ export default function VisionPageComponent() {
       abortRef.current = null;
     }
   }, []);
+
+  // ── Cleanup on unmount ─────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      stopSource();
+      stopAnalysis();
+    };
+  }, [stopSource, stopAnalysis]);
 
   // ── Model selection ────────────────────────────────────────────
 
@@ -705,7 +718,6 @@ export default function VisionPageComponent() {
                       </span>
                     </div>
                     <div className={styles.resultBody}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={result.thumbnail}
                         alt=""

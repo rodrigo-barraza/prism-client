@@ -129,7 +129,6 @@ export default function RequestsPage() {
         ids.add(r.requestId || r._id);
     }
     return ids;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requests, justNowTick]);
 
   // Tick every 1s while there are "just now" rows so they age out naturally

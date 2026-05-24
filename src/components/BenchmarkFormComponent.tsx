@@ -13,6 +13,7 @@ import {
 import BenchmarkModeSelector from "./BenchmarkModeSelectorComponent";
 import AgentAssertionsComponent from "./AgentAssertionsComponent";
 import { benchmarkPresets } from "../utils/benchmarkPresets";
+import { AgentBenchmarkAssertion } from "../types/types";
 import styles from "./BenchmarkFormComponent.module.css";
 
 /**
@@ -26,27 +27,54 @@ import styles from "./BenchmarkFormComponent.module.css";
  * Used by both BenchmarkPageComponent (New) and BenchmarkDetailPageComponent (Clone)
  * to eliminate the duplicated form field markup.
  */
+export interface BenchmarkFormState {
+  name: string;
+  systemPrompt: string;
+  prompt: string;
+  assertions: Array<{
+    expectedValue: string;
+    matchMode: string;
+  }>;
+  assertionOperator: string;
+  agentAssertions: AgentBenchmarkAssertion[];
+  agentAssertionOperator: string;
+  benchmarkMode: string;
+  expectedValue?: string;
+  matchMode?: string;
+}
+
+export interface MatchModeOption {
+  value: string;
+  label: string;
+}
+
+interface BenchmarkFormComponentProps {
+  form: BenchmarkFormState;
+  onChange: (fn: (prev: BenchmarkFormState) => BenchmarkFormState) => void;
+  matchModes: MatchModeOption[];
+}
+
 export default function BenchmarkFormComponent({
   form,
   onChange,
   matchModes,
-}: any) {
-  const update = (field: any) => (e: any) =>
-    onChange((f: any) => ({ ...f, [field]: e.target.value }));
+}: BenchmarkFormComponentProps) {
+  const update = (field: keyof BenchmarkFormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    onChange((f) => ({ ...f, [field]: e.target.value }));
 
-  const updateTextArea = (field: any) => (e: any) =>
-    onChange((f: any) => ({ ...f, [field]: e.target.value }));
+  const updateTextArea = (field: keyof BenchmarkFormState) => (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+    onChange((f) => ({ ...f, [field]: e.target.value }));
 
-  const handlePresetChange = (e: any) => {
+  const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const index = parseInt(e.target.value, 10);
     if (!isNaN(index) && benchmarkPresets[index]) {
       const preset = benchmarkPresets[index];
-      onChange((f: any) => ({
+      onChange((f) => ({
         ...f,
         name: preset.name,
         systemPrompt: preset.systemPrompt,
         prompt: preset.prompt,
-        assertions: preset.assertions.map((a: any) => ({ ...a })), // deep copy
+        assertions: preset.assertions.map((a) => ({ ...a })), // deep copy
         assertionOperator: preset.assertionOperator || "AND",
         // Presets are model benchmarks by default
         benchmarkMode: "model",
@@ -56,8 +84,8 @@ export default function BenchmarkFormComponent({
     }
   };
 
-  const handleModeChange = (mode: any) => {
-    onChange((f: any) => ({ ...f, benchmarkMode: mode }));
+  const handleModeChange = (mode: string) => {
+    onChange((f) => ({ ...f, benchmarkMode: mode as "model" | "agent" | "combined" }));
   };
 
   const mode = form.benchmarkMode || "model";
@@ -71,7 +99,7 @@ export default function BenchmarkFormComponent({
   ];
 
   const addAssertion = () => {
-    onChange((f: any) => ({
+    onChange((f) => ({
       ...f,
       assertions: [
         ...(f.assertions || [
@@ -85,8 +113,8 @@ export default function BenchmarkFormComponent({
     }));
   };
 
-  const removeAssertion = (index: any) => {
-    onChange((f: any) => {
+  const removeAssertion = (index: number) => {
+    onChange((f) => {
       const next = [...(f.assertions || [])];
       next.splice(index, 1);
       return {
@@ -99,8 +127,8 @@ export default function BenchmarkFormComponent({
     });
   };
 
-  const updateAssertion = (index: any, field: any) => (e: any) => {
-    onChange((f: any) => {
+  const updateAssertion = (index: number, field: "expectedValue" | "matchMode") => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    onChange((f) => {
       const next = [
         ...(f.assertions || [
           {
@@ -115,7 +143,7 @@ export default function BenchmarkFormComponent({
   };
 
   const toggleOperator = () => {
-    onChange((f: any) => ({
+    onChange((f) => ({
       ...f,
       assertionOperator: f.assertionOperator === "OR" ? "AND" : "OR",
     }));
@@ -126,12 +154,12 @@ export default function BenchmarkFormComponent({
   // -- Agent Assertion helpers ---------------------------------
   const agentAssertions = form.agentAssertions || [];
 
-  const handleAgentAssertionsChange = (next: any) => {
-    onChange((f: any) => ({ ...f, agentAssertions: next }));
+  const handleAgentAssertionsChange = (next: AgentBenchmarkAssertion[]) => {
+    onChange((f) => ({ ...f, agentAssertions: next }));
   };
 
-  const handleAgentOperatorChange = (next: any) => {
-    onChange((f: any) => ({ ...f, agentAssertionOperator: next }));
+  const handleAgentOperatorChange = (next: string) => {
+    onChange((f) => ({ ...f, agentAssertionOperator: next }));
   };
 
   // Whether to show model assertions section
@@ -150,7 +178,7 @@ export default function BenchmarkFormComponent({
             <option value="" disabled>
               -- Select an industry standard benchmark --
             </option>
-            {benchmarkPresets.map((p: any, index: any) => (
+            {benchmarkPresets.map((p, index: number) => (
               <option key={index} value={index}>
                 {p.name}
               </option>
@@ -217,7 +245,7 @@ export default function BenchmarkFormComponent({
           </div>
 
           <div className={styles.assertionsList}>
-            {assertions.map((a: any, i: any) => (
+            {assertions.map((a, i: number) => (
               <div key={i} className={styles.assertionRow}>
                 {/* Operator divider between assertions */}
                 {i > 0 && (
@@ -251,7 +279,7 @@ export default function BenchmarkFormComponent({
                       value={a.matchMode}
                       onChange={updateAssertion(i, "matchMode")}
                     >
-                      {matchModes.map((m: any) => (
+                      {matchModes.map((m) => (
                         <option key={m.value} value={m.value}>
                           {m.label}
                         </option>
