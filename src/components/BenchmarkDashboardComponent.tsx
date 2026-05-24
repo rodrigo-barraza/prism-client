@@ -120,7 +120,7 @@ export default function BenchmarkDashboardComponent({
 
       setConfigLookup(buildConfigLookup(mergedConfig));
       hasLoadedRef.current = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load benchmark stats:", error);
     } finally {
       setLoading(false);

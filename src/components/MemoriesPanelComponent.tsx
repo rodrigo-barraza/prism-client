@@ -20,7 +20,13 @@ import {
   HIGHLIGHT_DURATION_MS,
 } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
-
+import { getErrorMessage } from "../utils/errorMessage";
+import type {
+  AgentMemory,
+  ConsolidationHistoryEntry,
+  ConsolidateResult,
+  MemoryType,
+} from "../types/types";
 import {
   DatePickerComponent,
   SearchInputComponent,
@@ -34,28 +40,28 @@ import styles from "./MemoriesPanelComponent.module.css";
 /**
  * Type → icon mapping for memory categories.
  */
-const TYPE_ICONS = {
+const TYPE_ICONS: Record<MemoryType, typeof User> = {
   user: User,
   feedback: MessageSquare,
   project: FolderKanban,
   reference: ExternalLink,
 };
 
-const TYPE_ICON_CLASSES = {
+const TYPE_ICON_CLASSES: Record<MemoryType, string> = {
   user: "memoryIconUser",
   feedback: "memoryIconFeedback",
   project: "memoryIconProject",
   reference: "memoryIconReference",
 };
 
-const TYPE_BADGE_CLASSES = {
+const TYPE_BADGE_CLASSES: Record<MemoryType, string> = {
   user: "badgeUser",
   feedback: "badgeFeedback",
   project: "badgeProject",
   reference: "badgeReference",
 };
 
-const TRIGGER_LABELS = {
+const TRIGGER_LABELS: Record<string, string> = {
   manual: "Manual",
   scheduled: "Auto-Dream",
   session_threshold: "Session",
@@ -68,6 +74,26 @@ const TRIGGER_LABELS = {
  * (user, feedback, project, reference). These are extracted automatically
  * by the SessionSummarizer and stored via AgentMemoryService.
  */
+interface ToastState {
+  type: "success" | "error" | "info";
+  text: string;
+}
+
+interface ConsolidationEvent {
+  project?: string;
+  summary?: string;
+  actionsApplied: number;
+}
+
+interface MemoriesPanelProps {
+  project?: string;
+  agent?: string;
+  refreshKey?: number;
+  consolidationEvent?: ConsolidationEvent | null;
+  onCountChange?: (count: number) => void;
+  memoryConfigured?: boolean;
+}
+
 export default function MemoriesPanel({
   project,
   agent,
@@ -75,16 +101,16 @@ export default function MemoriesPanel({
   consolidationEvent,
   onCountChange,
   memoryConfigured = true,
-}: any) {
-  const [memories, setMemories] = useState<any[]>([]);
+}: MemoriesPanelProps) {
+  const [memories, setMemories] = useState<AgentMemory[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
-  const [newMemoryIds, setNewMemoryIds] = useState(new Set());
+  const [error, setError] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [newMemoryIds, setNewMemoryIds] = useState(new Set<string>());
   const [consolidating, setConsolidating] = useState(false);
-  const [toast, setToast] = useState<any>(null);
-  const knownIdsRef = useRef<any>(new Set());
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const knownIdsRef = useRef<Set<string>>(new Set());
 
   // -- Search & filter state ----------------------------------
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,7 +118,7 @@ export default function MemoriesPanel({
   const [dateTo, setDateTo] = useState("");
 
   // History state
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<ConsolidationHistoryEntry[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
 
@@ -104,7 +130,7 @@ export default function MemoriesPanel({
       const fetched = result.memories || [];
 
       // Detect newly arrived memories
-      const freshIds = new Set();
+      const freshIds = new Set<string>();
       for (const m of fetched) {
         const id = m.id || m._id;
         if (knownIdsRef.current.size > 0 && !knownIdsRef.current.has(id)) {
@@ -116,14 +142,14 @@ export default function MemoriesPanel({
       if (freshIds.size > 0) {
         setNewMemoryIds(freshIds);
         // Auto-clear highlight after 6s
-        setTimeout(() => setNewMemoryIds(new Set()), HIGHLIGHT_DURATION_MS);
+        setTimeout(() => setNewMemoryIds(new Set<string>()), HIGHLIGHT_DURATION_MS);
       }
 
       setMemories(fetched);
       setTotal(result.total || 0);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load memories:", error);
-      setError(error.message);
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -133,8 +159,8 @@ export default function MemoriesPanel({
     setHistoryLoading(true);
     try {
       const result = await PrismService.getConsolidationHistory(project, 5);
-      setHistory(result.history || []);
-    } catch (error: any) {
+      setHistory((result.history || []) as ConsolidationHistoryEntry[]);
+    } catch (error: unknown) {
       console.error("Failed to load consolidation history:", error);
     } finally {
       setHistoryLoading(false);
@@ -175,7 +201,7 @@ export default function MemoriesPanel({
     setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, [consolidationEvent]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleDelete = useCallback(async (memoryId: any) => {
+  const handleDelete = useCallback(async (memoryId: string) => {
     try {
       await PrismService.deleteAgentMemory(memoryId);
       // Optimistic removal from local state
@@ -184,7 +210,7 @@ export default function MemoriesPanel({
       );
       setTotal((prev) => Math.max(0, prev - 1));
       setConfirmingDeleteId(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to delete memory:", error);
     }
   }, []);
@@ -193,7 +219,7 @@ export default function MemoriesPanel({
     setConsolidating(true);
     setToast(null);
     try {
-      const result: any = await PrismService.consolidateMemories(project, agent);
+      const result = await PrismService.consolidateMemories(project!, agent) as ConsolidateResult;
       if (result.skipped) {
         const message =
           result.reason === "daily_limit_reached"
@@ -202,7 +228,7 @@ export default function MemoriesPanel({
               ? "Not enough memories to consolidate"
               : "No consolidation needed";
         setToast({ type: "info", text: message });
-      } else if (result.actionsApplied > 0) {
+      } else if ((result.actionsApplied ?? 0) > 0) {
         setToast({
           type: "success",
           text: result.summary || `Consolidated ${result.merged || 0} memories`,
@@ -213,10 +239,10 @@ export default function MemoriesPanel({
       } else {
         setToast({ type: "info", text: result.summary || "No changes needed" });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setToast({
         type: "error",
-        text: `Consolidation failed: ${error.message}`,
+        text: `Consolidation failed: ${getErrorMessage(error)}`,
       });
     } finally {
       setConsolidating(false);
@@ -391,7 +417,7 @@ export default function MemoriesPanel({
         <DatePickerComponent
           from={dateFrom}
           to={dateTo}
-          onChange={({ from, to }: any) => {
+          onChange={({ from, to }: { from: string; to: string }) => {
             setDateFrom(from);
             setDateTo(to);
           }}
@@ -420,7 +446,7 @@ export default function MemoriesPanel({
                 <span
                   className={`${styles.historyTrigger} ${styles[`trigger${run.trigger?.charAt(0).toUpperCase()}${run.trigger?.slice(1)}`] || ""}`}
                 >
-                  {(TRIGGER_LABELS as any)[run.trigger] ||
+                  {TRIGGER_LABELS[run.trigger ?? ""] ||
                     run.trigger ||
                     "unknown"}
                 </span>
@@ -458,11 +484,11 @@ export default function MemoriesPanel({
 
       {filteredMemories.map((memory) => {
         const memoryId = memory.id || memory._id;
-        const type = memory.type || "project";
-        const IconComponent = (TYPE_ICONS as any)[type] || FolderKanban;
+        const type = (memory.type || "project") as MemoryType;
+        const IconComponent = TYPE_ICONS[type] || FolderKanban;
         const iconClass =
-          (TYPE_ICON_CLASSES as any)[type] || "memoryIconProject";
-        const badgeClass = (TYPE_BADGE_CLASSES as any)[type] || "badgeProject";
+          TYPE_ICON_CLASSES[type] || "memoryIconProject";
+        const badgeClass = TYPE_BADGE_CLASSES[type] || "badgeProject";
         const isConfirming = confirmingDeleteId === memoryId;
         const isNew = newMemoryIds.has(memoryId);
 

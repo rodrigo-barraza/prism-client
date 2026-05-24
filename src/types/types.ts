@@ -730,6 +730,8 @@ export interface Skill {
 export interface AgentMemory {
   _id: ObjectId;
   id?: string;
+  type?: string;
+  title?: string | null;
   content: string;
   project?: string;
   agent?: string;
@@ -742,6 +744,35 @@ export interface AgentMemoryListResponse {
   memories: AgentMemory[];
   total: number;
 }
+
+export interface ConsolidationHistoryEntry {
+  _id?: string;
+  project?: string;
+  trigger?: string;
+  runAt?: string;
+  createdAt?: string;
+  summary?: string;
+  actionsApplied?: number;
+  merged?: number;
+  created?: number;
+  memoriesBefore?: number;
+  memoriesAfter?: number;
+  durationMs?: number;
+}
+
+export interface ConsolidationHistoryResponse {
+  history: ConsolidationHistoryEntry[];
+}
+
+export interface ConsolidateResult {
+  skipped?: boolean;
+  reason?: string;
+  actionsApplied?: number;
+  merged?: number;
+  summary?: string;
+}
+
+export type MemoryType = "user" | "feedback" | "project" | "reference";
 
 // ─── Settings ───────────────────────────────────────────────
 

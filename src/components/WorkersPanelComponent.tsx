@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
+import { getErrorMessage } from "../utils/errorMessage";
 import { renderToolName } from "../utils/utilities";
 import { formatDuration } from "../utils/utilities";
 import CostBadgeComponent from "./CostBadgeComponent";
@@ -18,7 +19,7 @@ import ModelBadgeComponent from "./ModelBadgeComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
 import styles from "./WorkersPanelComponent.module.css";
 
-const STATUS_LABEL = {
+const STATUS_LABEL: Record<string, string> = {
   running: "Running",
   complete: "Complete",
   failed: "Failed",
@@ -26,7 +27,7 @@ const STATUS_LABEL = {
   pending: "Pending",
 };
 
-const STATUS_CLASS = {
+const STATUS_CLASS: Record<string, string> = {
   running: "statusRunning",
   complete: "statusComplete",
   failed: "statusFailed",
@@ -34,7 +35,7 @@ const STATUS_CLASS = {
   pending: "statusPending",
 };
 
-const CARD_CLASS = {
+const CARD_CLASS: Record<string, string> = {
   running: "workerCardRunning",
   complete: "workerCardComplete",
   failed: "workerCardFailed",
@@ -44,7 +45,7 @@ const CARD_CLASS = {
 /**
  * Extract a short agent number from an agentId like "agent-1" → "1"
  */
-function getAgentNumber(agentId: any) {
+function getAgentNumber(agentId: string | undefined) {
   const match = typeof agentId === "string" ? agentId.match(/agent-(\w+)/) : null;
   return match ? match[1].toUpperCase() : agentId;
 }
@@ -64,9 +65,9 @@ export default function WorkersPanel({
 }: any) {
   const [workers, setWorkers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const hasData = useRef<boolean>(false);
-  const pollRef = useRef<any>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // -- Load --------------------------------------------------
 
@@ -79,9 +80,9 @@ export default function WorkersPanel({
       setWorkers(list);
       onCountChange?.(list.length);
       hasData.current = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load workers:", error);
-      if (!hasData.current) setError(error.message);
+      if (!hasData.current) setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -105,10 +106,10 @@ export default function WorkersPanel({
     if (hasRunning) {
       pollRef.current = setInterval(loadWorkers, POLL_FAST);
     } else {
-      clearInterval(pollRef.current);
+      if (pollRef.current) clearInterval(pollRef.current);
     }
 
-    return () => clearInterval(pollRef.current);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [workers, loadWorkers]);
 
   // -- Loading -------------------------------------------------
@@ -171,10 +172,10 @@ export default function WorkersPanel({
       {/* -- Worker list --------------------------------------- */}
       {workers.map((worker) => {
         const statusLabel =
-          (STATUS_LABEL as any)[worker.status] || worker.status;
+          STATUS_LABEL[worker.status] || worker.status;
         const statusClass =
-          (STATUS_CLASS as any)[worker.status] || "statusPending";
-        const cardClass = (CARD_CLASS as any)[worker.status] || "";
+          STATUS_CLASS[worker.status] || "statusPending";
+        const cardClass = CARD_CLASS[worker.status] || "";
         const isLive = worker.status === "running";
         const isComplete = worker.status === "complete";
 
@@ -276,7 +277,7 @@ export default function WorkersPanel({
             {/* Files */}
             {worker.files?.length > 0 && (
               <div className={styles.workerFiles}>
-                {worker.files.map((f: any, i: number) => (
+                {worker.files.map((f: string, i: number) => (
                   <span key={i} className={styles.workerFile} title={f}>
                     <FileCode
                       size={9}

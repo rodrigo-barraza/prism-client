@@ -8,6 +8,7 @@ import ProviderLogo from "./ProviderLogosComponent";
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
 import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
 import IrisService from "../services/IrisService";
+import { getErrorMessage } from "../utils/errorMessage";
 import { formatCost } from "../utils/utilities";
 import styles from "./SessionRequestsListComponent.module.css";
 
@@ -21,7 +22,7 @@ export default function SessionRequestsListComponent({
 }: any) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchRequests = useCallback(async () => {
     if (!agentSessionId) return;
@@ -30,10 +31,11 @@ export default function SessionRequestsListComponent({
     try {
       const result = await IrisService.getSessionRequests(agentSessionId);
       setData(result);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error);
       // 404 = no requests yet, don't show error
-      if (!error.message?.includes("404")) {
-        setError(error.message);
+      if (!msg.includes("404")) {
+        setError(msg);
       }
       setData(null);
     } finally {

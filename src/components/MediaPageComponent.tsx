@@ -170,7 +170,7 @@ export default function MediaPageComponent({
       if (result.usernames) setUsernames(result.usernames);
       if (result.providers) setProviders(result.providers);
       if (result.models) setModels(result.models);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load media:", error);
     } finally {
       setLoading(false);

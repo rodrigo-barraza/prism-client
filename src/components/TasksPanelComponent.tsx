@@ -16,10 +16,17 @@ import {
   X,
 } from "lucide-react";
 import ToolsApiService from "../services/ToolsApiService";
-
+import type { AgenticTask } from "../services/ToolsApiService";
+import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./TasksPanelComponent.module.css";
 
-const STATUS_CONFIG = {
+interface StatusConfigEntry {
+  icon: typeof CircleDot;
+  label: string;
+  colorClass: string;
+}
+
+const STATUS_CONFIG: Record<string, StatusConfigEntry> = {
   pending: { icon: CircleDot, label: "Pending", colorClass: "statusPending" },
   in_progress: {
     icon: Play,
@@ -35,6 +42,18 @@ const STATUS_CONFIG = {
 
 const STATUS_CYCLE = ["pending", "in_progress", "completed"];
 
+interface TaskSummary {
+  total: number;
+  [key: string]: number | undefined;
+}
+
+interface TasksPanelProps {
+  project?: string;
+  refreshKey?: number;
+  agentSessionId?: string;
+  onCountChange?: (count: number) => void;
+}
+
 /**
  * TasksPanel — view and manage persistent agentic tasks.
  *
@@ -47,13 +66,13 @@ export default function TasksPanel({
   refreshKey,
   agentSessionId,
   onCountChange,
-}: any) {
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [summary, setSummary] = useState<any>(null);
+}: TasksPanelProps) {
+  const [tasks, setTasks] = useState<AgenticTask[]>([]);
+  const [summary, setSummary] = useState<TaskSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<any>(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<any>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const hasData = useRef<boolean>(false);
 
@@ -74,13 +93,13 @@ export default function TasksPanel({
         status: statusFilter || undefined,
         agentSessionId: agentSessionId || undefined,
       });
-      setTasks(result.tasks || []);
-      setSummary(result.summary || null);
+      setTasks((result.tasks || []) as AgenticTask[]);
+      setSummary((result.summary || null) as TaskSummary | null);
       onCountChange?.(result.summary?.total || (result.tasks || []).length);
       hasData.current = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load tasks:", error);
-      if (!hasData.current) setError(error.message);
+      if (!hasData.current) setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -106,7 +125,7 @@ export default function TasksPanel({
       if (!newSubject.trim() || !newDescription.trim()) return;
       setCreating(true);
       try {
-        await ToolsApiService.createAgenticTask(project, {
+        await ToolsApiService.createAgenticTask(project!, {
           subject: newSubject.trim(),
           description: newDescription.trim(),
         });
@@ -114,7 +133,7 @@ export default function TasksPanel({
         setNewDescription("");
         setShowNewForm(false);
         loadTasks();
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to create task:", error);
       } finally {
         setCreating(false);
@@ -126,8 +145,8 @@ export default function TasksPanel({
   // -- Status cycle -------------------------------------------
 
   const handleCycleStatus = useCallback(
-    async (task: any) => {
-      const index = STATUS_CYCLE.indexOf(task.status);
+    async (task: AgenticTask) => {
+      const index = STATUS_CYCLE.indexOf(task.status || "pending");
       const nextStatus = STATUS_CYCLE[(index + 1) % STATUS_CYCLE.length];
       try {
         await ToolsApiService.updateAgenticTask(task.project, task.taskId, {
@@ -143,7 +162,7 @@ export default function TasksPanel({
         );
         // Refresh summary
         loadTasks();
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to update task:", error);
       }
     },
@@ -153,18 +172,18 @@ export default function TasksPanel({
   // -- Delete -------------------------------------------------
 
   const handleDelete = useCallback(
-    async (task: any) => {
+    async (task: AgenticTask) => {
       try {
         await ToolsApiService.deleteAgenticTask(task.project, task.taskId);
         setTasks((prev) =>
           prev.filter(
-            (t: any) =>
+            (t) =>
               !(t.project === task.project && t.taskId === task.taskId),
           ),
         );
         setConfirmingDeleteId(null);
         loadTasks();
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Failed to delete task:", error);
       }
     },
@@ -224,7 +243,7 @@ export default function TasksPanel({
       {summary && summary.total > 0 && (
         <div className={styles.summaryRow}>
           {STATUS_CYCLE.map((s) => {
-            const config = (STATUS_CONFIG as any)[s];
+            const config = STATUS_CONFIG[s];
             const count = summary[s] || 0;
             if (count === 0 && statusFilter !== s) return null;
             const isActive = statusFilter === s;
@@ -299,7 +318,7 @@ export default function TasksPanel({
           <div className={styles.emptyTitle}>No tasks yet</div>
           <div className={styles.emptySubtitle}>
             {statusFilter
-              ? `No ${(STATUS_CONFIG as any)[statusFilter]?.label.toLowerCase()} tasks. Try clearing the filter.`
+              ? `No ${STATUS_CONFIG[statusFilter]?.label.toLowerCase()} tasks. Try clearing the filter.`
               : "Tasks are created by the agent during coding sessions, or you can create them manually."}
           </div>
         </div>
@@ -308,7 +327,7 @@ export default function TasksPanel({
       {/* -- Task list --------------------------------------- */}
       {tasks.map((task) => {
         const config =
-          (STATUS_CONFIG as any)[task.status] || STATUS_CONFIG.pending;
+          STATUS_CONFIG[task.status ?? "pending"] || STATUS_CONFIG.pending;
         const StatusIcon = config.icon;
         const isExpanded = expandedId === task.taskId;
         const isConfirming = confirmingDeleteId === task.taskId;
@@ -393,7 +412,7 @@ export default function TasksPanel({
                 <div className={styles.taskDescription}>{task.description}</div>
                 {task.metadata && Object.keys(task.metadata).length > 0 && (
                   <div className={styles.taskMetadata}>
-                    {Object.entries(task.metadata).map(([k, v]: any) => (
+                    {Object.entries(task.metadata).map(([k, v]) => (
                       <span key={k} className={styles.metaTag}>
                         <span className={styles.metaKey}>{k}</span>
                         <span className={styles.metaValue}>{String(v)}</span>

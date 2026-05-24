@@ -15,6 +15,7 @@ import {
   ToastComponent,
   useToast,
 } from "@rodrigo-barraza/components-library";
+import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./ModelsPageComponent.module.css";
 
 /**
@@ -69,7 +70,7 @@ export default function ModelsPageComponent({
   const isAdmin = mode === "admin";
   const [allModels, setAllModels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [actionInProgress, setActionInProgress] = useState<any>(null);
   const { toasts, addToast, removeToast } = useToast(4000);
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
@@ -244,8 +245,8 @@ export default function ModelsPageComponent({
       const fullModels = buildMergedModels(mergedConfig, lmData, modelStats);
       setAllModels(fullModels);
       hasLoadedRef.current = true;
-    } catch (error: any) {
-      setError(error.message || "Unknown error");
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
       setAllModels([]);
     } finally {
       setLoading(false);
@@ -302,22 +303,22 @@ export default function ModelsPageComponent({
       await lmService.loadLmStudioModel(modelKey, options);
       addToast(`Loaded ${modelKey}`, "success");
       await fetchModels();
-    } catch (error: any) {
-      addToast(`Failed to load: ${error.message}`, "error");
+    } catch (error: unknown) {
+      addToast(`Failed to load: ${getErrorMessage(error)}`, "error");
     } finally {
       setActionInProgress(null);
     }
   };
 
-  const handleUnload = async (instanceId: any) => {
+  const handleUnload = async (instanceId: string) => {
     setActionInProgress({ id: instanceId, type: "unload" });
     try {
       const lmService = isAdmin ? IrisService : PrismService;
       await lmService.unloadLmStudioModel(instanceId);
       addToast(`Unloaded ${instanceId}`, "success");
       await fetchModels();
-    } catch (error: any) {
-      addToast(`Failed to unload: ${error.message}`, "error");
+    } catch (error: unknown) {
+      addToast(`Failed to unload: ${getErrorMessage(error)}`, "error");
     } finally {
       setActionInProgress(null);
     }

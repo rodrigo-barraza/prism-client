@@ -75,7 +75,7 @@ export default function TextPageComponent({
       setTotal(result.total || 0);
       if (result.providers) setProviders(result.providers);
       if (result.models) setModels(result.models);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load text:", error);
     } finally {
       setLoading(false);

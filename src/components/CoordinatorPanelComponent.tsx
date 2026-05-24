@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import { TOAST_DURATION_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
+import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./CoordinatorPanelComponent.module.css";
 
-const STATUS_CLASSES = {
+const STATUS_CLASSES: Record<string, string> = {
   pending: "statusPending",
   ready: "statusPending",
   running: "statusRunning",
@@ -22,7 +23,7 @@ const STATUS_CLASSES = {
   error: "statusError",
 };
 
-const COMPLEXITY_CLASSES = {
+const COMPLEXITY_CLASSES: Record<string, string> = {
   low: "complexityLow",
   medium: "complexityMedium",
   high: "complexityHigh",
@@ -37,17 +38,48 @@ const COMPLEXITY_CLASSES = {
  *
  * Lifecycle: Input → Plan → Execute → Review → Merge
  */
-export default function CoordinatorPanel({ project: _project }: any) {
+interface CoordinatorToast {
+  type: "success" | "error" | "info";
+  text: string;
+}
+
+interface CoordinatorPlanSubTask {
+  id: string;
+  complexity?: string;
+  files?: string[];
+  instruction?: string;
+}
+
+interface CoordinatorPlan {
+  taskId?: string;
+  summary?: string;
+  subTasks?: CoordinatorPlanSubTask[];
+  error?: string;
+}
+
+interface CoordinatorWorker {
+  id: string;
+  status: string;
+  error?: string;
+  diff?: {
+    hasChanges: boolean;
+    additions?: number;
+    deletions?: number;
+    diff?: string;
+  };
+}
+
+export default function CoordinatorPanel({ project: _project }: { project?: string }) {
   // -- State -------------------------------------------------
   const [phase, setPhase] = useState("input"); // input | planning | plan | executing | review | merged
   const [task, setTask] = useState("");
   const [filesInput, setFilesInput] = useState("");
-  const [plan, setPlan] = useState<any>(null);
-  const [workers, setWorkers] = useState<any[]>([]);
-  const [toast, setToast] = useState<any>(null);
+  const [plan, setPlan] = useState<CoordinatorPlan | null>(null);
+  const [workers, setWorkers] = useState<CoordinatorWorker[]>([]);
+  const [toast, setToast] = useState<CoordinatorToast | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const showToast = useCallback((type: any, text: any) => {
+  const showToast = useCallback((type: CoordinatorToast["type"], text: string) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, []);
@@ -70,9 +102,9 @@ export default function CoordinatorPanel({ project: _project }: any) {
     setLoading(true);
 
     try {
-      const result: any = await PrismService._request("/coordinator/plan", {
+      const result = await PrismService._request("/coordinator/plan", {
         body: { task, files },
-      });
+      }) as CoordinatorPlan;
 
       if (result.error) {
         showToast("error", result.error);
@@ -82,8 +114,8 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
       setPlan(result);
       setPhase("plan");
-    } catch (error: any) {
-      showToast("error", `Planning failed: ${error.message}`);
+    } catch (error: unknown) {
+      showToast("error", `Planning failed: ${getErrorMessage(error)}`);
       setPhase("input");
     } finally {
       setLoading(false);
@@ -98,9 +130,9 @@ export default function CoordinatorPanel({ project: _project }: any) {
     setLoading(true);
 
     try {
-      const result: any = await PrismService._request("/coordinator/execute", {
+      const result = await PrismService._request("/coordinator/execute", {
         body: { plan },
-      });
+      }) as { error?: string; workers?: CoordinatorWorker[] };
 
       if (result.error) {
         showToast("error", result.error);
@@ -110,8 +142,8 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
       setWorkers(result.workers || []);
       setPhase("review");
-    } catch (error: any) {
-      showToast("error", `Execution failed: ${error.message}`);
+    } catch (error: unknown) {
+      showToast("error", `Execution failed: ${getErrorMessage(error)}`);
       setPhase("plan");
     } finally {
       setLoading(false);
@@ -124,12 +156,12 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
     setLoading(true);
     try {
-      const result: any = await PrismService._request(
+      const result = await PrismService._request(
         `/coordinator/approve-merge/${plan.taskId}`,
         {
           method: "POST",
         },
-      );
+      ) as { error?: string };
 
       if (result.error) {
         showToast("error", result.error);
@@ -138,8 +170,8 @@ export default function CoordinatorPanel({ project: _project }: any) {
 
       setPhase("merged");
       showToast("success", "All branches merged successfully!");
-    } catch (error: any) {
-      showToast("error", `Merge failed: ${error.message}`);
+    } catch (error: unknown) {
+      showToast("error", `Merge failed: ${getErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -235,18 +267,18 @@ export default function CoordinatorPanel({ project: _project }: any) {
         <div className={styles.planSection}>
           <div className={styles.planSummary}>{plan.summary}</div>
 
-          {plan.subTasks?.map((st: any) => (
+          {plan.subTasks?.map((st) => (
             <div key={st.id} className={styles.subTaskCard}>
               <div className={styles.subTaskHeader}>
                 <span className={styles.subTaskId}>{st.id}</span>
                 <span
-                  className={`${styles.subTaskComplexity} ${styles[(COMPLEXITY_CLASSES as any)[st.complexity] || "complexityMedium"]}`}
+                  className={`${styles.subTaskComplexity} ${styles[COMPLEXITY_CLASSES[st.complexity ?? "medium"] || "complexityMedium"]}`}
                 >
                   {st.complexity || "medium"}
                 </span>
               </div>
               <div className={styles.subTaskFiles}>
-                {st.files?.map((f: any, i: any) => (
+                {st.files?.map((f, i) => (
                   <span key={i} className={styles.subTaskFile}>
                     {f.split("/").pop()}
                   </span>
@@ -288,7 +320,7 @@ export default function CoordinatorPanel({ project: _project }: any) {
               <div className={styles.workerHeader}>
                 <span className={styles.workerName}>{w.id}</span>
                 <span
-                  className={`${styles.workerStatus} ${styles[(STATUS_CLASSES as any)[w.status] || "statusPending"]}`}
+                  className={`${styles.workerStatus} ${styles[STATUS_CLASSES[w.status] || "statusPending"]}`}
                 >
                   {w.status}
                 </span>

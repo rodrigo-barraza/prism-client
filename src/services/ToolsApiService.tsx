@@ -43,6 +43,9 @@ export interface AgenticTask {
   subtasks?: Array<{ title: string; status: string }>;
   subject?: string;
   tags?: string[];
+  activeForm?: string;
+  metadata?: Record<string, unknown>;
+  conversationId?: string;
 }
 
 export interface AgenticTaskListResponse {
