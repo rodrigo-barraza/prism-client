@@ -414,14 +414,14 @@ export default function WorkflowInspector({
                             >
                               {(m.rawInputTypes || m.inputTypes || []).map(
                                 (t: string) => {
-                                  const mod = getModalityIcon(t);
+                                  const modalityIcon = getModalityIcon(t);
                                   if (!mod) return null;
-                                  const Icon = mod.icon;
+                                  const Icon = modalityIcon.icon;
                                   return (
                                     <Icon
                                       key={`in-${t}`}
                                       size={9}
-                                      style={{ color: mod.color }}
+                                      style={{ color: modalityIcon.color }}
                                     />
                                   );
                                 },
@@ -430,14 +430,14 @@ export default function WorkflowInspector({
                                 →
                               </span>
                               {(m.outputTypes || []).map((t: string) => {
-                                const mod = getModalityIcon(t);
+                                const modalityIcon = getModalityIcon(t);
                                 if (!mod) return null;
-                                const Icon = mod.icon;
+                                const Icon = modalityIcon.icon;
                                 return (
                                   <Icon
                                     key={`out-${t}`}
                                     size={9}
-                                    style={{ color: mod.color }}
+                                    style={{ color: modalityIcon.color }}
                                   />
                                 );
                               })}

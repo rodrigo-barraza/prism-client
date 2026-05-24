@@ -386,7 +386,7 @@ export default function DistributionChartComponent({
 
             <div className={styles.legend}>
               {entries.map(({ name, value }, i: number) => {
-                const pct = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                 const color = isStatus
                   ? STATUS_COLORS[name] || COLORS[0]
                   : COLORS[i % COLORS.length];
@@ -408,7 +408,7 @@ export default function DistributionChartComponent({
                     <span className={styles.legendValue}>
                       {formatValue(value, activeMetric)}
                     </span>
-                    <span className={styles.legendPct}>{pct}%</span>
+                    <span className={styles.legendPct}>{percentage}%</span>
                   </div>
                 );
               })}

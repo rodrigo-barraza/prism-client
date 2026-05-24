@@ -77,8 +77,8 @@ export interface WorkerToolActivityItem {
 function parseTaskNotification(content: string | undefined | null) {
   if (!content || !content.includes("<task-notification>")) return null;
   const tag = (name: string) => {
-    const re = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
-    const m = content.match(re);
+    const regex = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
+    const m = content.match(regex);
     return m ? m[1].trim() : null;
   };
   return {

@@ -168,7 +168,7 @@ export interface RowData {
 function formatPricingRate(n: number | null | undefined): string {
   if (n == null) return "—";
   // Use up to 4 decimals but strip unnecessary trailing zeros, min 2 decimals
-  const str = n.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+  const formatted = n.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
   const [int, dec = ""] = str.split(".");
   const padded = dec.padEnd(2, "0");
   return `$${int}.${padded}`;
@@ -822,11 +822,11 @@ function ModelsTableInner({
         width: "100px",
         sortValue: (row: RowData) => row._raw._benchPassRate || 0,
         render: (row: RowData) => {
-          const pct = Math.round((row._raw._benchPassRate || 0) * 100);
+          const percentage = Math.round((row._raw._benchPassRate || 0) * 100);
           const color =
-            pct >= 80
+            percentage >= 80
               ? "var(--success)"
-              : pct >= 50
+              : percentage >= 50
                 ? "var(--warning)"
                 : "var(--danger)";
           return (
@@ -834,11 +834,11 @@ function ModelsTableInner({
               <span className={styles.benchRateBar}>
                 <span
                   className={styles.benchRateBarFill}
-                  style={{ width: `${pct}%`, background: color }}
+                  style={{ width: `${percentage}%`, background: color }}
                 />
               </span>
               <span className={styles.benchRateValue} style={{ color }}>
-                {pct}%
+                {percentage}%
               </span>
             </span>
           );

@@ -570,8 +570,8 @@ export default function AdminChatViewerComponent({
     if (projectFilter) params.set("project", projectFilter);
     if (providerFilter) params.set("provider", providerFilter);
     if (modelFilter) params.set("model", modelFilter);
-    const qs = params.toString();
-    window.history.replaceState(null, "", `/admin/chat/${id}${qs ? `?${qs}` : ""}`);
+    const queryString = params.toString();
+    window.history.replaceState(null, "", `/admin/chat/${id}${queryString ? `?${queryString}` : ""}`);
 
     // Remove NEW badge
     setNewIds((prev) => {
@@ -603,8 +603,8 @@ export default function AdminChatViewerComponent({
       } else {
         params.set("agent", agentId);
       }
-      const qs = params.toString();
-      router.replace(qs ? `/admin/chat?${qs}` : "/admin/chat", { scroll: false });
+      const queryString = params.toString();
+      router.replace(queryString ? `/admin/chat?${queryString}` : "/admin/chat", { scroll: false });
 
       // Reset list state
       setSelectedId(null);

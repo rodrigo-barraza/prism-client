@@ -612,15 +612,15 @@ function ModelNode(props: ModelNodeProps) {
       )}
       {/* Modality icons from model's input types */}
       {modalityIcons.map((modality: string) => {
-        const mod = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>; label?: string; color?: string }>)[modality];
+        const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>; label?: string; color?: string }>)[modality];
         if (!mod) return null;
-        const Icon = mod.icon;
+        const Icon = modalityEntry.icon;
         return (
           <Icon
             key={modality}
             size={11}
-            style={{ color: mod.color || "#888", opacity: 0.7, flexShrink: 0 }}
-            title={mod.label}
+            style={{ color: modalityEntry.color || "#888", opacity: 0.7, flexShrink: 0 }}
+            title={modalityEntry.label}
           />
         );
       })}
@@ -914,15 +914,15 @@ function AssetNode(props: AssetNodeProps) {
       {isConversation &&
         conversationModalities.length > 0 &&
         conversationModalities.map((modality: string) => {
-          const mod = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>; label?: string; color?: string }>)[modality];
+          const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>; label?: string; color?: string }>)[modality];
           if (!mod) return null;
-          const Icon = mod.icon;
+          const Icon = modalityEntry.icon;
           return (
             <Icon
               key={modality}
               size={11}
-              style={{ color: mod.color || "#888", opacity: 0.7, flexShrink: 0 }}
-              title={mod.label}
+              style={{ color: modalityEntry.color || "#888", opacity: 0.7, flexShrink: 0 }}
+              title={modalityEntry.label}
             />
           );
         })}

@@ -179,15 +179,15 @@ export default function NavigationSidebarComponent({
     if (mode !== "user") return;
     PrismService.getSettings()
       .then((s) => {
-        const mem = (s?.memory || {}) as Record<string, string>;
+        const memoryData = (s?.memory || {}) as Record<string, string>;
         setMemoryConfigured(
           Boolean(
-            mem.extractionProvider &&
-            mem.extractionModel &&
-            mem.consolidationProvider &&
-            mem.consolidationModel &&
-            mem.embeddingProvider &&
-            mem.embeddingModel,
+            memoryData.extractionProvider &&
+            memoryData.extractionModel &&
+            memoryData.consolidationProvider &&
+            memoryData.consolidationModel &&
+            memoryData.embeddingProvider &&
+            memoryData.embeddingModel,
           ),
         );
       })

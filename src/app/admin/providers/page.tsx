@@ -400,9 +400,9 @@ function LimitBar({ label, remaining, limit, reset }: { label: string; remaining
   if (limit == null || limit === 0) return null;
 
   const rem = remaining ?? 0;
-  const pct = Math.max(0, Math.min(100, (rem / limit) * 100));
+  const percentage = Math.max(0, Math.min(100, (rem / limit) * 100));
   // HSL gradient: green (>60%) → yellow (30-60%) → red (<30%)
-  const hue = Math.round((pct / 100) * 120);
+  const hue = Math.round((percentage / 100) * 120);
 
   return (
     <div className={styles.limitBar}>
@@ -416,7 +416,7 @@ function LimitBar({ label, remaining, limit, reset }: { label: string; remaining
         <div
           className={styles.progressBarFill}
           style={{
-            width: `${pct}%`,
+            width: `${percentage}%`,
             background: `hsl(${hue}, 70%, 50%)`,
           }}
         />

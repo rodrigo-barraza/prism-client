@@ -197,8 +197,8 @@ export default class PrismService {
 
    */
   static async getBuiltInToolSchemas(agent?: string): Promise<ToolSchema[]> {
-    const qs = agent ? `?agent=${encodeURIComponent(agent)}` : "";
-    return PrismService._request<ToolSchema[]>(`/config/tools${qs}`, { method: "GET" });
+    const queryString = agent ? `?agent=${encodeURIComponent(agent)}` : "";
+    return PrismService._request<ToolSchema[]>(`/config/tools${queryString}`, { method: "GET" });
   }
 
   /**
@@ -245,7 +245,7 @@ export default class PrismService {
 
    */
   static async getConversations({ limit, cursor }: { limit?: number; cursor?: string } = {}): Promise<ConversationListResponse> {
-    const qs = new URLSearchParams();
+    const queryString = new URLSearchParams();
     if (limit) qs.set("limit", String(limit));
     if (cursor) qs.set("cursor", cursor);
     const query = qs.toString();
@@ -283,13 +283,13 @@ export default class PrismService {
 
    */
   static async getAgentSessions(project: string, { limit, cursor, agent }: { limit?: number; cursor?: string; agent?: string } = {}): Promise<AgentSessionListResponse> {
-    const qs = new URLSearchParams();
+    const queryString = new URLSearchParams();
     qs.set("type", "agent");
     qs.set("project", project);
     if (agent) qs.set("agent", agent);
     if (limit) qs.set("limit", String(limit));
     if (cursor) qs.set("cursor", cursor);
-    return PrismService._request<AgentSessionListResponse>(`/conversations?${qs}`, { method: "GET" });
+    return PrismService._request<AgentSessionListResponse>(`/conversations?${queryString}`, { method: "GET" });
   }
 
   /**
@@ -327,10 +327,10 @@ export default class PrismService {
     project?: string,
     conversationMeta?: ConversationMeta,
   ): Promise<{ success: boolean }> {
-    const qs = project ? `?project=${encodeURIComponent(project)}` : "";
+    const queryString = project ? `?project=${encodeURIComponent(project)}` : "";
     const body: { messages: Message[]; conversationMeta?: ConversationMeta } = { messages };
     if (conversationMeta) body.conversationMeta = conversationMeta;
-    return PrismService._request<{ success: boolean }>(`/conversations/${id}/messages${qs}`, {
+    return PrismService._request<{ success: boolean }>(`/conversations/${id}/messages${queryString}`, {
       body,
     });
   }
@@ -345,8 +345,8 @@ export default class PrismService {
 
    */
   static async getFavorites(type?: string): Promise<Favorite[]> {
-    const qs = type ? `?type=${encodeURIComponent(type)}` : "";
-    return PrismService._request<Favorite[]>(`/favorites${qs}`, { method: "GET" });
+    const queryString = type ? `?type=${encodeURIComponent(type)}` : "";
+    return PrismService._request<Favorite[]>(`/favorites${queryString}`, { method: "GET" });
   }
 
   /**
@@ -380,8 +380,8 @@ export default class PrismService {
 
    */
   static async getCustomTools(project?: string): Promise<CustomTool[]> {
-    const qs = project ? `?project=${encodeURIComponent(project)}` : "";
-    return PrismService._request<CustomTool[]>(`/custom-tools${qs}`, { method: "GET" });
+    const queryString = project ? `?project=${encodeURIComponent(project)}` : "";
+    return PrismService._request<CustomTool[]>(`/custom-tools${queryString}`, { method: "GET" });
   }
 
   /**
@@ -472,8 +472,8 @@ export default class PrismService {
 
    */
   static async getSkills(project?: string): Promise<Skill[]> {
-    const qs = project ? `?project=${encodeURIComponent(project)}` : "";
-    return PrismService._request<Skill[]>(`/skills${qs}`, { method: "GET" });
+    const queryString = project ? `?project=${encodeURIComponent(project)}` : "";
+    return PrismService._request<Skill[]>(`/skills${queryString}`, { method: "GET" });
   }
 
   /**
@@ -519,11 +519,11 @@ export default class PrismService {
 
    */
   static async getAgentMemories(project?: string, limit = 100, agent?: string): Promise<AgentMemoryListResponse> {
-    const qs = new URLSearchParams();
+    const queryString = new URLSearchParams();
     if (project) qs.set("project", project);
     if (limit) qs.set("limit", String(limit));
     if (agent) qs.set("agent", agent);
-    return PrismService._request<AgentMemoryListResponse>(`/agent-memories?${qs}`, { method: "GET" });
+    return PrismService._request<AgentMemoryListResponse>(`/agent-memories?${queryString}`, { method: "GET" });
   }
 
   /**
@@ -551,11 +551,11 @@ export default class PrismService {
 
    */
   static async getConsolidationHistory(project?: string, limit = 10): Promise<{ history: Array<{ _id: string; project: string; createdAt: string; merged: number; created: number }> }> {
-    const qs = new URLSearchParams();
+    const queryString = new URLSearchParams();
     if (project) qs.set("project", project);
     if (limit) qs.set("limit", String(limit));
     return PrismService._request<{ history: Array<{ _id: string; project: string; createdAt: string; merged: number; created: number }> }>(
-      `/agent-memories/consolidation-history?${qs}`,
+      `/agent-memories/consolidation-history?${queryString}`,
       { method: "GET" },
     );
   }
@@ -605,8 +605,8 @@ export default class PrismService {
 
    */
   static async getMCPServers(project?: string): Promise<MCPServer[]> {
-    const qs = project ? `?project=${encodeURIComponent(project)}` : "";
-    return PrismService._request<MCPServer[]>(`/mcp-servers${qs}`, { method: "GET" });
+    const queryString = project ? `?project=${encodeURIComponent(project)}` : "";
+    return PrismService._request<MCPServer[]>(`/mcp-servers${queryString}`, { method: "GET" });
   }
 
   /**
@@ -671,10 +671,10 @@ export default class PrismService {
 
    */
   static async getCoordinatorWorkers(agentSessionId?: string): Promise<{ workers: CoordinatorWorker[] }> {
-    const qs = agentSessionId
+    const queryString = agentSessionId
       ? `?agentSessionId=${encodeURIComponent(agentSessionId)}`
       : "";
-    return PrismService._request<{ workers: CoordinatorWorker[] }>(`/coordinator/workers${qs}`, {
+    return PrismService._request<{ workers: CoordinatorWorker[] }>(`/coordinator/workers${queryString}`, {
       method: "GET",
     });
   }
@@ -1226,7 +1226,7 @@ export default class PrismService {
   static loadLmStudioModelStream(
     model: string,
     options: { contextLength?: number; flashAttention?: boolean; offloadKvCache?: boolean; evalBatchSize?: number } = {},
-    callbacks: { onProgress?: (pct: number) => void; onComplete?: () => void; onError?: (err: Error) => void } = {},
+    callbacks: { onProgress?: (percentage: number) => void; onComplete?: () => void; onError?: (err: Error) => void } = {},
   ): () => void {
     const { onProgress, onComplete, onError } = callbacks;
     const controller = new AbortController();
@@ -1244,10 +1244,10 @@ export default class PrismService {
           return;
         }
         const elapsed = Date.now() - startTime;
-        const pct = Math.min(0.95, elapsed / (elapsed + EXPECTED_LOAD_MS));
-        if (pct > lastPct + 0.005) {
-          lastPct = pct;
-          if (onProgress) onProgress(pct);
+        const percentage = Math.min(0.95, elapsed / (elapsed + EXPECTED_LOAD_MS));
+        if (percentage > lastPct + 0.005) {
+          lastPct = percentage;
+          if (onProgress) onProgress(percentage);
         }
       }, 300);
 

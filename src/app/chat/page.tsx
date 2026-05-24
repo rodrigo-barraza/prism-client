@@ -43,8 +43,8 @@ function buildUrl(currentParams: URLSearchParams, updates: Record<string, string
       params.set(key, value as string);
     }
   }
-  const qs = params.toString();
-  return qs ? `/chat?${qs}` : "/chat";
+  const queryString = params.toString();
+  return queryString ? `/chat?${queryString}` : "/chat";
 }
 
 function AgentsPageInner() {

@@ -132,8 +132,8 @@ export default function StatusBarComponent({
     const id = setInterval(() => {
       const elapsed = performance.now() - syntheticStartRef.current;
       // Asymptotic: approaches 0.95 over SYNTHETIC_EXPECTED_MS
-      const pct = Math.min(0.95, elapsed / (elapsed + SYNTHETIC_EXPECTED_MS));
-      setSyntheticProgress(pct);
+      const percentage = Math.min(0.95, elapsed / (elapsed + SYNTHETIC_EXPECTED_MS));
+      setSyntheticProgress(percentage);
     }, SYNTHETIC_TICK_MS);
 
     return () => clearInterval(id);

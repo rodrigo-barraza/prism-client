@@ -1028,16 +1028,16 @@ export default function AgentComponent({
   useEffect(() => {
     PrismService.getSettings()
       .then((s: PrismSettings) => {
-        const mem = s?.memory;
+        const memorySection = s?.memory;
         setMemoryConfigured(
           Boolean(
-            mem &&
-            mem.extractionProvider &&
-            mem.extractionModel &&
-            mem.consolidationProvider &&
-            mem.consolidationModel &&
-            mem.embeddingProvider &&
-            mem.embeddingModel,
+            memorySection &&
+            memorySection.extractionProvider &&
+            memorySection.extractionModel &&
+            memorySection.consolidationProvider &&
+            memorySection.consolidationModel &&
+            memorySection.embeddingProvider &&
+            memorySection.embeddingModel,
           ),
         );
       })
@@ -1877,11 +1877,11 @@ export default function AgentComponent({
           },
           onToolExecution: (data: SSEData) => {
             if (isStale()) return;
-            const tc = data.tool;
-            if (!tc) return;
+            const toolData = data.tool;
+            if (!toolData) return;
             setToolActivity((prev: ToolCallEvent[]) => {
               let updated: ToolCallEvent[] = [];
-              const resolvedId = tc.id || `tc-${Date.now()}-${Math.random()}`;
+              const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
               if (data.status === "calling") {
                 // Deduplicate: skip if this tool ID was already registered
                 if (prev.some((a) => a.id === resolvedId)) {
@@ -1891,8 +1891,8 @@ export default function AgentComponent({
                   ...prev,
                   {
                     id: resolvedId,
-                    name: tc.name || "unknown",
-                    args: tc.args || {},
+                    name: toolData.name || "unknown",
+                    args: toolData.args || {},
                     status: "calling",
                     timestamp: Date.now(),
                   },
@@ -1917,16 +1917,16 @@ export default function AgentComponent({
               } else {
                 updated = prev.map((activity) => {
                   if (
-                    (tc.id && activity.id === tc.id) ||
-                    (!tc.id &&
-                      activity.name === (tc.name || "unknown") &&
+                    (toolData.id && activity.id === toolData.id) ||
+                    (!toolData.id &&
+                      activity.name === (toolData.name || "unknown") &&
                       activity.status === "calling")
                   ) {
                     return {
                       ...activity,
                       status: data.status,
-                      result: tc.result,
-                      args: tc.args || {},
+                      result: toolData.result,
+                      args: toolData.args || {},
                     };
                   }
                   return activity;
@@ -1960,12 +1960,12 @@ export default function AgentComponent({
             });
 
             // Auto-refresh tasks panel when any task tool completes
-            if (data.status !== "calling" && (tc.name || "").startsWith("task_")) {
+            if (data.status !== "calling" && (toolData.name || "").startsWith("task_")) {
               setTasksRefreshKey((k) => k + 1);
             }
 
             // Auto-refresh memories panel when upsert_memory completes
-            if (data.status !== "calling" && tc.name === "upsert_memory") {
+            if (data.status !== "calling" && toolData.name === "upsert_memory") {
               setLeftTab("memories");
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
@@ -1976,15 +1976,15 @@ export default function AgentComponent({
             }
 
             // Auto-refresh workspace tree when filesystem-mutating tools complete
-            if (data.status !== "calling" && WORKSPACE_FS_TOOLS.has(tc.name || "")) {
+            if (data.status !== "calling" && WORKSPACE_FS_TOOLS.has(toolData.name || "")) {
               setWorkspaceTreeRefreshKey((k) => k + 1);
 
               // Live-update file viewer: refresh open tabs whose path was touched
-              const mutatedPath = (tc.args?.path as string) || (tc.args?.source as string) || null;
+              const mutatedPath = (toolData.args?.path as string) || (toolData.args?.source as string) || null;
               const openFiles = viewerOpenFilesRef.current;
               if (mutatedPath && openFiles.length > 0) {
                 // delete_file and move_file both remove the source path
-                if (tc.name === "delete_file" || tc.name === "move_file") {
+                if (toolData.name === "delete_file" || toolData.name === "move_file") {
                   const deleted = openFiles.find(
                     (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
@@ -2017,8 +2017,8 @@ export default function AgentComponent({
             if (isStale()) return;
             setToolActivity((prev) => {
               let updated;
-              const resolvedId = tc.id || `tc-${Date.now()}-${Math.random()}`;
-              if (tc.status === "calling") {
+              const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
+              if (toolData.status === "calling") {
                 // Deduplicate: skip if this tool ID was already registered
                 if (prev.some((a) => a.id === resolvedId)) {
                   return prev;
@@ -2027,8 +2027,8 @@ export default function AgentComponent({
                   ...prev,
                   {
                     id: resolvedId,
-                    name: tc.name,
-                    args: tc.args,
+                    name: toolData.name,
+                    args: toolData.args,
                     status: "calling",
                     timestamp: Date.now(),
                   },
@@ -2053,17 +2053,17 @@ export default function AgentComponent({
                 // done or error — update existing entry
                 updated = prev.map((activity) => {
                   if (
-                    (tc.id && activity.id === tc.id) ||
-                    (!tc.id &&
-                      activity.name === tc.name &&
+                    (toolData.id && activity.id === toolData.id) ||
+                    (!toolData.id &&
+                      activity.name === toolData.name &&
                       activity.status === "calling")
                   ) {
                     return {
                       ...activity,
-                      status: tc.status,
-                      result: tc.result,
-                      ...(tc.args && Object.keys(tc.args).length > 0
-                        ? { args: tc.args }
+                      status: toolData.status,
+                      result: toolData.result,
+                      ...(toolData.args && Object.keys(toolData.args).length > 0
+                        ? { args: toolData.args }
                         : {}),
                     };
                   }
@@ -2097,12 +2097,12 @@ export default function AgentComponent({
             });
 
             // Auto-refresh tasks panel when any task tool completes (MCP path)
-            if (tc.status !== "calling" && tc.name?.startsWith("task_")) {
+            if (toolData.status !== "calling" && toolData.name?.startsWith("task_")) {
               setTasksRefreshKey((k) => k + 1);
             }
 
             // Auto-refresh memories panel when upsert_memory completes (MCP path)
-            if (tc.status !== "calling" && tc.name === "upsert_memory") {
+            if (toolData.status !== "calling" && toolData.name === "upsert_memory") {
               setLeftTab("memories");
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
@@ -2113,15 +2113,15 @@ export default function AgentComponent({
             }
 
             // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
-            if (tc.status !== "calling" && WORKSPACE_FS_TOOLS.has(tc.name)) {
+            if (toolData.status !== "calling" && WORKSPACE_FS_TOOLS.has(toolData.name)) {
               setWorkspaceTreeRefreshKey((k) => k + 1);
 
               // Live-update file viewer (MCP path)
-              const mutatedPath = tc.args?.path || tc.args?.source || null;
+              const mutatedPath = toolData.args?.path || toolData.args?.source || null;
               const openFiles = viewerOpenFilesRef.current;
               if (mutatedPath && openFiles.length > 0) {
                 // delete_file and move_file both remove the source path
-                if (tc.name === "delete_file" || tc.name === "move_file") {
+                if (toolData.name === "delete_file" || toolData.name === "move_file") {
                   const deleted = openFiles.find(
                     (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
@@ -3266,10 +3266,10 @@ export default function AgentComponent({
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
       } catch (error: unknown) {
-        const errMsg = error instanceof Error ? error.message : String(error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
         const is404 =
-          errMsg.includes("404") ||
-          errMsg.includes("not found");
+          errorMessage.includes("404") ||
+          errorMessage.includes("not found");
         if (is404) {
           console.warn(
             `Session ${conversation.id} not yet persisted (still generating?) — skipping switch`,

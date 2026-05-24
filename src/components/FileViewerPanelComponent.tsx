@@ -483,9 +483,9 @@ export default function FileViewerPanelComponent({
           }
         })
         .catch((error: { message?: string; toString?: () => string }) => {
-          const errMsg = error.message || error.toString?.() || "Failed to read file";
+          const errorMessage = error.message || error.toString?.() || "Failed to read file";
           const isNotFound =
-            /not found|no such file|ENOENT|does not exist/i.test(errMsg);
+            /not found|no such file|ENOENT|does not exist/i.test(errorMessage);
           if (isNotFound) {
             onFileNotFound?.(id, path);
           }
@@ -497,7 +497,7 @@ export default function FileViewerPanelComponent({
               totalLines: 0,
               language: null,
               languageLabel: null,
-              error: errMsg,
+              error: errorMessage,
               isBinary: false,
             },
           }));

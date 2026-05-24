@@ -506,20 +506,20 @@ export default function ModelPickerPopoverComponent({
       "URL Context": "urlContext",
       "Image Generation": "imageGeneration",
     };
-    const mod: Record<string, boolean> = {};
+    const modalityToggles: Record<string, boolean> = {};
     for (const t of currentModel.inputTypes || []) {
       const mapped = (INPUT_MAP as Record<string, string>)[t];
-      if (mapped) mod[mapped] = true;
+      if (mapped) modalityToggles[mapped] = true;
     }
     for (const t of currentModel.outputTypes || []) {
       const mapped = (OUTPUT_MAP as Record<string, string>)[t];
-      if (mapped) mod[mapped] = true;
+      if (mapped) modalityToggles[mapped] = true;
     }
     for (const t of currentModel.tools || []) {
       const mapped = (TOOL_MAP as Record<string, string>)[t];
-      if (mapped) mod[mapped] = true;
+      if (mapped) modalityToggles[mapped] = true;
     }
-    return Object.keys(mod).length > 0 ? mod : null;
+    return Object.keys(modalityToggles).length > 0 ? mod : null;
   }, [currentModel, multiSelect]);
 
   // Trigger icon

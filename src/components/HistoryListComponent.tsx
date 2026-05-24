@@ -133,9 +133,9 @@ export default function HistoryList({
   const allModalities = useMemo(() => {
     const set = new Set();
     for (const item of items) {
-      const mod = item.modalities || {};
+      const modalities = item.modalities || {};
       for (const { key } of MODALITY_FILTERS) {
-        if (mod[`${key}In`] || mod[`${key}Out`]) set.add(key);
+        if (modalities[`${key}In`] || modalities[`${key}Out`]) set.add(key);
       }
     }
     return MODALITY_FILTERS.filter(({ key }: FilterItem) => set.has(key));
@@ -145,9 +145,9 @@ export default function HistoryList({
   const allTools = useMemo(() => {
     const set = new Set();
     for (const item of items) {
-      const mod = item.modalities || {};
+      const modalities = item.modalities || {};
       for (const { key } of TOOL_FILTERS) {
-        if (mod[key]) set.add(key);
+        if (modalities[key]) set.add(key);
       }
     }
     return TOOL_FILTERS.filter(({ key }: FilterItem) => set.has(key));
@@ -181,15 +181,15 @@ export default function HistoryList({
         if (!matchesSearch) return false;
       }
       if (activeModalities.size > 0) {
-        const mod = item.modalities || {};
+        const modalities = item.modalities || {};
         const matches = [...activeModalities].some(
-          (key) => mod[`${key}In`] || mod[`${key}Out`],
+          (key) => modalities[`${key}In`] || modalities[`${key}Out`],
         );
         if (!matches) return false;
       }
       if (activeTools.size > 0) {
-        const mod = item.modalities || {};
-        const matches = [...activeTools].some((key) => mod[key]);
+        const modalities = item.modalities || {};
+        const matches = [...activeTools].some((key) => modalities[key]);
         if (!matches) return false;
       }
       if (activeProviders.size > 0) {

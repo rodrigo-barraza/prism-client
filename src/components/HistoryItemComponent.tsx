@@ -104,7 +104,7 @@ export default function HistoryItemComponent({
   children,
 }: HistoryItemProps) {
   const itemDate = item.updatedAt || item.createdAt;
-  const mod = item.modalities || {};
+  const modalities = item.modalities || {};
   const hasModalities = mod && Object.keys(mod).length > 0;
   const hasModel = (item.modelNames?.length ?? 0) > 0 || item.modelName;
 

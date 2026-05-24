@@ -797,8 +797,8 @@ function highlightExpected(text: string, expected: string, matchMode: string) {
   // For regex mode, find the first match in the original text
   if (matchMode === "regex") {
     try {
-      const re = new RegExp(`(${expected})`, "i");
-      const match = text.match(re);
+      const regex = new RegExp(`(${expected})`, "i");
+      const match = text.match(regex);
       if (!match || match.index === undefined) return text;
       const index = match.index;
       const len = match[0].length;
@@ -1070,11 +1070,11 @@ export const dashboardPassRateColumn = () => ({
   sortable: true,
   width: "100px",
   render: (r: TableRow) => {
-    const pct = Math.round((r.passRate as number) * 100);
+    const percentage = Math.round((r.passRate as number) * 100);
     const color =
-      pct >= 80
+      percentage >= 80
         ? "var(--success)"
-        : pct >= 50
+        : percentage >= 50
           ? "var(--warning)"
           : "var(--danger)";
     return (
@@ -1082,11 +1082,11 @@ export const dashboardPassRateColumn = () => ({
         <span className={styles.dashboardRateBar}>
           <span
             className={styles.dashboardRateBarFill}
-            style={{ width: `${pct}%`, background: color }}
+            style={{ width: `${percentage}%`, background: color }}
           />
         </span>
         <span className={styles.dashboardRateValue} style={{ color }}>
-          {pct}%
+          {percentage}%
         </span>
       </span>
     );
