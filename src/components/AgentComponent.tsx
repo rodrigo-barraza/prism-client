@@ -2846,25 +2846,42 @@ export default function AgentComponent({
 
         // Refresh conversation messages from database to sync the user's message
         // with the server-side injected system context, enabling Clean/Raw View toggles.
-        try {
-          const full = isNoAgent
-            ? await PrismService.getConversation(agentSessionId)
-            : await PrismService.getAgentSession(agentSessionId, agentProject!);
-          console.debug(
-            `[PostStream refresh] full?.messages?.length=${full?.messages?.length},`,
-            `sessionMatch=${agentSessionIdRef.current === genId}`,
-          );
-          if (full && full.messages && agentSessionIdRef.current === genId) {
-            const displayMessages = prepareDisplayMessages(full.messages);
+        //
+        // RACE GUARD: The `done` SSE event fires BEFORE appendMessages completes
+        // on the backend. An immediate fetch can return stale/incomplete data
+        // (e.g. 1.22 KB instead of 44 KB). We compare the fetched display count
+        // against the current streaming count; if fewer, retry after a delay.
+        const attemptPostStreamRefresh = async (attempt = 1) => {
+          try {
+            const full = isNoAgent
+              ? await PrismService.getConversation(agentSessionId)
+              : await PrismService.getAgentSession(agentSessionId, agentProject!);
             console.debug(
-              `[PostStream setMessages] raw=${full.messages.length} → display=${displayMessages.length}`,
-              displayMessages.length === 0 ? '⚠️ EMPTY — this clears the chat!' : '',
+              `[PostStream refresh] attempt=${attempt} full?.messages?.length=${full?.messages?.length},`,
+              `sessionMatch=${agentSessionIdRef.current === genId}`,
             );
-            setMessages(displayMessages);
+            if (full && full.messages && agentSessionIdRef.current === genId) {
+              const displayMessages = prepareDisplayMessages(full.messages);
+              const currentCount = messagesRef.current.length;
+              console.debug(
+                `[PostStream setMessages] attempt=${attempt} raw=${full.messages.length} → display=${displayMessages.length}, currentStreaming=${currentCount}`,
+                displayMessages.length === 0 ? '⚠️ EMPTY — this clears the chat!' : '',
+              );
+              // Guard: don't replace streaming messages with stale/incomplete DB data
+              if (displayMessages.length < currentCount && attempt < 3) {
+                console.debug(
+                  `[PostStream] ⚠️ Fetched fewer messages (${displayMessages.length}) than streaming (${currentCount}), retrying in 2s (attempt ${attempt})`,
+                );
+                await new Promise((r) => setTimeout(r, 2000));
+                return attemptPostStreamRefresh(attempt + 1);
+              }
+              setMessages(displayMessages);
+            }
+          } catch (e) {
+            console.error("Failed to refresh session messages after done:", e);
           }
-        } catch (e) {
-          console.error("Failed to refresh session messages after done:", e);
-        }
+        };
+        await attemptPostStreamRefresh();
       } catch (error: unknown) {
         console.error(`[handleSend] orchestration error:`, error);
         setMessages((prev) => [
