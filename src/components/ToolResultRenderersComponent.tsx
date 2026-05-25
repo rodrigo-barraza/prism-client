@@ -1437,7 +1437,7 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
   const hasError = !!parsed.error;
   const width = parsed.width || (args?.width ? Number(args.width) : 100);
   const height = parsed.height || 0;
-  const asciiText = parsed.ascii || "";
+  const embedUrl = parsed.asciiEmbedUrl || parsed.embedUrl || "";
 
   return (
     <div className={styles.rendererBlock}>
@@ -1452,10 +1452,12 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
         />
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
-      {!hasError && asciiText && (
-        <div className={styles.asciiArtContainer}>
-          <pre className={styles.asciiArtPre}>{asciiText}</pre>
-        </div>
+      {!hasError && embedUrl && (
+        <TurtleDrawEmbed
+          src={embedUrl}
+          title="ASCII Art"
+          fallbackHeight={520}
+        />
       )}
     </div>
   );
