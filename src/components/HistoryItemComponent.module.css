@@ -9,8 +9,10 @@
   border-left: 3px solid rgba(255, 255, 255, 0.08);
   transition:
     background 0.2s,
-    border-color 0.2s;
+    border-color 0.2s,
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  will-change: transform;
 
   &:nth-child(even):not(.active):not(:hover) {
     background: rgba(255, 255, 255, 0.02);
@@ -34,6 +36,7 @@
 .active {
   background: rgba(99, 102, 241, 0.1);
   border-left-color: var(--accent-color);
+  transform: translateX(4px);
 }
 
 .active .icon {
