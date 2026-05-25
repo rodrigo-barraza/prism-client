@@ -24,6 +24,11 @@
   &:hover .actions {
     opacity: 1;
   }
+
+  &:hover .actions button,
+  &:hover .actions [class*="hoverReveal"] {
+    opacity: 1 !important;
+  }
 }
 
 .active {

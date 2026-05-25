@@ -104,6 +104,8 @@ import {
   ButtonComponent,
   EmptyStateComponent,
   TabBarComponent,
+  ToastComponent,
+  useToast,
 } from "@rodrigo-barraza/components-library";
 import useToolToggles from "../hooks/useToolToggles";
 import useModelMemory from "../hooks/useModelMemory";
@@ -445,6 +447,23 @@ export default function AgentComponent({
   // When a loaded session references a workspace that isn't currently connected,
   // store the path so the UI can show "workspace not available" instead of looping errors.
   const [unavailableWorkspace, setUnavailableWorkspace] = useState<string | null>(null);
+
+  // -- Notifications & Toasts ------------------------------------
+  const { toasts, addToast, removeToast } = useToast();
+  const pendingDeletionsRef = useRef<Map<string, {
+    timeoutId: NodeJS.Timeout;
+    session: any;
+    wasActive: boolean;
+  }>>(new Map());
+
+  // Clean up deletion timeouts on unmount
+  useEffect(() => {
+    return () => {
+      pendingDeletionsRef.current.forEach((pending) => {
+        clearTimeout(pending.timeoutId);
+      });
+    };
+  }, []);
 
   // -- File viewer pane state (VS Code-style read-only viewer) --
   const [viewerOpenFiles, setViewerOpenFiles] = useState<ViewerOpenFile[]>([]);
@@ -3326,24 +3345,115 @@ export default function AgentComponent({
     ],
   );
 
+  const handleUndoDelete = useCallback(
+    (convId: string, toastId: number) => {
+      const pending = pendingDeletionsRef.current.get(convId);
+      if (pending) {
+        clearTimeout(pending.timeoutId);
+        pendingDeletionsRef.current.delete(convId);
+
+        // Restore the session to sessions state
+        setSessions((prev) => {
+          if (prev.some((s) => s.id === convId)) return prev;
+          const updated = [...prev, pending.session];
+          // Sort by updatedAt or createdAt descending
+          return updated.sort((a, b) => {
+            const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+            const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+            return dateB - dateA;
+          });
+        });
+
+        if (pending.wasActive) {
+          handleSelectSession(pending.session);
+        }
+
+        // Dismiss the toast
+        removeToast(toastId);
+      }
+    },
+    [removeToast, handleSelectSession],
+  );
+
   const handleDeleteSession = useCallback(
     async (convId: string) => {
       try {
-        // Direct Chat sessions live in the conversations collection
-        if (isNoAgent) {
-          await PrismService.deleteConversation(convId);
-        } else {
-          await PrismService.deleteAgentSession(convId, agentProject!);
-        }
+        const session = sessions.find((s) => s.id === convId);
+        if (!session) return;
+
+        const wasActive = activeId === convId;
+
+        // Optimistically remove from state
         setSessions((prev) => prev.filter((c) => c.id !== convId));
-        if (activeId === convId) {
+        if (wasActive) {
           handleNewChat();
         }
+
+        // Defer actual API deletion by 10 seconds (10000ms)
+        const timeoutId = setTimeout(async () => {
+          pendingDeletionsRef.current.delete(convId);
+          try {
+            if (isNoAgent) {
+              await PrismService.deleteConversation(convId);
+            } else {
+              await PrismService.deleteAgentSession(convId, agentProject!);
+            }
+          } catch (error) {
+            console.error("Failed to delete session:", error);
+          }
+        }, 10000);
+
+        // Store in pending deletions
+        pendingDeletionsRef.current.set(convId, {
+          timeoutId,
+          session,
+          wasActive,
+        });
+
+        // Add toast notification
+        const toastId = addToast(
+          (
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
+              <span>Conversation deleted</span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleUndoDelete(convId, toastId);
+                }}
+                style={{
+                  background: "rgba(99, 102, 241, 0.15)",
+                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                  color: "#818cf8",
+                  padding: "3px 8px",
+                  borderRadius: "4px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  marginLeft: "auto",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(99, 102, 241, 0.25)";
+                  e.currentTarget.style.borderColor = "rgba(99, 102, 241, 0.4)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(99, 102, 241, 0.15)";
+                  e.currentTarget.style.borderColor = "rgba(99, 102, 241, 0.3)";
+                }}
+              >
+                Undo
+              </button>
+            </div>
+          ) as any,
+          "info",
+          10000
+        );
       } catch (error: unknown) {
         console.error("Failed to delete session:", error);
       }
     },
-    [activeId, handleNewChat, agentProject, isNoAgent],
+    [activeId, handleNewChat, agentProject, isNoAgent, sessions, addToast, handleUndoDelete],
   );
 
   // -- Open file in the FileViewerPanel (shared by workspace tree & mention badges) --
@@ -4391,7 +4501,8 @@ export default function AgentComponent({
 
   // -- Layout ---------------------------------------------------
   return (
-    <ThreePanelLayout
+    <>
+      <ThreePanelLayout
       navSidebar={
         <NavigationSidebarComponent
           mode="user"
@@ -4526,5 +4637,7 @@ export default function AgentComponent({
     >
       {chatContent}
     </ThreePanelLayout>
+      <ToastComponent toasts={toasts} onRemove={removeToast} />
+    </>
   );
 }

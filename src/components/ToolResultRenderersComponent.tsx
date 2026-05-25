@@ -1452,12 +1452,20 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
         />
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
-      {!hasError && embedUrl && (
-        <TurtleDrawEmbed
-          src={embedUrl}
-          title="ASCII Art"
-          fallbackHeight={520}
-        />
+      {!hasError && parsed.ascii ? (
+        <div className={styles.asciiArtContainer}>
+          <pre className={styles.asciiArtPre}>
+            <code>{parsed.ascii}</code>
+          </pre>
+        </div>
+      ) : (
+        !hasError && embedUrl && (
+          <TurtleDrawEmbed
+            src={embedUrl}
+            title="ASCII Art"
+            fallbackHeight={520}
+          />
+        )
       )}
     </div>
   );
