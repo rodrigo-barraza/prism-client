@@ -89,6 +89,32 @@ function parseTaskNotification(content: string | undefined | null) {
   };
 }
 
+/**
+ * Splits a raw message content string into a system context prefix (if any) and the clean user message.
+ */
+function splitRawContent(raw: string | undefined | null): { prefix: string; rest: string } {
+  if (!raw) return { prefix: "", rest: "" };
+  if (raw.startsWith("[System Context]")) {
+    const splitIdx = raw.indexOf("\n\n[User Message]\n");
+    if (splitIdx !== -1) {
+      const length = splitIdx + "\n\n[User Message]\n".length;
+      return { prefix: raw.substring(0, length), rest: raw.substring(length) };
+    }
+    const altSplit = raw.indexOf("[User Message]\n");
+    if (altSplit !== -1) {
+      const length = altSplit + "[User Message]\n".length;
+      return { prefix: raw.substring(0, length), rest: raw.substring(length) };
+    }
+  } else if (raw.startsWith("[System Context - Local Time:")) {
+    const index = raw.indexOf("]\n\n");
+    if (index !== -1) {
+      const length = index + 3;
+      return { prefix: raw.substring(0, length), rest: raw.substring(length) };
+    }
+  }
+  return { prefix: "", rest: raw };
+}
+
 /* -- Render @path mentions as inline badges -------------------
  * When a user sends a message with file/dir mentions, the
  * contentEditable serializer stores them as `@path/to/file`
@@ -389,6 +415,7 @@ interface EditableMessageProps {
   onCancelEdit: () => void;
   knownPaths?: Set<string> | null;
   onMentionFileOpen?: (path: string) => void;
+  showRaw?: boolean;
 }
 
 function EditableMessage({
@@ -400,6 +427,7 @@ function EditableMessage({
   onCancelEdit,
   knownPaths,
   onMentionFileOpen,
+  showRaw = false,
 }: EditableMessageProps) {
   const [editValue, setEditValue] = useState(content);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -528,6 +556,17 @@ function EditableMessage({
 
   // Non-editing: user messages show plain text, assistant uses caller's rendering
   if (!isAssistant) {
+    if (showRaw) {
+      const { prefix, rest } = splitRawContent(content);
+      if (prefix) {
+        return (
+          <div className={styles.text}>
+            <div className={styles.rawPrefix}>{prefix}</div>
+            {renderContentWithMentions(rest, knownPaths, onMentionFileOpen)}
+          </div>
+        );
+      }
+    }
     return (
       <div className={styles.text}>
         {renderContentWithMentions(content, knownPaths, onMentionFileOpen)}
@@ -1637,6 +1676,7 @@ export default function MessageList({
                               onCancelEdit={() => setEditingIndex(null)}
                               knownPaths={knownPathsSet}
                               onMentionFileOpen={onMentionFileOpen}
+                              showRaw={showRaw}
                             />
                           ) : message.role === "assistant" &&
                             !readOnly &&
@@ -1651,6 +1691,35 @@ export default function MessageList({
                               knownPaths={knownPathsSet}
                               onMentionFileOpen={onMentionFileOpen}
                             />
+                          ) : message.role === "user" && showRaw ? (
+                            (() => {
+                              const { prefix, rest } = splitRawContent(message.content);
+                              if (prefix) {
+                                return (
+                                  <div className={styles.text}>
+                                    <div className={styles.rawPrefix}>{prefix}</div>
+                                    <MarkdownContent
+                                      content={rest}
+                                      className={
+                                        isStreaming ? styles.streamingText : ""
+                                      }
+                                    >
+                                      <StreamingCursorComponent active={isStreaming} />
+                                    </MarkdownContent>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <MarkdownContent
+                                  content={message.content}
+                                  className={
+                                    isStreaming ? styles.streamingText : ""
+                                  }
+                                >
+                                  <StreamingCursorComponent active={isStreaming} />
+                                </MarkdownContent>
+                              );
+                            })()
                           ) : message.content ? (
                             <MarkdownContent
                               content={message.content}

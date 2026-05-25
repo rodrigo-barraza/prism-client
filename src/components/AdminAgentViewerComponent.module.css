@@ -7,7 +7,7 @@
   padding: 0 16px;
   height: 44px;
   min-height: 44px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
   background: var(--bg-base);
   flex-shrink: 0;
 }
@@ -60,7 +60,7 @@
 .leftPanel {
   width: 300px;
   min-width: 300px;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--calculated-border-color);
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-surface);
@@ -94,7 +94,7 @@
 .rightPanel {
   width: 320px;
   min-width: 320px;
-  border-left: 1px solid var(--border-color);
+  border-left: 1px solid var(--calculated-border-color);
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-surface);
@@ -122,7 +122,7 @@
   align-items: center;
   gap: 6px;
   justify-content: center;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--calculated-border-color);
   background: var(--bg-surface);
   flex-shrink: 0;
 }

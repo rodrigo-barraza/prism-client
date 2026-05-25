@@ -4595,7 +4595,7 @@ export default function AgentComponent({
           <ModelPickerPopoverComponent
             config={filteredConfig}
             settings={{ provider: settings.provider, model: settings.model }}
-            disabled={isGenerating || isSessionLocked}
+            disabled={isGenerating}
             onSelectModel={(provider: string, modelName: string) => {
               const modelDef = (
                 filteredConfig?.textToText?.models?.[provider] || []
@@ -4607,6 +4607,22 @@ export default function AgentComponent({
                 model: modelName,
                 temperature: temp,
               }));
+              if (activeId) {
+                PrismService.patchConversation(
+                  activeId,
+                  {
+                    settings: {
+                      ...settings,
+                      provider,
+                      model: modelName,
+                      temperature: temp,
+                    },
+                  },
+                  agentProject || undefined,
+                ).catch((err) => {
+                  console.error("Failed to patch conversation settings:", err);
+                });
+              }
               saveModel(provider, modelName);
               window.dispatchEvent(
                 new CustomEvent("model:change", {

@@ -25,7 +25,7 @@
 }
 
 .themeItem + .themeItem {
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
 }
 
 .themeItemActive {
@@ -147,7 +147,7 @@
 
 .newThemeRow {
   padding: 12px 24px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
 }
 
 .newThemeButtonWrapper {
@@ -159,7 +159,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  border: 1px dashed var(--border-medium);
+  border: 1px dashed var(--calculated-border-medium);
   border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
@@ -192,7 +192,7 @@
   left: 0;
   min-width: 180px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: 8px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2), 0 -1px 4px rgba(0, 0, 0, 0.1);
   z-index: 100;
@@ -299,7 +299,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
 .editorTitle {
@@ -332,7 +332,7 @@
 .editorCancelBtn {
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
 }
 
 .editorCancelBtn:hover {
@@ -356,7 +356,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px 24px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
 .editorLabel {
@@ -371,7 +371,7 @@
   flex: 1;
   font-size: 0.8125rem;
   padding: 7px 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   background: var(--bg-base);
   color: var(--text-primary);
@@ -391,7 +391,7 @@
   margin: 12px 24px;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
 }
 
 .previewLabel {
@@ -531,11 +531,11 @@
 /* ── Token Groups ──────────────────────────────────────────────────── */
 
 .tokenGroups {
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
 }
 
 .tokenGroup {
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
 .tokenGroup:last-child {
@@ -674,7 +674,7 @@
   font-size: 0.6875rem;
   font-family: var(--font-mono, monospace);
   padding: 5px 8px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   border-radius: 4px;
   background: var(--bg-base);
   color: var(--text-primary);
@@ -695,7 +695,7 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 24px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
 }
 
 .applyPreviewBtn {

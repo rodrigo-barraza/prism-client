@@ -18,16 +18,7 @@
 }
 
 .searchField {
-  /* Override the SearchInputComponent's default input height for compact panel */
-  & input {
-    height: 30px;
-    font-size: var(--font-size-xs);
-  }
-
-  & svg {
-    width: 12px;
-    height: 12px;
-  }
+  /* No overrides — render SearchInputComponent at its default size */
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
@@ -49,7 +40,7 @@
   font-weight: 600;
   color: var(--text-muted);
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -133,7 +124,7 @@
   gap: 6px;
   padding: 12px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   transition: all 0.2s ease;
 
@@ -141,7 +132,7 @@
     border-color: color-mix(
       in srgb,
       var(--color-warning) 30%,
-      var(--border-color)
+      var(--calculated-border-color)
     );
     box-shadow: 0 2px 8px
       color-mix(in srgb, var(--color-warning) 6%, transparent);
@@ -283,7 +274,7 @@
   background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
   border-radius: 6px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
-  border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
 }
 
 /* ── Loading state ──────────────────────────────────────────── */
@@ -428,7 +419,7 @@
   gap: 6px;
   padding: 8px;
   background: color-mix(in srgb, var(--bg-elevated) 40%, transparent);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   animation: toastSlideIn 0.2s ease-out;
 }
@@ -460,7 +451,7 @@
   gap: 3px;
   padding: 6px 8px;
   background: var(--bg-surface);
-  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   border-radius: 5px;
   transition: border-color 0.15s ease;
 
@@ -468,7 +459,7 @@
     border-color: color-mix(
       in srgb,
       var(--color-violet) 30%,
-      var(--border-color)
+      var(--calculated-border-color)
     );
   }
 }
@@ -532,4 +523,99 @@
     align-items: center;
     gap: 3px;
   }
+}
+
+/* ── Memory Type Filter Pills ──────────────────────────────── */
+
+.typeFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--calculated-border-color);
+  flex-shrink: 0;
+}
+
+.typePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+  border: 1px solid var(--calculated-border-color);
+  color: var(--text-muted);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: capitalize;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.typePillActiveAll {
+  background: color-mix(in srgb, var(--color-violet) 12%, transparent) !important;
+  color: var(--color-violet) !important;
+  border-color: color-mix(in srgb, var(--color-violet) 35%, transparent) !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-violet) 10%, transparent);
+}
+
+.typePillActiveUser {
+  background: color-mix(in srgb, var(--color-indigo) 12%, transparent) !important;
+  color: var(--color-indigo) !important;
+  border-color: color-mix(in srgb, var(--color-indigo) 35%, transparent) !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-indigo) 10%, transparent);
+}
+
+.typePillActiveFeedback {
+  background: color-mix(in srgb, var(--color-emerald) 12%, transparent) !important;
+  color: var(--color-emerald) !important;
+  border-color: color-mix(in srgb, var(--color-emerald) 35%, transparent) !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-emerald) 10%, transparent);
+}
+
+.typePillActiveProject {
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent) !important;
+  color: var(--color-warning) !important;
+  border-color: color-mix(in srgb, var(--color-warning) 35%, transparent) !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+.typePillActiveReference {
+  background: color-mix(in srgb, var(--color-cyan) 12%, transparent) !important;
+  color: var(--color-cyan) !important;
+  border-color: color-mix(in srgb, var(--color-cyan) 35%, transparent) !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-cyan) 10%, transparent);
+}
+
+/* ── Infinite Scroll Sentinel & Footer ─────────────────────── */
+
+.sentinel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 0;
+}
+
+.endOfList {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  padding: 16px 0;
+  text-align: center;
+  gap: 6px;
+  opacity: 0.6;
 }

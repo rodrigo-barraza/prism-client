@@ -42,7 +42,7 @@ import { generateUUID } from "../utils/utilities";
 
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
-import CustomThemeService from "@/services/CustomThemeService";
+import { CustomThemeService } from "@rodrigo-barraza/components-library";
 
 function RainbowCanvas({ turbo = false, greyscale = false }: { turbo?: boolean; greyscale?: boolean; }) {
   return (

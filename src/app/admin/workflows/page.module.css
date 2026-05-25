@@ -29,7 +29,7 @@
   transition: all var(--transition-fast);
 
   &:hover {
-    background: var(--accent-primary-subtle);
+    background: var(--calculated-accent-primary-subtle);
     color: var(--accent-primary);
   }
 }

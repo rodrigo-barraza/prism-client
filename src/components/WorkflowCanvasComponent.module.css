@@ -134,7 +134,7 @@
   background: var(--bg-surface);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   z-index: 3;
   pointer-events: none;
@@ -223,7 +223,7 @@
   background: var(--bg-surface);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -236,7 +236,7 @@
 }
 
 .toolbarBtnActive {
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
   border-color: var(--accent-primary);
 }

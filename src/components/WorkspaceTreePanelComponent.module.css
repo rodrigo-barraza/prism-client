@@ -22,7 +22,7 @@
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
   font-size: var(--font-size-xs);
   font-weight: 600;
   text-transform: uppercase;
@@ -92,7 +92,7 @@
   right: 0;
   z-index: 20;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-top: none;
   border-radius: 0 0 6px 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -165,7 +165,7 @@
   flex: 1 1 auto;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
+  scrollbar-color: var(--calculated-border-color) transparent;
 }
 
 .treeRoot {

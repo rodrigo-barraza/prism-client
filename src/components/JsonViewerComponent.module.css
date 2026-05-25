@@ -1,7 +1,7 @@
 /* ── JSON Viewer ── */
 .viewer {
   background: var(--bg-base);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 12px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
   background: var(--bg-elevated);
   border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
 }
@@ -37,7 +37,7 @@
   font-weight: 500;
   color: var(--text-muted);
   background: none;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   cursor: pointer;
   transition: all 0.15s;
   font-family: var(--font-sans, inherit);
@@ -68,13 +68,13 @@
   transition: background 0.1s;
 
   &:hover {
-    background: var(--accent-primary-glow);
+    background: var(--calculated-accent-primary-glow);
   }
 }
 
 .children {
   padding-left: 18px;
-  border-left: 1px solid var(--border-subtle);
+  border-left: 1px solid var(--calculated-border-subtle);
   margin-left: 6px;
 }
 

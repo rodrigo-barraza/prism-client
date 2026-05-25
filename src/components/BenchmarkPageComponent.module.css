@@ -19,7 +19,7 @@
   gap: 20px;
   padding: 24px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   animation: fadeIn 0.25s ease-out;
 }
@@ -29,7 +29,7 @@
   align-items: flex-start;
   gap: 14px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 }
 
 .createFormIcon {
@@ -75,7 +75,7 @@
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--accent-primary);
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   padding: 1px 5px;
   border-radius: 2px;
   max-width: 200px;
@@ -90,7 +90,7 @@
   border-radius: 2px;
   background: var(--bg-elevated);
   color: var(--text-tertiary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   line-height: 1.6;
 }
 
@@ -179,7 +179,7 @@
 .progressSpinner {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border-color);
+  border: 2px solid var(--calculated-border-color);
   border-top-color: var(--accent-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

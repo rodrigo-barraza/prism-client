@@ -9,7 +9,7 @@
   padding: 8px 10px;
   border-radius: var(--border-radius-sm);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
@@ -55,7 +55,7 @@
   font-family: var(--font-mono);
   color: var(--text-muted);
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   padding: 1px 5px;
   border-radius: 3px;
   flex-shrink: 0;
@@ -79,7 +79,7 @@
   opacity: 0.4;
 
   &:hover {
-    background: var(--color-danger-subtle);
+    background: var(--calculated-color-danger-subtle);
     color: var(--color-danger);
     opacity: 1;
   }

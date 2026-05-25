@@ -15,7 +15,7 @@
   font-size: var(--font-size-xs);
   padding: 2px 6px;
   border-radius: 2px;
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
   font-weight: 500;
 }
@@ -96,7 +96,7 @@
 /* ── List View (Table) ── */
 .listWrapper {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   overflow: hidden;
 }

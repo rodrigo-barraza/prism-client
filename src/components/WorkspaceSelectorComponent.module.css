@@ -13,7 +13,7 @@
   padding: 3px 8px;
   border-radius: var(--border-radius-sm);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -26,11 +26,11 @@
 }
 
 .button:hover {
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   border-color: color-mix(
     in srgb,
     var(--accent-primary) 30%,
-    var(--border-color)
+    var(--calculated-border-color)
   );
 }
 
@@ -96,7 +96,7 @@
   min-width: 220px;
   max-width: 360px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   z-index: 100;
@@ -139,13 +139,13 @@
 }
 
 .menuItem:hover {
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   color: var(--text-primary);
 }
 
 .menuItemActive {
   color: var(--accent-primary);
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
 }
 
 .menuItemIcon {
@@ -171,7 +171,7 @@
 
 .menuDivider {
   height: 1px;
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   margin: 4px 0;
 }
 
@@ -208,7 +208,7 @@
   font-size: 11.5px;
   font-family: var(--font-mono, monospace);
   padding: 5px 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-base);
   color: var(--text-primary);

@@ -12,7 +12,7 @@
 
   &.resolved {
     opacity: 0.6;
-    border-color: var(--border-subtle);
+    border-color: var(--calculated-border-subtle);
     background: var(--bg-surface);
   }
 }
@@ -55,7 +55,7 @@
   padding: 8px 10px;
   background: var(--bg-elevated);
   border-radius: 6px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
 }
 
 .contextPre {
@@ -72,7 +72,7 @@
 
 .questionBlock {
   padding: 10px 0;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
 
   &:first-of-type {
     border-top: none;
@@ -231,7 +231,7 @@
   flex: 1;
   padding: 7px 10px;
   border-radius: 6px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   background: var(--bg-elevated);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
@@ -278,7 +278,7 @@
   justify-content: center;
   padding: 7px 8px;
   border-radius: 6px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
@@ -305,7 +305,7 @@
   width: 100%;
   padding: 7px 10px;
   border-radius: 6px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   background: var(--bg-elevated);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
@@ -348,7 +348,7 @@
 
 .batchSubmit {
   padding-top: 10px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
   margin-top: 4px;
 }
 
@@ -359,7 +359,7 @@
   width: 100%;
   padding: 9px 14px;
   border-radius: 6px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   background: var(--bg-elevated);
   color: var(--text-muted);
   font-size: var(--font-size-sm);

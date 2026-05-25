@@ -42,7 +42,7 @@
 }
 
 .chatInputBtn.submit:hover:not(:disabled) {
-  background: var(--accent-primary-hover);
+  background: var(--calculated-accent-primary-hover);
   transform: translateY(-1px);
 }
 

@@ -34,7 +34,7 @@
   max-width: 90vw;
   height: 100%;
   background: var(--bg-base);
-  border-left: 1px solid var(--border-color);
+  border-left: 1px solid var(--calculated-border-color);
   display: flex;
   flex-direction: column;
   z-index: 1;
@@ -58,7 +58,7 @@
   align-items: center;
   gap: 10px;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
   flex-shrink: 0;
   background: var(--bg-surface);
   backdrop-filter: blur(12px);
@@ -100,7 +100,7 @@
   flex-shrink: 0;
   border-radius: 6px;
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -127,7 +127,7 @@
   display: flex;
   gap: 8px;
   padding: 14px 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
   background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -202,7 +202,7 @@
 
 .divider {
   height: 1px;
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   margin: 16px 20px 0;
 }
 
@@ -225,7 +225,7 @@
   font-weight: 600;
   background: var(--bg-elevated);
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
 }
 
 .modalityArrow {
@@ -253,7 +253,7 @@
   font-weight: 600;
   background: var(--bg-elevated);
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   transition: all 0.15s ease;
 
   & svg {
@@ -268,7 +268,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -285,7 +285,7 @@
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   padding: 7px 12px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 }
 
 .pricingValue {
@@ -294,7 +294,7 @@
   font-family: var(--font-mono);
   color: var(--text-primary);
   padding: 7px 12px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
   text-align: right;
 }
 
@@ -319,7 +319,7 @@
   padding: 8px 6px;
   border-radius: 6px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
 }
 
 .arenaScore {
@@ -409,7 +409,7 @@
   padding: 8px 10px;
   border-radius: 6px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
 }
 
 .mediaLimitType {
@@ -443,7 +443,7 @@
   padding: 12px 8px 10px;
   border-radius: 8px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   transition:
     border-color 0.2s ease,
     background 0.2s ease;
@@ -459,7 +459,7 @@
   border-color: color-mix(
     in srgb,
     var(--accent-primary) 20%,
-    var(--border-color)
+    var(--calculated-border-color)
   );
 }
 

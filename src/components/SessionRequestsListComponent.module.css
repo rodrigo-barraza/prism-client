@@ -9,7 +9,7 @@
 }
 
 .card {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   background: var(--bg-surface);
@@ -25,7 +25,7 @@
   letter-spacing: 0.5px;
   color: var(--text-secondary);
   padding: 6px 10px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 }
 
 .headerCount {
@@ -53,7 +53,7 @@
   gap: 6px;
   padding: 4px 10px;
   border-bottom: 1px solid
-    color-mix(in srgb, var(--border-color) 50%, transparent);
+    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
   font-size: 0.625rem;
   transition: background 0.12s;
 
@@ -62,7 +62,7 @@
   }
 
   &:hover {
-    background: var(--accent-primary-glow);
+    background: var(--calculated-accent-primary-glow);
   }
 }
 

@@ -205,7 +205,7 @@
   border-bottom-color: color-mix(
     in srgb,
     var(--accent-primary) 15%,
-    var(--border-color)
+    var(--calculated-border-color)
   ) !important;
 }
 

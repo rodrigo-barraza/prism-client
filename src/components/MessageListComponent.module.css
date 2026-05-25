@@ -47,12 +47,12 @@
 /* ── Role node avatar variants ── */
 .userNode .avatar {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
 }
 
 .aiNode .avatar {
-  background: var(--accent-primary-glow);
+  background: var(--calculated-accent-primary-glow);
   color: var(--accent-primary);
   border: 1px solid var(--accent-primary);
 }
@@ -76,7 +76,7 @@
 }
 
 .systemNode .avatar {
-  background: var(--color-warning-subtle, rgba(245, 158, 11, 0.08));
+  background: var(--calculated-color-warning-subtle, rgba(245, 158, 11, 0.08));
   color: var(--color-warning, var(--color-warning));
   border: 1px solid var(--color-warning, var(--color-warning));
 }
@@ -163,7 +163,7 @@
 .thinkingBlock {
   position: relative;
   margin-bottom: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
 }
@@ -204,7 +204,7 @@
   overflow-y: auto;
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--calculated-border-color);
 }
 
 /* ── Active thinking streaming state ── */
@@ -288,7 +288,7 @@
 .messageImage {
   width: 100%;
   border-radius: 2px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   object-fit: cover;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -304,7 +304,7 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: 2px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: var(--bg-elevated);
 }
 
@@ -323,7 +323,7 @@
   width: 100%;
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: var(--bg-elevated);
 }
 
@@ -339,7 +339,7 @@
 .audioCard {
   width: 100%;
   border-radius: 6px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: var(--bg-elevated);
   overflow: hidden;
   padding: 4px;
@@ -349,7 +349,7 @@
 .pdfViewer {
   width: 100%;
   border-radius: 6px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: var(--bg-elevated);
   overflow: hidden;
 }
@@ -359,7 +359,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 }
 
 .pdfHeaderIcon {
@@ -384,7 +384,7 @@
   transition: all 0.15s;
 
   &:hover {
-    background: var(--accent-primary-glow);
+    background: var(--calculated-accent-primary-glow);
   }
 }
 
@@ -394,7 +394,7 @@
   border: none;
   display: block;
   background: var(
-    --text-inverse,
+    --calculated-text-inverse,
     #fff
   ); /* PDF renderer needs light background */
 }
@@ -467,7 +467,7 @@
 
   & th,
   & td {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--calculated-border-color);
     padding: 8px 12px;
     text-align: left;
   }
@@ -479,7 +479,7 @@
 
   & hr {
     border: none;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--calculated-border-color);
     margin: 16px 0;
   }
 }
@@ -517,7 +517,7 @@
 .modelChangeLine {
   flex: 1;
   height: 1px;
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   opacity: 0.5;
 }
 
@@ -680,12 +680,12 @@
 
 /* ── Grouped deleted items (shown when expanded) ── */
 .deletedGroupItem {
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--calculated-border-color) 40%, transparent);
   padding: 4px 0;
 
   &:last-child {
     border-bottom: 1px solid
-      color-mix(in srgb, var(--border-color) 40%, transparent);
+      color-mix(in srgb, var(--calculated-border-color) 40%, transparent);
   }
 }
 
@@ -710,7 +710,7 @@
     color-mix(
       in srgb,
       var(--color-danger, var(--color-danger)) 35%,
-      var(--border-color)
+      var(--calculated-border-color)
     );
   background: color-mix(
     in srgb,
@@ -765,7 +765,7 @@
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   border: 1px solid
-    color-mix(in srgb, var(--accent-primary) 25%, var(--border-color));
+    color-mix(in srgb, var(--accent-primary) 25%, var(--calculated-border-color));
   border-top: none;
   border-left: 3px solid var(--accent-primary);
   border-radius: 0 0 6px 0;
@@ -818,7 +818,7 @@
   align-items: center;
   justify-content: center;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-secondary);
 }
 
@@ -866,14 +866,35 @@
 }
 
 @keyframes stickySlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-100%);
-  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
+/* ── Raw Prefix (greyed out system context headers) ── */
+.rawPrefix {
+  opacity: 0.45;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-xs, 11px);
+  display: block;
+  margin-bottom: 12px;
+  background: color-mix(in srgb, var(--bg-elevated) 40%, var(--bg-base));
+  padding: 8px 12px;
+  border-left: 2px solid var(--calculated-border-color);
+  border-radius: 0 4px 4px 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  transition: opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    opacity: 0.75;
+    border-color: var(--accent-primary);
+    background: var(--bg-elevated);
+  }
+}
+
 
 

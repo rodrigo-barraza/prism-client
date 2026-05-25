@@ -82,7 +82,7 @@
   padding: 8px 10px;
   border-radius: 6px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
@@ -116,7 +116,7 @@
   padding: 6px 10px;
   border-radius: 6px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   line-height: 1.55;
@@ -294,7 +294,7 @@
   padding: 4px 8px;
   border-radius: 4px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
 }
 
 .searchLink {
@@ -331,7 +331,7 @@
   margin-top: 4px;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: var(--bg-base);
   display: flex;
   flex-direction: column;
@@ -566,7 +566,7 @@
   margin-top: 4px;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: var(--bg-base);
   max-width: 100%;
 }
@@ -591,7 +591,7 @@
   margin-top: 6px;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: var(--bg-base);
   width: 75vmin;
   height: 75vmin;
@@ -633,7 +633,7 @@
   margin-top: 6px;
   border-radius: 8px;
   overflow: auto;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: #0c0c0c;
   max-width: 100%;
   max-height: 520px;
@@ -693,7 +693,7 @@
   padding: 6px 8px;
   border-radius: 6px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   max-height: 300px;
   overflow-y: auto;
 }
@@ -740,7 +740,7 @@
   padding: 4px 6px;
   border-radius: 4px;
   background: var(--bg-elevated);
-  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   max-height: 180px;
   overflow-y: auto;
 }
@@ -775,7 +775,7 @@
   padding: 6px 8px;
   border-radius: 6px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   max-height: 300px;
   overflow-y: auto;
 }
@@ -822,7 +822,7 @@
   padding: 4px 6px;
   border-radius: 4px;
   background: var(--bg-elevated);
-  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   max-height: 180px;
   overflow-y: auto;
 }
@@ -966,7 +966,7 @@
   padding: 24px;
   border-radius: 12px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(12px);
   overflow: hidden;
@@ -1118,7 +1118,7 @@
   padding: 12px;
   border-radius: 10px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
   position: relative;

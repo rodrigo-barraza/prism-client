@@ -26,8 +26,8 @@
   padding: 0 12px;
   font-size: var(--font-size-base);
   color: var(--text-primary);
-  background: var(--select-bg);
-  border: 1px solid var(--border-color);
+  background: var(--calculated-select-bg);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition:
@@ -71,14 +71,14 @@
   font-size: 0.625rem;
   font-weight: 700;
   color: var(--accent-primary);
-  background: var(--accent-primary-glow);
+  background: var(--calculated-accent-primary-glow);
   border-radius: 8px;
   line-height: 1;
 }
 
 .dropdownTriggerOpen {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px var(--accent-primary-glow);
+  box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
 }
 
 .chevron {
@@ -103,9 +103,9 @@
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md, 6px);
-  box-shadow: var(--shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.25));
+  box-shadow: var(--calculated-shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.25));
   padding: 4px 0;
   animation: filterDropdownSlideIn 0.15s ease-out;
 }
@@ -126,7 +126,7 @@
 }
 
 .menuGroup + .menuGroup {
-  border-top: 1px solid var(--border-subtle, var(--border-color));
+  border-top: 1px solid var(--calculated-border-subtle, var(--calculated-border-color));
 }
 
 .menuGroupLabel {
@@ -156,17 +156,17 @@
 }
 
 .menuItem:hover {
-  background: var(--accent-primary-subtle, var(--bg-elevated));
+  background: var(--calculated-accent-primary-subtle, var(--bg-elevated));
   color: var(--text-primary);
 }
 
 .menuItemActive {
   color: var(--text-primary);
-  background: var(--accent-primary-subtle, var(--accent-primary-glow));
+  background: var(--calculated-accent-primary-subtle, var(--calculated-accent-primary-glow));
 }
 
 .menuItemActive:hover {
-  background: var(--accent-primary-subtle, var(--accent-primary-glow));
+  background: var(--calculated-accent-primary-subtle, var(--calculated-accent-primary-glow));
 }
 
 .menuCheck {
@@ -186,7 +186,7 @@
 }
 
 .dropdownMenu::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   border-radius: 2px;
 }
 
@@ -209,7 +209,7 @@
   letter-spacing: 0.01em;
   color: var(--badge-color, var(--text-secondary));
   background: var(--badge-bg, var(--bg-elevated));
-  border: 1px solid var(--badge-border, var(--border-color));
+  border: 1px solid var(--badge-border, var(--calculated-border-color));
   border-radius: var(--border-radius-sm, 4px);
   white-space: nowrap;
   user-select: none;

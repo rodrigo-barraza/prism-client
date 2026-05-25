@@ -3,7 +3,7 @@
   font-weight: 500;
   padding: 2px 7px;
   border-radius: var(--border-radius-sm);
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -12,7 +12,7 @@
 /* ── Estimated Memory Bar ── */
 .memorySection {
   background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   padding: 14px 16px;
 }
@@ -139,7 +139,7 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   background: rgba(0, 0, 0, 0.35);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
   border-radius: var(--border-radius-sm);
   padding: 0 8px;
@@ -148,7 +148,7 @@
   &:focus {
     border-color: var(--accent-primary);
     outline: none;
-    box-shadow: 0 0 0 2px var(--accent-primary-glow);
+    box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
   }
 }
 
@@ -178,7 +178,7 @@
 /* ── Divider ── */
 .divider {
   height: 1px;
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   margin: 0;
 }
 
@@ -188,7 +188,7 @@
   font-weight: 500;
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all 0.15s;

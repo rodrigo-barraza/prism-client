@@ -117,16 +117,39 @@ export default function MemoriesPanel({
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
+  // -- Pagination & Infinite Scroll State ----------------------
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [selectedType, setSelectedType] = useState<string>("all");
+
   // History state
   const [history, setHistory] = useState<ConsolidationHistoryEntry[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  const loadMemories = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // Keep a mutable ref of memories to avoid recreating loadMemories on page loads
+  const memoriesRef = useRef<AgentMemory[]>([]);
+  memoriesRef.current = memories;
+
+  const PAGE_SIZE = 20;
+
+  const loadMemories = useCallback(async (isAppend = false) => {
+    if (isAppend) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      setError(null);
+    }
     try {
-      const result = await PrismService.getAgentMemories(project, 100, agent);
+      const currentSkip = isAppend ? memoriesRef.current.length : 0;
+      const typeParam = selectedType === "all" ? undefined : selectedType;
+      const result = await PrismService.getAgentMemories(
+        project,
+        PAGE_SIZE,
+        agent,
+        currentSkip,
+        typeParam
+      );
       const fetched = result.memories || [];
 
       // Detect newly arrived memories
@@ -139,21 +162,32 @@ export default function MemoriesPanel({
         knownIdsRef.current.add(id);
       }
 
-      if (freshIds.size > 0) {
+      if (freshIds.size > 0 && !isAppend) {
         setNewMemoryIds(freshIds);
         // Auto-clear highlight after 6s
         setTimeout(() => setNewMemoryIds(new Set<string>()), HIGHLIGHT_DURATION_MS);
       }
 
-      setMemories(fetched);
+      setMemories((prev) => {
+        if (isAppend) {
+          const prevIds = new Set(prev.map((m) => m.id || m._id));
+          const newItems = fetched.filter((m) => !prevIds.has(m.id || m._id));
+          return [...prev, ...newItems];
+        }
+        return fetched;
+      });
       setTotal(result.total || 0);
+      setHasMore(fetched.length === PAGE_SIZE);
     } catch (error: unknown) {
       console.error("Failed to load memories:", error);
-      setError(getErrorMessage(error));
+      if (!isAppend) {
+        setError(getErrorMessage(error));
+      }
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  }, [project, agent]);
+  }, [project, agent, selectedType]);
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
@@ -173,13 +207,43 @@ export default function MemoriesPanel({
   }, [total, onCountChange]);
 
   useEffect(() => {
-    loadMemories();
-  }, [loadMemories, refreshKey]);
+    loadMemories(false);
+  }, [loadMemories, refreshKey, selectedType]);
 
   // Load history when expanded
   useEffect(() => {
     if (historyOpen) loadHistory();
   }, [historyOpen, loadHistory]);
+
+  // Infinite scroll intersection observer sentinel
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!hasMore || loading || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMemories(true);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "100px",
+      }
+    );
+
+    const currentSentinel = sentinelRef.current;
+    if (currentSentinel) {
+      observer.observe(currentSentinel);
+    }
+
+    return () => {
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel);
+      }
+    };
+  }, [hasMore, loading, loadingMore, loadMemories]);
 
   // React to real-time consolidation events from WebSocket
   useEffect(() => {
@@ -193,7 +257,7 @@ export default function MemoriesPanel({
         type: "success",
         text: `✨ ${summary || "Memories consolidated"}`,
       });
-      loadMemories();
+      loadMemories(false);
       if (historyOpen) loadHistory();
     } else {
       setToast({ type: "info", text: summary || "No changes needed" });
@@ -234,7 +298,7 @@ export default function MemoriesPanel({
           text: result.summary || `Consolidated ${result.merged || 0} memories`,
         });
         // Refresh after consolidation
-        loadMemories();
+        loadMemories(false);
         if (historyOpen) loadHistory();
       } else {
         setToast({ type: "info", text: result.summary || "No changes needed" });
@@ -390,7 +454,7 @@ export default function MemoriesPanel({
         </button>
         <button
           className={styles.refreshBtn}
-          onClick={loadMemories}
+          onClick={() => loadMemories(false)}
           disabled={loading}
           title="Refresh memories"
         >
@@ -424,6 +488,38 @@ export default function MemoriesPanel({
           placeholder="All time"
           storageKey="memories-panel-date-range"
         />
+      </div>
+
+      {/* -- Memory Type Filters -------------------------------- */}
+      <div className={styles.typeFilters}>
+        {(["all", "user", "feedback", "project", "reference"] as const).map((t) => {
+          const isActive = selectedType === t;
+          let activeClass = "";
+          if (isActive) {
+            if (t === "all") activeClass = styles.typePillActiveAll;
+            else if (t === "user") activeClass = styles.typePillActiveUser;
+            else if (t === "feedback") activeClass = styles.typePillActiveFeedback;
+            else if (t === "project") activeClass = styles.typePillActiveProject;
+            else if (t === "reference") activeClass = styles.typePillActiveReference;
+          }
+          
+          let PillIcon = Brain;
+          if (t === "user") PillIcon = User;
+          else if (t === "feedback") PillIcon = MessageSquare;
+          else if (t === "project") PillIcon = FolderKanban;
+          else if (t === "reference") PillIcon = ExternalLink;
+
+          return (
+            <button
+              key={t}
+              className={`${styles.typePill} ${activeClass}`}
+              onClick={() => setSelectedType(t)}
+            >
+              <PillIcon size={10} />
+              {t}
+            </button>
+          );
+        })}
       </div>
 
       {/* -- Consolidation History ------------------------------- */}
@@ -554,6 +650,27 @@ export default function MemoriesPanel({
           </div>
         );
       })}
+
+      {/* Infinite Scroll Sentinel */}
+      {hasMore && (
+        <div ref={sentinelRef} className={styles.sentinel}>
+          {loadingMore && (
+            <LoadingIndicatorComponent
+              size="small"
+              color="inherit"
+              label="Loading more..."
+            />
+          )}
+        </div>
+      )}
+
+      {/* End of list indicator */}
+      {!hasMore && memories.length > 0 && (
+        <div className={styles.endOfList}>
+          <Brain size={12} />
+          <span>All memories loaded</span>
+        </div>
+      )}
     </div>
   );
 }

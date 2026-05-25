@@ -12,7 +12,7 @@
 /* ── Conversation Stats Badges ── */
 
 .sessionStats {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   background: var(--bg-surface);
@@ -27,7 +27,7 @@
   letter-spacing: 0.5px;
   color: var(--text-secondary);
   padding: 6px 10px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
   gap: 6px;
 }
 
@@ -49,7 +49,7 @@
   letter-spacing: 0.2px;
   color: var(--text-secondary);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   white-space: nowrap;
   transition:
     border-color 0.2s,
@@ -139,8 +139,8 @@
 .inputField {
   height: var(--input-height);
   padding: 0 10px;
-  background: var(--select-bg);
-  border: 1px solid var(--border-color);
+  background: var(--calculated-select-bg);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
   border-radius: var(--border-radius-sm);
   transition: border-color 0.2s;
@@ -150,8 +150,8 @@
 .formGroup textarea {
   height: auto;
   padding: 10px;
-  background: var(--select-bg);
-  border: 1px solid var(--border-color);
+  background: var(--calculated-select-bg);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
   border-radius: var(--border-radius-sm);
   transition: border-color 0.2s;
@@ -172,7 +172,7 @@
 
 .section {
   margin-top: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   background: var(--bg-surface);
@@ -185,7 +185,7 @@
   letter-spacing: 0.5px;
   color: var(--text-secondary);
   padding: 6px 10px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 }
 
 .modalityRow {
@@ -193,7 +193,7 @@
   align-items: center;
   gap: 8px;
   padding: 5px 10px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 }
 
 .modalityRow:last-child {
@@ -233,7 +233,7 @@
   height: var(--input-height);
   padding: 0 14px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
   font-size: 0.8125rem;
@@ -252,12 +252,12 @@
 .systemPromptActive {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
-  background: var(--accent-primary-glow);
+  background: var(--calculated-accent-primary-glow);
 }
 
 .systemPromptActive:hover {
-  background: var(--accent-primary-glow);
-  border-color: var(--accent-primary-hover);
+  background: var(--calculated-accent-primary-glow);
+  border-color: var(--calculated-accent-primary-hover);
 }
 
 .toolToggleRow {
@@ -291,7 +291,7 @@
   height: var(--input-height);
   padding: 0 10px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   word-break: break-all;
 }
@@ -301,7 +301,7 @@
   line-height: 1.5;
   color: var(--text-secondary);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   padding: 10px 12px;
   max-height: 200px;
@@ -317,7 +317,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
   text-decoration: none;
   color: inherit;
   cursor: pointer;
@@ -328,7 +328,7 @@
   }
 
   &:hover {
-    background: var(--accent-primary-glow);
+    background: var(--calculated-accent-primary-glow);
   }
 
   & .modalityName {

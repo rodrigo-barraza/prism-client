@@ -24,16 +24,16 @@
 
 .statsTabBtn:hover {
   color: var(--text-primary);
-  background: color-mix(in srgb, var(--border-color) 50%, transparent);
+  background: color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
 }
 
 .statsTabBtnActive {
   color: var(--accent-primary);
-  background: var(--accent-primary-glow);
+  background: var(--calculated-accent-primary-glow);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .statsTabBtnActive:hover {
-  background: var(--accent-primary-glow);
+  background: var(--calculated-accent-primary-glow);
   color: var(--accent-primary);
 }

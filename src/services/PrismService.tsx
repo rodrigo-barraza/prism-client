@@ -335,6 +335,26 @@ export default class PrismService {
     });
   }
 
+  /**
+   * Patch conversation or agent session.
+   */
+  static async patchConversation(
+    id: string,
+    updates: {
+      title?: string;
+      systemPrompt?: string;
+      settings?: Record<string, unknown>;
+    },
+    project?: string,
+  ): Promise<any> {
+    const queryString = project ? `?project=${encodeURIComponent(project)}` : "";
+    return PrismService._request<any>(`/conversations/${id}${queryString}`, {
+      method: "PATCH",
+      body: updates,
+    });
+  }
+
+
   // ---------------------------------------------------------------------------
   // Custom Tools
   // ---------------------------------------------------------------------------
@@ -518,11 +538,19 @@ export default class PrismService {
 
 
    */
-  static async getAgentMemories(project?: string, limit = 100, agent?: string): Promise<AgentMemoryListResponse> {
+  static async getAgentMemories(
+    project?: string,
+    limit = 100,
+    agent?: string,
+    skip = 0,
+    type?: string,
+  ): Promise<AgentMemoryListResponse> {
     const queryString = new URLSearchParams();
     if (project) queryString.set("project", project);
     if (limit) queryString.set("limit", String(limit));
     if (agent) queryString.set("agent", agent);
+    if (skip) queryString.set("skip", String(skip));
+    if (type) queryString.set("type", type);
     return PrismService._request<AgentMemoryListResponse>(`/agent-memories?${queryString}`, { method: "GET" });
   }
 

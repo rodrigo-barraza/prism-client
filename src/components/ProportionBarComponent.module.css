@@ -10,7 +10,7 @@
   max-width: 120px;
   height: 6px;
   border-radius: 3px;
-  background: var(--border-subtle);
+  background: var(--calculated-border-subtle);
   overflow: hidden;
 }
 

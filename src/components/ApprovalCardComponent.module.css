@@ -10,7 +10,7 @@
 
   &.resolved {
     opacity: 0.6;
-    border-color: var(--border-subtle);
+    border-color: var(--calculated-border-subtle);
     background: var(--bg-surface);
   }
 }

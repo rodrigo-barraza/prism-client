@@ -11,12 +11,12 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   white-space: nowrap;
   line-height: 1;
   text-transform: none;
   color: var(--tool-badge-accent, var(--text-primary));
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--calculated-shadow-md);
   transition:
     border-color 0.2s,
     color 0.2s,

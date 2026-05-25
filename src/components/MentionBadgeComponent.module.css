@@ -13,7 +13,7 @@
   margin: 0 1px;
   background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-elevated));
   border: 1px solid
-    color-mix(in srgb, var(--accent-primary) 25%, var(--border-color));
+    color-mix(in srgb, var(--accent-primary) 25%, var(--calculated-border-color));
   border-radius: var(--radius-full, 999px);
   font-size: var(--font-size-sm);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
@@ -35,7 +35,7 @@
   border-color: color-mix(
     in srgb,
     var(--accent-primary) 40%,
-    var(--border-color)
+    var(--calculated-border-color)
   );
 }
 
@@ -49,7 +49,7 @@
   transform: translateX(-50%) translateY(4px);
   padding: 4px 10px;
   background: var(--bg-base);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   font-size: var(--font-size-xs);
@@ -99,13 +99,13 @@
   border-style: dashed;
   color: var(--text-muted);
   background: color-mix(in srgb, var(--text-muted) 6%, var(--bg-elevated));
-  border-color: color-mix(in srgb, var(--text-muted) 20%, var(--border-color));
+  border-color: color-mix(in srgb, var(--text-muted) 20%, var(--calculated-border-color));
 }
 
 .mentionBadgeStale:hover {
   opacity: 0.6;
   background: color-mix(in srgb, var(--text-muted) 10%, var(--bg-elevated));
-  border-color: color-mix(in srgb, var(--text-muted) 30%, var(--border-color));
+  border-color: color-mix(in srgb, var(--text-muted) 30%, var(--calculated-border-color));
 }
 
 /* Tooltip suffix for stale badges */

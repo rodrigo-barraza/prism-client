@@ -18,7 +18,7 @@
   gap: 12px;
   padding: 10px 16px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   margin-bottom: 12px;
   flex-wrap: wrap;
@@ -36,7 +36,7 @@
   display: block;
   width: 1px;
   height: 20px;
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   margin-left: 6px;
 }
 
@@ -71,7 +71,7 @@
 
 .swatchActive {
   border-color: var(--text-primary);
-  box-shadow: 0 0 8px var(--accent-primary-glow);
+  box-shadow: 0 0 8px var(--calculated-accent-primary-glow);
   transform: scale(1.15);
 }
 
@@ -84,7 +84,7 @@
   height: 30px;
   border-radius: var(--border-radius-sm);
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s;
@@ -115,7 +115,7 @@
   padding: 6px 12px;
   border-radius: var(--border-radius-sm);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -124,7 +124,7 @@
 }
 
 .actionBtn:hover {
-  background: var(--accent-primary-glow);
+  background: var(--calculated-accent-primary-glow);
   color: var(--text-primary);
 }
 
@@ -187,9 +187,9 @@
 }
 
 .useBtn:hover {
-  background: var(--accent-primary-hover);
+  background: var(--calculated-accent-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px var(--accent-primary-glow);
+  box-shadow: 0 4px 16px var(--calculated-accent-primary-glow);
 }
 
 .closeBtn {

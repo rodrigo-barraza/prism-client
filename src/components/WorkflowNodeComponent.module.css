@@ -45,7 +45,7 @@
 .headerSeparator {
   width: 1px;
   height: 12px;
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   opacity: 0.5;
   flex-shrink: 0;
 }
@@ -74,7 +74,7 @@
     color var(--transition-fast);
 
   &:hover {
-    background: var(--color-danger-subtle);
+    background: var(--calculated-color-danger-subtle);
     color: var(--color-danger);
   }
 }
@@ -131,7 +131,7 @@
   line-height: 1.4;
   color: var(--text-primary);
   background: var(--bg-base);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   border-radius: 2px;
   resize: none;
   outline: none;
@@ -212,7 +212,7 @@
   background: var(--bg-surface);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-muted);
   cursor: pointer;
   transition:
@@ -222,7 +222,7 @@
   z-index: 2;
 
   &:hover {
-    background: var(--color-danger-subtle);
+    background: var(--calculated-color-danger-subtle);
     color: var(--color-danger);
     border-color: var(--color-danger);
   }
@@ -235,7 +235,7 @@
   overflow: hidden;
   border-radius: 2px;
   background: var(--bg-base);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   display: flex;
   flex-direction: column;
 }
@@ -288,7 +288,7 @@
 /* ── Node config panel ── */
 .configBtnActive {
   color: var(--accent-primary) !important;
-  background: var(--accent-primary-subtle) !important;
+  background: var(--calculated-accent-primary-subtle) !important;
 }
 
 .nodeConfig {
@@ -306,7 +306,7 @@
   gap: 6px;
   padding: 6px 6px;
   background: var(--bg-base);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   border-radius: 2px;
 }
 
@@ -345,7 +345,7 @@
   color: var(--text-muted);
   cursor: pointer;
   padding: 3px 6px;
-  border: 1px dashed var(--border-color);
+  border: 1px dashed var(--calculated-border-color);
   border-radius: 2px;
   transition:
     border-color var(--transition-fast),
@@ -365,7 +365,7 @@
   font-size: 0.5625rem;
   color: var(--text-secondary);
   padding: 2px 6px;
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   border-radius: 2px;
 }
 
@@ -385,7 +385,7 @@
 
   &:hover {
     color: var(--color-danger);
-    background: var(--color-danger-subtle);
+    background: var(--calculated-color-danger-subtle);
   }
 }
 

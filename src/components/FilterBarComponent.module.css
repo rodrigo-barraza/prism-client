@@ -6,7 +6,7 @@
   margin-bottom: 16px;
   padding: 14px 18px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
 }
 
@@ -30,7 +30,7 @@
   background: var(--bg-elevated);
   padding: 3px;
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
 }
 
 .pill {
@@ -56,7 +56,7 @@
 .pillActive {
   background: var(--bg-surface);
   color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--calculated-shadow-sm);
 }
 
 .searchBox {
@@ -65,7 +65,7 @@
   gap: 6px;
   padding: 6px 12px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-muted);
   transition: all var(--transition-fast);
@@ -97,7 +97,7 @@
   background: var(--bg-elevated);
   padding: 3px;
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
 }
 
 .viewBtn {
@@ -138,7 +138,7 @@
 .viewBtnActive {
   background: var(--bg-surface);
   color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--calculated-shadow-sm);
 }
 
 .discreteGroup {
@@ -155,7 +155,7 @@
   width: 28px;
   height: 28px;
   border-radius: 2px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -169,7 +169,7 @@
 }
 
 .discreteBtnActive {
-  background: var(--accent-primary-glow);
+  background: var(--calculated-accent-primary-glow);
   border-color: var(--accent-primary);
   color: var(--accent-primary);
 }
@@ -178,7 +178,7 @@
   padding: 6px 10px;
   font-size: 0.8125rem;
   min-width: 140px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-surface);
   color: var(--text-primary);
@@ -195,7 +195,7 @@
   font-size: 0.8125rem;
   min-width: 120px;
   cursor: pointer;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-surface);
   color: var(--text-primary);

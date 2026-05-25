@@ -120,7 +120,7 @@
   min-width: 200px;
   height: 100%;
   background: var(--bg-surface);
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--calculated-border-color);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -141,7 +141,7 @@
   height: 80px;
   min-height: 80px;
   overflow: hidden;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
 /* ── Mini Cats (concurrent API calls — JS-driven bouncing) ── */
@@ -223,13 +223,13 @@
   cursor: pointer;
 
   &:hover {
-    background: var(--accent-primary-subtle);
+    background: var(--calculated-accent-primary-subtle);
     color: var(--text-primary);
   }
 }
 
 .navLink.active {
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
 
   &::before {
@@ -338,7 +338,7 @@
     content: "";
     flex: 1;
     height: 1px;
-    background: var(--border-color);
+    background: var(--calculated-border-color);
   }
 }
 
@@ -391,7 +391,7 @@
 
 .footer {
   padding: 10px 8px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -540,7 +540,7 @@
   flex-direction: column;
   border-radius: 12px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   animation: popoverInUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -572,7 +572,7 @@
 
 .mobilePopoverFooter {
   padding: 6px 8px 8px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -583,7 +583,7 @@
 .workspaceSelector {
   position: relative;
   padding: 6px 8px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 }
 
 .workspaceCurrent {
@@ -594,7 +594,7 @@
   padding: 6px 8px;
   border-radius: var(--border-radius-sm);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -602,7 +602,7 @@
   transition: background var(--transition-fast);
 
   &:hover {
-    background: var(--accent-primary-subtle);
+    background: var(--calculated-accent-primary-subtle);
   }
 }
 
@@ -627,7 +627,7 @@
   left: 8px;
   right: 8px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   z-index: 100;
@@ -654,19 +654,19 @@
   transition: background var(--transition-fast);
 
   &:hover {
-    background: var(--accent-primary-subtle);
+    background: var(--calculated-accent-primary-subtle);
     color: var(--text-primary);
   }
 }
 
 .workspaceItemActive {
   color: var(--accent-primary);
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
 }
 
 .workspaceMenuDivider {
   height: 1px;
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   margin: 2px 0;
 }
 
@@ -687,7 +687,7 @@
     color var(--transition-fast);
 
   &:hover {
-    background: var(--accent-primary-subtle);
+    background: var(--calculated-accent-primary-subtle);
     color: var(--accent-primary);
   }
 }

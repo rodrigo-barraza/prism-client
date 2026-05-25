@@ -2,10 +2,10 @@ import { Inter, Noto_Color_Emoji, Noto_Emoji } from "next/font/google";
 import {
   ThemeProvider,
   ComponentsProvider,
+  CustomThemeBootComponent,
   generateThemeInitScript,
 } from "@rodrigo-barraza/components-library";
 import { WorkspaceProvider } from "../components/WorkspaceContextComponent";
-import CustomThemeBootComponent from "../components/CustomThemeBootComponent";
 import "./globals.css";
 import SessionTrackerComponent from "@/components/SessionTrackerComponent";
 
@@ -59,7 +59,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={`${inter.variable} ${notoColorEmoji.variable} ${notoEmoji.variable}`}>
         <ThemeProvider storageKey="prism:theme" defaultTheme="light">
-          <CustomThemeBootComponent />
+          <CustomThemeBootComponent storageKey="prism:custom-themes" />
           <ComponentsProvider sound>
             <WorkspaceProvider>
               {children}

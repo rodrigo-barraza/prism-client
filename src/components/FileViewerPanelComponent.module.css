@@ -6,7 +6,7 @@
   height: 100%;
   min-height: 0;
   background: var(--bg-base);
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--calculated-border-color);
   overflow: hidden;
   /* Layout-based width transitions for open/close (not GPU-composited,
      but acceptable for an infrequent user-toggled panel) */
@@ -102,7 +102,7 @@
   height: 34px;
   min-height: 34px;
   background: var(--bg-elevated);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -120,7 +120,7 @@
   padding: 0 10px;
   height: 100%;
   border: none;
-  border-right: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--calculated-border-subtle);
   background: transparent;
   color: var(--text-muted);
   font-size: var(--font-size-xs);
@@ -217,7 +217,7 @@
   font-size: 0.625rem;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   color: var(--text-tertiary, var(--text-muted));
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
   flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -236,7 +236,7 @@
   flex: 1;
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-medium) transparent;
+  scrollbar-color: var(--calculated-border-medium) transparent;
   background: var(--bg-base);
 }
 
@@ -310,7 +310,7 @@
   align-items: center;
   gap: 8px;
   padding: 3px 12px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
   font-size: 0.625rem;
   color: var(--text-muted);
   flex-shrink: 0;
@@ -439,7 +439,7 @@
   overflow: auto;
   background: var(--bg-base);
   scrollbar-width: thin;
-  scrollbar-color: var(--border-medium) transparent;
+  scrollbar-color: var(--calculated-border-medium) transparent;
 }
 
 /* ── Image preview ──────────────────────────────────────── */

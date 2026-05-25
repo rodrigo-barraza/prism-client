@@ -12,12 +12,15 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import { useTheme } from "@rodrigo-barraza/components-library";
-import CustomThemeService, {
-  type CustomTheme,
-  type CustomThemeTokens,
-  getCustomThemeAttr,
-} from "../services/CustomThemeService";
+import {
+  useTheme,
+  CustomThemeService,
+} from "@rodrigo-barraza/components-library";
+import type {
+  CustomTheme,
+  CustomThemeTokens,
+} from "@rodrigo-barraza/components-library";
+const { getCustomThemeAttr } = CustomThemeService;
 import styles from "./CustomThemeEditorComponent.module.css";
 
 // ── Token Groups ───────────────────────────────────────────────────────

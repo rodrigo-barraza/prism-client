@@ -108,7 +108,7 @@
 
   & + & {
     border-top: 1px solid
-      color-mix(in srgb, var(--color-orange) 8%, var(--border-color));
+      color-mix(in srgb, var(--color-orange) 8%, var(--calculated-border-color));
   }
 
   &:hover {

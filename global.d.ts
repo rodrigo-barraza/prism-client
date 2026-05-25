@@ -3,8 +3,6 @@ declare module "*.css" {
   export default classes;
 }
 
-declare module "@rodrigo-barraza/components-library";
-declare module "@rodrigo-barraza/utilities-library";
 declare module "three";
 
 interface Window {

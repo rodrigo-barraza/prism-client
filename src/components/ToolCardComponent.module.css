@@ -53,14 +53,14 @@
 .cardDisabled {
   --tool-color-muted: var(--text-tertiary);
   background: var(--bg-surface);
-  border-color: var(--border-color);
-  border-left-color: var(--border-color);
+  border-color: var(--calculated-border-color);
+  border-left-color: var(--calculated-border-color);
   opacity: 0.55;
 
   &:hover {
     opacity: 0.8;
     background: var(--bg-surface);
-    border-color: var(--border-color);
+    border-color: var(--calculated-border-color);
     border-left-color: var(--text-tertiary);
     box-shadow: none;
   }

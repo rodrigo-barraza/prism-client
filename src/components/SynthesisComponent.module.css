@@ -25,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-primary-glow);
+  background: var(--calculated-accent-primary-glow);
   color: var(--accent-primary);
   border: 1px solid var(--accent-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -75,7 +75,7 @@
   align-items: center;
   gap: 20px;
   padding: 12px 16px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-surface);
 }
@@ -112,7 +112,7 @@
 /* ── Collapsible Sections ── */
 
 .collapsibleSection {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-surface);
   overflow: hidden;
@@ -132,7 +132,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-base);
   cursor: pointer;
@@ -141,9 +141,9 @@
 
   &:hover {
     border-color: var(--accent-primary);
-    background: var(--accent-primary-subtle);
+    background: var(--calculated-accent-primary-subtle);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--calculated-shadow-sm);
   }
 }
 
@@ -178,14 +178,14 @@
 }
 
 .seedMessage {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   background: var(--bg-base);
   transition: border-color var(--transition-fast);
 
   &:hover {
-    border-color: var(--border-color);
+    border-color: var(--calculated-border-color);
   }
 }
 
@@ -195,7 +195,7 @@
   justify-content: space-between;
   padding: 6px 10px;
   background: var(--bg-elevated);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
 .roleToggle {
@@ -238,13 +238,13 @@
   flex: 1;
   justify-content: center;
   border-style: dashed !important;
-  border-color: var(--border-color) !important;
+  border-color: var(--calculated-border-color) !important;
   background: transparent !important;
 
   &:hover {
     border-color: var(--accent-primary) !important;
     color: var(--accent-primary);
-    background: var(--accent-primary-subtle) !important;
+    background: var(--calculated-accent-primary-subtle) !important;
   }
 }
 
@@ -264,7 +264,7 @@
   font-weight: 600;
   color: var(--accent-primary);
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
 .convLink {
@@ -278,7 +278,7 @@
 
   &:hover {
     color: var(--accent-primary);
-    background: var(--accent-primary-subtle);
+    background: var(--calculated-accent-primary-subtle);
   }
 }
 
@@ -318,7 +318,7 @@
 .turnsInput {
   width: 72px;
   padding: 5px 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-base);
   color: var(--text-primary);
@@ -333,7 +333,7 @@
   &:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px var(--accent-primary-glow);
+    box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
   }
 
   /* Hide number spinners for a cleaner look */
@@ -365,7 +365,7 @@
   display: flex;
   gap: 6px;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
 .outputActionBtn {

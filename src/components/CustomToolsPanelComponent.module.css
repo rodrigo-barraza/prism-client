@@ -117,7 +117,7 @@
 
 .builtInCard {
   border-left: 2px solid
-    color-mix(in srgb, var(--accent-primary) 50%, var(--border-color));
+    color-mix(in srgb, var(--accent-primary) 50%, var(--calculated-border-color));
 }
 
 .offlineCard {
@@ -191,7 +191,7 @@
   padding: 6px 8px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
 }
 
 .dataSourceRow {
@@ -219,7 +219,7 @@
 /* ── Tool Card (list view) ─────────────────────────────────── */
 
 .toolCard {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-surface);
   overflow: hidden;
@@ -230,7 +230,7 @@
     border-color: color-mix(
       in srgb,
       var(--accent-primary) 40%,
-      var(--border-color)
+      var(--calculated-border-color)
     );
   }
 }
@@ -333,7 +333,7 @@
 
 .toolCardBody {
   padding: 8px 12px 10px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--calculated-border-color);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -376,7 +376,7 @@
   padding: 2px 6px;
   border-radius: 3px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   font-size: 0.625rem;
 
   & code {
@@ -420,7 +420,7 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 
   & h3 {
     font-size: 0.8125rem;
@@ -480,8 +480,8 @@
   padding: 7px 10px;
   font-size: 0.8125rem;
   color: var(--text-primary);
-  background: var(--select-bg, var(--bg-surface));
-  border: 1px solid var(--border-color);
+  background: var(--calculated-select-bg, var(--bg-surface));
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color 0.2s ease;
   font-family: inherit;
@@ -539,7 +539,7 @@
 
 .paramsModeToggle {
   display: flex;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
 }
@@ -558,7 +558,7 @@
   transition: all 0.15s ease;
 
   &:not(:last-child) {
-    border-right: 1px solid var(--border-color);
+    border-right: 1px solid var(--calculated-border-color);
   }
 
   &:hover:not(.modeBtnActive) {
@@ -659,9 +659,9 @@
   background: var(--accent-primary);
 
   &:hover:not(:disabled) {
-    background: var(--accent-primary-hover);
+    background: var(--calculated-accent-primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 3px 10px var(--accent-primary-glow);
+    box-shadow: 0 3px 10px var(--calculated-accent-primary-glow);
   }
 
   &:disabled {
@@ -673,14 +673,14 @@
 .jsonUploadBtn {
   color: var(--text-secondary);
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
 
   &:hover {
     color: var(--text-primary);
     border-color: color-mix(
       in srgb,
       var(--accent-primary) 40%,
-      var(--border-color)
+      var(--calculated-border-color)
     );
     background: color-mix(in srgb, var(--accent-primary) 5%, var(--bg-surface));
   }
@@ -716,7 +716,7 @@
 }
 
 .paramCard {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-surface);
   overflow: hidden;
@@ -729,7 +729,7 @@
   justify-content: space-between;
   padding: 4px 8px;
   background: color-mix(in srgb, var(--bg-surface) 50%, transparent);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--calculated-border-color);
 }
 
 .paramIndex {
@@ -805,8 +805,8 @@
   padding: 5px 8px;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--select-bg, var(--bg-surface));
-  border: 1px solid var(--border-color);
+  background: var(--calculated-select-bg, var(--bg-surface));
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color 0.2s ease;
   font-family: inherit;
@@ -841,9 +841,9 @@
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: var(--accent-primary-hover);
+    background: var(--calculated-accent-primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--accent-primary-glow);
+    box-shadow: 0 4px 12px var(--calculated-accent-primary-glow);
   }
 
   &:disabled {
@@ -893,7 +893,7 @@
 
 .groupByToggle {
   display: flex;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   margin-left: auto;
@@ -913,7 +913,7 @@
   transition: all 0.18s ease;
 
   &:not(:last-child) {
-    border-right: 1px solid var(--border-color);
+    border-right: 1px solid var(--calculated-border-color);
   }
 
   &:hover:not(.groupByBtnActive) {

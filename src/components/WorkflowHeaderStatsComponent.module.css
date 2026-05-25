@@ -5,7 +5,7 @@
   font-size: var(--font-size-xs);
   padding: 2px 8px;
   border-radius: 2px;
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
   font-weight: 500;
   white-space: nowrap;

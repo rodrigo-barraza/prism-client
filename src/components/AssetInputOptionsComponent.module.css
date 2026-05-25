@@ -29,7 +29,7 @@
   justify-content: center;
   gap: 4px;
   background: transparent;
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--calculated-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 4px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -46,7 +46,7 @@
   &:hover {
     color: var(--text-primary);
     background: var(--bg-elevated);
-    border-color: var(--border-color);
+    border-color: var(--calculated-border-color);
   }
 }
 
@@ -62,7 +62,7 @@
   gap: 6px;
   flex: 1;
   min-height: 0;
-  border: 1px dashed var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border: 1px dashed var(--calculated-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 4px;
   color: var(--text-muted, #666);
   font-size: 0.625rem;
@@ -75,7 +75,7 @@
 
   &:hover {
     color: var(--text-secondary);
-    border-color: var(--border-color);
+    border-color: var(--calculated-border-color);
     background: rgba(255, 255, 255, 0.02);
   }
 }
@@ -127,7 +127,7 @@
 
 .cancelBtn {
   background: transparent;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   border-radius: 4px;
   color: var(--text-secondary);
   font-size: 0.625rem;

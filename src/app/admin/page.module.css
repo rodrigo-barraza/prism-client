@@ -28,7 +28,7 @@
   transition: color var(--transition-fast);
 
   &:hover {
-    color: var(--accent-primary-hover);
+    color: var(--calculated-accent-primary-hover);
   }
 }
 
@@ -41,7 +41,7 @@
 
 .chartCard {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   padding: 20px 24px;
 }

@@ -7,7 +7,7 @@
   align-items: stretch;
   padding: 0;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
 }
@@ -18,7 +18,7 @@
   border-color: color-mix(
     in srgb,
     var(--accent-primary) 40%,
-    var(--border-color)
+    var(--calculated-border-color)
   );
   background: color-mix(in srgb, var(--accent-primary) 3%, var(--bg-surface));
   position: relative;
@@ -79,7 +79,7 @@
   width: 1px;
   align-self: stretch;
   margin: 12px 0;
-  background: var(--border-color);
+  background: var(--calculated-border-color);
   flex-shrink: 0;
 }
 

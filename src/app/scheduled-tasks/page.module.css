@@ -36,9 +36,9 @@
   padding: 10px 16px;
   border-radius: var(--border-radius-sm);
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--calculated-shadow-lg);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   min-width: 220px;
@@ -106,7 +106,7 @@
   background: var(--bg-elevated);
   padding: 2px 8px;
   border-radius: var(--border-radius-sm);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
 }
 
 .headerActions {
@@ -140,7 +140,7 @@
   padding: 0 12px 0 32px;
   font-size: 0.8125rem;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
   width: 240px;
@@ -152,7 +152,7 @@
 .searchInput:focus {
   outline: none;
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px var(--accent-primary-glow);
+  box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
   width: 280px;
 }
 
@@ -166,7 +166,7 @@
   background: var(--accent-primary);
   border: none;
   border-radius: var(--border-radius-sm);
-  color: var(--text-inverse);
+  color: var(--calculated-text-inverse);
   font-size: var(--font-size-sm);
   font-weight: 600;
   transition:
@@ -209,7 +209,7 @@
   gap: 12px;
   padding: 60px 24px;
   text-align: center;
-  border: 1px dashed var(--border-color);
+  border: 1px dashed var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--bg-surface);
 }
@@ -240,7 +240,7 @@
   background: var(--accent-primary);
   border: none;
   border-radius: var(--border-radius-sm);
-  color: var(--text-inverse);
+  color: var(--calculated-text-inverse);
   font-size: var(--font-size-sm);
   font-weight: 600;
   transition:
@@ -267,7 +267,7 @@
   flex-direction: column;
   justify-content: space-between;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   padding: 18px 20px;
   transition:
@@ -293,7 +293,7 @@
 .card:hover {
   border-color: var(--accent-primary);
   background: var(--bg-elevated);
-  box-shadow: var(--shadow-glow);
+  box-shadow: var(--calculated-shadow-glow);
   transform: translateY(-1px);
 }
 
@@ -353,7 +353,7 @@
   height: 22px;
   border-radius: var(--radius-full);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   cursor: pointer;
   transition: all var(--transition-fast);
   padding: 0;
@@ -362,7 +362,7 @@
 .toggleSwitchOn {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  box-shadow: 0 0 8px var(--accent-primary-glow);
+  box-shadow: 0 0 8px var(--calculated-accent-primary-glow);
 }
 
 .toggleKnob {
@@ -373,13 +373,13 @@
   height: 16px;
   border-radius: 50%;
   background: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--calculated-shadow-sm);
   transition: transform var(--transition-fast);
 }
 
 .toggleSwitchOn .toggleKnob {
   transform: translateX(18px);
-  background: var(--text-inverse);
+  background: var(--calculated-text-inverse);
 }
 
 /* ── Card Body ─────────────────────────────────────────────── */
@@ -394,7 +394,7 @@
   background: var(--bg-base);
   border-radius: var(--border-radius-sm);
   padding: 10px 12px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   min-height: 56px;
   max-height: 100px;
   overflow-y: auto;
@@ -420,7 +420,7 @@
   gap: 4px;
   padding: 2px 7px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   font-size: 0.625rem;
   font-weight: 500;
@@ -473,11 +473,11 @@
   margin-top: 4px;
   z-index: 1000;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   padding: 4px;
   min-width: 160px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--calculated-shadow-lg);
   backdrop-filter: blur(12px);
   animation: slideDown 0.15s ease-out forwards;
 }
@@ -513,7 +513,7 @@
 }
 
 .menuDropdown .deleteBtnText:hover {
-  background: var(--color-danger-subtle);
+  background: var(--calculated-color-danger-subtle);
   color: var(--color-danger);
 }
 
@@ -522,7 +522,7 @@
 .confirmRow {
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--calculated-border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -557,7 +557,7 @@
 
 .confirmNo {
   background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
 }
 
@@ -585,7 +585,7 @@
 
 .scheduleBuilder {
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--calculated-border-subtle);
   border-radius: var(--border-radius-sm);
   padding: 16px;
   display: flex;

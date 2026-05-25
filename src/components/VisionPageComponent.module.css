@@ -98,15 +98,15 @@
   &:hover {
     border-color: var(--accent-primary);
     color: var(--accent-primary);
-    background: var(--accent-primary-subtle);
+    background: var(--calculated-accent-primary-subtle);
   }
 }
 
 .sourceBtnActive {
   border-color: var(--accent-primary);
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
-  box-shadow: 0 0 0 1px var(--accent-primary-glow);
+  box-shadow: 0 0 0 1px var(--calculated-accent-primary-glow);
 }
 
 /* IP camera URL input */
@@ -150,7 +150,7 @@
   transition: all 0.15s ease;
 
   &:hover {
-    background: var(--accent-primary-hover);
+    background: var(--calculated-accent-primary-hover);
   }
 
   &:disabled {
@@ -207,7 +207,7 @@
   width: 80px;
   height: 80px;
   border-radius: 20px;
-  background: var(--accent-primary-subtle);
+  background: var(--calculated-accent-primary-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
