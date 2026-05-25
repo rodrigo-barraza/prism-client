@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+
 import {
   Clock,
   Plus,
@@ -12,11 +12,9 @@ import {
   Check,
   Loader2,
   X,
-  ChevronDown,
   Bot,
   Sparkles,
   Copy,
-  AlertCircle,
 } from "lucide-react";
 import PrismService from "../../services/PrismService";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
@@ -66,7 +64,7 @@ interface Toast {
 }
 
 export default function ScheduledTasksPage() {
-  const router = useRouter();
+
 
   // Data state
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -330,10 +328,11 @@ export default function ScheduledTasksPage() {
   }, [tasks, searchQuery]);
 
   return (
-    <div className={styles.container}>
+    <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
       
       <div className={styles.page}>
+        <div className={styles.content}>
         {/* Sleek toast list */}
         <div className={styles.toastContainer}>
           {toasts.map((toast) => (
@@ -376,7 +375,7 @@ export default function ScheduledTasksPage() {
         </header>
 
         {/* Task Cards Grid */}
-        <div className={styles.content}>
+        <div>
           {loading ? (
             <div className={styles.loadingState}>
               <Loader2 size={32} className={styles.spin} />
@@ -781,6 +780,7 @@ export default function ScheduledTasksPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
