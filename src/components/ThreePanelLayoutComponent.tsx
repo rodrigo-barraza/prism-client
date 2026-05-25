@@ -142,9 +142,9 @@ export default function ThreePanelLayout({
 
   /* -- Mobile: auto-close sidebar when a [data-panel-close] element is clicked -- */
   const handleSidebarClick = useCallback(
-    (closeFn: () => void) => (e: React.MouseEvent<HTMLElement>) => {
+    (closeFn: () => void) => (clickEvent: React.MouseEvent<HTMLElement>) => {
       if (!isMobile) return;
-      const target = e.target as HTMLElement | null;
+      const target = clickEvent.target as HTMLElement | null;
       if (target && target.closest("[data-panel-close]")) {
         closeFn();
       }
