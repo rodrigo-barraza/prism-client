@@ -12,7 +12,7 @@
     border-color 0.2s;
   position: relative;
 
-  &:nth-child(even):not(.active) {
+  &:nth-child(even):not(.active):not(:hover) {
     background: rgba(255, 255, 255, 0.02);
   }
 
