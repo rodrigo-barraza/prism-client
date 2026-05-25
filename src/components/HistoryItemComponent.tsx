@@ -251,6 +251,7 @@ export default function HistoryItemComponent({
             }
             providers={item.providers}
             className={styles.modelBadge}
+            noHover
           />
         )}
 

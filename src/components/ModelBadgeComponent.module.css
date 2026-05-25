@@ -51,6 +51,14 @@
   animation: fadeIn 0.15s ease-out forwards;
 }
 
+.noHover:hover .modelNameClean {
+  display: inline !important;
+}
+
+.noHover:hover .modelNameRaw {
+  display: none !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
