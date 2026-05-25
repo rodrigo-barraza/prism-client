@@ -28,6 +28,7 @@ import {
   BarChart3,
   AlertCircle,
   Eye,
+  Clock,
 } from "lucide-react";
 import {
   useTheme,
@@ -62,6 +63,11 @@ const USER_NAV_SECTIONS = [
         label: "Chat",
         icon: Bot,
         alsoMatches: ["/coding-agent", "/agents"],
+      },
+      {
+        href: "/scheduled-tasks",
+        label: "Scheduled Tasks",
+        icon: Clock,
       },
       { href: "/settings", label: "Settings", icon: Settings },
     ],

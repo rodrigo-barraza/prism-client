@@ -690,6 +690,55 @@ export default class PrismService {
   }
 
   // ---------------------------------------------------------------------------
+  // Scheduled Tasks
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Fetch all scheduled tasks.
+   */
+  static async getScheduledTasks(): Promise<any[]> {
+    return PrismService._request<any[]>("/scheduled-tasks", { method: "GET" });
+  }
+
+  /**
+   * Create a scheduled task.
+   */
+  static async createScheduledTask(task: any): Promise<any> {
+    return PrismService._request<any>("/scheduled-tasks", {
+      method: "POST",
+      body: task,
+    });
+  }
+
+  /**
+   * Update an existing scheduled task (e.g. toggle enabled).
+   */
+  static async updateScheduledTask(id: string, updates: Partial<any>): Promise<any> {
+    return PrismService._request<any>(`/scheduled-tasks/${id}`, {
+      method: "PATCH",
+      body: updates,
+    });
+  }
+
+  /**
+   * Delete a scheduled task.
+   */
+  static async deleteScheduledTask(id: string): Promise<{ success: boolean }> {
+    return PrismService._request<{ success: boolean }>(`/scheduled-tasks/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  /**
+   * Trigger a scheduled task immediately in the background.
+   */
+  static async triggerScheduledTask(id: string): Promise<{ success: boolean; agentSessionId: string }> {
+    return PrismService._request<{ success: boolean; agentSessionId: string }>(`/scheduled-tasks/${id}/trigger`, {
+      method: "POST",
+    });
+  }
+
+  // ---------------------------------------------------------------------------
   // Chat
   // ---------------------------------------------------------------------------
 
