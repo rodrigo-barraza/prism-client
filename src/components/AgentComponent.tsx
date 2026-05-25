@@ -613,7 +613,7 @@ export default function AgentComponent({
   // Only auto-scroll when the user is near the bottom of the messages container.
   // Re-engaged on send, session load, and new chat.
   const isUserNearBottomRef = useRef<boolean>(true);
-  const SCROLL_BOTTOM_THRESHOLD = 20;
+  const SCROLL_BOTTOM_THRESHOLD = 150;
 
   const agentSessionIdRef = useRef<string>(agentSessionId);
   agentSessionIdRef.current = agentSessionId;
