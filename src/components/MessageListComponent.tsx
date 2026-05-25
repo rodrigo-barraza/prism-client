@@ -48,6 +48,7 @@ import {
 import WordBadgeComponent from "./WordBadgeComponent";
 import WorkerNotificationComponent from "./WorkerNotificationComponent";
 import PlanCardComponent from "./PlanCardComponent";
+import ImagePreviewComponent from "./ImagePreviewComponent";
 import styles from "./MessageListComponent.module.css";
 import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
@@ -751,9 +752,18 @@ export default function MessageList({
   onMentionFileOpen,
 }: MessageListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [localLightboxSrc, setLocalLightboxSrc] = useState<string | null>(null);
   const knownPathsSet = useMemo(() => knownPaths ? new Set(knownPaths) : null, [knownPaths]);
   const [expandedDeletedSet, setExpandedDeletedSet] = useState<Set<number>>(new Set());
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
+
+  const handleImageClick = (url: string) => {
+    if (onImageClick) {
+      onImageClick(url);
+    } else {
+      setLocalLightboxSrc(url);
+    }
+  };
 
   const cleanMessageContent = (content: string | undefined | null): string => {
     if (!content) return "";
@@ -1342,12 +1352,22 @@ export default function MessageList({
                                   {gMsg.images && gMsg.images.length > 0 && (
                                     <div className={styles.imagePreviewRow}>
                                       {gMsg.images.map(
-                                        (rawUrl: string, j: number) => (
-                                          <MediaPreview
-                                            key={j}
-                                            dataUrl={rawUrl}
-                                          />
-                                        ),
+                                        (rawUrl: string, j: number) => {
+                                          const resolvedUrl = PrismService.getFileUrl(rawUrl);
+                                          const cat = getMimeCategory(rawUrl);
+                                          let clickHandler;
+                                          if (cat === "image")
+                                            clickHandler = () => handleImageClick(resolvedUrl);
+                                          else if (cat === "pdf" || cat === "text")
+                                            clickHandler = () => onDocClick?.(resolvedUrl);
+                                          return (
+                                            <MediaPreview
+                                              key={j}
+                                              dataUrl={rawUrl}
+                                              onClick={clickHandler}
+                                            />
+                                          );
+                                        }
                                       )}
                                     </div>
                                   )}
@@ -1818,7 +1838,7 @@ export default function MessageList({
                             const cat = getMimeCategory(rawUrl);
                             let clickHandler;
                             if (cat === "image")
-                              clickHandler = () => onImageClick?.(resolvedUrl);
+                              clickHandler = () => handleImageClick(resolvedUrl);
                             else if (cat === "pdf" || cat === "text")
                               clickHandler = () => onDocClick?.(resolvedUrl);
                             return (
@@ -2082,6 +2102,13 @@ export default function MessageList({
           </React.Fragment>
         );
       })}
+      {localLightboxSrc && (
+        <ImagePreviewComponent
+          src={localLightboxSrc}
+          onClose={() => setLocalLightboxSrc(null)}
+          readOnly={true}
+        />
+      )}
     </div>
   );
 }

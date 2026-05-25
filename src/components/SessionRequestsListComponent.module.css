@@ -101,6 +101,22 @@
   flex-shrink: 0;
 }
 
+.requestProvider {
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+.divider {
+  color: var(--text-muted);
+  opacity: 0.5;
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
 .requestModel {
   color: var(--text-primary);
   font-weight: 500;

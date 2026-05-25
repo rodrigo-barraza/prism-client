@@ -14,7 +14,7 @@ export interface ModelBadgeProps {
 /**
  * Derive a clean, human-friendly display name from a raw model name or path.
  */
-function cleanModelName(raw: string): string {
+export function cleanModelName(raw: string): string {
   if (!raw) return "";
 
   // 1. Strip provider prefix if any (e.g. "openai:gpt-4o" -> "gpt-4o")

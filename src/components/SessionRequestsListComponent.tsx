@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Activity, AlertCircle, Users } from "lucide-react";
 import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
-import ProviderLogo from "./ProviderLogosComponent";
+import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
+import { cleanModelName } from "./ModelBadgeComponent";
 
 import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
 import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
@@ -111,13 +112,12 @@ export default function SessionRequestsListComponent({
                     </span>
                   )}
                   <ProviderLogo provider={req.provider} size={12} />
+                  <span className={styles.requestProvider}>
+                    {resolveProviderLabel(req.provider)}
+                  </span>
+                  <span className={styles.divider}>•</span>
                   <span className={styles.requestModel} title={req.model}>
-                    {req.model
-                      ? req.model
-                          .replace(/^models\//, "")
-                          .split("/")
-                          .pop()
-                      : "—"}
+                    {req.model ? cleanModelName(req.model) : "—"}
                   </span>
                   {req.operation && (
                     <span className={styles.requestOperation}>
@@ -157,11 +157,9 @@ export default function SessionRequestsListComponent({
                   {req.totalTime > 0 && (
                     <StopwatchBadgeComponent seconds={req.totalTime} />
                   )}
-                  {req.estimatedCost > 0 && (
-                    <span className={styles.requestCost} title="Cost">
-                      {formatCost(req.estimatedCost)}
-                    </span>
-                  )}
+                  <span className={styles.requestCost} title="Cost">
+                    {formatCost(req.estimatedCost ?? 0)}
+                  </span>
                   <DateTimeBadgeComponent date={req.timestamp} />
                 </div>
               </div>

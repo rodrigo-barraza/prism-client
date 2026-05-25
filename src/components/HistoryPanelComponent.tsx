@@ -122,9 +122,10 @@ export default function HistoryPanel({
           }
         }
 
-        // If no models found in messages, fall back to conv.model
-        if (modelNamesSet.size === 0 && conversation.model) {
-          modelNamesSet.add(conversation.model);
+        // If no models found in messages, fall back to conv.model or conv.settings.model
+        if (modelNamesSet.size === 0) {
+          const fallbackModel = conversation.model || conversation.settings?.model;
+          if (fallbackModel) modelNamesSet.add(fallbackModel);
         }
         modelNames = Array.from(modelNamesSet);
       }
@@ -168,6 +169,7 @@ export default function HistoryPanel({
         tags,
         username: conversation.username,
         modelNames,
+        modelName: conversation.model || conversation.settings?.model || null,
         agent: conversation.agent,
         searchText: [
           conversation.project || "",

@@ -1,0 +1,19 @@
+
+> prism-client@0.1.0 lint
+> eslint .
+
+
+Oops! Something went wrong! :(
+
+ESLint: 10.4.0
+
+TypeError: scopeManager.addGlobals is not a function
+    at addDeclaredGlobals (/home/rodrigo/development/prism-client/node_modules/eslint/lib/languages/js/source-code/source-code.js:221:15)
+    at SourceCode.finalize (/home/rodrigo/development/prism-client/node_modules/eslint/lib/languages/js/source-code/source-code.js:1090:3)
+    at #flatVerifyWithoutProcessors (/home/rodrigo/development/prism-client/node_modules/eslint/lib/linter/linter.js:1261:24)
+    at Linter._verifyWithFlatConfigArrayAndWithoutProcessors (/home/rodrigo/development/prism-client/node_modules/eslint/lib/linter/linter.js:1349:43)
+    at Linter._verifyWithFlatConfigArray (/home/rodrigo/development/prism-client/node_modules/eslint/lib/linter/linter.js:1416:15)
+    at Linter.verify (/home/rodrigo/development/prism-client/node_modules/eslint/lib/linter/linter.js:861:9)
+    at Linter.verifyAndFix (/home/rodrigo/development/prism-client/node_modules/eslint/lib/linter/linter.js:1534:20)
+    at verifyText (/home/rodrigo/development/prism-client/node_modules/eslint/lib/eslint/eslint-helpers.js:1155:45)
+    at readAndVerifyFile (/home/rodrigo/development/prism-client/node_modules/eslint/lib/eslint/eslint-helpers.js:1296:10)

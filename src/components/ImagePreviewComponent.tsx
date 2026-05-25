@@ -252,8 +252,14 @@ export default function ImagePreviewComponent({
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className={styles.overlay}>
+    <div className={styles.overlay} onClick={handleOverlayClick}>
       <button className={styles.closeBtn} onClick={onClose}>
         <X size={24} />
       </button>

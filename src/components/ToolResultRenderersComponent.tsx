@@ -177,6 +177,10 @@ export interface ParsedToolResult {
   team?: string;
   agent_id?: string;
   result?: unknown;
+  turtleEmbedUrl?: string;
+  embedUrl?: string;
+  sessionId?: string;
+  turtleId?: string;
 }
 
 export interface RendererProps {
@@ -1355,6 +1359,40 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
 
 // -- 13. Turtle Graphics -----------------------------------------------------
 
+function TurtleDrawEmbed({ src, title, fallbackHeight }: { src: string; title: string; fallbackHeight: number }) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [height, setHeight] = useState(fallbackHeight);
+
+  const handleMessage = useCallback((event: MessageEvent) => {
+    if (
+      event.data?.type === "embed-resize" &&
+      iframeRef.current &&
+      event.source === iframeRef.current.contentWindow
+    ) {
+      setHeight(event.data.height);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [handleMessage]);
+
+  return (
+    <div className={styles.turtleEmbedWrapper}>
+      <iframe
+        ref={iframeRef}
+        src={src}
+        className={styles.turtleEmbedFrame}
+        title={title}
+        style={{ height: `${height}px` }}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    </div>
+  );
+}
+
 function TurtleDrawRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
@@ -1362,6 +1400,7 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
   const hasError = !!parsed.error;
   const commandCount = parsed.commandCount || args?.commands?.length || 0;
   const canvasSize = parsed.canvasSize || "800x600";
+  const embedUrl = parsed.turtleEmbedUrl || parsed.embedUrl || "";
 
   return (
     <div className={styles.rendererBlock}>
@@ -1376,6 +1415,13 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
         />
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <TurtleDrawEmbed
+          src={embedUrl}
+          title="Turtle Drawing"
+          fallbackHeight={660}
+        />
+      )}
     </div>
   );
 }
