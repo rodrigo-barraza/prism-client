@@ -18,6 +18,14 @@ import {
 } from "lucide-react";
 import PrismService from "../../services/PrismService";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
+import {
+  ModalComponent,
+  SelectComponent,
+  InputComponent,
+  TextAreaComponent,
+  FormGroupComponent,
+  ButtonComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./page.module.css";
 
 interface Workspace {
@@ -215,7 +223,7 @@ export default function ScheduledTasksPage() {
   };
 
   // -- Handle task creation submit --
-  const handleSubmitTask = async (e: React.FormEvent) => {
+  const handleSubmitTask = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formPrompt.trim() || !formProvider || !formModel) {
       showToast("Please fill all required fields", "error");
@@ -522,263 +530,219 @@ export default function ScheduledTasksPage() {
           )}
         </div>
 
-        {/* Creative Glass Modal for New Scheduled Task */}
+        {/* Modal for New Scheduled Task — using ModalComponent from components-library */}
         {showNewModal && (
-          <div className={styles.modalOverlay}>
-            <div className={styles.modalBackdrop} onClick={() => setShowNewModal(false)} />
-            
-            <div className={styles.modal}>
-              <div className={styles.modalHeader}>
-                <h2>New Scheduled Task</h2>
-                <button
+          <ModalComponent
+            title="New Scheduled Task"
+            onClose={() => setShowNewModal(false)}
+            size="md"
+            footer={
+              <div className={styles.modalActions}>
+                <ButtonComponent
+                  variant="disabled"
                   onClick={() => setShowNewModal(false)}
-                  className={styles.modalClose}
                 >
-                  <X size={18} />
-                </button>
+                  Cancel
+                </ButtonComponent>
+                <ButtonComponent
+                  variant="submit"
+                  icon={Check}
+                  loading={formSubmitting}
+                  disabled={formSubmitting}
+                  onClick={handleSubmitTask}
+                >
+                  Add Scheduled Task
+                </ButtonComponent>
+              </div>
+            }
+          >
+            <form onSubmit={handleSubmitTask} className={styles.form}>
+              {/* Task Name */}
+              <FormGroupComponent label="Name">
+                <InputComponent
+                  id="taskName"
+                  required
+                  placeholder="Enter task name"
+                  value={formName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)}
+                />
+              </FormGroupComponent>
+
+              <div className={styles.formRow}>
+                {/* Project / Workspace */}
+                <FormGroupComponent label="Project">
+                  <SelectComponent
+                    value={formProject}
+                    onChange={(val: string) => setFormProject(val)}
+                    options={workspaces.map((w) => ({
+                      value: w.name,
+                      label: w.name,
+                    }))}
+                    placeholder="Select project"
+                  />
+                </FormGroupComponent>
+
+                {/* Agent Persona */}
+                <FormGroupComponent label="Agent">
+                  <SelectComponent
+                    value={formAgent}
+                    onChange={(val: string) => setFormAgent(val)}
+                    icon={<Bot size={13} />}
+                    options={[
+                      { value: "NONE", label: "Direct Model (No Agent)" },
+                      ...agents.map((a) => ({
+                        value: a.id,
+                        label: a.name,
+                      })),
+                    ]}
+                  />
+                </FormGroupComponent>
               </div>
 
-              <form onSubmit={handleSubmitTask} className={styles.form}>
-                {/* Task Name */}
-                <div className={styles.formGroup}>
-                  <label htmlFor="taskName">Name</label>
-                  <input
-                    id="taskName"
-                    type="text"
-                    required
-                    placeholder="Enter task name"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    className={styles.formInput}
+              <div className={styles.formRow}>
+                {/* Model Provider */}
+                <FormGroupComponent label="Provider">
+                  <SelectComponent
+                    value={formProvider}
+                    onChange={(val: string) => setFormProvider(val)}
+                    options={providers.map((p) => ({
+                      value: p,
+                      label: p.toUpperCase(),
+                    }))}
+                    placeholder="Select provider"
                   />
-                </div>
+                </FormGroupComponent>
 
-                <div className={styles.formRow}>
-                  {/* Project / Workspace */}
-                  <div className={styles.formGroup}>
-                    <label htmlFor="taskProject">Project</label>
-                    <select
-                      id="taskProject"
-                      value={formProject}
-                      onChange={(e) => setFormProject(e.target.value)}
-                      className={styles.formSelect}
-                    >
-                      {workspaces.map((w) => (
-                        <option key={w.id} value={w.name}>
-                          📁 {w.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Agent Persona */}
-                  <div className={styles.formGroup}>
-                    <label htmlFor="taskAgent">Agent</label>
-                    <select
-                      id="taskAgent"
-                      value={formAgent}
-                      onChange={(e) => setFormAgent(e.target.value)}
-                      className={styles.formSelect}
-                    >
-                      <option value="NONE">Direct Model (No Agent)</option>
-                      {agents.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          🤖 {a.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className={styles.formRow}>
-                  {/* Model Provider */}
-                  <div className={styles.formGroup}>
-                    <label htmlFor="taskProvider">Provider</label>
-                    <select
-                      id="taskProvider"
-                      value={formProvider}
-                      onChange={(e) => setFormProvider(e.target.value)}
-                      className={styles.formSelect}
-                    >
-                      {providers.map((p) => (
-                        <option key={p} value={p}>
-                          {p.toUpperCase()}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Model Selection */}
-                  <div className={styles.formGroup}>
-                    <label htmlFor="taskModel">Model</label>
-                    <select
-                      id="taskModel"
-                      value={formModel}
-                      onChange={(e) => setFormModel(e.target.value)}
-                      className={styles.formSelect}
-                    >
-                      {(modelsMap[formProvider] || []).map((m) => (
-                        <option key={m.name} value={m.name}>
-                          {m.displayName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Prompt */}
-                <div className={styles.formGroup}>
-                  <label htmlFor="taskPrompt">Prompt</label>
-                  <textarea
-                    id="taskPrompt"
-                    required
-                    placeholder="Enter a prompt for the agent..."
-                    value={formPrompt}
-                    onChange={(e) => setFormPrompt(e.target.value)}
-                    className={styles.formTextarea}
-                    rows={4}
+                {/* Model Selection */}
+                <FormGroupComponent label="Model">
+                  <SelectComponent
+                    value={formModel}
+                    onChange={(val: string) => setFormModel(val)}
+                    icon={<Sparkles size={13} />}
+                    options={(modelsMap[formProvider] || []).map((m) => ({
+                      value: m.name,
+                      label: m.displayName || m.name,
+                    }))}
+                    placeholder="Select model"
                   />
-                </div>
+                </FormGroupComponent>
+              </div>
 
-                {/* Schedule Selector */}
-                <div className={styles.scheduleBuilder}>
-                  <div className={styles.formGroup}>
-                    <label htmlFor="taskScheduleType">Schedule</label>
-                    <select
-                      id="taskScheduleType"
-                      value={formScheduleType}
-                      onChange={(e) => setFormScheduleType(e.target.value as any)}
-                      className={styles.formSelect}
-                    >
-                      <option value="hourly">Hourly</option>
-                      <option value="daily">Daily</option>
-                      <option value="weekly">Weekly</option>
-                      <option value="cron">Cron Expression</option>
-                      <option value="trigger">Trigger (Manual / Remote)</option>
-                    </select>
+              {/* Prompt */}
+              <FormGroupComponent label="Prompt">
+                <TextAreaComponent
+                  id="taskPrompt"
+                  required
+                  placeholder="Enter a prompt for the agent..."
+                  value={formPrompt}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormPrompt(e.target.value)}
+                  minRows={4}
+                  maxRows={10}
+                />
+              </FormGroupComponent>
+
+              {/* Schedule Selector */}
+              <div className={styles.scheduleBuilder}>
+                <FormGroupComponent label="Schedule">
+                  <SelectComponent
+                    value={formScheduleType}
+                    onChange={(val: string) => setFormScheduleType(val as typeof formScheduleType)}
+                    options={[
+                      { value: "hourly", label: "Hourly" },
+                      { value: "daily", label: "Daily" },
+                      { value: "weekly", label: "Weekly" },
+                      { value: "cron", label: "Cron Expression" },
+                      { value: "trigger", label: "Trigger (Manual / Remote)" },
+                    ]}
+                  />
+                </FormGroupComponent>
+
+                {/* Time picker for daily */}
+                {formScheduleType === "daily" && (
+                  <div className={styles.timePickerRow}>
+                    <span className={styles.pickerLabel}>around</span>
+                    <SelectComponent
+                      value={formTimeHour}
+                      onChange={(val: string) => setFormTimeHour(val)}
+                      options={Array.from({ length: 12 }, (_, i) => {
+                        const h = String(i === 0 ? 12 : i).padStart(2, "0");
+                        return { value: h, label: h };
+                      })}
+                    />
+                    <span className={styles.timeColon}>:</span>
+                    <SelectComponent
+                      value={formTimeMinute}
+                      onChange={(val: string) => setFormTimeMinute(val)}
+                      options={["00", "15", "30", "45"].map((m) => ({ value: m, label: m }))}
+                    />
+                    <SelectComponent
+                      value={formTimeAmpm}
+                      onChange={(val: string) => setFormTimeAmpm(val)}
+                      options={[
+                        { value: "AM", label: "AM" },
+                        { value: "PM", label: "PM" },
+                      ]}
+                    />
                   </div>
+                )}
 
-                  {/* Custom Schedule Details based on type */}
-                  {formScheduleType === "daily" && (
-                    <div className={styles.timePickerRow}>
-                      <span className={styles.pickerLabel}>around</span>
-                      <select
-                        value={formTimeHour}
-                        onChange={(e) => setFormTimeHour(e.target.value)}
-                        className={styles.timeSelect}
-                      >
-                        {Array.from({ length: 12 }, (_, i) => String(i === 0 ? 12 : i).padStart(2, "0")).map((h) => (
-                          <option key={h} value={h}>{h}</option>
-                        ))}
-                      </select>
-                      <span className={styles.timeColon}>:</span>
-                      <select
-                        value={formTimeMinute}
-                        onChange={(e) => setFormTimeMinute(e.target.value)}
-                        className={styles.timeSelect}
-                      >
-                        {["00", "15", "30", "45"].map((m) => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={formTimeAmpm}
-                        onChange={(e) => setFormTimeAmpm(e.target.value)}
-                        className={styles.timeSelect}
-                      >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                      </select>
-                    </div>
-                  )}
+                {/* Day + time picker for weekly */}
+                {formScheduleType === "weekly" && (
+                  <div className={styles.weeklyPickerRow}>
+                    <SelectComponent
+                      value={String(formWeeklyDay)}
+                      onChange={(val: string) => setFormWeeklyDay(Number(val))}
+                      options={[
+                        { value: "0", label: "Sunday" },
+                        { value: "1", label: "Monday" },
+                        { value: "2", label: "Tuesday" },
+                        { value: "3", label: "Wednesday" },
+                        { value: "4", label: "Thursday" },
+                        { value: "5", label: "Friday" },
+                        { value: "6", label: "Saturday" },
+                      ]}
+                    />
+                    <span className={styles.pickerLabel}>around</span>
+                    <SelectComponent
+                      value={formTimeHour}
+                      onChange={(val: string) => setFormTimeHour(val)}
+                      options={Array.from({ length: 12 }, (_, i) => {
+                        const h = String(i === 0 ? 12 : i).padStart(2, "0");
+                        return { value: h, label: h };
+                      })}
+                    />
+                    <span className={styles.timeColon}>:</span>
+                    <SelectComponent
+                      value={formTimeMinute}
+                      onChange={(val: string) => setFormTimeMinute(val)}
+                      options={["00", "15", "30", "45"].map((m) => ({ value: m, label: m }))}
+                    />
+                    <SelectComponent
+                      value={formTimeAmpm}
+                      onChange={(val: string) => setFormTimeAmpm(val)}
+                      options={[
+                        { value: "AM", label: "AM" },
+                        { value: "PM", label: "PM" },
+                      ]}
+                    />
+                  </div>
+                )}
 
-                  {formScheduleType === "weekly" && (
-                    <div className={styles.weeklyPickerRow}>
-                      <select
-                        value={formWeeklyDay}
-                        onChange={(e) => setFormWeeklyDay(Number(e.target.value))}
-                        className={styles.formSelect}
-                      >
-                        <option value={0}>Sunday</option>
-                        <option value={1}>Monday</option>
-                        <option value={2}>Tuesday</option>
-                        <option value={3}>Wednesday</option>
-                        <option value={4}>Thursday</option>
-                        <option value={5}>Friday</option>
-                        <option value={6}>Saturday</option>
-                      </select>
-                      <span className={styles.pickerLabel}>around</span>
-                      <select
-                        value={formTimeHour}
-                        onChange={(e) => setFormTimeHour(e.target.value)}
-                        className={styles.timeSelect}
-                      >
-                        {Array.from({ length: 12 }, (_, i) => String(i === 0 ? 12 : i).padStart(2, "0")).map((h) => (
-                          <option key={h} value={h}>{h}</option>
-                        ))}
-                      </select>
-                      <span className={styles.timeColon}>:</span>
-                      <select
-                        value={formTimeMinute}
-                        onChange={(e) => setFormTimeMinute(e.target.value)}
-                        className={styles.timeSelect}
-                      >
-                        {["00", "15", "30", "45"].map((m) => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={formTimeAmpm}
-                        onChange={(e) => setFormTimeAmpm(e.target.value)}
-                        className={styles.timeSelect}
-                      >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                      </select>
-                    </div>
-                  )}
-
-                  {formScheduleType === "cron" && (
-                    <div className={styles.formGroup}>
-                      <label htmlFor="taskCron">Cron Expression</label>
-                      <input
-                        id="taskCron"
-                        type="text"
-                        required
-                        placeholder="* * * * *"
-                        value={formCron}
-                        onChange={(e) => setFormCron(e.target.value)}
-                        className={styles.formInput}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Submit Actions */}
-                <div className={styles.modalActions}>
-                  <button
-                    type="button"
-                    onClick={() => setShowNewModal(false)}
-                    className={styles.cancelBtn}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={formSubmitting}
-                    className={styles.submitBtn}
-                  >
-                    {formSubmitting ? (
-                      <Loader2 size={14} className={styles.spin} />
-                    ) : (
-                      <Check size={14} />
-                    )}
-                    <span>Add Scheduled Task</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+                {/* Cron expression input */}
+                {formScheduleType === "cron" && (
+                  <FormGroupComponent label="Cron Expression">
+                    <InputComponent
+                      id="taskCron"
+                      required
+                      placeholder="* * * * *"
+                      value={formCron}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormCron(e.target.value)}
+                    />
+                  </FormGroupComponent>
+                )}
+              </div>
+            </form>
+          </ModalComponent>
         )}
         </div>
       </div>

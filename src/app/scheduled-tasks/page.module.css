@@ -565,74 +565,6 @@
   background: var(--bg-secondary);
 }
 
-/* ── Modal Overlay ─────────────────────────────────────────── */
-
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1050;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.modalBackdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  animation: fadeInPure 0.15s ease-out;
-}
-
-.modal {
-  position: relative;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  width: 100%;
-  max-width: 560px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-  padding: 24px;
-  z-index: 1060;
-  animation: slideUp 0.2s ease-out;
-}
-
-.modalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.modalHeader h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-}
-
-.modalClose {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  border-radius: var(--border-radius-sm);
-  transition:
-    color var(--transition-fast),
-    background var(--transition-fast);
-}
-
-.modalClose:hover {
-  color: var(--text-primary);
-  background: var(--bg-tertiary);
-}
-
 /* ── Form ──────────────────────────────────────────────────── */
 
 .form {
@@ -647,67 +579,7 @@
   gap: 12px;
 }
 
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 
-.formGroup label {
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.formInput,
-.formSelect,
-.formTextarea {
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
-  padding: 8px 12px;
-  font-size: 0.8125rem;
-  height: 36px;
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.formInput:focus,
-.formSelect:focus,
-.formTextarea:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--accent-glow);
-}
-
-.formSelect {
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b728e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  padding-right: 28px;
-}
-
-.formSelect option {
-  background: var(--select-option-bg);
-  color: var(--select-option-text);
-}
-
-.formTextarea {
-  resize: vertical;
-  min-height: 80px;
-  height: auto;
-  line-height: 1.5;
-  font-family: inherit;
-  padding: 10px 12px;
-}
 
 /* ── Schedule Builder ──────────────────────────────────────── */
 
@@ -740,21 +612,7 @@
   color: var(--text-muted);
 }
 
-.timeSelect {
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
-  padding: 6px 8px;
-  font-size: var(--font-size-sm);
-  height: 32px;
-  cursor: pointer;
-}
 
-.timeSelect option {
-  background: var(--select-option-bg);
-  color: var(--select-option-text);
-}
 
 /* ── Modal Actions ─────────────────────────────────────────── */
 
@@ -765,43 +623,7 @@
   margin-top: 8px;
 }
 
-.cancelBtn,
-.submitBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  transition: all var(--transition-fast);
-}
 
-.cancelBtn {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-.cancelBtn:hover {
-  background: var(--bg-secondary);
-}
-
-.submitBtn {
-  background: var(--accent-color);
-  border: none;
-  color: var(--text-inverse);
-}
-
-.submitBtn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.submitBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 /* ── Animations ────────────────────────────────────────────── */
 
