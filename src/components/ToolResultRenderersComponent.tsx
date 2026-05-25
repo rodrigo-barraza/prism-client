@@ -181,6 +181,9 @@ export interface ParsedToolResult {
   embedUrl?: string;
   sessionId?: string;
   turtleId?: string;
+  width?: number;
+  height?: number;
+  asciiEmbedUrl?: string;
 }
 
 export interface RendererProps {
@@ -1426,6 +1429,39 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
   );
 }
 
+function AsciiImageRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const width = parsed.width || (args?.width ? Number(args.width) : 100);
+  const height = parsed.height || 0;
+  const embedUrl = parsed.asciiEmbedUrl || parsed.embedUrl || "";
+
+  return (
+    <div className={styles.rendererBlock}>
+      <div className={styles.rendererHeader}>
+        <span style={{ fontSize: 13 }}>🎨</span>
+        <span className={styles.rendererTitle}>
+          ASCII Art — {String(width)}x{String(height)}
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Rendered"}
+        />
+      </div>
+      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <TurtleDrawEmbed
+          src={embedUrl}
+          title="ASCII Art"
+          fallbackHeight={600}
+        />
+      )}
+    </div>
+  );
+}
+
 // -- 14. Coordinator Tools ---------------------------------------------------
 
 /**
@@ -1878,6 +1914,9 @@ const TOOL_RESULT_REGISTRY = {
 
   // Turtle Graphics
   turtle_draw: { Renderer: TurtleDrawRenderer },
+
+  // Image to ASCII Art
+  convert_image_to_ascii: { Renderer: AsciiImageRenderer },
 
   // Coordinator
   team_create: { Renderer: TeamCreateRenderer },

@@ -1891,15 +1891,15 @@ export default function AgentComponent({
             if (isStale()) return;
             const toolData = data.tool;
             if (!toolData) return;
+            const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
+
             setToolActivity((prev: ToolCallEvent[]) => {
-              let updated: ToolCallEvent[] = [];
-              const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
               if (data.status === "calling") {
                 // Deduplicate: skip if this tool ID was already registered
                 if (prev.some((a) => a.id === resolvedId)) {
                   return prev;
                 }
-                updated = [
+                return [
                   ...prev,
                   {
                     id: resolvedId,
@@ -1909,25 +1909,8 @@ export default function AgentComponent({
                     timestamp: Date.now(),
                   },
                 ];
-                // Track segment ordering: group consecutive tool events
-                // Guard: only add to segments if not already tracked
-                if (!segmentToolIdSet.has(resolvedId)) {
-                  segmentToolIdSet.add(resolvedId);
-                  if (lastSegmentType === "tools") {
-                    // Append to current tools segment
-                    contentSegments[contentSegments.length - 1].toolIds!.push(
-                      resolvedId,
-                    );
-                  } else {
-                    contentSegments.push({
-                      type: "tools",
-                      toolIds: [resolvedId],
-                    });
-                    lastSegmentType = "tools";
-                  }
-                }
               } else {
-                updated = prev.map((activity) => {
+                return prev.map((activity) => {
                   if (
                     (toolData.id && activity.id === toolData.id) ||
                     (!toolData.id &&
@@ -1944,31 +1927,89 @@ export default function AgentComponent({
                   return activity;
                 });
               }
-              setMessages((msgPrev: ClientMessage[]) => {
-                const array = [...msgPrev];
-                const last = array[array.length - 1];
-                if (last?.role === "assistant") {
-                  array[array.length - 1] = {
-                    ...last,
-                    toolCalls: updated,
-                    contentSegments: snapshotSegments(),
-                    textFragments: [...textFragments],
-                    thinkingFragments: [...thinkingFragments],
-                  };
+            });
+
+            // Track segment ordering: group consecutive tool events
+            // Guard: only add to segments if not already tracked
+            if (data.status === "calling") {
+              if (!segmentToolIdSet.has(resolvedId)) {
+                segmentToolIdSet.add(resolvedId);
+                if (lastSegmentType === "tools") {
+                  // Append to current tools segment
+                  contentSegments[contentSegments.length - 1].toolIds!.push(
+                    resolvedId,
+                  );
                 } else {
-                  // Tool events can arrive before any text chunks — create placeholder
-                  array.push({
-                    role: "assistant",
-                    content: "",
-                    toolCalls: updated,
-                    contentSegments: snapshotSegments(),
-                    textFragments: [...textFragments],
-                    thinkingFragments: [...thinkingFragments],
+                  contentSegments.push({
+                    type: "tools",
+                    toolIds: [resolvedId],
                   });
+                  lastSegmentType = "tools";
                 }
-                return array;
-              });
-              return updated;
+              }
+            }
+
+            setMessages((msgPrev: ClientMessage[]) => {
+              const array = [...msgPrev];
+              const last = array[array.length - 1];
+
+              const currentToolCalls = last?.role === "assistant" ? last.toolCalls || [] : [];
+              let updatedToolCalls: ToolCallEvent[] = [];
+
+              if (data.status === "calling") {
+                if (currentToolCalls.some((tc) => tc.id === resolvedId)) {
+                  updatedToolCalls = currentToolCalls;
+                } else {
+                  updatedToolCalls = [
+                    ...currentToolCalls,
+                    {
+                      id: resolvedId,
+                      name: toolData.name || "unknown",
+                      args: toolData.args || {},
+                      status: "calling",
+                      timestamp: Date.now(),
+                    },
+                  ];
+                }
+              } else {
+                updatedToolCalls = currentToolCalls.map((tc) => {
+                  if (
+                    (toolData.id && tc.id === toolData.id) ||
+                    (!toolData.id &&
+                      tc.name === (toolData.name || "unknown") &&
+                      tc.status === "calling")
+                  ) {
+                    return {
+                      ...tc,
+                      status: data.status,
+                      result: toolData.result,
+                      args: toolData.args || {},
+                    };
+                  }
+                  return tc;
+                });
+              }
+
+              if (last?.role === "assistant") {
+                array[array.length - 1] = {
+                  ...last,
+                  toolCalls: updatedToolCalls,
+                  contentSegments: snapshotSegments(),
+                  textFragments: [...textFragments],
+                  thinkingFragments: [...thinkingFragments],
+                };
+              } else {
+                // Tool events can arrive before any text chunks — create placeholder
+                array.push({
+                  role: "assistant",
+                  content: "",
+                  toolCalls: updatedToolCalls,
+                  contentSegments: snapshotSegments(),
+                  textFragments: [...textFragments],
+                  thinkingFragments: [...thinkingFragments],
+                });
+              }
+              return array;
             });
 
             // Auto-refresh tasks panel when any task tool completes
@@ -2028,15 +2069,15 @@ export default function AgentComponent({
           onToolCall: (tc: ToolCallEvent) => {
             if (isStale()) return;
             const toolData = tc;
+            const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
+
             setToolActivity((prev) => {
-              let updated;
-              const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
               if (toolData.status === "calling") {
                 // Deduplicate: skip if this tool ID was already registered
                 if (prev.some((a) => a.id === resolvedId)) {
                   return prev;
                 }
-                updated = [
+                return [
                   ...prev,
                   {
                     id: resolvedId,
@@ -2046,25 +2087,9 @@ export default function AgentComponent({
                     timestamp: Date.now(),
                   },
                 ];
-                // Track segment ordering: group consecutive tool events
-                // Guard: only add to segments if not already tracked
-                if (!segmentToolIdSet.has(resolvedId)) {
-                  segmentToolIdSet.add(resolvedId);
-                  if (lastSegmentType === "tools") {
-                    contentSegments[contentSegments.length - 1].toolIds!.push(
-                      resolvedId,
-                    );
-                  } else {
-                    contentSegments.push({
-                      type: "tools",
-                      toolIds: [resolvedId],
-                    });
-                    lastSegmentType = "tools";
-                  }
-                }
               } else {
                 // done or error — update existing entry
-                updated = prev.map((activity) => {
+                return prev.map((activity) => {
                   if (
                     (toolData.id && activity.id === toolData.id) ||
                     (!toolData.id &&
@@ -2083,30 +2108,89 @@ export default function AgentComponent({
                   return activity;
                 });
               }
-              setMessages((msgPrev: ClientMessage[]) => {
-                const array = [...msgPrev];
-                const last = array[array.length - 1];
-                if (last?.role === "assistant") {
-                  array[array.length - 1] = {
-                    ...last,
-                    toolCalls: updated,
-                    contentSegments: snapshotSegments(),
-                    textFragments: [...textFragments],
-                    thinkingFragments: [...thinkingFragments],
-                  };
+            });
+
+            // Track segment ordering: group consecutive tool events
+            // Guard: only add to segments if not already tracked
+            if (toolData.status === "calling") {
+              if (!segmentToolIdSet.has(resolvedId)) {
+                segmentToolIdSet.add(resolvedId);
+                if (lastSegmentType === "tools") {
+                  contentSegments[contentSegments.length - 1].toolIds!.push(
+                    resolvedId,
+                  );
                 } else {
-                  array.push({
-                    role: "assistant",
-                    content: "",
-                    toolCalls: updated,
-                    contentSegments: snapshotSegments(),
-                    textFragments: [...textFragments],
-                    thinkingFragments: [...thinkingFragments],
+                  contentSegments.push({
+                    type: "tools",
+                    toolIds: [resolvedId],
                   });
+                  lastSegmentType = "tools";
                 }
-                return array;
-              });
-              return updated;
+              }
+            }
+
+            setMessages((msgPrev: ClientMessage[]) => {
+              const array = [...msgPrev];
+              const last = array[array.length - 1];
+
+              const currentToolCalls = last?.role === "assistant" ? last.toolCalls || [] : [];
+              let updatedToolCalls: ToolCallEvent[] = [];
+
+              if (toolData.status === "calling") {
+                if (currentToolCalls.some((tc) => tc.id === resolvedId)) {
+                  updatedToolCalls = currentToolCalls;
+                } else {
+                  updatedToolCalls = [
+                    ...currentToolCalls,
+                    {
+                      id: resolvedId,
+                      name: toolData.name,
+                      args: toolData.args,
+                      status: "calling",
+                      timestamp: Date.now(),
+                    },
+                  ];
+                }
+              } else {
+                updatedToolCalls = currentToolCalls.map((tc) => {
+                  if (
+                    (toolData.id && tc.id === toolData.id) ||
+                    (!toolData.id &&
+                      tc.name === toolData.name &&
+                      tc.status === "calling")
+                  ) {
+                    return {
+                      ...tc,
+                      status: toolData.status,
+                      result: toolData.result,
+                      ...(toolData.args && Object.keys(toolData.args).length > 0
+                        ? { args: toolData.args }
+                        : {}),
+                    };
+                  }
+                  return tc;
+                });
+              }
+
+              if (last?.role === "assistant") {
+                array[array.length - 1] = {
+                  ...last,
+                  toolCalls: updatedToolCalls,
+                  contentSegments: snapshotSegments(),
+                  textFragments: [...textFragments],
+                  thinkingFragments: [...thinkingFragments],
+                };
+              } else {
+                array.push({
+                  role: "assistant",
+                  content: "",
+                  toolCalls: updatedToolCalls,
+                  contentSegments: snapshotSegments(),
+                  textFragments: [...textFragments],
+                  thinkingFragments: [...thinkingFragments],
+                });
+              }
+              return array;
             });
 
             // Auto-refresh tasks panel when any task tool completes (MCP path)
