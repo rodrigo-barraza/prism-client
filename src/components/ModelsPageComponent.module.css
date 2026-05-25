@@ -20,7 +20,7 @@
   padding: 8px 14px;
   border: 1px solid var(--border-color);
   border-radius: 2px;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -28,9 +28,9 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
     color: var(--text-primary);
-    border-color: var(--accent-color);
+    border-color: var(--accent-primary);
   }
 
   &:disabled {
@@ -70,7 +70,7 @@
 
 .loadBtn {
   background: rgba(99, 102, 241, 0.1);
-  color: var(--accent-color);
+  color: var(--accent-primary);
 
   &:hover:not(:disabled) {
     background: rgba(99, 102, 241, 0.2);
@@ -84,14 +84,14 @@
 
 .loadingBtn {
   background: rgba(99, 102, 241, 0.1);
-  color: var(--accent-color);
+  color: var(--accent-primary);
   opacity: 0.7;
   cursor: wait;
 }
 
 .unloadBtn {
   background: rgba(239, 68, 68, 0.1);
-  color: var(--danger);
+  color: var(--color-danger);
 
   &:hover:not(:disabled) {
     background: rgba(239, 68, 68, 0.2);

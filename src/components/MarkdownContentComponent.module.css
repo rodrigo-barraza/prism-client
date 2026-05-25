@@ -38,22 +38,22 @@
   }
 
   blockquote {
-    border-left: 3px solid var(--accent-color);
+    border-left: 3px solid var(--accent-primary);
     padding: 4px 12px;
     margin: 8px 0;
     color: var(--text-secondary);
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
     border-radius: 0 2px 2px 0;
   }
 
   a {
-    color: var(--accent-color);
+    color: var(--accent-primary);
     text-decoration: underline;
     text-decoration-color: rgba(138, 120, 255, 0.3);
     transition: text-decoration-color 0.2s;
 
     &:hover {
-      text-decoration-color: var(--accent-color);
+      text-decoration-color: var(--accent-primary);
     }
   }
 
@@ -72,7 +72,7 @@
   }
 
   th {
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
     font-weight: 600;
   }
 
@@ -136,7 +136,7 @@
 }
 
 .inlineCode {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   padding: 2px 6px;
   border-radius: 2px;
   font-size: 0.8125rem;
@@ -162,7 +162,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 6px 12px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   font-size: var(--font-size-sm);
 }
 
@@ -187,7 +187,7 @@
   transition: all 0.15s;
 
   &:hover {
-    color: var(--accent-color);
-    background: var(--bg-tertiary);
+    color: var(--accent-primary);
+    background: var(--bg-elevated);
   }
 }

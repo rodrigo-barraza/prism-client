@@ -48,7 +48,7 @@ export default function PlanCardComponent({
       case "executing":
         return "var(--color-success)";
       case "rejected":
-        return "var(--color-error)";
+        return "var(--color-danger)";
       default:
         return "var(--color-warning)";
     }

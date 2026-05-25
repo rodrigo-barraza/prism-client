@@ -14,12 +14,12 @@
   width: 22px;
   height: 22px;
   border-radius: 3px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   cursor: default;
   transition: border-color 0.15s;
 }
 
 .toolPill:hover {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }

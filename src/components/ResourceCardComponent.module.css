@@ -4,7 +4,7 @@
   align-items: center;
   gap: 4px;
   padding: 16px 12px 14px;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   text-decoration: none;
@@ -32,9 +32,9 @@
   }
 
   &:hover {
-    border-color: var(--accent-color);
+    border-color: var(--accent-primary);
     box-shadow:
-      0 0 0 1px var(--accent-color),
+      0 0 0 1px var(--accent-primary),
       0 4px 12px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
     color: var(--text-primary);
@@ -44,7 +44,7 @@
     }
 
     .icon {
-      color: var(--accent-color);
+      color: var(--accent-primary);
     }
 
     .label {

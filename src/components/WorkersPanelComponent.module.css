@@ -77,7 +77,7 @@
 }
 
 .workerCardComplete {
-  border-left-color: var(--accent-color);
+  border-left-color: var(--accent-primary);
   background: rgba(99, 102, 241, 0.1);
 }
 
@@ -105,8 +105,8 @@
   letter-spacing: 0.5px;
   padding: 2px 7px;
   border-radius: 3px;
-  background: var(--accent-color);
-  color: var(--bg-primary);
+  background: var(--accent-primary);
+  color: var(--bg-base);
   text-transform: uppercase;
 }
 
@@ -216,7 +216,7 @@
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   color: var(--text-muted);
   padding: 1px 4px;
-  background: color-mix(in srgb, var(--bg-tertiary) 60%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
   border-radius: 3px;
   max-width: 180px;
   overflow: hidden;

@@ -4,7 +4,7 @@
   width: 100%;
   height: calc(100dvh - 80px);
   overflow: hidden;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   /* Override AdminShell main padding */
   margin: -28px -32px;
   width: calc(100% + 64px);
@@ -29,8 +29,8 @@
   transition: all var(--transition-fast);
 
   &:hover {
-    background: var(--accent-subtle);
-    color: var(--accent-color);
+    background: var(--accent-primary-subtle);
+    color: var(--accent-primary);
   }
 }
 

@@ -74,15 +74,15 @@
   padding: 0 4px;
   font-size: 0.625rem;
   font-weight: 700;
-  color: var(--accent-color);
-  background: var(--accent-glow);
+  color: var(--accent-primary);
+  background: var(--accent-primary-glow);
   border-radius: 8px;
   line-height: 1;
 }
 
 .dropdownTriggerOpen {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--accent-glow);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-glow);
 }
 
 .chevron {
@@ -106,7 +106,7 @@
   max-height: calc(100vh - 120px);
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md, 6px);
   box-shadow: var(--shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.25));
@@ -160,23 +160,23 @@
 }
 
 .menuItem:hover {
-  background: var(--accent-subtle, var(--bg-tertiary));
+  background: var(--accent-primary-subtle, var(--bg-elevated));
   color: var(--text-primary);
 }
 
 .menuItemActive {
   color: var(--text-primary);
-  background: var(--accent-subtle, var(--accent-glow));
+  background: var(--accent-primary-subtle, var(--accent-primary-glow));
 }
 
 .menuItemActive:hover {
-  background: var(--accent-subtle, var(--accent-glow));
+  background: var(--accent-primary-subtle, var(--accent-primary-glow));
 }
 
 .menuCheck {
   margin-left: auto;
   font-size: var(--font-size-xs);
-  color: var(--accent-color);
+  color: var(--accent-primary);
   font-weight: 700;
 }
 
@@ -212,7 +212,7 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--badge-color, var(--text-secondary));
-  background: var(--badge-bg, var(--bg-tertiary));
+  background: var(--badge-bg, var(--bg-elevated));
   border: 1px solid var(--badge-border, var(--border-color));
   border-radius: var(--border-radius-sm, 4px);
   white-space: nowrap;

@@ -11,13 +11,13 @@
   gap: 3px;
   padding: 1px 7px 1px 5px;
   margin: 0 1px;
-  background: color-mix(in srgb, var(--accent-color) 10%, var(--bg-tertiary));
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-elevated));
   border: 1px solid
-    color-mix(in srgb, var(--accent-color) 25%, var(--border-color));
+    color-mix(in srgb, var(--accent-primary) 25%, var(--border-color));
   border-radius: var(--radius-full, 999px);
   font-size: var(--font-size-sm);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   font-weight: 500;
   white-space: nowrap;
   vertical-align: baseline;
@@ -31,10 +31,10 @@
 }
 
 .mentionBadge:hover {
-  background: color-mix(in srgb, var(--accent-color) 16%, var(--bg-tertiary));
+  background: color-mix(in srgb, var(--accent-primary) 16%, var(--bg-elevated));
   border-color: color-mix(
     in srgb,
-    var(--accent-color) 40%,
+    var(--accent-primary) 40%,
     var(--border-color)
   );
 }
@@ -48,7 +48,7 @@
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   padding: 4px 10px;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
@@ -82,9 +82,9 @@
 }
 
 .mentionBadgeClickable:hover {
-  background: color-mix(in srgb, var(--accent-color) 22%, var(--bg-tertiary));
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 15%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 22%, var(--bg-elevated));
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
 .mentionBadgeClickable:active {
@@ -98,13 +98,13 @@
   filter: grayscale(1);
   border-style: dashed;
   color: var(--text-muted);
-  background: color-mix(in srgb, var(--text-muted) 6%, var(--bg-tertiary));
+  background: color-mix(in srgb, var(--text-muted) 6%, var(--bg-elevated));
   border-color: color-mix(in srgb, var(--text-muted) 20%, var(--border-color));
 }
 
 .mentionBadgeStale:hover {
   opacity: 0.6;
-  background: color-mix(in srgb, var(--text-muted) 10%, var(--bg-tertiary));
+  background: color-mix(in srgb, var(--text-muted) 10%, var(--bg-elevated));
   border-color: color-mix(in srgb, var(--text-muted) 30%, var(--border-color));
 }
 

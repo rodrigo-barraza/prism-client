@@ -35,7 +35,7 @@
   gap: 8px;
   padding: 10px 16px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-lg);
@@ -48,15 +48,15 @@
 }
 
 .toast.success {
-  border-left: 3px solid var(--success);
+  border-left: 3px solid var(--color-success);
 }
 
 .toast.error {
-  border-left: 3px solid var(--danger);
+  border-left: 3px solid var(--color-danger);
 }
 
 .toast.info {
-  border-left: 3px solid var(--info);
+  border-left: 3px solid var(--color-info);
 }
 
 .toastIcon {
@@ -87,7 +87,7 @@
 }
 
 .headerIcon {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   opacity: 0.8;
 }
 
@@ -103,7 +103,7 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-tertiary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   padding: 2px 8px;
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--border-color);
@@ -139,7 +139,7 @@
   height: 36px;
   padding: 0 12px 0 32px;
   font-size: 0.8125rem;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
@@ -151,8 +151,8 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--accent-glow);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-glow);
   width: 280px;
 }
 
@@ -163,7 +163,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  background: var(--accent-color);
+  background: var(--accent-primary);
   border: none;
   border-radius: var(--border-radius-sm);
   color: var(--text-inverse);
@@ -198,7 +198,7 @@
 
 .spin {
   animation: spin 1s linear infinite;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .emptyState {
@@ -237,7 +237,7 @@
 .emptyBtn {
   margin-top: 8px;
   padding: 7px 16px;
-  background: var(--accent-color);
+  background: var(--accent-primary);
   border: none;
   border-radius: var(--border-radius-sm);
   color: var(--text-inverse);
@@ -266,7 +266,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   padding: 18px 20px;
@@ -285,14 +285,14 @@
   left: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, var(--accent-color), var(--accent-secondary, var(--accent-color)));
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary, var(--accent-primary)));
   opacity: 0.65;
   transition: opacity var(--transition-fast);
 }
 
 .card:hover {
-  border-color: var(--accent-color);
-  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  background: var(--bg-elevated);
   box-shadow: var(--shadow-glow);
   transform: translateY(-1px);
 }
@@ -352,7 +352,7 @@
   width: 40px;
   height: 22px;
   border-radius: var(--radius-full);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -360,9 +360,9 @@
 }
 
 .toggleSwitchOn {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-  box-shadow: 0 0 8px var(--accent-glow);
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary-glow);
 }
 
 .toggleKnob {
@@ -391,7 +391,7 @@
 }
 
 .promptWrapper {
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border-radius: var(--border-radius-sm);
   padding: 10px 12px;
   border: 1px solid var(--border-subtle);
@@ -419,7 +419,7 @@
   align-items: center;
   gap: 4px;
   padding: 2px 7px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   font-size: 0.625rem;
@@ -428,7 +428,7 @@
 }
 
 .tag svg {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   opacity: 0.7;
 }
 
@@ -452,7 +452,7 @@
 }
 
 .menuBtn:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
@@ -472,7 +472,7 @@
   right: 0;
   margin-top: 4px;
   z-index: 1000;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   padding: 4px;
@@ -499,7 +499,7 @@
 }
 
 .menuDropdown button:hover {
-  background: color-mix(in srgb, var(--accent-color) 6%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
   color: var(--text-primary);
 }
 
@@ -509,12 +509,12 @@
 }
 
 .menuDropdown .deleteBtnText {
-  color: var(--danger);
+  color: var(--color-danger);
 }
 
 .menuDropdown .deleteBtnText:hover {
-  background: var(--danger-subtle);
-  color: var(--danger);
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
 }
 
 /* ── Inline Confirm Delete ─────────────────────────────────── */
@@ -546,7 +546,7 @@
 }
 
 .confirmYes {
-  background: var(--danger);
+  background: var(--color-danger);
   border: none;
   color: white;
 }
@@ -556,13 +556,13 @@
 }
 
 .confirmNo {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
 }
 
 .confirmNo:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
 }
 
 /* ── Form ──────────────────────────────────────────────────── */
@@ -624,6 +624,68 @@
 }
 
 
+
+/* ── Table View ────────────────────────────────────────────── */
+
+.toggleSwitchSmall {
+  width: 32px;
+  height: 18px;
+}
+
+.toggleSwitchSmall .toggleKnob {
+  width: 12px;
+  height: 12px;
+}
+
+.toggleSwitchSmall.toggleSwitchOn .toggleKnob {
+  transform: translateX(14px);
+}
+
+.tableNameCell {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.tableScheduleCell {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.tableDash {
+  color: var(--text-muted);
+}
+
+.tableActionsCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.tableActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tableActionBtn:hover {
+  background: var(--bg-elevated);
+  color: var(--accent-primary);
+}
+
+.tableActionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* ── Animations ────────────────────────────────────────────── */
 

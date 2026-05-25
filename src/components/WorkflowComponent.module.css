@@ -38,7 +38,7 @@
     width: calc(100% - 60px);
     min-width: calc(100% - 60px);
     z-index: 200;
-    background: var(--bg-secondary);
+    background: var(--bg-surface);
     transition: opacity 0.25s ease;
     opacity: 1;
   }

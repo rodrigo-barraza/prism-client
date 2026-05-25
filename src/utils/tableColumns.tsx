@@ -363,7 +363,7 @@ export const costColumns = (
       <ProportionBarComponent
         value={row[costKey] as number | undefined}
         total={totalCost}
-        color="var(--warning)"
+        color="var(--color-warning)"
         mini={mini}
       />
     ),
@@ -490,7 +490,7 @@ export const durationShareColumn = (
     <ProportionBarComponent
       value={getDurationMs(row)}
       total={totalDuration}
-      color="var(--accent-color)"
+      color="var(--accent-primary)"
       mini={mini}
     />
   ),
@@ -1073,10 +1073,10 @@ export const dashboardPassRateColumn = () => ({
     const percentage = Math.round((r.passRate as number) * 100);
     const color =
       percentage >= 80
-        ? "var(--success)"
+        ? "var(--color-success)"
         : percentage >= 50
-          ? "var(--warning)"
-          : "var(--danger)";
+          ? "var(--color-warning)"
+          : "var(--color-danger)";
     return (
       <span className={styles.dashboardRateCell}>
         <span className={styles.dashboardRateBar}>

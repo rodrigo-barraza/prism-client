@@ -30,9 +30,9 @@
 }
 
 .cycleButton:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: var(--accent-glow);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--accent-primary-glow);
 }
 
 .cycleButton:active {
@@ -41,8 +41,8 @@
 
 /* Highlighted state — when value differs from the default */
 .cycleButtonActive {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
   color: var(--color-white);
   filter: hue-rotate(0deg);
   animation: cycleHue 4s linear infinite;
@@ -56,8 +56,8 @@
 }
 
 .cycleButtonActive:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--accent-primary-hover);
+  border-color: var(--accent-primary-hover);
   color: var(--color-white);
 }
 

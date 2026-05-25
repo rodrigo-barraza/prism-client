@@ -11,7 +11,7 @@
   letter-spacing: 0.2px;
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   white-space: nowrap;
   transition:
@@ -21,7 +21,7 @@
 }
 
 .badge:hover {
-  border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
   color: var(--text-primary);
 }
 

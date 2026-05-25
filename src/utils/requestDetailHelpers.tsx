@@ -225,7 +225,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
               {
                 label: "Error",
                 value: (
-                  <span style={{ color: "var(--danger)" }}>
+                  <span style={{ color: "var(--color-danger)" }}>
                     {req.errorMessage}
                   </span>
                 ),

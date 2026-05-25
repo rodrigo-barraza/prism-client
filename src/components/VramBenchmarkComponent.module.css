@@ -31,7 +31,7 @@
   padding: 8px 14px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-card);
+  background: var(--bg-surface);
   color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -40,9 +40,9 @@
 }
 
 .refreshBtn:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   color: var(--text-primary);
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }
 
 .refreshBtn:disabled {
@@ -54,7 +54,7 @@
 .tabBar {
   margin-bottom: 0;
   border-bottom: none;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-bottom: none;
   border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
@@ -63,7 +63,7 @@
 
 /* ─── Chart card ─── */
 .chartCard {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
   padding: 20px 24px 24px;
@@ -81,7 +81,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent-color), transparent 70%);
+  background: linear-gradient(90deg, var(--accent-primary), transparent 70%);
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
@@ -91,7 +91,7 @@
 }
 
 .chartCard:hover {
-  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 30%, transparent);
   box-shadow: var(--shadow-glow);
 }
 
@@ -136,15 +136,15 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color var(--transition-fast);
 }
 
 .vramClipInputs:focus-within {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--accent-glow, rgba(99, 102, 241, 0.1));
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-glow, rgba(99, 102, 241, 0.1));
 }
 
 .vramClipInput {
@@ -197,7 +197,7 @@
   align-items: center;
   gap: 6px;
   padding: 5px 10px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   transition:
@@ -207,8 +207,8 @@
 }
 
 .chartSearchGroup:focus-within {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--accent-glow, rgba(99, 102, 241, 0.1));
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-glow, rgba(99, 102, 241, 0.1));
 }
 
 .chartSearchIcon {
@@ -220,7 +220,7 @@
 
 .chartSearchGroup:focus-within .chartSearchIcon {
   opacity: 1;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .chartSearchInput {
@@ -250,7 +250,7 @@
   height: 18px;
   border: none;
   border-radius: 50%;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   color: var(--text-muted);
   font-size: 0.625rem;
   line-height: 1;
@@ -262,7 +262,7 @@
 }
 
 .chartSearchClear:hover {
-  background: var(--accent-color);
+  background: var(--accent-primary);
   color: var(--color-white);
 }
 

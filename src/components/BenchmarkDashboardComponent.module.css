@@ -22,8 +22,8 @@
   padding: 0 20px;
   background: linear-gradient(
     to bottom,
-    var(--bg-primary) 0%,
-    var(--bg-primary) 85%,
+    var(--bg-base) 0%,
+    var(--bg-base) 85%,
     transparent 100%
   );
   padding-bottom: 8px;
@@ -35,7 +35,7 @@
   display: flex;
   align-items: stretch;
   gap: 2px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   padding: 3px;
@@ -64,19 +64,19 @@
 
 .segmentedBtn:hover {
   color: var(--text-primary);
-  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+  background: color-mix(in srgb, var(--bg-surface) 80%, transparent);
 }
 
 .segmentedBtnActive {
   color: var(--text-primary);
-  background: var(--bg-card);
+  background: var(--bg-surface);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.12),
-    0 0 0 1px color-mix(in srgb, var(--accent-color) 12%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 .segmentedBtnActive:hover {
-  background: var(--bg-card);
+  background: var(--bg-surface);
 }
 
 .segmentedCount {
@@ -96,8 +96,8 @@
 }
 
 .segmentedBtnActive .segmentedCount {
-  color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 /* ── Loading ──────────────────────────────────────────────── */
@@ -114,7 +114,7 @@
 
 .spinIcon {
   animation: spin 1s linear infinite;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 @keyframes spin {
@@ -139,7 +139,7 @@
 }
 
 .detailCard {
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   padding: 8px 10px;
@@ -150,15 +150,15 @@
 }
 
 .detailCardPassed {
-  border-left-color: var(--success);
+  border-left-color: var(--color-success);
 }
 
 .detailCardFailed {
-  border-left-color: var(--danger);
+  border-left-color: var(--color-danger);
 }
 
 .detailCardErrored {
-  border-left-color: var(--warning);
+  border-left-color: var(--color-warning);
 }
 
 .detailHeader {
@@ -191,13 +191,13 @@
 }
 
 .detailStatusPassed {
-  color: var(--success);
-  background: color-mix(in srgb, var(--success) 10%, transparent);
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
 }
 
 .detailStatusFailed {
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
 }
 
 .detailStats {
@@ -217,14 +217,14 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: var(--success);
+  color: var(--color-success);
 }
 
 .detailFailed {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: var(--danger);
+  color: var(--color-danger);
 }
 
 .detailRate {
@@ -238,19 +238,19 @@
 .selectedRow td {
   background: color-mix(
     in srgb,
-    var(--accent-color) 8%,
+    var(--accent-primary) 8%,
     transparent
   ) !important;
 }
 
 .selectedRow td:first-child {
-  box-shadow: inset 3px 0 0 var(--accent-color);
+  box-shadow: inset 3px 0 0 var(--accent-primary);
 }
 
 .selectedRow:hover td {
   background: color-mix(
     in srgb,
-    var(--accent-color) 12%,
+    var(--accent-primary) 12%,
     transparent
   ) !important;
 }

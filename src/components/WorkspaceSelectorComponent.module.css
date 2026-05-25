@@ -12,7 +12,7 @@
   gap: 5px;
   padding: 3px 8px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   font-size: 0.8125rem;
@@ -26,10 +26,10 @@
 }
 
 .button:hover {
-  background: var(--accent-subtle);
+  background: var(--accent-primary-subtle);
   border-color: color-mix(
     in srgb,
-    var(--accent-color) 30%,
+    var(--accent-primary) 30%,
     var(--border-color)
   );
 }
@@ -95,7 +95,7 @@
   left: 0;
   min-width: 220px;
   max-width: 360px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
@@ -139,13 +139,13 @@
 }
 
 .menuItem:hover {
-  background: var(--accent-subtle);
+  background: var(--accent-primary-subtle);
   color: var(--text-primary);
 }
 
 .menuItemActive {
-  color: var(--accent-color);
-  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  background: var(--accent-primary-subtle);
 }
 
 .menuItemIcon {
@@ -178,13 +178,13 @@
 /* ── Add workspace item ──────────────────────────────────────────── */
 
 .addItem {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   opacity: 0.85;
 }
 
 .addItem:hover {
   opacity: 1;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 /* ── Add workspace inline form ───────────────────────────────────── */
@@ -210,7 +210,7 @@
   padding: 5px 8px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.15s;
@@ -222,15 +222,15 @@
 }
 
 .addInput:focus {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }
 
 .addInput.invalid {
-  border-color: var(--danger, var(--color-danger));
+  border-color: var(--color-danger, var(--color-danger));
 }
 
 .addInput.valid {
-  border-color: var(--success, var(--color-success-bright));
+  border-color: var(--color-success, var(--color-success-bright));
 }
 
 .addButton {
@@ -242,8 +242,8 @@
   height: 26px;
   border: none;
   border-radius: var(--border-radius-sm);
-  background: var(--accent-color);
-  color: var(--bg-primary);
+  background: var(--accent-primary);
+  color: var(--bg-base);
   cursor: pointer;
   transition:
     background 0.15s,
@@ -272,11 +272,11 @@
 }
 
 .validationRow.success {
-  color: var(--success, var(--color-success-bright));
+  color: var(--color-success, var(--color-success-bright));
 }
 
 .validationRow.error {
-  color: var(--danger, var(--color-danger));
+  color: var(--color-danger, var(--color-danger));
 }
 
 .validationRow.info {

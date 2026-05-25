@@ -15,7 +15,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
 }
 
 .statsHeader {
@@ -48,7 +48,7 @@
   font-weight: 500;
   letter-spacing: 0.2px;
   color: var(--text-secondary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   white-space: nowrap;
   transition:
@@ -86,7 +86,7 @@
 }
 
 .statBadge:hover {
-  border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
   color: var(--text-primary);
 }
 
@@ -161,12 +161,12 @@
 .formGroup select:focus,
 .formGroup textarea:focus,
 .inputField:focus {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
   outline: none;
 }
 
 .formGroup input[type="range"] {
-  accent-color: var(--accent-color);
+  accent-color: var(--accent-primary);
   width: 100%;
 }
 
@@ -175,7 +175,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
 }
 
 .sectionHeader {
@@ -203,7 +203,7 @@
 .modalityIcon {
   display: flex;
   align-items: center;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   flex-shrink: 0;
 }
 
@@ -221,7 +221,7 @@
 }
 
 .modalityStatus.modalityActive {
-  color: var(--success);
+  color: var(--color-success);
   opacity: 1;
 }
 
@@ -232,7 +232,7 @@
   width: 100%;
   height: var(--input-height);
   padding: 0 14px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
@@ -245,19 +245,19 @@
 }
 
 .systemPromptBtn:hover {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
   color: var(--text-primary);
 }
 
 .systemPromptActive {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: var(--accent-glow);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--accent-primary-glow);
 }
 
 .systemPromptActive:hover {
-  background: var(--accent-glow);
-  border-color: var(--accent-hover);
+  background: var(--accent-primary-glow);
+  border-color: var(--accent-primary-hover);
 }
 
 .toolToggleRow {
@@ -274,7 +274,7 @@
 .arenaValue {
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   opacity: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -290,7 +290,7 @@
   color: var(--text-primary);
   height: var(--input-height);
   padding: 0 10px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   word-break: break-all;
@@ -300,7 +300,7 @@
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-secondary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   padding: 10px 12px;
@@ -328,11 +328,11 @@
   }
 
   &:hover {
-    background: var(--accent-glow);
+    background: var(--accent-primary-glow);
   }
 
   & .modalityName {
-    color: var(--accent-color);
+    color: var(--accent-primary);
     font-weight: 500;
   }
 

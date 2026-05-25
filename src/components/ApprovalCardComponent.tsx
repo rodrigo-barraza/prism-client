@@ -6,7 +6,7 @@ import styles from "./ApprovalCardComponent.module.css";
 const TIER_CONFIG = {
   1: { label: "Auto", color: "var(--color-success)", icon: ShieldCheck },
   2: { label: "Write", color: "var(--color-warning)", icon: Shield },
-  3: { label: "Danger", color: "var(--color-error)", icon: ShieldAlert },
+  3: { label: "Danger", color: "var(--color-danger)", icon: ShieldAlert },
 };
 
 type TierLevel = keyof typeof TIER_CONFIG;

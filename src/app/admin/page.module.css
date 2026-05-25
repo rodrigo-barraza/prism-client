@@ -21,14 +21,14 @@
 
 .sectionAction {
   font-size: 0.8125rem;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   cursor: pointer;
   text-decoration: none;
   font-weight: 500;
   transition: color var(--transition-fast);
 
   &:hover {
-    color: var(--accent-hover);
+    color: var(--accent-primary-hover);
   }
 }
 
@@ -40,7 +40,7 @@
 }
 
 .chartCard {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   padding: 20px 24px;

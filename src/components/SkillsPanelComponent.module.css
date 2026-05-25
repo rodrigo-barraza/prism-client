@@ -49,7 +49,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   transition: all 0.2s ease;
@@ -147,7 +147,7 @@
   line-height: 1.5;
   white-space: pre-wrap;
   padding: 8px;
-  background: color-mix(in srgb, var(--bg-tertiary) 60%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
   border-radius: 6px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
@@ -265,7 +265,7 @@
   padding: 7px 10px;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   outline: none;
@@ -286,7 +286,7 @@
   padding: 8px 10px;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   outline: none;

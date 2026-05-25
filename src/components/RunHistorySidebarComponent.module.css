@@ -56,7 +56,7 @@
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-tertiary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   padding: 1px 5px;
   border-radius: 3px;
   margin-left: auto;
@@ -85,8 +85,8 @@
   transition: all 0.15s ease;
 
   &:hover {
-    color: var(--danger);
-    background: var(--danger-subtle);
+    color: var(--color-danger);
+    background: var(--color-danger-subtle);
   }
 }
 
@@ -133,8 +133,8 @@
 .assertionValue {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
-  color: var(--accent-color);
-  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  background: var(--accent-primary-subtle);
   padding: 2px 6px;
   border-radius: 3px;
   max-width: 200px;
@@ -185,14 +185,14 @@
   margin-bottom: 2px;
 
   &:hover {
-    background: var(--accent-glow);
-    border-color: color-mix(in srgb, var(--accent-color) 15%, transparent);
+    background: var(--accent-primary-glow);
+    border-color: color-mix(in srgb, var(--accent-primary) 15%, transparent);
   }
 }
 
 .runItemActive {
-  background: color-mix(in srgb, var(--accent-color) 8%, transparent);
-  border-color: color-mix(in srgb, var(--accent-color) 30%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
 .runItemAborted {
@@ -218,7 +218,7 @@
 }
 
 .runItemActive .runIndex {
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 /* ── Run Item Stats ──────────────────────────────────────── */
@@ -236,7 +236,7 @@
   align-items: center;
   gap: 3px;
   font-weight: 600;
-  color: var(--success);
+  color: var(--color-success);
 }
 
 .statFailed {
@@ -244,7 +244,7 @@
   align-items: center;
   gap: 3px;
   font-weight: 600;
-  color: var(--danger);
+  color: var(--color-danger);
 }
 
 /* ── Running Indicator ───────────────────────────────────── */
@@ -256,18 +256,18 @@
   padding: 10px 14px;
   margin: 0 8px 4px;
   border-radius: var(--border-radius-sm);
-  background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-secondary));
-  border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   animation: fadeIn 0.3s ease-out;
 }
 
 .spinIcon {
   animation: spin 1s linear infinite;
   flex-shrink: 0;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 @keyframes spin {

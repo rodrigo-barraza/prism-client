@@ -23,7 +23,7 @@
 .tabs {
   display: flex;
   gap: 2px;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border-radius: 4px;
   padding: 2px;
   border: 1px solid var(--border-subtle);
@@ -49,8 +49,8 @@
 }
 
 .tabActive {
-  background: var(--accent-subtle);
-  color: var(--accent-color);
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
 }
 
 .markdownPreview {
@@ -58,7 +58,7 @@
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-primary);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-sm);
   max-height: calc(100vh - 320px);
@@ -79,7 +79,7 @@
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
   color: var(--text-primary);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-sm);
   resize: none;
@@ -89,7 +89,7 @@
   min-height: 48px;
 
   &:focus {
-    border-color: var(--accent-color);
+    border-color: var(--accent-primary);
   }
 
   &::placeholder {

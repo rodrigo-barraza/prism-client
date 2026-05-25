@@ -8,7 +8,7 @@
   gap: 6px;
   padding: 8px 10px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   transition:
     border-color 0.2s,
@@ -16,9 +16,9 @@
   animation: fadeIn 0.15s ease-out;
 
   &:hover {
-    border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
+    border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
     box-shadow: 0 1px 4px
-      color-mix(in srgb, var(--accent-color) 8%, transparent);
+      color-mix(in srgb, var(--accent-primary) 8%, transparent);
   }
 }
 
@@ -54,7 +54,7 @@
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-muted);
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   padding: 1px 5px;
   border-radius: 3px;
@@ -79,8 +79,8 @@
   opacity: 0.4;
 
   &:hover {
-    background: var(--danger-subtle);
-    color: var(--danger);
+    background: var(--color-danger-subtle);
+    color: var(--color-danger);
     opacity: 1;
   }
 }

@@ -8,7 +8,7 @@
   gap: 4px;
   padding: 0 10px;
   height: 32px;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color var(--transition-fast);
@@ -19,8 +19,8 @@
 }
 
 .inputWrapperOpen {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px var(--accent-glow);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-glow);
 }
 
 .input {
@@ -55,7 +55,7 @@
   width: 18px;
   height: 18px;
   border: none;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   color: var(--text-muted);
   border-radius: 50%;
   cursor: pointer;
@@ -64,7 +64,7 @@
   transition: all var(--transition-fast);
 
   &:hover {
-    background: var(--accent-subtle);
+    background: var(--accent-primary-subtle);
     color: var(--text-primary);
   }
 }
@@ -77,7 +77,7 @@
   min-width: 140px;
   max-height: 200px;
   overflow-y: auto;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
@@ -102,14 +102,14 @@
   text-overflow: ellipsis;
 
   &:hover {
-    background: var(--accent-subtle);
+    background: var(--accent-primary-subtle);
     color: var(--text-primary);
   }
 }
 
 .optionSelected {
-  background: var(--accent-glow);
-  color: var(--accent-color);
+  background: var(--accent-primary-glow);
+  color: var(--accent-primary);
   font-weight: 600;
 }
 

@@ -526,8 +526,8 @@ export default function RequestsPage() {
                                     {
                                       label: c.project,
                                       style: {
-                                        background: "var(--accent-subtle)",
-                                        color: "var(--accent-color)",
+                                        background: "var(--accent-primary-subtle)",
+                                        color: "var(--accent-primary)",
                                       },
                                     },
                                   ]
@@ -568,7 +568,7 @@ export default function RequestsPage() {
                                 {
                                   label: `${w.nodeCount} nodes · ${w.edgeCount} edges`,
                                   style: {
-                                    background: "var(--bg-tertiary)",
+                                    background: "var(--bg-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },
@@ -602,7 +602,7 @@ export default function RequestsPage() {
                                 {
                                   label: `${s.conversationCount} conversation${s.conversationCount !== 1 ? "s" : ""}`,
                                   style: {
-                                    background: "var(--bg-tertiary)",
+                                    background: "var(--bg-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },

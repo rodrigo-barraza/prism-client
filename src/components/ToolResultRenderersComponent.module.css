@@ -57,7 +57,7 @@
   gap: 4px;
   padding: 1px 8px;
   border-radius: 4px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   color: var(--text-secondary);
@@ -81,7 +81,7 @@
   margin: 0;
   padding: 8px 10px;
   border-radius: 6px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
@@ -102,10 +102,10 @@
 .inlineCode {
   padding: 0 4px;
   border-radius: 3px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-xs);
-  color: var(--accent-color);
+  color: var(--accent-primary);
   overflow-wrap: break-word;
 }
 
@@ -115,7 +115,7 @@
   margin: 0;
   padding: 6px 10px;
   border-radius: 6px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
@@ -180,7 +180,7 @@
 
 .rawToggleBtn:hover {
   color: var(--text-secondary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
 }
 
 .chevronOpen {
@@ -214,7 +214,7 @@
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   padding: 2px 0;
   opacity: 0.9;
 }
@@ -267,7 +267,7 @@
 }
 
 .dirEntry:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
 }
 
 .dirIcon {
@@ -293,7 +293,7 @@
 .searchResult {
   padding: 4px 8px;
   border-radius: 4px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
 }
 
@@ -332,7 +332,7 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   display: flex;
   flex-direction: column;
 }
@@ -528,7 +528,7 @@
 }
 
 .gitCommit:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
 }
 
 .gitHash {
@@ -567,7 +567,7 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   max-width: 100%;
 }
 
@@ -592,7 +592,7 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   width: 75vmin;
   height: 75vmin;
   max-width: 100%;
@@ -604,7 +604,7 @@
 }
 
 .turtleEmbedWrapper:hover {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
   box-shadow: 0 6px 24px rgba(138, 120, 255, 0.15);
 }
 
@@ -680,8 +680,8 @@
   border-radius: 8px;
   font-size: 0.625rem;
   font-weight: 700;
-  background: color-mix(in srgb, var(--accent-color) 14%, transparent);
-  color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-primary) 14%, transparent);
+  color: var(--accent-primary);
   line-height: 1;
 }
 
@@ -692,7 +692,7 @@
   margin-top: 4px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   max-height: 300px;
   overflow-y: auto;
@@ -711,7 +711,7 @@
 }
 
 .inputArgRow:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
 }
 
 .inputArgKey {
@@ -739,7 +739,7 @@
   margin-top: 2px;
   padding: 4px 6px;
   border-radius: 4px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
   max-height: 180px;
   overflow-y: auto;
@@ -774,7 +774,7 @@
   margin-top: 4px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   max-height: 300px;
   overflow-y: auto;
@@ -793,7 +793,7 @@
 }
 
 .outputArgRow:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
 }
 
 .outputArgKey {
@@ -821,7 +821,7 @@
   margin-top: 2px;
   padding: 4px 6px;
   border-radius: 4px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
   max-height: 180px;
   overflow-y: auto;
@@ -846,13 +846,13 @@
   border: 1px solid
     color-mix(
       in srgb,
-      var(--accent-color, var(--color-indigo)) 20%,
+      var(--accent-primary, var(--color-indigo)) 20%,
       transparent
     );
   background: color-mix(
     in srgb,
-    var(--accent-color, var(--color-indigo)) 4%,
-    var(--bg-secondary)
+    var(--accent-primary, var(--color-indigo)) 4%,
+    var(--bg-surface)
   );
   overflow: hidden;
   animation: workerResultFadeIn 0.3s ease-out;
@@ -876,7 +876,7 @@
 .workerResultToggle:hover {
   background: color-mix(
     in srgb,
-    var(--accent-color, var(--color-indigo)) 8%,
+    var(--accent-primary, var(--color-indigo)) 8%,
     transparent
   );
 }
@@ -898,7 +898,7 @@
   border-radius: 8px;
   background: color-mix(
     in srgb,
-    var(--accent-color, var(--color-indigo)) 10%,
+    var(--accent-primary, var(--color-indigo)) 10%,
     transparent
   );
 }
@@ -908,7 +908,7 @@
   border-top: 1px solid
     color-mix(
       in srgb,
-      var(--accent-color, var(--color-indigo)) 12%,
+      var(--accent-primary, var(--color-indigo)) 12%,
       transparent
     );
   font-size: var(--font-size-sm);
@@ -965,7 +965,7 @@
   gap: 20px;
   padding: 24px;
   border-radius: 12px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(12px);
@@ -998,7 +998,7 @@
 
 .emojiBubble:hover {
   transform: translateY(-2px) scale(1.05);
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }
 
 .bubbleEmojiChar {
@@ -1033,7 +1033,7 @@
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent-color) 25%, transparent) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-primary) 25%, transparent) 0%, transparent 70%);
   filter: blur(10px);
   z-index: 1;
   animation: glowPulse 4s ease-in-out infinite;
@@ -1085,7 +1085,7 @@
 }
 
 .downloadLink {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   text-decoration: none;
   font-weight: 600;
   transition: opacity 0.15s;
@@ -1117,7 +1117,7 @@
   align-items: center;
   padding: 12px;
   border-radius: 10px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
@@ -1127,8 +1127,8 @@
 
 .comboOptionCard:hover {
   transform: translateY(-3px);
-  border-color: var(--accent-color);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-color) 12%, rgba(0,0,0,0.1));
+  border-color: var(--accent-primary);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-primary) 12%, rgba(0,0,0,0.1));
 }
 
 .optionCardHeader {

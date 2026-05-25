@@ -4,7 +4,7 @@
   width: 100%;
   height: calc(100dvh - 80px);
   overflow: hidden;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   margin: -28px -32px;
   width: calc(100% + 64px);
 }
@@ -26,14 +26,14 @@
   border-radius: 2px;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   color: var(--text-secondary);
   white-space: nowrap;
 }
 
 .statPillGenerating {
-  background: var(--accent-subtle);
-  color: var(--accent-color);
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
   animation: fadeInOut 1.5s ease-in-out infinite;
 }
 
@@ -43,7 +43,7 @@
   flex: 1;
   border-top: 1px solid var(--border-color);
   overflow: hidden;
-  background: var(--bg-card);
+  background: var(--bg-surface);
 }
 
 /* Header content styles */
@@ -67,8 +67,8 @@
   font-size: 0.625rem;
   font-weight: 600;
   white-space: nowrap;
-  background: var(--accent-subtle);
-  color: var(--accent-color);
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
   animation: fadeInOut 1.5s ease-in-out infinite;
 }
 

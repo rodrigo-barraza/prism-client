@@ -90,7 +90,7 @@
   padding: 0 10px;
   font-size: var(--font-size-xs);
   border-radius: var(--border-radius-sm);
-  box-shadow: 0 2px 8px var(--accent-glow);
+  box-shadow: 0 2px 8px var(--accent-primary-glow);
   transition: filter 0.4s ease-out;
 }
 
@@ -297,7 +297,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   padding: 8px;
@@ -309,24 +309,24 @@
 }
 
 .inputBox:focus-within {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
   box-shadow:
-    0 0 0 2px var(--accent-glow),
+    0 0 0 2px var(--accent-primary-glow),
     0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .inputBoxDragActive {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
   border-style: dashed;
   box-shadow:
-    0 0 0 2px var(--accent-glow),
+    0 0 0 2px var(--accent-primary-glow),
     0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .inputBoxGenerating {
   border-color: transparent;
   background-image:
-    linear-gradient(var(--bg-secondary), var(--bg-secondary)),
+    linear-gradient(var(--bg-surface), var(--bg-surface)),
     linear-gradient(var(--prism-angle, 0deg), var(--prism-colors));
   background-origin: border-box;
   background-clip: padding-box, border-box;
@@ -344,10 +344,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   opacity: 0.95;
   border-radius: var(--border-radius-md);
-  color: var(--accent-color);
+  color: var(--accent-primary);
   font-size: var(--font-size-base);
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -409,7 +409,7 @@
   pointer-events: auto;
   max-height: 240px;
   overflow-y: auto;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
@@ -444,11 +444,11 @@
 }
 
 .mentionItemActive {
-  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   color: var(--text-primary);
 
   & svg {
-    color: var(--accent-color);
+    color: var(--accent-primary);
     opacity: 1;
   }
 }
@@ -467,7 +467,7 @@
 }
 
 .hint kbd {
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   padding: 2px 4px;
   border-radius: 2px;
@@ -495,7 +495,7 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   color: var(--text-secondary);
 }
 
@@ -520,7 +520,7 @@
     opacity 0.15s;
 
   &:hover {
-    color: var(--danger);
+    color: var(--color-danger);
     opacity: 1;
   }
 }
@@ -545,7 +545,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 2px;
   max-width: 320px;
@@ -588,7 +588,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 2px;
 }
@@ -610,9 +610,9 @@
   gap: 6px;
   padding: 10px 14px;
   margin-bottom: 8px;
-  background: color-mix(in srgb, var(--accent-color) 4%, var(--bg-tertiary));
+  background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-elevated));
   border: 1px dashed
-    color-mix(in srgb, var(--accent-color) 30%, var(--border-color));
+    color-mix(in srgb, var(--accent-primary) 30%, var(--border-color));
   border-radius: var(--border-radius-sm);
   animation: fadeIn 0.2s ease-out;
 }
@@ -630,7 +630,7 @@
   gap: 6px;
   font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -665,7 +665,7 @@
   left: 30px;
   width: 280px;
   max-height: 400px;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -702,7 +702,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
 }
 
 .toolsBubbleList {
@@ -721,7 +721,7 @@
 }
 
 .toolsBubbleItem:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
 }
 
 .toolsBubbleItemInfo {
@@ -776,7 +776,7 @@
   font-size: 0.625rem;
   font-weight: 700;
   border-radius: 999px;
-  background: var(--accent-color);
+  background: var(--accent-primary);
   color: var(--color-white);
 }
 
@@ -834,7 +834,7 @@
   padding: 8px 14px;
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
@@ -848,11 +848,11 @@
 
   &:hover {
     color: var(--text-primary);
-    border-color: var(--accent-color);
-    background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-card));
+    border-color: var(--accent-primary);
+    background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface));
     transform: translateY(-1px);
     box-shadow: 0 2px 8px
-      color-mix(in srgb, var(--accent-color) 15%, transparent);
+      color-mix(in srgb, var(--accent-primary) 15%, transparent);
   }
 }
 
@@ -914,7 +914,7 @@
 }
 
 .liveMicReady {
-  background: var(--accent-color) !important;
+  background: var(--accent-primary) !important;
   color: #fff !important;
   transition:
     background 0.2s,
@@ -922,7 +922,7 @@
 }
 
 .liveMicReady:hover {
-  background: var(--accent-hover) !important;
+  background: var(--accent-primary-hover) !important;
   transform: translateY(-1px);
 }
 
@@ -973,13 +973,13 @@
 .statusBarActive {
   background: linear-gradient(
     to right,
-    color-mix(in srgb, var(--accent-color) 6%, transparent),
-    color-mix(in srgb, var(--accent-color) 12%, transparent),
-    color-mix(in srgb, var(--accent-color) 6%, transparent)
+    color-mix(in srgb, var(--accent-primary) 6%, transparent),
+    color-mix(in srgb, var(--accent-primary) 12%, transparent),
+    color-mix(in srgb, var(--accent-primary) 6%, transparent)
   );
   border-top-color: color-mix(
     in srgb,
-    var(--accent-color) 18%,
+    var(--accent-primary) 18%,
     var(--border-color)
   );
 }
@@ -1005,7 +1005,7 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--accent-color);
+  background: var(--accent-primary);
   flex-shrink: 0;
   animation: statusBarPulseDot 1.4s ease-in-out infinite;
   will-change: opacity, transform;

@@ -1,7 +1,7 @@
 /* ── Chat Preview Container ──────────────────────────── */
 
 .chatPreview {
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   flex: 1;
@@ -28,7 +28,7 @@
 }
 
 .promptBlock {
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-color);
   padding: 14px 16px;
   font-size: 0.8125rem;
@@ -66,11 +66,11 @@
 }
 
 .promptLabelSystem {
-  color: var(--warning);
+  color: var(--color-warning);
 }
 
 .promptLabelUser {
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .promptContent {
@@ -79,13 +79,13 @@
 
 /* System block gets a subtle left accent */
 .promptBlockSystem {
-  border-left: 2px solid color-mix(in srgb, var(--warning) 40%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
 }
 
 /* User block gets accent left border */
 .promptBlockUser {
   border-left: 2px solid
-    color-mix(in srgb, var(--accent-color) 40%, transparent);
+    color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
 
 /* ── Mini Mode ───────────────────────────────────────── */

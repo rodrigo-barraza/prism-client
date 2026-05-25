@@ -112,7 +112,7 @@ const AGENT_COLORS = {
 };
 
 function getAgentColor(agentId: string) {
-  return (AGENT_COLORS as Record<string, string>)[agentId] || "var(--accent-color)";
+  return (AGENT_COLORS as Record<string, string>)[agentId] || "var(--accent-primary)";
 }
 
 /**

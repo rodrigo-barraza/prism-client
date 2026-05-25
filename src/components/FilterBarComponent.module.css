@@ -5,7 +5,7 @@
   gap: 10px;
   margin-bottom: 16px;
   padding: 14px 18px;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
 }
@@ -27,7 +27,7 @@
 .pills {
   display: flex;
   align-items: center;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   padding: 3px;
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--border-subtle);
@@ -54,7 +54,7 @@
 }
 
 .pillActive {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   color: var(--text-primary);
   box-shadow: var(--shadow-sm);
 }
@@ -64,7 +64,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-muted);
@@ -73,9 +73,9 @@
 }
 
 .searchBox:focus-within {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: var(--bg-card);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--bg-surface);
 }
 
 .searchInput {
@@ -94,7 +94,7 @@
 .viewToggle {
   display: flex;
   align-items: center;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   padding: 3px;
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--border-subtle);
@@ -136,7 +136,7 @@
 }
 
 .viewBtnActive {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   color: var(--text-primary);
   box-shadow: var(--shadow-sm);
 }
@@ -164,14 +164,14 @@
 }
 
 .discreteBtn:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
 .discreteBtnActive {
-  background: var(--accent-glow);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+  background: var(--accent-primary-glow);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
 }
 
 .filterInput {
@@ -180,14 +180,14 @@
   min-width: 140px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-card);
+  background: var(--bg-surface);
   color: var(--text-primary);
   outline: none;
   transition: border-color var(--transition-fast);
 }
 
 .filterInput:focus {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }
 
 .filterSelect {
@@ -197,14 +197,14 @@
   cursor: pointer;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-card);
+  background: var(--bg-surface);
   color: var(--text-primary);
   outline: none;
   transition: border-color var(--transition-fast);
 }
 
 .filterSelect:focus {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }
 
 .clearBtn {

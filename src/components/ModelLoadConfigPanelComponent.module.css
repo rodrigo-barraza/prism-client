@@ -3,8 +3,8 @@
   font-weight: 500;
   padding: 2px 7px;
   border-radius: var(--border-radius-sm);
-  background: var(--accent-subtle);
-  color: var(--accent-color);
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -146,9 +146,9 @@
   transition: border-color 0.15s;
 
   &:focus {
-    border-color: var(--accent-color);
+    border-color: var(--accent-primary);
     outline: none;
-    box-shadow: 0 0 0 2px var(--accent-glow);
+    box-shadow: 0 0 0 2px var(--accent-primary-glow);
   }
 }
 

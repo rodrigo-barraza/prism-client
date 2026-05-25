@@ -825,10 +825,10 @@ function ModelsTableInner({
           const percentage = Math.round((row._raw._benchPassRate || 0) * 100);
           const color =
             percentage >= 80
-              ? "var(--success)"
+              ? "var(--color-success)"
               : percentage >= 50
-                ? "var(--warning)"
-                : "var(--danger)";
+                ? "var(--color-warning)"
+                : "var(--color-danger)";
           return (
             <span className={styles.benchRateCell}>
               <span className={styles.benchRateBar}>

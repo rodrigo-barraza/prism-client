@@ -4,7 +4,7 @@
 
 /* Table */
 .tableWrapper {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   overflow: hidden;

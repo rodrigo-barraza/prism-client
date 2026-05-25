@@ -46,15 +46,15 @@
 
 /* ── Role node avatar variants ── */
 .userNode .avatar {
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
 }
 
 .aiNode .avatar {
-  background: var(--accent-glow);
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
+  background: var(--accent-primary-glow);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
 }
 
 .prismAvatar {
@@ -76,14 +76,14 @@
 }
 
 .systemNode .avatar {
-  background: var(--warning-subtle, rgba(245, 158, 11, 0.08));
-  color: var(--warning, var(--color-warning));
-  border: 1px solid var(--warning, var(--color-warning));
+  background: var(--color-warning-subtle, rgba(245, 158, 11, 0.08));
+  color: var(--color-warning, var(--color-warning));
+  border: 1px solid var(--color-warning, var(--color-warning));
 }
 
 /* ── Task notification card (worker results) ── */
 .notificationNode {
-  border-left: 3px solid var(--accent-color, var(--color-indigo));
+  border-left: 3px solid var(--accent-primary, var(--color-indigo));
   padding: 8px 0;
   margin-left: auto;
   margin-right: auto;
@@ -97,14 +97,14 @@
   & .avatar {
     background: color-mix(
       in srgb,
-      var(--accent-color, var(--color-indigo)) 10%,
+      var(--accent-primary, var(--color-indigo)) 10%,
       transparent
     );
-    color: var(--accent-color, var(--color-indigo));
+    color: var(--accent-primary, var(--color-indigo));
     border: 1px solid
       color-mix(
         in srgb,
-        var(--accent-color, var(--color-indigo)) 30%,
+        var(--accent-primary, var(--color-indigo)) 30%,
         transparent
       );
   }
@@ -154,7 +154,7 @@
   cursor: pointer;
 
   &:hover {
-    color: var(--accent-color);
+    color: var(--accent-primary);
     transform: scale(1.1);
   }
 }
@@ -186,7 +186,7 @@
   transition: background 0.15s;
 
   &:hover {
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
   }
 }
 
@@ -229,13 +229,13 @@
     content: "";
     position: absolute;
     inset: 2px;
-    background: var(--bg-primary);
+    background: var(--bg-base);
     border-radius: calc(var(--border-radius-sm) - 1px);
     z-index: 0;
   }
 
   & .thinkingToggle {
-    color: var(--accent-color);
+    color: var(--accent-primary);
 
     & svg:first-child {
       animation: thinkingPulse 1.5s ease-in-out infinite;
@@ -305,7 +305,7 @@
   padding: 8px 12px;
   border-radius: 2px;
   border: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
 }
 
 .mediaCardIcon {
@@ -324,7 +324,7 @@
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
 }
 
 .videoPreview {
@@ -340,7 +340,7 @@
   width: 100%;
   border-radius: 6px;
   border: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   overflow: hidden;
   padding: 4px;
 }
@@ -350,7 +350,7 @@
   width: 100%;
   border-radius: 6px;
   border: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   overflow: hidden;
 }
 
@@ -363,7 +363,7 @@
 }
 
 .pdfHeaderIcon {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   flex-shrink: 0;
 }
 
@@ -377,14 +377,14 @@
 .pdfOpenLink {
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   text-decoration: none;
   padding: 2px 8px;
   border-radius: 4px;
   transition: all 0.15s;
 
   &:hover {
-    background: var(--accent-glow);
+    background: var(--accent-primary-glow);
   }
 }
 
@@ -439,22 +439,22 @@
   }
 
   & blockquote {
-    border-left: 3px solid var(--accent-color);
+    border-left: 3px solid var(--accent-primary);
     padding: 4px 12px;
     margin: 8px 0;
     color: var(--text-secondary);
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
     border-radius: 0 2px 2px 0;
   }
 
   & a {
-    color: var(--accent-color);
+    color: var(--accent-primary);
     text-decoration: underline;
     text-decoration-color: rgba(138, 120, 255, 0.3);
     transition: text-decoration-color 0.2s;
 
     &:hover {
-      text-decoration-color: var(--accent-color);
+      text-decoration-color: var(--accent-primary);
     }
   }
 
@@ -473,7 +473,7 @@
   }
 
   & th {
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
     font-weight: 600;
   }
 
@@ -527,7 +527,7 @@
   gap: 5px;
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   letter-spacing: 0.3px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -665,14 +665,14 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--danger, var(--color-danger));
+  color: var(--color-danger, var(--color-danger));
   background: color-mix(
     in srgb,
-    var(--danger, var(--color-danger)) 10%,
+    var(--color-danger, var(--color-danger)) 10%,
     transparent
   );
   border: 1px solid
-    color-mix(in srgb, var(--danger, var(--color-danger)) 25%, transparent);
+    color-mix(in srgb, var(--color-danger, var(--color-danger)) 25%, transparent);
   border-radius: 4px;
   line-height: 1;
   flex-shrink: 0;
@@ -709,19 +709,19 @@
   border: 1px solid
     color-mix(
       in srgb,
-      var(--danger, var(--color-danger)) 35%,
+      var(--color-danger, var(--color-danger)) 35%,
       var(--border-color)
     );
   background: color-mix(
     in srgb,
-    var(--danger, var(--color-danger)) 6%,
-    var(--bg-primary)
+    var(--color-danger, var(--color-danger)) 6%,
+    var(--bg-base)
   );
   font-size: 0.8125rem;
   line-height: 1.55;
   color: color-mix(
     in srgb,
-    var(--danger, var(--color-danger)) 85%,
+    var(--color-danger, var(--color-danger)) 85%,
     var(--text-primary)
   );
   word-break: break-word;
@@ -731,7 +731,7 @@
 .errorIcon {
   flex-shrink: 0;
   margin-top: 2px;
-  color: var(--danger, var(--color-danger));
+  color: var(--color-danger, var(--color-danger));
   animation: errorPulse 2s ease-in-out 3;
 }
 
@@ -761,26 +761,26 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-secondary));
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface));
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   border: 1px solid
-    color-mix(in srgb, var(--accent-color) 25%, var(--border-color));
+    color-mix(in srgb, var(--accent-primary) 25%, var(--border-color));
   border-top: none;
-  border-left: 3px solid var(--accent-color);
+  border-left: 3px solid var(--accent-primary);
   border-radius: 0 0 6px 0;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.15),
     0 1px 3px rgba(0, 0, 0, 0.1),
-    inset 0 0 12px -6px color-mix(in srgb, var(--accent-color) 15%, transparent);
+    inset 0 0 12px -6px color-mix(in srgb, var(--accent-primary) 15%, transparent);
 
   &:hover {
-    background: var(--accent-color);
-    border-color: var(--accent-color);
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
     box-shadow:
-      0 6px 20px color-mix(in srgb, var(--accent-color) 40%, transparent),
+      0 6px 20px color-mix(in srgb, var(--accent-primary) 40%, transparent),
       0 2px 6px rgba(0, 0, 0, 0.15);
     transform: translateY(1px);
 
@@ -817,7 +817,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
 }
@@ -834,7 +834,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   line-height: 1.4;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -849,9 +849,9 @@
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
-  color: var(--accent-color);
-  border: 1px solid color-mix(in srgb, var(--accent-color) 20%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  color: var(--accent-primary);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, transparent);
   letter-spacing: 0.02em;
   white-space: nowrap;
 }

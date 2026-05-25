@@ -45,7 +45,7 @@
 
   &:hover {
     color: var(--text-primary);
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
     border-color: var(--border-color);
   }
 }
@@ -139,7 +139,7 @@
 
   &:hover {
     color: var(--text-primary);
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
   }
 }
 

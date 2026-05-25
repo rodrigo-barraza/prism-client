@@ -4,8 +4,8 @@
 }
 
 .nodeBody {
-  fill: var(--bg-card);
-  stroke: var(--accent-color);
+  fill: var(--bg-surface);
+  stroke: var(--accent-primary);
   stroke-width: 1.5;
   stroke-opacity: 0.4;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25));
@@ -15,12 +15,12 @@
 }
 
 .nodeGroup:hover .nodeBody {
-  stroke: var(--accent-color);
+  stroke: var(--accent-primary);
   stroke-opacity: 0.5;
 }
 
 .nodeHeader {
-  fill: var(--bg-tertiary);
+  fill: var(--bg-elevated);
   stroke: none;
 }
 
@@ -74,8 +74,8 @@
     color var(--transition-fast);
 
   &:hover {
-    background: var(--danger-subtle);
-    color: var(--danger);
+    background: var(--color-danger-subtle);
+    color: var(--color-danger);
   }
 }
 
@@ -130,7 +130,7 @@
   font-family: var(--font-mono, monospace);
   line-height: 1.4;
   color: var(--text-primary);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-subtle);
   border-radius: 2px;
   resize: none;
@@ -138,7 +138,7 @@
   box-sizing: border-box;
 
   &:focus {
-    border-color: var(--accent-color);
+    border-color: var(--accent-primary);
   }
 
   &::placeholder {
@@ -222,9 +222,9 @@
   z-index: 2;
 
   &:hover {
-    background: var(--danger-subtle);
-    color: var(--danger);
-    border-color: var(--danger);
+    background: var(--color-danger-subtle);
+    color: var(--color-danger);
+    border-color: var(--color-danger);
   }
 }
 
@@ -234,7 +234,7 @@
   height: 100%;
   overflow: hidden;
   border-radius: 2px;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -287,8 +287,8 @@
 
 /* ── Node config panel ── */
 .configBtnActive {
-  color: var(--accent-color) !important;
-  background: var(--accent-subtle) !important;
+  color: var(--accent-primary) !important;
+  background: var(--accent-primary-subtle) !important;
 }
 
 .nodeConfig {
@@ -305,7 +305,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 6px;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border: 1px solid var(--border-subtle);
   border-radius: 2px;
 }
@@ -353,7 +353,7 @@
   width: 100%;
 
   &:hover {
-    border-color: var(--accent-color);
+    border-color: var(--accent-primary);
     color: var(--text-secondary);
   }
 }
@@ -365,7 +365,7 @@
   font-size: 0.5625rem;
   color: var(--text-secondary);
   padding: 2px 6px;
-  background: var(--accent-subtle);
+  background: var(--accent-primary-subtle);
   border-radius: 2px;
 }
 
@@ -384,17 +384,17 @@
   margin-left: 2px;
 
   &:hover {
-    color: var(--danger);
-    background: var(--danger-subtle);
+    color: var(--color-danger);
+    background: var(--color-danger-subtle);
   }
 }
 
 /* ── Selected node flash overlay ── */
 .selectedFlash {
   fill: none;
-  stroke: var(--accent-color);
+  stroke: var(--accent-primary);
   pointer-events: none;
-  filter: drop-shadow(0 0 4px var(--accent-color));
+  filter: drop-shadow(0 0 4px var(--accent-primary));
   animation: flashSelect 1.6s ease-in-out infinite;
 }
 

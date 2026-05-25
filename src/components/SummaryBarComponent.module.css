@@ -6,7 +6,7 @@
   display: flex;
   align-items: stretch;
   padding: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
@@ -17,13 +17,13 @@
 .live {
   border-color: color-mix(
     in srgb,
-    var(--accent-color) 40%,
+    var(--accent-primary) 40%,
     var(--border-color)
   );
-  background: color-mix(in srgb, var(--accent-color) 3%, var(--bg-secondary));
+  background: color-mix(in srgb, var(--accent-primary) 3%, var(--bg-surface));
   position: relative;
   animation: fadeIn 0.3s ease-out;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .live::before {
@@ -33,7 +33,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--accent-color);
+  background: var(--accent-primary);
   animation: livePulse 2s ease-in-out infinite;
 }
 

@@ -34,7 +34,7 @@
   display: inline-flex;
   border-radius: 6px;
   border: 1px solid var(--border-color);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   overflow: hidden;
 }
 
@@ -59,19 +59,19 @@
 
 .segmentedOption:hover {
   color: var(--text-secondary);
-  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
 .segmentedOption[data-active="true"] {
-  color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   font-weight: 600;
 }
 
 .toolsListWrapper {
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-primary);
+  background: var(--bg-base);
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -83,7 +83,7 @@
   top: 0;
   z-index: 1;
   padding: 8px;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -93,7 +93,7 @@
   padding: 0 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-family: inherit;
@@ -102,7 +102,7 @@
 }
 
 .toolsSearchInput:focus {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }
 
 .toolsSearchInput::placeholder {
@@ -135,7 +135,7 @@
 }
 
 .domainHeader:hover {
-  background: color-mix(in srgb, var(--accent-color) 3%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
 .domainIcon {
@@ -155,7 +155,7 @@
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  accent-color: var(--accent-color);
+  accent-color: var(--accent-primary);
   cursor: pointer;
   margin-left: 4px;
 }
@@ -173,14 +173,14 @@
 }
 
 .toolRow:hover {
-  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
 .toolCheckbox {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  accent-color: var(--accent-color);
+  accent-color: var(--accent-primary);
   cursor: pointer;
 }
 
@@ -214,7 +214,7 @@
 }
 
 .bulkCheckboxRow:hover {
-  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
 .bulkCheckboxLabel {
@@ -228,7 +228,7 @@
 
 .coreGroup {
   border-bottom: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--accent-color) 2%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 2%, transparent);
 }
 
 .coreHeader {
@@ -238,7 +238,7 @@
   padding: 8px 12px;
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -247,13 +247,13 @@
 }
 
 .coreHeader:hover {
-  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
 .coreIcon {
   display: flex;
   align-items: center;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .coreLabel {
@@ -263,8 +263,8 @@
 .coreBadge {
   font-size: 9px;
   font-weight: 700;
-  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
-  color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  color: var(--accent-primary);
   padding: 1px 6px;
   border-radius: 10px;
   text-transform: uppercase;
@@ -294,7 +294,7 @@
 }
 
 .coreCheckbox {
-  accent-color: var(--accent-color) !important;
+  accent-color: var(--accent-primary) !important;
   cursor: default !important;
   opacity: 0.7;
 }

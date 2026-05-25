@@ -85,8 +85,8 @@ export default function HistoryPanel({
         tags.push({
           label: conversation.project,
           style: {
-            background: "var(--accent-subtle)",
-            color: "var(--accent-color)",
+            background: "var(--accent-primary-subtle)",
+            color: "var(--accent-primary)",
           },
         });
       }

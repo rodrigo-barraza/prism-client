@@ -10,7 +10,7 @@
   font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   white-space: nowrap;
   line-height: 1;
@@ -28,13 +28,13 @@
 .badge:hover {
   border-color: color-mix(
     in srgb,
-    var(--tool-badge-accent, var(--accent-color)) 40%,
+    var(--tool-badge-accent, var(--accent-primary)) 40%,
     transparent
   );
   background: color-mix(
     in srgb,
-    var(--tool-badge-accent, var(--accent-color)) 6%,
-    var(--bg-card)
+    var(--tool-badge-accent, var(--accent-primary)) 6%,
+    var(--bg-surface)
   );
 }
 

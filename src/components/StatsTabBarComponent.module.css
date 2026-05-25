@@ -3,7 +3,7 @@
   align-items: center;
   gap: 2px;
   margin-left: auto;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border-radius: 4px;
   padding: 2px;
 }
@@ -28,12 +28,12 @@
 }
 
 .statsTabBtnActive {
-  color: var(--accent-color);
-  background: var(--accent-glow);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 20%, transparent);
+  color: var(--accent-primary);
+  background: var(--accent-primary-glow);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .statsTabBtnActive:hover {
-  background: var(--accent-glow);
-  color: var(--accent-color);
+  background: var(--accent-primary-glow);
+  color: var(--accent-primary);
 }

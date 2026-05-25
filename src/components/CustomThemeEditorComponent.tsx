@@ -29,18 +29,19 @@ interface TokenField {
 
 const TOKEN_GROUPS: { title: string; fields: TokenField[] }[] = [
   {
-    title: "Accent",
+    title: "Surfaces",
     fields: [
-      { key: "accentColor", label: "Primary" },
-      { key: "accentSecondary", label: "Secondary" },
+      { key: "background", label: "Base Background" },
+      { key: "surface", label: "Surface" },
+      { key: "elevated", label: "Elevated" },
     ],
   },
   {
-    title: "Surfaces",
+    title: "Accent",
     fields: [
-      { key: "bgPrimary", label: "Primary Background" },
-      { key: "bgSecondary", label: "Secondary Background" },
-      { key: "bgTertiary", label: "Tertiary Background" },
+      { key: "primary", label: "Primary" },
+      { key: "secondary", label: "Secondary" },
+      { key: "tertiary", label: "Tertiary" },
     ],
   },
   {
@@ -48,7 +49,7 @@ const TOKEN_GROUPS: { title: string; fields: TokenField[] }[] = [
     fields: [
       { key: "textPrimary", label: "Primary Text" },
       { key: "textSecondary", label: "Secondary Text" },
-      { key: "textTertiary", label: "Tertiary Text" },
+      { key: "textMuted", label: "Muted Text" },
     ],
   },
   {
@@ -60,8 +61,8 @@ const TOKEN_GROUPS: { title: string; fields: TokenField[] }[] = [
   {
     title: "Semantic",
     fields: [
-      { key: "danger", label: "Danger" },
       { key: "success", label: "Success" },
+      { key: "danger", label: "Danger" },
       { key: "warning", label: "Warning" },
       { key: "info", label: "Info" },
     ],
@@ -263,11 +264,11 @@ export default function CustomThemeEditorComponent({
                       <span className={styles.themeSwatchDual}>
                         <span
                           className={styles.themeSwatchHalf}
-                          style={{ background: theme.tokens.accentColor }}
+                          style={{ background: theme.tokens.primary }}
                         />
                         <span
                           className={styles.themeSwatchHalf}
-                          style={{ background: theme.tokens.accentSecondary }}
+                          style={{ background: theme.tokens.secondary }}
                         />
                       </span>
                       <span className={styles.themeItemName}>{theme.name}</span>
@@ -350,7 +351,7 @@ export default function CustomThemeEditorComponent({
                       <span
                         className={styles.cloneMenuSwatch}
                         style={{
-                          background: CustomThemeService.BUILT_IN_PRESETS[base.id]?.accentColor || "#888",
+                          background: CustomThemeService.BUILT_IN_PRESETS[base.id]?.primary || "#888",
                         }}
                       />
                       {base.label}
@@ -418,14 +419,14 @@ export default function CustomThemeEditorComponent({
           <div
             className={styles.livePreview}
             style={{
-              "--preview-bg": editTokens.bgPrimary,
-              "--preview-bg2": editTokens.bgSecondary,
-              "--preview-bg3": editTokens.bgTertiary,
-              "--preview-accent": editTokens.accentColor,
-              "--preview-accent2": editTokens.accentSecondary,
+              "--preview-bg": editTokens.background,
+              "--preview-bg2": editTokens.surface,
+              "--preview-bg3": editTokens.elevated,
+              "--preview-accent": editTokens.primary,
+              "--preview-accent2": editTokens.secondary,
               "--preview-text": editTokens.textPrimary,
               "--preview-text2": editTokens.textSecondary,
-              "--preview-text3": editTokens.textTertiary,
+              "--preview-text3": editTokens.textMuted,
               "--preview-border": editTokens.borderColor,
               "--preview-danger": editTokens.danger,
               "--preview-success": editTokens.success,

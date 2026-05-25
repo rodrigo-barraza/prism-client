@@ -100,9 +100,9 @@
   padding: 7px 16px;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
   border-radius: 6px;
   text-decoration: none;
   transition: all 0.2s ease;
@@ -110,11 +110,11 @@
 }
 
 .settingsLink:hover {
-  background: color-mix(in srgb, var(--accent-color) 18%, transparent);
-  border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
   transform: translateY(-1px);
   box-shadow: 0 3px 10px
-    color-mix(in srgb, var(--accent-color) 15%, transparent);
+    color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
 .emptyTitle {
@@ -132,7 +132,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 12px;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   transition: all 0.2s ease;
@@ -280,7 +280,7 @@
   line-height: 1.5;
   white-space: pre-wrap;
   padding: 8px;
-  background: color-mix(in srgb, var(--bg-tertiary) 60%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
   border-radius: 6px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
@@ -427,7 +427,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 8px;
-  background: color-mix(in srgb, var(--bg-tertiary) 40%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 40%, transparent);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   animation: toastSlideIn 0.2s ease-out;
@@ -459,7 +459,7 @@
   flex-direction: column;
   gap: 3px;
   padding: 6px 8px;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
   border-radius: 5px;
   transition: border-color 0.15s ease;

@@ -75,7 +75,7 @@ export const getRequestsColumns = ({
       <ProportionBarComponent
         value={r.totalTime || 0}
         total={totalDuration}
-        color="var(--accent-color)"
+        color="var(--accent-primary)"
         mini={mini}
       />
     ),

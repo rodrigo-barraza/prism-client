@@ -41,7 +41,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   margin-bottom: 12px;
@@ -93,14 +93,14 @@
   padding: 0;
 
   &:hover {
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
     color: var(--text-primary);
   }
 }
 
 .toolBtnActive {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
   color: white;
 }
 
@@ -122,7 +122,7 @@
 
 .swatchActive {
   border-color: var(--text-primary);
-  box-shadow: 0 0 8px var(--accent-glow);
+  box-shadow: 0 0 8px var(--accent-primary-glow);
   transform: scale(1.15);
 }
 
@@ -142,14 +142,14 @@
   padding: 0;
 
   &:hover {
-    background: var(--bg-tertiary);
+    background: var(--bg-elevated);
     color: var(--text-primary);
   }
 }
 
 .sizeBtnActive {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
   color: white;
 }
 
@@ -165,7 +165,7 @@
   gap: 5px;
   padding: 6px 12px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
@@ -174,7 +174,7 @@
   transition: all 0.15s;
 
   &:hover {
-    background: var(--accent-glow);
+    background: var(--accent-primary-glow);
     color: var(--text-primary);
   }
 
@@ -264,7 +264,7 @@
   gap: 6px;
   padding: 10px 24px;
   border-radius: var(--border-radius-sm);
-  background: var(--accent-color);
+  background: var(--accent-primary);
   border: none;
   color: white;
   font-size: 0.8125rem;
@@ -273,8 +273,8 @@
   transition: all 0.2s;
 
   &:hover {
-    background: var(--accent-hover);
+    background: var(--accent-primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px var(--accent-glow);
+    box-shadow: 0 4px 16px var(--accent-primary-glow);
   }
 }

@@ -707,7 +707,7 @@ export default function CustomAgentsPanel({
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                color: "var(--error)",
+                color: "var(--color-danger)",
                 fontSize: 12,
               }}
             >

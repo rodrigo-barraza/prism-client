@@ -164,7 +164,7 @@ function NodePorts({
                     : "url(#prism-gradient)"
                   : isCompatible
                     ? color
-                    : "var(--bg-tertiary)"
+                    : "var(--bg-elevated)"
               }
               stroke={
                 hasPrismSource
@@ -236,7 +236,7 @@ function NodePorts({
                   ? nodeStatusGradient
                   : isActive
                     ? color
-                    : "var(--bg-tertiary)"
+                    : "var(--bg-elevated)"
               }
               stroke={isNodeRunning ? nodeStatusGradient : color}
               strokeWidth={2}
@@ -375,7 +375,7 @@ function NodeShell({
     : { stroke: accentColor, strokeOpacity: 0.4 };
 
   // Header fill — default to bg-tertiary if not provided
-  const headerStyle = headerFillStyle || { fill: "var(--bg-tertiary)" };
+  const headerStyle = headerFillStyle || { fill: "var(--bg-elevated)" };
 
   return (
     <g
@@ -637,7 +637,7 @@ function ModelNode(props: ModelNodeProps) {
       height={nodeHeight}
       status={status}
       isSelected={isSelected}
-      accentColor="var(--accent-color)"
+      accentColor="var(--accent-primary)"
       headerContent={headerContent}
       headerActions={headerActions}
       headerActionsWidth={actionsWidth}

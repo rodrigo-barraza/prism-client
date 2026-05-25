@@ -115,7 +115,7 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: { totalDuration?: 
       <ProportionBarComponent
         value={r.elapsedMs || 0}
         total={totalDuration}
-        color="var(--accent-color)"
+        color="var(--accent-primary)"
       />
     ),
   },

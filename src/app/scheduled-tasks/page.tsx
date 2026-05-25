@@ -15,6 +15,8 @@ import {
   Bot,
   Sparkles,
   Copy,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import PrismService from "../../services/PrismService";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
@@ -25,10 +27,14 @@ import {
   TextAreaComponent,
   FormGroupComponent,
   ButtonComponent,
+  TableComponent,
+  BadgeComponent,
+  DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import { AgentPersona, PrismConfig } from "../../types/types";
 import AgentPickerComponent from "../../components/AgentPickerComponent";
 import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComponent";
+import { ViewModeToggleComponent } from "../../components/FilterBarComponent";
 import styles from "./page.module.css";
 
 interface Workspace {
@@ -106,6 +112,7 @@ export default function ScheduledTasksPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [triggeringId, setTriggeringId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [viewMode, setViewMode] = useState("card");
 
   // New task form state
   const [formName, setFormName] = useState("");
@@ -424,6 +431,15 @@ export default function ScheduledTasksPage() {
               />
             </div>
 
+            <ViewModeToggleComponent
+              mode={viewMode}
+              onChange={setViewMode}
+              modes={[
+                { key: "card", icon: LayoutGrid, title: "Card view" },
+                { key: "table", icon: List, title: "Table view" },
+              ]}
+            />
+
             <button
               onClick={() => setShowNewModal(true)}
               className={styles.newBtn}
@@ -435,7 +451,7 @@ export default function ScheduledTasksPage() {
           </div>
         </header>
 
-        {/* Task Cards Grid */}
+        {/* Task Content */}
         <div>
           {loading ? (
             <div className={styles.loadingState}>
@@ -454,7 +470,134 @@ export default function ScheduledTasksPage() {
                 Create your first task
               </button>
             </div>
+          ) : viewMode === "table" ? (
+            /* ── Table View ── */
+            <TableComponent
+              columns={[
+                {
+                  key: "name",
+                  label: "Name",
+                  render: (row: any) => (
+                    <span className={styles.tableNameCell}>{row.name}</span>
+                  ),
+                },
+                {
+                  key: "schedule",
+                  label: "Schedule",
+                  sortable: false,
+                  render: (row: any) => (
+                    <span className={styles.tableScheduleCell}>{formatScheduleText(row)}</span>
+                  ),
+                },
+                {
+                  key: "agent",
+                  label: "Agent",
+                  sortable: false,
+                  render: (row: any) => {
+                    const taskAgent = agents.find((a) => a.id === row.agent);
+                    return (
+                      <BadgeComponent variant="info" mini>
+                        <Bot size={10} />
+                        {taskAgent ? taskAgent.name : "Direct Chat"}
+                      </BadgeComponent>
+                    );
+                  },
+                },
+                {
+                  key: "model",
+                  label: "Model",
+                  render: (row: any) => (
+                    <BadgeComponent variant="provider" mini>
+                      <Sparkles size={10} />
+                      {row.model?.split("/").pop()}
+                    </BadgeComponent>
+                  ),
+                },
+                {
+                  key: "project",
+                  label: "Project",
+                  render: (row: any) => row.project
+                    ? <BadgeComponent variant="info" mini>{row.project}</BadgeComponent>
+                    : <span className={styles.tableDash}>—</span>,
+                },
+                {
+                  key: "enabled",
+                  label: "Status",
+                  sortValue: (row: any) => (row.enabled ? 1 : 0),
+                  render: (row: any) => (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleToggleTask(row); }}
+                      className={`${styles.toggleSwitch} ${styles.toggleSwitchSmall} ${row.enabled ? styles.toggleSwitchOn : ""}`}
+                      title={row.enabled ? "Disable task" : "Enable task"}
+                    >
+                      <span className={styles.toggleKnob} />
+                    </button>
+                  ),
+                },
+                {
+                  key: "createdAt",
+                  label: "Created",
+                  sortable: true,
+                  align: "right",
+                  render: (row: any) => row.createdAt
+                    ? <DateTimeBadgeComponent date={row.createdAt} />
+                    : <span className={styles.tableDash}>—</span>,
+                },
+                {
+                  key: "actions",
+                  label: "",
+                  sortable: false,
+                  align: "right",
+                  render: (row: any) => {
+                    const isMenuOpen = activeMenuId === row.id;
+                    const isTriggering = triggeringId === row.id;
+                    return (
+                      <div className={styles.tableActionsCell}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleTriggerTask(row); }}
+                          className={styles.tableActionBtn}
+                          disabled={isTriggering}
+                          title="Trigger task"
+                        >
+                          {isTriggering ? <Loader2 size={13} className={styles.spin} /> : <Play size={13} />}
+                        </button>
+                        <div className={styles.menuContainer}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setActiveMenuId(isMenuOpen ? null : row.id); }}
+                            className={styles.menuBtn}
+                            title="More Actions"
+                          >
+                            <MoreVertical size={14} />
+                          </button>
+                          {isMenuOpen && (
+                            <>
+                              <div className={styles.menuBackdrop} onClick={() => setActiveMenuId(null)} />
+                              <div className={styles.menuDropdown}>
+                                <button onClick={() => handleCopyConfig(row)}>
+                                  <Copy size={13} /><span>Copy Config</span>
+                                </button>
+                                <button
+                                  onClick={() => { setConfirmDeleteId(row.id); setActiveMenuId(null); }}
+                                  className={styles.deleteBtnText}
+                                >
+                                  <Trash2 size={13} /><span>Delete</span>
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  },
+                },
+              ]}
+              data={filteredTasks}
+              getRowKey={(t: any) => t.id}
+              emptyText="No scheduled tasks found"
+              storageKey="scheduled-tasks"
+            />
           ) : (
+            /* ── Card View ── */
             <div className={styles.grid}>
               {filteredTasks.map((task) => {
                 const isMenuOpen = activeMenuId === task.id;

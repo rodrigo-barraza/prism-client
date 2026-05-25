@@ -17,7 +17,7 @@
   min-height: var(--button-height);
   flex-shrink: 0;
   border-radius: var(--border-radius-md);
-  box-shadow: 0 4px 12px var(--accent-glow);
+  box-shadow: 0 4px 12px var(--accent-primary-glow);
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
@@ -52,7 +52,7 @@
   width: calc(100% - 16px);
 
   &:hover {
-    background: var(--accent-glow);
+    background: var(--accent-primary-glow);
     color: var(--text-primary);
   }
 
@@ -63,12 +63,12 @@
 }
 
 .allLinkActive {
-  background: var(--accent-subtle);
-  color: var(--accent-color);
-  border-color: color-mix(in srgb, var(--accent-color) 25%, transparent);
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
+  border-color: color-mix(in srgb, var(--accent-primary) 25%, transparent);
 
   & svg {
-    color: var(--accent-color);
+    color: var(--accent-primary);
   }
 }
 
@@ -78,7 +78,7 @@
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-tertiary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   padding: 1px 6px;
   border-radius: 3px;
 }
@@ -115,17 +115,17 @@
   position: relative;
 
   &:hover {
-    background: var(--accent-glow);
+    background: var(--accent-primary-glow);
   }
 }
 
 .itemActive {
-  background: color-mix(in srgb, var(--accent-color) 8%, transparent);
-  border-left: 3px solid var(--accent-color);
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+  border-left: 3px solid var(--accent-primary);
 }
 
 .itemRunning {
-  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
 .itemRunning::after {
@@ -135,7 +135,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--accent-color);
+  background: var(--accent-primary);
   animation: runPulse 2s ease-in-out infinite;
 }
 
@@ -171,7 +171,7 @@
 }
 
 .itemActive .itemName {
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 /* Row 3: passed/failed (left) · pass bar (right) */
@@ -195,7 +195,7 @@
   align-items: center;
   gap: 3px;
   font-weight: 600;
-  color: var(--success);
+  color: var(--color-success);
 }
 
 .statFailed {
@@ -203,7 +203,7 @@
   align-items: center;
   gap: 3px;
   font-weight: 600;
-  color: var(--danger);
+  color: var(--color-danger);
 }
 
 .noRuns {
@@ -216,7 +216,7 @@
 .spinIcon {
   animation: spin 1s linear infinite;
   flex-shrink: 0;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 @keyframes spin {

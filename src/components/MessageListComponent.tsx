@@ -464,12 +464,12 @@ function EditableMessage({
             fontSize: isAssistant ? 13 : 14,
             lineHeight: 1.55,
             color: "var(--text-primary)",
-            background: "var(--bg-secondary)",
-            border: "1px solid var(--accent-color)",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--accent-primary)",
             borderRadius: 8,
             resize: "vertical",
             fontFamily: isAssistant ? "var(--font-mono, monospace)" : "inherit",
-            boxShadow: "0 0 0 2px var(--accent-glow)",
+            boxShadow: "0 0 0 2px var(--accent-primary-glow)",
             tabSize: 2,
           }}
         />
@@ -486,7 +486,7 @@ function EditableMessage({
               border: "none",
               borderRadius: 6,
               cursor: "pointer",
-              background: "var(--accent-color)",
+              background: "var(--accent-primary)",
               color: "#fff",
             }}
           >
@@ -503,7 +503,7 @@ function EditableMessage({
               fontWeight: 600,
               borderRadius: 6,
               cursor: "pointer",
-              background: "var(--bg-tertiary)",
+              background: "var(--bg-elevated)",
               color: "var(--text-secondary)",
               border: "1px solid var(--border-color)",
             }}

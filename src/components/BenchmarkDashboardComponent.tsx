@@ -294,10 +294,10 @@ export default function BenchmarkDashboardComponent({
                   style={{
                     color:
                       bRate >= 80
-                        ? "var(--success)"
+                        ? "var(--color-success)"
                         : bRate >= 50
-                          ? "var(--warning)"
-                          : "var(--danger)",
+                          ? "var(--color-warning)"
+                          : "var(--color-danger)",
                   }}
                 >
                   {bRate}%
@@ -364,12 +364,12 @@ export default function BenchmarkDashboardComponent({
                   {
                     value: totals.passed,
                     label: "Passed",
-                    color: "var(--success)",
+                    color: "var(--color-success)",
                   },
                   {
                     value: totals.failed + totals.errored,
                     label: "Failed",
-                    color: "var(--danger)",
+                    color: "var(--color-danger)",
                   },
                   {
                     bar:
@@ -388,7 +388,7 @@ export default function BenchmarkDashboardComponent({
                         {
                           value: formatCost(totals.cost),
                           label: "Total Cost",
-                          color: "var(--success)",
+                          color: "var(--color-success)",
                           icon: <Coins size={14} />,
                         },
                       ]

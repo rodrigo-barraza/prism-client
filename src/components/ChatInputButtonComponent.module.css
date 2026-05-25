@@ -15,8 +15,8 @@
 }
 
 .chatInputBtn:hover:not(:disabled) {
-  color: var(--accent-color);
-  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+  background: var(--bg-elevated);
 }
 
 .chatInputBtn:disabled {
@@ -27,8 +27,8 @@
 }
 
 .chatInputBtn.active {
-  color: var(--accent-color);
-  background: var(--bg-tertiary);
+  color: var(--accent-primary);
+  background: var(--bg-elevated);
 }
 
 /* ── Submit variant ── */
@@ -36,18 +36,18 @@
   align-self: stretch;
   height: auto;
   min-height: 40px;
-  background: var(--accent-color);
+  background: var(--accent-primary);
   color: white;
   margin-left: auto;
 }
 
 .chatInputBtn.submit:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--accent-primary-hover);
   transform: translateY(-1px);
 }
 
 .chatInputBtn.submit:disabled {
-  background: var(--bg-primary);
+  background: var(--bg-base);
   color: var(--text-secondary);
   opacity: 1;
 }

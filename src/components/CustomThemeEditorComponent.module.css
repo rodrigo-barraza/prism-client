@@ -21,7 +21,7 @@
 }
 
 .themeItem:hover {
-  background: color-mix(in srgb, var(--accent-color) 3%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
 .themeItem + .themeItem {
@@ -29,7 +29,7 @@
 }
 
 .themeItemActive {
-  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
 .themeItemMain {
@@ -94,8 +94,8 @@
   letter-spacing: 0.5px;
   padding: 2px 7px;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--accent-color) 15%, transparent);
-  color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  color: var(--accent-primary);
   flex-shrink: 0;
   animation: fadeIn 0.2s ease-out;
 }
@@ -128,19 +128,19 @@
 }
 
 .actionBtn:hover {
-  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   color: var(--text-primary);
 }
 
 .actionBtnDanger {
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
   animation: fadeIn 0.15s ease-out;
 }
 
 .actionBtnDanger:hover {
-  background: color-mix(in srgb, var(--danger) 20%, transparent);
-  color: var(--danger);
+  background: color-mix(in srgb, var(--color-danger) 20%, transparent);
+  color: var(--color-danger);
 }
 
 /* ── New Theme Button ──────────────────────────────────────────────── */
@@ -171,9 +171,9 @@
 }
 
 .newThemeButton:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 4%, transparent);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
 .newThemeChevron {
@@ -191,7 +191,7 @@
   bottom: calc(100% + 6px);
   left: 0;
   min-width: 180px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2), 0 -1px 4px rgba(0, 0, 0, 0.1);
@@ -240,7 +240,7 @@
 }
 
 .cloneMenuItem:hover {
-  background: color-mix(in srgb, var(--accent-color) 6%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
   color: var(--text-primary);
 }
 
@@ -336,13 +336,13 @@
 }
 
 .editorCancelBtn:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
 .editorSaveBtn {
-  background: var(--accent-color);
-  color: var(--bg-primary);
+  background: var(--accent-primary);
+  color: var(--bg-base);
 }
 
 .editorSaveBtn:hover {
@@ -373,7 +373,7 @@
   padding: 7px 10px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   color: var(--text-primary);
   font-family: inherit;
   outline: none;
@@ -382,7 +382,7 @@
 }
 
 .editorNameInput:focus {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }
 
 /* ── Live Preview Strip ────────────────────────────────────────────── */
@@ -560,7 +560,7 @@
 }
 
 .tokenGroupHeader:hover {
-  background: color-mix(in srgb, var(--accent-color) 3%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
 .tokenGroupChevron {
@@ -676,7 +676,7 @@
   padding: 5px 8px;
   border: 1px solid var(--border-subtle);
   border-radius: 4px;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   color: var(--text-primary);
   outline: none;
   height: auto;
@@ -685,7 +685,7 @@
 }
 
 .hexInput:focus {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
 }
 
 /* ── Editor Footer ─────────────────────────────────────────────────── */
@@ -709,8 +709,8 @@
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
-  background: var(--accent-secondary, var(--accent-color));
-  color: var(--bg-primary);
+  background: var(--accent-secondary, var(--accent-primary));
+  color: var(--bg-base);
   transition: all var(--transition-fast);
 }
 

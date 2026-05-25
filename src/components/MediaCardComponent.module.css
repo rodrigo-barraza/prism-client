@@ -2,7 +2,7 @@
 
 .card {
   position: relative;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -13,7 +13,7 @@
 }
 
 .card:hover {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
@@ -60,7 +60,7 @@
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,7 +163,7 @@
 }
 
 .convLink:hover {
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .meta {

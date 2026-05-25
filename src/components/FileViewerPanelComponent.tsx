@@ -652,7 +652,7 @@ export default function FileViewerPanelComponent({
           display: "block",
           backgroundColor: isSelected ? "rgba(99,102,241,0.12)" : undefined,
           borderLeft: isSelected
-            ? "2px solid var(--accent-color)"
+            ? "2px solid var(--accent-primary)"
             : "2px solid transparent",
           position: "relative" as const,
         },

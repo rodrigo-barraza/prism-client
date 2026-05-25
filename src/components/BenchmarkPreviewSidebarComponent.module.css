@@ -21,7 +21,7 @@
   border-bottom: 1px solid var(--border-color);
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   flex-shrink: 0;
@@ -68,7 +68,7 @@
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-tertiary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   padding: 1px 5px;
   border-radius: 3px;
   margin-left: auto;
@@ -106,10 +106,10 @@
 }
 
 .checkDone {
-  color: var(--success);
+  color: var(--color-success);
 
   & svg {
-    color: var(--success);
+    color: var(--color-success);
     opacity: 1;
   }
 }
@@ -140,8 +140,8 @@
 .assertionValue {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
-  color: var(--accent-color);
-  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  background: var(--accent-primary-subtle);
   padding: 2px 6px;
   border-radius: 3px;
   max-width: 200px;

@@ -4,7 +4,7 @@
 
 /* Table */
 .tableWrapper {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -17,7 +17,7 @@
 
 .sharedConversationRow td:first-child {
   background: rgba(99, 102, 241, 0.1) !important;
-  box-shadow: inset 2px 0 0 var(--accent-color) !important;
+  box-shadow: inset 2px 0 0 var(--accent-primary) !important;
 }
 
 .detailSection {
@@ -81,13 +81,13 @@
 .newRow td {
   background: color-mix(
     in srgb,
-    var(--accent-color) 8%,
+    var(--accent-primary) 8%,
     transparent
   ) !important;
 }
 
 .newRow td:first-child {
-  box-shadow: inset 3px 0 0 var(--accent-color) !important;
+  box-shadow: inset 3px 0 0 var(--accent-primary) !important;
 }
 
 /* Fade-out when row ages past "just now" */
@@ -103,7 +103,7 @@
 
 @keyframes newRowFade {
   0% {
-    background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+    background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
   }
   100% {
     background: transparent;
@@ -112,7 +112,7 @@
 
 @keyframes newRowBorderFade {
   0% {
-    box-shadow: inset 3px 0 0 var(--accent-color);
+    box-shadow: inset 3px 0 0 var(--accent-primary);
   }
   100% {
     box-shadow: inset 3px 0 0 transparent;

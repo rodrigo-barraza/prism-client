@@ -7,7 +7,7 @@
   margin: 0 auto;
   width: 100%;
   animation: fadeIn 0.3s ease-out forwards;
-  border-left: 3px solid var(--accent-color, var(--color-indigo));
+  border-left: 3px solid var(--accent-primary, var(--color-indigo));
   padding: 8px 0;
   opacity: 0.8;
   transition: opacity 0.2s ease;
@@ -35,14 +35,14 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   background: color-mix(
     in srgb,
-    var(--accent-color, var(--color-indigo)) 10%,
+    var(--accent-primary, var(--color-indigo)) 10%,
     transparent
   );
-  color: var(--accent-color, var(--color-indigo));
+  color: var(--accent-primary, var(--color-indigo));
   border: 1px solid
     color-mix(
       in srgb,
-      var(--accent-color, var(--color-indigo)) 30%,
+      var(--accent-primary, var(--color-indigo)) 30%,
       transparent
     );
 }
@@ -95,7 +95,7 @@
   cursor: pointer;
 
   &:hover {
-    color: var(--accent-color);
+    color: var(--accent-primary);
     transform: scale(1.1);
   }
 }

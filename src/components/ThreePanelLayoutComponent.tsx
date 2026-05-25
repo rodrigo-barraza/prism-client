@@ -232,9 +232,6 @@ export default function ThreePanelLayout({
             style={transitionStyle}
             onClick={handleSidebarClick(toggleLeft)}
           >
-            {leftTitle && (
-              <div className={styles.sidebarHeader}>{leftTitle}</div>
-            )}
             {leftPanel}
           </aside>
 

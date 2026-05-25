@@ -18,8 +18,8 @@
   transition: all var(--transition-fast);
 
   &:hover {
-    background: var(--accent-subtle);
-    color: var(--accent-color);
+    background: var(--accent-primary-subtle);
+    color: var(--accent-primary);
   }
 
   &:disabled {
@@ -49,7 +49,7 @@
   }
 
   &:disabled {
-    background: var(--bg-primary);
+    background: var(--bg-base);
     color: var(--text-secondary);
     cursor: not-allowed;
     filter: none;
@@ -66,7 +66,7 @@
 }
 
 .spinner {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   animation: spin 1s linear infinite;
 }
 
@@ -109,15 +109,15 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-secondary);
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-sm);
   transition: all var(--transition-fast);
   white-space: nowrap;
 
   &:hover {
-    border-color: var(--accent-color);
-    background: var(--accent-subtle);
+    border-color: var(--accent-primary);
+    background: var(--accent-primary-subtle);
     color: var(--text-primary);
   }
 }
@@ -154,7 +154,7 @@
   min-height: var(--button-height);
   flex-shrink: 0;
   border-radius: var(--border-radius-md);
-  box-shadow: 0 4px 12px var(--accent-glow);
+  box-shadow: 0 4px 12px var(--accent-primary-glow);
 
   &:hover {
     transform: translateY(-1px);
@@ -178,7 +178,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   padding: 8px;
@@ -188,9 +188,9 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 
   &:focus-within {
-    border-color: var(--accent-color);
+    border-color: var(--accent-primary);
     box-shadow:
-      0 0 0 2px var(--accent-glow),
+      0 0 0 2px var(--accent-primary-glow),
       0 4px 20px rgba(0, 0, 0, 0.3);
   }
 }
@@ -232,12 +232,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
+  background: var(--bg-base);
   animation: fadeIn 0.1s ease-out;
 }
 
 .loadingSpinner {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   animation: spin 1s linear infinite;
 }
 

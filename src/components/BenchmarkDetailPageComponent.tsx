@@ -1455,19 +1455,19 @@ export default function BenchmarkDetailPageComponent({
                       {
                         value: runningCount,
                         label: "Running",
-                        color: "var(--accent-color)",
+                        color: "var(--accent-primary)",
                         icon: <Loader2 size={14} className={styles.spinIcon} />,
                       },
                       {
                         value: passed,
                         label: "Passed",
-                        color: "var(--success)",
+                        color: "var(--color-success)",
                         icon: <CircleCheck size={14} />,
                       },
                       {
                         value: failed,
                         label: "Failed",
-                        color: "var(--danger)",
+                        color: "var(--color-danger)",
                         icon: <CircleX size={14} />,
                       },
                       ...(errored > 0
@@ -1475,7 +1475,7 @@ export default function BenchmarkDetailPageComponent({
                             {
                               value: errored,
                               label: "Errors",
-                              color: "var(--warning)",
+                              color: "var(--color-warning)",
                             },
                           ]
                         : []),
@@ -1491,7 +1491,7 @@ export default function BenchmarkDetailPageComponent({
                             {
                               value: formatCost(totalCost),
                               label: "Cost",
-                              color: "var(--success)",
+                              color: "var(--color-success)",
                               icon: (
                                 <Coins size={14} className={styles.costIcon} />
                               ),
@@ -1555,13 +1555,13 @@ export default function BenchmarkDetailPageComponent({
                   {
                     value: latestRun.summary?.passed ?? 0,
                     label: "Passed",
-                    color: "var(--success)",
+                    color: "var(--color-success)",
                     icon: <CircleCheck size={14} />,
                   },
                   {
                     value: latestRun.summary?.failed ?? 0,
                     label: "Failed",
-                    color: "var(--danger)",
+                    color: "var(--color-danger)",
                     icon: <CircleX size={14} />,
                   },
                   ...((latestRun.summary?.errored ?? 0) > 0
@@ -1569,7 +1569,7 @@ export default function BenchmarkDetailPageComponent({
                         {
                           value: latestRun.summary!.errored,
                           label: "Errors",
-                          color: "var(--warning)",
+                          color: "var(--color-warning)",
                         },
                       ]
                     : []),
@@ -1596,7 +1596,7 @@ export default function BenchmarkDetailPageComponent({
                               ),
                           ),
                           label: "Cost",
-                          color: "var(--success)",
+                          color: "var(--color-success)",
                           icon: <Coins size={14} className={styles.costIcon} />,
                         },
                       ]

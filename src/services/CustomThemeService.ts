@@ -12,22 +12,23 @@
 // ── Types ──────────────────────────────────────────────────────────────
 
 export interface CustomThemeTokens {
-  // Accent
-  accentColor: string;
-  accentSecondary: string;
   // Surfaces
-  bgPrimary: string;
-  bgSecondary: string;
-  bgTertiary: string;
+  background: string;
+  surface: string;
+  elevated: string;
+  // Accent
+  primary: string;
+  secondary: string;
+  tertiary: string;
   // Text
   textPrimary: string;
   textSecondary: string;
-  textTertiary: string;
+  textMuted: string;
   // Borders
   borderColor: string;
   // Semantic
-  danger: string;
   success: string;
+  danger: string;
   warning: string;
   info: string;
 }
@@ -45,9 +46,20 @@ export interface CustomTheme {
 export interface CustomThemeMeta {
   label: string;
   icon: string;
-  color: string;
+  background: string;
+  surface: string;
+  elevated: string;
+  primary: string;
   secondary: string;
-  bg: string;
+  tertiary: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  borderColor: string;
+  success: string;
+  danger: string;
+  warning: string;
+  info: string;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────
@@ -105,102 +117,85 @@ function isLight(hex: string): boolean {
 // ── Token Auto-Derivation ──────────────────────────────────────────────
 
 /**
- * From the ~13 user-picked tokens, derive the full set of ~45+ CSS custom
+ * From the ~17 user-picked tokens, derive the full set of CSS custom
  * properties needed by the design system.
  */
 function deriveFullCSS(tokens: CustomThemeTokens): string {
   const {
-    accentColor,
-    accentSecondary,
-    bgPrimary,
-    bgSecondary,
-    bgTertiary,
+    primary,
+    secondary,
+    tertiary,
+    background,
+    surface,
+    elevated,
     textPrimary,
     textSecondary,
-    textTertiary,
+    textMuted,
     borderColor: borderCol,
-    danger,
     success,
+    danger,
     warning,
     info,
   } = tokens;
 
-  const lightMode = isLight(bgPrimary);
+  const lightMode = isLight(background);
   const borderRgb = hexToRgb(borderCol);
 
-  // Derive text muted (halfway between tertiary and bg)
-  const [tr, tg, tb] = hexToRgb(textTertiary);
-  const [br, bg2, bb] = hexToRgb(bgPrimary);
-  const textMuted = rgbToHex(
-    (tr + br) / 2,
-    (tg + bg2) / 2,
-    (tb + bb) / 2,
-  );
-
   // Derive text inverse (opposite of primary bg)
-  const textInverse = lightMode ? bgPrimary : textPrimary;
+  const textInverse = lightMode ? background : textPrimary;
 
   // Opacity scales depend on light/dark
   const borderOpacity = lightMode ? 0.1 : 0.06;
   const subtleMultiplier = lightMode ? 0.5 : 0.5;
   const mediumMultiplier = lightMode ? 1.0 : 1.67;
-  const accentMultiplier = lightMode ? 1.4 : 2.5;
+  const strongMultiplier = lightMode ? 1.4 : 2.5;
   const glowAlpha = lightMode ? 0.2 : 0.4;
   const subtleAlpha = lightMode ? 0.06 : 0.1;
   const shadowAlpha = lightMode ? 0.08 : 0.15;
 
   const lines = [
     `/* Accent — Primary */`,
-    `--accent-color: ${accentColor};`,
-    `--accent-hover: ${darken(accentColor, 12)};`,
-    `--accent-glow: ${hexToRgba(accentColor, glowAlpha)};`,
-    `--accent-subtle: ${hexToRgba(accentColor, subtleAlpha)};`,
-    `--shadow-glow: 0 0 20px ${hexToRgba(accentColor, shadowAlpha)};`,
+    `--accent-primary: ${primary};`,
+    `--accent-primary-hover: ${darken(primary, 12)};`,
+    `--accent-primary-glow: ${hexToRgba(primary, glowAlpha)};`,
+    `--accent-primary-subtle: ${hexToRgba(primary, subtleAlpha)};`,
+    `--shadow-glow: 0 0 20px ${hexToRgba(primary, shadowAlpha)};`,
     ``,
     `/* Accent — Secondary */`,
-    `--accent-secondary: ${accentSecondary};`,
-    `--accent-secondary-hover: ${darken(accentSecondary, 12)};`,
-    `--accent-secondary-glow: ${hexToRgba(accentSecondary, glowAlpha)};`,
-    `--accent-secondary-subtle: ${hexToRgba(accentSecondary, subtleAlpha)};`,
+    `--accent-secondary: ${secondary};`,
+    `--accent-secondary-hover: ${darken(secondary, 12)};`,
+    `--accent-secondary-glow: ${hexToRgba(secondary, glowAlpha)};`,
+    `--accent-secondary-subtle: ${hexToRgba(secondary, subtleAlpha)};`,
+    ``,
+    `/* Accent — Tertiary */`,
+    `--accent-tertiary: ${tertiary};`,
     ``,
     `/* Surfaces */`,
-    `--bg-primary: ${bgPrimary};`,
-    `--bg-secondary: ${bgSecondary};`,
-    `--bg-tertiary: ${bgTertiary};`,
-    `--bg-surface: ${hexToRgba(bgSecondary, 0.72)};`,
-    `--bg-card: ${hexToRgba(bgSecondary, 0.94)};`,
-    `--bg-card-hover: ${hexToRgba(bgTertiary, 0.96)};`,
-    `--bg-panel: ${hexToRgba(bgSecondary, 0.85)};`,
-    `--bg-input: ${hexToRgba(bgSecondary, 0.6)};`,
-    `--bg-input-hover: ${hexToRgba(bgTertiary, 0.7)};`,
-    `--bg-sidebar: ${hexToRgba(lightMode ? lighten(bgPrimary, 3) : darken(bgPrimary, 15), 0.97)};`,
+    `--bg-base: ${background};`,
+    `--bg-surface: ${surface};`,
+    `--bg-elevated: ${elevated};`,
     ``,
     `/* Borders */`,
     `--border-color: rgba(${borderRgb.join(", ")}, ${borderOpacity});`,
     `--border-subtle: rgba(${borderRgb.join(", ")}, ${borderOpacity * subtleMultiplier});`,
     `--border-medium: rgba(${borderRgb.join(", ")}, ${borderOpacity * mediumMultiplier});`,
-    `--border-accent: rgba(${borderRgb.join(", ")}, ${borderOpacity * accentMultiplier});`,
+    `--border-strong: rgba(${borderRgb.join(", ")}, ${borderOpacity * strongMultiplier});`,
     ``,
     `/* Text */`,
     `--text-primary: ${textPrimary};`,
     `--text-secondary: ${textSecondary};`,
-    `--text-tertiary: ${textTertiary};`,
     `--text-muted: ${textMuted};`,
     `--text-inverse: ${textInverse};`,
     ``,
     `/* Semantic */`,
-    `--danger: ${danger};`,
-    `--danger-subtle: ${hexToRgba(danger, lightMode ? 0.06 : 0.1)};`,
-    `--success: ${success};`,
-    `--success-subtle: ${hexToRgba(success, lightMode ? 0.06 : 0.1)};`,
-    `--warning: ${warning};`,
-    `--warning-subtle: ${hexToRgba(warning, lightMode ? 0.06 : 0.1)};`,
-    `--info: ${info};`,
-    `--info-subtle: ${hexToRgba(info, lightMode ? 0.06 : 0.1)};`,
-    `--color-success: var(--success);`,
-    `--color-error: var(--danger);`,
-    `--color-warning: var(--warning);`,
-    `--color-info: var(--info);`,
+    `--color-success: ${success};`,
+    `--color-success-subtle: ${hexToRgba(success, lightMode ? 0.06 : 0.1)};`,
+    `--color-danger: ${danger};`,
+    `--color-danger-subtle: ${hexToRgba(danger, lightMode ? 0.06 : 0.1)};`,
+    `--color-warning: ${warning};`,
+    `--color-warning-subtle: ${hexToRgba(warning, lightMode ? 0.06 : 0.1)};`,
+    `--color-info: ${info};`,
+    `--color-info-subtle: ${hexToRgba(info, lightMode ? 0.06 : 0.1)};`,
     ``,
     `/* Shadows */`,
     `--shadow-sm: 0 1px 3px rgba(0, 0, 0, ${lightMode ? 0.08 : 0.3});`,
@@ -208,8 +203,8 @@ function deriveFullCSS(tokens: CustomThemeTokens): string {
     `--shadow-lg: 0 8px 32px rgba(0, 0, 0, ${lightMode ? 0.12 : 0.5});`,
     ``,
     `/* Select */`,
-    `--select-bg: ${lightMode ? bgSecondary : hexToRgba(bgSecondary, 0.65)};`,
-    `--select-option-bg: ${bgSecondary};`,
+    `--select-bg: ${lightMode ? surface : hexToRgba(surface, 0.65)};`,
+    `--select-option-bg: ${surface};`,
     `--select-option-text: ${textPrimary};`,
   ];
 
@@ -339,9 +334,20 @@ function getCustomThemeMetaMap(): Record<string, CustomThemeMeta> {
     map[getCustomThemeAttr(theme.id)] = {
       label: theme.name,
       icon: theme.icon,
-      color: theme.tokens.accentColor,
-      secondary: theme.tokens.accentSecondary,
-      bg: theme.tokens.bgPrimary,
+      background: theme.tokens.background,
+      surface: theme.tokens.surface,
+      elevated: theme.tokens.elevated,
+      primary: theme.tokens.primary,
+      secondary: theme.tokens.secondary,
+      tertiary: theme.tokens.tertiary,
+      textPrimary: theme.tokens.textPrimary,
+      textSecondary: theme.tokens.textSecondary,
+      textMuted: theme.tokens.textMuted,
+      borderColor: theme.tokens.borderColor,
+      success: theme.tokens.success,
+      danger: theme.tokens.danger,
+      warning: theme.tokens.warning,
+      info: theme.tokens.info,
     };
   }
   return map;
@@ -360,92 +366,98 @@ function generateAllCustomThemeCSS(): string {
 /** Built-in theme token snapshots for the "clone from" flow */
 const BUILT_IN_PRESETS: Record<string, CustomThemeTokens> = {
   dark: {
-    accentColor: "#6366f1",
-    accentSecondary: "#a78bfa",
-    bgPrimary: "#0a0a0f",
-    bgSecondary: "#13141c",
-    bgTertiary: "#1a1b26",
+    background: "#0a0a0f",
+    surface: "#13141c",
+    elevated: "#1a1b26",
+    primary: "#6366f1",
+    secondary: "#a78bfa",
+    tertiary: "#38bdf8",
     textPrimary: "#f8f8f8",
     textSecondary: "#8e95ae",
-    textTertiary: "#6b728e",
+    textMuted: "#565c74",
     borderColor: "#ffffff",
-    danger: "#ef4444",
     success: "#10b981",
+    danger: "#ef4444",
     warning: "#f59e0b",
     info: "#3b82f6",
   },
   light: {
-    accentColor: "#4f46e5",
-    accentSecondary: "#e11d48",
-    bgPrimary: "#f5f5f7",
-    bgSecondary: "#ffffff",
-    bgTertiary: "#edeef2",
+    background: "#f5f5f7",
+    surface: "#ffffff",
+    elevated: "#edeef2",
+    primary: "#4f46e5",
+    secondary: "#e11d48",
+    tertiary: "#f59e0b",
     textPrimary: "#1a1a2e",
     textSecondary: "#64748b",
-    textTertiary: "#78849c",
+    textMuted: "#94a3b8",
     borderColor: "#000000",
-    danger: "#dc2626",
     success: "#059669",
+    danger: "#dc2626",
     warning: "#d97706",
     info: "#2563eb",
   },
   tropical: {
-    accentColor: "#ff6b6b",
-    accentSecondary: "#00ceaa",
-    bgPrimary: "#1a120e",
-    bgSecondary: "#241a14",
-    bgTertiary: "#2e221a",
+    background: "#1a120e",
+    surface: "#241a14",
+    elevated: "#2e221a",
+    primary: "#ff6b6b",
+    secondary: "#00ceaa",
+    tertiary: "#fbbf24",
     textPrimary: "#faebd7",
     textSecondary: "#c4a882",
-    textTertiary: "#8a7560",
+    textMuted: "#8a7560",
     borderColor: "#00ceaa",
-    danger: "#ff5252",
     success: "#00d4aa",
+    danger: "#ff5252",
     warning: "#ffb347",
     info: "#4fc3f7",
   },
   oceanic: {
-    accentColor: "#00b4d8",
-    accentSecondary: "#48e0a0",
-    bgPrimary: "#060d18",
-    bgSecondary: "#0b1628",
-    bgTertiary: "#111f38",
+    background: "#060d18",
+    surface: "#0b1628",
+    elevated: "#111f38",
+    primary: "#00b4d8",
+    secondary: "#48e0a0",
+    tertiary: "#a78bfa",
     textPrimary: "#d0e8f2",
     textSecondary: "#7ba7c2",
-    textTertiary: "#4a7a96",
+    textMuted: "#4a7a96",
     borderColor: "#00b4d8",
-    danger: "#ff6b6b",
     success: "#48e0a0",
+    danger: "#ff6b6b",
     warning: "#ffc857",
     info: "#90e0ef",
   },
   punk: {
-    accentColor: "#ff2d9b",
-    accentSecondary: "#f0b429",
-    bgPrimary: "#0e0a10",
-    bgSecondary: "#171119",
-    bgTertiary: "#211828",
+    background: "#0e0a10",
+    surface: "#171119",
+    elevated: "#211828",
+    primary: "#ff2d9b",
+    secondary: "#f0b429",
+    tertiary: "#a78bfa",
     textPrimary: "#f0e6f4",
     textSecondary: "#b893c4",
-    textTertiary: "#7d5f8e",
+    textMuted: "#7d5f8e",
     borderColor: "#ff2d9b",
-    danger: "#ff3d5a",
     success: "#39ff76",
+    danger: "#ff3d5a",
     warning: "#f0b429",
     info: "#a78bfa",
   },
   ember: {
-    accentColor: "#f59e0b",
-    accentSecondary: "#e06c4e",
-    bgPrimary: "#120c08",
-    bgSecondary: "#1c1410",
-    bgTertiary: "#261c16",
+    background: "#120c08",
+    surface: "#1c1410",
+    elevated: "#261c16",
+    primary: "#f59e0b",
+    secondary: "#e06c4e",
+    tertiary: "#34d399",
     textPrimary: "#f5ebe0",
     textSecondary: "#c2a68a",
-    textTertiary: "#8b7260",
+    textMuted: "#8b7260",
     borderColor: "#f59e0b",
-    danger: "#ef4444",
     success: "#34d399",
+    danger: "#ef4444",
     warning: "#fbbf24",
     info: "#60a5fa",
   },

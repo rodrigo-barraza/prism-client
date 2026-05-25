@@ -305,8 +305,8 @@ export default function TracesPage() {
                                     {
                                       label: c.project,
                                       style: {
-                                        background: "var(--accent-subtle)",
-                                        color: "var(--accent-color)",
+                                        background: "var(--accent-primary-subtle)",
+                                        color: "var(--accent-primary)",
                                       },
                                     },
                                   ]
@@ -347,7 +347,7 @@ export default function TracesPage() {
                                 {
                                   label: `${w.nodeCount} nodes · ${w.edgeCount} edges`,
                                   style: {
-                                    background: "var(--bg-tertiary)",
+                                    background: "var(--bg-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },
@@ -381,7 +381,7 @@ export default function TracesPage() {
                                 {
                                   label: `${s.requestCount} request${s.requestCount !== 1 ? "s" : ""}`,
                                   style: {
-                                    background: "var(--bg-tertiary)",
+                                    background: "var(--bg-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },

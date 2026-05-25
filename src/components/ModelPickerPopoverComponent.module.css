@@ -8,7 +8,7 @@
   gap: 8px;
   height: 36px;
   padding: 0 14px 0 10px;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
@@ -28,9 +28,9 @@
 }
 
 .trigger:hover {
-  border-color: color-mix(in srgb, var(--accent-color) 50%, transparent);
-  background: var(--bg-tertiary);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-color) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
+  background: var(--bg-elevated);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
 .triggerReadOnly {
@@ -38,20 +38,20 @@
 
   &:hover {
     border-color: var(--border-color);
-    background: var(--bg-secondary);
+    background: var(--bg-surface);
     box-shadow: none;
   }
 }
 
 .triggerOpen {
-  border-color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-secondary));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 20%, transparent);
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .triggerActive {
-  border-color: color-mix(in srgb, var(--accent-color) 50%, transparent);
-  background: color-mix(in srgb, var(--accent-color) 6%, var(--bg-secondary));
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 6%, var(--bg-surface));
 }
 
 /* ── Loading state ──────────────────────────────────────────────────── */
@@ -59,14 +59,14 @@
 .triggerLoading {
   position: relative;
   overflow: hidden;
-  border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
   animation: triggerPulse 2s ease-in-out infinite;
   pointer-events: none;
 }
 
 .triggerSpinner {
   animation: spin 1s linear infinite;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   flex-shrink: 0;
 }
 
@@ -75,8 +75,8 @@
   inset: 0;
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--accent-color) 12%, transparent),
-    color-mix(in srgb, var(--accent-color) 20%, transparent)
+    color-mix(in srgb, var(--accent-primary) 12%, transparent),
+    color-mix(in srgb, var(--accent-primary) 20%, transparent)
   );
   transform-origin: left center;
   transition: transform 0.3s ease-out;
@@ -88,12 +88,12 @@
   0%,
   100% {
     box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--accent-color) 10%, transparent);
+      color-mix(in srgb, var(--accent-primary) 10%, transparent);
   }
   50% {
     box-shadow:
-      0 0 0 2px color-mix(in srgb, var(--accent-color) 30%, transparent),
-      0 0 12px color-mix(in srgb, var(--accent-color) 15%, transparent);
+      0 0 0 2px color-mix(in srgb, var(--accent-primary) 30%, transparent),
+      0 0 12px color-mix(in srgb, var(--accent-primary) 15%, transparent);
   }
 }
 
@@ -168,7 +168,7 @@
 .popover {
   position: fixed;
   z-index: 9999;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 2px;
   box-shadow:
@@ -232,7 +232,7 @@
   width: 24px;
   height: 24px;
   border: none;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border-radius: 50%;
   color: var(--text-secondary);
   cursor: pointer;
@@ -270,7 +270,7 @@
    overflow: visible lets FilterDropdownComponent's
    absolutely-positioned .dropdownMenu escape. */
 .popoverBody > div > div:first-child {
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   margin-bottom: 0;
   border: none;
   border-bottom: 1px solid var(--border-color);

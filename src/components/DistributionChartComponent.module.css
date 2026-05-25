@@ -43,7 +43,7 @@
   font-weight: 500;
   color: var(--text-muted);
   padding: 3px 8px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border-radius: var(--border-radius-sm);
   white-space: nowrap;
 }
@@ -87,12 +87,12 @@
   transition: all 0.15s ease;
 
   &:hover {
-    background: var(--accent-subtle);
+    background: var(--accent-primary-subtle);
   }
 }
 
 .legendRowActive {
-  background: var(--accent-subtle);
+  background: var(--accent-primary-subtle);
 }
 
 .legendDot {

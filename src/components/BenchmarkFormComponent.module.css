@@ -31,25 +31,25 @@
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s;
-  background: var(--accent-subtle);
-  color: var(--accent-color);
-  border: 1px solid color-mix(in srgb, var(--accent-color) 30%, transparent);
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
 .operatorToggle:hover {
-  background: color-mix(in srgb, var(--accent-color) 20%, transparent);
-  border-color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  border-color: var(--accent-primary);
 }
 
 .operatorOr {
-  background: color-mix(in srgb, var(--warning) 12%, transparent);
-  color: var(--warning);
-  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
 }
 
 .operatorOr:hover {
-  background: color-mix(in srgb, var(--warning) 20%, transparent);
-  border-color: var(--warning);
+  background: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  border-color: var(--color-warning);
 }
 
 /* ── Assertions List ────────────────────────────────────── */
@@ -70,7 +70,7 @@
   gap: 10px;
   align-items: end;
   padding: 10px 12px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
 }

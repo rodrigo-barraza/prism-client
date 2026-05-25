@@ -39,14 +39,14 @@
     color 0.15s;
 
   &:hover {
-    background: color-mix(in srgb, var(--accent-color) 6%, transparent);
+    background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
     color: var(--text-primary);
   }
 }
 
 .headerIcon {
   opacity: 0.7;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   flex-shrink: 0;
 }
 
@@ -91,7 +91,7 @@
   left: 0;
   right: 0;
   z-index: 20;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-top: none;
   border-radius: 0 0 6px 6px;
@@ -128,12 +128,12 @@
   transition: background 0.1s;
 
   &:hover {
-    background: color-mix(in srgb, var(--accent-color) 8%, transparent);
+    background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
   }
 }
 
 .switcherItemActive {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   font-weight: 600;
 }
 
@@ -144,7 +144,7 @@
 
 .switcherItemActive .switcherItemIcon {
   opacity: 1;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .switcherItemName {
@@ -155,7 +155,7 @@
 
 .switcherItemCheck {
   flex-shrink: 0;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   opacity: 0.8;
 }
 
@@ -196,7 +196,7 @@
   min-height: 22px;
 
   &:hover {
-    background: color-mix(in srgb, var(--accent-color) 6%, transparent);
+    background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
   }
 
   &:hover .treeMentionBtn {
@@ -228,7 +228,7 @@
 
 .treeFolderIcon {
   flex-shrink: 0;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   opacity: 0.8;
 }
 
@@ -273,8 +273,8 @@
   will-change: opacity;
 
   &:hover {
-    color: var(--accent-color);
-    background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+    color: var(--accent-primary);
+    background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
   }
 
   &:active {

@@ -12,7 +12,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  background: var(--bg-secondary);
+  background: var(--bg-surface);
 }
 
 .header {
@@ -34,7 +34,7 @@
   color: var(--text-muted);
   font-size: 0.5625rem;
   font-weight: 500;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   padding: 1px 5px;
   border-radius: 3px;
 }
@@ -62,15 +62,15 @@
   }
 
   &:hover {
-    background: var(--accent-glow);
+    background: var(--accent-primary-glow);
   }
 }
 
 .requestError {
-  background: color-mix(in srgb, var(--error) 5%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 5%, transparent);
 
   &:hover {
-    background: color-mix(in srgb, var(--error) 10%, transparent);
+    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
   }
 }
 
@@ -144,7 +144,7 @@
 .requestCost {
   font-size: 0.5625rem;
   font-weight: 600;
-  color: var(--success);
+  color: var(--color-success);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }

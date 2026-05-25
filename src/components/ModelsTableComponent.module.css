@@ -53,7 +53,7 @@
 }
 
 .loadedBadge {
-  color: var(--success);
+  color: var(--color-success);
   background: rgba(16, 185, 129, 0.1);
 }
 
@@ -87,7 +87,7 @@
   flex-shrink: 0;
 
   &.active {
-    background: var(--success);
+    background: var(--color-success);
     opacity: 1;
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
     animation: pulse 2s ease-in-out infinite;
@@ -172,11 +172,11 @@
 
 .selectWrap:hover .selectBox {
   opacity: 0.6;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .selectCheck {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   transition: all 0.15s ease;
 }
 
@@ -189,7 +189,7 @@
 .selectWrapActive {
   .selectCheck {
     filter: drop-shadow(
-      0 0 3px color-mix(in srgb, var(--accent-color) 40%, transparent)
+      0 0 3px color-mix(in srgb, var(--accent-primary) 40%, transparent)
     );
   }
 }
@@ -199,24 +199,24 @@
 .selectedRow td {
   background: color-mix(
     in srgb,
-    var(--accent-color) 8%,
+    var(--accent-primary) 8%,
     transparent
   ) !important;
   border-bottom-color: color-mix(
     in srgb,
-    var(--accent-color) 15%,
+    var(--accent-primary) 15%,
     var(--border-color)
   ) !important;
 }
 
 .selectedRow td:first-child {
-  box-shadow: inset 3px 0 0 var(--accent-color);
+  box-shadow: inset 3px 0 0 var(--accent-primary);
 }
 
 .selectedRow:hover td {
   background: color-mix(
     in srgb,
-    var(--accent-color) 14%,
+    var(--accent-primary) 14%,
     transparent
   ) !important;
 }
@@ -231,7 +231,7 @@
   gap: 4px;
   font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--success);
+  color: var(--color-success);
 
   & svg {
     flex-shrink: 0;
@@ -244,7 +244,7 @@
   gap: 4px;
   font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--danger);
+  color: var(--color-danger);
 
   & svg {
     flex-shrink: 0;
@@ -261,7 +261,7 @@
   width: 40px;
   height: 4px;
   border-radius: 2px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -301,8 +301,8 @@
   gap: 4px;
   font-size: 0.625rem;
   font-weight: 600;
-  color: var(--accent-color);
-  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   padding: 2px 6px;
   border-radius: 2px;
   white-space: nowrap;

@@ -10,7 +10,7 @@
   overflow: hidden;
   opacity: 0.35;
   margin-top: 6px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   transition:
     height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.4s ease,

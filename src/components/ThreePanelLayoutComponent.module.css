@@ -77,33 +77,33 @@
   height: 100%;
   flex-shrink: 0;
   border-radius: 0;
-  background: var(--accent-glow);
+  background: var(--accent-primary-glow);
   border: 1px solid transparent;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   cursor: pointer;
   opacity: 0.8;
   transition: all 0.25s ease;
 }
 
 .headerToggle:hover {
-  background: var(--accent-color);
-  color: var(--bg-primary);
+  background: var(--accent-primary);
+  color: var(--bg-base);
   opacity: 1;
   transform: scale(1.05);
 }
 
 /* When the associated panel is hidden */
 .panelHidden {
-  background: color-mix(in srgb, var(--accent-color) 15%, transparent);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
   opacity: 1;
 }
 
 .panelHidden:hover {
-  background: var(--accent-color);
-  color: var(--bg-primary);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-color) 40%, transparent);
+  background: var(--accent-primary);
+  color: var(--bg-base);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
 
 /* ── Mobile Meta Bar (conversation info below header) ── */
@@ -183,21 +183,6 @@
   pointer-events: none;
 }
 
-.sidebarHeader {
-  height: 42px;
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--border-color);
-  font-weight: 500;
-  font-size: var(--font-size-sm);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  opacity: 0.6;
-}
 
 /* ── Main Center ───────────────────────────────────── */
 
@@ -237,7 +222,7 @@
     bottom: 0;
     z-index: 200;
     border: none;
-    background: var(--bg-primary);
+    background: var(--bg-base);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     will-change: transform;
