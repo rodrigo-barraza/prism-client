@@ -1,9 +1,11 @@
 .card {
+  max-width: 800px;
+  margin: 8px auto;
+  width: 100%;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--color-warning) 25%, transparent);
   background: color-mix(in srgb, var(--color-warning) 4%, var(--bg-secondary));
   padding: 12px 14px;
-  margin: 8px 0;
   animation: slideIn 0.2s ease-out;
 
   &.resolved {

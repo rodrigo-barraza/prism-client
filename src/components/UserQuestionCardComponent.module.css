@@ -1,11 +1,13 @@
 /* ─── Card container ──────────────────────────────────── */
 
 .card {
+  max-width: 800px;
+  margin: 8px auto;
+  width: 100%;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--color-info) 30%, transparent);
   background: color-mix(in srgb, var(--color-info) 5%, var(--bg-secondary));
   padding: 14px 16px;
-  margin: 8px 0;
   animation: slideIn 0.25s ease-out;
 
   &.resolved {

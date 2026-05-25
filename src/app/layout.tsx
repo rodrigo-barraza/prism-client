@@ -1,4 +1,4 @@
-import { Inter, Noto_Color_Emoji } from "next/font/google";
+import { Inter, Noto_Color_Emoji, Noto_Emoji } from "next/font/google";
 import {
   ThemeProvider,
   ComponentsProvider,
@@ -21,6 +21,13 @@ const inter = Inter({
 const notoColorEmoji = Noto_Color_Emoji({
   variable: "--font-emoji",
   weight: "400",
+  subsets: ["emoji"],
+  display: "swap",
+});
+
+const notoEmoji = Noto_Emoji({
+  variable: "--font-emoji-mono",
+  weight: ["400", "500", "600", "700"],
   subsets: ["emoji"],
   display: "swap",
 });
@@ -50,7 +57,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           suppressHydrationWarning
         />
       </head>
-      <body className={`${inter.variable} ${notoColorEmoji.variable}`}>
+      <body className={`${inter.variable} ${notoColorEmoji.variable} ${notoEmoji.variable}`}>
         <ThemeProvider storageKey="prism:theme" defaultTheme="light">
           <CustomThemeBootComponent />
           <ComponentsProvider sound>
