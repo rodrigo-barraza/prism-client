@@ -49,7 +49,7 @@ interface Task {
   agent: string | null;
   provider: string;
   model: string;
-  scheduleType: "hourly" | "daily" | "weekly" | "cron";
+  scheduleType: "hourly" | "daily" | "weekly" | "cron" | "trigger";
   scheduleTime?: string;
   scheduleDay?: number;
   cronExpression?: string;
@@ -91,7 +91,7 @@ export default function ScheduledTasksPage() {
   const [formAgent, setFormAgent] = useState("CODING");
   const [formProvider, setFormProvider] = useState("");
   const [formModel, setFormModel] = useState("");
-  const [formScheduleType, setFormScheduleType] = useState<"hourly" | "daily" | "weekly" | "cron">("daily");
+  const [formScheduleType, setFormScheduleType] = useState<"hourly" | "daily" | "weekly" | "cron" | "trigger">("daily");
   const [formTimeHour, setFormTimeHour] = useState("09");
   const [formTimeMinute, setFormTimeMinute] = useState("00");
   const [formTimeAmpm, setFormTimeAmpm] = useState("AM");
@@ -288,6 +288,10 @@ export default function ScheduledTasksPage() {
 
     if (task.scheduleType === "cron") {
       return `Cron expression: ${task.cronExpression || "* * * * *"}`;
+    }
+
+    if (task.scheduleType === "trigger") {
+      return "Manual / Remote Trigger";
     }
 
     return "Unknown schedule";
@@ -651,6 +655,7 @@ export default function ScheduledTasksPage() {
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
                       <option value="cron">Cron Expression</option>
+                      <option value="trigger">Trigger (Manual / Remote)</option>
                     </select>
                   </div>
 
