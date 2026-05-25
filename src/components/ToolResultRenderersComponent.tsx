@@ -184,6 +184,7 @@ export interface ParsedToolResult {
   width?: number;
   height?: number;
   asciiEmbedUrl?: string;
+  ascii?: string;
 }
 
 export interface RendererProps {
@@ -1436,14 +1437,14 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
   const hasError = !!parsed.error;
   const width = parsed.width || (args?.width ? Number(args.width) : 100);
   const height = parsed.height || 0;
-  const embedUrl = parsed.asciiEmbedUrl || parsed.embedUrl || "";
+  const asciiText = parsed.ascii || "";
 
   return (
     <div className={styles.rendererBlock}>
       <div className={styles.rendererHeader}>
         <span style={{ fontSize: 13 }}>🎨</span>
         <span className={styles.rendererTitle}>
-          ASCII Art — {String(width)}x{String(height)}
+          ASCII Art — {String(width)}×{String(height)}
         </span>
         <StatusBadge
           success={!hasError}
@@ -1451,12 +1452,10 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
         />
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
-      {!hasError && embedUrl && (
-        <TurtleDrawEmbed
-          src={embedUrl}
-          title="ASCII Art"
-          fallbackHeight={600}
-        />
+      {!hasError && asciiText && (
+        <div className={styles.asciiArtContainer}>
+          <pre className={styles.asciiArtPre}>{asciiText}</pre>
+        </div>
       )}
     </div>
   );

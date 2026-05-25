@@ -623,6 +623,34 @@
   }
 }
 
+/* ── ASCII Art Inline Renderer ─────────────────────────────── */
+
+.asciiArtContainer {
+  margin-top: 6px;
+  border-radius: 8px;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  background: #0c0c0c;
+  max-width: 100%;
+  max-height: 520px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  animation: turtleFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  scrollbar-width: thin;
+}
+
+.asciiArtPre {
+  margin: 0;
+  padding: 12px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  font-size: 5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: #c8d6e5;
+  white-space: pre;
+  user-select: all;
+}
+
 
 /* ── Terminal error ───────────────────────────────────────── */
 
