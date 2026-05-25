@@ -6,21 +6,31 @@
   padding: 10px 12px 10px 9px;
   cursor: pointer;
   border-bottom: 1px solid var(--border-color);
-  border-left: 3px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid transparent;
   transition:
     background 0.2s,
     border-color 0.2s,
+    opacity 0.2s,
     transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   will-change: transform;
 
-  &:nth-child(even):not(.active):not(:hover) {
-    background: rgba(255, 255, 255, 0.02);
+  /* Non-active items are visually subdued */
+  &:not(.active) {
+    opacity: 0.55;
+  }
+
+  &:not(.active):nth-child(even):not(:hover) {
+    background: rgba(128, 128, 128, 0.02);
+  }
+
+  &:not(.active):hover {
+    opacity: 0.85;
   }
 
   &:hover {
-    background: var(--accent-glow);
-    border-left-color: rgba(255, 255, 255, 0.15);
+    background: var(--accent-subtle);
+    border-left-color: var(--accent-color);
   }
 
   &:hover .actions {
@@ -34,8 +44,9 @@
 }
 
 .active {
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--accent-subtle);
   border-left-color: var(--accent-color);
+  opacity: 1;
   transform: translateX(4px);
 }
 
