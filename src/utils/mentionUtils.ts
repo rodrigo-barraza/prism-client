@@ -56,15 +56,15 @@ export interface WorkspaceEntry {
  */
 export function flattenTree(nodes: WorkspaceEntry[], prefix = ""): WorkspaceEntry[] {
   const out: WorkspaceEntry[] = [];
-  for (const n of nodes) {
-    const p = prefix ? `${prefix}/${n.name}` : n.name;
+  for (const node of nodes) {
+    const fullPath = prefix ? `${prefix}/${node.name}` : node.name;
     out.push({
-      path: String(p || ""),
-      name: String(n.name || ""),
-      type: String(n.type || ""),
+      path: String(fullPath || ""),
+      name: String(node.name || ""),
+      type: String(node.type || ""),
     });
-    if (n.type === "directory" && n.children?.length) {
-      out.push(...flattenTree(n.children, p));
+    if (node.type === "directory" && node.children?.length) {
+      out.push(...flattenTree(node.children, fullPath));
     }
   }
   return out;
@@ -99,11 +99,11 @@ export function detectMentionToken(text: string, cursorOffset: number) {
 export function filterMentionResults(entries: WorkspaceEntry[] | null, query: string, limit = 20): WorkspaceEntry[] {
   if (!entries || !entries.length) return [];
   if (!query) return entries.slice(0, limit);
-  const q = query.toLowerCase();
+  const lowerQuery = query.toLowerCase();
   return entries
     .filter(
-      (e) =>
-        (e.path || "").toLowerCase().includes(q) || (e.name || "").toLowerCase().includes(q),
+      (entry) =>
+        (entry.path || "").toLowerCase().includes(lowerQuery) || (entry.name || "").toLowerCase().includes(lowerQuery),
     )
     .slice(0, limit);
 }
@@ -224,12 +224,12 @@ export function createMentionBadge(path: string, name: string, type: string | un
  * Place the caret (cursor) immediately after a given DOM node.
  */
 export function placeCaretAfter(node: Node) {
-  const sel = window.getSelection()!;
-  const r = document.createRange();
-  r.setStartAfter(node);
-  r.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(r);
+  const selection = window.getSelection()!;
+  const range = document.createRange();
+  range.setStartAfter(node);
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 /**

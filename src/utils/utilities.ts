@@ -124,8 +124,8 @@ export function getUniqueModels(messages: Message[]): string[] {
   return [
     ...new Set(
       messages
-        .filter((m) => m.role === "assistant" && m.model)
-        .map((m) => m.model!),
+        .filter((message) => message.role === "assistant" && message.model)
+        .map((message) => message.model!),
     ),
   ];
 }
@@ -138,8 +138,8 @@ export function getUniqueProviders(messages: Message[]): string[] {
   return [
     ...new Set(
       messages
-        .filter((m) => m.role === "assistant" && m.provider)
-        .map((m) => m.provider!),
+        .filter((message) => message.role === "assistant" && message.provider)
+        .map((message) => message.provider!),
     ),
   ];
 }
@@ -148,7 +148,7 @@ export function getUniqueProviders(messages: Message[]): string[] {
  * Sum estimatedCost across all messages.
  */
 export function getSessionCost(messages: Message[]): number {
-  return messages.reduce((sum, m) => sum + (m.estimatedCost || 0), 0);
+  return messages.reduce((sum, message) => sum + (message.estimatedCost || 0), 0);
 }
 
 /**
@@ -203,17 +203,17 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
   let liveTtftSamples = null; // server-computed TTFT samples (seconds[]) from generation_started events
   let liveOutputCharacters = 0; // real character count from streaming chunks
   let liveGenProgress = null; // backend-computed tok/s from SessionGenerationTracker
-  for (const m of messages) {
-    if (m.role !== "assistant") continue;
+  for (const message of messages) {
+    if (message.role !== "assistant") continue;
     // Finalized messages have usage from the provider
-    if (m.usage) {
-      requests += m.usage.requests || 1;
-      input += getTotalInputTokens(m.usage);
-      output += m.usage.outputTokens || 0;
+    if (message.usage) {
+      requests += message.usage.requests || 1;
+      input += getTotalInputTokens(message.usage);
+      output += message.usage.outputTokens || 0;
     }
     // Retroactive TTFT from completed messages
-    if (m.timeToGeneration != null) {
-      lastTimeToGeneration = m.timeToGeneration;
+    if (message.timeToGeneration != null) {
+      lastTimeToGeneration = message.timeToGeneration;
     }
     // Intermediate authoritative usage from backend usage_update events.
     // Priority: usage (done) > _intermediateUsage (per-iteration) > _liveGenProgress (tracker)
@@ -221,70 +221,70 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
     // _liveGenProgress.outputTokens may exceed _intermediateUsage when
     // a new iteration completes — use whichever is higher so the token
     // count never stalls between iterations.
-    if (!m.usage && m._intermediateUsage) {
-      const intermediateOutput = m._intermediateUsage.outputTokens || 0;
+    if (!message.usage && message._intermediateUsage) {
+      const intermediateOutput = message._intermediateUsage.outputTokens || 0;
       // Use tracker's real token count if it exceeds intermediate (new iteration completed)
-      const trackerOutput = m._liveGenProgress?.outputTokens || 0;
+      const trackerOutput = message._liveGenProgress?.outputTokens || 0;
       const effectiveOutput = Math.max(intermediateOutput, trackerOutput);
 
-      requests += m._intermediateUsage.requests || 1;
-      input += getTotalInputTokens(m._intermediateUsage);
+      requests += message._intermediateUsage.requests || 1;
+      input += getTotalInputTokens(message._intermediateUsage);
       output += effectiveOutput;
       // Still expose streaming metadata for tok/s computation
       liveStreamingTokens = effectiveOutput;
-      liveStreamingStartTime = m._streamingStartTime || null;
-      liveStreamingLastChunkTime = m._streamingLastChunkTime || null;
-      liveStreamingBurstTokens = m._streamingBurstTokens || 0;
-      liveStreamingBurstElapsed = m._streamingBurstElapsed || 0;
+      liveStreamingStartTime = message._streamingStartTime || null;
+      liveStreamingLastChunkTime = message._streamingLastChunkTime || null;
+      liveStreamingBurstTokens = message._streamingBurstTokens || 0;
+      liveStreamingBurstElapsed = message._streamingBurstElapsed || 0;
     }
     // In-flight streaming messages: use tracker's real token count
     // (fed exclusively by provider-reported usage, never per-chunk estimates)
-    else if (!m.usage && m._liveGenProgress && (m._liveGenProgress.outputTokens ?? 0) > 0) {
-      output += m._liveGenProgress.outputTokens ?? 0;
-      liveStreamingTokens = m._liveGenProgress.outputTokens ?? 0;
-      liveStreamingStartTime = m._streamingStartTime || null;
-      liveStreamingLastChunkTime = m._streamingLastChunkTime || null;
-      liveStreamingBurstTokens = m._streamingBurstTokens || 0;
-      liveStreamingBurstElapsed = m._streamingBurstElapsed || 0;
+    else if (!message.usage && message._liveGenProgress && (message._liveGenProgress.outputTokens ?? 0) > 0) {
+      output += message._liveGenProgress.outputTokens ?? 0;
+      liveStreamingTokens = message._liveGenProgress.outputTokens ?? 0;
+      liveStreamingStartTime = message._streamingStartTime || null;
+      liveStreamingLastChunkTime = message._streamingLastChunkTime || null;
+      liveStreamingBurstTokens = message._streamingBurstTokens || 0;
+      liveStreamingBurstElapsed = message._streamingBurstElapsed || 0;
     }
     // In-flight streaming with no token data yet (first iteration
     // before provider-reported usage arrives). Expose streaming
     // timing metadata so the chunk-counting fallback in useTokenRate
     // (Priority 3) can compute live tok/s from burst counters.
     else if (
-      !m.usage &&
-      !m._intermediateUsage &&
-      m._streamingStartTime &&
-      m._streamingLastChunkTime
+      !message.usage &&
+      !message._intermediateUsage &&
+      message._streamingStartTime &&
+      message._streamingLastChunkTime
     ) {
-      liveStreamingStartTime = m._streamingStartTime;
-      liveStreamingLastChunkTime = m._streamingLastChunkTime;
-      liveStreamingBurstTokens = m._streamingBurstTokens || 0;
-      liveStreamingBurstElapsed = m._streamingBurstElapsed || 0;
+      liveStreamingStartTime = message._streamingStartTime;
+      liveStreamingLastChunkTime = message._streamingLastChunkTime;
+      liveStreamingBurstTokens = message._streamingBurstTokens || 0;
+      liveStreamingBurstElapsed = message._streamingBurstElapsed || 0;
     }
     // Track live output characters (real data, always increasing during streaming)
-    if ((m._streamingOutputCharacters ?? 0) > 0) {
-      liveOutputCharacters = m._streamingOutputCharacters!;
+    if ((message._streamingOutputCharacters ?? 0) > 0) {
+      liveOutputCharacters = message._streamingOutputCharacters!;
     }
     // Track live processing phase and start time for TTFT estimation
-    if (m._processingStartTime) {
-      liveProcessingStartTime = m._processingStartTime;
+    if (message._processingStartTime) {
+      liveProcessingStartTime = message._processingStartTime;
     }
-    if (m.statusPhase) {
-      liveProcessingPhase = m.statusPhase;
+    if (message.statusPhase) {
+      liveProcessingPhase = message.statusPhase;
     }
     // Server-computed TTFT samples from generation_started events (per-iteration, per-worker)
-    if (m._ttftSamples?.length) {
-      liveTtftSamples = m._ttftSamples;
+    if (message._ttftSamples?.length) {
+      liveTtftSamples = message._ttftSamples;
     }
     // Worker live generation progress (keyed by workerId)
-    if (m._workerGenerationProgress) {
-      workerGenerationProgress = m._workerGenerationProgress;
+    if (message._workerGenerationProgress) {
+      workerGenerationProgress = message._workerGenerationProgress;
       // Sum live worker output tokens so the token badge increments
       // in real-time during worker generation (before completion).
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
       // so the count doesn't reset when workers transition between phases.
-      for (const wp of Object.values(m._workerGenerationProgress) as WorkerProgress[]) {
+      for (const wp of Object.values(message._workerGenerationProgress) as WorkerProgress[]) {
         const count = wp.totalOutputTokens || wp.outputTokens || 0;
         if (count > 0) {
           output += count;
@@ -292,17 +292,17 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
       }
     }
     // Backend-computed tok/s from SessionGenerationTracker
-    if (m._liveGenProgress) {
-      liveGenProgress = m._liveGenProgress;
+    if (message._liveGenProgress) {
+      liveGenProgress = message._liveGenProgress;
     }
     // Accumulated worker tokens (from worker_status complete events)
     // These arrive independently of the coordinator's own usage.
     // Only add completed worker tokens that aren't already counted
     // from _workerGenerationProgress (which is removed on completion).
-    if (m._workerTokens) {
-      input += m._workerTokens.input || 0;
-      output += m._workerTokens.output || 0;
-      requests += m._workerTokens.requests || 0;
+    if (message._workerTokens) {
+      input += message._workerTokens.input || 0;
+      output += message._workerTokens.output || 0;
+      requests += message._workerTokens.requests || 0;
     }
   }
   return {
@@ -331,13 +331,13 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
  */
 export function getUsedTools(messages: Message[]): Array<{ name: string; count: number }> {
   const counts = new Map<string, number>();
-  for (const m of messages) {
-    if (m.role !== "assistant") continue;
-    if (m.thinking) counts.set("Thinking", (counts.get("Thinking") || 0) + 1);
-    if (m.toolCalls && m.toolCalls.length > 0) {
+  for (const message of messages) {
+    if (message.role !== "assistant") continue;
+    if (message.thinking) counts.set("Thinking", (counts.get("Thinking") || 0) + 1);
+    if (message.toolCalls && message.toolCalls.length > 0) {
       counts.set("Tool Calling", (counts.get("Tool Calling") || 0) + 1);
-      for (const tc of m.toolCalls) {
-        if (tc.name) counts.set(tc.name, (counts.get(tc.name) || 0) + 1);
+      for (const toolCall of message.toolCalls) {
+        if (toolCall.name) counts.set(toolCall.name, (counts.get(toolCall.name) || 0) + 1);
       }
     }
   }
@@ -409,14 +409,17 @@ export function mergeUsedToolsWithWorkers(
     for (const t of clientTools) {
       if (CAPABILITY_TOOL_NAMES.has(t.name)) continue;
       merged.set(t.name, (merged.get(t.name) || 0) + t.count);
+    for (const tool of clientTools) {
+      if (CAPABILITY_TOOL_NAMES.has(tool.name)) continue;
+      merged.set(tool.name, (merged.get(tool.name) || 0) + tool.count);
     }
   }
 
   // Overlay live worker tool counts (real-time during generation)
   if (workerToolActivity) {
-    for (const w of Object.values(workerToolActivity)) {
-      if (!w.toolNames) continue;
-      for (const [name, count] of Object.entries(w.toolNames)) {
+    for (const worker of Object.values(workerToolActivity)) {
+      if (!worker.toolNames) continue;
+      for (const [name, count] of Object.entries(worker.toolNames)) {
         if (CAPABILITY_TOOL_NAMES.has(name)) continue;
         merged.set(name, Math.max(merged.get(name) || 0, count));
       }
@@ -455,23 +458,23 @@ export function getModalities(messages: Message[]) {
   const WEB_SEARCH_NAMES = new Set(["web_search", "web_search_preview"]);
   const CODE_EXEC_NAMES = new Set(["code_execution"]);
 
-  for (const m of messages || []) {
-    const isUser = m.role === "user";
-    const isAssistant = m.role === "assistant";
-    if (m.content && (isUser || isAssistant)) {
-      if (isUser && !m.liveTranscription) modalities.textIn = true;
+  for (const message of messages || []) {
+    const isUser = message.role === "user";
+    const isAssistant = message.role === "assistant";
+    if (message.content && (isUser || isAssistant)) {
+      if (isUser && !message.liveTranscription) modalities.textIn = true;
       if (isAssistant) modalities.textOut = true;
     }
     // Tool calls are structured text output
-    if (isAssistant && m.toolCalls && m.toolCalls.length > 0) {
+    if (isAssistant && message.toolCalls && message.toolCalls.length > 0) {
       modalities.textOut = true;
     }
-    if (m.audio) {
+    if (message.audio) {
       if (isUser) modalities.audioIn = true;
       if (isAssistant) modalities.audioOut = true;
     }
-    if (m.images && m.images.length > 0) {
-      for (const ref of m.images) {
+    if (message.images && message.images.length > 0) {
+      for (const ref of message.images) {
         if (typeof ref !== "string") continue;
         const isDoc =
           ref.startsWith("data:application/") ||
@@ -495,18 +498,18 @@ export function getModalities(messages: Message[]) {
       }
     }
     // Standalone image field (not from images array)
-    if (m.image && !m.images?.length) {
+    if (message.image && !message.images?.length) {
       if (isUser) modalities.imageIn = true;
       if (isAssistant) modalities.imageOut = true;
     }
-    if (m.documents && m.documents.length > 0) {
+    if (message.documents && message.documents.length > 0) {
       modalities.docIn = true;
     }
 
     // Classify tool calls by type
-    if (m.toolCalls && m.toolCalls.length > 0) {
-      for (const tc of m.toolCalls) {
-        const name = (tc.name || "").toLowerCase();
+    if (message.toolCalls && message.toolCalls.length > 0) {
+      for (const toolCall of message.toolCalls) {
+        const name = (toolCall.name || "").toLowerCase();
         if (WEB_SEARCH_NAMES.has(name)) {
           modalities.webSearch = true;
         } else if (CODE_EXEC_NAMES.has(name)) {
@@ -520,8 +523,8 @@ export function getModalities(messages: Message[]) {
     // Detect inline web search results (from streaming)
     if (
       isAssistant &&
-      typeof m.content === "string" &&
-      m.content.includes("> **Sources:**")
+      typeof message.content === "string" &&
+      message.content.includes("> **Sources:**")
     ) {
       modalities.webSearch = true;
     }
@@ -529,19 +532,19 @@ export function getModalities(messages: Message[]) {
     // Detect inline code execution blocks (from streaming)
     if (
       isAssistant &&
-      typeof m.content === "string" &&
-      m.content.includes("```exec-")
+      typeof message.content === "string" &&
+      message.content.includes("```exec-")
     ) {
       modalities.codeExecution = true;
     }
 
     // Tool result messages → function calling
-    if (m.role === "tool") {
+    if (message.role === "tool") {
       modalities.functionCalling = true;
     }
 
     // Detect thinking / reasoning
-    if (isAssistant && m.thinking) {
+    if (isAssistant && message.thinking) {
       modalities.thinking = true;
     }
   }

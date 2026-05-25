@@ -75,6 +75,11 @@ import StatusBarComponent from "./StatusBarComponent";
 import PixelTransitionComponent from "./PixelTransitionComponent";
 
 import { buildToolSchemas } from "../utils/FunctionCallingUtilities";
+import {
+  applyToolExecutionToMessages,
+  applyToolExecutionToActivity,
+  applyToolCallToMessages,
+} from "../utils/toolCallStateUpdaters";
 
 import useSessionStats from "../hooks/useSessionStats";
 import {
@@ -1894,39 +1899,14 @@ export default function AgentComponent({
             const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
 
             setToolActivity((prev: ToolCallEvent[]) => {
-              if (data.status === "calling") {
-                // Deduplicate: skip if this tool ID was already registered
-                if (prev.some((a) => a.id === resolvedId)) {
-                  return prev;
-                }
-                return [
-                  ...prev,
-                  {
-                    id: resolvedId,
-                    name: toolData.name || "unknown",
-                    args: toolData.args || {},
-                    status: "calling",
-                    timestamp: Date.now(),
-                  },
-                ];
-              } else {
-                return prev.map((activity) => {
-                  if (
-                    (toolData.id && activity.id === toolData.id) ||
-                    (!toolData.id &&
-                      activity.name === (toolData.name || "unknown") &&
-                      activity.status === "calling")
-                  ) {
-                    return {
-                      ...activity,
-                      status: data.status,
-                      result: toolData.result,
-                      args: toolData.args || {},
-                    };
-                  }
-                  return activity;
-                });
-              }
+              const next = applyToolExecutionToActivity(prev, resolvedId, {
+                id: toolData.id,
+                name: toolData.name,
+                args: toolData.args,
+                status: data.status as string,
+                result: toolData.result,
+              });
+              return next ?? prev;
             });
 
             // Track segment ordering: group consecutive tool events
@@ -1949,73 +1929,34 @@ export default function AgentComponent({
               }
             }
 
-            setMessages((msgPrev: ClientMessage[]) => {
-              const array = [...msgPrev];
-              const last = array[array.length - 1];
+            // Capture snapshot values from the mutable streaming closure
+            // BEFORE passing to the functional updater
+            const execSnapshot = {
+              contentSegments: snapshotSegments(),
+              textFragments: [...textFragments],
+              thinkingFragments: [...thinkingFragments],
+            };
 
-              const currentToolCalls = last?.role === "assistant" ? last.toolCalls || [] : [];
-              let updatedToolCalls: ToolCallEvent[] = [];
-
-              if (data.status === "calling") {
-                if (currentToolCalls.some((tc) => tc.id === resolvedId)) {
-                  updatedToolCalls = currentToolCalls;
-                } else {
-                  updatedToolCalls = [
-                    ...currentToolCalls,
-                    {
-                      id: resolvedId,
-                      name: toolData.name || "unknown",
-                      args: toolData.args || {},
-                      status: "calling",
-                      timestamp: Date.now(),
-                    },
-                  ];
-                }
-              } else {
-                updatedToolCalls = currentToolCalls.map((tc) => {
-                  if (
-                    (toolData.id && tc.id === toolData.id) ||
-                    (!toolData.id &&
-                      tc.name === (toolData.name || "unknown") &&
-                      tc.status === "calling")
-                  ) {
-                    return {
-                      ...tc,
-                      status: data.status,
-                      result: toolData.result,
-                      args: toolData.args || {},
-                    };
-                  }
-                  return tc;
-                });
-              }
-
-              if (last?.role === "assistant") {
-                array[array.length - 1] = {
-                  ...last,
-                  toolCalls: updatedToolCalls,
-                  contentSegments: snapshotSegments(),
-                  textFragments: [...textFragments],
-                  thinkingFragments: [...thinkingFragments],
-                };
-              } else {
-                // Tool events can arrive before any text chunks — create placeholder
-                array.push({
-                  role: "assistant",
-                  content: "",
-                  toolCalls: updatedToolCalls,
-                  contentSegments: snapshotSegments(),
-                  textFragments: [...textFragments],
-                  thinkingFragments: [...thinkingFragments],
-                });
-              }
-              return array;
-            });
+            setMessages((msgPrev: ClientMessage[]) =>
+              applyToolExecutionToMessages(
+                msgPrev,
+                resolvedId,
+                {
+                  id: toolData.id,
+                  name: toolData.name,
+                  args: toolData.args,
+                  status: data.status as string,
+                  result: toolData.result,
+                },
+                execSnapshot,
+              ) as ClientMessage[],
+            );
 
             // Auto-refresh tasks panel when any task tool completes
             if (data.status !== "calling" && (toolData.name || "").startsWith("task_")) {
               setTasksRefreshKey((k) => k + 1);
             }
+
 
             // Auto-refresh memories panel when upsert_memory completes
             if (data.status !== "calling" && toolData.name === "upsert_memory") {
@@ -2072,42 +2013,14 @@ export default function AgentComponent({
             const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
 
             setToolActivity((prev) => {
-              if (toolData.status === "calling") {
-                // Deduplicate: skip if this tool ID was already registered
-                if (prev.some((a) => a.id === resolvedId)) {
-                  return prev;
-                }
-                return [
-                  ...prev,
-                  {
-                    id: resolvedId,
-                    name: toolData.name,
-                    args: toolData.args,
-                    status: "calling",
-                    timestamp: Date.now(),
-                  },
-                ];
-              } else {
-                // done or error — update existing entry
-                return prev.map((activity) => {
-                  if (
-                    (toolData.id && activity.id === toolData.id) ||
-                    (!toolData.id &&
-                      activity.name === toolData.name &&
-                      activity.status === "calling")
-                  ) {
-                    return {
-                      ...activity,
-                      status: toolData.status,
-                      result: toolData.result,
-                      ...(toolData.args && Object.keys(toolData.args).length > 0
-                        ? { args: toolData.args }
-                        : {}),
-                    };
-                  }
-                  return activity;
-                });
-              }
+              const next = applyToolExecutionToActivity(prev, resolvedId, {
+                id: toolData.id,
+                name: toolData.name,
+                args: toolData.args,
+                status: toolData.status as string,
+                result: toolData.result,
+              });
+              return next ?? prev;
             });
 
             // Track segment ordering: group consecutive tool events
@@ -2129,69 +2042,21 @@ export default function AgentComponent({
               }
             }
 
-            setMessages((msgPrev: ClientMessage[]) => {
-              const array = [...msgPrev];
-              const last = array[array.length - 1];
+            // Capture snapshot values from the mutable streaming closure
+            const callSnapshot = {
+              contentSegments: snapshotSegments(),
+              textFragments: [...textFragments],
+              thinkingFragments: [...thinkingFragments],
+            };
 
-              const currentToolCalls = last?.role === "assistant" ? last.toolCalls || [] : [];
-              let updatedToolCalls: ToolCallEvent[] = [];
-
-              if (toolData.status === "calling") {
-                if (currentToolCalls.some((tc) => tc.id === resolvedId)) {
-                  updatedToolCalls = currentToolCalls;
-                } else {
-                  updatedToolCalls = [
-                    ...currentToolCalls,
-                    {
-                      id: resolvedId,
-                      name: toolData.name,
-                      args: toolData.args,
-                      status: "calling",
-                      timestamp: Date.now(),
-                    },
-                  ];
-                }
-              } else {
-                updatedToolCalls = currentToolCalls.map((tc) => {
-                  if (
-                    (toolData.id && tc.id === toolData.id) ||
-                    (!toolData.id &&
-                      tc.name === toolData.name &&
-                      tc.status === "calling")
-                  ) {
-                    return {
-                      ...tc,
-                      status: toolData.status,
-                      result: toolData.result,
-                      ...(toolData.args && Object.keys(toolData.args).length > 0
-                        ? { args: toolData.args }
-                        : {}),
-                    };
-                  }
-                  return tc;
-                });
-              }
-
-              if (last?.role === "assistant") {
-                array[array.length - 1] = {
-                  ...last,
-                  toolCalls: updatedToolCalls,
-                  contentSegments: snapshotSegments(),
-                  textFragments: [...textFragments],
-                  thinkingFragments: [...thinkingFragments],
-                };
-              } else {
-                array.push({
-                  role: "assistant",
-                  content: "",
-                  toolCalls: updatedToolCalls,
-                  contentSegments: snapshotSegments(),
-                  textFragments: [...textFragments],
-                  thinkingFragments: [...thinkingFragments],
-                });
-              }
-              return array;
-            });
+            setMessages((msgPrev: ClientMessage[]) =>
+              applyToolCallToMessages(
+                msgPrev,
+                resolvedId,
+                toolData,
+                callSnapshot,
+              ) as ClientMessage[],
+            );
 
             // Auto-refresh tasks panel when any task tool completes (MCP path)
             if (toolData.status !== "calling" && toolData.name?.startsWith("task_")) {
