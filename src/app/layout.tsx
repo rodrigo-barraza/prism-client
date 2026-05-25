@@ -1,4 +1,4 @@
-import { Inter } from "next/font/google";
+import { Inter, Noto_Color_Emoji } from "next/font/google";
 import {
   ThemeProvider,
   ComponentsProvider,
@@ -16,6 +16,13 @@ export const dynamic = "force-dynamic";
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+});
+
+const notoColorEmoji = Noto_Color_Emoji({
+  variable: "--font-emoji",
+  weight: "400",
+  subsets: ["emoji"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -43,7 +50,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           suppressHydrationWarning
         />
       </head>
-      <body className={inter.variable}>
+      <body className={`${inter.variable} ${notoColorEmoji.variable}`}>
         <ThemeProvider storageKey="prism:theme" defaultTheme="light">
           <CustomThemeBootComponent />
           <ComponentsProvider sound>
