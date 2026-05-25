@@ -1,18 +1,7 @@
-import { MessageSquare, Volume2, Cpu } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import styles from "./ModelTypeBadgeComponent.module.css";
+"use client";
 
-/**
- * Icon + label mapping for each model type.
- * conversation → chat/completions endpoint
- * audio       → TTS endpoint
- * embed       → embedding endpoint
- */
-const MODEL_TYPE_META = {
-  conversation: { icon: MessageSquare, label: "Conversation" },
-  audio: { icon: Volume2, label: "Audio" },
-  embed: { icon: Cpu, label: "Embed" },
-};
+import React from "react";
+import BadgeComponent from "./BadgeComponent";
 
 export interface ModelTypeBadgeProps {
   modelType?: string;
@@ -20,32 +9,17 @@ export interface ModelTypeBadgeProps {
   mini?: boolean;
 }
 
-/**
- * ModelTypeBadgeComponent — renders a colour-coded pill for a model's
- * endpoint-based type (conversation | audio | embed).
- */
 export default function ModelTypeBadgeComponent({
   modelType,
-  className = "",
-  mini = false,
+  className,
+  mini,
 }: ModelTypeBadgeProps) {
-  if (!modelType) {
-    return <span style={{ color: "var(--text-muted)" }}>—</span>;
-  }
-
-  const meta: any = (MODEL_TYPE_META as any)[modelType] || {
-    icon: MessageSquare,
-    label: modelType,
-  };
-  const Icon = meta.icon;
-  const cls = `${styles.badge} ${styles[modelType] || ""} ${mini ? styles.mini : ""} ${className}`;
-
   return (
-    <TooltipComponent label={`${meta.label} model`} position="top">
-      <span className={cls}>
-        <Icon size={mini ? 8 : 10} />
-        <span>{meta.label}</span>
-      </span>
-    </TooltipComponent>
+    <BadgeComponent
+      type="model-type"
+      modelType={modelType}
+      className={className}
+      mini={mini}
+    />
   );
 }

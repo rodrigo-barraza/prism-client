@@ -1,23 +1,22 @@
-import { User } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import styles from "./UserBadgeComponent.module.css";
+"use client";
+
+import React from "react";
+import BadgeComponent from "./BadgeComponent";
 
 export interface UserBadgeProps {
   username?: string;
   className?: string;
 }
 
-/**
- * UserBadgeComponent — amber-colored user/username badge with icon.
- */
-export default function UserBadgeComponent({ username, className = "" }: UserBadgeProps) {
-  if (!username || username === "unknown") return null;
+export default function UserBadgeComponent({
+  username,
+  className,
+}: UserBadgeProps) {
   return (
-    <TooltipComponent label={`User: ${username}`} position="top">
-      <span className={`${styles.badge} ${className}`}>
-        <User size={10} />
-        {username}
-      </span>
-    </TooltipComponent>
+    <BadgeComponent
+      type="user"
+      username={username}
+      className={className}
+    />
   );
 }

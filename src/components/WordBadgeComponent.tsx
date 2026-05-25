@@ -1,28 +1,25 @@
-import { LetterText } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import styles from "./WordBadgeComponent.module.css";
+"use client";
 
-/**
- * WordBadgeComponent — displays a word count badge with an icon.
- */
+import React from "react";
+import BadgeComponent from "./BadgeComponent";
+
+export interface WordBadgeProps {
+  count: number;
+  className?: string;
+  mini?: boolean;
+}
+
 export default function WordBadgeComponent({
   count,
-  className = "",
-  mini = false,
-}: any) {
-  if (!count || count <= 0) return null;
-
-  const suffix = count !== 1 ? "words" : "word";
-  const tooltipLabel = `${count.toLocaleString()} ${suffix}`;
-
+  className,
+  mini,
+}: WordBadgeProps) {
   return (
-    <TooltipComponent label={tooltipLabel} position="top">
-      <span
-        className={`${styles.badge} ${mini ? styles.mini : ""} ${className}`}
-      >
-        <LetterText size={mini ? 8 : 10} />
-        {count.toLocaleString()} {suffix}
-      </span>
-    </TooltipComponent>
+    <BadgeComponent
+      type="words"
+      count={count}
+      className={className}
+      mini={mini}
+    />
   );
 }
