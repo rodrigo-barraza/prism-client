@@ -46,7 +46,7 @@ import CoordinatorPanel from "./CoordinatorPanelComponent";
 import WorkersPanel from "./WorkersPanelComponent";
 import SessionRequestsListComponent from "./SessionRequestsListComponent";
 
-import ThreePanelLayout from "./ThreePanelLayoutComponent";
+import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent";
 import {
   SelectComponent,
   TabBarComponent,
@@ -981,7 +981,7 @@ export default function AdminChatViewerComponent({
             )
           }
           headerCenter={
-            <>
+            <div className={layoutStyles.headerCenterGroup}>
               <AgentPickerComponent
                 agents={agents}
                 activeAgentId={activeAgentId}
@@ -995,7 +995,7 @@ export default function AdminChatViewerComponent({
                 onSelectModel={() => {}}
                 onToggleFavorite={handleToggleFavorite}
               />
-            </>
+            </div>
           }
         >
           <div className={chatStyles.container}>

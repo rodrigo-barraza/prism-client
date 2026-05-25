@@ -59,7 +59,7 @@
 
 .header-center-group {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -270,6 +270,7 @@
 
   .header-center-group {
     width: 100%;
+    flex-wrap: wrap;
     gap: 6px;
     padding-block: 6px;
     padding-inline: 0;
