@@ -311,7 +311,7 @@ export default function ScheduledTasksPage() {
       });
 
       setTasks((prev) => [created, ...prev]);
-      showToast(`Scheduled Task "${formName}" created successfully!`);
+      showToast(`Agentic Cron "${formName}" created successfully!`);
       setShowNewModal(false);
 
       // Reset form fields
@@ -415,7 +415,7 @@ export default function ScheduledTasksPage() {
         <header className={styles.header}>
           <div className={styles.headerTitleRow}>
             <Clock className={styles.headerIcon} />
-            <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
+            <h1 className={styles.headerTitle}>Agentic Crons</h1>
             <span className={styles.badge}>{filteredTasks.length} total</span>
           </div>
 
@@ -443,7 +443,7 @@ export default function ScheduledTasksPage() {
             <button
               onClick={() => setShowNewModal(true)}
               className={styles.newBtn}
-              title="Create Scheduled Task"
+              title="Create Agentic Cron"
             >
               <Plus size={16} />
               <span>New</span>
@@ -456,12 +456,12 @@ export default function ScheduledTasksPage() {
           {loading ? (
             <div className={styles.loadingState}>
               <Loader2 size={32} className={styles.spin} />
-              <p>Loading scheduled tasks…</p>
+              <p>Loading Agentic Crons…</p>
             </div>
           ) : filteredTasks.length === 0 ? (
             <div className={styles.emptyState}>
               <Clock size={48} className={styles.emptyIcon} />
-              <h2>No scheduled tasks found</h2>
+              <h2>No Agentic Crons found</h2>
               <p>Create a background agent automation task to get started.</p>
               <button
                 onClick={() => setShowNewModal(true)}
@@ -593,7 +593,7 @@ export default function ScheduledTasksPage() {
               ]}
               data={filteredTasks}
               getRowKey={(t: any) => t.id}
-              emptyText="No scheduled tasks found"
+              emptyText="No Agentic Crons found"
               storageKey="scheduled-tasks"
             />
           ) : (
@@ -726,10 +726,10 @@ export default function ScheduledTasksPage() {
           )}
         </div>
 
-        {/* Modal for New Scheduled Task — using ModalComponent from components-library */}
+        {/* Modal for New Agentic Cron — using ModalComponent from components-library */}
         {showNewModal && (
           <ModalComponent
-            title="New Scheduled Task"
+            title="New Agentic Cron"
             onClose={() => setShowNewModal(false)}
             size="md"
             footer={
@@ -747,7 +747,7 @@ export default function ScheduledTasksPage() {
                   disabled={formSubmitting}
                   onClick={handleSubmitTask}
                 >
-                  Add Scheduled Task
+                  Add Agentic Cron
                 </ButtonComponent>
               </div>
             }

@@ -68,6 +68,14 @@ function AgentsPageInner() {
     return fromUrl || localAgentId;
   }, [searchParams, localAgentId]);
 
+  useEffect(() => {
+    const fromUrl = searchParams.get("agent");
+    if (fromUrl && fromUrl !== localAgentId) {
+      setLocalAgentId(fromUrl);
+      localStorage.setItem(LS_ACTIVE_AGENT, fromUrl);
+    }
+  }, [searchParams, localAgentId]);
+
   const forceFc = searchParams.get("fc") === "true";
   const forceThinking = searchParams.get("thinking") === "true";
 

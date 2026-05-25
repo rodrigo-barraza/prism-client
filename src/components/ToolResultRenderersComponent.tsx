@@ -40,6 +40,7 @@ import StatusBarComponent from "./StatusBarComponent";
 import PrismService from "../services/PrismService";
 import { formatLatency, renderToolName } from "../utils/utilities";
 import styles from "./ToolResultRenderersComponent.module.css";
+import TimerBadgeComponent from "./TimerBadgeComponent";
 
 // --- Types & Interfaces ------------------------------------------------
 
@@ -1115,6 +1116,27 @@ function TerminalRenderer({ result, args, streamingOutput, language }: RendererP
   );
 }
 
+function ScheduleRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed || !parsed.success || !(parsed as any).timer) {
+    return <RawResultToggle result={result} />;
+  }
+
+  const timer = (parsed as any).timer;
+  return (
+    <div className={styles.rendererBlock}>
+      <TimerBadgeComponent
+        timerId={timer.id}
+        firesAt={timer.firesAt}
+        prompt={timer.prompt}
+        mode={timer.mode}
+        status="active"
+        readOnly={true}
+      />
+    </div>
+  );
+}
+
 function GitStatusRenderer({ result }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
@@ -2002,6 +2024,7 @@ const TOOL_RESULT_REGISTRY = {
   execute_python: { Renderer: TerminalRenderer, language: "python" },
   execute_javascript: { Renderer: TerminalRenderer, language: "javascript" },
   run_command: { Renderer: TerminalRenderer, language: "bash" },
+  schedule: { Renderer: ScheduleRenderer },
 
   // Git
   git_status: { Renderer: GitStatusRenderer },

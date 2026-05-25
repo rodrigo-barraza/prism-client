@@ -981,7 +981,7 @@ export default function AdminChatViewerComponent({
             )
           }
           headerCenter={
-            <div className={layoutStyles.headerCenterGroup}>
+            <div className={layoutStyles['header-center-group']}>
               <AgentPickerComponent
                 agents={agents}
                 activeAgentId={activeAgentId}

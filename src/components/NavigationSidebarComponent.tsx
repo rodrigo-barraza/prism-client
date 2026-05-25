@@ -66,7 +66,7 @@ const USER_NAV_SECTIONS = [
       },
       {
         href: "/scheduled-tasks",
-        label: "Scheduled Tasks",
+        label: "Agentic Crons",
         icon: Clock,
       },
       { href: "/settings", label: "Settings", icon: Settings },
