@@ -27,6 +27,7 @@ import {
   Plus,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
+import IrisService, { IrisCollectionChangeEvent } from "../services/IrisService";
 import ToolsApiService from "../services/ToolsApiService";
 import {
   Message,
@@ -428,7 +429,7 @@ export default function AgentComponent({
   const [toolActivity, setToolActivity] = useState<ToolCallEvent[]>([]);
   const [streamingOutputs, setStreamingOutputs] = useState<Map<string, string>>(new Map());
   const [agentSessionId, setAgentSessionId] = useState(() => generateUUID());
-  const [traceId, setTraceId] = useState(() => generateUUID());
+  const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
   const [sessions, setSessions] = useState<Array<AgentSession | Conversation>>([]);
   const sessionsCursorRef = useRef<string | null>(null);
   const [sessionsHasMore, setSessionsHasMore] = useState(false);
@@ -3207,6 +3208,7 @@ export default function AgentComponent({
         setAgentSessionId(full.id || generateUUID());
         setTraceId(full.traceId || null);
         setActiveId(full.id ?? null);
+        setIsGenerating(!!(full as any).isGenerating);
         window.dispatchEvent(
           new CustomEvent("conversation:change", {
             detail: { conversationId: full.id },
@@ -3345,6 +3347,44 @@ export default function AgentComponent({
       currentWorkspace?.path,
     ],
   );
+
+  // -- Real-Time Background Synchronization (Change Streams) -----
+  const refreshActiveSession = useCallback(
+    async (sessionId: string) => {
+      if (!sessionId || sessionId !== agentSessionIdRef.current) return;
+      try {
+        const full = isNoAgent
+          ? await PrismService.getConversation(sessionId)
+          : await PrismService.getAgentSession(sessionId, agentProject!);
+        if (full && full.id === agentSessionIdRef.current) {
+          applySessionData(full);
+        }
+      } catch (error) {
+        console.error("Failed to refresh active session via change stream:", error);
+      }
+    },
+    [isNoAgent, agentProject, applySessionData]
+  );
+
+  useEffect(() => {
+    const onCollectionChange = (event: IrisCollectionChangeEvent) => {
+      if (
+        (event.collection === "agent_conversations" || event.collection === "model_conversations") &&
+        event.id &&
+        event.id === agentSessionIdRef.current
+      ) {
+        refreshActiveSession(event.id);
+      }
+    };
+
+    const sseSubscription = IrisService.subscribeCollectionChanges({
+      onChange: onCollectionChange,
+    });
+
+    return () => {
+      sseSubscription.close();
+    };
+  }, [refreshActiveSession]);
 
   const handleUndoDelete = useCallback(
     (convId: string, toastId: number) => {

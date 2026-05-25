@@ -38,6 +38,7 @@ import {
   DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import WorkerNotificationComponent from "./WorkerNotificationComponent";
+import TimerBadgeComponent from "./TimerBadgeComponent";
 import PlanCardComponent from "./PlanCardComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 import styles from "./MessageListComponent.module.css";
@@ -1291,6 +1292,27 @@ export default function MessageList({
                     />
                   );
                 }
+
+                // -- Fired Timer Badge Rendering --
+                const isTimerFired =
+                  message.role === "user" &&
+                  message.content &&
+                  typeof message.content === "string" &&
+                  message.content.startsWith("⏰ Reminder fired: ");
+                if (isTimerFired) {
+                  const prompt = message.content.replace("⏰ Reminder fired: ", "");
+                  return (
+                    <TimerBadgeComponent
+                      timerId={(message as any).id || `fired-${i}`}
+                      firesAt={message.timestamp || new Date().toISOString()}
+                      prompt={prompt}
+                      mode="one_shot"
+                      status="fired"
+                      readOnly={true}
+                    />
+                  );
+                }
+
                 // -- Normal message rendering --
                 return (
                   <div

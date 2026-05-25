@@ -273,6 +273,20 @@ export default class PrismService {
   }
 
   /**
+   * Fetch all active scheduled reminders for a specific conversation.
+   */
+  static async getConversationTimers(id: string): Promise<any[]> {
+    return PrismService._request<any[]>(`/conversations/${id}/timers`, { method: "GET" });
+  }
+
+  /**
+   * Cancel a specific scheduled reminder.
+   */
+  static async cancelConversationTimer(id: string, timerId: string): Promise<{ success: boolean }> {
+    return PrismService._request<{ success: boolean }>(`/conversations/${id}/timers/${timerId}/cancel`, { method: "POST" });
+  }
+
+  /**
 
 
   // -- Agent Sessions -----------------------------------------
