@@ -46,6 +46,7 @@ import styles from "./AdminAgentViewerComponent.module.css";
 import {
   EmptyStateComponent,
   TabBarComponent,
+  tabBarStyles,
 } from "@rodrigo-barraza/components-library";
 
 /**
@@ -289,49 +290,49 @@ export default function AdminAgentViewerComponent() {
         tabs={[
           {
             key: "settings",
-            icon: <Settings size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>⚙️</span>,
             tooltip: "Settings",
           },
-          { key: "info", icon: <Info size={14} />, tooltip: "Info" },
+          { key: "info", icon: <span className={tabBarStyles.tabEmojiIcon}>ℹ️</span>, tooltip: "Info" },
           {
             key: "tools",
-            icon: <Wrench size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
             ...badgeProps(allToolCount),
             tooltip: "Tools",
           },
           {
             key: "skills",
-            icon: <BookOpen size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>,
             ...badgeProps(skills.filter((s) => s.enabled).length),
             tooltip: "Skills",
           },
           {
             key: "memories",
-            icon: <Brain size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
             ...badgeProps(totalMemoriesCount),
             tooltip: "Memories",
           },
           {
             key: "tasks",
-            icon: <ListChecks size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>,
             ...badgeProps(tasksCount),
             tooltip: "Tasks",
           },
           {
             key: "mcp",
-            icon: <Plug size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>,
             ...badgeProps(mcpServers.filter((s) => s.connected).length),
             tooltip: "MCP Servers",
           },
           {
             key: "workers",
-            icon: <Users size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
             ...badgeProps(workersCount),
             tooltip: "Workers",
           },
           {
             key: "coordinator",
-            icon: <GitBranch size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>,
             tooltip: "Coordinator",
           },
         ]}

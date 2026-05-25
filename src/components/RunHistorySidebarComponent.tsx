@@ -17,6 +17,7 @@ import ModelCardComponent from "./ModelCardComponent";
 import {
   BadgeComponent,
   TabBarComponent,
+  tabBarStyles,
   DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import ChatPreviewComponent from "./ChatPreviewComponent";
@@ -100,14 +101,14 @@ export default function RunHistorySidebarComponent({
         tabs={[
           {
             key: "general",
-            icon: <Settings size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>⚙️</span>,
             tooltip: "General",
             badge: selectedModels.length + agentInstances.length,
             badgeDisabled: selectedModels.length + agentInstances.length === 0,
           },
           {
             key: "history",
-            icon: <History size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>📜</span>,
             tooltip: "Run History",
             badge: runHistory.length,
             badgeDisabled: runHistory.length === 0,

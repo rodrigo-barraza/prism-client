@@ -50,6 +50,7 @@ import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import {
   SelectComponent,
   TabBarComponent,
+  tabBarStyles,
   ButtonComponent,
 } from "@rodrigo-barraza/components-library";
 
@@ -745,26 +746,26 @@ export default function AdminChatViewerComponent({
       badge?: number;
       badgeDisabled?: boolean;
     }> = [
-      { key: "settings", icon: <Settings size={14} />, tooltip: "Settings" },
-      { key: "info", icon: <Info size={14} />, tooltip: "Info" },
+      { key: "settings", icon: <span className={tabBarStyles.tabEmojiIcon}>⚙️</span>, tooltip: "Settings" },
+      { key: "info", icon: <span className={tabBarStyles.tabEmojiIcon}>ℹ️</span>, tooltip: "Info" },
     ];
 
     if (isSelectedAgent) {
       // Agent mode tabs
       tabs.push(
-        { key: "tools", icon: <Wrench size={14} />, ...badgeProps(allToolCount), tooltip: "Tools" },
-        { key: "skills", icon: <BookOpen size={14} />, ...badgeProps(skills.filter((s) => s.enabled).length), tooltip: "Skills" },
-        { key: "memories", icon: <Brain size={14} />, ...badgeProps(totalMemoriesCount), tooltip: "Memories" },
-        { key: "tasks", icon: <ListChecks size={14} />, ...badgeProps(tasksCount), tooltip: "Tasks" },
-        { key: "mcp", icon: <Plug size={14} />, ...badgeProps(mcpServers.filter((s) => s.connected).length), tooltip: "MCP Servers" },
-        { key: "workers", icon: <BotMessageSquare size={14} />, ...badgeProps(workersCount), tooltip: "Workers" },
-        { key: "requests", icon: <Activity size={14} />, ...badgeProps(backendSessionStats?.requestCount || 0), tooltip: "Requests" },
-        { key: "coordinator", icon: <GitBranch size={14} />, tooltip: "Coordinator" },
+        { key: "tools", icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>, ...badgeProps(allToolCount), tooltip: "Tools" },
+        { key: "skills", icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>, ...badgeProps(skills.filter((s) => s.enabled).length), tooltip: "Skills" },
+        { key: "memories", icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>, ...badgeProps(totalMemoriesCount), tooltip: "Memories" },
+        { key: "tasks", icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>, ...badgeProps(tasksCount), tooltip: "Tasks" },
+        { key: "mcp", icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>, ...badgeProps(mcpServers.filter((s) => s.connected).length), tooltip: "MCP Servers" },
+        { key: "workers", icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>, ...badgeProps(workersCount), tooltip: "Workers" },
+        { key: "requests", icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>, ...badgeProps(backendSessionStats?.requestCount || 0), tooltip: "Requests" },
+        { key: "coordinator", icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>, tooltip: "Coordinator" },
       );
     } else {
       // No Agent / conversation tabs
       tabs.push(
-        { key: "params", icon: <SlidersHorizontal size={14} />, tooltip: "Parameters" },
+        { key: "params", icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>, tooltip: "Parameters" },
       );
     }
 

@@ -104,6 +104,7 @@ import {
   ButtonComponent,
   EmptyStateComponent,
   TabBarComponent,
+  tabBarStyles,
   ToastComponent,
   useToast,
 } from "@rodrigo-barraza/components-library";
@@ -3493,26 +3494,26 @@ export default function AgentComponent({
         tabs={[
           {
             key: "settings",
-            icon: <Settings size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>⚙️</span>,
             tooltip: "Settings",
           },
           ...((currentWorkspace && hasFileOps) || unavailableWorkspace
             ? [
                 {
                   key: "workspace",
-                  icon: <FolderTree size={14} />,
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>📂</span>,
                   tooltip: "Workspace",
                 },
               ]
             : []),
           {
             key: "info",
-            icon: <Info size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>ℹ️</span>,
             tooltip: "Info",
           },
           {
             key: "tools",
-            icon: <Wrench size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
             ...badgeProps(allToolSchemas.length, "tools"),
             tooltip: "Tool Calling",
             tooltipDisabled: !settings.functionCallingEnabled,
@@ -3521,7 +3522,7 @@ export default function AgentComponent({
             ? [
                 {
                   key: "params",
-                  icon: <SlidersHorizontal size={14} />,
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
                   tooltip: "Parameters",
                 },
               ]
@@ -3530,7 +3531,7 @@ export default function AgentComponent({
             ? [
                 {
                   key: "skills",
-                  icon: <BookOpen size={14} />,
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>,
                   ...badgeProps(
                     skills.filter((s) => s.enabled).length,
                     "skills",
@@ -3539,19 +3540,19 @@ export default function AgentComponent({
                 },
                 {
                   key: "memories",
-                  icon: <Brain size={14} />,
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
                   ...badgeProps(totalMemoriesCount, "memories"),
                   tooltip: "Memories",
                 },
                 {
                   key: "tasks",
-                  icon: <ListChecks size={14} />,
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>,
                   ...badgeProps(tasksCount, "tasks"),
                   tooltip: "Tasks",
                 },
                 {
                   key: "mcp",
-                  icon: <Plug size={14} />,
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>,
                   ...badgeProps(
                     mcpServers.filter((s) => s.connected).length,
                     "mcp",
@@ -3560,7 +3561,7 @@ export default function AgentComponent({
                 },
                 {
                   key: "workers",
-                  icon: <BotMessageSquare size={14} />,
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
                   ...badgeProps(workersCount, "workers"),
                   badgeRainbow: Object.values(workerToolActivity).some(
                     (w: WorkerActivityEntry) =>
@@ -3574,7 +3575,7 @@ export default function AgentComponent({
             : []),
           {
             key: "requests",
-            icon: <Activity size={14} />,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
             ...badgeProps(
               backendSessionStats?.requestCount || 0,
               "requests",
@@ -3585,7 +3586,7 @@ export default function AgentComponent({
             ? [
                 {
                   key: "coordinator",
-                  icon: <GitBranch size={14} />,
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>,
                   tooltip: "Coordinator",
                 },
               ]
