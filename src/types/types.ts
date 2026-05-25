@@ -793,6 +793,10 @@ export interface AgentDefaultsConfig {
   };
 }
 
+export interface SecurityConfig {
+  allowEnvFiles?: boolean;
+}
+
 export interface PrismSettings {
   provider?: string;
   model?: string;
@@ -829,6 +833,8 @@ export interface PrismSettings {
   memory?: MemoryConfig;
   /** Per-agent default provider/model overrides */
   agents?: AgentDefaultsConfig;
+  /** Security and sandboxing preferences */
+  security?: SecurityConfig;
 }
 
 // ─── MCP Servers ────────────────────────────────────────────

@@ -38,6 +38,7 @@ import {
   ButtonComponent,
   CardComponent,
   PageHeaderComponent,
+  ToggleComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./SettingsPageComponent.module.css";
 
@@ -315,6 +316,27 @@ export default function SettingsPageComponent() {
   const handleResetAgents = useCallback(async () => {
     if (!defaults?.agents) return;
     const updated = { agents: { ...(defaults?.agents || {}) } };
+    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    await persistSettings(updated);
+  }, [defaults, persistSettings]);
+
+  const handleSecurityToggle = useCallback(
+    (key: string, enabled: boolean) => {
+      const updated = {
+        security: {
+          ...settings?.security,
+          [key]: enabled,
+        },
+      };
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  const handleResetSecurity = useCallback(async () => {
+    if (!defaults?.security) return;
+    const updated = { security: { ...(defaults?.security || {}) } };
     setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
@@ -1225,6 +1247,45 @@ export default function SettingsPageComponent() {
             variant="disabled"
             icon={RotateCcw}
             onClick={handleResetAgents}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Security & Sandboxing Section ---------------------------- */}
+      <CardComponent className={styles.section}>
+        <CardComponent.Header
+          icon={Lock}
+          title="Security & Sandboxing"
+          subtitle="Configure file system policies, environment variable isolation, and credentials access"
+        />
+
+        <CardComponent.Body>
+          <div className={styles.row}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Allow `.env` & Sensitive Files Access</span>
+              <span className={styles.rowDescription}>
+                Allow the agent to view, search, or edit `.env` environment configurations, `.pem` certificates, `.key` private keys, and SSH credentials inside the workspace. When disabled, these files are strictly isolated from the agent's file tools to prevent credential leakage.
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ToggleComponent
+                checked={settings?.security?.allowEnvFiles ?? false}
+                onChange={(checked: boolean) => handleSecurityToggle("allowEnvFiles", checked)}
+                size="mini"
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetSecurity}
             disabled={saving}
           >
             Reset to Defaults
