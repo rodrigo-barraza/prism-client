@@ -108,6 +108,31 @@ export default function HistoryItemComponent({
   const hasModalities = modalities && Object.keys(modalities).length > 0;
   const hasModel = (item.modelNames?.length ?? 0) > 0 || item.modelName;
 
+  const INPUT_KEYS = ["textIn", "imageIn", "audioIn", "videoIn", "docIn"];
+  const OUTPUT_KEYS = ["textOut", "imageOut", "audioOut", "embeddingOut"];
+  const TOOL_KEYS = [
+    "thinking",
+    "functionCalling",
+    "webSearch",
+    "codeExecution",
+    "computerUse",
+    "fileSearch",
+    "urlContext",
+    "imageGeneration",
+  ];
+
+  const hasInputOutputModalities =
+    modalities &&
+    Object.keys(modalities).some(
+      (key) => (INPUT_KEYS.includes(key) || OUTPUT_KEYS.includes(key)) && modalities[key]
+    );
+
+  const hasActiveTools =
+    modalities &&
+    Object.keys(modalities).some(
+      (key) => TOOL_KEYS.includes(key) && modalities[key]
+    );
+
   const AGENT_DISPLAY_NAMES: Record<string, string> = {
     CODING: "Coding Agent",
     LUPOS: "Lupos",
@@ -230,14 +255,18 @@ export default function HistoryItemComponent({
           />
         )}
 
-        {/* Row 4: modalities (left) · tools (right) */}
-        {hasModalities && (
+        {/* Row 4: modalities (left) */}
+        {hasInputOutputModalities && (
           <div className={styles.bottomRow}>
             <div className={styles.bottomLeft}>
               <ModalityIconComponent modalities={modalities} />
             </div>
-            {hasModalities && <ModelToolsRow tools={modalities} variant="condensed" />}
           </div>
+        )}
+
+        {/* Row 5: tool badge row (below bottomRow) */}
+        {hasActiveTools && (
+          <ModelToolsRow tools={modalities} variant="condensed" />
         )}
 
         {children}
