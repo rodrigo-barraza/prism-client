@@ -153,6 +153,10 @@ interface NavigationProps {
   onNavClick?: (href: string) => void;
 }
 
+// Module-level cache to persist the sidebar open/collapsed state across client-side page transitions.
+// This prevents layout flickering on mount during client-side navigation.
+let globalShowNav: boolean | null = null;
+
 export default function NavigationSidebarComponent({
   mode = "user",
   liveCount = 0,
@@ -175,7 +179,12 @@ export default function NavigationSidebarComponent({
   const pathname = usePathname();
   const { theme, themes, setTheme } = useTheme();
   const customThemeMeta = useMemo(() => CustomThemeService.getCustomThemeMetaMap(), []);
-  const [showNav, setShowNav] = useState(false);
+  const [showNav, setShowNav] = useState(() => {
+    if (globalShowNav !== null) {
+      return globalShowNav;
+    }
+    return false;
+  });
   const [navReady, setNavReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -210,7 +219,15 @@ export default function NavigationSidebarComponent({
   useEffect(() => {
     const stored = localStorage.getItem(LS_PANEL_NAV);
     const initialNav = stored !== null ? stored === "true" : false;
-    setShowNav(initialNav);
+    
+    setShowNav((current) => {
+      if (current !== initialNav) {
+        return initialNav;
+      }
+      return current;
+    });
+    globalShowNav = initialNav;
+
     if (!initialNav) {
       document.documentElement.setAttribute("data-nav-collapsed", "true");
     } else {
@@ -234,6 +251,7 @@ export default function NavigationSidebarComponent({
     setShowNav((prev) => {
       const next = !prev;
       localStorage.setItem(LS_PANEL_NAV, String(next));
+      globalShowNav = next;
       if (next) {
         document.documentElement.removeAttribute("data-nav-collapsed");
       } else {

@@ -26,6 +26,9 @@ import {
   FormGroupComponent,
   ButtonComponent,
 } from "@rodrigo-barraza/components-library";
+import { AgentPersona, PrismConfig } from "../../types/types";
+import AgentPickerComponent from "../../components/AgentPickerComponent";
+import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComponent";
 import styles from "./page.module.css";
 
 interface Workspace {
@@ -55,9 +58,10 @@ interface Task {
   agent: string | null;
   provider: string;
   model: string;
-  scheduleType: "hourly" | "daily" | "weekly" | "cron" | "trigger";
+  scheduleType: "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once";
   scheduleTime?: string;
   scheduleDay?: number;
+  scheduleDate?: string;
   cronExpression?: string;
   enabled: boolean;
   lastRunMinute?: string;
@@ -71,15 +75,28 @@ interface Toast {
   type: "success" | "error" | "info";
 }
 
+const NONE_AGENT = {
+  id: "NONE",
+  name: "No Agent",
+  description: "Direct model conversations with no agentic loop.",
+  project: "direct",
+  toolCount: -1,
+  custom: false,
+  icon: "",
+  color: "",
+};
+
 export default function ScheduledTasksPage() {
 
 
   // Data state
   const [tasks, setTasks] = useState<Task[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agents, setAgents] = useState<any[]>([]);
   const [modelsMap, setModelsMap] = useState<Record<string, Model[]>>({});
   const [providers, setProviders] = useState<string[]>([]);
+  const [config, setConfig] = useState<PrismConfig | null>(null);
+  const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   
   // UI state
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,12 +114,16 @@ export default function ScheduledTasksPage() {
   const [formAgent, setFormAgent] = useState("CODING");
   const [formProvider, setFormProvider] = useState("");
   const [formModel, setFormModel] = useState("");
-  const [formScheduleType, setFormScheduleType] = useState<"hourly" | "daily" | "weekly" | "cron" | "trigger">("daily");
+  const [formScheduleType, setFormScheduleType] = useState<"hourly" | "daily" | "weekly" | "cron" | "trigger" | "once">("daily");
   const [formTimeHour, setFormTimeHour] = useState("09");
   const [formTimeMinute, setFormTimeMinute] = useState("00");
   const [formTimeAmpm, setFormTimeAmpm] = useState("AM");
   const [formWeeklyDay, setFormWeeklyDay] = useState(1); // Monday
   const [formCron, setFormCron] = useState("0 9 * * *");
+  const [formOnceDate, setFormOnceDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   // -- Show Toast Helper --
@@ -131,10 +152,11 @@ export default function ScheduledTasksPage() {
 
       // 3. Fetch agent personas
       const fetchedAgents = await PrismService.getAgentPersonas();
-      setAgents(fetchedAgents);
+      setAgents([NONE_AGENT, ...fetchedAgents]);
 
       // 4. Fetch config for providers and models
       const config = await PrismService.getConfig();
+      setConfig(config);
       const textModelsMap = config.textToText?.models || {};
       
       // Filter models: show all for direct, or only tool calling models
@@ -162,6 +184,14 @@ export default function ScheduledTasksPage() {
         }
       }
 
+      // 5. Fetch favorites
+      try {
+        const favs = await PrismService.getFavorites("model");
+        setFavoriteKeys(favs.map((f) => f.key as string));
+      } catch (err) {
+        console.error("Failed to load favorite models", err);
+      }
+
     } catch (err: unknown) {
       console.error(err);
       showToast("Failed to load initial data", "error");
@@ -180,6 +210,24 @@ export default function ScheduledTasksPage() {
       setFormModel(modelsMap[formProvider][0].name);
     }
   }, [formProvider, modelsMap]);
+
+  // -- Favorites -------------------------------------------------
+  const handleToggleFavorite = useCallback(
+    async (key: string) => {
+      if (favoriteKeys.includes(key)) {
+        setFavoriteKeys((prev) => prev.filter((k) => k !== key));
+        try {
+          await PrismService.removeFavorite("model", key);
+        } catch {}
+      } else {
+        setFavoriteKeys((prev) => [...prev, key]);
+        try {
+          await PrismService.addFavorite("model", key, { type: "model" });
+        } catch {}
+      }
+    },
+    [favoriteKeys]
+  );
 
   // -- Handle task toggle enablement --
   const handleToggleTask = async (task: Task) => {
@@ -234,7 +282,7 @@ export default function ScheduledTasksPage() {
 
     // Calculate time format
     let scheduleTime = "";
-    if (formScheduleType === "daily" || formScheduleType === "weekly") {
+    if (formScheduleType === "daily" || formScheduleType === "weekly" || formScheduleType === "once") {
       let h = parseInt(formTimeHour, 10);
       if (formTimeAmpm === "PM" && h < 12) h += 12;
       if (formTimeAmpm === "AM" && h === 12) h = 0;
@@ -251,6 +299,7 @@ export default function ScheduledTasksPage() {
         scheduleType: formScheduleType,
         scheduleTime: scheduleTime || undefined,
         scheduleDay: formScheduleType === "weekly" ? formWeeklyDay : undefined,
+        scheduleDate: formScheduleType === "once" ? formOnceDate : undefined,
         cronExpression: formScheduleType === "cron" ? formCron.trim() : undefined,
       });
 
@@ -298,6 +347,10 @@ export default function ScheduledTasksPage() {
 
     if (task.scheduleType === "trigger") {
       return "Manual / Remote Trigger";
+    }
+
+    if (task.scheduleType === "once") {
+      return `One-time on ${task.scheduleDate || ""} around ${formatTime(task.scheduleTime)}`;
     }
 
     return "Unknown schedule";
@@ -584,49 +637,27 @@ export default function ScheduledTasksPage() {
 
                 {/* Agent Persona */}
                 <FormGroupComponent label="Agent">
-                  <SelectComponent
-                    value={formAgent}
-                    onChange={(val: string) => setFormAgent(val)}
-                    icon={<Bot size={13} />}
-                    options={[
-                      { value: "NONE", label: "Direct Model (No Agent)" },
-                      ...agents.map((a) => ({
-                        value: a.id,
-                        label: a.name,
-                      })),
-                    ]}
+                  <AgentPickerComponent
+                    agents={agents}
+                    activeAgentId={formAgent}
+                    onSelect={setFormAgent}
                   />
                 </FormGroupComponent>
               </div>
 
-              <div className={styles.formRow}>
-                {/* Model Provider */}
-                <FormGroupComponent label="Provider">
-                  <SelectComponent
-                    value={formProvider}
-                    onChange={(val: string) => setFormProvider(val)}
-                    options={providers.map((p) => ({
-                      value: p,
-                      label: p.toUpperCase(),
-                    }))}
-                    placeholder="Select provider"
-                  />
-                </FormGroupComponent>
-
-                {/* Model Selection */}
-                <FormGroupComponent label="Model">
-                  <SelectComponent
-                    value={formModel}
-                    onChange={(val: string) => setFormModel(val)}
-                    icon={<Sparkles size={13} />}
-                    options={(modelsMap[formProvider] || []).map((m) => ({
-                      value: m.name,
-                      label: m.displayName || m.name,
-                    }))}
-                    placeholder="Select model"
-                  />
-                </FormGroupComponent>
-              </div>
+              {/* Model Selection */}
+              <FormGroupComponent label="Model">
+                <ModelPickerPopoverComponent
+                  config={config}
+                  settings={{ provider: formProvider, model: formModel }}
+                  onSelectModel={(provider: string, model: string) => {
+                    setFormProvider(provider);
+                    setFormModel(model);
+                  }}
+                  favorites={favoriteKeys}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              </FormGroupComponent>
 
               {/* Prompt */}
               <FormGroupComponent label="Prompt">
@@ -648,6 +679,7 @@ export default function ScheduledTasksPage() {
                     value={formScheduleType}
                     onChange={(val: string) => setFormScheduleType(val as typeof formScheduleType)}
                     options={[
+                      { value: "once", label: "One-time" },
                       { value: "hourly", label: "Hourly" },
                       { value: "daily", label: "Daily" },
                       { value: "weekly", label: "Weekly" },
@@ -701,6 +733,40 @@ export default function ScheduledTasksPage() {
                         { value: "5", label: "Friday" },
                         { value: "6", label: "Saturday" },
                       ]}
+                    />
+                    <span className={styles.pickerLabel}>around</span>
+                    <SelectComponent
+                      value={formTimeHour}
+                      onChange={(val: string) => setFormTimeHour(val)}
+                      options={Array.from({ length: 12 }, (_, i) => {
+                        const h = String(i === 0 ? 12 : i).padStart(2, "0");
+                        return { value: h, label: h };
+                      })}
+                    />
+                    <span className={styles.timeColon}>:</span>
+                    <SelectComponent
+                      value={formTimeMinute}
+                      onChange={(val: string) => setFormTimeMinute(val)}
+                      options={["00", "15", "30", "45"].map((m) => ({ value: m, label: m }))}
+                    />
+                    <SelectComponent
+                      value={formTimeAmpm}
+                      onChange={(val: string) => setFormTimeAmpm(val)}
+                      options={[
+                        { value: "AM", label: "AM" },
+                        { value: "PM", label: "PM" },
+                      ]}
+                    />
+                  </div>
+                )}
+
+                {/* Date + time picker for once */}
+                {formScheduleType === "once" && (
+                  <div className={styles.weeklyPickerRow}>
+                    <InputComponent
+                      type="date"
+                      value={formOnceDate}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormOnceDate(e.target.value)}
                     />
                     <span className={styles.pickerLabel}>around</span>
                     <SelectComponent

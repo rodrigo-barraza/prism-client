@@ -102,13 +102,17 @@ function AgentsPageInner() {
     (e: Event) => {
       const customEvent = e as CustomEvent;
       const newId = customEvent.detail?.agentId;
-      if (newId && newId !== activeAgentId) {
+      if (newId) {
         setLocalAgentId(newId);
         localStorage.setItem(LS_ACTIVE_AGENT, newId);
-        router.replace(
-          buildUrl(searchParams, { agent: encodeURIComponent(newId) }),
-          { scroll: false },
-        );
+        if (searchParams.has("session")) {
+          router.push(`/chat?agent=${encodeURIComponent(newId)}`);
+        } else if (newId !== activeAgentId) {
+          router.replace(
+            buildUrl(searchParams, { agent: encodeURIComponent(newId) }),
+            { scroll: false },
+          );
+        }
       }
     },
     [activeAgentId, router, searchParams],

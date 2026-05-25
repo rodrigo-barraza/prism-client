@@ -4588,7 +4588,7 @@ export default function AgentComponent({
                   new CustomEvent("agent:switch", { detail: { agentId: id } }),
                 );
               }}
-              disabled={isGenerating || isSessionLocked}
+              disabled={isGenerating}
             />
           )}
           <ModelPickerPopoverComponent
