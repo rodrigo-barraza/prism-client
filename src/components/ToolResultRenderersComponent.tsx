@@ -29,7 +29,9 @@ import {
   MessageSquare,
   StopCircle,
   Zap,
+  Download,
 } from "lucide-react";
+
 import MarkdownContent from "./MarkdownContentComponent";
 const LazyMessageList = lazy(() => import("./MessageListComponent"));
 import { prepareDisplayMessages, type WorkerToolActivityItem } from "./MessageListComponent";
@@ -1449,6 +1451,119 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
   );
 }
 
+function EmojiCombinationRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result) as any;
+  if (!parsed || !parsed.success) return <RawResultToggle result={result} />;
+
+  const {
+    leftEmoji,
+    leftEmojiCodepoint,
+    rightEmoji,
+    rightEmojiCodepoint,
+    gStaticUrl,
+    alt,
+    date,
+    isLatest,
+    gBoardOrder,
+  } = parsed;
+
+  return (
+    <div className={styles.rendererBlock}>
+      <div className={styles.rendererHeader}>
+        <span style={{ fontSize: 13 }}>🍳</span>
+        <span className={styles.rendererTitle}>Emoji Mashup</span>
+        {isLatest && <StatusBadge success={true} label="Latest GBoard Design" />}
+      </div>
+      <div className={styles.emojiCombineContainer}>
+        <div className={styles.emojiLeftRightGrid}>
+          <div className={styles.emojiBubble} title={`Codepoint: ${leftEmojiCodepoint}`}>
+            <span className={styles.bubbleEmojiChar}>{leftEmoji}</span>
+          </div>
+          <span className={styles.combinePlus}>+</span>
+          <div className={styles.emojiBubble} title={`Codepoint: ${rightEmojiCodepoint}`}>
+            <span className={styles.bubbleEmojiChar}>{rightEmoji}</span>
+          </div>
+          <span className={styles.combineEquals}>=</span>
+        </div>
+        <div className={styles.emojiMergedContainer}>
+          <div className={styles.mergedBackdropGlow} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={gStaticUrl}
+            alt={alt || "Emoji Kitchen mashup"}
+            className={styles.mergedEmojiImage}
+            title={alt}
+          />
+        </div>
+      </div>
+      <div className={styles.emojiMetaRow}>
+        <span className={styles.metaItem}>Order: {gBoardOrder || "N/A"}</span>
+        <span className={styles.metaSeparator}>·</span>
+        <span className={styles.metaItem}>Date: {date || "N/A"}</span>
+        <span className={styles.metaSeparator}>·</span>
+        <a
+          href={gStaticUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          download={`mashup_${leftEmojiCodepoint}_${rightEmojiCodepoint}.png`}
+          className={styles.downloadLink}
+          style={{ display: "inline-flex", alignItems: "center", gap: 3 }}
+        >
+          <Download size={11} />
+          Download PNG
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function EmojiCombinationsRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result) as any;
+  if (!parsed || !parsed.success) return <RawResultToggle result={result} />;
+
+
+  const baseEmoji = parsed.emoji || args?.emoji || "";
+  const count = parsed.count || 0;
+  const combinations = parsed.combinations || [];
+
+  return (
+    <div className={styles.rendererBlock}>
+      <div className={styles.rendererHeader}>
+        <span style={{ fontSize: 13 }}>🧑‍🍳</span>
+        <span className={styles.rendererTitle}>
+          {baseEmoji} Mashup Kitchen — {count} Options
+        </span>
+      </div>
+      <div className={styles.emojiGridScrollContainer}>
+        <div className={styles.emojiCombosGrid}>
+          {combinations.map((option: any, index: number) => {
+            const combo = option.combination;
+            return (
+              <div key={index} className={styles.comboOptionCard}>
+                <div className={styles.optionCardHeader}>
+                  <span className={styles.miniEmoji}>{baseEmoji}</span>
+                  <span className={styles.miniPlus}>+</span>
+                  <span className={styles.miniEmoji}>{option.emoji}</span>
+                </div>
+                <div className={styles.optionCardImageContainer}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={combo.gStaticUrl}
+                    alt={combo.alt}
+                    className={styles.miniMergedImage}
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 // -- 14. Coordinator Tools ---------------------------------------------------
 
 /**
@@ -1904,6 +2019,11 @@ const TOOL_RESULT_REGISTRY = {
 
   // Image to ASCII Art
   convert_image_to_ascii: { Renderer: AsciiImageRenderer },
+
+  // Emoji Kitchen
+  get_emoji_combination: { Renderer: EmojiCombinationRenderer },
+  get_emoji_combinations: { Renderer: EmojiCombinationsRenderer },
+
 
   // Coordinator
   team_create: { Renderer: TeamCreateRenderer },
