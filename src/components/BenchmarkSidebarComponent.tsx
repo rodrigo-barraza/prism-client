@@ -17,7 +17,7 @@ import {
   SearchInputComponent,
   DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
-import CostBadgeComponent from "./CostBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
 import SoundService from "@/services/SoundService";
@@ -184,12 +184,11 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: { activ
                 <div className={styles.topRow}>
                   <DateTimeBadgeComponent
                     date={b.updatedAt || b.createdAt}
-                    mini
                   />
                   {isRunning && (
                     <Loader2 size={10} className={styles.spinIcon} />
                   )}
-                  <CostBadgeComponent cost={b.cumulativeCost} />
+                  <BadgeComponent type="cost" cost={b.cumulativeCost} />
                 </div>
 
                 {/* Row 2: name */}

@@ -17,11 +17,11 @@ import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import RunHistorySidebarComponent from "./RunHistorySidebarComponent";
 import {
-  BadgeComponent,
   ButtonComponent,
   ModalComponent,
   DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
+import BadgeComponent from "./BadgeComponent";
 
 import BenchmarkFormComponent from "./BenchmarkFormComponent";
 import SummaryBarComponent from "./SummaryBarComponent";
@@ -30,7 +30,7 @@ import AgentPickerComponent from "./AgentPickerComponent";
 import BenchmarksTableComponent from "./BenchmarksTableComponent";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
-import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
+
 
 import StorageService from "../services/StorageService";
 import { SK_MODEL_MEMORY_BENCHMARKS } from "../constants";
@@ -1535,7 +1535,7 @@ export default function BenchmarkDetailPageComponent({
                       latestRun.models || []
                     ).reduce((sum: number, r: BenchmarkRunResult) => sum + (r.latencyMs || 0), 0);
                     return totalDuration > 0 ? (
-                      <StopwatchBadgeComponent seconds={totalDuration} />
+                      <BadgeComponent type="stopwatch" seconds={totalDuration} />
                     ) : null;
                   })()}
                   <DateTimeBadgeComponent

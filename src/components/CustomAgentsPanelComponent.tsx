@@ -75,7 +75,7 @@ import {
   ButtonComponent,
   ToggleComponent,
 } from "@rodrigo-barraza/components-library";
-import AgentBadgeComponent from "./AgentBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./CustomAgentsPanelComponent.module.css";
@@ -772,7 +772,8 @@ export default function CustomAgentsPanel({
 
             return (
               <div key={agent._id} className={styles.agentCard}>
-                <AgentBadgeComponent
+                <BadgeComponent
+                  type="agent"
                   agent={{
                     id: agent.agentId,
                     icon: agent.icon,

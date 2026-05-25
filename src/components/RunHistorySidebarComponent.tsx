@@ -15,14 +15,13 @@ import {
 import AgentCardComponent from "./AgentCardComponent";
 import ModelCardComponent from "./ModelCardComponent";
 import {
-  BadgeComponent,
   TabBarComponent,
   tabBarStyles,
   DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
-import CostBadgeComponent from "./CostBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
 import SoundService from "@/services/SoundService";
@@ -293,7 +292,7 @@ export default function RunHistorySidebarComponent({
                   >
                     <div className={styles.runItemHeader}>
                       <DateTimeBadgeComponent date={run.completedAt} />
-                      <CostBadgeComponent cost={totalCost} mini />
+                      <BadgeComponent type="cost" cost={totalCost} mini />
                       <span className={styles.runIndex}>
                         #{runHistory.length - index}
                       </span>

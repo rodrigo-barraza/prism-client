@@ -15,7 +15,7 @@ import Link from "next/link";
 import PrismService from "../services/PrismService";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 
-import ModelBadgeComponent from "./ModelBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import styles from "./MediaCardComponent.module.css";
 import type { MediaItem } from "./MediaPageComponent";
@@ -183,7 +183,8 @@ export default function MediaCardComponent({
           )}
           <div className={styles.meta}>
             {m.model && (
-              <ModelBadgeComponent
+              <BadgeComponent
+                type="model"
                 models={[m.model.split("/").pop() || ""]}
                 provider={m.provider}
                 mini

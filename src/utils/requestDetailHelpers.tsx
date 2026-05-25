@@ -9,17 +9,10 @@
 
 import { formatNumber, formatLatency, formatTokensPerSec } from "./utilities";
 import {
-  BadgeComponent,
   DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
-import ModelBadgeComponent from "../components/ModelBadgeComponent";
-import ProvidersBadgeComponent from "../components/ProvidersBadgeComponent";
-import TokenCountBadgeComponent from "../components/TokenCountBadgeComponent";
-
-import StopwatchBadgeComponent from "../components/StopwatchBadgeComponent";
+import BadgeComponent from "../components/BadgeComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
-
-import CostBadgeComponent from "../components/CostBadgeComponent";
 import ToolIconComponent from "../components/ToolIconComponent";
 import { prepareDisplayMessages } from "../components/MessageListComponent";
 import type { TransformedRequestItem, Message } from "../types/types";
@@ -162,7 +155,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
               {
                 label: "Agent",
                 value: (
-                  <BadgeComponent variant="accent">{req.agent}</BadgeComponent>
+                  <BadgeComponent variant="accent">{req.agent as React.ReactNode}</BadgeComponent>
                 ),
               },
             ]
@@ -170,7 +163,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
         {
           label: "Provider",
           value: req.provider ? (
-            <ProvidersBadgeComponent providers={[req.provider]} />
+            <BadgeComponent type="providers" providers={[req.provider]} />
           ) : (
             "-"
           ),
@@ -178,7 +171,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
         {
           label: "Model",
           value: req.model ? (
-            <ModelBadgeComponent models={[req.model]} provider={req.provider} />
+            <BadgeComponent type="model" models={[req.model]} provider={req.provider} />
           ) : (
             "-"
           ),
@@ -247,7 +240,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Input Tokens",
           value:
             (req.inputTokens ?? 0) > 0 ? (
-              <TokenCountBadgeComponent value={req.inputTokens ?? 0} label="in" />
+              <BadgeComponent type="tokens" value={req.inputTokens ?? 0} label="in" />
             ) : (
               formatNumber(req.inputTokens ?? 0)
             ),
@@ -256,7 +249,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Output Tokens",
           value:
             (req.outputTokens ?? 0) > 0 ? (
-              <TokenCountBadgeComponent value={req.outputTokens ?? 0} label="out" />
+              <BadgeComponent type="tokens" value={req.outputTokens ?? 0} label="out" />
             ) : (
               formatNumber(req.outputTokens ?? 0)
             ),
@@ -266,7 +259,8 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
               {
                 label: "Cache Read Tokens",
                 value: (
-                  <TokenCountBadgeComponent
+                  <BadgeComponent
+                    type="tokens"
                     value={req.cacheReadInputTokens ?? 0}
                     label="cached read"
                   />
@@ -279,7 +273,8 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
               {
                 label: "Cache Write Tokens",
                 value: (
-                  <TokenCountBadgeComponent
+                  <BadgeComponent
+                    type="tokens"
                     value={req.cacheCreationInputTokens ?? 0}
                     label="cached write"
                   />
@@ -292,7 +287,8 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
               {
                 label: "Reasoning Tokens",
                 value: (
-                  <TokenCountBadgeComponent
+                  <BadgeComponent
+                    type="tokens"
                     value={req.reasoningOutputTokens ?? 0}
                     label="reasoning"
                   />
@@ -302,7 +298,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           : []),
         {
           label: "Estimated Cost",
-          value: <CostBadgeComponent cost={req.estimatedCost ?? 0} />,
+          value: <BadgeComponent type="cost" cost={req.estimatedCost ?? 0} />,
         },
         {
           label: "Tokens/sec",
@@ -317,11 +313,11 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
         },
         {
           label: "Input Chars",
-          value: formatNumber(req.inputCharacters ?? 0),
+          value: formatNumber((req.inputCharacters as number) ?? 0),
         },
         {
           label: "Output Chars",
-          value: formatNumber(req.outputCharacters ?? 0),
+          value: formatNumber((req.outputCharacters as number) ?? 0),
         },
         {
           label: "Messages",
@@ -336,7 +332,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Time to Generation",
           value:
             (req.timeToGeneration ?? 0) > 0 ? (
-              <StopwatchBadgeComponent seconds={req.timeToGeneration ?? 0} />
+              <BadgeComponent type="stopwatch" seconds={req.timeToGeneration ?? 0} />
             ) : (
               formatLatency(req.timeToGeneration ?? 0)
             ),
@@ -345,7 +341,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Generation Time",
           value:
             (req.generationTime ?? 0) > 0 ? (
-              <StopwatchBadgeComponent seconds={req.generationTime ?? 0} />
+              <BadgeComponent type="stopwatch" seconds={req.generationTime ?? 0} />
             ) : (
               formatLatency(req.generationTime ?? 0)
             ),
@@ -354,7 +350,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Total Time",
           value:
             (req.totalTime ?? 0) > 0 ? (
-              <StopwatchBadgeComponent seconds={req.totalTime ?? 0} />
+              <BadgeComponent type="stopwatch" seconds={req.totalTime ?? 0} />
             ) : (
               formatLatency(req.totalTime ?? 0)
             ),

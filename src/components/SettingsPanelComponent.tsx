@@ -18,19 +18,13 @@ import {
 import CycleButton from "./CycleButtonComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
 import SystemPromptModal from "./SystemPromptModalComponent";
-import ModelBadgeComponent from "./ModelBadgeComponent";
 import styles from "./SettingsPanelComponent.module.css";
-import CostBadgeComponent from "./CostBadgeComponent";
-import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
-import RequestCountBadgeComponent from "./RequestCountBadgeComponent";
-import MessageCountBadgeComponent from "./MessageCountBadgeComponent";
-import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import StatsTabBarComponent from "./StatsTabBarComponent";
 import { formatCost, CAPABILITY_TOOL_NAMES } from "../utils/utilities";
 import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstantsComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
-import ThroughputBadgeComponent from "./ThroughputBadgeComponent";
 import useTokenRate from "../hooks/useTokenRate";
 import useTtft from "../hooks/useTtft";
 import type { PrismConfig, PrismSettings, ModelOption, Workflow, VoiceOption } from "../types/types";
@@ -213,52 +207,61 @@ export default function SettingsPanel({
     const ttftVal = stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
     return (
       <div className={styles.statsBadges}>
-        <MessageCountBadgeComponent
+        <BadgeComponent
+          type="messages"
           count={stats.messageCount}
           deletedCount={stats.deletedCount}
         />
-        <RequestCountBadgeComponent count={stats.requestCount} />
+        <BadgeComponent type="requests" count={stats.requestCount} />
         {stats.uniqueModels && stats.uniqueModels.length > 0 && (
-          <ModelBadgeComponent
+          <BadgeComponent
+            type="model"
             models={stats.uniqueModels}
             providers={stats.uniqueProviders}
           />
         )}
         {stats.totalTokens && stats.totalTokens.total > 0 && (
           <>
-            <TokenCountBadgeComponent
+            <BadgeComponent
+              type="tokens"
               value={stats.totalTokens.input}
               label="tokens in"
             />
-            <TokenCountBadgeComponent
+            <BadgeComponent
+              type="tokens"
               value={stats.totalTokens.output}
               label="tokens out"
             />
-            <TokenCountBadgeComponent
+            <BadgeComponent
+              type="tokens"
               value={stats.totalTokens.total}
               label="tokens total"
             />
             {stats.totalTokens.cacheRead !== undefined && stats.totalTokens.cacheRead > 0 && (
-              <TokenCountBadgeComponent
+              <BadgeComponent
+                type="tokens"
                 value={stats.totalTokens.cacheRead}
                 label="cached read"
               />
             )}
             {stats.totalTokens.cacheWrite !== undefined && stats.totalTokens.cacheWrite > 0 && (
-              <TokenCountBadgeComponent
+              <BadgeComponent
+                type="tokens"
                 value={stats.totalTokens.cacheWrite}
                 label="cached write"
               />
             )}
             {stats.totalTokens.reasoning !== undefined && stats.totalTokens.reasoning > 0 && (
-              <TokenCountBadgeComponent
+              <BadgeComponent
+                type="tokens"
                 value={stats.totalTokens.reasoning}
                 label="reasoning"
               />
             )}
           </>
         )}
-        <ThroughputBadgeComponent
+        <BadgeComponent
+          type="throughput"
           liveTokPerSec={liveTokensPerSec}
           avgTokPerSec={stats.avgTokensPerSec}
           isActivelyGenerating={computedTokPerSec !== null || hasActiveWorkers}
@@ -278,7 +281,7 @@ export default function SettingsPanel({
             </span>
           )
         )}
-        <CostBadgeComponent cost={stats.totalCost} />
+        <BadgeComponent type="cost" cost={stats.totalCost} />
         {stats.originalTotalCost > 0 &&
           stats.originalTotalCost !== stats.totalCost && (
             <span className={`${styles.statBadge} ${styles.statBadgeSub}`}>
@@ -286,13 +289,15 @@ export default function SettingsPanel({
             </span>
           )}
         {showFull && activeElapsedTime > 0 && (
-          <StopwatchBadgeComponent
+          <BadgeComponent
+            type="stopwatch"
             seconds={activeElapsedTime}
             live={!!stats.currentTurnStart}
           />
         )}
         {!showFull && stats.completedElapsedTime !== undefined && stats.completedElapsedTime > 0 && (
-          <StopwatchBadgeComponent
+          <BadgeComponent
+            type="stopwatch"
             seconds={stats.completedElapsedTime}
             live={false}
           />
@@ -388,7 +393,7 @@ export default function SettingsPanel({
             renderStatsBadges(activeStats, statsTab === "all")
           ) : (
             <div className={styles.statsBadges}>
-              <MessageCountBadgeComponent count={0} />
+              <BadgeComponent type="messages" count={0} />
             </div>
           )}
         </div>

@@ -14,9 +14,8 @@ import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
 import { renderToolName } from "../utils/utilities";
 import { formatDuration } from "../utils/utilities";
-import CostBadgeComponent from "./CostBadgeComponent";
-import ModelBadgeComponent from "./ModelBadgeComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
+import BadgeComponent from "./BadgeComponent";
 import styles from "./WorkersPanelComponent.module.css";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -214,7 +213,8 @@ export default function WorkersPanel({
                   {formatDuration(worker.durationMs)}
                 </span>
               )}
-              <CostBadgeComponent
+              <BadgeComponent
+                type="cost"
                 cost={worker.totalCost}
                 mini
                 showIcon={false}
@@ -243,7 +243,8 @@ export default function WorkersPanel({
 
             {/* -- Model badge ---------------------------------- */}
             {worker.resolvedModel && (
-              <ModelBadgeComponent
+              <BadgeComponent
+                type="model"
                 models={[worker.resolvedModel.replace(/-\d{8}$/, "")]}
                 provider={worker.provider}
                 mini

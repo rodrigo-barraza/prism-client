@@ -33,7 +33,7 @@ import CoordinatorPanel from "./CoordinatorPanelComponent";
 import WorkersPanel from "./WorkersPanelComponent";
 import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
 
-import ModelBadgeComponent from "./ModelBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 
 import { formatNumber } from "../utils/utilities";
@@ -508,7 +508,8 @@ export default function AdminAgentViewerComponent() {
         </span>
 
         {activeId && settings.model && (
-          <ModelBadgeComponent
+          <BadgeComponent
+            type="model"
             models={[settings.model]}
             provider={settings.provider}
           />

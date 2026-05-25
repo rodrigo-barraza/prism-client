@@ -4,10 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Activity, AlertCircle, Users } from "lucide-react";
 import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
-import { cleanModelName } from "./ModelBadgeComponent";
-
-import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
-import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
+import BadgeComponent, { cleanModelName } from "./BadgeComponent";
 import IrisService from "../services/IrisService";
 import { getErrorMessage } from "../utils/errorMessage";
 import { formatCost } from "../utils/utilities";
@@ -127,35 +124,39 @@ export default function SessionRequestsListComponent({
                 </div>
                 <div className={styles.requestStats}>
                   {req.inputTokens > 0 && (
-                    <TokenCountBadgeComponent
+                    <BadgeComponent
+                      type="tokens"
                       value={req.inputTokens}
                       label="in"
                       mini
                     />
                   )}
                   {req.outputTokens > 0 && (
-                    <TokenCountBadgeComponent
+                    <BadgeComponent
+                      type="tokens"
                       value={req.outputTokens}
                       label="out"
                       mini
                     />
                   )}
                   {req.cacheReadInputTokens > 0 && (
-                    <TokenCountBadgeComponent
+                    <BadgeComponent
+                      type="tokens"
                       value={req.cacheReadInputTokens}
                       label="cached"
                       mini
                     />
                   )}
                   {req.reasoningOutputTokens > 0 && (
-                    <TokenCountBadgeComponent
+                    <BadgeComponent
+                      type="tokens"
                       value={req.reasoningOutputTokens}
                       label="reasoning"
                       mini
                     />
                   )}
                   {req.totalTime > 0 && (
-                    <StopwatchBadgeComponent seconds={req.totalTime} />
+                    <BadgeComponent type="stopwatch" seconds={req.totalTime} />
                   )}
                   <span className={styles.requestCost} title="Cost">
                     {formatCost(req.estimatedCost ?? 0)}

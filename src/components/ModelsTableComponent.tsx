@@ -35,15 +35,11 @@ import {
   TooltipComponent,
   SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
-import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
-import ModelBadgeComponent from "./ModelBadgeComponent";
-import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";
 import ToolIconComponent from "./ToolIconComponent";
 import FilterDropdownComponent from "./FilterDropdownComponent";
 import { FilterBarComponent } from "./FilterBarComponent";
 import ProportionBarComponent from "./ProportionBarComponent";
-import CostBadgeComponent from "./CostBadgeComponent";
-import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import {
   formatFileSize,
   formatContextTokens,
@@ -382,7 +378,7 @@ function buildStatsColumns({
       label: "Model",
       description: "The AI model identifier used for the request",
       render: (row: RowData) => (
-        <ModelBadgeComponent models={row.model ? [row.model] : []} />
+        <BadgeComponent type="model" models={row.model ? [row.model] : []} />
       ),
     },
     requestsColumn() as TableColumn,
@@ -392,7 +388,8 @@ function buildStatsColumns({
       label: "Provider",
       description: "The API provider hosting this model",
       render: (row: RowData) => (
-        <ProvidersBadgeComponent
+        <BadgeComponent
+          type="providers"
           providers={row.provider ? [row.provider] : []}
         />
       ),
@@ -974,7 +971,7 @@ function ModelsTableInner({
       label: "Model",
       description: "Unique model identifier used in API calls",
       align: "left",
-      render: (row: RowData) => <ModelBadgeComponent models={[row._model.key]} />,
+      render: (row: RowData) => <BadgeComponent type="model" models={[row._model.key]} />,
     });
 
     // 6. PROVIDER — provider badge
@@ -986,7 +983,7 @@ function ModelsTableInner({
       sortValue: (row: RowData) =>
         (resolveProviderLabel(row._model.provider) || "").toLowerCase(),
       render: (row: RowData) => (
-        <ProvidersBadgeComponent providers={[row._model.provider]} />
+        <BadgeComponent type="providers" providers={[row._model.provider]} />
       ),
     });
 
@@ -999,7 +996,7 @@ function ModelsTableInner({
           "Endpoint-based model category: conversation, audio, or embed",
         align: "left",
         render: (row: RowData) => (
-          <ModelTypeBadgeComponent modelType={row._model.modelType || undefined} />
+          <BadgeComponent type="model-type" modelType={row._model.modelType || undefined} />
         ),
       });
     }
@@ -1093,7 +1090,7 @@ function ModelsTableInner({
         sortValue: (row: RowData) => row._raw._benchTotalCost || 0,
         render: (row: RowData) => {
           const v = row._raw._benchTotalCost;
-          return v != null && v > 0 ? <CostBadgeComponent cost={v} /> : emptyDash();
+          return v != null && v > 0 ? <BadgeComponent type="cost" cost={v} /> : emptyDash();
         },
       });
     }
@@ -1164,7 +1161,7 @@ function ModelsTableInner({
         render: (row: RowData) => {
           const v = row._raw.totalInputTokens || 0;
           return v > 0 ? (
-            <TokenCountBadgeComponent value={v} label="in" mini />
+            <BadgeComponent type="tokens" value={v} label="in" mini />
           ) : (
             "—"
           );
@@ -1178,7 +1175,7 @@ function ModelsTableInner({
         render: (row: RowData) => {
           const v = row._raw.totalOutputTokens || 0;
           return v > 0 ? (
-            <TokenCountBadgeComponent value={v} label="out" mini />
+            <BadgeComponent type="tokens" value={v} label="out" mini />
           ) : (
             "—"
           );
@@ -1319,7 +1316,8 @@ function ModelsTableInner({
         ...benchmarkHide,
         render: (row: RowData) =>
           row._raw.pricing?.inputPerMillion != null ? (
-            <CostBadgeComponent
+            <BadgeComponent
+              type="cost"
               cost={row._raw.pricing.inputPerMillion}
               mini
               showIcon={false}
@@ -1340,7 +1338,8 @@ function ModelsTableInner({
         ...benchmarkHide,
         render: (row: RowData) =>
           row._raw.pricing?.outputPerMillion != null ? (
-            <CostBadgeComponent
+            <BadgeComponent
+              type="cost"
               cost={row._raw.pricing.outputPerMillion}
               mini
               showIcon={false}
@@ -1362,7 +1361,7 @@ function ModelsTableInner({
         sortValue: (row: RowData) => row._raw.totalCost || 0,
         render: (row: RowData) => {
           const cost = row._raw.totalCost;
-          return typeof cost === "number" && cost > 0 ? <CostBadgeComponent cost={cost} /> : emptyDash();
+          return typeof cost === "number" && cost > 0 ? <BadgeComponent type="cost" cost={cost} /> : emptyDash();
         },
       });
       cols.push({

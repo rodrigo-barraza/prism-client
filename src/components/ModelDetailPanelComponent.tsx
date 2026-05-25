@@ -34,8 +34,7 @@ import {
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import StorageService from "../services/StorageService";
 import { SK_MODEL_MEMORY_AGENT, LOCAL_PROVIDERS } from "../constants";
-import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
-import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import {
   MODALITY_ICONS,
   MODALITY_COLORS,
@@ -225,7 +224,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               {m.providerLabel}
               {m.year && <span>· {m.year}</span>}
               {m.modelType && (
-                <ModelTypeBadgeComponent modelType={m.modelType} />
+                <BadgeComponent type="model-type" modelType={m.modelType} />
               )}
             </div>
           </div>
@@ -267,7 +266,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               <span className={styles.kvLabel}>Provider</span>
               <span className={styles.kvValue}>
-                <ProvidersBadgeComponent providers={[m.provider]} />
+                <BadgeComponent type="providers" providers={[m.provider]} />
               </span>
 
               {m.year && (

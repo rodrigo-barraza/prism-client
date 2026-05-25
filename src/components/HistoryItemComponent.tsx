@@ -6,9 +6,7 @@ import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
 
 import styles from "./HistoryItemComponent.module.css";
-import CostBadgeComponent from "./CostBadgeComponent";
-import ModelBadgeComponent from "./ModelBadgeComponent";
-import AgentBadgeComponent from "./AgentBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import SoundService from "@/services/SoundService";
 import {
   IconButtonComponent,
@@ -220,7 +218,8 @@ export default function HistoryItemComponent({
 
                 return (
                   <span className={styles.agentBadge} data-agent-identifier={agentId}>
-                    <AgentBadgeComponent
+                    <BadgeComponent
+                      type="agent"
                       agent={resolvedAgent}
                       size={14}
                       iconSize={9}
@@ -243,7 +242,8 @@ export default function HistoryItemComponent({
 
         {/* Row 3: model badge */}
         {hasModel && (
-          <ModelBadgeComponent
+          <BadgeComponent
+            type="model"
             models={
               (item.modelNames?.length ?? 0) > 0
                 ? (item.modelNames!.filter(Boolean) as string[])
@@ -268,7 +268,7 @@ export default function HistoryItemComponent({
                 <ModalityIconComponent modalities={modalities} />
               )}
             </div>
-            <CostBadgeComponent cost={item.totalCost ?? 0} showIcon={false} />
+            <BadgeComponent type="cost" cost={item.totalCost ?? 0} showIcon={false} />
           </div>
         )}
 

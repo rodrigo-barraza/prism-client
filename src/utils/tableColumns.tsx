@@ -23,21 +23,16 @@ import {
   Loader2,
   Circle,
 } from "lucide-react";
-import ModelBadgeComponent from "../components/ModelBadgeComponent";
-import ProvidersBadgeComponent from "../components/ProvidersBadgeComponent";
-import AgentBadgeComponent from "../components/AgentBadgeComponent";
-import ProjectBadgeComponent from "../components/ProjectBadgeComponent";
-import UserBadgeComponent from "../components/UserBadgeComponent";
 import CountLinkComponent from "../components/CountLinkComponent";
-import CostBadgeComponent from "../components/CostBadgeComponent";
 import ProportionBarComponent from "../components/ProportionBarComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 
 import ToolIconComponent from "../components/ToolIconComponent";
 import {
-  BadgeComponent,
   DateTimeBadgeComponent,
+  TooltipComponent,
 } from "@rodrigo-barraza/components-library";
+import BadgeComponent from "../components/BadgeComponent";
 import ProviderLogo from "../components/ProviderLogosComponent";
 import { resolveProviderLabel } from "../components/ProviderLogosComponent";
 import {
@@ -48,10 +43,6 @@ import {
   getTotalInputTokens,
 } from "./utilities";
 import { PROVIDER_COLORS } from "../constants";
-
-import StopwatchBadgeComponent from "../components/StopwatchBadgeComponent";
-import TokenCountBadgeComponent from "../components/TokenCountBadgeComponent";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "../components/TableComponentsComponent.module.css";
 import type { TokenUsage } from "../types/types";
 
@@ -111,7 +102,8 @@ export const modelColumn = () => ({
   label: "Model",
   description: "The AI model identifier used for the request",
   render: (row: TableRow) => (
-    <ModelBadgeComponent
+    <BadgeComponent
+      type="model"
       models={row.model ? [row.model as string] : []}
       provider={row.provider as string | undefined}
     />
@@ -124,7 +116,7 @@ export const providerColumn = () => ({
   description:
     "The API provider hosting this model (e.g. OpenAI, Google, Anthropic)",
   render: (row: TableRow) => (
-    <ProvidersBadgeComponent providers={row.provider ? [row.provider as string] : []} />
+    <BadgeComponent type="providers" providers={row.provider ? [row.provider as string] : []} />
   ),
 });
 
@@ -132,7 +124,7 @@ export const projectColumn = () => ({
   key: "project",
   label: "Project",
   description: "The project or application this request belongs to",
-  render: (row: TableRow) => <ProjectBadgeComponent project={row.project as string | undefined} />,
+  render: (row: TableRow) => <BadgeComponent type="project" project={row.project as string | undefined} />,
 });
 
 export const userColumn = () => ({
@@ -140,7 +132,7 @@ export const userColumn = () => ({
   label: "User",
   description: "The user who initiated this request",
   sortable: false,
-  render: (row: TableRow) => <UserBadgeComponent username={row.username as string | undefined} />,
+  render: (row: TableRow) => <BadgeComponent type="user" username={row.username as string | undefined} />,
 });
 
 /* ·· Models / Providers (as badge lists) ·· */
@@ -151,7 +143,8 @@ export const modelsListColumn = ({ mini = false }: { mini?: boolean } = {}) => (
   description: "All distinct models used in this group",
   sortable: false,
   render: (row: TableRow) => (
-    <ModelBadgeComponent
+    <BadgeComponent
+      type="model"
       models={row.models as string[] | undefined}
       providers={row.providers as string[] | undefined}
       mini={mini}
@@ -165,7 +158,7 @@ export const modelCountColumn = () => ({
   description: "Number of distinct models used",
   sortValue: (row: TableRow) => (row.models as string[] | undefined)?.length ?? (row.modelCount as number | undefined) ?? 0,
   render: (row: TableRow) => (
-    <ModelBadgeComponent models={(row.models as string[] | undefined) ?? []} providers={row.providers as string[] | undefined} />
+    <BadgeComponent type="model" models={(row.models as string[] | undefined) ?? []} providers={row.providers as string[] | undefined} />
   ),
 });
 
@@ -175,7 +168,7 @@ export const providersListColumn = ({ mini = false }: { mini?: boolean } = {}) =
   description: "All distinct providers used in this group",
   sortable: false,
   render: (row: TableRow) => (
-    <ProvidersBadgeComponent providers={row.providers as string[] | undefined} mini={mini} />
+    <BadgeComponent type="providers" providers={row.providers as string[] | undefined} mini={mini} />
   ),
 });
 
@@ -185,7 +178,7 @@ export const providerCountColumn = () => ({
   description: "Number of distinct API providers used",
   sortValue: (row: TableRow) => ((row.providers as string[] | undefined) ?? []).length,
   render: (row: TableRow) => (
-    <ProvidersBadgeComponent providers={(row.providers as string[] | undefined) ?? []} />
+    <BadgeComponent type="providers" providers={(row.providers as string[] | undefined) ?? []} />
   ),
 });
 
@@ -350,7 +343,7 @@ export const costColumns = (
     sortable: true,
     align: "right",
     render: (row: TableRow) => (
-      <CostBadgeComponent cost={(row[costKey] as number) || 0} mini={mini} />
+      <BadgeComponent type="cost" cost={(row[costKey] as number) || 0} mini={mini} />
     ),
   },
   {
@@ -473,7 +466,7 @@ export const durationColumn = ({ useDurationMs = false }: { useDurationMs?: bool
         })();
     const duration = formatDuration(ms);
     if (!duration) return emptyDash();
-    return <StopwatchBadgeComponent seconds={ms / 1000} />;
+    return <BadgeComponent type="stopwatch" seconds={ms / 1000} />;
   },
 });
 
@@ -616,7 +609,7 @@ export const agentColumn = () => ({
   render: (r: TableRow) => {
     // Normalize: sessions expose `agents` (array), requests expose `agent` (string)
     const agents = (r.agents as string[] | undefined) ?? (r.agent ? [r.agent as string] : []);
-    return <AgentBadgeComponent agents={agents} />;
+    return <BadgeComponent type="agent" agents={agents} />;
   },
 });
 
@@ -887,7 +880,7 @@ export const benchmarkDurationColumn = () => ({
   align: "right",
   render: (r: TableRow) => {
     if (!r.latency) return emptyDash();
-    return <StopwatchBadgeComponent seconds={r.latency as number} />;
+    return <BadgeComponent type="stopwatch" seconds={r.latency as number} />;
   },
 });
 
@@ -901,7 +894,7 @@ export const benchmarkTokensInColumn = () => ({
   render: (r: TableRow) => {
     const inputTokens = getTotalInputTokens(r.usage as TokenUsage | undefined);
     return inputTokens > 0 ? (
-      <TokenCountBadgeComponent value={inputTokens} label="in" mini />
+      <BadgeComponent type="tokens" value={inputTokens} label="in" mini />
     ) : (
       emptyDash()
     );
@@ -918,7 +911,7 @@ export const benchmarkTokensOutColumn = () => ({
   render: (r: TableRow) => {
     const outputTokens = (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
     return outputTokens > 0 ? (
-      <TokenCountBadgeComponent value={outputTokens} label="out" mini />
+      <BadgeComponent type="tokens" value={outputTokens} label="out" mini />
     ) : (
       emptyDash()
     );
@@ -960,7 +953,7 @@ export const benchmarkCostColumn = () => ({
   align: "right",
   render: (r: TableRow) =>
     r.estimatedCost != null ? (
-      <CostBadgeComponent cost={r.estimatedCost as number} mini />
+      <BadgeComponent type="cost" cost={r.estimatedCost as number} mini />
     ) : (
       emptyDash()
     ),
@@ -1021,7 +1014,7 @@ export const dashboardProviderColumn = () => ({
   description: "The API provider hosting this model",
   sortable: true,
   render: (r: TableRow) => (
-    <ProvidersBadgeComponent providers={r.provider ? [r.provider as string] : []} />
+    <BadgeComponent type="providers" providers={r.provider ? [r.provider as string] : []} />
   ),
 });
 
@@ -1099,7 +1092,7 @@ export const dashboardAvgLatencyColumn = () => ({
   description: "Average response latency across all benchmark tests",
   sortable: true,
   align: "right",
-  render: (r: TableRow) => <StopwatchBadgeComponent seconds={r.avgLatency as number} />,
+  render: (r: TableRow) => <BadgeComponent type="stopwatch" seconds={r.avgLatency as number} />,
 });
 
 export const dashboardCostColumn = () => ({
@@ -1110,7 +1103,7 @@ export const dashboardCostColumn = () => ({
   align: "right",
   render: (r: TableRow) =>
     (r.totalCost as number | undefined) ?? 0 > 0 ? (
-      <CostBadgeComponent cost={r.totalCost as number} mini />
+      <BadgeComponent type="cost" cost={r.totalCost as number} mini />
     ) : (
       emptyDash()
     ),

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
-import AgentBadgeComponent from "./AgentBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import styles from "./AgentPickerComponent.module.css";
 
@@ -164,7 +164,7 @@ export default function AgentPickerComponent({
                 disabled={disabled}
                 type="button"
               >
-                <AgentBadgeComponent agent={activeAgent} />
+                <BadgeComponent type="agent" agent={activeAgent} />
                 <span className={styles.triggerLabel}>
                   {activeAgent?.name || activeAgentId}
                 </span>
@@ -224,7 +224,7 @@ export default function AgentPickerComponent({
                       : undefined
                   }
                 >
-                  <AgentBadgeComponent agent={agent} />
+                  <BadgeComponent type="agent" agent={agent} />
                   <div className={styles.agentInfo}>
                     <div className={styles.agentName}>{agent.name}</div>
                     <div className={styles.agentMeta}>

@@ -10,7 +10,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import styles from "./SettingsPanelComponent.module.css";
-import ModelTypeBadgeComponent from "./ModelTypeBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import type { PrismConfig, PrismSettings } from "../types/types";
 
@@ -98,7 +98,7 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
     <div className={styles.container}>
       {/* Model Type Badge */}
       {selectedModelDef.modelType && (
-        <ModelTypeBadgeComponent modelType={selectedModelDef.modelType} />
+        <BadgeComponent type="model-type" modelType={selectedModelDef.modelType} />
       )}
 
       {/* Modalities */}

@@ -111,7 +111,7 @@ import {
 import useToolToggles from "../hooks/useToolToggles";
 import useModelMemory from "../hooks/useModelMemory";
 import AgentPickerComponent from "./AgentPickerComponent";
-import AgentBadgeComponent from "./AgentBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 import WorkspaceSelectorComponent from "./WorkspaceSelectorComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
@@ -4092,7 +4092,8 @@ export default function AgentComponent({
         {messages.length === 0 && activeAgentData && (
           <EmptyStateComponent
             icon={
-              <AgentBadgeComponent
+              <BadgeComponent
+                type="agent"
                 agent={activeAgentData}
                 size={80}
                 iconSize={40}

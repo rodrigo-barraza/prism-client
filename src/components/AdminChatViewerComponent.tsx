@@ -60,9 +60,7 @@ import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import { ErrorMessage } from "./StateMessageComponent";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 import useProjectFilter from "../hooks/useProjectFilter";
-import ProjectBadgeComponent from "./ProjectBadgeComponent";
-import UserBadgeComponent from "./UserBadgeComponent";
-import AgentBadgeComponent from "./AgentBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 
 import { SETTINGS_DEFAULTS, PROJECT_AGENT } from "../constants";
 import type {
@@ -962,12 +960,14 @@ export default function AdminChatViewerComponent({
           headerMeta={
             selectedEntry && (
               <div className={styles.headerMeta}>
-                <ProjectBadgeComponent
+                <BadgeComponent
+                  type="project"
                   project={selectedEntry.project}
                 />
-                <UserBadgeComponent username={(selectedEntry as Conversation).username} />
+                <BadgeComponent type="user" username={(selectedEntry as Conversation).username} />
                 {isSelectedAgent && (
-                  <AgentBadgeComponent
+                  <BadgeComponent
+                    type="agent"
                     agent={agents.find((a) => a.id === selectedEntry.agent) as AgentPersona | undefined}
                   />
                 )}

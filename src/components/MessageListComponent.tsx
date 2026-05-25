@@ -30,19 +30,13 @@ import StreamingCursorComponent from "./StreamingCursorComponent";
 
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 
-import ProvidersBadgeComponent from "./ProvidersBadgeComponent";
-import ModelBadgeComponent from "./ModelBadgeComponent";
-import TokenCountBadgeComponent from "./TokenCountBadgeComponent";
-import CostBadgeComponent from "./CostBadgeComponent";
-import StopwatchBadgeComponent from "./StopwatchBadgeComponent";
+import BadgeComponent from "./BadgeComponent";
 
 import {
-  BadgeComponent,
   CopyButtonComponent,
   IconButtonComponent,
   DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
-import WordBadgeComponent from "./WordBadgeComponent";
 import WorkerNotificationComponent from "./WorkerNotificationComponent";
 import PlanCardComponent from "./PlanCardComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
@@ -51,7 +45,7 @@ import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
 import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
-import MentionBadge from "./MentionBadgeComponent";
+
 import type { Message, ToolCallEvent, ContentSegment } from "../types/types";
 
 export interface WorkerToolActivityItem {
@@ -135,8 +129,9 @@ function renderContentWithMentions(
     // Strip the #Lstart-Lend suffix from the value to get a clean path
     const cleanPath = seg.value.replace(/#L\d+(-L\d+)?$/, "");
     return (
-      <MentionBadge
+      <BadgeComponent
         key={i}
+        type="mention"
         path={cleanPath}
         lineStart={(seg as any).lineStart}
         lineEnd={(seg as any).lineEnd}
@@ -973,7 +968,7 @@ export default function MessageList({
                 <div className={styles.messageActions}>
                   <IconButtonComponent
                     icon={<Pencil size={14} />}
-                    onClick={onSystemPromptEdit}
+                    onClick={() => onSystemPromptEdit(systemPrompt || "")}
                     tooltip="Edit system prompt"
                     className={styles.actionBtn}
                   />
@@ -1059,7 +1054,8 @@ export default function MessageList({
                               {message.role === "user" ? "User" : "Model"}
                             </BadgeComponent>
                             {message.model && (
-                              <ModelBadgeComponent
+                              <BadgeComponent
+                                type="model"
                                 models={[message.model]}
                                 mini
                               />
@@ -1067,7 +1063,6 @@ export default function MessageList({
                             {message.timestamp && (
                               <DateTimeBadgeComponent
                                 date={message.timestamp}
-                                mini
                               />
                             )}
                             {message.content && (
@@ -1083,14 +1078,12 @@ export default function MessageList({
                           <>
                             <DateTimeBadgeComponent
                               date={displayMessages[groupIndices[0]].timestamp}
-                              mini
                             />
                             <span style={{ opacity: 0.5 }}>—</span>
                             <DateTimeBadgeComponent
                               date={
                                 displayMessages[groupIndices[groupCount - 1]].timestamp
                               }
-                              mini
                             />
                           </>
                         )}
@@ -1165,7 +1158,8 @@ export default function MessageList({
                                 {gMsg.role === "user" ? "User" : "Model"}
                               </BadgeComponent>
                               {gMsg.model && (
-                                <ModelBadgeComponent
+                                <BadgeComponent
+                                  type="model"
                                   models={[gMsg.model]}
                                   mini
                                 />
@@ -1173,7 +1167,6 @@ export default function MessageList({
                               {gMsg.timestamp && (
                                 <DateTimeBadgeComponent
                                   date={gMsg.timestamp}
-                                  mini
                                 />
                               )}
                               <div
@@ -1255,12 +1248,14 @@ export default function MessageList({
                                     (gMsg.usage || gMsg.provider) && (
                                       <div className={styles.metaBadges}>
                                         {gMsg.provider && (
-                                          <ProvidersBadgeComponent
+                                          <BadgeComponent
+                                            type="providers"
                                             providers={[gMsg.provider]}
                                           />
                                         )}
                                         {gMsg.model && (
-                                          <ModelBadgeComponent
+                                          <BadgeComponent
+                                            type="model"
                                             models={[gMsg.model]}
                                           />
                                         )}
@@ -1333,7 +1328,6 @@ export default function MessageList({
                             {message.timestamp && (
                               <DateTimeBadgeComponent
                                 date={message.timestamp}
-                                mini
                               />
                             )}
                           </div>
@@ -1438,7 +1432,7 @@ export default function MessageList({
                                 />
                               );
                             }
-                            if (
+                            if(
                               seg.type === "tools" &&
                               message.toolCalls &&
                               message.toolCalls.length > 0
@@ -1833,7 +1827,8 @@ export default function MessageList({
                       {/* User metadata */}
                       {message.role === "user" && message.content && (
                         <div className={styles.metaBadges}>
-                          <WordBadgeComponent
+                          <BadgeComponent
+                            type="words"
                             count={
                               message.content
                                 .trim()
@@ -1852,12 +1847,14 @@ export default function MessageList({
                           message.provider) && (
                           <div className={styles.metaBadges}>
                             {message.provider && (
-                              <ProvidersBadgeComponent
+                              <BadgeComponent
+                                type="providers"
                                 providers={[message.provider]}
                               />
                             )}
                             {message.model && (
-                              <ModelBadgeComponent
+                              <BadgeComponent
+                                type="model"
                                 models={[message.model]}
                               />
                             )}
@@ -1907,11 +1904,13 @@ export default function MessageList({
                                 }
                                 return (
                                   <>
-                                    <TokenCountBadgeComponent
+                                    <BadgeComponent
+                                      type="tokens"
                                       value={totalIn}
                                       label={inLabel}
                                     />
-                                    <TokenCountBadgeComponent
+                                    <BadgeComponent
+                                      type="tokens"
                                       value={message.usage.outputTokens}
                                       label={outLabel}
                                     />
@@ -1920,7 +1919,8 @@ export default function MessageList({
                               }
                               if (message.usage?.outputTokens != null) {
                                 return (
-                                  <TokenCountBadgeComponent
+                                  <BadgeComponent
+                                    type="tokens"
                                     value={message.usage.outputTokens}
                                     label="tokens"
                                   />
@@ -1929,7 +1929,8 @@ export default function MessageList({
                               return null;
                             })()}
                             {message.content && (
-                              <WordBadgeComponent
+                              <BadgeComponent
+                                type="words"
                                 count={
                                   message.content
                                     .trim()
@@ -1939,7 +1940,8 @@ export default function MessageList({
                               />
                             )}
                             {message.totalTime != null && (
-                              <StopwatchBadgeComponent
+                              <BadgeComponent
+                                type="stopwatch"
                                 seconds={message.totalTime}
                               />
                             )}
@@ -1960,7 +1962,8 @@ export default function MessageList({
                                 $0
                               </BadgeComponent>
                             ) : message.estimatedCost ? (
-                              <CostBadgeComponent
+                              <BadgeComponent
+                                type="cost"
                                 cost={message.estimatedCost}
                               />
                             ) : null}
