@@ -3933,7 +3933,7 @@ export default function AgentComponent({
                 onClick={() => setShowRaw(false)}
                 className={chatStyles.debugToggleBtn}
               >
-                Clean View
+                Clean
               </ButtonComponent>
               <ButtonComponent
                 variant={showRaw ? "tonal" : "text"}
@@ -3941,7 +3941,7 @@ export default function AgentComponent({
                 onClick={() => setShowRaw(true)}
                 className={chatStyles.debugToggleBtn}
               >
-                Raw View
+                Raw
               </ButtonComponent>
             </div>
           )}

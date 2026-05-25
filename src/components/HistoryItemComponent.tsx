@@ -231,7 +231,6 @@ export default function HistoryItemComponent({
                   </span>
                 );
               })()}
-            <CostBadgeComponent cost={item.totalCost ?? 0} showIcon={false} />
           </div>
         </div>
 
@@ -255,18 +254,21 @@ export default function HistoryItemComponent({
           />
         )}
 
-        {/* Row 4: modalities (left) */}
-        {hasInputOutputModalities && (
-          <div className={styles.bottomRow}>
-            <div className={styles.bottomLeft}>
-              <ModalityIconComponent modalities={modalities} />
-            </div>
-          </div>
-        )}
-
-        {/* Row 5: tool badge row (below bottomRow) */}
+        {/* Row 4: tool badge row */}
         {hasActiveTools && (
           <ModelToolsRow tools={modalities} variant="condensed" />
+        )}
+
+        {/* Row 5: very bottom row - modalities (left) & cost badge (right) */}
+        {(hasInputOutputModalities || (item.totalCost !== undefined && item.totalCost > 0)) && (
+          <div className={styles.bottomRow}>
+            <div className={styles.bottomLeft}>
+              {hasInputOutputModalities && (
+                <ModalityIconComponent modalities={modalities} />
+              )}
+            </div>
+            <CostBadgeComponent cost={item.totalCost ?? 0} showIcon={false} />
+          </div>
         )}
 
         {children}
