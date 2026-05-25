@@ -71,14 +71,17 @@ const STYLE_ID_PREFIX = "custom-theme-";
 
 /** Parse a hex color (#rrggbb) into [r, g, b] */
 function hexToRgb(hex: string): [number, number, number] {
+  if (!hex || typeof hex !== "string") {
+    return [0, 0, 0];
+  }
   const h = hex.replace("#", "");
   const full = h.length === 3
     ? h.split("").map((c) => c + c).join("")
     : h;
   return [
-    parseInt(full.slice(0, 2), 16),
-    parseInt(full.slice(2, 4), 16),
-    parseInt(full.slice(4, 6), 16),
+    parseInt(full.slice(0, 2), 16) || 0,
+    parseInt(full.slice(2, 4), 16) || 0,
+    parseInt(full.slice(4, 6), 16) || 0,
   ];
 }
 
@@ -121,22 +124,21 @@ function isLight(hex: string): boolean {
  * properties needed by the design system.
  */
 function deriveFullCSS(tokens: CustomThemeTokens): string {
-  const {
-    primary,
-    secondary,
-    tertiary,
-    background,
-    surface,
-    elevated,
-    textPrimary,
-    textSecondary,
-    textMuted,
-    borderColor: borderCol,
-    success,
-    danger,
-    warning,
-    info,
-  } = tokens;
+  const t = tokens || {};
+  const primary = t.primary || "#6366f1";
+  const secondary = t.secondary || "#a78bfa";
+  const tertiary = t.tertiary || "#38bdf8";
+  const background = t.background || "#0a0a0f";
+  const surface = t.surface || "#13141c";
+  const elevated = t.elevated || "#1a1b26";
+  const textPrimary = t.textPrimary || "#f8f8f8";
+  const textSecondary = t.textSecondary || "#8e95ae";
+  const textMuted = t.textMuted || "#565c74";
+  const borderCol = t.borderColor || "#ffffff";
+  const success = t.success || "#10b981";
+  const danger = t.danger || "#ef4444";
+  const warning = t.warning || "#f59e0b";
+  const info = t.info || "#3b82f6";
 
   const lightMode = isLight(background);
   const borderRgb = hexToRgb(borderCol);
@@ -223,6 +225,7 @@ export function getCustomThemeAttr(id: string): string {
 
 /** Build the full CSS rule for a custom theme */
 function buildStyleContent(theme: CustomTheme): string {
+  if (!theme || !theme.id) return "";
   const selector = `[data-theme="${getCustomThemeAttr(theme.id)}"]`;
   return `${selector} {\n  ${deriveFullCSS(theme.tokens)}\n}`;
 }
@@ -255,7 +258,9 @@ function getAll(): CustomTheme[] {
   if (typeof localStorage === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as CustomTheme[]) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
@@ -318,7 +323,9 @@ function duplicate(id: string): { themes: CustomTheme[]; newTheme: CustomTheme }
 function injectAllCustomThemes(): void {
   const all = getAll();
   for (const theme of all) {
-    injectThemeStyle(theme);
+    if (theme) {
+      injectThemeStyle(theme);
+    }
   }
 }
 
@@ -331,23 +338,25 @@ function getCustomThemeNames(): string[] {
 function getCustomThemeMetaMap(): Record<string, CustomThemeMeta> {
   const map: Record<string, CustomThemeMeta> = {};
   for (const theme of getAll()) {
+    if (!theme) continue;
+    const t = theme.tokens || {};
     map[getCustomThemeAttr(theme.id)] = {
-      label: theme.name,
-      icon: theme.icon,
-      background: theme.tokens.background,
-      surface: theme.tokens.surface,
-      elevated: theme.tokens.elevated,
-      primary: theme.tokens.primary,
-      secondary: theme.tokens.secondary,
-      tertiary: theme.tokens.tertiary,
-      textPrimary: theme.tokens.textPrimary,
-      textSecondary: theme.tokens.textSecondary,
-      textMuted: theme.tokens.textMuted,
-      borderColor: theme.tokens.borderColor,
-      success: theme.tokens.success,
-      danger: theme.tokens.danger,
-      warning: theme.tokens.warning,
-      info: theme.tokens.info,
+      label: theme.name || "Unnamed Theme",
+      icon: theme.icon || "palette",
+      background: t.background || "#0a0a0f",
+      surface: t.surface || "#13141c",
+      elevated: t.elevated || "#1a1b26",
+      primary: t.primary || "#6366f1",
+      secondary: t.secondary || "#a78bfa",
+      tertiary: t.tertiary || "#38bdf8",
+      textPrimary: t.textPrimary || "#f8f8f8",
+      textSecondary: t.textSecondary || "#8e95ae",
+      textMuted: t.textMuted || "#565c74",
+      borderColor: t.borderColor || "#ffffff",
+      success: t.success || "#10b981",
+      danger: t.danger || "#ef4444",
+      warning: t.warning || "#f59e0b",
+      info: t.info || "#3b82f6",
     };
   }
   return map;
@@ -358,7 +367,10 @@ function getCustomThemeMetaMap(): Record<string, CustomThemeMeta> {
  * for FOUC prevention — injected inline before first paint).
  */
 function generateAllCustomThemeCSS(): string {
-  return getAll().map(buildStyleContent).join("\n");
+  return getAll()
+    .map(buildStyleContent)
+    .filter(Boolean)
+    .join("\n");
 }
 
 // ── Default Token Presets ──────────────────────────────────────────────
