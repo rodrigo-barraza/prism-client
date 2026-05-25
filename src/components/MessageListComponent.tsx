@@ -419,6 +419,11 @@ function ToolCallsBlock({
 export function prepareDisplayMessages(rawMessages: Message[] | undefined | null): Message[] {
   if (!rawMessages || rawMessages.length === 0) return [];
 
+  console.debug(
+    `[prepareDisplayMessages] input: ${rawMessages.length} messages`,
+    rawMessages.map((m, i) => `  [${i}] role=${m.role} content=${(m.content || '').length}ch toolCalls=${m.toolCalls?.length || 0} images=${m.images?.length || 0} audio=${!!m.audio} error=${!!m.error}`).join('\n'),
+  );
+
   // First pass: collect tool results keyed by tool_call_id
   // Support both snake_case (API) and camelCase (normalized) property names
   const toolResults: Record<string, string> = {};
@@ -432,17 +437,28 @@ export function prepareDisplayMessages(rawMessages: Message[] | undefined | null
   // Second pass: filter and enrich
   const filtered = rawMessages
     .filter(
-      (m) =>
-        m.role !== "tool" &&
-        m.role !== "system" &&
-        !(
+      (m, i) => {
+        // Filter out tool role messages (they're merged into toolCalls)
+        if (m.role === "tool") return false;
+        // Filter out system messages
+        if (m.role === "system") return false;
+        // Filter out empty assistant messages with no useful content
+        const isEmptyAssistant =
           m.role === "assistant" &&
           !m.content?.trim() &&
           !m.toolCalls?.length &&
           !m.images?.length &&
           !m.audio &&
-          !m.error
-        ),
+          !m.error;
+        if (isEmptyAssistant) {
+          console.debug(
+            `[prepareDisplayMessages] ⚠️ FILTERING OUT empty assistant msg [${i}]:`,
+            `content="${(m.content || '').slice(0, 50)}" toolCalls=${m.toolCalls?.length || 0}`,
+            `images=${m.images?.length || 0} audio=${!!m.audio} error=${!!m.error}`,
+          );
+        }
+        return !isEmptyAssistant;
+      },
     )
     .map((m) => {
       // Merge tool results into toolCalls
@@ -459,6 +475,14 @@ export function prepareDisplayMessages(rawMessages: Message[] | undefined | null
       }
       return m;
     });
+
+  console.debug(
+    `[prepareDisplayMessages] output: ${filtered.length} messages (filtered ${rawMessages.length - filtered.length})`,
+    filtered.length === 0 && rawMessages.length > 0
+      ? '⚠️ ALL MESSAGES FILTERED — this will empty the chat!'
+      : '',
+  );
+
   return filtered;
 }
 

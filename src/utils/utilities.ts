@@ -395,20 +395,17 @@ export function mergeUsedToolsWithWorkers(
   workerToolActivity: Record<string, { toolNames?: Record<string, number> }> | null | undefined,
 ): Array<{ name: string; count: number }> {
   // Separate capabilities from function-level tool calls
-  const capabilities = clientTools.filter((t) =>
-    CAPABILITY_TOOL_NAMES.has(t.name),
+  const capabilities = clientTools.filter((clientTool) =>
+    CAPABILITY_TOOL_NAMES.has(clientTool.name),
   );
 
   // Start with authoritative source (backend if available, else client function-level)
   const merged = new Map<string, number>();
   if (backendToolCounts) {
-    for (const t of toolCountsToUsedTools(backendToolCounts)) {
-      merged.set(t.name, t.count);
+    for (const toolEntry of toolCountsToUsedTools(backendToolCounts)) {
+      merged.set(toolEntry.name, toolEntry.count);
     }
   } else {
-    for (const t of clientTools) {
-      if (CAPABILITY_TOOL_NAMES.has(t.name)) continue;
-      merged.set(t.name, (merged.get(t.name) || 0) + t.count);
     for (const tool of clientTools) {
       if (CAPABILITY_TOOL_NAMES.has(tool.name)) continue;
       merged.set(tool.name, (merged.get(tool.name) || 0) + tool.count);

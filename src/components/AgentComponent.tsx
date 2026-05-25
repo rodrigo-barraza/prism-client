@@ -928,6 +928,7 @@ export default function AgentComponent({
         if (!full) return;
 
         const displayMessages = prepareDisplayMessages(full.messages || []);
+        console.debug(`[URL session load] id=${initialSessionId}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`);
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
         setMessages(displayMessages);
@@ -1733,6 +1734,7 @@ export default function AgentComponent({
             // Skip UI updates if user switched sessions
             if (isStale()) return;
             const now = performance.now();
+            if (!firstChunkTime) console.debug(`[onChunk] first chunk received, ${content.length}ch, stale=${isStale()}`);
             if (!firstChunkTime) firstChunkTime = now;
             // Accumulate generation-only elapsed: skip gaps from processing/tool phases
             if (prevChunkTime !== null) {
@@ -1897,6 +1899,7 @@ export default function AgentComponent({
             const toolData = data.tool;
             if (!toolData) return;
             const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
+            console.debug(`[ToolExec] ${data.status} ${toolData.name} id=${resolvedId}`);
 
             setToolActivity((prev: ToolCallEvent[]) => {
               const next = applyToolExecutionToActivity(prev, resolvedId, {
@@ -1937,8 +1940,8 @@ export default function AgentComponent({
               thinkingFragments: [...thinkingFragments],
             };
 
-            setMessages((msgPrev: ClientMessage[]) =>
-              applyToolExecutionToMessages(
+            setMessages((msgPrev: ClientMessage[]) => {
+              const next = applyToolExecutionToMessages(
                 msgPrev,
                 resolvedId,
                 {
@@ -1949,8 +1952,10 @@ export default function AgentComponent({
                   result: toolData.result,
                 },
                 execSnapshot,
-              ) as ClientMessage[],
-            );
+              ) as ClientMessage[];
+              console.debug(`[ToolExec setMessages] ${data.status} ${toolData.name}: prev=${msgPrev.length} → next=${next.length}`);
+              return next;
+            });
 
             // Auto-refresh tasks panel when any task tool completes
             if (data.status !== "calling" && (toolData.name || "").startsWith("task_")) {
@@ -2011,6 +2016,7 @@ export default function AgentComponent({
             if (isStale()) return;
             const toolData = tc;
             const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
+            console.debug(`[ToolCall MCP] ${toolData.status} ${toolData.name} id=${resolvedId}`);
 
             setToolActivity((prev) => {
               const next = applyToolExecutionToActivity(prev, resolvedId, {
@@ -2049,14 +2055,16 @@ export default function AgentComponent({
               thinkingFragments: [...thinkingFragments],
             };
 
-            setMessages((msgPrev: ClientMessage[]) =>
-              applyToolCallToMessages(
+            setMessages((msgPrev: ClientMessage[]) => {
+              const next = applyToolCallToMessages(
                 msgPrev,
                 resolvedId,
                 toolData,
                 callSnapshot,
-              ) as ClientMessage[],
-            );
+              ) as ClientMessage[];
+              console.debug(`[ToolCall MCP setMessages] ${toolData.status} ${toolData.name}: prev=${msgPrev.length} → next=${next.length}`);
+              return next;
+            });
 
             // Auto-refresh tasks panel when any task tool completes (MCP path)
             if (toolData.status !== "calling" && toolData.name?.startsWith("task_")) {
@@ -2626,10 +2634,12 @@ export default function AgentComponent({
             });
           },
           onDone: (data: SSEData) => {
+            console.debug(`[onDone] stream finished, isStale=${isStale()}`);
             if (!isStale()) {
               setMessages((prev) => {
                 const updated = [...prev];
                 const last = updated[updated.length - 1];
+                console.debug(`[onDone setMessages] prev=${prev.length}, last.role=${last?.role}`);
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
                     ...last,
@@ -2682,7 +2692,10 @@ export default function AgentComponent({
             })();
             resolve();
           },
-          onError: (error) => reject(error),
+          onError: (error) => {
+            console.error(`[onError] stream error:`, error);
+            reject(error);
+          },
         });
       });
 
@@ -2764,6 +2777,7 @@ export default function AgentComponent({
       isUserNearBottomRef.current = true;
       // Track this session as generating (for history indicator even after switching away)
       const genId = agentSessionIdRef.current;
+      console.debug(`[handleSend] starting generation, sessionId=${genId}, currentMessages=${messagesRef.current.length}`);
       setGeneratingSessionIds((prev) => new Set(prev).add(genId));
       setToolActivity([]);
       setWorkerToolActivity({});
@@ -2824,8 +2838,10 @@ export default function AgentComponent({
       ]);
 
       try {
+        console.debug(`[handleSend] starting runOrchestrationLoop, updatedMessages=${updatedMessages.length}`);
         await runOrchestrationLoop(updatedMessages, resolvedTitle);
         // Messages are already updated by the streaming callbacks — just reload history
+        console.debug(`[handleSend] runOrchestrationLoop resolved, proceeding to post-stream refresh`);
         loadSessions();
 
         // Refresh conversation messages from database to sync the user's message
@@ -2834,14 +2850,23 @@ export default function AgentComponent({
           const full = isNoAgent
             ? await PrismService.getConversation(agentSessionId)
             : await PrismService.getAgentSession(agentSessionId, agentProject!);
+          console.debug(
+            `[PostStream refresh] full?.messages?.length=${full?.messages?.length},`,
+            `sessionMatch=${agentSessionIdRef.current === genId}`,
+          );
           if (full && full.messages && agentSessionIdRef.current === genId) {
             const displayMessages = prepareDisplayMessages(full.messages);
+            console.debug(
+              `[PostStream setMessages] raw=${full.messages.length} → display=${displayMessages.length}`,
+              displayMessages.length === 0 ? '⚠️ EMPTY — this clears the chat!' : '',
+            );
             setMessages(displayMessages);
           }
         } catch (e) {
           console.error("Failed to refresh session messages after done:", e);
         }
       } catch (error: unknown) {
+        console.error(`[handleSend] orchestration error:`, error);
         setMessages((prev) => [
           ...prev,
           {
@@ -2851,6 +2876,7 @@ export default function AgentComponent({
           },
         ]);
       } finally {
+        console.debug(`[handleSend finally] genId=${genId}, currentSessionId=${agentSessionIdRef.current}, match=${agentSessionIdRef.current === genId}`);
         // Remove this session from the generating set
         setGeneratingSessionIds((prev) => {
           const next = new Set(prev);
@@ -2866,6 +2892,7 @@ export default function AgentComponent({
           setCurrentTurnStart(null);
           setMessages((prev) => {
             const last = prev[prev.length - 1];
+            console.debug(`[handleSend finally setMessages] prev=${prev.length}, last.role=${last?.role}, last.completedAt=${last?.completedAt}`);
             if (last?.role === "assistant" && !last.completedAt) {
               const updated = [...prev];
               updated[updated.length - 1] = {
@@ -2877,6 +2904,7 @@ export default function AgentComponent({
             return prev;
           });
         } else {
+          console.debug(`[handleSend finally] session switched away, skipping UI updates`);
           // Session was switched away — just clear the abort ref
           abortRef.current = null;
         }
@@ -2980,6 +3008,7 @@ export default function AgentComponent({
 
   // -- Session management ----------------------------------
   const resetSessionState = useCallback(() => {
+    console.debug(`[resetSessionState] clearing all messages and state`);
     setMessages([]);
     setToolActivity([]);
     setWorkerToolActivity({});
@@ -3134,6 +3163,7 @@ export default function AgentComponent({
       } else {
         // Normal backend-loaded session
         const displayMessages = prepareDisplayMessages(full.messages || []);
+        console.debug(`[Session switch] id=${full.id}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`);
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
         setMessages(displayMessages);

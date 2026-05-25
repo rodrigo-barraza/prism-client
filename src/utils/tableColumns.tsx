@@ -299,9 +299,9 @@ export const tokenColumns = ({
     description: "Total input (prompt) tokens consumed",
     align: "right",
     render: (row: TableRow) => {
-      const v = row[inputKey] as number | undefined;
-      if (showDash && !(v && v > 0)) return emptyDash();
-      return formatTokenCount(v);
+      const tokenValue = row[inputKey] as number | undefined;
+      if (showDash && !(tokenValue && tokenValue > 0)) return emptyDash();
+      return formatTokenCount(tokenValue);
     },
   },
   {
@@ -310,9 +310,9 @@ export const tokenColumns = ({
     description: "Total output (completion) tokens generated",
     align: "right",
     render: (row: TableRow) => {
-      const v = row[outputKey] as number | undefined;
-      if (showDash && !(v && v > 0)) return emptyDash();
-      return formatTokenCount(v);
+      const tokenValue = row[outputKey] as number | undefined;
+      if (showDash && !(tokenValue && tokenValue > 0)) return emptyDash();
+      return formatTokenCount(tokenValue);
     },
   },
   {
@@ -379,9 +379,9 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
   sortable: true,
   align: "right",
   render: (row: TableRow) => {
-    const v = row[key] as number | undefined;
-    if (!v || v <= 0) return emptyDash();
-    return formatLatency(v);
+    const latencyValue = row[key] as number | undefined;
+    if (!latencyValue || latencyValue <= 0) return emptyDash();
+    return formatLatency(latencyValue);
   },
 });
 
@@ -466,10 +466,10 @@ export const durationColumn = ({ useDurationMs = false }: { useDurationMs?: bool
     const ms = useDurationMs
       ? getDurationMs(row)
       : (() => {
-          const s = row.startedAt as string | undefined;
-          const f = row.finishedAt as string | undefined;
-          if (!s || !f) return 0;
-          return new Date(f).getTime() - new Date(s).getTime();
+          const startedAtTimestamp = row.startedAt as string | undefined;
+          const finishedAtTimestamp = row.finishedAt as string | undefined;
+          if (!startedAtTimestamp || !finishedAtTimestamp) return 0;
+          return new Date(finishedAtTimestamp).getTime() - new Date(startedAtTimestamp).getTime();
         })();
     const duration = formatDuration(ms);
     if (!duration) return emptyDash();
@@ -761,8 +761,8 @@ export const benchmarkSizeColumn = ({ modelConfigMap = {} }: { modelConfigMap?: 
   sortable: true,
   sortValue: (r: TableRow) => {
     const config = modelConfigMap[`${r.provider as string}:${r.model as string}`];
-    const s = config?.size ?? "";
-    const match = s.match(/([\d.]+)\s*(GB|MB|KB)/i);
+    const sizeString = config?.size ?? "";
+    const match = sizeString.match(/([\d.]+)\s*(GB|MB|KB)/i);
     if (!match) return 0;
     const value = parseFloat(match[1]);
     const unit = match[2].toUpperCase();
@@ -899,9 +899,9 @@ export const benchmarkTokensInColumn = () => ({
   sortValue: (r: TableRow) => getTotalInputTokens(r.usage as TokenUsage | undefined) ?? 0,
   align: "right",
   render: (r: TableRow) => {
-    const v = getTotalInputTokens(r.usage as TokenUsage | undefined);
-    return v > 0 ? (
-      <TokenCountBadgeComponent value={v} label="in" mini />
+    const inputTokens = getTotalInputTokens(r.usage as TokenUsage | undefined);
+    return inputTokens > 0 ? (
+      <TokenCountBadgeComponent value={inputTokens} label="in" mini />
     ) : (
       emptyDash()
     );
@@ -916,9 +916,9 @@ export const benchmarkTokensOutColumn = () => ({
   sortValue: (r: TableRow) => (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0,
   align: "right",
   render: (r: TableRow) => {
-    const v = (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
-    return v > 0 ? (
-      <TokenCountBadgeComponent value={v} label="out" mini />
+    const outputTokens = (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
+    return outputTokens > 0 ? (
+      <TokenCountBadgeComponent value={outputTokens} label="out" mini />
     ) : (
       emptyDash()
     );

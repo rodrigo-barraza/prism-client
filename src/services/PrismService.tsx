@@ -788,7 +788,10 @@ export default class PrismService {
 
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            console.debug(`[SSE] stream reader done, remaining buffer=${buffer.length}ch`);
+            break;
+          }
 
           buffer += decoder.decode(value, { stream: true });
 
@@ -803,13 +806,16 @@ export default class PrismService {
 
             try {
               const data = JSON.parse(json);
+              if (data.type === "tool_execution" || data.type === "toolCall" || data.type === "done" || data.type === "error") {
+                console.debug(`[SSE dispatch] type=${data.type} status=${data.status || ''} tool=${data.tool?.name || data.name || ''} (${json.length}ch)`);
+              }
               PrismService._dispatchSSE(data, callbacks);
             } catch (parseErr: unknown) {
               if (json.length > 0) {
                 console.warn(
                   `[PrismService] SSE JSON parse failed (${json.length} chars):`,
                   getErrorMessage(parseErr),
-                  json.slice(0, 120),
+                  json.slice(0, 200),
                 );
               }
             }
@@ -817,6 +823,7 @@ export default class PrismService {
         }
       } catch (error: unknown) {
         if ((error instanceof Error) && error.name === "AbortError") return;
+        console.error(`[SSE] stream error:`, error);
         if (onError) onError(error instanceof Error ? error : new Error(getErrorMessage(error)));
       }
     })();
