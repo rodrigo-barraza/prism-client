@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Copy,
   CheckCheck,
+  Palette,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
@@ -34,6 +35,7 @@ import { useWorkspace } from "./WorkspaceContextComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import CustomAgentsPanel from "./CustomAgentsPanelComponent";
+import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
 import {
   ButtonComponent,
   CardComponent,
@@ -1291,6 +1293,19 @@ export default function SettingsPageComponent() {
             Reset to Defaults
           </ButtonComponent>
         </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Custom Themes Section ------------------------------------ */}
+      <CardComponent className={styles.section}>
+        <CardComponent.Header
+          icon={Palette}
+          title="Custom Themes"
+          subtitle="Create, edit, and manage your own color themes"
+        />
+
+        <CardComponent.Body>
+          <CustomThemeEditorComponent />
+        </CardComponent.Body>
       </CardComponent>
     </div>
   );

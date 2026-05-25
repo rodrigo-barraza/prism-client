@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import PrismService from "../services/PrismService";
 import {
@@ -41,6 +41,7 @@ import { generateUUID } from "../utils/utilities";
 
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
+import CustomThemeService from "@/services/CustomThemeService";
 
 function RainbowCanvas({ turbo = false, greyscale = false }: { turbo?: boolean; greyscale?: boolean; }) {
   return (
@@ -167,6 +168,7 @@ export default function NavigationSidebarComponent({
   };
   const pathname = usePathname();
   const { theme, themes, setTheme } = useTheme();
+  const customThemeMeta = useMemo(() => CustomThemeService.getCustomThemeMetaMap(), []);
   const [showNav, setShowNav] = useState(false);
   const [navReady, setNavReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -633,6 +635,7 @@ interface CatState {
                   theme={theme}
                   themes={themes}
                   onSelectTheme={setTheme}
+                  customThemeMeta={customThemeMeta}
                 />
               </div>
             </div>
@@ -788,6 +791,7 @@ interface CatState {
             themes={themes}
             onSelectTheme={setTheme}
             collapsed={!showNav}
+            customThemeMeta={customThemeMeta}
           />
           {isAdmin && (
             <div className={styles.statusRow}>

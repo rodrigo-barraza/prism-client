@@ -5,6 +5,7 @@ import {
   generateThemeInitScript,
 } from "@rodrigo-barraza/components-library";
 import { WorkspaceProvider } from "../components/WorkspaceContextComponent";
+import CustomThemeBootComponent from "../components/CustomThemeBootComponent";
 import "./globals.css";
 import SessionTrackerComponent from "@/components/SessionTrackerComponent";
 
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={inter.variable}>
         <ThemeProvider storageKey="prism:theme" defaultTheme="light">
+          <CustomThemeBootComponent />
           <ComponentsProvider sound>
             <WorkspaceProvider>
               {children}
