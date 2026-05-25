@@ -1,32 +1,32 @@
 /* ── ThreePanelLayout ────────────────────────────────── */
 
-.container {
+.three-panel-layout-container {
   display: flex;
-  width: 100%;
-  height: 100%;
+  inline-size: 100%;
+  block-size: 100%;
   overflow: hidden;
 }
 
 /* Column wrapper (header → body), sits beside navSidebar */
-.page {
+.layout-page-column {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 0;
-  height: 100%;
+  min-inline-size: 0;
+  block-size: 100%;
   overflow: hidden;
 }
 
 /* ── Full-width header ─────────────────────────────── */
 
-.pageHeader {
-  height: 50px;
-  min-height: 50px;
+.layout-page-header {
+  block-size: 50px;
+  min-block-size: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0;
-  border-bottom: 1px solid var(--calculated-border-color);
+  border-block-end: 1px solid var(--calculated-border-color);
   background: var(--bg-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -42,9 +42,9 @@
 }
 
 
-.headerCenter {
+.header-center-area {
   flex: 1;
-  min-width: 0;
+  min-inline-size: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -53,11 +53,11 @@
   overflow: visible;
 }
 
-.headerCenter>* {
+.header-center-area>* {
   pointer-events: auto;
 }
 
-.headerCenterGroup {
+.header-center-group {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -67,14 +67,14 @@
 
 /* ── Header Toggle Buttons ─────────────────────────── */
 
-.headerToggle {
+.header-toggle-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-width: 34px;
-  max-width: 60px;
-  height: 100%;
+  inline-size: 100%;
+  min-inline-size: 34px;
+  max-inline-size: 60px;
+  block-size: 100%;
   flex-shrink: 0;
   border-radius: 0;
   background: var(--calculated-accent-primary-glow);
@@ -82,51 +82,52 @@
   color: var(--accent-primary);
   cursor: pointer;
   opacity: 0.8;
-  transition: all 0.25s ease;
+  transition: opacity 0.25s ease, scale 0.25s ease, background-color 0.25s ease, color 0.25s ease;
 }
 
-.headerToggle:hover {
+.header-toggle-button:hover {
   background: var(--accent-primary);
   color: var(--bg-base);
   opacity: 1;
-  transform: scale(1.05);
+  scale: 1.05;
 }
 
 /* When the associated panel is hidden */
-.panelHidden {
-  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+.is-panel-hidden {
+  background: color-mix(in oklch, var(--accent-primary) 15%, transparent);
   border-color: var(--accent-primary);
   color: var(--accent-primary);
   opacity: 1;
 }
 
-.panelHidden:hover {
+.is-panel-hidden:hover {
   background: var(--accent-primary);
   color: var(--bg-base);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  box-shadow: 0 0 12px color-mix(in oklch, var(--accent-primary) 40%, transparent);
 }
 
 /* ── Mobile Meta Bar (conversation info below header) ── */
 
-.mobileMetaBar {
+.mobile-metadata-bar {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 4px 16px;
-  border-bottom: 1px solid var(--calculated-border-color);
+  padding-block: 4px;
+  padding-inline: 16px;
+  border-block-end: 1px solid var(--calculated-border-color);
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   background: var(--bg-surface);
   flex-shrink: 0;
-  min-height: 28px;
-  overflow-x: auto;
+  min-block-size: 28px;
+  overflow-inline: auto;
   white-space: nowrap;
 }
 
 /* ── Body (sidebars + main) ────────────────────────── */
 
-.body {
+.layout-body-row {
   flex: 1;
   display: flex;
   overflow: hidden;
@@ -135,69 +136,70 @@
 
 /* ── Sidebars ──────────────────────────────────────── */
 
-.leftSidebar {
-  width: 320px;
-  min-width: 320px;
-  height: 100%;
-  border-right: 1px solid var(--calculated-border-color);
+.left-sidebar-panel {
+  inline-size: 320px;
+  min-inline-size: 320px;
+  block-size: 100%;
+  border-inline-end: 1px solid var(--calculated-border-color);
   background: var(--bg-surface);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-block-size: 0;
   overflow: hidden;
   transition:
-    width 0.5s ease,
-    min-width 0.5s ease,
+    inline-size 0.5s ease,
+    min-inline-size 0.5s ease,
     opacity 0.5s ease,
-    border-width 0.5s ease;
+    border-inline-end-width 0.5s ease;
   opacity: 1;
 }
 
-.rightSidebar {
-  width: 320px;
-  min-width: 320px;
-  height: 100%;
-  border-left: 1px solid var(--calculated-border-color);
+.right-sidebar-panel {
+  inline-size: 320px;
+  min-inline-size: 320px;
+  block-size: 100%;
+  border-inline-start: 1px solid var(--calculated-border-color);
   background: var(--bg-surface);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-block-size: 0;
   overflow: hidden;
   transition:
-    width 0.5s ease,
-    min-width 0.5s ease,
+    inline-size 0.5s ease,
+    min-inline-size 0.5s ease,
     opacity 0.5s ease,
-    border-width 0.5s ease;
+    border-inline-start-width 0.5s ease;
   opacity: 1;
 }
 
-.sidebarHidden {
-  width: 0 !important;
-  min-width: 0 !important;
+.is-sidebar-hidden {
+  inline-size: 0 !important;
+  min-inline-size: 0 !important;
   opacity: 0;
-  border-width: 0 !important;
+  border-inline-start-width: 0 !important;
+  border-inline-end-width: 0 !important;
   pointer-events: none;
 }
 
 
 /* ── Main Center ───────────────────────────────────── */
 
-.main {
+.main-content-section {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  block-size: 100%;
+  min-block-size: 0;
   overflow: hidden;
   position: relative;
 }
 
 /* Scrim overlay — darkens main content when a mobile drawer is open */
-.main::after {
+.main-content-section::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -208,69 +210,68 @@
   transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.scrimActive::after {
+.is-scrim-active::after {
   opacity: 1;
   pointer-events: auto;
 }
 
 @media (max-width: 767px) {
 
-  .leftSidebar,
-  .rightSidebar {
+  .left-sidebar-panel,
+  .right-sidebar-panel {
     position: absolute;
-    top: 0;
-    bottom: 0;
+    inset-block: 0;
     z-index: 200;
     border: none;
     background: var(--bg-base);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    will-change: transform;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: translate;
+    transition: translate 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .leftSidebar {
-    left: 0;
-    right: auto;
-    transform: translateX(0);
+  .left-sidebar-panel {
+    inset-inline: 0 auto;
+    translate: 0 0;
   }
 
-  .rightSidebar {
-    right: 0;
-    left: auto;
-    transform: translateX(0);
+  .right-sidebar-panel {
+    inset-inline: auto 0;
+    translate: 0 0;
   }
 
-  .leftSidebar.sidebarHidden {
-    transform: translateX(-100%);
+  .left-sidebar-panel.is-sidebar-hidden {
+    translate: -100% 0;
     pointer-events: none;
     border-width: 0;
   }
 
-  .rightSidebar.sidebarHidden {
-    transform: translateX(100%);
+  .right-sidebar-panel.is-sidebar-hidden {
+    translate: 100% 0;
     pointer-events: none;
     border-width: 0;
   }
 
   /* Ensure header stays above sidebar overlays */
-  .pageHeader {
+  .layout-page-header {
     position: relative;
     z-index: 201;
-    height: auto;
-    min-height: 50px;
+    block-size: auto;
+    min-block-size: 50px;
     flex-wrap: wrap;
   }
 
 
-  .headerCenter {
+  .header-center-area {
     overflow: visible;
-    padding: 4px 8px 0;
+    padding-block: 4px 0;
+    padding-inline: 8px;
   }
 
-  .headerCenterGroup {
+  .header-center-group {
     width: 100%;
     gap: 6px;
-    padding: 6px 0;
+    padding-block: 6px;
+    padding-inline: 0;
   }
 }

@@ -180,13 +180,13 @@ export default function ThreePanelLayout({
   const transitionStyle = hydrated ? undefined : { transition: "none" };
 
   return (
-    <div className={styles.container}>
+    <div className={styles['three-panel-layout-container']}>
       {navSidebar}
-      <div className={styles.page}>
+      <div className={styles['layout-page-column']}>
         {/* Full-width header */}
-        <header className={styles.pageHeader}>
+        <header className={styles['layout-page-header']}>
           <button
-            className={`${styles.headerToggle} ${!showLeft ? styles.panelHidden : ""}`}
+            className={`${styles['header-toggle-button']} ${!showLeft ? styles['is-panel-hidden'] : ""}`}
             onClick={toggleLeft}
             title={
               showLeft
@@ -198,12 +198,12 @@ export default function ThreePanelLayout({
           </button>
           {!isMobile && headerMeta}
           {headerCenter && (
-            <div className={styles.headerCenter}>{headerCenter}</div>
+            <div className={styles['header-center-area']}>{headerCenter}</div>
           )}
           {headerControls}
           {rightPanel && (
             <button
-              className={`${styles.headerToggle} ${!showRight ? styles.panelHidden : ""}`}
+              className={`${styles['header-toggle-button']} ${!showRight ? styles['is-panel-hidden'] : ""}`}
               onClick={toggleRight}
               title={
                 showRight
@@ -221,14 +221,14 @@ export default function ThreePanelLayout({
         </header>
         {/* Mobile: meta info row below the header */}
         {isMobile && headerMeta && (
-          <div className={styles.mobileMetaBar}>{headerMeta}</div>
+          <div className={styles['mobile-metadata-bar']}>{headerMeta}</div>
         )}
 
         {/* Body: sidebars + main content */}
-        <div className={styles.body}>
+        <div className={styles['layout-body-row']}>
           {/* Left Sidebar */}
           <aside
-            className={`${styles.leftSidebar} ${!showLeft ? styles.sidebarHidden : ""}`}
+            className={`${styles['left-sidebar-panel']} ${!showLeft ? styles['is-sidebar-hidden'] : ""}`}
             style={transitionStyle}
             onClick={handleSidebarClick(toggleLeft)}
           >
@@ -240,7 +240,7 @@ export default function ThreePanelLayout({
 
           {/* Main Center */}
           <section
-            className={`${styles.main} ${isMobile && (showLeft || showRight) ? styles.scrimActive : ""}`}
+            className={`${styles['main-content-section']} ${isMobile && (showLeft || showRight) ? styles['is-scrim-active'] : ""}`}
             data-chat-area
             onClick={handleMainClick}
           >
@@ -250,7 +250,7 @@ export default function ThreePanelLayout({
           {/* Right Sidebar */}
           {rightPanel && (
             <aside
-              className={`${styles.rightSidebar} ${!showRight ? styles.sidebarHidden : ""}`}
+              className={`${styles['right-sidebar-panel']} ${!showRight ? styles['is-sidebar-hidden'] : ""}`}
               style={transitionStyle}
               onClick={handleSidebarClick(toggleRight)}
             >
