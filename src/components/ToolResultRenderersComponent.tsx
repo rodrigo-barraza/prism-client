@@ -1363,33 +1363,13 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
 
 // -- 13. Turtle Graphics -----------------------------------------------------
 
-function TurtleDrawEmbed({ src, title, fallbackHeight }: { src: string; title: string; fallbackHeight: number }) {
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const [height, setHeight] = useState(fallbackHeight);
-
-  const handleMessage = useCallback((event: MessageEvent) => {
-    if (
-      event.data?.type === "embed-resize" &&
-      iframeRef.current &&
-      event.source === iframeRef.current.contentWindow
-    ) {
-      setHeight(event.data.height);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [handleMessage]);
-
+function TurtleDrawEmbed({ src, title }: { src: string; title: string }) {
   return (
     <div className={styles.turtleEmbedWrapper}>
       <iframe
-        ref={iframeRef}
         src={src}
         className={styles.turtleEmbedFrame}
         title={title}
-        style={{ height: `${height}px` }}
         loading="lazy"
         referrerPolicy="no-referrer"
       />
@@ -1423,7 +1403,6 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
         <TurtleDrawEmbed
           src={embedUrl}
           title="Turtle Drawing"
-          fallbackHeight={660}
         />
       )}
     </div>
@@ -1463,7 +1442,6 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
           <TurtleDrawEmbed
             src={embedUrl}
             title="ASCII Art"
-            fallbackHeight={520}
           />
         )
       )}

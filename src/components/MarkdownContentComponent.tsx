@@ -155,12 +155,15 @@ function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
   }
   if (isStringSrc && src.includes("/compute/turtle/embed")) {
     return (
-      <AutoResizeEmbed
-        src={src}
-        title={alt || "Turtle Drawing"}
-        fallbackHeight={660}
-        className={styles.embedFrame}
-      />
+      <span className={`${styles.embedWrapper} ${styles.turtleEmbedWrapper}`}>
+        <iframe
+          src={src}
+          className={`${styles.embedFrame} ${styles.turtleEmbedFrame}`}
+          title={alt || "Turtle Drawing"}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+      </span>
     );
   }
   return <img src={src} alt={alt} {...rest} />;
