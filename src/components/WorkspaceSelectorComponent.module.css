@@ -41,7 +41,7 @@
   flex-shrink: 0;
 }
 
-.button[data-locked] {
+.button[data-is-locked] {
   cursor: default;
   background: transparent;
   border-color: transparent;
@@ -49,12 +49,12 @@
   gap: 4px;
 }
 
-.button[data-locked]:hover {
+.button[data-is-locked]:hover {
   background: transparent;
   border-color: transparent;
 }
 
-.button[data-unavailable] .buttonIcon {
+.button[data-is-unavailable] .buttonIcon {
   color: var(--text-muted);
   opacity: 0.5;
 }

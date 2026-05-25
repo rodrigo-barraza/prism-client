@@ -81,7 +81,7 @@ interface HistoryItemProps {
  *   isFavorite    — boolean
  *   onToggleFavorite — (id) => void (omit to hide star)
  *   className     — extra root class
- *   dataPanelClose — adds data-panel-close attr (for mobile drawer close)
+ *   dataPanelClose — adds data-panel-close-trigger attr (for mobile drawer close)
  *   children      — optional extra content appended inside the row
  */
 export default function HistoryItemComponent({
@@ -161,7 +161,7 @@ export default function HistoryItemComponent({
     <div
       className={`${styles.item} ${isActive ? styles.active : ""} ${className || ""}`}
       {...SoundService.interactive(() => onClick?.(item))}
-      {...(dataPanelClose ? { "data-panel-close": true } : {})}
+      {...(dataPanelClose ? { "data-panel-close-trigger": true } : {})}
       onContextMenu={
         onOpenInNewTab
           ? (e: React.MouseEvent) => {
@@ -219,7 +219,7 @@ export default function HistoryItemComponent({
                     : item.agent;
 
                 return (
-                  <span className={styles.agentBadge} data-agent={agentId}>
+                  <span className={styles.agentBadge} data-agent-identifier={agentId}>
                     <AgentBadgeComponent
                       agent={resolvedAgent}
                       size={14}

@@ -508,9 +508,8 @@ export default function SettingsPanel({
             ) : null;
           }))()}
 
-        {/* Google models (non-live): Thinking Level dropdown — always visible */}
+        {/* Models (non-live) that support thinking levels: Thinking Level dropdown — always visible */}
         {!selectedModelDef?.liveAPI &&
-          settings.provider === "google" &&
           selectedModelDef?.thinkingLevels &&
           !readOnly &&
           (((): React.ReactNode => {
@@ -615,19 +614,50 @@ export default function SettingsPanel({
           </div>
         )}
 
+        {/* LiveAPI models in readOnly mode */}
         {!!(readOnly &&
           selectedModelDef?.liveAPI &&
-          settings.liveThinkingLevel) && (
-            <div className={styles.formGroup}>
-              <label>Thinking Level</label>
-              <div className={styles.readOnlyValue}>
-                <Brain size={14} />{" "}
-                {settings.liveThinkingLevel === "none"
-                  ? "No Thinking"
-                  : settings.liveThinkingLevel}
+          selectedModelDef?.thinkingLevels) &&
+          (() => {
+            const canDisable = selectedModelDef.thinkingLevels!.includes("minimal");
+            const currentValue =
+              settings.liveThinkingLevel ||
+              (canDisable ? "none" : selectedModelDef.thinkingLevels![0]);
+            return (
+              <div className={styles.formGroup}>
+                <label>Thinking Level</label>
+                <div className={styles.readOnlyValue}>
+                  <Brain size={14} />{" "}
+                  {currentValue === "none"
+                    ? "No Thinking"
+                    : currentValue.charAt(0).toUpperCase() + currentValue.slice(1)}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
+
+        {/* Non-live models in readOnly mode */}
+        {!!(readOnly &&
+          !selectedModelDef?.liveAPI &&
+          selectedModelDef?.thinkingLevels) &&
+          (() => {
+            const canDisable = selectedModelDef.thinkingLevels!.includes("minimal");
+            const currentValue =
+              settings.thinkingEnabled === false && canDisable
+                ? "none"
+                : settings.thinkingLevel || "high";
+            return (
+              <div className={styles.formGroup}>
+                <label>Thinking Level</label>
+                <div className={styles.readOnlyValue}>
+                  <Brain size={14} />{" "}
+                  {currentValue === "none"
+                    ? "No Thinking"
+                    : currentValue.charAt(0).toUpperCase() + currentValue.slice(1)}
+                </div>
+              </div>
+            );
+          })()}
 
         {!!(readOnly && !isTTS && !selectedModelDef?.liveAPI && settings.voice) && (
           <div className={styles.formGroup}>
@@ -713,7 +743,7 @@ export default function SettingsPanel({
                     !selectedModelDef?.thinkingLevels ||
                     selectedModelDef.thinkingLevels.includes("minimal");
                   const alwaysOn =
-                    !canDisable && settings.provider === "google";
+                    !canDisable && !!selectedModelDef?.thinkingLevels;
                   const modelName = (settings.model || "").toLowerCase();
                   const nameBasedThinking = [
                     "qwen3",

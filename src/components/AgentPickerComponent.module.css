@@ -50,7 +50,7 @@
   flex-shrink: 0;
   transition: transform 0.2s ease;
 
-  &[data-open="true"] {
+  &[data-is-open="true"] {
     transform: rotate(180deg);
   }
 }
@@ -113,7 +113,7 @@
     background: var(--bg-surface);
   }
 
-  &[data-active="true"] {
+  &[data-is-active="true"] {
     background: color-mix(
       in srgb,
       var(--agent-accent, var(--color-indigo)) 12%,

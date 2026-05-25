@@ -247,7 +247,7 @@ export default function ModelPickerPopoverComponent({
     setFlipped(shouldFlip);
 
     // -- Horizontal: center on ChatArea, clamp to viewport ----------
-    const chatArea = document.querySelector("[data-chat-area]");
+    const chatArea = document.querySelector("[data-chat-area-region]");
     let left;
     if (chatArea) {
       const areaRect = chatArea.getBoundingClientRect();
@@ -434,7 +434,7 @@ export default function ModelPickerPopoverComponent({
     });
 
     // Watch the ChatArea for size changes (sidebar open/close transitions)
-    const chatArea = document.querySelector("[data-chat-area]");
+    const chatArea = document.querySelector("[data-chat-area-region]");
     let ro: ResizeObserver | undefined;
     if (chatArea) {
       ro = new ResizeObserver(reposition);

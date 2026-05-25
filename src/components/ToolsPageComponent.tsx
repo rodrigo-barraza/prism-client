@@ -552,7 +552,7 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: { tool: Cli
               onClick={() => setShowRaw(!showRaw)}
             >
               <span className={styles.detailSectionTitle}>Raw Schema</span>
-              <span className={styles.rawChevron} data-open={showRaw}>
+              <span className={styles.rawChevron} data-is-open={showRaw}>
                 ▾
               </span>
             </button>

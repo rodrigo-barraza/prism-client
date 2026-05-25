@@ -149,7 +149,7 @@ export default function AgentPickerComponent({
             <ChevronDown
               size={14}
               className={styles.triggerChevron}
-              data-open={open}
+              data-is-open={open}
             />
           </button>
         ) : (
@@ -171,7 +171,7 @@ export default function AgentPickerComponent({
                 <ChevronDown
                   size={13}
                   className={styles.triggerChevron}
-                  data-open={open}
+                  data-is-open={open}
                 />
               </button>
             );
@@ -213,7 +213,7 @@ export default function AgentPickerComponent({
                 <button
                   key={agent.id}
                   className={styles.agentItem}
-                  data-active={isActive}
+                  data-is-active={isActive}
                   onClick={() =>
                     addMode ? handleAdd(agent) : handleSelect(agent.id)
                   }

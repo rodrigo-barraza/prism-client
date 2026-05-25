@@ -375,7 +375,7 @@
   color: var(--text-primary);
 }
 
-.iconOption[data-selected="true"] {
+.iconOption[data-is-selected="true"] {
   background: color-mix(
     in srgb,
     var(--agent-color, var(--accent-primary)) 15%,
@@ -418,7 +418,7 @@
       0 0 8px var(--swatch-color);
   }
 
-  &[data-selected="true"] {
+  &[data-is-selected="true"] {
     border-color: var(--color-white);
     box-shadow:
       0 0 0 2px var(--swatch-color),

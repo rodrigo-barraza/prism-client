@@ -659,7 +659,7 @@
   color: var(--text-muted);
   transition: transform var(--transition-fast);
 
-  &[data-open="true"] {
+  &[data-is-open="true"] {
     transform: rotate(180deg);
   }
 }

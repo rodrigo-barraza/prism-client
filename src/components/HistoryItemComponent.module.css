@@ -201,98 +201,98 @@
 
 /* ── Dynamic Agent Theme Styling ── */
 
-.agentBadge[data-agent="CODING"] {
+.agentBadge[data-agent-identifier="CODING"] {
   background: rgba(99, 102, 241, 0.08);
   border-color: rgba(99, 102, 241, 0.22);
   color: #818cf8;
 }
-.agentBadge[data-agent="CODING"]:hover {
+.agentBadge[data-agent-identifier="CODING"]:hover {
   background: rgba(99, 102, 241, 0.12);
   border-color: rgba(99, 102, 241, 0.3);
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
-.agentBadge[data-agent="LUPOS"] {
+.agentBadge[data-agent-identifier="LUPOS"] {
   background: rgba(239, 68, 68, 0.06);
   border-color: rgba(239, 68, 68, 0.18);
   color: #f97316;
 }
-.agentBadge[data-agent="LUPOS"]:hover {
+.agentBadge[data-agent-identifier="LUPOS"]:hover {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.25);
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
 }
 
-.agentBadge[data-agent="STICKERS"] {
+.agentBadge[data-agent-identifier="STICKERS"] {
   background: rgba(16, 185, 129, 0.06);
   border-color: rgba(16, 185, 129, 0.18);
   color: #34d399;
 }
-.agentBadge[data-agent="STICKERS"]:hover {
+.agentBadge[data-agent-identifier="STICKERS"]:hover {
   background: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.25);
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
 }
 
-.agentBadge[data-agent="LIGHTS"] {
+.agentBadge[data-agent-identifier="LIGHTS"] {
   background: rgba(234, 179, 8, 0.06);
   border-color: rgba(234, 179, 8, 0.18);
   color: #fbbf24;
 }
-.agentBadge[data-agent="LIGHTS"]:hover {
+.agentBadge[data-agent-identifier="LIGHTS"]:hover {
   background: rgba(234, 179, 8, 0.1);
   border-color: rgba(234, 179, 8, 0.25);
   box-shadow: 0 2px 8px rgba(234, 179, 8, 0.15);
 }
 
-.agentBadge[data-agent="OOG"] {
+.agentBadge[data-agent-identifier="OOG"] {
   background: rgba(120, 113, 108, 0.06);
   border-color: rgba(120, 113, 108, 0.18);
   color: #a8a29e;
 }
-.agentBadge[data-agent="OOG"]:hover {
+.agentBadge[data-agent-identifier="OOG"]:hover {
   background: rgba(120, 113, 108, 0.1);
   border-color: rgba(120, 113, 108, 0.25);
   box-shadow: 0 2px 8px rgba(120, 113, 108, 0.15);
 }
 
-.agentBadge[data-agent="OMNI"] {
+.agentBadge[data-agent-identifier="OMNI"] {
   background: rgba(185, 28, 28, 0.06);
   border-color: rgba(185, 28, 28, 0.18);
   color: #dc2626;
 }
-.agentBadge[data-agent="OMNI"]:hover {
+.agentBadge[data-agent-identifier="OMNI"]:hover {
   background: rgba(185, 28, 28, 0.1);
   border-color: rgba(185, 28, 28, 0.25);
   box-shadow: 0 2px 8px rgba(185, 28, 28, 0.15);
 }
 
-.agentBadge[data-agent="IMAGE"] {
+.agentBadge[data-agent-identifier="IMAGE"] {
   background: rgba(236, 72, 153, 0.06);
   border-color: rgba(236, 72, 153, 0.18);
   color: #f472b6;
 }
-.agentBadge[data-agent="IMAGE"]:hover {
+.agentBadge[data-agent-identifier="IMAGE"]:hover {
   background: rgba(236, 72, 153, 0.1);
   border-color: rgba(236, 72, 153, 0.25);
   box-shadow: 0 2px 8px rgba(236, 72, 153, 0.15);
 }
 
 /* Fallback for other custom agents */
-.agentBadge:not([data-agent="CODING"]):not([data-agent="OMNI"]):not(
-    [data-agent="LUPOS"]
-  ):not([data-agent="STICKERS"]):not([data-agent="OOG"]):not(
-    [data-agent="LIGHTS"]
-  ):not([data-agent="IMAGE"]) {
+.agentBadge:not([data-agent-identifier="CODING"]):not([data-agent-identifier="OMNI"]):not(
+    [data-agent-identifier="LUPOS"]
+  ):not([data-agent-identifier="STICKERS"]):not([data-agent-identifier="OOG"]):not(
+    [data-agent-identifier="LIGHTS"]
+  ):not([data-agent-identifier="IMAGE"]) {
   background: rgba(139, 92, 246, 0.06);
   border-color: rgba(139, 92, 246, 0.18);
   color: #a78bfa;
 }
-.agentBadge:not([data-agent="CODING"]):not([data-agent="OMNI"]):not(
-    [data-agent="LUPOS"]
-  ):not([data-agent="STICKERS"]):not([data-agent="OOG"]):not(
-    [data-agent="LIGHTS"]
-  ):not([data-agent="IMAGE"]):hover {
+.agentBadge:not([data-agent-identifier="CODING"]):not([data-agent-identifier="OMNI"]):not(
+    [data-agent-identifier="LUPOS"]
+  ):not([data-agent-identifier="STICKERS"]):not([data-agent-identifier="OOG"]):not(
+    [data-agent-identifier="LIGHTS"]
+  ):not([data-agent-identifier="IMAGE"]):hover {
   background: rgba(139, 92, 246, 0.1);
   border-color: rgba(139, 92, 246, 0.25);
   box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);

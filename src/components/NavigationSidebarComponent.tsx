@@ -229,9 +229,9 @@ export default function NavigationSidebarComponent({
     globalShowNav = initialNav;
 
     if (!initialNav) {
-      document.documentElement.setAttribute("data-nav-collapsed", "true");
+      document.documentElement.setAttribute("data-navigation-is-collapsed", "true");
     } else {
-      document.documentElement.removeAttribute("data-nav-collapsed");
+      document.documentElement.removeAttribute("data-navigation-is-collapsed");
     }
 
     // Enable transitions after first paint
@@ -253,9 +253,9 @@ export default function NavigationSidebarComponent({
       localStorage.setItem(LS_PANEL_NAV, String(next));
       globalShowNav = next;
       if (next) {
-        document.documentElement.removeAttribute("data-nav-collapsed");
+        document.documentElement.removeAttribute("data-navigation-is-collapsed");
       } else {
-        document.documentElement.setAttribute("data-nav-collapsed", "true");
+        document.documentElement.setAttribute("data-navigation-is-collapsed", "true");
       }
       return next;
     });

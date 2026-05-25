@@ -49,7 +49,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   try {
     var nav = localStorage.getItem('panel_nav');
     if (nav === 'false') {
-      document.documentElement.setAttribute('data-nav-collapsed', 'true');
+      document.documentElement.setAttribute('data-navigation-is-collapsed', 'true');
     }
   } catch (error) { console.warn('Nav initialization failed:', error.message); }
 })();</script>`,

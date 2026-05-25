@@ -140,12 +140,12 @@ export default function ThreePanelLayout({
     });
   }, []);
 
-  /* -- Mobile: auto-close sidebar when a [data-panel-close] element is clicked -- */
+  /* -- Mobile: auto-close sidebar when a [data-panel-close-trigger] element is clicked -- */
   const handleSidebarClick = useCallback(
     (closeFn: () => void) => (clickEvent: React.MouseEvent<HTMLElement>) => {
       if (!isMobile) return;
       const target = clickEvent.target as HTMLElement | null;
-      if (target && target.closest("[data-panel-close]")) {
+      if (target && target.closest("[data-panel-close-trigger]")) {
         closeFn();
       }
     },
@@ -241,7 +241,7 @@ export default function ThreePanelLayout({
           {/* Main Center */}
           <section
             className={`${styles['main-content-section']} ${isMobile && (showLeft || showRight) ? styles['is-scrim-active'] : ""}`}
-            data-chat-area
+            data-chat-area-region
             onClick={handleMainClick}
           >
             {children}

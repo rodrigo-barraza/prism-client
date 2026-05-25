@@ -62,7 +62,7 @@
   background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
-.segmentedOption[data-active="true"] {
+.segmentedOption[data-is-active="true"] {
   color: var(--accent-primary);
   background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   font-weight: 600;

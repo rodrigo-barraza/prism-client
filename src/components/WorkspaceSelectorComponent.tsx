@@ -49,8 +49,8 @@ export default function WorkspaceSelectorComponent({
         <div className={`${styles.wrapper} ${className || ""}`}>
           <div
             className={styles.button}
-            data-locked
-            data-unavailable
+            data-is-locked
+            data-is-unavailable
             title={`Workspace not available: ${unavailableWorkspace}`}
           >
             <WifiOff className={styles.buttonIcon} />
@@ -61,7 +61,7 @@ export default function WorkspaceSelectorComponent({
     }
     return (
       <div className={`${styles.wrapper} ${className || ""}`}>
-        <div className={styles.button} data-locked>
+        <div className={styles.button} data-is-locked>
           <Monitor className={styles.buttonIcon} />
           <span>{(currentWorkspace as any)?.name ?? "Workspace"}</span>
           <Lock className={styles.lockIcon} />

@@ -310,17 +310,17 @@
   letter-spacing: 0.04em;
 }
 
-.methodBadge[data-method="GET"] {
+.methodBadge[data-http-method="GET"] {
   background: color-mix(in srgb, var(--color-success-bright) 15%, transparent);
   color: var(--color-success-bright);
 }
 
-.methodBadge[data-method="POST"] {
+.methodBadge[data-http-method="POST"] {
   background: color-mix(in srgb, var(--color-warning) 15%, transparent);
   color: var(--color-warning);
 }
 
-.methodBadge[data-method="JS"] {
+.methodBadge[data-http-method="JS"] {
   background: color-mix(in srgb, #f0db4f 15%, transparent);
   color: #f0db4f;
 }
@@ -702,13 +702,13 @@
   }
 }
 
-.jsonFeedback[data-type="error"] {
+.jsonFeedback[data-content-type="error"] {
   color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-danger) 20%, transparent);
 }
 
-.jsonFeedback[data-type="success"] {
+.jsonFeedback[data-content-type="success"] {
   color: var(--color-success-bright);
   background: color-mix(in srgb, var(--color-success-bright) 8%, transparent);
   border: 1px solid

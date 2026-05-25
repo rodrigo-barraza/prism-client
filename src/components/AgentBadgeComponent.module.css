@@ -26,11 +26,11 @@
 
 /* ── Per-agent gradient defaults ────────────────────── */
 
-.badgeInner[data-agent="CODING"] {
+.badgeInner[data-agent-identifier="CODING"] {
   background: linear-gradient(135deg, var(--color-indigo) 0%, #818cf8 100%);
 }
 
-.badgeInner[data-agent="LUPOS"] {
+.badgeInner[data-agent-identifier="LUPOS"] {
   background: linear-gradient(
     135deg,
     var(--color-danger) 0%,
@@ -38,7 +38,7 @@
   );
 }
 
-.badgeInner[data-agent="STICKERS"] {
+.badgeInner[data-agent-identifier="STICKERS"] {
   background: linear-gradient(
     135deg,
     var(--color-emerald) 0%,
@@ -46,7 +46,7 @@
   );
 }
 
-.badgeInner[data-agent="DIGEST"] {
+.badgeInner[data-agent-identifier="DIGEST"] {
   background: linear-gradient(
     135deg,
     var(--color-warning) 0%,
@@ -54,11 +54,11 @@
   );
 }
 
-.badgeInner[data-agent="LIGHTS"] {
+.badgeInner[data-agent-identifier="LIGHTS"] {
   background: linear-gradient(135deg, #eab308 0%, var(--color-warning) 100%);
 }
 
-.badgeInner[data-agent="OOG"] {
+.badgeInner[data-agent-identifier="OOG"] {
   background: linear-gradient(
     135deg,
     var(--text-muted) 0%,
@@ -66,20 +66,20 @@
   );
 }
 
-.badgeInner[data-agent="OMNI"] {
+.badgeInner[data-agent-identifier="OMNI"] {
   background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
 }
 
-.badgeInner[data-agent="IMAGE"] {
+.badgeInner[data-agent-identifier="IMAGE"] {
   background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
 }
 
 /* Custom agents — fallback gradient for any agent not in the hardcoded list */
-.badgeInner:not([data-agent="CODING"]):not([data-agent="OMNI"]):not(
-    [data-agent="LUPOS"]
-  ):not([data-agent="STICKERS"]):not([data-agent="DIGEST"]):not(
-    [data-agent="OOG"]
-  ):not([data-agent="LIGHTS"]):not([data-agent="IMAGE"]) {
+.badgeInner:not([data-agent-identifier="CODING"]):not([data-agent-identifier="OMNI"]):not(
+    [data-agent-identifier="LUPOS"]
+  ):not([data-agent-identifier="STICKERS"]):not([data-agent-identifier="DIGEST"]):not(
+    [data-agent-identifier="OOG"]
+  ):not([data-agent-identifier="LIGHTS"]):not([data-agent-identifier="IMAGE"]) {
   background: linear-gradient(
     135deg,
     var(--color-violet) 0%,

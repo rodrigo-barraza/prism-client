@@ -271,8 +271,7 @@ export default function ParametersPanelComponent({
               </div>
             )}
 
-            {(settings.provider || "") === "google" &&
-              selectedModelDef?.thinkingLevels && (
+            {selectedModelDef?.thinkingLevels && (
                 <div className={styles.formGroup}>
                   <label>Thinking Level</label>
                   <SelectComponent

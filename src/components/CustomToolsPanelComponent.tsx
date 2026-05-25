@@ -624,13 +624,13 @@ export default function CustomToolsPanel({
                   </button>
                 </div>
                 {jsonError && (
-                  <div className={styles.jsonFeedback} data-type="error">
+                  <div className={styles.jsonFeedback} data-content-type="error">
                     <AlertCircle size={12} />
                     {jsonError}
                   </div>
                 )}
                 {jsonSuccess && (
-                  <div className={styles.jsonFeedback} data-type="success">
+                  <div className={styles.jsonFeedback} data-content-type="success">
                     <CheckCircle size={12} />
                     {jsonSuccess}
                   </div>
@@ -758,7 +758,7 @@ export default function CustomToolsPanel({
                 <div className={styles.toolCardInfo}>
                   <span className={styles.toolCardName}>{tool.name}</span>
                   <span className={styles.toolCardMeta}>
-                    <span className={styles.methodBadge} data-method="JS">
+                    <span className={styles.methodBadge} data-http-method="JS">
                       JS
                     </span>
                     {tool.parameters && tool.parameters.length > 0 && (

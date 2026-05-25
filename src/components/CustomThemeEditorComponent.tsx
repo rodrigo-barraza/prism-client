@@ -440,16 +440,16 @@ export default function CustomThemeEditorComponent({
             <span className={styles.previewLabel}>Preview</span>
             <div className={styles.previewContent}>
               <div className={styles.previewSidebar}>
-                <div className={styles.previewNavItem} data-active="true">
-                  <span className={styles.previewDot} data-color="accent" />
+                <div className={styles.previewNavItem} data-is-active="true">
+                  <span className={styles.previewDot} data-color-variant="accent" />
                   <span>Active</span>
                 </div>
                 <div className={styles.previewNavItem}>
-                  <span className={styles.previewDot} data-color="accent2" />
+                  <span className={styles.previewDot} data-color-variant="accent2" />
                   <span>Nav Item</span>
                 </div>
                 <div className={styles.previewNavItem}>
-                  <span className={styles.previewDot} data-color="muted" />
+                  <span className={styles.previewDot} data-color-variant="muted" />
                   <span>Another</span>
                 </div>
               </div>
@@ -460,22 +460,22 @@ export default function CustomThemeEditorComponent({
                     Secondary text content with tertiary meta
                   </span>
                   <div className={styles.previewBadges}>
-                    <span className={styles.previewBadge} data-color="accent">
+                    <span className={styles.previewBadge} data-color-variant="accent">
                       Accent
                     </span>
-                    <span className={styles.previewBadge} data-color="accent2">
+                    <span className={styles.previewBadge} data-color-variant="accent2">
                       Secondary
                     </span>
-                    <span className={styles.previewBadge} data-color="success">
+                    <span className={styles.previewBadge} data-color-variant="success">
                       Success
                     </span>
-                    <span className={styles.previewBadge} data-color="danger">
+                    <span className={styles.previewBadge} data-color-variant="danger">
                       Error
                     </span>
-                    <span className={styles.previewBadge} data-color="warning">
+                    <span className={styles.previewBadge} data-color-variant="warning">
                       Warning
                     </span>
-                    <span className={styles.previewBadge} data-color="info">
+                    <span className={styles.previewBadge} data-color-variant="info">
                       Info
                     </span>
                   </div>

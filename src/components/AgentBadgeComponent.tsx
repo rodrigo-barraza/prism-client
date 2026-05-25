@@ -219,12 +219,12 @@ export default function AgentBadgeComponent({
   return (
     <span
       className={`${styles.badge} ${className}`}
-      data-agent={agentId}
+      data-agent-identifier={agentId}
       style={outerStyle}
     >
       <span
         className={styles.badgeInner}
-        data-agent={agentId}
+        data-agent-identifier={agentId}
         style={gradientStyle}
       >
         {renderAgentIcon(agent, iconSize)}

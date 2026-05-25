@@ -514,7 +514,7 @@ export default function ToolSelectionComponent({
             <button
               type="button"
               className={styles.segmentedOption}
-              data-active={groupMode === "domain"}
+              data-is-active={groupMode === "domain"}
               onClick={() => setGroupMode("domain")}
             >
               <FolderOpen size={11} />
@@ -523,7 +523,7 @@ export default function ToolSelectionComponent({
             <button
               type="button"
               className={styles.segmentedOption}
-              data-active={groupMode === "label"}
+              data-is-active={groupMode === "label"}
               onClick={() => setGroupMode("label")}
             >
               <Tag size={11} />

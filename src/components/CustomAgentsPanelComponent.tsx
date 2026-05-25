@@ -379,7 +379,7 @@ export default function CustomAgentsPanel({
                   key={name}
                   type="button"
                   className={styles.iconOption}
-                  data-selected={editingAgent.icon === name}
+                  data-is-selected={editingAgent.icon === name}
                   onClick={() => updateField("icon", name)}
                   title={name}
                   style={
@@ -416,7 +416,7 @@ export default function CustomAgentsPanel({
                   key={hex}
                   type="button"
                   className={styles.colorSwatch}
-                  data-selected={editingAgent.color === hex}
+                  data-is-selected={editingAgent.color === hex}
                   onClick={() =>
                     updateField(
                       "color",

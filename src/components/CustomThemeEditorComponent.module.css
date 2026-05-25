@@ -432,7 +432,7 @@
   transition: all 0.15s ease;
 }
 
-.previewNavItem[data-active="true"] {
+.previewNavItem[data-is-active="true"] {
   background: color-mix(in srgb, var(--preview-accent) 12%, transparent);
   color: var(--preview-accent);
 }
@@ -444,15 +444,15 @@
   flex-shrink: 0;
 }
 
-.previewDot[data-color="accent"] {
+.previewDot[data-color-variant="accent"] {
   background: var(--preview-accent);
 }
 
-.previewDot[data-color="accent2"] {
+.previewDot[data-color-variant="accent2"] {
   background: var(--preview-accent2);
 }
 
-.previewDot[data-color="muted"] {
+.previewDot[data-color-variant="muted"] {
   background: var(--preview-text3);
 }
 
@@ -498,32 +498,32 @@
   border-radius: 4px;
 }
 
-.previewBadge[data-color="accent"] {
+.previewBadge[data-color-variant="accent"] {
   background: color-mix(in srgb, var(--preview-accent) 18%, transparent);
   color: var(--preview-accent);
 }
 
-.previewBadge[data-color="accent2"] {
+.previewBadge[data-color-variant="accent2"] {
   background: color-mix(in srgb, var(--preview-accent2) 18%, transparent);
   color: var(--preview-accent2);
 }
 
-.previewBadge[data-color="success"] {
+.previewBadge[data-color-variant="success"] {
   background: color-mix(in srgb, var(--preview-success) 18%, transparent);
   color: var(--preview-success);
 }
 
-.previewBadge[data-color="danger"] {
+.previewBadge[data-color-variant="danger"] {
   background: color-mix(in srgb, var(--preview-danger) 18%, transparent);
   color: var(--preview-danger);
 }
 
-.previewBadge[data-color="warning"] {
+.previewBadge[data-color-variant="warning"] {
   background: color-mix(in srgb, var(--preview-warning) 18%, transparent);
   color: var(--preview-warning);
 }
 
-.previewBadge[data-color="info"] {
+.previewBadge[data-color-variant="info"] {
   background: color-mix(in srgb, var(--preview-info) 18%, transparent);
   color: var(--preview-info);
 }
