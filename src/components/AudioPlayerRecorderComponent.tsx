@@ -325,8 +325,8 @@ export default function AudioPlayerRecorderComponent({
       recorder.onstop = () => {
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const reader = new FileReader();
-        reader.onload = (ev: ProgressEvent<FileReader>) => {
-          onRecordingComplete?.(ev.target?.result as string | ArrayBuffer | null);
+        reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
+          onRecordingComplete?.(readerEvent.target?.result as string | ArrayBuffer | null);
         };
         reader.readAsDataURL(blob);
         stream.getTracks().forEach((t) => t.stop());

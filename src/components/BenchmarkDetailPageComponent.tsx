@@ -526,27 +526,27 @@ export default function BenchmarkDetailPageComponent({
       },
 
       // -- Tool call events (same pattern as /coding-agent) ---
-      onToolCall: (tc: ToolCallEvent) => {
+      onToolCall: (toolCall: ToolCallEvent) => {
         const key = resolveModelKeyForContent(
           liveDataRef.current,
-          tc._sourceModel,
+          toolCall._sourceModel,
         );
         if (!key) return;
         const d = liveDataRef.current.get(key);
         if (!d) return;
-        if (tc.status === "calling") {
+        if (toolCall.status === "calling") {
           d.toolCalls = [
             ...d.toolCalls,
-            { id: tc.id, name: tc.name, args: tc.args, status: "calling" },
+            { id: toolCall.id, name: toolCall.name, args: toolCall.args, status: "calling" },
           ];
         } else {
           d.toolCalls = d.toolCalls.map((t) =>
-            t.id === tc.id
+            t.id === toolCall.id
               ? {
                   ...t,
-                  status: tc.status,
-                  result: tc.result,
-                  ...(tc.args && { args: tc.args }),
+                  status: toolCall.status,
+                  result: toolCall.result,
+                  ...(toolCall.args && { args: toolCall.args }),
                 }
               : t,
           );

@@ -566,8 +566,8 @@ export default function FileViewerPanelComponent({
       const startX = e.clientX;
       const startWidth = width;
 
-      const onMove = (ev: MouseEvent) => {
-        const delta = ev.clientX - startX;
+      const onMove = (mouseEvent: MouseEvent) => {
+        const delta = mouseEvent.clientX - startX;
         const newWidth = Math.max(300, Math.min(startWidth + delta, 1200));
         onWidthChange?.(newWidth);
       };

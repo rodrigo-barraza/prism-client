@@ -342,8 +342,8 @@ export default function CustomToolsPanel({
       const file = e.target.files?.[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent<FileReader>) => {
-        const text = ev.target?.result;
+      reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
+        const text = readerEvent.target?.result;
         if (typeof text === "string") {
           setJsonText(text);
           parseJsonDefinition(text);

@@ -29,9 +29,9 @@ export default function ToolCallsBlockComponent({
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   if (!toolCalls || toolCalls.length === 0) return null;
 
-  const hasActiveCalls = toolCalls.some((tc) => tc.status === "calling");
+  const hasActiveCalls = toolCalls.some((toolCall) => toolCall.status === "calling");
   const doneCount = toolCalls.filter(
-    (tc: ToolCallEvent) => tc.status === "done" || tc.status === "error",
+    (toolCall: ToolCallEvent) => toolCall.status === "done" || toolCall.status === "error",
   ).length;
 
   // Build header text with active tense awareness
@@ -73,15 +73,15 @@ export default function ToolCallsBlockComponent({
       {/* -- Always-visible tool cards -- */}
       {!headerCollapsed && (
         <div className={styles.toolCallsContent}>
-          {toolCalls.map((tc, j) => {
+          {toolCalls.map((toolCall, j) => {
             const name =
-              tc.name === "googleSearch"
+              toolCall.name === "googleSearch"
                 ? "Google Search"
-                : renderToolName(tc.name);
-            const { Icon, color } = resolveToolVisuals(tc.name) as any;
+                : renderToolName(toolCall.name);
+            const { Icon, color } = resolveToolVisuals(toolCall.name) as any;
 
-            const isCalling = tc.status === "calling";
-            const isError = tc.status === "error";
+            const isCalling = toolCall.status === "calling";
+            const isError = toolCall.status === "error";
 
             return (
               <div key={j} className={styles.toolCallItem}>
@@ -104,18 +104,18 @@ export default function ToolCallsBlockComponent({
                 <span className={styles.toolCallName}>{name}</span>
 
                 {/* Worker tool badges — show which tools a spawned agent used */}
-                {tc.name === "team_create" &&
+                {toolCall.name === "team_create" &&
                   (() => {
-                    const parsed = tc.result
-                      ? typeof tc.result === "string"
+                    const parsed = toolCall.result
+                      ? typeof toolCall.result === "string"
                         ? (() => {
                             try {
-                              return JSON.parse(tc.result);
+                              return JSON.parse(toolCall.result);
                             } catch {
                               return null;
                             }
                           })()
-                        : tc.result
+                        : toolCall.result
                       : null;
                     const members = (parsed as { members?: Array<{ agent_id?: string; toolUses?: number }> })?.members || [];
                     // Aggregate tool activity from all team members
@@ -139,7 +139,7 @@ export default function ToolCallsBlockComponent({
                     }
                     // Fallback: match by description during calling state (before result arrives)
                     // createTeam prefixes descriptions as "[teamName] description"
-                    const tcArgs = tc.args as { members?: Array<{ description?: string }> };
+                    const tcArgs = toolCall.args as { members?: Array<{ description?: string }> };
                     if (
                       Object.keys(allToolNames).length === 0 &&
                       workerToolActivity &&
@@ -187,8 +187,8 @@ export default function ToolCallsBlockComponent({
 
                 {/* Tool-specific result renderer (registry pattern) */}
                 <ToolResultView
-                  toolCall={tc}
-                  streamingOutput={streamingOutputs?.get(tc.id)}
+                  toolCall={toolCall}
+                  streamingOutput={streamingOutputs?.get(toolCall.id)}
                   workerToolActivity={workerToolActivity}
                 />
               </div>

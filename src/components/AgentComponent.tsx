@@ -1520,9 +1520,9 @@ export default function AgentComponent({
     const files = Array.from(e.target.files || []);
     for (const file of files) {
       const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent<FileReader>) => {
-        if (ev.target?.result) {
-          setPendingImages((prev) => [...prev, ev.target?.result as string]);
+      reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
+        if (readerEvent.target?.result) {
+          setPendingImages((prev) => [...prev, readerEvent.target?.result as string]);
         }
       };
       reader.readAsDataURL(file);
@@ -1573,9 +1573,9 @@ export default function AgentComponent({
       const images = files.filter((f) => f.type.startsWith("image/"));
       for (const file of images) {
         const reader = new FileReader();
-        reader.onload = (ev: ProgressEvent<FileReader>) => {
-          if (ev.target?.result) {
-            setPendingImages((prev) => [...prev, ev.target?.result as string]);
+        reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
+          if (readerEvent.target?.result) {
+            setPendingImages((prev) => [...prev, readerEvent.target?.result as string]);
           }
         };
         reader.readAsDataURL(file);
@@ -1598,9 +1598,9 @@ export default function AgentComponent({
       e.preventDefault();
       for (const file of files) {
         const reader = new FileReader();
-        reader.onload = (ev: ProgressEvent<FileReader>) => {
-          if (ev.target?.result) {
-            setPendingImages((prev) => [...prev, ev.target?.result as string]);
+        reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
+          if (readerEvent.target?.result) {
+            setPendingImages((prev) => [...prev, readerEvent.target?.result as string]);
           }
         };
         reader.readAsDataURL(file);
@@ -2032,9 +2032,9 @@ export default function AgentComponent({
             }
           },
           // LM Studio native MCP tool calls (toolCall events)
-          onToolCall: (tc: ToolCallEvent) => {
+          onToolCall: (toolCall: ToolCallEvent) => {
             if (isStale()) return;
-            const toolData = tc;
+            const toolData = toolCall;
             const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
             console.debug(`[ToolCall MCP] ${toolData.status} ${toolData.name} id=${resolvedId}`);
 

@@ -116,11 +116,11 @@ export default function WorkflowInspector({
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
 
-    const onMove = (ev: MouseEvent) => {
+    const onMove = (mouseEvent: MouseEvent) => {
       if (!isDragging.current) return;
       const newWidth = Math.min(
         MAX_WIDTH,
-        Math.max(MIN_WIDTH, window.innerWidth - ev.clientX),
+        Math.max(MIN_WIDTH, window.innerWidth - mouseEvent.clientX),
       );
       setInspectorWidth(newWidth);
     };
