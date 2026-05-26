@@ -37,7 +37,7 @@ export default function PromptSectionComponent({
       </div>
       <TextAreaComponent
         className={styles.textarea}
-        value={value}
+        value={value ?? ""}
         onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(e.target.value)}
         placeholder={placeholder}
         minRows={rows}

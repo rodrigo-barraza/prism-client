@@ -173,17 +173,17 @@ export default function SpinningCatComponent({
       currentState.lastTimestamp = now;
 
       if (animateRef.current) {
-        dt.accelTime += dt / 1000;
-        dt.speedMultiplier =
-          BASE_SPEED + ACCEL_COEFFICIENT * dt.accelTime * dt.accelTime;
-      } else if (dt.speedMultiplier > BASE_SPEED + SETTLED_THRESHOLD) {
-        dt.accelTime = 0;
+        currentState.accelTime += dt / 1000;
+        currentState.speedMultiplier =
+          BASE_SPEED + ACCEL_COEFFICIENT * currentState.accelTime * currentState.accelTime;
+      } else if (currentState.speedMultiplier > BASE_SPEED + SETTLED_THRESHOLD) {
+        currentState.accelTime = 0;
         const smoothing = 1 - Math.pow(1 - DECEL_SMOOTHING, dt / 16.67);
-        dt.speedMultiplier += (BASE_SPEED - dt.speedMultiplier) * smoothing;
-      } else if (dt.windingDown) {
-        dt.speedMultiplier = BASE_SPEED;
-        dt.accelTime = 0;
-        dt.windingDown = false;
+        currentState.speedMultiplier += (BASE_SPEED - currentState.speedMultiplier) * smoothing;
+      } else if (currentState.windingDown) {
+        currentState.speedMultiplier = BASE_SPEED;
+        currentState.accelTime = 0;
+        currentState.windingDown = false;
         setVisuallyActive(false);
         // Reset inline FX styles
         const wrapper = canvasRef.current?.parentElement;
@@ -193,22 +193,22 @@ export default function SpinningCatComponent({
         }
       }
 
-      const frame = frames[dt.frameIndex];
+      const frame = frames[currentState.frameIndex];
       if (!frame) {
-        dt.frameIndex = 0;
+        currentState.frameIndex = 0;
         rafRef.current = requestAnimationFrame(loop);
         return;
       }
       const baseDelay = frame.delay || 100;
-      const effectiveDelay = baseDelay / dt.speedMultiplier;
+      const effectiveDelay = baseDelay / currentState.speedMultiplier;
 
-      dt.elapsed += dt;
+      currentState.elapsed += dt;
 
-      if (dt.elapsed >= effectiveDelay) {
-        dt.elapsed = 0;
-        dt.frameIndex = (dt.frameIndex + 1) % frames.length;
+      if (currentState.elapsed >= effectiveDelay) {
+        currentState.elapsed = 0;
+        currentState.frameIndex = (currentState.frameIndex + 1) % frames.length;
 
-        if (dt.frameIndex === 0) {
+        if (currentState.frameIndex === 0) {
           const canvas = canvasRef.current;
           if (canvas) {
             const context = canvas.getContext("2d");
@@ -216,17 +216,17 @@ export default function SpinningCatComponent({
           }
         }
 
-        renderFrame(canvasRef.current, frames, bitmaps, dt.frameIndex);
+        renderFrame(canvasRef.current, frames, bitmaps, currentState.frameIndex);
       }
 
       // -- Compute visual FX intensity (0 → 1) --
       if (
         animateRef.current ||
-        dt.windingDown ||
-        dt.speedMultiplier > BASE_SPEED + SETTLED_THRESHOLD
+        currentState.windingDown ||
+        currentState.speedMultiplier > BASE_SPEED + SETTLED_THRESHOLD
       ) {
         const intensity = Math.min(
-          (dt.speedMultiplier - BASE_SPEED) / (MAX_SPEED_FOR_FX - BASE_SPEED),
+          (currentState.speedMultiplier - BASE_SPEED) / (MAX_SPEED_FOR_FX - BASE_SPEED),
           1,
         );
         const scale = 1 + intensity * (MAX_SCALE - 1);

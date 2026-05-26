@@ -84,25 +84,25 @@ export default function RainbowCanvasComponent({
         animationState.lastTime = now;
 
         if (turboRef.current) {
-          dt.turboTime += dt;
-          dt.turboVelocity = TURBO_ACCEL * dt.turboTime * dt.turboTime;
-        } else if (dt.turboVelocity > 0.5) {
-          dt.turboTime = 0;
+          animationState.turboTime += dt;
+          animationState.turboVelocity = TURBO_ACCEL * animationState.turboTime * animationState.turboTime;
+        } else if (animationState.turboVelocity > 0.5) {
+          animationState.turboTime = 0;
           const smoothing = 1 - Math.pow(1 - TURBO_RELEASE, dt * 60);
-          dt.turboVelocity += (0 - dt.turboVelocity) * smoothing;
+          animationState.turboVelocity += (0 - animationState.turboVelocity) * smoothing;
         } else if (animateRef.current) {
           // Idle animation — constant slow speed, no turbo deceleration
-          dt.turboVelocity = 0;
-          dt.turboTime = 0;
+          animationState.turboVelocity = 0;
+          animationState.turboTime = 0;
         } else {
-          dt.turboVelocity = 0;
-          dt.turboTime = 0;
+          animationState.turboVelocity = 0;
+          animationState.turboTime = 0;
           draw();
           rafRef.current = null;
           return;
         }
 
-        const speed = BASE_SPEED + dt.turboVelocity;
+        const speed = BASE_SPEED + animationState.turboVelocity;
         animationState.offset = (animationState.offset + speed * dt) % 360;
         draw();
         rafRef.current = requestAnimationFrame(tick);

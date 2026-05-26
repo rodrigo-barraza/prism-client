@@ -78,29 +78,29 @@ export default function ParametersPanelComponent({
   const isTTS = selectedModelDef?._isTTS === true;
   const isSpecialModel = isTranscription || isTTS;
 
-  const handleTempChange = (value: string) => {
-    onChange?.({ temperature: value === "" ? undefined : parseFloat(value) });
+  const handleTempChange = (value: number) => {
+    onChange?.({ temperature: value });
   };
-  const handleMaxTokensChange = (value: string) => {
-    onChange?.({ maxTokens: value === "" ? undefined : parseInt(value, 10) });
+  const handleMaxTokensChange = (value: number) => {
+    onChange?.({ maxTokens: value });
   };
-  const handleTopPChange = (value: string) => {
-    onChange?.({ topP: value === "" ? undefined : parseFloat(value) });
+  const handleTopPChange = (value: number) => {
+    onChange?.({ topP: value });
   };
-  const handleTopKChange = (value: string) => {
-    onChange?.({ topK: value === "" ? undefined : parseInt(value, 10) });
+  const handleTopKChange = (value: number) => {
+    onChange?.({ topK: value });
   };
-  const handleFreqPenaltyChange = (value: string) => {
-    onChange?.({ frequencyPenalty: value === "" ? undefined : parseFloat(value) });
+  const handleFreqPenaltyChange = (value: number) => {
+    onChange?.({ frequencyPenalty: value });
   };
-  const handlePresPenaltyChange = (value: string) => {
-    onChange?.({ presencePenalty: value === "" ? undefined : parseFloat(value) });
+  const handlePresPenaltyChange = (value: number) => {
+    onChange?.({ presencePenalty: value });
   };
-  const handleMinPChange = (value: string) => {
-    onChange?.({ minP: value === "" ? undefined : parseFloat(value) });
+  const handleMinPChange = (value: number) => {
+    onChange?.({ minP: value });
   };
-  const handleRepeatPenaltyChange = (value: string) => {
-    onChange?.({ repeatPenalty: value === "" ? undefined : parseFloat(value) });
+  const handleRepeatPenaltyChange = (value: number) => {
+    onChange?.({ repeatPenalty: value });
   };
   const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;

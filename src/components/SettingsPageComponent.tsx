@@ -103,8 +103,8 @@ export default function SettingsPageComponent() {
   const isWindowsPath = (p: string) => /^[A-Za-z]:[/\\]/.test(p);
   const windowsToWslPreview = (p: string) => {
     const pathMatch = p.match(/^([A-Za-z]):[/\\](.*)/);
-    if (!model) return null;
-    return `/mnt/${model[1].toLowerCase()}/${model[2].replace(/\\/g, "/")}`;
+    if (!pathMatch) return null;
+    return `/mnt/${pathMatch[1].toLowerCase()}/${pathMatch[2].replace(/\\/g, "/")}`;
   };
 
   /** Format uptime duration from ISO date */
