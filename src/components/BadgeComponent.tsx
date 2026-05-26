@@ -336,10 +336,10 @@ function CoinStatic({ agent, size }: any) {
         context.beginPath();
         context.roundRect(0, 0, TEX_SIZE, TEX_SIZE, r);
         context.closePath();
-        const gradient = context.createLinearGradient(0, 0, TEX_SIZE, TEX_SIZE);
-        g.addColorStop(0, gradient[0]);
-        g.addColorStop(1, gradient[1]);
-        context.fillStyle = g;
+        const canvasGradient = context.createLinearGradient(0, 0, TEX_SIZE, TEX_SIZE);
+        canvasGradient.addColorStop(0, gradient[0]);
+        canvasGradient.addColorStop(1, gradient[1]);
+        context.fillStyle = canvasGradient;
         context.fill();
       }
       canvasRef.current = texCanvas;

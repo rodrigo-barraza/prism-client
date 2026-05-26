@@ -488,13 +488,13 @@ export default function WorkflowCanvas({
     const handleTouchMove = (e: TouchEvent) => {
       const touchState = touchRef.current;
 
-      if (t.type === "pinch" && e.touches.length === 2) {
+      if (touchState.type === "pinch" && e.touches.length === 2) {
         e.preventDefault();
         const rect = container?.getBoundingClientRect();
         if (!rect) return;
         const newDist = getTouchDist(e.touches);
         const center = getTouchCenter(e.touches, rect);
-        const scale = newDist / t.lastDist;
+        const scale = newDist / touchState.lastDist;
         const currentZoom = zoomRef.current;
         const newZoom = Math.min(
           MAX_ZOOM,
@@ -514,7 +514,7 @@ export default function WorkflowCanvas({
       if (e.touches.length !== 1) return;
       const touch = e.touches[0];
 
-      if (t.type === "drag" && dragging) {
+      if (touchState.type === "drag" && dragging) {
         e.preventDefault();
         const svgPos = screenToSvg(touch.clientX, touch.clientY);
         onUpdateNodePosition(dragging.nodeId, {
@@ -524,7 +524,7 @@ export default function WorkflowCanvas({
         return;
       }
 
-      if (t.type === "pan" && isPanning) {
+      if (touchState.type === "pan" && isPanning) {
         e.preventDefault();
         setPan({
           x: panStart.current.panX + (touch.clientX - panStart.current.x),

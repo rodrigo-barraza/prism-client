@@ -38,9 +38,9 @@ const DEFAULT_WIDTH = 320;
 function getStoredWidth(): number {
   try {
     const storedWidth = localStorage.getItem(LS_WORKFLOW_INSPECTOR_WIDTH);
-    if (v) {
+    if (storedWidth) {
       const parsedWidth = parseInt(storedWidth, 10);
-      if (!isNaN(n) && n >= MIN_WIDTH && n <= MAX_WIDTH) return n;
+      if (!isNaN(parsedWidth) && parsedWidth >= MIN_WIDTH && parsedWidth <= MAX_WIDTH) return parsedWidth;
     }
   } catch {
     /* ignore */
@@ -216,8 +216,8 @@ export default function WorkflowInspector({
 
   const getNodeLabel = (id: string) => {
     const matchedNode = (nodes || []).find((nd: WorkflowNode) => nd.id === id);
-    if (!n) return id;
-    if (n.nodeType === "input") {
+    if (!matchedNode) return id;
+    if (matchedNode.nodeType === "input") {
       const labels: Record<string, string> = {
         text: "Text",
         image: "Image",
@@ -226,12 +226,12 @@ export default function WorkflowInspector({
         pdf: "PDF",
         conversation: "Chat History",
       };
-      const key = typeof n.modality === "string" ? n.modality : "";
-      return n.customName || labels[key] || "Media";
+      const key = typeof matchedNode.modality === "string" ? matchedNode.modality : "";
+      return matchedNode.customName || labels[key] || "Media";
     }
-    if (n.nodeType === "viewer") return n.customName || "Output";
-    if (n.nodeType === "tools") return n.customName || "Tools";
-    return (n.displayName as string) || n.modelName || id;
+    if (matchedNode.nodeType === "viewer") return matchedNode.customName || "Output";
+    if (matchedNode.nodeType === "tools") return matchedNode.customName || "Tools";
+    return (matchedNode.displayName as string) || matchedNode.modelName || id;
   };
 
   const NODE_TYPE_LABELS: Record<string, string> = {

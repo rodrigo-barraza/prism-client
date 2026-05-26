@@ -163,19 +163,19 @@ function handleResize(inst: ThreeInstance): void {
   const canvasWidth = rect.width;
   const canvasHeight = rect.height;
 
-  if (w === 0 || h === 0) return;
-  if (w === inst.width && h === inst.height) return;
+  if (canvasWidth === 0 || canvasHeight === 0) return;
+  if (canvasWidth === inst.width && canvasHeight === inst.height) return;
 
-  inst.width = w;
-  inst.height = h;
+  inst.width = canvasWidth;
+  inst.height = canvasHeight;
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  inst.renderer.setSize(w, h, false);
+  inst.renderer.setSize(canvasWidth, canvasHeight, false);
   inst.renderer.setPixelRatio(dpr);
-  canvas.style.width = `${w}px`;
-  canvas.style.height = `${h}px`;
+  canvas.style.width = `${canvasWidth}px`;
+  canvas.style.height = `${canvasHeight}px`;
 
-  inst.camera.aspect = w / h;
+  inst.camera.aspect = canvasWidth / canvasHeight;
   inst.camera.updateProjectionMatrix();
 }
 
