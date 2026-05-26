@@ -3631,7 +3631,7 @@ export default function AgentComponent({
         tabs={[
           {
             key: "settings",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>⚙️</span>,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🛠️</span>,
             tooltip: "Settings",
           },
           ...((currentWorkspace && hasFileOps) || unavailableWorkspace
@@ -3645,7 +3645,7 @@ export default function AgentComponent({
             : []),
           {
             key: "info",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>ℹ️</span>,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
             tooltip: "Info",
           },
           {

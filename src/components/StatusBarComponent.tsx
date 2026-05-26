@@ -18,7 +18,7 @@ const PHASE_LABELS = {
 const PHASE_ICONS = {
   starting: "⚡",
   loading: "📦",
-  processing: "⚙️",
+  processing: "🛠️",
   generating: "✨",
   thinking: "🧠",
   delegating: "👥",

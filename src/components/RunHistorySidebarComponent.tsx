@@ -99,7 +99,7 @@ export default function RunHistorySidebarComponent({
         tabs={[
           {
             key: "general",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>⚙️</span>,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🛠️</span>,
             tooltip: "General",
             badge: selectedModels.length + agentInstances.length,
             badgeDisabled: selectedModels.length + agentInstances.length === 0,

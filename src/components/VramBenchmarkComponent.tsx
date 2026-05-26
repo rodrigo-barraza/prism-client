@@ -550,7 +550,7 @@ function SettingsMatrixTooltip() {
         {rows.map(([key, info]) => (
           <Fragment key={key}>
             <span>
-              {SETTINGS_EMOJI[key] || "⚙️"} {key}
+              {SETTINGS_EMOJI[key] || "🛠️"} {key}
             </span>
             <span>{info.flash ? "✓" : "✗"}</span>
             <span>{info.kv}</span>
@@ -3525,7 +3525,7 @@ export default function VramBenchmarkComponent() {
                 ...settingsLabels.map((s) => ({
                   value: s,
                   label: s,
-                  icon: <span>{SETTINGS_EMOJI[s] || "⚙️"}</span>,
+                  icon: <span>{SETTINGS_EMOJI[s] || "🛠️"}</span>,
                   tooltip: <SettingsTooltipContent settingsKey={s} />,
                 })),
               ]}

@@ -744,8 +744,8 @@ export default function AdminChatViewerComponent({
       badge?: number;
       badgeDisabled?: boolean;
     }> = [
-      { key: "settings", icon: <span className={tabBarStyles.tabEmojiIcon}>⚙️</span>, tooltip: "Settings" },
-      { key: "info", icon: <span className={tabBarStyles.tabEmojiIcon}>ℹ️</span>, tooltip: "Info" },
+      { key: "settings", icon: <span className={tabBarStyles.tabEmojiIcon}>🛠️</span>, tooltip: "Settings" },
+      { key: "info", icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>, tooltip: "Info" },
     ];
 
     if (isSelectedAgent) {
