@@ -281,6 +281,7 @@ interface CatState {
   fadeStart: number | null;
 }
 
+  const sidebarReference = useRef<HTMLElement>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
   const catStateRef = useRef<Map<string, CatState>>(new Map());
   const catElsRef = useRef<Map<string, HTMLImageElement>>(new Map());
@@ -532,6 +533,76 @@ interface CatState {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
+  // ── Programmatic contrast color for sidebar content ────────────
+  useEffect(() => {
+    const sidebarElement = sidebarReference.current;
+    if (!sidebarElement) return;
+
+    const computeAndApplyContrastColor = () => {
+      const computedStyle = getComputedStyle(sidebarElement);
+      const backgroundColorValue = computedStyle.backgroundColor;
+
+      const rgbMatch = backgroundColorValue.match(
+        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/
+      );
+      if (!rgbMatch) return;
+
+      const redChannel = parseInt(rgbMatch[1], 10);
+      const greenChannel = parseInt(rgbMatch[2], 10);
+      const blueChannel = parseInt(rgbMatch[3], 10);
+
+      const toLinearComponent = (channelValue: number): number => {
+        const normalizedValue = channelValue / 255;
+        return normalizedValue <= 0.03928
+          ? normalizedValue / 12.92
+          : Math.pow((normalizedValue + 0.055) / 1.055, 2.4);
+      };
+
+      const relativeLuminance =
+        0.2126 * toLinearComponent(redChannel) +
+        0.7152 * toLinearComponent(greenChannel) +
+        0.0722 * toLinearComponent(blueChannel);
+
+      const isLightBackground = relativeLuminance > 0.179;
+
+      sidebarElement.style.setProperty(
+        "--sidebar-contrast-color",
+        isLightBackground ? "rgba(0, 0, 0, 0.87)" : "rgba(255, 255, 255, 0.92)"
+      );
+      sidebarElement.style.setProperty(
+        "--sidebar-contrast-color-muted",
+        isLightBackground ? "rgba(0, 0, 0, 0.5)" : "rgba(255, 255, 255, 0.55)"
+      );
+      sidebarElement.style.setProperty(
+        "--sidebar-contrast-border",
+        isLightBackground ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.15)"
+      );
+      sidebarElement.style.setProperty(
+        "--sidebar-contrast-hover-background",
+        isLightBackground ? "rgba(0, 0, 0, 0.08)" : "rgba(255, 255, 255, 0.08)"
+      );
+    };
+
+    computeAndApplyContrastColor();
+
+    const mutationObserver = new MutationObserver(computeAndApplyContrastColor);
+    mutationObserver.observe(sidebarElement, {
+      attributes: true,
+      attributeFilter: ["style", "class"],
+    });
+
+    const documentObserver = new MutationObserver(computeAndApplyContrastColor);
+    documentObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+
+    return () => {
+      mutationObserver.disconnect();
+      documentObserver.disconnect();
+    };
+  }, []);
+
   const navSections = mode === "admin" ? ADMIN_NAV_SECTIONS : USER_NAV_SECTIONS;
   const isAdmin = mode === "admin";
 
@@ -676,7 +747,7 @@ interface CatState {
       className={`${styles.wrapper} ${!showNav ? styles.isCollapsedState : ""} ${!navReady ? styles.noTransition : ""}`}
     >
       {/* Expanded sidebar */}
-      <aside className={styles.sidebar}>
+      <aside ref={sidebarReference} className={styles.sidebar}>
         {/* Rainbow logo banner */}
         <div className={styles.logoBanner} ref={bannerRef}>
           <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
