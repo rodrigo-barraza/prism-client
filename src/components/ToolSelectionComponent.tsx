@@ -584,9 +584,6 @@ export default function ToolSelectionComponent({
 
             {!coreCollapsed && (
               <div className={styles.coreToolsList}>
-                <span className={styles.coreHint}>
-                  Implicit agent capabilities required for cognitive reasoning and task orchestration.
-                </span>
                 {filteredCoreTools.map((tool) => (
                   <TooltipComponent
                     key={tool.name}
