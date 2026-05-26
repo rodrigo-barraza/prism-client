@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
+import BadgeComponent from "./BadgeComponent";
 import {
   ListChecks,
   RefreshCw,
@@ -376,7 +376,7 @@ export default function TasksPanel({
                     </span>
                   )}
                   {task.createdAt && (
-                    <DateTimeBadgeComponent date={task.createdAt} />
+                    <BadgeComponent type="dateTime" date={task.createdAt} />
                   )}
                 </div>
               </div>

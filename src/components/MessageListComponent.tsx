@@ -35,7 +35,6 @@ import BadgeComponent from "./BadgeComponent";
 import {
   CopyButtonComponent,
   IconButtonComponent,
-  DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import WorkerNotificationComponent from "./WorkerNotificationComponent";
 
@@ -1062,7 +1061,8 @@ export default function MessageList({
                               />
                             )}
                             {message.timestamp && (
-                              <DateTimeBadgeComponent
+                              <BadgeComponent
+                                type="dateTime"
                                 date={message.timestamp}
                               />
                             )}
@@ -1077,11 +1077,13 @@ export default function MessageList({
                         )}
                         {groupCount > 1 && (
                           <>
-                            <DateTimeBadgeComponent
+                            <BadgeComponent
+                              type="dateTime"
                               date={displayMessages[groupIndices[0]].timestamp}
                             />
                             <span style={{ opacity: 0.5 }}>—</span>
-                            <DateTimeBadgeComponent
+                            <BadgeComponent
+                              type="dateTime"
                               date={
                                 displayMessages[groupIndices[groupCount - 1]].timestamp
                               }
@@ -1166,7 +1168,8 @@ export default function MessageList({
                                 />
                               )}
                               {gMsg.timestamp && (
-                                <DateTimeBadgeComponent
+                                <BadgeComponent
+                                  type="dateTime"
                                   date={gMsg.timestamp}
                                 />
                               )}
@@ -1310,7 +1313,7 @@ export default function MessageList({
                       <span className={styles.scheduleFiredLine} />
                       <div className={styles.scheduleFiredDetails}>
                         {message.timestamp && (
-                          <DateTimeBadgeComponent date={message.timestamp} />
+                          <BadgeComponent type="dateTime" date={message.timestamp} />
                         )}
                         <span className={styles.scheduleFiredPrompt}>{prompt}</span>
                       </div>
@@ -1353,7 +1356,8 @@ export default function MessageList({
                                 ? "System"
                                 : "Model"}
                             {message.timestamp && (
-                              <DateTimeBadgeComponent
+                              <BadgeComponent
+                                type="dateTime"
                                 date={message.timestamp}
                               />
                             )}
@@ -1995,7 +1999,8 @@ export default function MessageList({
                               />
                             ) : null}
                             {message.timestamp && (
-                              <DateTimeBadgeComponent
+                              <BadgeComponent
+                                type="dateTime"
                                 date={message.timestamp}
                               />
                             )}

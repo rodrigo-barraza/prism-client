@@ -15,7 +15,6 @@ import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
   SearchInputComponent,
-  DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
 
@@ -182,7 +181,8 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: { activ
               >
                 {/* Row 1: date (left) · cost (right) */}
                 <div className={styles.topRow}>
-                  <DateTimeBadgeComponent
+                  <BadgeComponent
+                    type="dateTime"
                     date={b.updatedAt || b.createdAt}
                   />
                   {isRunning && (

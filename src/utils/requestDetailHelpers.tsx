@@ -8,9 +8,6 @@
  */
 
 import { formatNumber, formatLatency, formatTokensPerSec } from "./utilities";
-import {
-  DateTimeBadgeComponent,
-} from "@rodrigo-barraza/components-library";
 import BadgeComponent from "../components/BadgeComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 import ToolIconComponent from "../components/ToolIconComponent";
@@ -121,7 +118,7 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
         {
           label: "Timestamp",
           value: req.timestamp ? (
-            <DateTimeBadgeComponent date={req.timestamp} />
+            <BadgeComponent type="dateTime" date={req.timestamp} />
           ) : (
             "-"
           ),

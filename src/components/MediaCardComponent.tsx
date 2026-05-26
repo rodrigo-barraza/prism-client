@@ -10,7 +10,6 @@ import {
   Film,
   FileText,
 } from "lucide-react";
-import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 import Link from "next/link";
 import PrismService from "../services/PrismService";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
@@ -190,7 +189,7 @@ export default function MediaCardComponent({
                 mini
               />
             )}
-            {m.timestamp && <DateTimeBadgeComponent date={m.timestamp} />}
+            {m.timestamp && <BadgeComponent type="dateTime" date={m.timestamp} />}
           </div>
         </div>
       )}

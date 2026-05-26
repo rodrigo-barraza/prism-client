@@ -19,7 +19,6 @@ import RunHistorySidebarComponent from "./RunHistorySidebarComponent";
 import {
   ButtonComponent,
   ModalComponent,
-  DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
 
@@ -1538,7 +1537,8 @@ export default function BenchmarkDetailPageComponent({
                       <BadgeComponent type="stopwatch" seconds={totalDuration} />
                     ) : null;
                   })()}
-                  <DateTimeBadgeComponent
+                  <BadgeComponent
+                    type="dateTime"
                     date={latestRun.completedAt}
                   />
                 </div>

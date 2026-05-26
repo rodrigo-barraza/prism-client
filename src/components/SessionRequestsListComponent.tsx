@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Activity, AlertCircle, Users } from "lucide-react";
-import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import BadgeComponent, { cleanModelName } from "./BadgeComponent";
 import IrisService from "../services/IrisService";
@@ -161,7 +160,7 @@ export default function SessionRequestsListComponent({
                   <span className={styles.requestCost} title="Cost">
                     {formatCost(req.estimatedCost ?? 0)}
                   </span>
-                  <DateTimeBadgeComponent date={req.timestamp} />
+                  <BadgeComponent type="dateTime" date={req.timestamp} />
                 </div>
               </div>
             );

@@ -30,11 +30,11 @@ import type {
 import {
   DatePickerComponent,
   SearchInputComponent,
-  DateTimeBadgeComponent,
   LoadingIndicatorComponent,
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
 import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
+import BadgeComponent from "./BadgeComponent";
 import styles from "./MemoriesPanelComponent.module.css";
 
 /**
@@ -611,7 +611,7 @@ export default function MemoriesPanel({
                     {type}
                   </span>
                   {memory.createdAt && (
-                    <DateTimeBadgeComponent date={memory.createdAt} />
+                    <BadgeComponent type="dateTime" date={memory.createdAt} />
                   )}
                 </div>
               </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Clock, XCircle, Play } from "lucide-react";
-import { DateTimeBadgeComponent } from "@rodrigo-barraza/components-library";
+import { BadgeComponent } from "@rodrigo-barraza/components-library";
 import styles from "./TimerBadgeComponent.module.css";
 
 interface TimerBadgeComponentProps {
@@ -96,7 +96,7 @@ export default function TimerBadgeComponent({
             <span className={styles.timerBadgeTypeIndicator}>
               {mode === "recurring" ? "Recurring Reminder" : "One-Shot Timer"}
             </span>
-            <DateTimeBadgeComponent date={firesAt} />
+            <BadgeComponent type="dateTime" date={firesAt} />
           </div>
           {isTimerActive && !readOnly && onCancel && (
             <button

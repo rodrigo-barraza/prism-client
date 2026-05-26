@@ -29,7 +29,6 @@ import {
   ButtonComponent,
   TableComponent,
   BadgeComponent,
-  DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import { AgentPersona, PrismConfig } from "../../types/types";
 import AgentPickerComponent from "../../components/AgentPickerComponent";
@@ -540,7 +539,7 @@ export default function ScheduledTasksPage() {
                   sortable: true,
                   align: "right",
                   render: (row: any) => row.createdAt
-                    ? <DateTimeBadgeComponent date={row.createdAt} />
+                    ? <BadgeComponent type="dateTime" date={row.createdAt} />
                     : <span className={styles.tableDash}>—</span>,
                 },
                 {

@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import {
   TooltipComponent,
-  MetricBadgeComponent,
   BadgeComponent as SharedBadgeComponent
 } from "@rodrigo-barraza/components-library";
 
@@ -175,6 +174,14 @@ export type BadgeProps =
       active?: boolean;
       variant?: "default" | "compact" | "condensed";
       tooltip?: string;
+    }
+  | {
+      type: "dateTime";
+      date?: string | Date | number | null;
+      showIcon?: boolean;
+      relative?: boolean;
+      highlightNew?: boolean;
+      className?: string;
     };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -487,7 +494,8 @@ export default function BadgeComponent(props: BadgeProps) {
     case "cost": {
       const { cost = 0, showIcon = true, className = "", mini = false, formatFn = formatCost } = props;
       return (
-        <MetricBadgeComponent
+        <SharedBadgeComponent
+          type="metric"
           value={cost}
           formatFn={formatFn}
           icon={showIcon ? <Coins size={mini ? 8 : 10} /> : undefined}
@@ -505,7 +513,8 @@ export default function BadgeComponent(props: BadgeProps) {
     case "tokens": {
       const { value, label = "tokens", showIcon = true, className = "", mini = false } = props;
       return (
-        <MetricBadgeComponent
+        <SharedBadgeComponent
+          type="metric"
           value={value}
           label={label}
           icon={showIcon ? <Hash size={mini ? 8 : 10} /> : undefined}
@@ -523,7 +532,8 @@ export default function BadgeComponent(props: BadgeProps) {
       const { count, showIcon = true, className = "", mini = false } = props;
       const suffix = count !== 1 ? "requests" : "request";
       return (
-        <MetricBadgeComponent
+        <SharedBadgeComponent
+          type="metric"
           value={count}
           label={suffix}
           icon={showIcon ? <Zap size={mini ? 8 : 10} /> : undefined}
@@ -608,7 +618,8 @@ export default function BadgeComponent(props: BadgeProps) {
           : `${count.toLocaleString()} ${suffix}`;
 
       return (
-        <MetricBadgeComponent
+        <SharedBadgeComponent
+          type="metric"
           value={count}
           label={suffix}
           icon={showIcon ? <MessageSquare size={mini ? 8 : 10} /> : undefined}
@@ -929,6 +940,21 @@ export default function BadgeComponent(props: BadgeProps) {
       }
 
       return badge;
+    }
+
+    // --- 17. Date Time ---
+    case "dateTime": {
+      const { date, showIcon = true, relative = true, highlightNew = false, className = "" } = props;
+      return (
+        <SharedBadgeComponent
+          type="dateTime"
+          date={date}
+          showIcon={showIcon}
+          relative={relative}
+          highlightNew={highlightNew}
+          className={className}
+        />
+      );
     }
 
     default:

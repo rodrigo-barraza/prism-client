@@ -17,7 +17,6 @@ import ModelCardComponent from "./ModelCardComponent";
 import {
   TabBarComponent,
   tabBarStyles,
-  DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
@@ -291,7 +290,7 @@ export default function RunHistorySidebarComponent({
                     data-panel-close
                   >
                     <div className={styles.runItemHeader}>
-                      <DateTimeBadgeComponent date={run.completedAt} />
+                      <BadgeComponent type="dateTime" date={run.completedAt} />
                       <BadgeComponent type="cost" cost={totalCost} mini />
                       <span className={styles.runIndex}>
                         #{runHistory.length - index}

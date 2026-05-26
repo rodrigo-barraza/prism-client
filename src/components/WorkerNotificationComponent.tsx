@@ -7,7 +7,7 @@ import { formatLatency } from "../utils/utilities";
 import styles from "./WorkerNotificationComponent.module.css";
 import {
   IconButtonComponent,
-  DateTimeBadgeComponent,
+  BadgeComponent,
 } from "@rodrigo-barraza/components-library";
 
 /**
@@ -65,7 +65,7 @@ export default function WorkerNotificationComponent({
           <div className={styles.roleLabel} style={{ color: statusColor }}>
             <span className={styles.statusIcon}>{statusIcon}</span>
             Worker
-            {timestamp && <DateTimeBadgeComponent date={timestamp} />}
+            {timestamp && <BadgeComponent type="dateTime" date={timestamp} />}
           </div>
           {!readOnly && onDelete && (
             <div className={styles.actions}>

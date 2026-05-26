@@ -29,7 +29,6 @@ import ModalityIconComponent from "../components/ModalityIconComponent";
 
 import ToolIconComponent from "../components/ToolIconComponent";
 import {
-  DateTimeBadgeComponent,
   TooltipComponent,
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "../components/BadgeComponent";
@@ -502,7 +501,7 @@ export const createdAtColumn = (
   align: "right",
   render: (row: TableRow) =>
     row[key] ? (
-      <DateTimeBadgeComponent date={row[key] as string} highlightNew={highlightNew} />
+      <BadgeComponent type="dateTime" date={row[key] as string} highlightNew={highlightNew} />
     ) : (
       emptyDash()
     ),
@@ -967,7 +966,7 @@ export const benchmarkDateColumn = () => ({
   align: "right",
   render: (r: TableRow) =>
     r.completedAt ? (
-      <DateTimeBadgeComponent date={r.completedAt as string} />
+      <BadgeComponent type="dateTime" date={r.completedAt as string} />
     ) : (
       emptyDash()
     ),

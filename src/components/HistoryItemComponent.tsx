@@ -10,7 +10,6 @@ import BadgeComponent from "./BadgeComponent";
 import SoundService from "@/services/SoundService";
 import {
   IconButtonComponent,
-  DateTimeBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 import type { LucideIcon } from "lucide-react";
 
@@ -189,7 +188,7 @@ export default function HistoryItemComponent({
         {/* Row 1: time + tags (left) · agentBadge + cost (right) */}
         <div className={styles.topRow}>
           <div className={styles.topLeft}>
-            <DateTimeBadgeComponent date={itemDate} />
+            <BadgeComponent type="dateTime" date={itemDate} />
             {admin &&
               item.username &&
               item.username !== "unknown" &&
