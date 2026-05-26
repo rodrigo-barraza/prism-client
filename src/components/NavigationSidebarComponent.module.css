@@ -19,7 +19,7 @@
   }
 }
 
-.wrapper.collapsed,
+.wrapper.isCollapsedState,
 :global([data-navigation-is-collapsed="true"]) .wrapper {
   & .sidebar {
     min-width: 52px;
@@ -31,7 +31,7 @@
     gap: 0;
   }
 
-  & .navLink {
+  & .navigationLink {
     justify-content: center;
     padding: 14px 0;
     gap: 0;
@@ -39,7 +39,7 @@
     border-radius: 0;
   }
 
-  & .navLink.active {
+  & .navigationLink.isActiveState {
     &::before {
       top: 0;
       right: 0;
@@ -51,13 +51,13 @@
     }
   }
 
-  & .navLabel,
+  & .navigationLabel,
   & .badge,
   & .attentionDot {
     display: none;
   }
 
-  & .navDivider {
+  & .navigationDivider {
     padding: 0;
     margin: 0;
 
@@ -74,7 +74,7 @@
     padding: 4px 0;
   }
 
-  & .footer .navLink {
+  & .footer .navigationLink {
     justify-content: center;
     padding: 14px 0;
     gap: 0;
@@ -82,7 +82,7 @@
     border-radius: 0;
   }
 
-  & .footer .navLabel {
+  & .footer .navigationLabel {
     display: none;
   }
 
@@ -95,7 +95,7 @@
     }
   }
 
-  & .collapseBtn {
+  & .collapseButton {
     right: 50%;
     transform: translate(50%, -50%);
 
@@ -111,7 +111,7 @@
   width: 100%;
 }
 
-.expandBtn {
+.expandButton {
   display: none;
 }
 
@@ -119,7 +119,7 @@
   width: fit-content;
   min-width: 200px;
   height: 100%;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border-right: 1px solid var(--calculated-border-color);
   display: flex;
   flex-direction: column;
@@ -166,7 +166,7 @@
   image-rendering: pixelated;
 }
 
-.collapseBtn {
+.collapseButton {
   position: absolute;
   right: 6px;
   top: 50%;
@@ -205,7 +205,7 @@
   overflow-y: auto;
 }
 
-.navLink {
+.navigationLink {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -228,7 +228,7 @@
   }
 }
 
-.navLink.active {
+.navigationLink.isActiveState {
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
 
@@ -244,8 +244,8 @@
     border-radius: 2px 0 0 2px;
   }
 
-  & .navIcon,
-  & .navLabel {
+  & .navigationIcon,
+  & .navigationLabel {
     color: hsl(0, 90%, 65%);
     filter: hue-rotate(0deg);
     animation: rainbowHue 4s linear infinite;
@@ -305,20 +305,20 @@
   }
 }
 
-.navIcon {
+.navigationIcon {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
 }
 
-.navLabel {
+.navigationLabel {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* ── Nav Divider ── */
 
-.navDivider {
+.navigationDivider {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -492,7 +492,7 @@
   position: absolute;
   inset: 3px;
   border-radius: 50%;
-  background: var(--bg-surface);
+  background: var(--background-surface);
 }
 
 /* Icon — centered, counter-rotates to stay upright */
@@ -539,7 +539,7 @@
   display: flex;
   flex-direction: column;
   border-radius: 12px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   overflow: hidden;
@@ -593,7 +593,7 @@
   width: 100%;
   padding: 6px 8px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
@@ -626,7 +626,7 @@
   top: calc(100% - 6px);
   left: 8px;
   right: 8px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -670,7 +670,7 @@
   margin: 2px 0;
 }
 
-.workspaceNewBtn {
+.workspaceNewButton {
   display: flex;
   align-items: center;
   gap: 6px;

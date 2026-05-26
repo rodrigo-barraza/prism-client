@@ -24,7 +24,7 @@
   gap: 6px;
 }
 
-.addBtn {
+.addButton {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -70,7 +70,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: 8px;
   transition: all 0.2s ease;
@@ -171,7 +171,7 @@
   flex-shrink: 0;
 }
 
-.connectBtn {
+.connectButton {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -195,7 +195,7 @@
   }
 }
 
-.disconnectBtn {
+.disconnectButton {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -214,7 +214,7 @@
   }
 }
 
-.actionBtn {
+.actionButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +233,7 @@
   }
 }
 
-.deleteBtn:hover {
+.deleteButton:hover {
   color: var(--color-rose) !important;
   background: color-mix(in srgb, var(--color-rose) 12%, transparent) !important;
 }
@@ -253,7 +253,7 @@
   padding: 2px 7px;
   font-size: 0.625rem;
   color: var(--text-secondary);
-  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  background: color-mix(in srgb, var(--background-elevated) 80%, transparent);
   border-radius: 4px;
   font-family: var(--font-mono, "JetBrains Mono", monospace);
 }
@@ -274,8 +274,8 @@
   font-weight: 500;
 }
 
-.confirmBtn {
-  composes: confirmBtn from "./PanelShared.module.css";
+.confirmButton {
+  composes: confirmButton from "./PanelShared.module.css";
 }
 
 .confirmBtnYes {
@@ -316,7 +316,7 @@
   }
 }
 
-.cancelBtn {
+.cancelButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,7 +360,7 @@
   padding: 7px 10px;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   outline: none;
@@ -426,7 +426,7 @@
   flex-shrink: 0;
 }
 
-.saveBtn {
+.saveButton {
   flex: 1;
   display: inline-flex;
   align-items: center;
@@ -455,7 +455,7 @@
   }
 }
 
-.cancelFormBtn {
+.cancelFormButton {
   padding: 8px 14px;
   font-size: var(--font-size-sm);
   font-weight: 500;

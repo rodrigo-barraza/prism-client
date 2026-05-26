@@ -34,7 +34,7 @@
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  background: var(--bg-base);
+  background: var(--background-base);
 }
 
 .panelHeader {
@@ -43,7 +43,7 @@
   gap: 8px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   flex-shrink: 0;
 }
 
@@ -80,14 +80,14 @@
   flex-wrap: wrap;
 }
 
-.sourceBtn {
+.sourceButton {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 6px 12px;
   border: 1px solid var(--border-primary);
   border-radius: 6px;
-  background: var(--bg-base);
+  background: var(--background-base);
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 500;
@@ -122,7 +122,7 @@
   padding: 7px 10px;
   border: 1px solid var(--border-primary);
   border-radius: 6px;
-  background: var(--bg-base);
+  background: var(--background-base);
   color: var(--text-primary);
   font-size: 12px;
   font-family: var(--font-mono, monospace);
@@ -138,7 +138,7 @@
   }
 }
 
-.urlConnectBtn {
+.urlConnectButton {
   padding: 7px 14px;
   border: 1px solid var(--accent-primary);
   border-radius: 6px;
@@ -308,7 +308,7 @@
   gap: 8px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-surface);
+  background: var(--background-surface);
 }
 
 .controlGroup {
@@ -329,7 +329,7 @@
   padding: 5px 6px;
   border: 1px solid var(--border-primary);
   border-radius: 5px;
-  background: var(--bg-base);
+  background: var(--background-base);
   color: var(--text-primary);
   font-size: 12px;
   text-align: center;
@@ -355,7 +355,7 @@
 }
 
 /* Start / stop button */
-.startBtn {
+.startButton {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -379,7 +379,7 @@
   }
 }
 
-.stopBtn {
+.stopButton {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -416,7 +416,7 @@
   padding: 8px 10px;
   border: 1px solid var(--border-primary);
   border-radius: 6px;
-  background: var(--bg-base);
+  background: var(--background-base);
   color: var(--text-primary);
   font-size: 12px;
   font-family: inherit;
@@ -448,7 +448,7 @@
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   overflow: hidden;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   animation: resultSlideIn 0.3s ease;
 }
 
@@ -469,7 +469,7 @@
   gap: 8px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 .resultTimestamp {
@@ -668,7 +668,7 @@
 }
 
 /* Clear results button */
-.clearBtn {
+.clearButton {
   margin-left: auto;
   padding: 4px 8px;
   border: 1px solid var(--border-primary);

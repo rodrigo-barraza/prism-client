@@ -19,7 +19,7 @@
   min-height: 42px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--calculated-border-color);
-  background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
+  background: color-mix(in srgb, var(--background-surface) 85%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 5;
@@ -55,7 +55,7 @@
   margin-right: 6px;
 }
 
-.debugToggleBtn {
+.debugToggleButton {
   height: 28px !important;
   min-height: 28px !important;
   padding: 0 10px !important;
@@ -68,11 +68,11 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.debugToggleBtn:hover {
+.debugToggleButton:hover {
   transform: translateY(-1px);
 }
 
-.debugToggleBtn:active {
+.debugToggleButton:active {
   transform: translateY(0);
 }
 
@@ -84,7 +84,7 @@
 }
 
 /* Override ButtonComponent sizing to fit the compact chat header */
-.chatHeaderNewBtn {
+.chatHeaderNewButton {
   height: 28px;
   min-height: 28px;
   padding: 0 10px;
@@ -195,10 +195,10 @@
 .hasBackground {
   background-image:
     linear-gradient(
-      var(--bg-surface, rgba(10, 10, 15, 0.94)),
-      var(--bg-surface, rgba(10, 10, 15, 0.94))
+      var(--background-surface, rgba(10, 10, 15, 0.94)),
+      var(--background-surface, rgba(10, 10, 15, 0.94))
     ),
-    var(--agent-bg-image);
+    var(--agent-background-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -237,7 +237,7 @@
   position: relative;
   padding: 20px 30px;
   border-top: 1px solid var(--calculated-border-color);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -297,7 +297,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   padding: 8px;
@@ -326,7 +326,7 @@
 .inputBoxGenerating {
   border-color: transparent;
   background-image:
-    linear-gradient(var(--bg-surface), var(--bg-surface)),
+    linear-gradient(var(--background-surface), var(--background-surface)),
     linear-gradient(var(--prism-angle, 0deg), var(--prism-colors));
   background-origin: border-box;
   background-clip: padding-box, border-box;
@@ -344,7 +344,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   opacity: 0.95;
   border-radius: var(--border-radius-md);
   color: var(--accent-primary);
@@ -409,7 +409,7 @@
   pointer-events: auto;
   max-height: 240px;
   overflow-y: auto;
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
@@ -478,7 +478,7 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   color: var(--text-secondary);
 }
 
@@ -528,7 +528,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: 2px;
   max-width: 320px;
@@ -571,7 +571,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: 2px;
 }
@@ -593,7 +593,7 @@
   gap: 6px;
   padding: 10px 14px;
   margin-bottom: 8px;
-  background: color-mix(in srgb, var(--accent-primary) 4%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--accent-primary) 4%, var(--background-elevated));
   border: 1px dashed
     color-mix(in srgb, var(--accent-primary) 30%, var(--calculated-border-color));
   border-radius: var(--border-radius-sm);
@@ -648,7 +648,7 @@
   left: 30px;
   width: 280px;
   max-height: 400px;
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-lg);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -685,7 +685,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--calculated-border-color);
-  background: var(--bg-surface);
+  background: var(--background-surface);
 }
 
 .toolsBubbleList {
@@ -704,7 +704,7 @@
 }
 
 .toolsBubbleItem:hover {
-  background: var(--bg-surface);
+  background: var(--background-surface);
 }
 
 .toolsBubbleItemInfo {
@@ -817,7 +817,7 @@
   padding: 8px 14px;
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
@@ -832,7 +832,7 @@
   &:hover {
     color: var(--text-primary);
     border-color: var(--accent-primary);
-    background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface));
+    background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-surface));
     transform: translateY(-1px);
     box-shadow: 0 2px 8px
       color-mix(in srgb, var(--accent-primary) 15%, transparent);
@@ -909,13 +909,13 @@
   transform: translateY(-1px);
 }
 
-.liveMicBtn {
+.liveMicButton {
   position: relative;
   background: var(--color-danger) !important;
   color: #fff !important;
 }
 
-.liveMicBtn::after {
+.liveMicButton::after {
   content: "";
   position: absolute;
   inset: -6px;

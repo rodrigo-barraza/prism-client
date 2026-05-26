@@ -215,7 +215,7 @@ export default function TextPageComponent({
                 <div key={`${t.convId}-${i}`} className={styles.textCard}>
                   <div className={styles.textHeader}>
                     <button
-                      className={`${styles.favBtn} ${isFav ? styles.favBtnActive : ""}`}
+                      className={`${styles.favButton} ${isFav ? styles.favBtnActive : ""}`}
                       onClick={() => toggleFavorite(textKey)}
                       title={
                         isFav ? "Remove from favorites" : "Add to favorites"

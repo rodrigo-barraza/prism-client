@@ -105,7 +105,7 @@ export default function ToolCallBadgeComponent({
       style={{
         color,
         borderColor: `color-mix(in srgb, ${color} 20%, transparent)`,
-        background: `color-mix(in srgb, ${color} 4%, var(--bg-elevated))`,
+        background: `color-mix(in srgb, ${color} 4%, var(--background-elevated))`,
       }}
     >
       <Icon size={size} />

@@ -69,14 +69,14 @@ export default function WorkflowSidebar({
         {!admin && (
           <div className={styles.sidebarHeaderActions}>
             <button
-              className={styles.headerBtn}
+              className={styles.headerButton}
               onClick={onNewWorkflow}
               title="New Workflow"
             >
               <Plus size={14} />
             </button>
             <button
-              className={styles.headerBtn}
+              className={styles.headerButton}
               onClick={onSaveWorkflow}
               title="Save Workflow"
             >
@@ -108,7 +108,7 @@ export default function WorkflowSidebar({
           </div>
           <div className={styles.assetButtons}>
             <button
-              className={styles.assetBtn}
+              className={styles.assetButton}
               onClick={() => onAddAsset("model")}
               title="Add AI Model"
             >
@@ -116,7 +116,7 @@ export default function WorkflowSidebar({
               <span>AI Model</span>
             </button>
             <button
-              className={styles.assetBtn}
+              className={styles.assetButton}
               onClick={() => onAddAsset("conversation", "input")}
               title="Add Chat History"
             >
@@ -124,7 +124,7 @@ export default function WorkflowSidebar({
               <span>Chat History</span>
             </button>
             <button
-              className={styles.assetBtn}
+              className={styles.assetButton}
               onClick={() => onAddAsset("text", "input")}
               title="Add Text"
             >
@@ -132,7 +132,7 @@ export default function WorkflowSidebar({
               <span>Text</span>
             </button>
             <button
-              className={styles.assetBtn}
+              className={styles.assetButton}
               onClick={() => onAddAsset("file", "input")}
               title="Add Media"
             >
@@ -140,7 +140,7 @@ export default function WorkflowSidebar({
               <span>Media</span>
             </button>
             <button
-              className={styles.assetBtn}
+              className={styles.assetButton}
               onClick={() => onAddAsset("text", "viewer")}
               title="Add Output"
             >
@@ -148,7 +148,7 @@ export default function WorkflowSidebar({
               <span>Output</span>
             </button>
             <button
-              className={styles.assetBtn}
+              className={styles.assetButton}
               onClick={() => onAddAsset("tools", "tools")}
               title="Add Function Calling Tools"
             >

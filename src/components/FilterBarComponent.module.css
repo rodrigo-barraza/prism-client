@@ -5,7 +5,7 @@
   gap: 10px;
   margin-bottom: 16px;
   padding: 14px 18px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
 }
@@ -27,7 +27,7 @@
 .pills {
   display: flex;
   align-items: center;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   padding: 3px;
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--calculated-border-subtle);
@@ -54,7 +54,7 @@
 }
 
 .pillActive {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   color: var(--text-primary);
   box-shadow: var(--calculated-shadow-sm);
 }
@@ -64,7 +64,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-muted);
@@ -75,7 +75,7 @@
 .searchBox:focus-within {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
-  background: var(--bg-surface);
+  background: var(--background-surface);
 }
 
 .searchInput {
@@ -94,13 +94,13 @@
 .viewToggle {
   display: flex;
   align-items: center;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   padding: 3px;
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--calculated-border-subtle);
 }
 
-.viewBtn {
+.viewButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -114,7 +114,7 @@
   transition: all var(--transition-fast);
 }
 
-.viewBtn:hover {
+.viewButton:hover {
   color: var(--text-primary);
 }
 
@@ -136,7 +136,7 @@
 }
 
 .viewBtnActive {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   color: var(--text-primary);
   box-shadow: var(--calculated-shadow-sm);
 }
@@ -148,7 +148,7 @@
   flex-wrap: wrap;
 }
 
-.discreteBtn {
+.discreteButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -163,8 +163,8 @@
   padding: 0;
 }
 
-.discreteBtn:hover {
-  background: var(--bg-elevated);
+.discreteButton:hover {
+  background: var(--background-elevated);
   color: var(--text-primary);
 }
 
@@ -180,7 +180,7 @@
   min-width: 140px;
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   color: var(--text-primary);
   outline: none;
   transition: border-color var(--transition-fast);
@@ -197,7 +197,7 @@
   cursor: pointer;
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   color: var(--text-primary);
   outline: none;
   transition: border-color var(--transition-fast);
@@ -207,7 +207,7 @@
   border-color: var(--accent-primary);
 }
 
-.clearBtn {
+.clearButton {
   align-self: flex-end;
   padding: 6px 12px;
   font-size: var(--font-size-sm);
@@ -218,6 +218,6 @@
   transition: color var(--transition-fast);
 }
 
-.clearBtn:hover {
+.clearButton:hover {
   color: var(--text-primary);
 }

@@ -75,7 +75,7 @@
 
 /* ── Loading ────────────────────────────────────────────────── */
 
-.loading {
+.isLoadingState {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,7 +87,7 @@
 
 /* ── Confirm Delete Row ─────────────────────────────────────── */
 
-.confirmBtn {
+.confirmButton {
   padding: 3px 10px;
   font-size: 0.625rem;
   font-weight: 600;

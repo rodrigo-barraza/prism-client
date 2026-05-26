@@ -57,7 +57,7 @@
 
 /* ── Loading state ────────────────────────────────────────────────── */
 
-.loading {
+.isLoadingState {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,7 +84,7 @@
   transition: opacity 0.3s ease;
 }
 
-.savedIndicator.visible {
+.savedIndicator.isVisibleState {
   opacity: 1;
 }
 
@@ -220,7 +220,7 @@
   font-weight: 500;
   padding: 1px 5px;
   border-radius: 4px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   color: var(--text-muted);
   letter-spacing: 0.2px;
 }
@@ -364,7 +364,7 @@
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-tertiary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   padding: 1px 6px;
   border-radius: 4px;
   letter-spacing: 0.3px;
@@ -378,7 +378,7 @@
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-muted);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   padding: 1px 6px;
   border-radius: 4px;
   letter-spacing: 0.3px;
@@ -427,7 +427,7 @@
   padding: 7px 10px;
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 6px;
-  background: var(--bg-base);
+  background: var(--background-base);
   color: var(--text-primary);
   outline: none;
   transition: border-color var(--transition-fast);
@@ -461,7 +461,7 @@
   border: none;
   border-radius: 6px;
   background: var(--accent-primary);
-  color: var(--bg-base);
+  color: var(--background-base);
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
@@ -544,7 +544,7 @@
   font-size: var(--font-size-xs);
   padding: 2px 6px;
   border-radius: 4px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   color: var(--accent-primary);
 }
 
@@ -573,7 +573,7 @@
   padding: 14px 16px;
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 10px;
-  background: var(--bg-base);
+  background: var(--background-base);
   cursor: pointer;
   text-align: left;
   transition: all var(--transition-fast);
@@ -586,12 +586,12 @@
     var(--accent-primary) 40%,
     var(--calculated-border-subtle)
   );
-  background: color-mix(in srgb, var(--accent-primary) 3%, var(--bg-base));
+  background: color-mix(in srgb, var(--accent-primary) 3%, var(--background-base));
 }
 
 .harnessCard.harnessActive {
   border-color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 6%, var(--bg-base));
+  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-base));
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--accent-primary) 15%, transparent),
     0 2px 8px color-mix(in srgb, var(--accent-primary) 8%, transparent);
@@ -819,7 +819,7 @@
   position: relative;
   display: flex;
   align-items: flex-start;
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 6px;
   overflow: hidden;
@@ -837,7 +837,7 @@
   overflow-x: auto;
 }
 
-.copyBtn {
+.copyButton {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -853,7 +853,7 @@
   transition: all var(--transition-fast);
 }
 
-.copyBtn:hover {
+.copyButton:hover {
   background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   color: var(--accent-primary);
 }

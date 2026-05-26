@@ -1436,7 +1436,7 @@ export default function BenchmarkDetailPageComponent({
                       variant="destructive"
                       icon={Square}
                       onClick={handleStop}
-                      className={styles.stopBtn}
+                      className={styles.stopButton}
                     >
                       Stop
                     </ButtonComponent>

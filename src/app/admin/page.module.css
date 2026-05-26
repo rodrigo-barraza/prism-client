@@ -40,7 +40,7 @@
 }
 
 .chartCard {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   padding: 20px 24px;

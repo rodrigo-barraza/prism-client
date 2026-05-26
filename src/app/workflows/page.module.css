@@ -7,7 +7,7 @@
   gap: 8px;
 }
 
-.headerActionBtn {
+.headerActionButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -29,7 +29,7 @@
   }
 }
 
-.runBtn {
+.runButton {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -49,7 +49,7 @@
   }
 
   &:disabled {
-    background: var(--bg-base);
+    background: var(--background-base);
     color: var(--text-secondary);
     cursor: not-allowed;
     filter: none;
@@ -101,7 +101,7 @@
   gap: 4px;
 }
 
-.assetBtn {
+.assetButton {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -109,7 +109,7 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-subtle);
   border-radius: var(--border-radius-sm);
   transition: all var(--transition-fast);
@@ -147,7 +147,7 @@
 }
 
 /* ── New Workflow Button (top of right panel) ── */
-.newWorkflowBtn {
+.newWorkflowButton {
   margin: 12px;
   width: calc(100% - 24px);
   height: var(--button-height);
@@ -166,7 +166,7 @@
   position: relative;
   padding: 20px 30px;
   border-top: 1px solid var(--calculated-border-color);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   flex-shrink: 0;
@@ -178,7 +178,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   padding: 8px;
@@ -211,7 +211,7 @@
   }
 }
 
-.saveBtn {
+.saveButton {
   height: 36px;
   flex-shrink: 0;
 }
@@ -232,7 +232,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-base);
+  background: var(--background-base);
   animation: fadeIn 0.1s ease-out;
 }
 
@@ -247,12 +247,12 @@
     gap: 4px;
   }
 
-  .headerActionBtn {
+  .headerActionButton {
     width: 28px;
     height: 28px;
   }
 
-  .runBtn {
+  .runButton {
     padding: 4px 10px;
     font-size: var(--font-size-xs);
   }

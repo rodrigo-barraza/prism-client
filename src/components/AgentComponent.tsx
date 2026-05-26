@@ -4253,7 +4253,7 @@ export default function AgentComponent({
                 variant={!showRaw ? "tonal" : "text"}
                 size="small"
                 onClick={() => setShowRaw(false)}
-                className={chatStyles.debugToggleBtn}
+                className={chatStyles.debugToggleButton}
               >
                 Clean
               </ButtonComponent>
@@ -4261,7 +4261,7 @@ export default function AgentComponent({
                 variant={showRaw ? "tonal" : "text"}
                 size="small"
                 onClick={() => setShowRaw(true)}
-                className={chatStyles.debugToggleBtn}
+                className={chatStyles.debugToggleButton}
               >
                 Raw
               </ButtonComponent>
@@ -4274,7 +4274,7 @@ export default function AgentComponent({
             icon={chatGlitchLabel ? undefined : Plus}
             onClick={handleNewChatGlitch}
             disabled={messages.length === 0 && !activeId}
-            className={`${chatStyles.chatHeaderNewBtn} ${chatGlitchLabel ? chatStyles.chatHeaderNewBtnGlitch : ""}`}
+            className={`${chatStyles.chatHeaderNewButton} ${chatGlitchLabel ? chatStyles.chatHeaderNewBtnGlitch : ""}`}
             title="Start a new session"
           >
             {chatGlitchLabel || "New Session"}
@@ -4300,7 +4300,7 @@ export default function AgentComponent({
         ref={messagesListRef}
         style={
           agentBackgroundImage
-            ? ({ "--agent-bg-image": `url(${agentBackgroundImage})` } as React.CSSProperties)
+            ? ({ "--agent-background-image": `url(${agentBackgroundImage})` } as React.CSSProperties)
             : undefined
         }
       >

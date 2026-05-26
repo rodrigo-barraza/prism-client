@@ -75,7 +75,7 @@ export default function BenchmarkModeSelector({ value, onChange }: { value: stri
             <button
               key={mode.value}
               type="button"
-              className={`${styles.option} ${isActive ? styles.active : ""}`}
+              className={`${styles.option} ${isActive ? styles.isActiveState : ""}`}
               onClick={() => onChange(mode.value)}
               title={mode.description}
             >

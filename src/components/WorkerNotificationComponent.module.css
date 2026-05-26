@@ -16,7 +16,7 @@
     opacity: 1;
   }
 
-  &:hover .actionBtn {
+  &:hover .actionButton {
     opacity: 1;
   }
 }
@@ -85,7 +85,7 @@
   gap: 4px;
 }
 
-.actionBtn {
+.actionButton {
   opacity: 0;
   color: var(--text-secondary);
   padding: 4px;

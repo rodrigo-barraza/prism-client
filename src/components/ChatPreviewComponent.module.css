@@ -1,7 +1,7 @@
 /* ── Chat Preview Container ──────────────────────────── */
 
 .chatPreview {
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   flex: 1;
@@ -28,7 +28,7 @@
 }
 
 .promptBlock {
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   padding: 14px 16px;
   font-size: 0.8125rem;

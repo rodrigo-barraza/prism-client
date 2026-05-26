@@ -129,7 +129,7 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: { activ
         icon={Plus}
         onClick={navigateToNew}
         disabled={isOnNewPage}
-        className={styles.newBtn}
+        className={styles.newButton}
         data-panel-close
       >
         New Benchmark

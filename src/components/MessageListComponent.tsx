@@ -487,7 +487,7 @@ function EditableMessage({
             fontSize: isAssistant ? 13 : 14,
             lineHeight: 1.55,
             color: "var(--text-primary)",
-            background: "var(--bg-surface)",
+            background: "var(--background-surface)",
             border: "1px solid var(--accent-primary)",
             borderRadius: 8,
             resize: "vertical",
@@ -526,7 +526,7 @@ function EditableMessage({
               fontWeight: 600,
               borderRadius: 6,
               cursor: "pointer",
-              background: "var(--bg-elevated)",
+              background: "var(--background-elevated)",
               color: "var(--text-secondary)",
               border: "1px solid var(--border-color)",
             }}
@@ -970,7 +970,7 @@ export default function MessageList({
                     icon={<Pencil size={14} />}
                     onClick={() => onSystemPromptEdit(systemPrompt || "")}
                     tooltip="Edit system prompt"
-                    className={styles.actionBtn}
+                    className={styles.actionButton}
                   />
                 </div>
               )}
@@ -1097,7 +1097,7 @@ export default function MessageList({
                             icon={<Undo2 size={14} />}
                             onClick={() => onRestore?.(i)}
                             tooltip="Restore message"
-                            className={styles.actionBtn}
+                            className={styles.actionButton}
                           />
                         </div>
                       )}
@@ -1182,14 +1182,14 @@ export default function MessageList({
                                     icon={<Undo2 size={14} />}
                                     onClick={() => onRestore?.(gi)}
                                     tooltip="Restore message"
-                                    className={styles.actionBtn}
+                                    className={styles.actionButton}
                                   />
                                 )}
                                 {gMsg.content && (
                                   <CopyButtonComponent
                                     text={gMsg.content}
                                     tooltip="Copy raw text"
-                                    className={styles.actionBtn}
+                                    className={styles.actionButton}
                                   />
                                 )}
                               </div>
@@ -1375,14 +1375,14 @@ export default function MessageList({
                                     }
                                     disabled={isGenerating}
                                     tooltip="Edit message"
-                                    className={styles.actionBtn}
+                                    className={styles.actionButton}
                                   />
                                   <IconButtonComponent
                                     icon={<RotateCcw size={14} />}
                                     onClick={() => onRerun?.(i)}
                                     disabled={isGenerating}
                                     tooltip="Rerun this turn"
-                                    className={styles.actionBtn}
+                                    className={styles.actionButton}
                                   />
                                 </>
                               )}
@@ -1397,14 +1397,14 @@ export default function MessageList({
                                     }
                                     disabled={isGenerating}
                                     tooltip="Edit response"
-                                    className={styles.actionBtn}
+                                    className={styles.actionButton}
                                   />
                                 )}
                               {message.content && (
                                 <CopyButtonComponent
                                   text={message.content}
                                   tooltip="Copy raw text"
-                                  className={styles.actionBtn}
+                                  className={styles.actionButton}
                                 />
                               )}
                               <IconButtonComponent
@@ -1412,7 +1412,7 @@ export default function MessageList({
                                 onClick={() => onDelete?.(i)}
                                 tooltip="Delete message"
                                 variant="destructive"
-                                className={styles.actionBtn}
+                                className={styles.actionButton}
                               />
                             </div>
                           )}
@@ -1421,7 +1421,7 @@ export default function MessageList({
                               <CopyButtonComponent
                                 text={message.content}
                                 tooltip="Copy raw text"
-                                className={styles.actionBtn}
+                                className={styles.actionButton}
                               />
                             </div>
                           )}

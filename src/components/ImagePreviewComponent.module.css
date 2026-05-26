@@ -17,7 +17,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   margin-bottom: 12px;
@@ -76,7 +76,7 @@
 }
 
 /* Brush size buttons */
-.sizeBtn {
+.sizeButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,8 +91,8 @@
   padding: 0;
 }
 
-.sizeBtn:hover {
-  background: var(--bg-elevated);
+.sizeButton:hover {
+  background: var(--background-elevated);
   color: var(--text-primary);
 }
 
@@ -108,13 +108,13 @@
 }
 
 /* Action buttons */
-.actionBtn {
+.actionButton {
   display: flex;
   align-items: center;
   gap: 5px;
   padding: 6px 12px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
@@ -123,12 +123,12 @@
   transition: all 0.15s;
 }
 
-.actionBtn:hover {
+.actionButton:hover {
   background: var(--calculated-accent-primary-glow);
   color: var(--text-primary);
 }
 
-.actionBtn:disabled {
+.actionButton:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
@@ -171,7 +171,7 @@
   margin-top: 12px;
 }
 
-.useBtn {
+.useButton {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -186,13 +186,13 @@
   transition: all 0.2s;
 }
 
-.useBtn:hover {
+.useButton:hover {
   background: var(--calculated-accent-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px var(--calculated-accent-primary-glow);
 }
 
-.closeBtn {
+.closeButton {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -210,7 +210,7 @@
   z-index: 10;
 }
 
-.closeBtn:hover {
+.closeButton:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 

@@ -66,7 +66,7 @@ export default function ModelCardComponent({
           </span>
         )}
         <button
-          className={styles.removeBtn}
+          className={styles.removeButton}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onRemove?.(model.instanceId);

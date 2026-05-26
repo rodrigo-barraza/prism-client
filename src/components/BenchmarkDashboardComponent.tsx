@@ -406,7 +406,7 @@ export default function BenchmarkDashboardComponent({
                 return (
                   <button
                     key={tab.key}
-                    className={`${styles.segmentedBtn} ${isActive ? styles.segmentedBtnActive : ""}`}
+                    className={`${styles.segmentedButton} ${isActive ? styles.segmentedBtnActive : ""}`}
                     onClick={() => setActiveTab(tab.key)}
                   >
                     {Icon && <Icon size={13} />}

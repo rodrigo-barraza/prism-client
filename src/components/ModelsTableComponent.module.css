@@ -86,7 +86,7 @@
   opacity: 0.35;
   flex-shrink: 0;
 
-  &.active {
+  &.isActiveState {
     background: var(--color-success);
     opacity: 1;
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
@@ -261,7 +261,7 @@
   width: 40px;
   height: 4px;
   border-radius: 2px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   overflow: hidden;
   flex-shrink: 0;
 }

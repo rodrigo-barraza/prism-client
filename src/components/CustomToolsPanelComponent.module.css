@@ -190,7 +190,7 @@
   gap: 4px;
   padding: 6px 8px;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+  background: color-mix(in srgb, var(--background-surface) 60%, transparent);
   border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
 }
 
@@ -221,7 +221,7 @@
 .toolCard {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   overflow: hidden;
   transition: border-color 0.2s ease;
   flex-shrink: 0;
@@ -252,7 +252,7 @@
   }
 }
 
-.expandBtn {
+.expandButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -375,7 +375,7 @@
   gap: 4px;
   padding: 2px 6px;
   border-radius: 3px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   font-size: 0.625rem;
 
@@ -430,7 +430,7 @@
   }
 }
 
-.cancelBtn {
+.cancelButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -444,7 +444,7 @@
   transition: all 0.15s ease;
 
   &:hover {
-    background: var(--bg-surface);
+    background: var(--background-surface);
     color: var(--text-primary);
   }
 }
@@ -480,7 +480,7 @@
   padding: 7px 10px;
   font-size: 0.8125rem;
   color: var(--text-primary);
-  background: var(--calculated-select-bg, var(--bg-surface));
+  background: var(--calculated-select-bg, var(--background-surface));
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color 0.2s ease;
@@ -544,7 +544,7 @@
   overflow: hidden;
 }
 
-.modeBtn {
+.modeButton {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -563,7 +563,7 @@
 
   &:hover:not(.modeBtnActive) {
     color: var(--text-secondary);
-    background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+    background: color-mix(in srgb, var(--background-surface) 60%, transparent);
   }
 }
 
@@ -572,7 +572,7 @@
   background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
-.addParamBtn {
+.addParamButton {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -632,7 +632,7 @@
   resize: vertical;
   tab-size: 2;
   white-space: pre;
-  background: color-mix(in srgb, var(--bg-surface) 80%, #000);
+  background: color-mix(in srgb, var(--background-surface) 80%, #000);
 }
 
 .jsonActions {
@@ -640,8 +640,8 @@
   gap: 6px;
 }
 
-.jsonParseBtn,
-.jsonUploadBtn {
+.jsonParseButton,
+.jsonUploadButton {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -654,7 +654,7 @@
   transition: all 0.15s ease;
 }
 
-.jsonParseBtn {
+.jsonParseButton {
   color: var(--color-white);
   background: var(--accent-primary);
 
@@ -670,9 +670,9 @@
   }
 }
 
-.jsonUploadBtn {
+.jsonUploadButton {
   color: var(--text-secondary);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
 
   &:hover {
@@ -682,7 +682,7 @@
       var(--accent-primary) 40%,
       var(--calculated-border-color)
     );
-    background: color-mix(in srgb, var(--accent-primary) 5%, var(--bg-surface));
+    background: color-mix(in srgb, var(--accent-primary) 5%, var(--background-surface));
   }
 }
 
@@ -718,7 +718,7 @@
 .paramCard {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   overflow: hidden;
   animation: slideDown 0.15s ease;
 }
@@ -728,7 +728,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
-  background: color-mix(in srgb, var(--bg-surface) 50%, transparent);
+  background: color-mix(in srgb, var(--background-surface) 50%, transparent);
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
@@ -739,7 +739,7 @@
   font-family: var(--font-mono);
 }
 
-.paramRemoveBtn {
+.paramRemoveButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -805,7 +805,7 @@
   padding: 5px 8px;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--calculated-select-bg, var(--bg-surface));
+  background: var(--calculated-select-bg, var(--background-surface));
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color 0.2s ease;
@@ -824,7 +824,7 @@
 
 /* ── Save Button ───────────────────────────────────────────── */
 
-.saveBtn {
+.saveButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -899,7 +899,7 @@
   margin-left: auto;
 }
 
-.groupByBtn {
+.groupByButton {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -918,7 +918,7 @@
 
   &:hover:not(.groupByBtnActive) {
     color: var(--text-secondary);
-    background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+    background: color-mix(in srgb, var(--background-surface) 60%, transparent);
   }
 }
 
@@ -926,3 +926,71 @@
   color: var(--accent-primary);
   background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
+
+/* ── Subtab Navigation Bar ───────────────────────────────── */
+
+.subtab-navigation-bar {
+  display: flex;
+  padding-block: 4px;
+  padding-inline: 4px;
+  background-color: oklch(0.18 0.02 240 / 0.6); /* Modern dark glass background */
+  border-radius: var(--border-radius-sm);
+  border: 1px solid oklch(0.25 0.02 240 / 0.8);
+  gap: 4px;
+  flex-shrink: 0;
+  margin-block-end: 12px;
+}
+
+.subtab-button-element {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 8px;
+  padding-inline: 12px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: oklch(0.7 0.02 240);
+  background: none;
+  border: none;
+  border-radius: calc(var(--border-radius-sm) - 2px);
+  cursor: pointer;
+  user-select: none;
+  transition: 
+    color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    color: oklch(0.9 0.01 240);
+    background-color: oklch(0.24 0.02 240 / 0.5);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.subtab-button-element.is-active-state {
+  color: oklch(0.98 0.01 240);
+  background-color: oklch(0.3 0.03 240 / 0.9);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.2);
+}
+
+.subtab-actions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 4px 8px;
+  border-bottom: 1px solid var(--calculated-border-color);
+  margin-block-end: 12px;
+  flex-shrink: 0;
+}
+
+.subtab-title-text {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+

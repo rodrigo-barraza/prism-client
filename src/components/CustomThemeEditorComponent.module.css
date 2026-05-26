@@ -113,7 +113,7 @@
   opacity: 1;
 }
 
-.actionBtn {
+.actionButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,7 +127,7 @@
   transition: all var(--transition-fast);
 }
 
-.actionBtn:hover {
+.actionButton:hover {
   background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   color: var(--text-primary);
 }
@@ -191,7 +191,7 @@
   bottom: calc(100% + 6px);
   left: 0;
   min-width: 180px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: 8px;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2), 0 -1px 4px rgba(0, 0, 0, 0.1);
@@ -314,8 +314,8 @@
   gap: 8px;
 }
 
-.editorCancelBtn,
-.editorSaveBtn {
+.editorCancelButton,
+.editorSaveButton {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -329,23 +329,23 @@
   font-family: inherit;
 }
 
-.editorCancelBtn {
+.editorCancelButton {
   background: transparent;
   color: var(--text-secondary);
   border: 1px solid var(--calculated-border-color);
 }
 
-.editorCancelBtn:hover {
-  background: var(--bg-elevated);
+.editorCancelButton:hover {
+  background: var(--background-elevated);
   color: var(--text-primary);
 }
 
-.editorSaveBtn {
+.editorSaveButton {
   background: var(--accent-primary);
-  color: var(--bg-base);
+  color: var(--background-base);
 }
 
-.editorSaveBtn:hover {
+.editorSaveButton:hover {
   filter: brightness(1.1);
 }
 
@@ -373,7 +373,7 @@
   padding: 7px 10px;
   border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
-  background: var(--bg-base);
+  background: var(--background-base);
   color: var(--text-primary);
   font-family: inherit;
   outline: none;
@@ -407,7 +407,7 @@
 .previewContent {
   display: flex;
   min-height: 100px;
-  background: var(--preview-bg);
+  background: var(--preview-background);
   transition: background 0.15s ease;
 }
 
@@ -418,7 +418,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  background: color-mix(in srgb, var(--preview-bg) 95%, black);
+  background: color-mix(in srgb, var(--preview-background) 95%, black);
 }
 
 .previewNavItem {
@@ -432,7 +432,7 @@
   transition: all 0.15s ease;
 }
 
-.previewNavItem[data-is-active="true"] {
+.previewNavItem[data-is-active-state="true"] {
   background: color-mix(in srgb, var(--preview-accent) 12%, transparent);
   color: var(--preview-accent);
 }
@@ -462,7 +462,7 @@
 }
 
 .previewCard {
-  background: var(--preview-bg2);
+  background: var(--preview-background-secondary);
   border: 1px solid var(--preview-border, rgba(128, 128, 128, 0.1));
   border-radius: 6px;
   padding: 10px 12px;
@@ -676,7 +676,7 @@
   padding: 5px 8px;
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 4px;
-  background: var(--bg-base);
+  background: var(--background-base);
   color: var(--text-primary);
   outline: none;
   height: auto;
@@ -698,7 +698,7 @@
   border-top: 1px solid var(--calculated-border-subtle);
 }
 
-.applyPreviewBtn {
+.applyPreviewButton {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -710,10 +710,10 @@
   cursor: pointer;
   font-family: inherit;
   background: var(--accent-secondary, var(--accent-primary));
-  color: var(--bg-base);
+  color: var(--background-base);
   transition: all var(--transition-fast);
 }
 
-.applyPreviewBtn:hover {
+.applyPreviewButton:hover {
   filter: brightness(1.1);
 }

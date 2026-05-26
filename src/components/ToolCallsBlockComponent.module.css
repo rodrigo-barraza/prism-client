@@ -4,7 +4,7 @@
   margin-bottom: 10px;
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  background: color-mix(in srgb, var(--color-orange) 3%, var(--bg-base));
+  background: color-mix(in srgb, var(--color-orange) 3%, var(--background-base));
   transition: border-color 0.2s ease;
 }
 
@@ -30,7 +30,7 @@
     content: "";
     position: absolute;
     inset: 2px;
-    background: color-mix(in srgb, var(--color-orange) 3%, var(--bg-base));
+    background: color-mix(in srgb, var(--color-orange) 3%, var(--background-base));
     border-radius: calc(var(--border-radius-sm) - 1px);
     z-index: 0;
   }
@@ -69,7 +69,7 @@
     color 0.2s;
 
   &:hover {
-    background: color-mix(in srgb, var(--color-orange) 6%, var(--bg-elevated));
+    background: color-mix(in srgb, var(--color-orange) 6%, var(--background-elevated));
     color: var(--color-warning-light);
   }
 
@@ -112,7 +112,7 @@
   }
 
   &:hover {
-    background: color-mix(in srgb, var(--color-orange) 4%, var(--bg-elevated));
+    background: color-mix(in srgb, var(--color-orange) 4%, var(--background-elevated));
 
     & .toolCallIcon {
       transform: scale(1.08);

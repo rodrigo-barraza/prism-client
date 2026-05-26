@@ -64,7 +64,7 @@
 
 .emptyState {
   padding: 16px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px dashed var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   text-align: center;
@@ -83,7 +83,7 @@
   justify-content: center;
 }
 
-.quickAddBtn {
+.quickAddButton {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -91,7 +91,7 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-secondary);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
@@ -101,7 +101,7 @@
     color 0.15s;
 }
 
-.quickAddBtn:hover {
+.quickAddButton:hover {
   background: var(--calculated-accent-primary-subtle);
   border-color: color-mix(in srgb, var(--accent-primary) 30%, transparent);
   color: var(--accent-primary);
@@ -125,7 +125,7 @@
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
 }
@@ -158,7 +158,7 @@
   font-style: italic;
 }
 
-.removeBtn {
+.removeButton {
   display: flex;
   align-items: center;
 }

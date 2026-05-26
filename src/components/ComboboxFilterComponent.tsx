@@ -104,7 +104,7 @@ onChange(value);
         />
         {value ? (
           <button
-            className={styles.clearBtn}
+            className={styles.clearButton}
             onClick={handleClear}
             title="Clear"
           >

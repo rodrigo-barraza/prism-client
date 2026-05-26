@@ -347,7 +347,7 @@ export default function ModelsPageComponent({
         if (isActioning) {
           return (
             <button
-              className={`${styles.actionBtn} ${actionType === "unload" ? styles.unloadBtn : styles.loadingBtn}`}
+              className={`${styles.actionButton} ${actionType === "unload" ? styles.unloadButton : styles.loadingButton}`}
               disabled
             >
               <Loader2 size={10} className={styles.spinning} />
@@ -359,7 +359,7 @@ export default function ModelsPageComponent({
         if (isLoaded) {
           return (
             <button
-              className={`${styles.actionBtn} ${styles.unloadBtn}`}
+              className={`${styles.actionButton} ${styles.unloadButton}`}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 handleUnload(instance.id);
@@ -375,7 +375,7 @@ export default function ModelsPageComponent({
 
         return (
           <button
-            className={`${styles.actionBtn} ${styles.loadBtn}`}
+            className={`${styles.actionButton} ${styles.loadButton}`}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               handleLoad(modelKey);
@@ -398,7 +398,7 @@ export default function ModelsPageComponent({
           subtitle={`${allModels.length} models across ${providerSet.size} providers`}
         >
           <button
-            className={styles.refreshBtn}
+            className={styles.refreshButton}
             onClick={handleRefresh}
             disabled={loading}
           >
@@ -409,7 +409,7 @@ export default function ModelsPageComponent({
       ) : (
         <div className={styles.adminActions}>
           <button
-            className={styles.refreshBtn}
+            className={styles.refreshButton}
             onClick={handleRefresh}
             disabled={loading}
           >

@@ -97,7 +97,7 @@ const TreeNode = memo(function TreeNode({
         {onMentionFile && (
           <button
             type="button"
-            className={styles.treeMentionBtn}
+            className={styles.treeMentionButton}
             onClick={handleMention}
             title={`Mention @${nodePath}`}
           >

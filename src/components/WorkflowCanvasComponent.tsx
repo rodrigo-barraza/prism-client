@@ -819,7 +819,7 @@ export default function WorkflowCanvas({
             className={styles.connectionDeleteWrapper}
           >
             <button
-              className={styles.connectionDeleteBtn}
+              className={styles.connectionDeleteButton}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 if (conn.id) onDeleteConnection(conn.id);
@@ -984,7 +984,7 @@ export default function WorkflowCanvas({
         <div className={styles.canvasToolbar}>
           {onToggleSidebar && (
             <button
-              className={`${styles.toolbarBtn} ${sidebarVisible ? styles.toolbarBtnActive : ""}`}
+              className={`${styles.toolbarButton} ${sidebarVisible ? styles.toolbarBtnActive : ""}`}
               onClick={onToggleSidebar}
               title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
             >
@@ -996,7 +996,7 @@ export default function WorkflowCanvas({
             </button>
           )}
           <button
-            className={styles.toolbarBtn}
+            className={styles.toolbarButton}
             onClick={handleToggleAllExpand}
             title={
               allExpanded ? "Collapse all node info" : "Expand all node info"

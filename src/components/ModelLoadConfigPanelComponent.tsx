@@ -216,14 +216,14 @@ export default function ModelLoadConfigPanel({
       footer={
         <>
           <button
-            className={styles.cancelBtn}
+            className={styles.cancelButton}
             onClick={onClose}
             disabled={loading}
           >
             Cancel
           </button>
           <button
-            className={styles.loadBtn}
+            className={styles.loadButton}
             onClick={handleLoad}
             disabled={loading}
           >

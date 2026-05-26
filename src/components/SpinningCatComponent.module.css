@@ -26,6 +26,6 @@
   image-rendering: pixelated;
 }
 
-.hidden {
+.isHiddenState {
   display: none;
 }

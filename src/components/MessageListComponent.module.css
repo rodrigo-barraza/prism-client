@@ -18,7 +18,7 @@
     scroll-margin-top: 56px; /* clear the sticky pinned header when scrollIntoView fires */
   }
 
-  &:hover .actionBtn {
+  &:hover .actionButton {
     opacity: 1;
   }
 }
@@ -46,7 +46,7 @@
 
 /* ── Role node avatar variants ── */
 .userNode .avatar {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
 }
@@ -144,7 +144,7 @@
   gap: 4px;
 }
 
-.actionBtn {
+.actionButton {
   opacity: 0;
   color: var(--text-secondary);
   padding: 4px;
@@ -186,7 +186,7 @@
   transition: background 0.15s;
 
   &:hover {
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
   }
 }
 
@@ -229,7 +229,7 @@
     content: "";
     position: absolute;
     inset: 2px;
-    background: var(--bg-base);
+    background: var(--background-base);
     border-radius: calc(var(--border-radius-sm) - 1px);
     z-index: 0;
   }
@@ -305,7 +305,7 @@
   padding: 8px 12px;
   border-radius: 2px;
   border: 1px solid var(--calculated-border-color);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 .mediaCardIcon {
@@ -324,7 +324,7 @@
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 .videoPreview {
@@ -340,7 +340,7 @@
   width: 100%;
   border-radius: 6px;
   border: 1px solid var(--calculated-border-color);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   overflow: hidden;
   padding: 4px;
 }
@@ -350,7 +350,7 @@
   width: 100%;
   border-radius: 6px;
   border: 1px solid var(--calculated-border-color);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   overflow: hidden;
 }
 
@@ -443,7 +443,7 @@
     padding: 4px 12px;
     margin: 8px 0;
     color: var(--text-secondary);
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     border-radius: 0 2px 2px 0;
   }
 
@@ -473,7 +473,7 @@
   }
 
   & th {
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     font-weight: 600;
   }
 
@@ -762,7 +762,7 @@
   background: color-mix(
     in srgb,
     var(--color-danger, var(--color-danger)) 6%,
-    var(--bg-base)
+    var(--background-base)
   );
   font-size: 0.8125rem;
   line-height: 1.55;
@@ -808,7 +808,7 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface));
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-surface));
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   border: 1px solid
@@ -864,7 +864,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-secondary);
 }

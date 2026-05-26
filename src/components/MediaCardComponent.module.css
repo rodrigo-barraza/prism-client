@@ -2,7 +2,7 @@
 
 .card {
   position: relative;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -18,12 +18,12 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-.card:hover .favBtn {
+.card:hover .favButton {
   opacity: 0.5;
 }
 
 /* ── Favorite button ── */
-.favBtn {
+.favButton {
   position: absolute;
   top: 6px;
   left: 6px;
@@ -45,7 +45,7 @@
   transition: all 0.2s ease;
 }
 
-.favBtn:hover {
+.favButton:hover {
   opacity: 1 !important;
   transform: scale(1.1);
 }
@@ -60,7 +60,7 @@
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   display: flex;
   align-items: center;
   justify-content: center;

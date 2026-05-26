@@ -84,7 +84,7 @@ export default function PlanCardComponent({
               <ButtonComponent
                 variant="primary"
                 icon={Check}
-                className={styles.approveBtn}
+                className={styles.approveButton}
                 onClick={onApprove}
               >
                 Execute Plan
@@ -92,7 +92,7 @@ export default function PlanCardComponent({
               <ButtonComponent
                 variant="destructive"
                 icon={X}
-                className={styles.rejectBtn}
+                className={styles.rejectButton}
                 onClick={onReject}
               >
                 Cancel

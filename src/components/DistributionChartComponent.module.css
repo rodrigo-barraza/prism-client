@@ -43,7 +43,7 @@
   font-weight: 500;
   color: var(--text-muted);
   padding: 3px 8px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border-radius: var(--border-radius-sm);
   white-space: nowrap;
 }

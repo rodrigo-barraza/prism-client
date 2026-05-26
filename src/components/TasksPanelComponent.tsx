@@ -195,7 +195,7 @@ export default function TasksPanel({
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>
+        <div className={styles.isLoadingState}>
           <RefreshCw size={14} className={styles.spin} />
           Loading tasks…
         </div>
@@ -223,14 +223,14 @@ export default function TasksPanel({
           Tasks {summary ? `(${summary.total})` : ""}
         </span>
         <button
-          className={styles.headerBtn}
+          className={styles.headerButton}
           onClick={() => setShowNewForm((v) => !v)}
           title="Create task"
         >
           {showNewForm ? <X size={11} /> : <Plus size={11} />}
         </button>
         <button
-          className={styles.headerBtn}
+          className={styles.headerButton}
           onClick={loadTasks}
           disabled={loading}
           title="Refresh"
@@ -340,7 +340,7 @@ export default function TasksPanel({
             <div className={styles.taskCardHeader}>
               {/* Status cycle button */}
               <button
-                className={`${styles.statusBtn} ${styles[config.colorClass]}`}
+                className={`${styles.statusButton} ${styles[config.colorClass]}`}
                 onClick={() => handleCycleStatus(task)}
                 title={`Status: ${config.label} — click to cycle`}
               >
@@ -383,7 +383,7 @@ export default function TasksPanel({
 
               {/* Expand/collapse */}
               <button
-                className={styles.expandBtn}
+                className={styles.expandButton}
                 onClick={() => setExpandedId(isExpanded ? null : task.taskId)}
                 title={isExpanded ? "Collapse" : "Expand"}
               >
@@ -396,7 +396,7 @@ export default function TasksPanel({
 
               {/* Delete */}
               <button
-                className={styles.deleteBtn}
+                className={styles.deleteButton}
                 onClick={() =>
                   setConfirmingDeleteId(isConfirming ? null : task.taskId)
                 }
@@ -435,13 +435,13 @@ export default function TasksPanel({
                   Delete task #{task.taskId}?
                 </span>
                 <button
-                  className={`${styles.confirmBtn} ${styles.confirmBtnYes}`}
+                  className={`${styles.confirmButton} ${styles.confirmBtnYes}`}
                   onClick={() => handleDelete(task)}
                 >
                   Delete
                 </button>
                 <button
-                  className={`${styles.confirmBtn} ${styles.confirmBtnNo}`}
+                  className={`${styles.confirmButton} ${styles.confirmBtnNo}`}
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel

@@ -1,7 +1,7 @@
 /* ============================================================
    ToggleButtonComponent — toggleable pill button with rainbow
    active state (hue-rotate) matching NavigationSidebar's active
-   navLink animation.
+   navigationLink animation.
    ============================================================ */
 
 /* ── Inactive state — clearly clickable ────────────────── */
@@ -62,7 +62,7 @@
 
 /* ── Active state — rainbow hue-rotate ─────────────────── */
 
-.active {
+.isActiveState {
   border-color: color-mix(in srgb, hsl(0, 90%, 65%) 50%, transparent);
   background: color-mix(in srgb, hsl(0, 90%, 65%) 10%, transparent);
   color: hsl(0, 90%, 65%);

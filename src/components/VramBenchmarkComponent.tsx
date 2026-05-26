@@ -3374,7 +3374,7 @@ export default function VramBenchmarkComponent() {
     <>
       <PageHeaderComponent title="VRAM Benchmark" subtitle={subtitle}>
         <button
-          className={styles.refreshBtn}
+          className={styles.refreshButton}
           onClick={() => {
             setLoading(true);
             fetchData();

@@ -13,7 +13,7 @@
   font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: 0.2px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   white-space: nowrap;
   line-height: 1;
@@ -27,7 +27,7 @@
 
 .badge:hover {
   border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
-  background: color-mix(in srgb, var(--accent-primary) 6%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-elevated));
 }
 
 .badge svg {
@@ -47,7 +47,7 @@
 /* ── Active state (currently executing) ── */
 .badgeActive {
   border-color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-elevated));
   box-shadow: 0 0 6px -1px
     color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }

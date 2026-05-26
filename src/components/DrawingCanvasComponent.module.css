@@ -13,7 +13,7 @@
 }
 
 /* ── Close button ── */
-.closeBtn {
+.closeButton {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -41,7 +41,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   margin-bottom: 12px;
@@ -78,7 +78,7 @@
 }
 
 /* ── Tool buttons ── */
-.toolBtn {
+.toolButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,7 +93,7 @@
   padding: 0;
 
   &:hover {
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     color: var(--text-primary);
   }
 }
@@ -127,7 +127,7 @@
 }
 
 /* ── Size buttons ── */
-.sizeBtn {
+.sizeButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,7 +142,7 @@
   padding: 0;
 
   &:hover {
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     color: var(--text-primary);
   }
 }
@@ -159,13 +159,13 @@
 }
 
 /* ── Action buttons ── */
-.actionBtn {
+.actionButton {
   display: flex;
   align-items: center;
   gap: 5px;
   padding: 6px 12px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
@@ -238,7 +238,7 @@
   margin-top: 12px;
 }
 
-.cancelBtn {
+.cancelButton {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -258,7 +258,7 @@
   }
 }
 
-.saveBtn {
+.saveButton {
   display: flex;
   align-items: center;
   gap: 6px;

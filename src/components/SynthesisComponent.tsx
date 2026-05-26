@@ -810,7 +810,7 @@ export default function SynthesisComponent() {
                   text={sftJsonString}
                   showLabel
                   tooltip="Copy SFT JSON"
-                  className={styles.outputActionBtn}
+                  className={styles.outputActionButton}
                 />
                 <ButtonComponent
                   variant="secondary"
@@ -1041,7 +1041,7 @@ export default function SynthesisComponent() {
                       onClick={() => removeSeedMessage(i)}
                       tooltip="Remove message"
                       variant="destructive"
-                      className={styles.removeSeedBtn}
+                      className={styles.removeSeedButton}
                     />
                   </div>
                   <TextAreaComponent
@@ -1061,7 +1061,7 @@ export default function SynthesisComponent() {
                   variant="disabled"
                   icon={Plus}
                   onClick={() => addSeedMessage("user")}
-                  className={styles.addSeedBtn}
+                  className={styles.addSeedButton}
                 >
                   User
                 </ButtonComponent>
@@ -1069,7 +1069,7 @@ export default function SynthesisComponent() {
                   variant="disabled"
                   icon={Plus}
                   onClick={() => addSeedMessage("assistant")}
-                  className={styles.addSeedBtn}
+                  className={styles.addSeedButton}
                 >
                   Assistant
                 </ButtonComponent>

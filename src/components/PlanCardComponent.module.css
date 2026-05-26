@@ -1,7 +1,7 @@
 .card {
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--color-info) 25%, transparent);
-  background: color-mix(in srgb, var(--color-info) 4%, var(--bg-surface));
+  background: color-mix(in srgb, var(--color-info) 4%, var(--background-surface));
   margin: 10px 0;
   overflow: visible;
   animation: slideIn 0.25s ease-out;
@@ -11,13 +11,13 @@
     background: color-mix(
       in srgb,
       var(--color-success) 4%,
-      var(--bg-surface)
+      var(--background-surface)
     );
   }
 
   &.rejected {
     border-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
-    background: color-mix(in srgb, var(--color-danger) 3%, var(--bg-surface));
+    background: color-mix(in srgb, var(--color-danger) 3%, var(--background-surface));
     opacity: 0.7;
   }
 
@@ -26,7 +26,7 @@
     background: color-mix(
       in srgb,
       var(--color-success) 5%,
-      var(--bg-surface)
+      var(--background-surface)
     );
   }
 }
@@ -132,7 +132,7 @@
 
 /* ── ButtonComponent overrides ─────────────────────────── */
 
-.approveBtn {
+.approveButton {
   background: var(--color-success);
   border-color: var(--color-success);
 

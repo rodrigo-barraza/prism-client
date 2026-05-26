@@ -3,12 +3,12 @@
   align-items: center;
   gap: 2px;
   margin-left: auto;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border-radius: 4px;
   padding: 2px;
 }
 
-.statsTabBtn {
+.statsTabButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -22,7 +22,7 @@
   line-height: 1;
 }
 
-.statsTabBtn:hover {
+.statsTabButton:hover {
   color: var(--text-primary);
   background: color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
 }

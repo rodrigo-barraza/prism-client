@@ -1,7 +1,7 @@
 .tabs {
   display: flex;
   gap: 2px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   padding: 2px;
@@ -22,11 +22,11 @@
 
   &:hover {
     color: var(--text-primary);
-    background: var(--bg-surface);
+    background: var(--background-surface);
   }
 }
 
 .tabActive {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }

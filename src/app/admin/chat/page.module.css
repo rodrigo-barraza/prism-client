@@ -4,7 +4,7 @@
   width: 100%;
   height: calc(100dvh - 80px);
   overflow: hidden;
-  background: var(--bg-base);
+  background: var(--background-base);
   margin: -28px -32px;
   width: calc(100% + 64px);
 }
@@ -26,7 +26,7 @@
   border-radius: 2px;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -43,7 +43,7 @@
   flex: 1;
   border-top: 1px solid var(--calculated-border-color);
   overflow: hidden;
-  background: var(--bg-surface);
+  background: var(--background-surface);
 }
 
 /* Header content styles */

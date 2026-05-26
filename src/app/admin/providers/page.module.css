@@ -5,7 +5,7 @@
 }
 
 .providerCard {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -55,7 +55,7 @@
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 10px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   color: var(--text-secondary);
   letter-spacing: 0.02em;
 }
@@ -88,7 +88,7 @@
 .shareBar {
   width: 100%;
   height: 4px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -158,7 +158,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 10px 12px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--calculated-border-subtle);
 }

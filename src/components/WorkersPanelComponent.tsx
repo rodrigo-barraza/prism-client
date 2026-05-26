@@ -116,7 +116,7 @@ export default function WorkersPanel({
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>
+        <div className={styles.isLoadingState}>
           <RefreshCw size={14} className={styles.spin} />
           Loading workers…
         </div>
@@ -144,7 +144,7 @@ export default function WorkersPanel({
           Workers {workers.length > 0 ? `(${workers.length})` : ""}
         </span>
         <button
-          className={styles.headerBtn}
+          className={styles.headerButton}
           onClick={loadWorkers}
           disabled={loading}
           title="Refresh"

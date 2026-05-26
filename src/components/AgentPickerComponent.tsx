@@ -213,7 +213,7 @@ export default function AgentPickerComponent({
                 <button
                   key={agent.id}
                   className={styles.agentItem}
-                  data-is-active={isActive}
+                  data-is-active-state={isActive}
                   onClick={() =>
                     addMode ? handleAdd(agent) : handleSelect(agent.id)
                   }
@@ -243,7 +243,7 @@ export default function AgentPickerComponent({
                     </div>
                   </div>
                   {addMode ? (
-                    <span className={styles.addBtn}>
+                    <span className={styles.addButton}>
                       <Plus size={12} />
                       Add
                     </span>

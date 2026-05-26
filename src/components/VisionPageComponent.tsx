@@ -482,7 +482,7 @@ export default function VisionPageComponent() {
                 return (
                   <button
                     key={src.key}
-                    className={`${styles.sourceBtn} ${sourceType === src.key ? styles.sourceBtnActive : ""}`}
+                    className={`${styles.sourceButton} ${sourceType === src.key ? styles.sourceBtnActive : ""}`}
                     onClick={() => handleSourceSelect(src.key)}
                   >
                     <Icon size={14} />
@@ -503,7 +503,7 @@ export default function VisionPageComponent() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setIpCamUrl(e.target.value)}
                 />
                 <button
-                  className={styles.urlConnectBtn}
+                  className={styles.urlConnectButton}
                   onClick={() => startIpCamera(ipCamUrl)}
                   disabled={!ipCamUrl.trim()}
                 >
@@ -608,7 +608,7 @@ export default function VisionPageComponent() {
             <span className={styles.panelTitle}>Vision Analysis</span>
             {results.length > 0 && (
               <button
-                className={styles.clearBtn}
+                className={styles.clearButton}
                 onClick={() => {
                   setResults([]);
                   setSnapshotCount(0);
@@ -658,7 +658,7 @@ export default function VisionPageComponent() {
               {/* Start / Stop */}
               {!isAnalyzing ? (
                 <button
-                  className={styles.startBtn}
+                  className={styles.startButton}
                   onClick={startAnalysis}
                   disabled={
                     !isStreaming || !settings.provider || !settings.model
@@ -675,7 +675,7 @@ export default function VisionPageComponent() {
                   Start
                 </button>
               ) : (
-                <button className={styles.stopBtn} onClick={stopAnalysis}>
+                <button className={styles.stopButton} onClick={stopAnalysis}>
                   <Square size={10} />
                   Stop
                 </button>

@@ -82,7 +82,7 @@ export default function AgentCardComponent({
         </span>
         <span className={styles.badge}>Agent</span>
         <button
-          className={styles.removeBtn}
+          className={styles.removeButton}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onRemove?.(agent.instanceId);

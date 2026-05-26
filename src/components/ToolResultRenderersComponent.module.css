@@ -57,7 +57,7 @@
   gap: 4px;
   padding: 1px 8px;
   border-radius: 4px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   color: var(--text-secondary);
@@ -81,7 +81,7 @@
   margin: 0;
   padding: 8px 10px;
   border-radius: 6px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
@@ -102,7 +102,7 @@
 .inlineCode {
   padding: 0 4px;
   border-radius: 3px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-xs);
   color: var(--accent-primary);
@@ -115,7 +115,7 @@
   margin: 0;
   padding: 6px 10px;
   border-radius: 6px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
@@ -164,7 +164,7 @@
   margin-top: 2px;
 }
 
-.rawToggleBtn {
+.rawToggleButton {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -178,9 +178,9 @@
   transition: color 0.15s;
 }
 
-.rawToggleBtn:hover {
+.rawToggleButton:hover {
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 .chevronOpen {
@@ -267,7 +267,7 @@
 }
 
 .dirEntry:hover {
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 .dirIcon {
@@ -293,7 +293,7 @@
 .searchResult {
   padding: 4px 8px;
   border-radius: 4px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
 }
 
@@ -332,7 +332,7 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
-  background: var(--bg-base);
+  background: var(--background-base);
   display: flex;
   flex-direction: column;
 }
@@ -528,7 +528,7 @@
 }
 
 .gitCommit:hover {
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 .gitHash {
@@ -567,7 +567,7 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
-  background: var(--bg-base);
+  background: var(--background-base);
   max-width: 100%;
 }
 
@@ -592,7 +592,7 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
-  background: var(--bg-base);
+  background: var(--background-base);
   width: 75vmin;
   height: 75vmin;
   max-width: 100%;
@@ -692,7 +692,7 @@
   margin-top: 4px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   max-height: 300px;
   overflow-y: auto;
@@ -711,7 +711,7 @@
 }
 
 .inputArgRow:hover {
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 .inputArgKey {
@@ -739,7 +739,7 @@
   margin-top: 2px;
   padding: 4px 6px;
   border-radius: 4px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   max-height: 180px;
   overflow-y: auto;
@@ -774,7 +774,7 @@
   margin-top: 4px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   max-height: 300px;
   overflow-y: auto;
@@ -793,7 +793,7 @@
 }
 
 .outputArgRow:hover {
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 .outputArgKey {
@@ -821,7 +821,7 @@
   margin-top: 2px;
   padding: 4px 6px;
   border-radius: 4px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   max-height: 180px;
   overflow-y: auto;
@@ -852,7 +852,7 @@
   background: color-mix(
     in srgb,
     var(--accent-primary, var(--color-indigo)) 4%,
-    var(--bg-surface)
+    var(--background-surface)
   );
   overflow: hidden;
   animation: workerResultFadeIn 0.3s ease-out;
@@ -965,7 +965,7 @@
   gap: 20px;
   padding: 24px;
   border-radius: 12px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(12px);
@@ -1117,7 +1117,7 @@
   align-items: center;
   padding: 12px;
   border-radius: 10px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;

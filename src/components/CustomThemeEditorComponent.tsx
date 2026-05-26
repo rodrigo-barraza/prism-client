@@ -284,7 +284,7 @@ export default function CustomThemeEditorComponent({
                     </button>
                     <div className={styles.themeItemActions}>
                       <button
-                        className={styles.actionBtn}
+                        className={styles.actionButton}
                         onClick={() => handleEditTheme(theme)}
                         title="Edit"
                         type="button"
@@ -292,7 +292,7 @@ export default function CustomThemeEditorComponent({
                         <Pencil size={13} />
                       </button>
                       <button
-                        className={styles.actionBtn}
+                        className={styles.actionButton}
                         onClick={() => handleDuplicate(theme.id)}
                         title="Duplicate"
                         type="button"
@@ -301,7 +301,7 @@ export default function CustomThemeEditorComponent({
                       </button>
                       {isConfirmingDelete ? (
                         <button
-                          className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                          className={`${styles.actionButton} ${styles.actionBtnDanger}`}
                           onClick={() => handleDelete(theme.id)}
                           title="Confirm delete"
                           type="button"
@@ -310,7 +310,7 @@ export default function CustomThemeEditorComponent({
                         </button>
                       ) : (
                         <button
-                          className={styles.actionBtn}
+                          className={styles.actionButton}
                           onClick={() => handleConfirmDelete(theme.id)}
                           title="Delete"
                           type="button"
@@ -387,7 +387,7 @@ export default function CustomThemeEditorComponent({
             </span>
             <div className={styles.editorActions}>
               <button
-                className={styles.editorCancelBtn}
+                className={styles.editorCancelButton}
                 onClick={handleCancel}
                 type="button"
               >
@@ -395,7 +395,7 @@ export default function CustomThemeEditorComponent({
                 Cancel
               </button>
               <button
-                className={styles.editorSaveBtn}
+                className={styles.editorSaveButton}
                 onClick={handleSave}
                 type="button"
               >
@@ -422,9 +422,9 @@ export default function CustomThemeEditorComponent({
           <div
             className={styles.livePreview}
             style={{
-              "--preview-bg": editTokens.background,
-              "--preview-bg2": editTokens.surface,
-              "--preview-bg3": editTokens.elevated,
+              "--preview-background": editTokens.background,
+              "--preview-background-secondary": editTokens.surface,
+              "--preview-background-tertiary": editTokens.elevated,
               "--preview-accent": editTokens.primary,
               "--preview-accent2": editTokens.secondary,
               "--preview-text": editTokens.textPrimary,
@@ -440,7 +440,7 @@ export default function CustomThemeEditorComponent({
             <span className={styles.previewLabel}>Preview</span>
             <div className={styles.previewContent}>
               <div className={styles.previewSidebar}>
-                <div className={styles.previewNavItem} data-is-active="true">
+                <div className={styles.previewNavItem} data-is-active-state="true">
                   <span className={styles.previewDot} data-color-variant="accent" />
                   <span>Active</span>
                 </div>
@@ -556,7 +556,7 @@ export default function CustomThemeEditorComponent({
           {/* Apply button */}
           <div className={styles.editorFooter}>
             <button
-              className={styles.applyPreviewBtn}
+              className={styles.applyPreviewButton}
               onClick={() => {
                 if (editing) {
                   handleSave();

@@ -669,10 +669,10 @@ export default function FileViewerPanelComponent({
       const target = e.target as HTMLElement;
 
       // ── Inline @ mention button click ──
-      const mentionBtn = target.closest(`.${styles.lineMentionBtn}`);
-      if (mentionBtn) {
+      const mentionButton = target.closest(`.${styles.lineMentionButton}`);
+      if (mentionButton) {
         e.stopPropagation();
-        const lineEl = mentionBtn.closest("[data-line-number]") as HTMLElement | null;
+        const lineEl = mentionButton.closest("[data-line-number]") as HTMLElement | null;
         if (lineEl && activeFile && onMentionLines) {
           const lineNum = parseInt(lineEl.dataset.lineNumber || "", 10);
           if (!isNaN(lineNum)) {
@@ -740,9 +740,9 @@ export default function FileViewerPanelComponent({
     const injected: HTMLButtonElement[] = [];
     for (const element of Array.from(lineEls)) {
       // Skip if already injected
-      if (element.querySelector(`.${styles.lineMentionBtn}`)) continue;
+      if (element.querySelector(`.${styles.lineMentionButton}`)) continue;
       const button = document.createElement("button");
-      button.className = styles.lineMentionBtn;
+      button.className = styles.lineMentionButton;
       button.type = "button";
       button.title = "Reference this line in chat";
       button.textContent = "@";
@@ -772,7 +772,7 @@ export default function FileViewerPanelComponent({
           {cached?.isSvg && activeFileId && (
             <button
               type="button"
-              className={`${styles.titleBarBtn} ${styles.titleBarBtnActive}`}
+              className={`${styles.titleBarButton} ${styles.titleBarBtnActive}`}
               onClick={() => {
                 setSvgViewMode((prev) => ({
                   ...prev,
@@ -795,7 +795,7 @@ export default function FileViewerPanelComponent({
           )}
           <button
             type="button"
-            className={`${styles.titleBarBtn} ${wordWrap ? styles.titleBarBtnActive : ""}`}
+            className={`${styles.titleBarButton} ${wordWrap ? styles.titleBarBtnActive : ""}`}
             onClick={() => setWordWrap((v) => !v)}
             title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
           >
@@ -803,7 +803,7 @@ export default function FileViewerPanelComponent({
           </button>
           <button
             type="button"
-            className={styles.titleBarBtn}
+            className={styles.titleBarButton}
             onClick={handleCloseAll}
             title="Close all tabs"
           >
@@ -853,7 +853,7 @@ export default function FileViewerPanelComponent({
 
         {/* Loading state — only show full spinner for initial loads (no cached content) */}
         {cached?.loading && cached?.content == null && !cached?.isBinary && (
-          <div className={styles.loading}>
+          <div className={styles.isLoadingState}>
             <span className={styles.spinner} />
             Loading…
           </div>

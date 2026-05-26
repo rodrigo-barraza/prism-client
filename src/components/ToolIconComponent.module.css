@@ -14,7 +14,7 @@
   width: 22px;
   height: 22px;
   border-radius: 3px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   cursor: default;
   transition: border-color 0.15s;

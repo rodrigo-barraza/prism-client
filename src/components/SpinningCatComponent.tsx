@@ -256,11 +256,11 @@ export default function SpinningCatComponent({
       <img
         src="/cat.gif"
         alt="Cat"
-        className={`${styles.staticCat} ${visuallyActive ? styles.hidden : ""}`}
+        className={`${styles.staticCat} ${visuallyActive ? styles.isHiddenState : ""}`}
       />
       <canvas
         ref={canvasRef}
-        className={`${styles.canvas} ${visuallyActive ? "" : styles.hidden}`}
+        className={`${styles.canvas} ${visuallyActive ? "" : styles.isHiddenState}`}
       />
     </div>
   );

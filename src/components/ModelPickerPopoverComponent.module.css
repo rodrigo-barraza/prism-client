@@ -8,7 +8,7 @@
   gap: 8px;
   height: 36px;
   padding: 0 14px 0 10px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
@@ -29,7 +29,7 @@
 
 .trigger:hover {
   border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
@@ -38,20 +38,20 @@
 
   &:hover {
     border-color: var(--calculated-border-color);
-    background: var(--bg-surface);
+    background: var(--background-surface);
     box-shadow: none;
   }
 }
 
 .triggerOpen {
   border-color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface));
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-surface));
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .triggerActive {
   border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
-  background: color-mix(in srgb, var(--accent-primary) 6%, var(--bg-surface));
+  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-surface));
 }
 
 /* ── Loading state ──────────────────────────────────────────────────── */
@@ -168,7 +168,7 @@
 .popover {
   position: fixed;
   z-index: 9999;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: 2px;
   box-shadow:
@@ -232,7 +232,7 @@
   width: 24px;
   height: 24px;
   border: none;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border-radius: 50%;
   color: var(--text-secondary);
   cursor: pointer;
@@ -270,7 +270,7 @@
    overflow: visible lets FilterDropdownComponent's
    absolutely-positioned .dropdownMenu escape. */
 .popoverBody > div > div:first-child {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   margin-bottom: 0;
   border: none;
   border-bottom: 1px solid var(--calculated-border-color);

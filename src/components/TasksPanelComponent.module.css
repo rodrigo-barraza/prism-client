@@ -17,7 +17,7 @@
   composes: headerTitle from "./PanelShared.module.css";
 }
 
-.headerBtn {
+.headerButton {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -113,7 +113,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid
     color-mix(in srgb, var(--color-violet) 30%, var(--calculated-border-color));
   border-radius: 6px;
@@ -135,7 +135,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   padding: 6px 8px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: 4px;
   color: var(--text-primary);
@@ -154,7 +154,7 @@
 .newTaskTextarea {
   font-size: var(--font-size-sm);
   padding: 6px 8px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: 4px;
   color: var(--text-primary);
@@ -247,7 +247,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px 12px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   transition: all 0.2s ease;
@@ -284,7 +284,7 @@
   gap: 8px;
 }
 
-.statusBtn {
+.statusButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -397,7 +397,7 @@
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
 }
 
-.expandBtn {
+.expandButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -422,7 +422,7 @@
   }
 }
 
-.deleteBtn {
+.deleteButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -463,7 +463,7 @@
   line-height: 1.5;
   white-space: pre-wrap;
   padding: 8px;
-  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
   border-radius: 6px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   border: 1px solid color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
@@ -487,7 +487,7 @@
 
 .metaKey {
   padding: 1px 5px;
-  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  background: color-mix(in srgb, var(--background-elevated) 80%, transparent);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -520,8 +520,8 @@
   font-weight: 500;
 }
 
-.confirmBtn {
-  composes: confirmBtn from "./PanelShared.module.css";
+.confirmButton {
+  composes: confirmButton from "./PanelShared.module.css";
 }
 
 .confirmBtnYes {
@@ -545,7 +545,7 @@
 
 /* ── Loading & Error ─────────────────────────────────────────── */
 
-.loading {
+.isLoadingState {
   composes: loading from "./PanelShared.module.css";
 }
 

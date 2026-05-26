@@ -164,7 +164,7 @@ function NodePorts({
                     : "url(#prism-gradient)"
                   : isCompatible
                     ? color
-                    : "var(--bg-elevated)"
+                    : "var(--background-elevated)"
               }
               stroke={
                 hasPrismSource
@@ -236,7 +236,7 @@ function NodePorts({
                   ? nodeStatusGradient
                   : isActive
                     ? color
-                    : "var(--bg-elevated)"
+                    : "var(--background-elevated)"
               }
               stroke={isNodeRunning ? nodeStatusGradient : color}
               strokeWidth={2}
@@ -375,7 +375,7 @@ function NodeShell({
     : { stroke: accentColor, strokeOpacity: 0.4 };
 
   // Header fill — default to bg-tertiary if not provided
-  const headerStyle = headerFillStyle || { fill: "var(--bg-elevated)" };
+  const headerStyle = headerFillStyle || { fill: "var(--background-elevated)" };
 
   return (
     <g
@@ -483,7 +483,7 @@ function NodeShell({
           )}
           {onDelete && (
             <button
-              className={styles.deleteNodeBtn}
+              className={styles.deleteNodeButton}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onDelete(node.id);
@@ -682,7 +682,7 @@ function ModelNode(props: ModelNodeProps) {
                 >
                   📎 Image attached
                   <button
-                    className={styles.nodeConfigClearBtn}
+                    className={styles.nodeConfigClearButton}
                     onClick={() =>
                       onUpdateConfig?.(node.id, "staticInputs", {
                         ...node.staticInputs,
@@ -928,7 +928,7 @@ function AssetNode(props: AssetNodeProps) {
         })}
       {/* Gear / eye button */}
       <button
-        className={`${styles.deleteNodeBtn} ${isExpanded ? styles.configBtnActive : ""}`}
+        className={`${styles.deleteNodeButton} ${isExpanded ? styles.configBtnActive : ""}`}
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onToggleExpand(node.id);
@@ -1103,7 +1103,7 @@ function AssetNode(props: AssetNodeProps) {
                           </div>
                         )}
                         <button
-                          className={styles.fileInputClearBtn}
+                          className={styles.fileInputClearButton}
                           onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             onUpdateFileInput?.(node.id, null, null);
@@ -1147,7 +1147,7 @@ function AssetNode(props: AssetNodeProps) {
           >
             {(node.messages || []).length > 2 && (
               <button
-                className={styles.deleteNodeBtn}
+                className={styles.deleteNodeButton}
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
                   const msgs = [...(node.messages || [])];
@@ -1166,7 +1166,7 @@ function AssetNode(props: AssetNodeProps) {
               </button>
             )}
             <button
-              className={styles.deleteNodeBtn}
+              className={styles.deleteNodeButton}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 const msgs = [...(node.messages || [])];
@@ -1304,7 +1304,7 @@ function ToolNode(props: ToolNodeProps) {
         />
       )}
       <button
-        className={`${styles.deleteNodeBtn} ${isExpanded ? styles.configBtnActive : ""}`}
+        className={`${styles.deleteNodeButton} ${isExpanded ? styles.configBtnActive : ""}`}
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onToggleExpand(node.id);

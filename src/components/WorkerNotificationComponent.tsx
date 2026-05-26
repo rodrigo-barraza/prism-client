@@ -74,7 +74,7 @@ export default function WorkerNotificationComponent({
                 onClick={onDelete}
                 tooltip="Delete notification"
                 variant="destructive"
-                className={styles.actionBtn}
+                className={styles.actionButton}
               />
             </div>
           )}

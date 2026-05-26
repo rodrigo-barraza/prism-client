@@ -171,7 +171,7 @@ export default function MCPServersPanel({
       <div className={styles.container}>
         <div className={styles.formHeader}>
           <h3>{isNew ? "Add MCP Server" : "Edit Server"}</h3>
-          <button className={styles.cancelBtn} onClick={handleCancel}>
+          <button className={styles.cancelButton} onClick={handleCancel}>
             <X size={16} />
           </button>
         </div>
@@ -296,14 +296,14 @@ export default function MCPServersPanel({
 
           <div className={styles.formActions}>
             <button
-              className={styles.saveBtn}
+              className={styles.saveButton}
               onClick={handleSave}
               disabled={saving || !editingServer.name?.trim()}
             >
               <Save size={14} />
               {saving ? "Saving..." : isNew ? "Add Server" : "Save Changes"}
             </button>
-            <button className={styles.cancelFormBtn} onClick={handleCancel}>
+            <button className={styles.cancelFormButton} onClick={handleCancel}>
               Cancel
             </button>
           </div>
@@ -324,7 +324,7 @@ export default function MCPServersPanel({
         </span>
         {!readOnly && (
           <div className={styles.headerActions}>
-            <button className={styles.addBtn} onClick={handleCreate}>
+            <button className={styles.addButton} onClick={handleCreate}>
               <Plus size={12} />
               Add
             </button>
@@ -345,7 +345,7 @@ export default function MCPServersPanel({
             servers to give the agent access to databases, APIs, and more.
           </div>
           {!readOnly && (
-            <button className={styles.addBtn} onClick={handleCreate}>
+            <button className={styles.addButton} onClick={handleCreate}>
               <Plus size={12} />
               Add your first server
             </button>
@@ -384,7 +384,7 @@ export default function MCPServersPanel({
                 <div className={styles.serverActions}>
                   {server.connected ? (
                     <button
-                      className={styles.disconnectBtn}
+                      className={styles.disconnectButton}
                       onClick={() => handleDisconnect(server)}
                       disabled={isConnecting}
                     >
@@ -393,7 +393,7 @@ export default function MCPServersPanel({
                     </button>
                   ) : (
                     <button
-                      className={styles.connectBtn}
+                      className={styles.connectButton}
                       onClick={() => handleConnect(server)}
                       disabled={isConnecting}
                     >
@@ -402,14 +402,14 @@ export default function MCPServersPanel({
                     </button>
                   )}
                   <button
-                    className={styles.actionBtn}
+                    className={styles.actionButton}
                     onClick={() => handleEdit(server)}
                     title="Edit server"
                   >
                     <Edit3 size={13} />
                   </button>
                   <button
-                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                    className={`${styles.actionButton} ${styles.deleteButton}`}
                     onClick={() => handleDelete(serverId)}
                     title="Delete server"
                   >
@@ -436,13 +436,13 @@ export default function MCPServersPanel({
                   Delete &ldquo;{server.name}&rdquo;?
                 </span>
                 <button
-                  className={`${styles.confirmBtn} ${styles.confirmBtnYes}`}
+                  className={`${styles.confirmButton} ${styles.confirmBtnYes}`}
                   onClick={() => confirmDelete(serverId)}
                 >
                   Delete
                 </button>
                 <button
-                  className={`${styles.confirmBtn} ${styles.confirmBtnNo}`}
+                  className={`${styles.confirmButton} ${styles.confirmBtnNo}`}
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel

@@ -8,7 +8,7 @@
   gap: 6px;
   padding: 8px 10px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   transition:
     border-color 0.2s,
@@ -54,7 +54,7 @@
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-muted);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   padding: 1px 5px;
   border-radius: 3px;
@@ -66,7 +66,7 @@
   }
 }
 
-.removeBtn {
+.removeButton {
   display: flex;
   align-items: center;
   justify-content: center;

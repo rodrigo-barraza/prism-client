@@ -80,15 +80,15 @@ export default function ApprovalCardComponent({
 
       {isPending && (
         <div className={styles.actions}>
-          <button className={styles.approveBtn} onClick={onApprove}>
+          <button className={styles.approveButton} onClick={onApprove}>
             <Check size={14} />
             Approve
           </button>
-          <button className={styles.approveAllBtn} onClick={onApproveAll}>
+          <button className={styles.approveAllButton} onClick={onApproveAll}>
             <Zap size={14} />
             Approve All
           </button>
-          <button className={styles.rejectBtn} onClick={onReject}>
+          <button className={styles.rejectButton} onClick={onReject}>
             <X size={14} />
             Reject
           </button>

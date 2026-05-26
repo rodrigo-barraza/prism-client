@@ -1,6 +1,6 @@
 /* ============================================================
    Workers Panel — Coordinator Worker Instances
-   Styled to match HistoryItemComponent.active aesthetic
+   Styled to match HistoryItemComponent.isActiveState aesthetic
    ============================================================ */
 
 .container {
@@ -17,7 +17,7 @@
   composes: headerTitle from "./PanelShared.module.css";
 }
 
-.headerBtn {
+.headerButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,7 +43,7 @@
 }
 
 /* ── Worker Card ──────────────────────────────────────────── */
-/* Mirrors .item + .active from HistoryItemComponent           */
+/* Mirrors .item + .isActiveState from HistoryItemComponent           */
 
 .workerCard {
   display: flex;
@@ -106,7 +106,7 @@
   padding: 2px 7px;
   border-radius: 3px;
   background: var(--accent-primary);
-  color: var(--bg-base);
+  color: var(--background-base);
   text-transform: uppercase;
 }
 
@@ -216,7 +216,7 @@
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   color: var(--text-muted);
   padding: 1px 4px;
-  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
   border-radius: 3px;
   max-width: 180px;
   overflow: hidden;
@@ -244,7 +244,7 @@
 
 /* ── Loading / Error ──────────────────────────────────────── */
 
-.loading {
+.isLoadingState {
   composes: loading from "./PanelShared.module.css";
 }
 

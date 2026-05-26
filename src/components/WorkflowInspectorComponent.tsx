@@ -332,7 +332,7 @@ export default function WorkflowInspector({
             </span>
           </div>
         </div>
-        <button className={styles.closeBtn} onClick={onClose}>
+        <button className={styles.closeButton} onClick={onClose}>
           <X size={14} />
         </button>
       </div>
@@ -606,7 +606,7 @@ export default function WorkflowInspector({
                     </div>
                   )}
                   <button
-                    className={styles.clearBtn}
+                    className={styles.clearButton}
                     onClick={() => onUpdateFileInput?.(node.id, null, null)}
                   >
                     Remove
@@ -873,7 +873,7 @@ export default function WorkflowInspector({
                     href={PrismService.getFileUrl(results.image)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={styles.expandBtn}
+                    className={styles.expandButton}
                     title="Open full size"
                   >
                     <Maximize2 size={12} />
@@ -924,7 +924,7 @@ export default function WorkflowInspector({
                   {results.embedding.length > 8 ? ", …" : ""}]
                 </div>
                 <button
-                  className={styles.clearBtn}
+                  className={styles.clearButton}
                   style={{ marginTop: "4px" }}
                   onClick={() =>
                     copyToClipboard(JSON.stringify(results.embedding))
@@ -957,7 +957,7 @@ export default function WorkflowInspector({
                       href={PrismService.getFileUrl(receivedOutputs.image)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={styles.expandBtn}
+                      className={styles.expandButton}
                       title="Open full size"
                     >
                       <Maximize2 size={12} />
@@ -1009,7 +1009,7 @@ export default function WorkflowInspector({
                     {receivedOutputs.embedding.length > 8 ? ", …" : ""}]
                   </div>
                   <button
-                    className={styles.clearBtn}
+                    className={styles.clearButton}
                     style={{ marginTop: "4px" }}
                     onClick={() =>
                       copyToClipboard(

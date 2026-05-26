@@ -78,7 +78,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 12px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   transition: all 0.2s ease;
@@ -226,7 +226,7 @@
   line-height: 1.5;
   white-space: pre-wrap;
   padding: 8px;
-  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
   border-radius: 6px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   border: 1px solid color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
@@ -234,7 +234,7 @@
 
 /* ── Loading state ──────────────────────────────────────────── */
 
-.loading {
+.isLoadingState {
   composes: loading from "./PanelShared.module.css";
 }
 
@@ -254,7 +254,7 @@
 
 /* ── Delete button ─────────────────────────────────────────── */
 
-.deleteBtn {
+.deleteButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,8 +295,8 @@
   font-weight: 500;
 }
 
-.confirmBtn {
-  composes: confirmBtn from "./PanelShared.module.css";
+.confirmButton {
+  composes: confirmButton from "./PanelShared.module.css";
 }
 
 .confirmBtnYes {
@@ -365,7 +365,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 8px;
-  background: color-mix(in srgb, var(--bg-elevated) 40%, transparent);
+  background: color-mix(in srgb, var(--background-elevated) 40%, transparent);
   border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
   animation: toastSlideIn 0.2s ease-out;
@@ -397,7 +397,7 @@
   flex-direction: column;
   gap: 3px;
   padding: 6px 8px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   border-radius: 5px;
   transition: border-color 0.15s ease;

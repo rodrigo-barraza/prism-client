@@ -21,7 +21,7 @@
   gap: 8px;
   height: 36px;
   padding: 0 12px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
@@ -34,7 +34,7 @@
 
   &:hover {
     border-color: var(--text-tertiary);
-    background: var(--bg-surface);
+    background: var(--background-surface);
   }
 }
 
@@ -66,7 +66,7 @@
   min-width: 280px;
   max-height: min(460px, calc(100vh - 120px));
   overflow-y: auto;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius);
   box-shadow:
@@ -110,14 +110,14 @@
   text-align: left;
 
   &:hover {
-    background: var(--bg-surface);
+    background: var(--background-surface);
   }
 
-  &[data-is-active="true"] {
+  &[data-is-active-state="true"] {
     background: color-mix(
       in srgb,
       var(--agent-accent, var(--color-indigo)) 12%,
-      var(--bg-surface)
+      var(--background-surface)
     );
     border: 1px solid
       color-mix(
@@ -179,13 +179,13 @@
 
 .triggerAddOpen {
   border-color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-surface));
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-surface));
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .triggerAddActive {
   border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
-  background: color-mix(in srgb, var(--accent-primary) 6%, var(--bg-surface));
+  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-surface));
 }
 
 .triggerAddContent {
@@ -208,7 +208,7 @@
 
 /* ── Add button (per-row) ────────────────── */
 
-.addBtn {
+.addButton {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -225,7 +225,7 @@
   flex-shrink: 0;
 }
 
-.agentItem:hover .addBtn {
+.agentItem:hover .addButton {
   opacity: 1;
   background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
   border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);

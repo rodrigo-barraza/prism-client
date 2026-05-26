@@ -4,7 +4,7 @@
 
 /* Table */
 .tableWrapper {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   overflow: hidden;

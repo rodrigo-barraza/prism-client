@@ -214,7 +214,7 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
       <div className={styles.header}>
         <span className={styles.headerTitle}>Coordinator Mode</span>
         {phase !== "input" && (
-          <button className={styles.actionBtn} onClick={handleReset}>
+          <button className={styles.actionButton} onClick={handleReset}>
             <X size={11} /> Reset
           </button>
         )}
@@ -245,7 +245,7 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
             rows={4}
           />
           <button
-            className={styles.planBtn}
+            className={styles.planButton}
             onClick={handlePlan}
             disabled={!task.trim() || !filesInput.trim()}
           >
@@ -256,7 +256,7 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
 
       {/* -- Planning Phase ----------------------------------- */}
       {phase === "planning" && (
-        <div className={styles.loading}>
+        <div className={styles.isLoadingState}>
           <Loader size={14} className={styles.spin} />
           Decomposing task into sub-tasks…
         </div>
@@ -290,14 +290,14 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
 
           <div className={styles.planActions}>
             <button
-              className={styles.approveBtn}
+              className={styles.approveButton}
               onClick={handleExecute}
               disabled={loading}
             >
               <Play size={12} /> Execute ({plan.subTasks?.length}{" "}
               workers)
             </button>
-            <button className={styles.rejectBtn} onClick={handleReset}>
+            <button className={styles.rejectButton} onClick={handleReset}>
               Cancel
             </button>
           </div>
@@ -306,7 +306,7 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
 
       {/* -- Executing Phase ---------------------------------- */}
       {phase === "executing" && (
-        <div className={styles.loading}>
+        <div className={styles.isLoadingState}>
           <Loader size={14} className={styles.spin} />
           Spawning workers in git worktrees…
         </div>
@@ -351,13 +351,13 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
 
           <div className={styles.planActions}>
             <button
-              className={styles.approveBtn}
+              className={styles.approveButton}
               onClick={handleMerge}
               disabled={loading}
             >
               <Check size={12} /> Approve & Merge
             </button>
-            <button className={styles.rejectBtn} onClick={handleAbort}>
+            <button className={styles.rejectButton} onClick={handleAbort}>
               Reject & Cleanup
             </button>
           </div>
@@ -375,7 +375,7 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
             All worker branches have been merged. You can run another task or
             close this panel.
           </div>
-          <button className={styles.planBtn} onClick={handleReset}>
+          <button className={styles.planButton} onClick={handleReset}>
             <RefreshCw size={12} /> New Task
           </button>
         </div>

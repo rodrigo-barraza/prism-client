@@ -578,7 +578,7 @@ interface CatState {
                   <React.Fragment key={section.label || sectionIdx}>
                     {/* Section divider */}
                     {section.label && (
-                      <div className={styles.navDivider}>
+                      <div className={styles.navigationDivider}>
                         <span>{section.label}</span>
                       </div>
                     )}
@@ -596,7 +596,7 @@ interface CatState {
                         <Link
                           key={item.href}
                           href={item.href}
-                          className={`${styles.navLink} ${isActive ? styles.active : ""}`}
+                          className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
                           onMouseEnter={(e: React.MouseEvent) =>
                             SoundService.playHover({ event: e.nativeEvent })
                           }
@@ -609,8 +609,8 @@ interface CatState {
                             localStorage.setItem(LS_PANEL_RIGHT, "false");
                           }}
                         >
-                          <Icon className={styles.navIcon} />
-                          <span className={styles.navLabel}>{item.label}</span>
+                          <Icon className={styles.navigationIcon} />
+                          <span className={styles.navigationLabel}>{item.label}</span>
                           {item.href === "/settings" && !memoryConfigured && (
                             <span
                               className={styles.attentionDot}
@@ -639,20 +639,20 @@ interface CatState {
                 {isAdmin ? (
                   <Link
                     href="/"
-                    className={styles.navLink}
+                    className={styles.navigationLink}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <ArrowLeft className={styles.navIcon} />
-                    <span className={styles.navLabel}>Back to Prism</span>
+                    <ArrowLeft className={styles.navigationIcon} />
+                    <span className={styles.navigationLabel}>Back to Prism</span>
                   </Link>
                 ) : isLocal ? (
                   <Link
                     href="/admin"
-                    className={styles.navLink}
+                    className={styles.navigationLink}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <Settings className={styles.navIcon} />
-                    <span className={styles.navLabel}>Admin</span>
+                    <Settings className={styles.navigationIcon} />
+                    <span className={styles.navigationLabel}>Admin</span>
                   </Link>
                 ) : null}
                 <ThemePickerComponent
@@ -673,7 +673,7 @@ interface CatState {
 
   return (
     <div
-      className={`${styles.wrapper} ${!showNav ? styles.collapsed : ""} ${!navReady ? styles.noTransition : ""}`}
+      className={`${styles.wrapper} ${!showNav ? styles.isCollapsedState : ""} ${!navReady ? styles.noTransition : ""}`}
     >
       {/* Expanded sidebar */}
       <aside className={styles.sidebar}>
@@ -696,7 +696,7 @@ interface CatState {
           ))}
           <SpinningCatComponent animate={isGenerating} />
           <button
-            className={styles.collapseBtn}
+            className={styles.collapseButton}
             onClick={toggleNav}
             title="Toggle sidebar"
           >
@@ -710,7 +710,7 @@ interface CatState {
             <React.Fragment key={section.label || sectionIdx}>
               {/* Section divider */}
               {section.label && (
-                <div className={styles.navDivider}>
+                <div className={styles.navigationDivider}>
                   <span>{section.label}</span>
                 </div>
               )}
@@ -726,7 +726,7 @@ interface CatState {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`${styles.navLink} ${isActive ? styles.active : ""}`}
+                    className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
                     onMouseEnter={(e: React.MouseEvent) =>
                       SoundService.playHover({ event: e.nativeEvent })
                     }
@@ -735,8 +735,8 @@ interface CatState {
                       onNavClick?.(item.href);
                     }}
                   >
-                    <Icon className={styles.navIcon} />
-                    <span className={styles.navLabel}>{item.label}</span>
+                    <Icon className={styles.navigationIcon} />
+                    <span className={styles.navigationLabel}>{item.label}</span>
                     {item.href === "/settings" && !memoryConfigured && (
                       <span
                         className={styles.attentionDot}
@@ -783,12 +783,12 @@ interface CatState {
             >
               <Link
                 href="/"
-                className={styles.navLink}
+                className={styles.navigationLink}
                 onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e.nativeEvent })}
                 onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e.nativeEvent })}
               >
-                <ArrowLeft className={styles.navIcon} />
-                <span className={styles.navLabel}>Back to Prism</span>
+                <ArrowLeft className={styles.navigationIcon} />
+                <span className={styles.navigationLabel}>Back to Prism</span>
               </Link>
             </TooltipComponent>
           ) : isLocal ? (
@@ -801,12 +801,12 @@ interface CatState {
             >
               <Link
                 href="/admin"
-                className={styles.navLink}
+                className={styles.navigationLink}
                 onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e.nativeEvent })}
                 onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e.nativeEvent })}
               >
-                <Settings className={styles.navIcon} />
-                <span className={styles.navLabel}>Admin</span>
+                <Settings className={styles.navigationIcon} />
+                <span className={styles.navigationLabel}>Admin</span>
               </Link>
             </TooltipComponent>
           ) : null}

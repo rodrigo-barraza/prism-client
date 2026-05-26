@@ -441,7 +441,7 @@ export default function ScheduledTasksPage() {
 
             <button
               onClick={() => setShowNewModal(true)}
-              className={styles.newBtn}
+              className={styles.newButton}
               title="Create Agentic Cron"
             >
               <Plus size={16} />
@@ -464,7 +464,7 @@ export default function ScheduledTasksPage() {
               <p>Create a background agent automation task to get started.</p>
               <button
                 onClick={() => setShowNewModal(true)}
-                className={styles.emptyBtn}
+                className={styles.emptyButton}
               >
                 Create your first task
               </button>
@@ -554,7 +554,7 @@ export default function ScheduledTasksPage() {
                       <div className={styles.tableActionsCell}>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleTriggerTask(row); }}
-                          className={styles.tableActionBtn}
+                          className={styles.tableActionButton}
                           disabled={isTriggering}
                           title="Trigger task"
                         >
@@ -563,7 +563,7 @@ export default function ScheduledTasksPage() {
                         <div className={styles.menuContainer}>
                           <button
                             onClick={(e) => { e.stopPropagation(); setActiveMenuId(isMenuOpen ? null : row.id); }}
-                            className={styles.menuBtn}
+                            className={styles.menuButton}
                             title="More Actions"
                           >
                             <MoreVertical size={14} />
@@ -630,7 +630,7 @@ export default function ScheduledTasksPage() {
                         <div className={styles.menuContainer}>
                           <button
                             onClick={() => setActiveMenuId(isMenuOpen ? null : task.id)}
-                            className={styles.menuBtn}
+                            className={styles.menuButton}
                             title="More Actions"
                           >
                             <MoreVertical size={16} />

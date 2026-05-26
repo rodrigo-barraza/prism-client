@@ -11,7 +11,7 @@
   display: flex;
   gap: 2px;
   padding: 3px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
@@ -59,7 +59,7 @@
   color: var(--text-secondary);
 }
 
-.option.active {
+.option.isActiveState {
   color: var(--accent-primary);
   font-weight: 600;
 }

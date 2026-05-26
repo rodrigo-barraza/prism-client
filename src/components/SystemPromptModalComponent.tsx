@@ -201,7 +201,7 @@ export default function SystemPromptModal({
         </div>
 
         {selectedId && (
-          <button className={styles.deleteBtn} onClick={handleDelete}>
+          <button className={styles.deleteButton} onClick={handleDelete}>
             Delete this instruction
           </button>
         )}

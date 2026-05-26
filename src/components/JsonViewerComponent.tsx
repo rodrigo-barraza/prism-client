@@ -49,7 +49,7 @@ export default function JsonViewerComponent({
       <div className={styles.toolbar}>
         {label && <span className={styles.label}>{label}</span>}
         <button
-          className={styles.copyBtn}
+          className={styles.copyButton}
           onClick={handleCopy}
           title="Copy JSON"
         >
@@ -119,7 +119,7 @@ function JsonNode({
           ) : expanded ? (
             <span className={styles.bracket}>{bracket[0]}</span>
           ) : (
-            <span className={styles.collapsed}>
+            <span className={styles.isCollapsedState}>
               {bracket[0]}
               <span className={styles.ellipsis}>
                 {entries.length} {type === "array" ? "items" : "keys"}

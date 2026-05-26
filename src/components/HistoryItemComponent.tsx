@@ -156,7 +156,7 @@ export default function HistoryItemComponent({
 
   return (
     <div
-      className={`${styles.item} ${isActive ? styles.active : ""} ${className || ""}`}
+      className={`${styles.item} ${isActive ? styles.isActiveState : ""} ${className || ""}`}
       {...SoundService.interactive(() => onClick?.(item))}
       {...(dataPanelClose ? { "data-panel-close-trigger": true } : {})}
       onContextMenu={
@@ -174,7 +174,7 @@ export default function HistoryItemComponent({
     >
       {onToggleFavorite && (
         <button
-          className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ""}`}
+          className={`${styles.favButton} ${isFavorite ? styles.favBtnActive : ""}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onToggleFavorite(item.id);

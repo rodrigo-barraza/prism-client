@@ -113,8 +113,8 @@ export default function ChatInputButton({
   const isSubmit = variant === "submit";
 
   const classes = [
-    styles.chatInputBtn,
-    isActive ? styles.active : "",
+    styles.chatInputButton,
+    isActive ? styles.isActiveState : "",
     isSubmit ? styles.submit : "",
     isSubmit && isGenerating ? styles.submitGenerating : "",
     className,

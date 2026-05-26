@@ -96,7 +96,7 @@ export default function MediaCardComponent({
     <div className={cardClasses}>
       {showFavorite && (
         <button
-          className={`${styles.favBtn} ${isFavorite ? styles.favBtnActive : ""}`}
+          className={`${styles.favButton} ${isFavorite ? styles.favBtnActive : ""}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onFavorite?.();

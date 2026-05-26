@@ -10,7 +10,7 @@
   overflow: hidden;
 }
 
-.newBtn {
+.newButton {
   margin: 12px 12px 0;
   width: calc(100% - 24px);
   height: var(--button-height);
@@ -78,7 +78,7 @@
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-tertiary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   padding: 1px 6px;
   border-radius: 3px;
 }

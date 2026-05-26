@@ -675,7 +675,7 @@ export default function SettingsPanel({
 
         {!isSpecialModel && !readOnly && !hideSystemPrompt && (
           <button
-            className={`${styles.systemPromptBtn} ${settings.systemPrompt ? styles.systemPromptActive : ""}`}
+            className={`${styles.systemPromptButton} ${settings.systemPrompt ? styles.systemPromptActive : ""}`}
             onClick={() => onSystemPromptClick?.()}
           >
             <Edit3 size={16} />

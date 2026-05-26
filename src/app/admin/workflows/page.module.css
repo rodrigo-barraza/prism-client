@@ -4,7 +4,7 @@
   width: 100%;
   height: calc(100dvh - 80px);
   overflow: hidden;
-  background: var(--bg-base);
+  background: var(--background-base);
   /* Override AdminShell main padding */
   margin: -28px -32px;
   width: calc(100% + 64px);
@@ -18,7 +18,7 @@
   }
 }
 
-.headerActionBtn {
+.headerActionButton {
   display: flex;
   align-items: center;
   justify-content: center;

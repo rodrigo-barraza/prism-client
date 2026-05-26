@@ -165,7 +165,7 @@ onChange(value);
               badgeColor
                 ? ({
                     "--badge-color": badgeColor,
-                    "--badge-bg": `${badgeColor}18`,
+                    "--badge-background": `${badgeColor}18`,
                     "--badge-border": `${badgeColor}40`,
                   } as React.CSSProperties)
                 : undefined

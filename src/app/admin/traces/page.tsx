@@ -224,7 +224,7 @@ export default function TracesPage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.loading}>
+        <div className={styles.isLoadingState}>
           <LoadingIndicatorComponent
             size="small"
             color="inherit"
@@ -347,7 +347,7 @@ export default function TracesPage() {
                                 {
                                   label: `${w.nodeCount} nodes · ${w.edgeCount} edges`,
                                   style: {
-                                    background: "var(--bg-elevated)",
+                                    background: "var(--background-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },
@@ -381,7 +381,7 @@ export default function TracesPage() {
                                 {
                                   label: `${s.requestCount} request${s.requestCount !== 1 ? "s" : ""}`,
                                   style: {
-                                    background: "var(--bg-elevated)",
+                                    background: "var(--background-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },

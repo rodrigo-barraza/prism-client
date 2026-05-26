@@ -15,7 +15,7 @@
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  background: var(--bg-surface);
+  background: var(--background-surface);
 }
 
 .statsHeader {
@@ -48,7 +48,7 @@
   font-weight: 500;
   letter-spacing: 0.2px;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   white-space: nowrap;
   transition:
@@ -175,7 +175,7 @@
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  background: var(--bg-surface);
+  background: var(--background-surface);
 }
 
 .sectionHeader {
@@ -225,14 +225,14 @@
   opacity: 1;
 }
 
-.systemPromptBtn {
+.systemPromptButton {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
   height: var(--input-height);
   padding: 0 14px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-secondary);
@@ -244,7 +244,7 @@
     color 0.2s;
 }
 
-.systemPromptBtn:hover {
+.systemPromptButton:hover {
   border-color: var(--accent-primary);
   color: var(--text-primary);
 }
@@ -290,7 +290,7 @@
   color: var(--text-primary);
   height: var(--input-height);
   padding: 0 10px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   word-break: break-all;
@@ -300,7 +300,7 @@
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   padding: 10px 12px;

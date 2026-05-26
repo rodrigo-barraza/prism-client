@@ -266,7 +266,7 @@ body {
 .prism-glow {
   border: 2px solid transparent;
   background-image:
-    linear-gradient(var(--bg-base), var(--bg-base)),
+    linear-gradient(var(--background-base), var(--background-base)),
     linear-gradient(var(--prism-angle, 0deg), var(--prism-colors));
   background-origin: border-box;
   background-clip: padding-box, border-box;

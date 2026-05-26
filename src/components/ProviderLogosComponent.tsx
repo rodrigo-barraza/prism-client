@@ -189,19 +189,19 @@ const LOGOS = {
       {/* Llama head */}
       <path d="M6 8 C6 6.5, 7 5.5, 8 6 C9 5, 11 4.5, 12 4.5 C13 4.5, 15 5, 16 6 C17 5.5, 18 6.5, 18 8 C18 9, 18.5 10, 18.5 11 C18.5 13, 17 15, 15.5 16 C14.5 16.7, 13 17.5, 12 17.5 C11 17.5, 9.5 16.7, 8.5 16 C7 15, 5.5 13, 5.5 11 C5.5 10, 6 9, 6 8Z" />
       {/* Eyes */}
-      <circle cx="9.5" cy="10" r="1.2" fill="var(--bg-primary, #1a1a2e)" />
-      <circle cx="14.5" cy="10" r="1.2" fill="var(--bg-primary, #1a1a2e)" />
+      <circle cx="9.5" cy="10" r="1.2" fill="var(--background-primary, #1a1a2e)" />
+      <circle cx="14.5" cy="10" r="1.2" fill="var(--background-primary, #1a1a2e)" />
       {/* Nose / snout */}
       <ellipse
         cx="12"
         cy="13.5"
         rx="2.5"
         ry="2"
-        fill="var(--bg-primary, #1a1a2e)"
+        fill="var(--background-primary, #1a1a2e)"
       />
       <ellipse cx="12" cy="13.5" rx="1.8" ry="1.3" fill="currentColor" />
-      <circle cx="11.2" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
-      <circle cx="12.8" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
+      <circle cx="11.2" cy="13.2" r="0.5" fill="var(--background-primary, #1a1a2e)" />
+      <circle cx="12.8" cy="13.2" r="0.5" fill="var(--background-primary, #1a1a2e)" />
     </svg>
   ),
   "llama-cpp": (size: number) => (
@@ -216,18 +216,18 @@ const LOGOS = {
       <path d="M8 2 C7 2, 6 3, 6 5 L6 8 C6.5 7.5, 7.5 7.5, 8 8 L8 2Z" />
       <path d="M16 2 C17 2, 18 3, 18 5 L18 8 C17.5 7.5, 16.5 7.5, 16 8 L16 2Z" />
       <path d="M6 8 C6 6.5, 7 5.5, 8 6 C9 5, 11 4.5, 12 4.5 C13 4.5, 15 5, 16 6 C17 5.5, 18 6.5, 18 8 C18 9, 18.5 10, 18.5 11 C18.5 13, 17 15, 15.5 16 C14.5 16.7, 13 17.5, 12 17.5 C11 17.5, 9.5 16.7, 8.5 16 C7 15, 5.5 13, 5.5 11 C5.5 10, 6 9, 6 8Z" />
-      <circle cx="9.5" cy="10" r="1.2" fill="var(--bg-primary, #1a1a2e)" />
-      <circle cx="14.5" cy="10" r="1.2" fill="var(--bg-primary, #1a1a2e)" />
+      <circle cx="9.5" cy="10" r="1.2" fill="var(--background-primary, #1a1a2e)" />
+      <circle cx="14.5" cy="10" r="1.2" fill="var(--background-primary, #1a1a2e)" />
       <ellipse
         cx="12"
         cy="13.5"
         rx="2.5"
         ry="2"
-        fill="var(--bg-primary, #1a1a2e)"
+        fill="var(--background-primary, #1a1a2e)"
       />
       <ellipse cx="12" cy="13.5" rx="1.8" ry="1.3" fill="currentColor" />
-      <circle cx="11.2" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
-      <circle cx="12.8" cy="13.2" r="0.5" fill="var(--bg-primary, #1a1a2e)" />
+      <circle cx="11.2" cy="13.2" r="0.5" fill="var(--background-primary, #1a1a2e)" />
+      <circle cx="12.8" cy="13.2" r="0.5" fill="var(--background-primary, #1a1a2e)" />
       {/* C++ badge */}
       <rect
         x="15"
@@ -235,7 +235,7 @@ const LOGOS = {
         width="8"
         height="6"
         rx="1.5"
-        fill="var(--bg-primary, #1a1a2e)"
+        fill="var(--background-primary, #1a1a2e)"
       />
       <text
         x="19"

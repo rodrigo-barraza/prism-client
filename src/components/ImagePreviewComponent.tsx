@@ -260,7 +260,7 @@ export default function ImagePreviewComponent({
 
   return (
     <div className={styles.overlay} onClick={handleOverlayClick}>
-      <button className={styles.closeBtn} onClick={onClose}>
+      <button className={styles.closeButton} onClick={onClose}>
         <X size={24} />
       </button>
 
@@ -270,14 +270,14 @@ export default function ImagePreviewComponent({
           {/* Mode toggle */}
           <div className={styles.toolGroup}>
             <button
-              className={`${styles.actionBtn} ${!isEraser ? styles.sizeBtnActive : ""}`}
+              className={`${styles.actionButton} ${!isEraser ? styles.sizeBtnActive : ""}`}
               onClick={() => setIsEraser(false)}
               title="Draw"
             >
               <Pen size={14} />
             </button>
             <button
-              className={`${styles.actionBtn} ${isEraser ? styles.sizeBtnActive : ""}`}
+              className={`${styles.actionButton} ${isEraser ? styles.sizeBtnActive : ""}`}
               onClick={() => setIsEraser(true)}
               title="Eraser"
             >
@@ -308,7 +308,7 @@ export default function ImagePreviewComponent({
             {SIZES.map((s, i) => (
               <button
                 key={s.label}
-                className={`${styles.sizeBtn} ${sizeIdx === i ? styles.sizeBtnActive : ""}`}
+                className={`${styles.sizeButton} ${sizeIdx === i ? styles.sizeBtnActive : ""}`}
                 onClick={() => setSizeIdx(i)}
                 title={s.label}
               >
@@ -323,7 +323,7 @@ export default function ImagePreviewComponent({
           {/* Actions */}
           <div className={styles.toolGroup}>
             <button
-              className={styles.actionBtn}
+              className={styles.actionButton}
               onClick={handleUndo}
               disabled={strokes.length === 0}
               title="Undo last stroke"
@@ -331,7 +331,7 @@ export default function ImagePreviewComponent({
               <Undo2 size={14} /> Undo
             </button>
             <button
-              className={styles.actionBtn}
+              className={styles.actionButton}
               onClick={handleClear}
               disabled={strokes.length === 0}
               title="Clear all annotations"
@@ -363,7 +363,7 @@ export default function ImagePreviewComponent({
       {/* Bottom bar */}
       {!readOnly && (
         <div className={styles.bottomBar}>
-          <button className={styles.useBtn} onClick={handleUse}>
+          <button className={styles.useButton} onClick={handleUse}>
             <Send size={16} /> Use in chat
           </button>
         </div>

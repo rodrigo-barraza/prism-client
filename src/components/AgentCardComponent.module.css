@@ -8,7 +8,7 @@
   gap: 6px;
   padding: 8px 10px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-left: 2px solid color-mix(in srgb, var(--color-success) 60%, transparent);
   transition:
@@ -64,7 +64,7 @@
   flex-shrink: 0;
 }
 
-.removeBtn {
+.removeButton {
   display: flex;
   align-items: center;
   justify-content: center;

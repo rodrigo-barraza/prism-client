@@ -23,7 +23,7 @@
 .tabs {
   display: flex;
   gap: 2px;
-  background: var(--bg-base);
+  background: var(--background-base);
   border-radius: 4px;
   padding: 2px;
   border: 1px solid var(--calculated-border-subtle);
@@ -58,7 +58,7 @@
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-primary);
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-subtle);
   border-radius: var(--border-radius-sm);
   max-height: calc(100vh - 320px);
@@ -79,7 +79,7 @@
   font-family: var(--font-mono, monospace);
   line-height: 1.5;
   color: var(--text-primary);
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-subtle);
   border-radius: var(--border-radius-sm);
   resize: none;

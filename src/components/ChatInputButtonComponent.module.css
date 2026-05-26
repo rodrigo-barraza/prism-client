@@ -1,4 +1,4 @@
-.chatInputBtn {
+.chatInputButton {
   width: 40px;
   height: 40px;
   border-radius: var(--border-radius-sm);
@@ -14,25 +14,25 @@
   align-self: center;
 }
 
-.chatInputBtn:hover:not(:disabled) {
+.chatInputButton:hover:not(:disabled) {
   color: var(--accent-primary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
-.chatInputBtn:disabled {
+.chatInputButton:disabled {
   color: var(--text-secondary);
   background: transparent;
   cursor: not-allowed;
   opacity: 0.4;
 }
 
-.chatInputBtn.active {
+.chatInputButton.isActiveState {
   color: var(--accent-primary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
 }
 
 /* ── Submit variant ── */
-.chatInputBtn.submit {
+.chatInputButton.submit {
   align-self: stretch;
   height: auto;
   min-height: 40px;
@@ -41,18 +41,18 @@
   margin-left: auto;
 }
 
-.chatInputBtn.submit:hover:not(:disabled) {
+.chatInputButton.submit:hover:not(:disabled) {
   background: var(--calculated-accent-primary-hover);
   transform: translateY(-1px);
 }
 
-.chatInputBtn.submit:disabled {
-  background: var(--bg-base);
+.chatInputButton.submit:disabled {
+  background: var(--background-base);
   color: var(--text-secondary);
   opacity: 1;
 }
 
-.chatInputBtn.submitGenerating {
+.chatInputButton.submitGenerating {
   position: relative;
   overflow: hidden;
   background: transparent !important;
@@ -63,7 +63,7 @@
   transition: transform 0.15s ease;
 }
 
-.chatInputBtn.submitGenerating::before {
+.chatInputButton.submitGenerating::before {
   content: "";
   position: absolute;
   inset: -50%;
@@ -72,11 +72,11 @@
   z-index: -1;
 }
 
-.chatInputBtn.submitGenerating:hover {
+.chatInputButton.submitGenerating:hover {
   transform: scale(1.08);
 }
 
-.chatInputBtn.submitGenerating svg {
+.chatInputButton.submitGenerating svg {
   color: white !important;
 }
 

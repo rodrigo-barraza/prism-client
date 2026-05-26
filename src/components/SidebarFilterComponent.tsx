@@ -495,7 +495,7 @@ export default function SidebarFilterComponent({
                     b.color
                       ? ({
                           "--badge-color": b.color,
-                          "--badge-bg": `${b.color}18`,
+                          "--badge-background": `${b.color}18`,
                           "--badge-border": `${b.color}40`,
                         } as React.CSSProperties)
                       : undefined

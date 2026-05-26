@@ -8,7 +8,7 @@
 }
 
 /* ── Loading / empty states ──────────────────────────── */
-.loading {
+.isLoadingState {
   display: flex;
   align-items: center;
   justify-content: center;

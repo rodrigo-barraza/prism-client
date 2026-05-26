@@ -24,14 +24,14 @@
 }
 
 /* ─── Refresh button (in PageHeader right slot) ─── */
-.refreshBtn {
+.refreshButton {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -39,13 +39,13 @@
   transition: all 0.2s ease;
 }
 
-.refreshBtn:hover {
-  background: var(--bg-elevated);
+.refreshButton:hover {
+  background: var(--background-elevated);
   color: var(--text-primary);
   border-color: var(--accent-primary);
 }
 
-.refreshBtn:disabled {
+.refreshButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -54,7 +54,7 @@
 .tabBar {
   margin-bottom: 0;
   border-bottom: none;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-bottom: none;
   border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
@@ -63,7 +63,7 @@
 
 /* ─── Chart card ─── */
 .chartCard {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
   padding: 20px 24px 24px;
@@ -136,7 +136,7 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color var(--transition-fast);
@@ -197,7 +197,7 @@
   align-items: center;
   gap: 6px;
   padding: 5px 10px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition:
@@ -250,7 +250,7 @@
   height: 18px;
   border: none;
   border-radius: 50%;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   color: var(--text-muted);
   font-size: 0.625rem;
   line-height: 1;

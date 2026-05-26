@@ -16,7 +16,7 @@
     color 0.2s,
     background 0.2s;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
 }
 

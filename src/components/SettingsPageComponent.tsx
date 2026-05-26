@@ -369,7 +369,7 @@ export default function SettingsPageComponent() {
           title="Settings"
           subtitle="Configure system-wide preferences"
         />
-        <div className={styles.loading}>
+        <div className={styles.isLoadingState}>
           <Loader2 size={20} className={styles.spinning} />
           <span>Loading settings…</span>
         </div>
@@ -389,7 +389,7 @@ export default function SettingsPageComponent() {
         subtitle="Configure system-wide preferences"
       >
         <span
-          className={`${styles.savedIndicator} ${saved ? styles.visible : ""}`}
+          className={`${styles.savedIndicator} ${saved ? styles.isVisibleState : ""}`}
         >
           <Check size={14} />
           Saved
@@ -676,7 +676,7 @@ export default function SettingsPageComponent() {
                         {"\n"}cd workspace-service
                       </code>
                       <button
-                        className={styles.copyBtn}
+                        className={styles.copyButton}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -709,7 +709,7 @@ export default function SettingsPageComponent() {
                     <div className={styles.codeBlock}>
                       <code>cp .env.example .env</code>
                       <button
-                        className={styles.copyBtn}
+                        className={styles.copyButton}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText("cp .env.example .env");
@@ -747,7 +747,7 @@ export default function SettingsPageComponent() {
                     <div className={styles.codeBlock}>
                       <code>docker compose up -d</code>
                       <button
-                        className={styles.copyBtn}
+                        className={styles.copyButton}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText("docker compose up -d");
@@ -785,7 +785,7 @@ export default function SettingsPageComponent() {
                     <div className={styles.codeBlock}>
                       <code>docker logs workspace-service</code>
                       <button
-                        className={styles.copyBtn}
+                        className={styles.copyButton}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -884,7 +884,7 @@ export default function SettingsPageComponent() {
                         {"\n"}cd workspace-service{"\n"}npm install
                       </code>
                       <button
-                        className={styles.copyBtn}
+                        className={styles.copyButton}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -917,7 +917,7 @@ export default function SettingsPageComponent() {
                     <div className={styles.codeBlock}>
                       <code>cp .env.example .env</code>
                       <button
-                        className={styles.copyBtn}
+                        className={styles.copyButton}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText("cp .env.example .env");
@@ -945,7 +945,7 @@ export default function SettingsPageComponent() {
                         WORKSPACE_SERVICE_SECRET=your-agent-secret
                       </code>
                       <button
-                        className={styles.copyBtn}
+                        className={styles.copyButton}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -975,7 +975,7 @@ export default function SettingsPageComponent() {
                     <div className={styles.codeBlock}>
                       <code>npm run dev:local</code>
                       <button
-                        className={styles.copyBtn}
+                        className={styles.copyButton}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText("npm run dev:local");

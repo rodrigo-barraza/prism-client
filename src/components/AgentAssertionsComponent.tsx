@@ -173,7 +173,7 @@ export default function AgentAssertionsComponent({
                 <button
                   key={t.value}
                   type="button"
-                  className={styles.quickAddBtn}
+                  className={styles.quickAddButton}
                   onClick={() => addAssertion(t.value)}
                   title={t.description}
                 >
@@ -248,7 +248,7 @@ export default function AgentAssertionsComponent({
                       </span>
                     </div>
                   )}
-                  <div className={styles.removeBtn}>
+                  <div className={styles.removeButton}>
                     <IconButtonComponent
                       icon={<Trash2 size={14} />}
                       onClick={() => removeAssertion(i)}

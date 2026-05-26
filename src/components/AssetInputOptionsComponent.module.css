@@ -23,7 +23,7 @@
   flex-wrap: wrap;
 }
 
-.optionBtn {
+.optionButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,12 +45,12 @@
 
   &:hover {
     color: var(--text-primary);
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     border-color: var(--calculated-border-color);
   }
 }
 
-.compact .optionBtn {
+.compact .optionButton {
   padding: 5px;
   flex: 0 0 auto;
 }
@@ -106,7 +106,7 @@
   justify-content: center;
 }
 
-.captureBtn {
+.captureButton {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -125,7 +125,7 @@
   }
 }
 
-.cancelBtn {
+.cancelButton {
   background: transparent;
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 4px;
@@ -139,7 +139,7 @@
 
   &:hover {
     color: var(--text-primary);
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
   }
 }
 

@@ -568,7 +568,7 @@ export default function RequestsPage() {
                                 {
                                   label: `${w.nodeCount} nodes · ${w.edgeCount} edges`,
                                   style: {
-                                    background: "var(--bg-elevated)",
+                                    background: "var(--background-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },
@@ -602,7 +602,7 @@ export default function RequestsPage() {
                                 {
                                   label: `${s.conversationCount} conversation${s.conversationCount !== 1 ? "s" : ""}`,
                                   style: {
-                                    background: "var(--bg-elevated)",
+                                    background: "var(--background-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },

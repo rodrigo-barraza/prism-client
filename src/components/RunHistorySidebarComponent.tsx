@@ -238,7 +238,7 @@ export default function RunHistorySidebarComponent({
                 )}
                 <div className={styles.modelActions}>
                   <button
-                    className={styles.clearModelsBtn}
+                    className={styles.clearModelsButton}
                     onClick={onClearSelection}
                   >
                     Clear all

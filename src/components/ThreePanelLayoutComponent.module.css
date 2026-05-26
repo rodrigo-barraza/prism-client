@@ -27,7 +27,7 @@
   justify-content: space-between;
   padding: 0;
   border-block-end: 1px solid var(--calculated-border-color);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   font-weight: 500;
@@ -87,7 +87,7 @@
 
 .header-toggle-button:hover {
   background: var(--accent-primary);
-  color: var(--bg-base);
+  color: var(--background-base);
   opacity: 1;
   scale: 1.05;
 }
@@ -100,7 +100,7 @@
 
 .is-panel-hidden:hover {
   background: var(--accent-primary);
-  color: var(--bg-base);
+  color: var(--background-base);
   box-shadow: 0 0 12px color-mix(in oklch, var(--accent-primary) 40%, transparent);
 }
 
@@ -116,7 +116,7 @@
   border-block-end: 1px solid var(--calculated-border-color);
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   flex-shrink: 0;
   min-block-size: 28px;
   overflow-inline: auto;
@@ -139,7 +139,7 @@
   min-inline-size: 320px;
   block-size: 100%;
   border-inline-end: 1px solid var(--calculated-border-color);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
@@ -159,7 +159,7 @@
   min-inline-size: 320px;
   block-size: 100%;
   border-inline-start: 1px solid var(--calculated-border-color);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
@@ -221,7 +221,7 @@
     inset-block: 0;
     z-index: 200;
     border: none;
-    background: var(--bg-base);
+    background: var(--background-base);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     will-change: translate;

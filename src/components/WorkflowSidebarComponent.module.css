@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border-right: 1px solid var(--calculated-border-color);
   width: 320px;
   min-width: 320px;
@@ -32,7 +32,7 @@
   gap: 2px;
 }
 
-.headerBtn {
+.headerButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,7 +62,7 @@
   padding: 0 8px;
   font-size: var(--font-size-sm);
   font-weight: 500;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-subtle);
   color: var(--text-primary);
   border-radius: var(--border-radius-sm);
@@ -97,7 +97,7 @@
   gap: 4px;
 }
 
-.assetBtn {
+.assetButton {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -105,7 +105,7 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border: 1px solid var(--calculated-border-subtle);
   border-radius: var(--border-radius-sm);
   transition:

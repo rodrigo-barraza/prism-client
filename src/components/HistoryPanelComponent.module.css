@@ -4,10 +4,10 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  background: var(--bg-base);
+  background: var(--background-base);
 }
 
-.newBtn {
+.newButton {
   margin: 12px;
   width: calc(100% - 24px);
   height: var(--button-height);
@@ -37,8 +37,8 @@
   background: hsl(280, 80%, 20%) !important;
   border-color: hsl(300, 100%, 50%) !important;
   animation:
-    glitchHueBtn 0.15s linear infinite,
-    glitchJitterBtn 0.05s steps(2) infinite;
+    glitchHueButton 0.15s linear infinite,
+    glitchJitterButton 0.05s steps(2) infinite;
   will-change: filter, transform, text-shadow;
   text-shadow:
     1px 0 0 hsl(0, 100%, 60%),
@@ -52,7 +52,7 @@
   }
 }
 
-@keyframes glitchHueBtn {
+@keyframes glitchHueButton {
   0% {
     filter: hue-rotate(0deg) brightness(1.2);
   }
@@ -70,7 +70,7 @@
   }
 }
 
-@keyframes glitchJitterBtn {
+@keyframes glitchJitterButton {
   0% {
     transform: translate(0, 0) scale(1);
   }

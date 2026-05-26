@@ -348,7 +348,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasPro
 
   return createPortal(
     <div className={styles.overlay}>
-      <button className={styles.closeBtn} onClick={onClose} title="Close">
+      <button className={styles.closeButton} onClick={onClose} title="Close">
         <X size={22} />
       </button>
 
@@ -361,7 +361,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasPro
             return (
               <button
                 key={t.id}
-                className={`${styles.toolBtn} ${tool === t.id ? styles.toolBtnActive : ""}`}
+                className={`${styles.toolButton} ${tool === t.id ? styles.toolBtnActive : ""}`}
                 onClick={() => setTool(t.id)}
                 title={t.label}
               >
@@ -397,7 +397,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasPro
           {SIZES.map((s, i) => (
             <button
               key={s.label}
-              className={`${styles.sizeBtn} ${sizeIdx === i ? styles.sizeBtnActive : ""}`}
+              className={`${styles.sizeButton} ${sizeIdx === i ? styles.sizeBtnActive : ""}`}
               onClick={() => setSizeIdx(i)}
               title={s.label}
             >
@@ -412,7 +412,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasPro
         {/* Undo / Clear */}
         <div className={styles.toolGroup}>
           <button
-            className={styles.actionBtn}
+            className={styles.actionButton}
             onClick={handleUndo}
             disabled={strokes.length === 0}
             title="Undo"
@@ -420,7 +420,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasPro
             <Undo2 size={14} /> Undo
           </button>
           <button
-            className={styles.actionBtn}
+            className={styles.actionButton}
             onClick={handleClear}
             disabled={strokes.length === 0}
             title="Clear all"
@@ -468,10 +468,10 @@ export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasPro
 
       {/* Bottom bar */}
       <div className={styles.bottomBar}>
-        <button className={styles.cancelBtn} onClick={onClose}>
+        <button className={styles.cancelButton} onClick={onClose}>
           Cancel
         </button>
-        <button className={styles.saveBtn} onClick={handleSave}>
+        <button className={styles.saveButton} onClick={handleSave}>
           <Save size={15} /> {src ? "Save Changes" : "Use Drawing"}
         </button>
       </div>

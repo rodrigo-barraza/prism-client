@@ -1011,7 +1011,7 @@ export default function AdminChatViewerComponent({
                       variant={!showRaw ? "tonal" : "text"}
                       size="small"
                       onClick={() => setShowRaw(false)}
-                      className={chatStyles.debugToggleBtn}
+                      className={chatStyles.debugToggleButton}
                     >
                       Clean
                     </ButtonComponent>
@@ -1019,7 +1019,7 @@ export default function AdminChatViewerComponent({
                       variant={showRaw ? "tonal" : "text"}
                       size="small"
                       onClick={() => setShowRaw(true)}
-                      className={chatStyles.debugToggleBtn}
+                      className={chatStyles.debugToggleButton}
                     >
                       Raw
                     </ButtonComponent>

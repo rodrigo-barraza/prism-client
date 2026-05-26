@@ -91,7 +91,7 @@
   left: 0;
   right: 0;
   z-index: 20;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-top: none;
   border-radius: 0 0 6px 6px;
@@ -199,7 +199,7 @@
     background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
   }
 
-  &:hover .treeMentionBtn {
+  &:hover .treeMentionButton {
     opacity: 1;
     pointer-events: auto;
   }
@@ -251,7 +251,7 @@
   flex-shrink: 0;
 }
 
-.treeMentionBtn {
+.treeMentionButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;

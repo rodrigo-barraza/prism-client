@@ -11,7 +11,7 @@
   gap: 3px;
   padding: 1px 7px 1px 5px;
   margin: 0 1px;
-  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--background-elevated));
   border: 1px solid
     color-mix(in srgb, var(--accent-primary) 25%, var(--calculated-border-color));
   border-radius: var(--radius-full, 999px);
@@ -31,7 +31,7 @@
 }
 
 .mentionBadge:hover {
-  background: color-mix(in srgb, var(--accent-primary) 16%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--accent-primary) 16%, var(--background-elevated));
   border-color: color-mix(
     in srgb,
     var(--accent-primary) 40%,
@@ -48,7 +48,7 @@
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   padding: 4px 10px;
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
@@ -82,7 +82,7 @@
 }
 
 .mentionBadgeClickable:hover {
-  background: color-mix(in srgb, var(--accent-primary) 22%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--accent-primary) 22%, var(--background-elevated));
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
@@ -98,13 +98,13 @@
   filter: grayscale(1);
   border-style: dashed;
   color: var(--text-muted);
-  background: color-mix(in srgb, var(--text-muted) 6%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--text-muted) 6%, var(--background-elevated));
   border-color: color-mix(in srgb, var(--text-muted) 20%, var(--calculated-border-color));
 }
 
 .mentionBadgeStale:hover {
   opacity: 0.6;
-  background: color-mix(in srgb, var(--text-muted) 10%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--text-muted) 10%, var(--background-elevated));
   border-color: color-mix(in srgb, var(--text-muted) 30%, var(--calculated-border-color));
 }
 

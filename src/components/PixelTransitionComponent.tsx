@@ -74,7 +74,7 @@ export default function PixelTransitionComponent({
     // Self-contained inline SVG filter — feImage→feTile→feComposite→feMorphology
     const filterSvg = [
       `<svg xmlns="http://www.w3.org/2000/svg">`,
-      `<filter id="p" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">`,
+      `<filter id="pixelate-filter" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">`,
       `<feImage href="${tileHref}" result="s" x="0" y="0" width="${blockSize}" height="${blockSize}"/>`,
       `<feTile in="s" result="t"/>`,
       `<feComposite in="SourceGraphic" in2="t" operator="in" result="c"/>`,
@@ -83,7 +83,7 @@ export default function PixelTransitionComponent({
       `</svg>`,
     ].join("");
 
-    const value = `url('data:image/svg+xml,${encodeURIComponent(filterSvg)}#p')`;
+    const value = `url('data:image/svg+xml,${encodeURIComponent(filterSvg)}#pixelate-filter')`;
     filterCacheRef.current.set(blockSize, value);
     return value;
   }, []);

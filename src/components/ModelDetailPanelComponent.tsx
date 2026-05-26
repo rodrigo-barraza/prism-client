@@ -228,7 +228,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               )}
             </div>
           </div>
-          <button className={styles.closeBtn} onClick={onClose} title="Close">
+          <button className={styles.closeButton} onClick={onClose} title="Close">
             <X size={16} />
           </button>
         </div>

@@ -72,7 +72,7 @@
   font-size: 0.625rem;
   padding: 1px 5px;
   border-radius: 2px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   color: var(--text-muted);
   max-width: 120px;
   overflow: hidden;
@@ -95,7 +95,7 @@
 
 /* ── List View (Table) ── */
 .listWrapper {
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -107,7 +107,7 @@
   height: 40px;
   border-radius: 4px;
   overflow: hidden;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   display: flex;
   align-items: center;
   justify-content: center;

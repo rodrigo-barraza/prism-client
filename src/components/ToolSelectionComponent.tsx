@@ -312,7 +312,7 @@ export default function ToolSelectionComponent({
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set<string>());
   const [groupMode, setGroupMode] = useState("domain");
-  const [coreCollapsed, setCoreCollapsed] = useState(false);
+  const [coreCollapsed, setCoreCollapsed] = useState(true);
 
   // -- Split availableTools into Core System and Configurable ----
   const { coreTools, configurableTools } = useMemo(() => {

@@ -37,6 +37,7 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  padding-inline-start: 4px;
   padding-bottom: 80px;
 }
 

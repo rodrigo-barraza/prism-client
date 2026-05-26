@@ -341,7 +341,7 @@ function ToolDetailModal({ tool, onClose, agents, stats, allTools }: { tool: Cli
 
         {/* Body */}
         <div className={styles.detailBody}>
-          <button className={styles.tryToolBtn} onClick={handleTryTool}>
+          <button className={styles.tryToolButton} onClick={handleTryTool}>
             <Play size={14} /> Try Tool in Direct Chat
           </button>
 
@@ -762,7 +762,7 @@ export default function ToolsPageComponent() {
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>
+        <div className={styles.isLoadingState}>
           <div className={styles.loadingSpinner} />
           <span className={styles.loadingText}>Loading tools from Prism…</span>
         </div>
@@ -802,7 +802,7 @@ export default function ToolsPageComponent() {
           </div>
 
           <button
-            className={`${styles.refreshBtn} ${refreshing ? styles.spinning : ""}`}
+            className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
             onClick={handleRefresh}
             disabled={refreshing}
             title="Re-fetch schemas from tools-api"
@@ -874,14 +874,14 @@ export default function ToolsPageComponent() {
 
         <div className={styles.viewToggle}>
           <button
-            className={`${styles.viewBtn} ${view === "grid" ? styles.viewActive : ""}`}
+            className={`${styles.viewButton} ${view === "grid" ? styles.viewActive : ""}`}
             onClick={() => setView("grid")}
             title="Grid view"
           >
             <LayoutGrid />
           </button>
           <button
-            className={`${styles.viewBtn} ${view === "list" ? styles.viewActive : ""}`}
+            className={`${styles.viewButton} ${view === "list" ? styles.viewActive : ""}`}
             onClick={() => setView("list")}
             title="List view"
           >

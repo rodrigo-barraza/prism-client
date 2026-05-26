@@ -5,7 +5,7 @@
   cursor: grab;
   user-select: none;
   touch-action: none;
-  background: var(--bg-base);
+  background: var(--background-base);
   transition: background var(--transition-normal);
 }
 
@@ -131,7 +131,7 @@
   padding: 6px 16px;
   font-size: var(--font-size-xs);
   color: var(--text-muted);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--calculated-border-color);
@@ -185,7 +185,7 @@
   opacity: 1;
 }
 
-.connectionDeleteBtn {
+.connectionDeleteButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,14 +213,14 @@
   z-index: 3;
 }
 
-.toolbarBtn {
+.toolbarButton {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: var(--border-radius-sm);
-  background: var(--bg-surface);
+  background: var(--background-surface);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--calculated-border-color);
@@ -229,7 +229,7 @@
   transition: all var(--transition-fast);
 
   &:hover {
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     color: var(--text-primary);
     border-color: var(--accent-primary);
   }

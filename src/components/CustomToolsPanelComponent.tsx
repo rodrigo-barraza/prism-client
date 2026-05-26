@@ -104,7 +104,7 @@ export default function CustomToolsPanel({
   const [isNew, setIsNew] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [customOpen, setCustomOpen] = useState(true);
+  const [activeSubtab, setActiveSubtab] = useState<"tools" | "custom">("tools");
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [inputMode, setInputMode] = useState("manual"); // "manual" | "json"
   const [jsonText, setJsonText] = useState("");
@@ -385,7 +385,7 @@ export default function CustomToolsPanel({
       <div className={styles.container}>
         <div className={styles.formHeader}>
           <h3>{isNew ? "New Tool" : "Edit Tool"}</h3>
-          <button className={styles.cancelBtn} onClick={handleCancel}>
+          <button className={styles.cancelButton} onClick={handleCancel}>
             <X size={16} />
           </button>
         </div>
@@ -457,13 +457,13 @@ export default function CustomToolsPanel({
               <label>Parameters</label>
               <div className={styles.paramsModeToggle}>
                 <button
-                  className={`${styles.modeBtn} ${inputMode === "manual" ? styles.modeBtnActive : ""}`}
+                  className={`${styles.modeButton} ${inputMode === "manual" ? styles.modeBtnActive : ""}`}
                   onClick={() => setInputMode("manual")}
                 >
                   Manual
                 </button>
                 <button
-                  className={`${styles.modeBtn} ${inputMode === "json" ? styles.modeBtnActive : ""}`}
+                  className={`${styles.modeButton} ${inputMode === "json" ? styles.modeBtnActive : ""}`}
                   onClick={() => setInputMode("json")}
                 >
                   <FileText size={10} />
@@ -471,7 +471,7 @@ export default function CustomToolsPanel({
                 </button>
               </div>
               {inputMode === "manual" && (
-                <button className={styles.addParamBtn} onClick={addParameter}>
+                <button className={styles.addParamButton} onClick={addParameter}>
                   <Plus size={12} /> Add
                 </button>
               )}
@@ -490,7 +490,7 @@ export default function CustomToolsPanel({
                     <div className={styles.paramCardHeader}>
                       <span className={styles.paramIndex}>#{i + 1}</span>
                       <button
-                        className={styles.paramRemoveBtn}
+                        className={styles.paramRemoveButton}
                         onClick={() => removeParameter(i)}
                       >
                         <Trash2 size={12} />
@@ -601,7 +601,7 @@ export default function CustomToolsPanel({
                 />
                 <div className={styles.jsonActions}>
                   <button
-                    className={styles.jsonParseBtn}
+                    className={styles.jsonParseButton}
                     onClick={() => parseJsonDefinition(jsonText)}
                     disabled={!jsonText.trim()}
                   >
@@ -616,7 +616,7 @@ export default function CustomToolsPanel({
                     onChange={handleJsonFileUpload}
                   />
                   <button
-                    className={styles.jsonUploadBtn}
+                    className={styles.jsonUploadButton}
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload size={12} />
@@ -640,7 +640,7 @@ export default function CustomToolsPanel({
           </div>
 
           <button
-            className={styles.saveBtn}
+            className={styles.saveButton}
             onClick={handleSave}
             disabled={
               !editingTool.name || !editingTool.code || saving
@@ -695,163 +695,182 @@ export default function CustomToolsPanel({
 
   return (
     <div className={styles.container}>
-      {/* -- Built-in tools via ToolSelectionComponent -- */}
-      <ToolSelectionComponent
-        availableTools={builtInTools}
-        enabledTools={derivedEnabled}
-        onEnabledToolsChange={handleSelectionChange}
-      />
-
-      {/* -- Custom tools -- */}
-      <div
-        className={styles.sectionHeader}
-        onClick={() => setCustomOpen((v) => !v)}
-      >
-        {customOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-        <Globe size={12} />
-        <span>
-          Custom ({enabledCustomCount}/{tools.length})
-        </span>
-        <div
-          className={styles.sectionActions}
-          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      <nav className={styles['subtab-navigation-bar']} aria-label="Tools Subtabs">
+        <button
+          className={`${styles['subtab-button-element']} ${
+            activeSubtab === "tools" ? styles['is-active-state'] : ""
+          }`}
+          onClick={() => setActiveSubtab("tools")}
+          aria-selected={activeSubtab === "tools"}
+          role="tab"
         >
-          {tools.length > 0 && (
-            <ToggleComponent
-              checked={allCustomEnabled}
-              onChange={() => handleToggleAllCustom()}
-              size="mini"
-            />
-          )}
-          <ButtonComponent variant="primary" icon={Plus} onClick={handleCreate}>
-            New Tool
-          </ButtonComponent>
-        </div>
-      </div>
+          Tools
+        </button>
+        <button
+          className={`${styles['subtab-button-element']} ${
+            activeSubtab === "custom" ? styles['is-active-state'] : ""
+          }`}
+          onClick={() => setActiveSubtab("custom")}
+          aria-selected={activeSubtab === "custom"}
+          role="tab"
+        >
+          Custom Tools
+        </button>
+      </nav>
 
-      {customOpen && tools.length === 0 && (
-        <div className={styles.emptyCustom}>
-          Create a tool to run custom JavaScript.
-        </div>
+      {activeSubtab === "tools" && (
+        <ToolSelectionComponent
+          availableTools={builtInTools}
+          enabledTools={derivedEnabled}
+          onEnabledToolsChange={handleSelectionChange}
+        />
       )}
 
-      {customOpen &&
-        tools.map((tool: CustomTool | CustomToolFormState) => {
-          const id = (tool.id || tool._id || "").toString();
-          const isExpanded = expandedId === id;
-          return (
-            <div
-              key={id}
-              className={`${styles.toolCard} ${!tool.enabled ? styles.toolDisabled : ""}`}
-            >
-              <div
-                className={styles.toolCardHeader}
-                onClick={() => setExpandedId(isExpanded ? null : id)}
-              >
-                <button className={styles.expandBtn}>
-                  {isExpanded ? (
-                    <ChevronDown size={14} />
-                  ) : (
-                    <ChevronRight size={14} />
-                  )}
-                </button>
-                <div className={styles.toolCardInfo}>
-                  <span className={styles.toolCardName}>{tool.name}</span>
-                  <span className={styles.toolCardMeta}>
-                    <span className={styles.methodBadge} data-http-method="JS">
-                      JS
-                    </span>
-                    {tool.parameters && tool.parameters.length > 0 && (
-                      <span>{tool.parameters.length} params</span>
-                    )}
-                  </span>
-                </div>
-                <div className={styles.toolCardActions}>
-                  <ToggleComponent
-                    checked={tool.enabled}
-                    onChange={() => handleToggle(tool)}
-                    size="mini"
-                  />
-                </div>
-              </div>
+      {activeSubtab === "custom" && (
+        <>
+          <div className={styles['subtab-actions-header']}>
+            <span className={styles['subtab-title-text']}>
+              Custom Tools ({enabledCustomCount}/{tools.length})
+            </span>
+            <div className={styles.sectionActions}>
+              {tools.length > 0 && (
+                <ToggleComponent
+                  checked={allCustomEnabled}
+                  onChange={() => handleToggleAllCustom()}
+                  size="mini"
+                />
+              )}
+              <ButtonComponent variant="primary" icon={Plus} onClick={handleCreate}>
+                New Tool
+              </ButtonComponent>
+            </div>
+          </div>
 
-              {isExpanded && (
-                <div className={styles.toolCardBody}>
-                  <p className={styles.toolCardDesc}>
-                    {tool.description || "No description"}
-                  </p>
-                  {tool.code && (
-                    <div className={styles.toolCardEndpoint}>
-                      <Code2 size={11} />
-                      <code style={{ whiteSpace: "pre-wrap", fontSize: 11 }}>
-                        {tool.code.length > 120
-                          ? tool.code.slice(0, 120) + "…"
-                          : tool.code}
-                      </code>
-                    </div>
-                  )}
-                  {!tool.code && tool.endpoint && (
-                    <div className={styles.toolCardEndpoint}>
-                      <Globe size={11} />
-                      <code>{tool.endpoint}</code>
-                    </div>
-                  )}
-                  {tool.parameters && tool.parameters.length > 0 && (
-                    <div className={styles.toolCardParams}>
-                      {tool.parameters.map((p: any, i: number) => (
-                        <div key={i} className={styles.toolCardParam}>
-                          <code>{p.name}</code>
-                          <span className={styles.paramType}>{p.type}</span>
-                          {p.required && (
-                            <span className={styles.paramRequired}>
-                              required
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className={styles.toolCardFooter}>
-                    <ButtonComponent
-                      variant="secondary"
-                      icon={Edit3}
-                      onClick={() => handleEdit(tool)}
-                    >
-                      Edit
-                    </ButtonComponent>
-                    {confirmingDeleteId === id ? (
-                      <div className={styles.deleteConfirm}>
-                        <span className={styles.deleteConfirmLabel}>
-                          Delete?
-                        </span>
-                        <ButtonComponent
-                          variant="destructive"
-                          onClick={() => confirmDelete(id)}
-                        >
-                          Yes
-                        </ButtonComponent>
-                        <ButtonComponent
-                          variant="secondary"
-                          onClick={() => setConfirmingDeleteId(null)}
-                        >
-                          No
-                        </ButtonComponent>
-                      </div>
+          {tools.length === 0 && (
+            <div className={styles.emptyCustom}>
+              Create a tool to run custom JavaScript.
+            </div>
+          )}
+
+          {tools.map((tool: CustomTool | CustomToolFormState) => {
+            const id = (tool.id || tool._id || "").toString();
+            const isExpanded = expandedId === id;
+            return (
+              <div
+                key={id}
+                className={`${styles.toolCard} ${!tool.enabled ? styles.toolDisabled : ""}`}
+                style={{ marginBottom: "8px" }}
+              >
+                <div
+                  className={styles.toolCardHeader}
+                  onClick={() => setExpandedId(isExpanded ? null : id)}
+                >
+                  <button className={styles.expandButton}>
+                    {isExpanded ? (
+                      <ChevronDown size={14} />
                     ) : (
-                      <ButtonComponent
-                        variant="destructive"
-                        icon={Trash2}
-                        onClick={() => handleDelete(id)}
-                      >
-                        Delete
-                      </ButtonComponent>
+                      <ChevronRight size={14} />
                     )}
+                  </button>
+                  <div className={styles.toolCardInfo}>
+                    <span className={styles.toolCardName}>{tool.name}</span>
+                    <span className={styles.toolCardMeta}>
+                      <span className={styles.methodBadge} data-http-method="JS">
+                        JS
+                      </span>
+                      {tool.parameters && tool.parameters.length > 0 && (
+                        <span>{tool.parameters.length} params</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className={styles.toolCardActions}>
+                    <ToggleComponent
+                      checked={tool.enabled}
+                      onChange={() => handleToggle(tool)}
+                      size="mini"
+                    />
                   </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
+
+                {isExpanded && (
+                  <div className={styles.toolCardBody}>
+                    <p className={styles.toolCardDesc}>
+                      {tool.description || "No description"}
+                    </p>
+                    {tool.code && (
+                      <div className={styles.toolCardEndpoint}>
+                        <Code2 size={11} />
+                        <code style={{ whiteSpace: "pre-wrap", fontSize: 11 }}>
+                          {tool.code.length > 120
+                            ? tool.code.slice(0, 120) + "…"
+                            : tool.code}
+                        </code>
+                      </div>
+                    )}
+                    {!tool.code && tool.endpoint && (
+                      <div className={styles.toolCardEndpoint}>
+                        <Globe size={11} />
+                        <code>{tool.endpoint}</code>
+                      </div>
+                    )}
+                    {tool.parameters && tool.parameters.length > 0 && (
+                      <div className={styles.toolCardParams}>
+                        {tool.parameters.map((p: any, i: number) => (
+                          <div key={i} className={styles.toolCardParam}>
+                            <code>{p.name}</code>
+                            <span className={styles.paramType}>{p.type}</span>
+                            {p.required && (
+                              <span className={styles.paramRequired}>
+                                required
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className={styles.toolCardFooter}>
+                      <ButtonComponent
+                        variant="secondary"
+                        icon={Edit3}
+                        onClick={() => handleEdit(tool)}
+                      >
+                        Edit
+                      </ButtonComponent>
+                      {confirmingDeleteId === id ? (
+                        <div className={styles.deleteConfirm}>
+                          <span className={styles.deleteConfirmLabel}>
+                            Delete?
+                          </span>
+                          <ButtonComponent
+                            variant="destructive"
+                            onClick={() => confirmDelete(id)}
+                          >
+                            Yes
+                          </ButtonComponent>
+                          <ButtonComponent
+                            variant="secondary"
+                            onClick={() => setConfirmingDeleteId(null)}
+                          >
+                            No
+                          </ButtonComponent>
+                        </div>
+                      ) : (
+                        <ButtonComponent
+                          variant="destructive"
+                          icon={Trash2}
+                          onClick={() => handleDelete(id)}
+                        >
+                          Delete
+                        </ButtonComponent>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </>
+      )}
     </div>
   );
 }

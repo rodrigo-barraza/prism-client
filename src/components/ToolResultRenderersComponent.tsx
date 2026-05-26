@@ -330,7 +330,7 @@ function RawResultToggle({ result }: { result: unknown }) {
   return (
     <div className={styles.rawToggle}>
       <button
-        className={styles.rawToggleBtn}
+        className={styles.rawToggleButton}
         onClick={() => setShow((v) => !v)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
@@ -364,7 +364,7 @@ function InputArgsToggle({ args }: { args?: ToolArgs }) {
   return (
     <div className={styles.inputArgsToggle}>
       <button
-        className={styles.rawToggleBtn}
+        className={styles.rawToggleButton}
         onClick={() => setShow((v) => !v)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
@@ -441,7 +441,7 @@ function OutputResultToggle({ result }: { result: unknown }) {
   return (
     <div className={styles.outputResultToggle}>
       <button
-        className={styles.rawToggleBtn}
+        className={styles.rawToggleButton}
         onClick={() => setShow((v) => !v)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />

@@ -7,7 +7,7 @@ import styles from "./ToggleButtonComponent.module.css";
  *
  * When inactive, renders with a dashed border to clearly signal
  * it can be toggled on. When active, applies a rainbow hue-rotate
- * animation identical to the NavigationSidebar's active navLink.
+ * animation identical to the NavigationSidebar's active navigationLink.
  *
  * Props:
  *   icon     — React node (e.g. <Wrench size={10} />)
@@ -25,7 +25,7 @@ export default function ToggleButtonComponent({
 }: { icon?: React.ReactNode; label?: string; active?: boolean; title?: string; onClick?: (e: React.MouseEvent) => void }) {
   return (
     <button
-      className={`${styles.toggle} ${active ? styles.active : ""}`}
+      className={`${styles.toggle} ${active ? styles.isActiveState : ""}`}
       onClick={onClick}
       title={title}
     >

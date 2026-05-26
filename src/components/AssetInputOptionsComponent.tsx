@@ -114,13 +114,13 @@ export default function AssetInputOptions({ onFile, compact = false }: AssetInpu
           <div className={styles.webcamActions}>
             <button
               type="button"
-              className={styles.captureBtn}
+              className={styles.captureButton}
               onClick={captureWebcam}
               title="Capture photo"
             />
             <button
               type="button"
-              className={styles.cancelBtn}
+              className={styles.cancelButton}
               onClick={stopWebcam}
               title="Cancel"
             >
@@ -149,7 +149,7 @@ export default function AssetInputOptions({ onFile, compact = false }: AssetInpu
           />
           <button
             type="button"
-            className={styles.cancelBtn}
+            className={styles.cancelButton}
             onClick={() => setShowAudioRec(false)}
           >
             Cancel
@@ -169,7 +169,7 @@ export default function AssetInputOptions({ onFile, compact = false }: AssetInpu
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,audio/*,video/*,.pdf,.txt,.md,.json,.csv"
+          accept="image/*,audio/*,video/*,.pdf,.txt,.sizeMedium,.json,.csv"
           className={styles.hiddenInput}
           onChange={handleFileChange}
         />
@@ -177,7 +177,7 @@ export default function AssetInputOptions({ onFile, compact = false }: AssetInpu
         <div className={styles.optionGrid}>
           <button
             type="button"
-            className={styles.optionBtn}
+            className={styles.optionButton}
             onClick={() => fileInputRef.current?.click()}
             title="Upload file"
           >
@@ -187,7 +187,7 @@ export default function AssetInputOptions({ onFile, compact = false }: AssetInpu
 
           <button
             type="button"
-            className={styles.optionBtn}
+            className={styles.optionButton}
             onClick={() => setShowDrawing(true)}
             title="Create drawing"
           >
@@ -197,7 +197,7 @@ export default function AssetInputOptions({ onFile, compact = false }: AssetInpu
 
           <button
             type="button"
-            className={styles.optionBtn}
+            className={styles.optionButton}
             onClick={() => setShowAudioRec(true)}
             title="Record audio"
           >
@@ -207,7 +207,7 @@ export default function AssetInputOptions({ onFile, compact = false }: AssetInpu
 
           <button
             type="button"
-            className={styles.optionBtn}
+            className={styles.optionButton}
             onClick={startWebcam}
             title="Webcam capture"
           >
@@ -225,7 +225,7 @@ export default function AssetInputOptions({ onFile, compact = false }: AssetInpu
           <span>Drop or upload file</span>
           <input
             type="file"
-            accept="image/*,audio/*,video/*,.pdf,.txt,.md,.json,.csv"
+            accept="image/*,audio/*,video/*,.pdf,.txt,.sizeMedium,.json,.csv"
             className={styles.hiddenInput}
             onChange={handleFileChange}
           />

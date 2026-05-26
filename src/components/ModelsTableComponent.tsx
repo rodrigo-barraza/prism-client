@@ -940,7 +940,7 @@ function ModelsTableInner({
             <span className={styles.modelName}>{model.name}</span>
             {model.provider === "lm-studio" && model.isLoaded && (
               <span className={styles.loadedBadge}>
-                <span className={`${styles.statusDot} ${styles.active}`} />
+                <span className={`${styles.statusDot} ${styles.isActiveState}`} />
                 Loaded
               </span>
             )}

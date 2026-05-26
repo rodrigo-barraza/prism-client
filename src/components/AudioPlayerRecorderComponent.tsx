@@ -453,7 +453,7 @@ export default function AudioPlayerRecorderComponent({
           <div className={styles.squareControls}>
             <button
               type="button"
-              className={styles.playBtn}
+              className={styles.playButton}
               onClick={togglePlayback}
               title={isPlaying ? "Pause" : "Play"}
             >
@@ -464,7 +464,7 @@ export default function AudioPlayerRecorderComponent({
             </span>
             <button
               type="button"
-              className={styles.iconBtn}
+              className={styles.iconButton}
               onClick={toggleMute}
               title={muted ? "Unmute" : "Mute"}
             >
@@ -499,7 +499,7 @@ export default function AudioPlayerRecorderComponent({
 
         <button
           type="button"
-          className={styles.playBtn}
+          className={styles.playButton}
           onClick={togglePlayback}
           title={isPlaying ? "Pause" : "Play"}
         >
@@ -521,7 +521,7 @@ export default function AudioPlayerRecorderComponent({
 
         <button
           type="button"
-          className={styles.iconBtn}
+          className={styles.iconButton}
           onClick={toggleMute}
           title={muted ? "Unmute" : "Mute"}
         >
@@ -548,7 +548,7 @@ export default function AudioPlayerRecorderComponent({
 
         <button
           type="button"
-          className={styles.iconBtn}
+          className={styles.iconButton}
           onClick={handleDownload}
           title="Download"
         >
@@ -558,7 +558,7 @@ export default function AudioPlayerRecorderComponent({
         {onRemove && (
           <button
             type="button"
-            className={styles.iconBtn}
+            className={styles.iconButton}
             onClick={onRemove}
             title="Remove"
           >
@@ -577,7 +577,7 @@ export default function AudioPlayerRecorderComponent({
       <div className={`${styles.audioThumb} ${styles.audioRecording}`}>
         <button
           type="button"
-          className={styles.stopBtn}
+          className={styles.stopButton}
           onClick={stopRecording}
           title="Stop recording"
         >
@@ -610,7 +610,7 @@ export default function AudioPlayerRecorderComponent({
     <TooltipComponent label="Record audio" position="top" trigger="hover">
       <button
         type="button"
-        className={styles.micBtn}
+        className={styles.micButton}
         onClick={startRecording}
         aria-label="Record Audio"
       >

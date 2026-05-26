@@ -1097,7 +1097,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             </div>
             <div className={styles.assetButtons}>
               <button
-                className={styles.assetBtn}
+                className={styles.assetButton}
                 onClick={() => handleAddAsset("model", "model")}
                 title="Add AI Model"
               >
@@ -1105,7 +1105,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
                 <span>AI Model</span>
               </button>
               <button
-                className={styles.assetBtn}
+                className={styles.assetButton}
                 onClick={() => handleAddAsset("conversation", "input")}
                 title="Add Chat History"
               >
@@ -1113,7 +1113,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
                 <span>Chat History</span>
               </button>
               <button
-                className={styles.assetBtn}
+                className={styles.assetButton}
                 onClick={() => handleAddAsset("text", "input")}
                 title="Add Text"
               >
@@ -1121,7 +1121,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
                 <span>Text</span>
               </button>
               <button
-                className={styles.assetBtn}
+                className={styles.assetButton}
                 onClick={() => handleAddAsset("file", "input")}
                 title="Add Media"
               >
@@ -1129,7 +1129,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
                 <span>Media</span>
               </button>
               <button
-                className={styles.assetBtn}
+                className={styles.assetButton}
                 onClick={() => handleAddAsset("text", "viewer")}
                 title="Add Output"
               >
@@ -1137,7 +1137,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
                 <span>Output</span>
               </button>
               <button
-                className={styles.assetBtn}
+                className={styles.assetButton}
                 onClick={() => handleAddAsset("tools", "tools")}
                 title="Add Tool Calling Tools"
               >
@@ -1177,7 +1177,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             icon={Plus}
             onClick={handleNewWorkflow}
             disabled={!workflowId && nodes.length === 0}
-            className={styles.newWorkflowBtn}
+            className={styles.newWorkflowButton}
           >
             New Workflow
           </ButtonComponent>
@@ -1252,14 +1252,14 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
               URL.revokeObjectURL(url);
             }}
             title="Export workflow"
-            className={styles.headerActionBtn}
+            className={styles.headerActionButton}
           />
           <ButtonComponent
             variant="disabled"
             icon={Upload}
             onClick={() => (importRef.current as HTMLInputElement)?.click()}
             title="Import workflow"
-            className={styles.headerActionBtn}
+            className={styles.headerActionButton}
           />
           <ButtonComponent
             variant="disabled"
@@ -1267,7 +1267,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             onClick={handleUndo}
             disabled={undoCount === 0}
             title={`Undo (Ctrl+Z) · ${undoCount} states`}
-            className={styles.headerActionBtn}
+            className={styles.headerActionButton}
           />
           <ButtonComponent
             variant="disabled"
@@ -1275,7 +1275,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             onClick={handleResetWorkflow}
             disabled={isRunning || Object.keys(nodeStatuses).length === 0}
             title="Reset execution state"
-            className={styles.headerActionBtn}
+            className={styles.headerActionButton}
           />
           <input
             ref={importRef}
@@ -1303,7 +1303,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
           />
           {isRunning ? (
             <button
-              className={`${styles.runBtn} ${styles.runBtnStop}`}
+              className={`${styles.runButton} ${styles.runBtnStop}`}
               onClick={handleStopWorkflow}
             >
               <Square size={14} />
@@ -1311,7 +1311,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             </button>
           ) : (
             <button
-              className={styles.runBtn}
+              className={styles.runButton}
               onClick={handleRunWorkflow}
               disabled={nodes.length === 0}
             >
@@ -1369,7 +1369,7 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
             onClick={handleSaveWorkflow}
             disabled={!hasUnsavedChanges}
             title="Save Workflow"
-            className={styles.saveBtn}
+            className={styles.saveButton}
           />
         </div>
       </div>

@@ -6,7 +6,7 @@
   right: 0;
   width: 480px;
   height: 100vh;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   border-left: 1px solid var(--calculated-border-color);
   box-shadow: var(--calculated-shadow-lg);
   z-index: 200;

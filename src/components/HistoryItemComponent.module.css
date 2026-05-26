@@ -7,7 +7,7 @@
   cursor: pointer;
   border-bottom: 1px solid var(--calculated-border-color);
   border-left: 3px solid transparent;
-  background: var(--bg-base);
+  background: var(--background-base);
   transition:
     background 0.2s,
     border-color 0.2s,
@@ -16,7 +16,7 @@
   will-change: transform;
 
   &:hover {
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     border-left-color: var(--calculated-border-medium);
   }
 
@@ -30,18 +30,18 @@
   }
 }
 
-.active {
-  background: var(--bg-surface);
+.isActiveState {
+  background: var(--background-surface);
   border-left-color: var(--accent-primary);
-  transform: translateX(4px);
+  transform: translateX(-4px);
 }
 
-.active:hover {
-  background: var(--bg-surface);
+.isActiveState:hover {
+  background: var(--background-surface);
   border-left-color: var(--accent-primary);
 }
 
-.active .icon {
+.isActiveState .icon {
   color: var(--accent-primary);
 }
 
@@ -97,7 +97,7 @@
   padding: 1px 5px;
   border-radius: 2px;
   background: var(--accent-primary);
-  color: var(--bg-base);
+  color: var(--background-base);
 }
 
 .generatingDot {
@@ -312,7 +312,7 @@
 }
 
 /* ── Favorite Star ── */
-.favBtn {
+.favButton {
   display: flex;
   align-items: center;
   justify-content: center;

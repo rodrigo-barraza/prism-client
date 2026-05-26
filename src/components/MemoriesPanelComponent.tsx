@@ -449,7 +449,7 @@ export default function MemoriesPanel({
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>
+        <div className={styles.isLoadingState}>
           <LoadingIndicatorComponent
             size="small"
             color="inherit"
@@ -624,7 +624,7 @@ export default function MemoriesPanel({
                 </div>
               </div>
               <button
-                className={styles.deleteBtn}
+                className={styles.deleteButton}
                 onClick={() =>
                   setConfirmingDeleteId(isConfirming ? null : memoryId)
                 }
@@ -642,13 +642,13 @@ export default function MemoriesPanel({
               <div className={styles.confirmRow}>
                 <span className={styles.confirmLabel}>Delete this memory?</span>
                 <button
-                  className={`${styles.confirmBtn} ${styles.confirmBtnYes}`}
+                  className={`${styles.confirmButton} ${styles.confirmBtnYes}`}
                   onClick={() => handleDelete(memoryId)}
                 >
                   Delete
                 </button>
                 <button
-                  className={`${styles.confirmBtn} ${styles.confirmBtnNo}`}
+                  className={`${styles.confirmButton} ${styles.confirmBtnNo}`}
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel

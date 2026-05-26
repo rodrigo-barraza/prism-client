@@ -126,7 +126,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly 
       <div className={styles.container}>
         <div className={styles.formHeader}>
           <h3>{isNew ? "New Skill" : "Edit Skill"}</h3>
-          <button className={styles.cancelBtn} onClick={handleCancel}>
+          <button className={styles.cancelButton} onClick={handleCancel}>
             <X size={16} />
           </button>
         </div>
@@ -196,7 +196,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly 
 
           <div className={styles.formActions}>
             <button
-              className={styles.saveBtn}
+              className={styles.saveButton}
               onClick={handleSave}
               disabled={
                 saving ||
@@ -207,7 +207,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly 
               <Save size={14} />
               {saving ? "Saving..." : isNew ? "Create Skill" : "Save Changes"}
             </button>
-            <button className={styles.cancelFormBtn} onClick={handleCancel}>
+            <button className={styles.cancelFormButton} onClick={handleCancel}>
               Cancel
             </button>
           </div>
@@ -284,14 +284,14 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly 
               </div>
               <div className={styles.skillActions}>
                 <button
-                  className={styles.skillActionBtn}
+                  className={styles.skillActionButton}
                   onClick={() => handleEdit(skill)}
                   title="Edit skill"
                 >
                   <Edit3 size={13} />
                 </button>
                 <button
-                  className={`${styles.skillActionBtn} ${styles.skillDeleteBtn}`}
+                  className={`${styles.skillActionButton} ${styles.skillDeleteButton}`}
                   onClick={() => handleDelete(skillId)}
                   title="Delete skill"
                 >
@@ -318,13 +318,13 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly 
                   Delete &ldquo;{skill.name}&rdquo;?
                 </span>
                 <button
-                  className={`${styles.confirmBtn} ${styles.confirmBtnYes}`}
+                  className={`${styles.confirmButton} ${styles.confirmBtnYes}`}
                   onClick={() => confirmDelete(skillId)}
                 >
                   Delete
                 </button>
                 <button
-                  className={`${styles.confirmBtn} ${styles.confirmBtnNo}`}
+                  className={`${styles.confirmButton} ${styles.confirmBtnNo}`}
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel

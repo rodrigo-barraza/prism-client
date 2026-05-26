@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  background: var(--bg-base);
+  background: var(--background-base);
   border-right: 1px solid var(--calculated-border-color);
   overflow: hidden;
   /* Layout-based width transitions for open/close (not GPU-composited,
@@ -59,7 +59,7 @@
   -webkit-app-region: no-drag;
 }
 
-.titleBarBtn {
+.titleBarButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -76,12 +76,12 @@
     color 0.12s;
 }
 
-.titleBarBtn:hover {
+.titleBarButton:hover {
   background: rgba(255, 255, 255, 0.15);
   color: var(--color-white);
 }
 
-.titleBarBtn:active {
+.titleBarButton:active {
   background: rgba(255, 255, 255, 0.22);
 }
 
@@ -101,7 +101,7 @@
   align-items: stretch;
   height: 34px;
   min-height: 34px;
-  background: var(--bg-elevated);
+  background: var(--background-elevated);
   border-bottom: 1px solid var(--calculated-border-color);
   overflow-x: auto;
   overflow-y: hidden;
@@ -136,7 +136,7 @@
   min-width: 0;
 
   &:hover {
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     color: var(--text-secondary);
   }
 
@@ -146,7 +146,7 @@
 }
 
 .tabActive {
-  background: var(--bg-base);
+  background: var(--background-base);
   color: var(--text-primary);
   border-bottom: 2px solid var(--accent-primary);
   font-weight: 500;
@@ -204,7 +204,7 @@
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: var(--bg-base);
+  background: var(--background-base);
 }
 
 /* ── Breadcrumb path bar ─────────────────────────────────── */
@@ -223,7 +223,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: 24px;
-  background: var(--bg-base);
+  background: var(--background-base);
 }
 
 .breadcrumbSep {
@@ -237,12 +237,12 @@
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--calculated-border-medium) transparent;
-  background: var(--bg-base);
+  background: var(--background-base);
 }
 
 /* Override react-syntax-highlighter's internal pre/code styles */
 .codeScroll pre {
-  background: var(--bg-base) !important;
+  background: var(--background-base) !important;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
@@ -256,7 +256,7 @@
 
 /* ── Loading & empty states ──────────────────────────────── */
 
-.loading {
+.isLoadingState {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -316,7 +316,7 @@
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  background: var(--bg-base);
+  background: var(--background-base);
   min-height: 22px;
 }
 
@@ -375,7 +375,7 @@
 
 /* ── Inline @ mention button (injected into every line, shown on hover) ─ */
 
-.lineMentionBtn {
+.lineMentionButton {
   position: absolute;
   right: 8px;
   top: 50%;
@@ -387,7 +387,7 @@
   height: 22px;
   border: 1px solid color-mix(in srgb, var(--accent-primary) 40%, transparent);
   border-radius: 4px;
-  background: color-mix(in srgb, var(--accent-primary) 14%, var(--bg-elevated));
+  background: color-mix(in srgb, var(--accent-primary) 14%, var(--background-elevated));
   color: var(--accent-primary);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -408,13 +408,13 @@
 }
 
 /* Reveal on line hover — CSS-only, zero React re-renders */
-.codeLine:hover .lineMentionBtn {
+.codeLine:hover .lineMentionButton {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(-50%) scale(1);
 }
 
-.lineMentionBtn:hover {
+.lineMentionButton:hover {
   background: var(--accent-primary);
   color: var(--color-white);
   border-color: var(--accent-primary);
@@ -422,7 +422,7 @@
   transform: translateY(-50%) scale(1.05);
 }
 
-.lineMentionBtn:active {
+.lineMentionButton:active {
   transform: translateY(-50%) scale(0.95);
 }
 
@@ -437,7 +437,7 @@
   justify-content: center;
   min-height: 0;
   overflow: auto;
-  background: var(--bg-base);
+  background: var(--background-base);
   scrollbar-width: thin;
   scrollbar-color: var(--calculated-border-medium) transparent;
 }
@@ -463,17 +463,17 @@
   image-rendering: auto;
   /* Checkerboard background for transparent images */
   background-image:
-    linear-gradient(45deg, var(--bg-elevated) 25%, transparent 25%),
-    linear-gradient(-45deg, var(--bg-elevated) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--bg-elevated) 75%),
-    linear-gradient(-45deg, transparent 75%, var(--bg-elevated) 75%);
+    linear-gradient(45deg, var(--background-elevated) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--background-elevated) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--background-elevated) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--background-elevated) 75%);
   background-size: 16px 16px;
   background-position:
     0 0,
     0 8px,
     8px -8px,
     -8px 0;
-  background-color: var(--bg-surface);
+  background-color: var(--background-surface);
 }
 
 /* ── Audio player ───────────────────────────────────────── */
@@ -510,7 +510,7 @@
   max-height: 100%;
   border-radius: 4px;
   outline: none;
-  background: var(--bg-base);
+  background: var(--background-base);
 }
 
 /* ── PDF viewer ─────────────────────────────────────────── */
@@ -519,7 +519,7 @@
   width: 100%;
   height: 100%;
   border: none;
-  background: var(--bg-base);
+  background: var(--background-base);
 }
 
 /* ── SVG preview ───────────────────────────────────────── */
@@ -532,17 +532,17 @@
   user-select: none;
   /* Checkerboard background for transparent SVGs */
   background-image:
-    linear-gradient(45deg, var(--bg-elevated) 25%, transparent 25%),
-    linear-gradient(-45deg, var(--bg-elevated) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--bg-elevated) 75%),
-    linear-gradient(-45deg, transparent 75%, var(--bg-elevated) 75%);
+    linear-gradient(45deg, var(--background-elevated) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--background-elevated) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--background-elevated) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--background-elevated) 75%);
   background-size: 16px 16px;
   background-position:
     0 0,
     0 8px,
     8px -8px,
     -8px 0;
-  background-color: var(--bg-surface);
+  background-color: var(--background-surface);
   padding: 24px;
 }
 

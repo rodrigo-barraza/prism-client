@@ -13,14 +13,14 @@
   margin-bottom: 16px;
 }
 
-.refreshBtn {
+.refreshButton {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
   border: 1px solid var(--calculated-border-color);
   border-radius: 2px;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -28,7 +28,7 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--bg-elevated);
+    background: var(--background-elevated);
     color: var(--text-primary);
     border-color: var(--accent-primary);
   }
@@ -52,7 +52,7 @@
 }
 
 /* Action buttons */
-.actionBtn {
+.actionButton {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -68,7 +68,7 @@
   white-space: nowrap;
 }
 
-.loadBtn {
+.loadButton {
   background: rgba(99, 102, 241, 0.1);
   color: var(--accent-primary);
 
@@ -82,14 +82,14 @@
   }
 }
 
-.loadingBtn {
+.loadingButton {
   background: rgba(99, 102, 241, 0.1);
   color: var(--accent-primary);
   opacity: 0.7;
   cursor: wait;
 }
 
-.unloadBtn {
+.unloadButton {
   background: rgba(239, 68, 68, 0.1);
   color: var(--color-danger);
 

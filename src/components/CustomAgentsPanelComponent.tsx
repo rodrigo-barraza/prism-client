@@ -318,7 +318,7 @@ export default function CustomAgentsPanel({
       <div className={styles.formOverlay}>
         <div className={styles.formHeader}>
           <h3>{isNew ? "New Agent" : `Edit: ${editingAgent.name}`}</h3>
-          <button className={styles.cancelBtn} onClick={handleCancel}>
+          <button className={styles.cancelButton} onClick={handleCancel}>
             <X size={16} />
           </button>
         </div>
@@ -669,7 +669,7 @@ export default function CustomAgentsPanel({
 
                 <button
                   type="button"
-                  className={styles.policyRemoveBtn}
+                  className={styles.policyRemoveButton}
                   onClick={() => {
                     const updated = (editingAgent.policies || []).filter((_: SerializedPolicy, i: number) => i !== idx);
                     updateField("policies", updated);
@@ -683,7 +683,7 @@ export default function CustomAgentsPanel({
 
             <button
               type="button"
-              className={styles.policyAddBtn}
+              className={styles.policyAddButton}
               onClick={() => {
                 const newPolicy: SerializedPolicy = {
                   tool: "*",
@@ -816,14 +816,14 @@ export default function CustomAgentsPanel({
                   ) : (
                     <>
                       <button
-                        className={styles.actionBtn}
+                        className={styles.actionButton}
                         onClick={() => handleEdit(agent)}
                         title="Edit"
                       >
                         <Edit3 size={14} />
                       </button>
                       <button
-                        className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                        className={`${styles.actionButton} ${styles.actionBtnDanger}`}
                         onClick={() => handleDelete(String(agent._id))}
                         title="Delete"
                       >

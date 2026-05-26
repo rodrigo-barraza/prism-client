@@ -114,7 +114,7 @@ export function ViewModeToggleComponent({ mode, onChange, modes }: ViewModeToggl
           <TooltipComponent key={m.key} label={m.title} position="bottom">
             <button
               type="button"
-              className={`${styles.viewBtn} ${mode === m.key ? styles.viewBtnActive : ""}`}
+              className={`${styles.viewButton} ${mode === m.key ? styles.viewBtnActive : ""}`}
               onClick={() => onChange(m.key)}
             >
               <Icon size={14} />
@@ -159,7 +159,7 @@ export function FilterIconButtonGroupComponent({
           <TooltipComponent key={opt.key} label={opt.label} position="bottom">
             <button
               type="button"
-              className={`${styles.discreteBtn} ${isActive ? styles.discreteBtnActive : ""}`}
+              className={`${styles.discreteButton} ${isActive ? styles.discreteBtnActive : ""}`}
               onClick={() => {
                 if (isSingleSelect) {
                   onChange(isActive ? null : opt.key);
@@ -250,7 +250,7 @@ export interface FilterClearButtonProps {
 
 export function FilterClearButton({ onClick, children = "Clear" }: FilterClearButtonProps) {
   return (
-    <button type="button" className={styles.clearBtn} onClick={onClick}>
+    <button type="button" className={styles.clearButton} onClick={onClick}>
       {children}
     </button>
   );

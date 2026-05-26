@@ -103,7 +103,7 @@ function QuestionBlock({
               return (
                 <button
                   key={i}
-                  className={`${styles.optionBtn} ${isSelected ? styles.optionSelected : ""} ${isFocused ? styles.optionFocused : ""}`}
+                  className={`${styles.optionButton} ${isSelected ? styles.optionSelected : ""} ${isFocused ? styles.optionFocused : ""}`}
                   onClick={() => handleOptionClick(opt.label)}
                   onMouseEnter={() => (opt.preview ? setPreviewIdx(i) : null)}
                   onMouseLeave={() => setPreviewIdx(null)}
@@ -151,14 +151,14 @@ function QuestionBlock({
           />
           {/* Annotation toggle */}
           <button
-            className={`${styles.annotateBtn} ${showAnnotations ? styles.annotateBtnActive : ""}`}
+            className={`${styles.annotateButton} ${showAnnotations ? styles.annotateBtnActive : ""}`}
             onClick={() => setShowAnnotations((v) => !v)}
             title="Add notes"
           >
             <StickyNote size={14} />
           </button>
           <button
-            className={styles.sendBtn}
+            className={styles.sendButton}
             onClick={handleSubmit}
             disabled={
               !freeText.trim() &&
@@ -304,7 +304,7 @@ export default function UserQuestionCardComponent({
       {isPending && isMultiQuestion && (
         <div className={styles.batchSubmit}>
           <button
-            className={`${styles.submitAllBtn} ${allAnswered ? styles.submitAllReady : ""}`}
+            className={`${styles.submitAllButton} ${allAnswered ? styles.submitAllReady : ""}`}
             onClick={handleSubmitAll}
             disabled={!allAnswered}
           >

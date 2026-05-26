@@ -4,7 +4,7 @@
 }
 
 .nodeBody {
-  fill: var(--bg-surface);
+  fill: var(--background-surface);
   stroke: var(--accent-primary);
   stroke-width: 1.5;
   stroke-opacity: 0.4;
@@ -20,7 +20,7 @@
 }
 
 .nodeHeader {
-  fill: var(--bg-elevated);
+  fill: var(--background-elevated);
   stroke: none;
 }
 
@@ -59,7 +59,7 @@
   flex-shrink: 0;
 }
 
-.deleteNodeBtn {
+.deleteNodeButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,7 +130,7 @@
   font-family: var(--font-mono, monospace);
   line-height: 1.4;
   color: var(--text-primary);
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 2px;
   resize: none;
@@ -199,7 +199,7 @@
   overflow: hidden;
 }
 
-.fileInputClearBtn {
+.fileInputClearButton {
   position: absolute;
   top: 2px;
   right: 2px;
@@ -209,7 +209,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--bg-surface);
+  background: var(--background-surface);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border: 1px solid var(--calculated-border-color);
@@ -234,7 +234,7 @@
   height: 100%;
   overflow: hidden;
   border-radius: 2px;
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-subtle);
   display: flex;
   flex-direction: column;
@@ -305,7 +305,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 6px;
-  background: var(--bg-base);
+  background: var(--background-base);
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 2px;
 }
@@ -369,7 +369,7 @@
   border-radius: 2px;
 }
 
-.nodeConfigClearBtn {
+.nodeConfigClearButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
