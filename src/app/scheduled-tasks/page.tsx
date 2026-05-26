@@ -415,7 +415,7 @@ export default function ScheduledTasksPage() {
         <header className={styles.header}>
           <div className={styles.headerTitleRow}>
             <Clock className={styles.headerIcon} />
-            <h1 className={styles.headerTitle}>Agentic Crons</h1>
+            <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
             <span className={styles.badge}>{filteredTasks.length} total</span>
           </div>
 
@@ -456,12 +456,12 @@ export default function ScheduledTasksPage() {
           {loading ? (
             <div className={styles.loadingState}>
               <Loader2 size={32} className={styles.spin} />
-              <p>Loading Agentic Crons…</p>
+              <p>Loading Scheduled Tasks…</p>
             </div>
           ) : filteredTasks.length === 0 ? (
             <div className={styles.emptyState}>
               <Clock size={48} className={styles.emptyIcon} />
-              <h2>No Agentic Crons found</h2>
+              <h2>No Scheduled Tasks found</h2>
               <p>Create a background agent automation task to get started.</p>
               <button
                 onClick={() => setShowNewModal(true)}
@@ -593,7 +593,7 @@ export default function ScheduledTasksPage() {
               ]}
               data={filteredTasks}
               getRowKey={(t: any) => t.id}
-              emptyText="No Agentic Crons found"
+              emptyText="No Scheduled Tasks found"
               storageKey="scheduled-tasks"
             />
           ) : (
