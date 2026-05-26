@@ -9,7 +9,7 @@ import {
   FileText as DocIcon,
   Hash,
 } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
+import { BadgeComponent } from "@rodrigo-barraza/components-library";
 import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import styles from "./ModalityIconComponent.module.css";
 
@@ -90,9 +90,22 @@ export interface ModalityIconProps {
   className?: string;
 }
 
+function buildTooltipContent(
+  activeInputs: ModalityDef[],
+  activeOutputs: ModalityDef[],
+): React.ReactNode {
+  const inputLabels = activeInputs.map((definition) => definition.label);
+  const outputLabels = activeOutputs.map((definition) => definition.label);
+  const lines: string[] = [];
+  if (inputLabels.length > 0) lines.push(`In: ${inputLabels.join(", ")}`);
+  if (outputLabels.length > 0) lines.push(`Out: ${outputLabels.join(", ")}`);
+  return lines.join(" · ");
+}
+
 /**
  * ModalityIconComponent — renders a compact row of input → output modality
- * icons. Modalities only — tool capabilities are rendered by ModelToolsRow (ToolBadgeComponent).
+ * icons inside a BadgeComponent pill. Modalities only — tool capabilities
+ * are rendered by ModelToolsRow (ToolBadgeComponent).
  *
  * Props:
  *   modalities  — object with boolean keys (textIn, imageIn, textOut, etc.)
@@ -106,33 +119,33 @@ export default function ModalityIconComponent({
 }: ModalityIconProps) {
   if (!modalities) return null;
 
-  const activeInputs = INPUT_MODALITIES.filter((m) => modalities[m.key]);
-  const activeOutputs = OUTPUT_MODALITIES.filter((m) => modalities[m.key]);
+  const activeInputs = INPUT_MODALITIES.filter((modality) => modalities[modality.key]);
+  const activeOutputs = OUTPUT_MODALITIES.filter((modality) => modalities[modality.key]);
   const hasInputs = activeInputs.length > 0;
   const hasOutputs = activeOutputs.length > 0;
 
   if (!hasInputs && !hasOutputs) return null;
 
-  const renderIcon = (def: ModalityDef) => {
-    const Icon = def.icon;
+  const tooltipContent = buildTooltipContent(activeInputs, activeOutputs);
+
+  const renderIcon = (definition: ModalityDef) => {
+    const Icon = definition.icon;
     return (
-      <TooltipComponent key={def.key} label={def.label} position="top">
-        <span className={styles.modalityIcon} style={{ color: def.color }}>
-          <Icon size={size} />
-        </span>
-      </TooltipComponent>
+      <span key={definition.key} className={styles.modalityIcon} style={{ color: definition.color }}>
+        <Icon size={size} />
+      </span>
     );
   };
 
   return (
     <div className={`${styles.modalitiesRow} ${className || ""}`}>
-      <span className={styles.modalityBadge}>
+      <BadgeComponent variant="modality" tooltip={tooltipContent}>
         {activeInputs.map(renderIcon)}
         {hasInputs && hasOutputs && (
           <span className={styles.modalityArrow}>→</span>
         )}
         {activeOutputs.map(renderIcon)}
-      </span>
+      </BadgeComponent>
     </div>
   );
 }

@@ -38,7 +38,7 @@ import {
   Lock,
 } from "lucide-react";
 import { renderToolName } from "../utils/utilities";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
+import { TooltipComponent, ButtonComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ToolSelectionComponent.module.css";
 
 // -- Interfaces --------------------------------------------------
@@ -509,31 +509,6 @@ export default function ToolSelectionComponent({
         >
           Tools
         </label>
-        <div className={styles.toolsSectionHeaderRight}>
-          <div className={styles.segmentedControl}>
-            <button
-              type="button"
-              className={styles.segmentedOption}
-              data-is-active={groupMode === "domain"}
-              onClick={() => setGroupMode("domain")}
-            >
-              <FolderOpen size={11} />
-              Domain
-            </button>
-            <button
-              type="button"
-              className={styles.segmentedOption}
-              data-is-active={groupMode === "label"}
-              onClick={() => setGroupMode("label")}
-            >
-              <Tag size={11} />
-              Label
-            </button>
-          </div>
-          <span className={styles.toolsSummary}>
-            {enabledConfigurableCount} / {configurableTools.length}
-          </span>
-        </div>
       </div>
 
       <div className={styles.toolsListWrapper}>
@@ -546,6 +521,32 @@ export default function ToolSelectionComponent({
             value={toolSearch}
             onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setToolSearch(e.target.value)}
           />
+        </div>
+
+        <div className={styles.toolsSectionHeaderRight}>
+          <div className={styles.segmentedControl}>
+            <ButtonComponent
+              variant={groupMode === "domain" ? "tonal" : "secondary"}
+              size="small"
+              icon={FolderOpen}
+              iconSize={11}
+              onClick={() => setGroupMode("domain")}
+            >
+              Domain
+            </ButtonComponent>
+            <ButtonComponent
+              variant={groupMode === "label" ? "tonal" : "secondary"}
+              size="small"
+              icon={Tag}
+              iconSize={11}
+              onClick={() => setGroupMode("label")}
+            >
+              Label
+            </ButtonComponent>
+          </div>
+          <span className={styles.toolsSummary}>
+            {enabledConfigurableCount} / {configurableTools.length}
+          </span>
         </div>
 
         {/* Master select-all checkbox */}

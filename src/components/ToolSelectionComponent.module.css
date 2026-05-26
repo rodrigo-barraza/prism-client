@@ -25,47 +25,17 @@
 .toolsSectionHeaderRight {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
 /* ── Segmented control (Domain / Label toggle) ────────────────── */
 
 .segmentedControl {
   display: inline-flex;
-  border-radius: 6px;
-  border: 1px solid var(--calculated-border-color);
-  background: var(--bg-base);
-  overflow: hidden;
-}
-
-.segmentedOption {
-  all: unset;
-  display: inline-flex;
-  align-items: center;
   gap: 4px;
-  padding: 3px 10px;
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: all 0.18s ease;
-  position: relative;
-  user-select: none;
-}
-
-.segmentedOption + .segmentedOption {
-  border-left: 1px solid var(--calculated-border-color);
-}
-
-.segmentedOption:hover {
-  color: var(--text-secondary);
-  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
-}
-
-.segmentedOption[data-is-active="true"] {
-  color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
-  font-weight: 600;
 }
 
 .toolsListWrapper {

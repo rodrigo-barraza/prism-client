@@ -7,34 +7,6 @@
   gap: 4px;
 }
 
-.modalityBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-size: 0.625rem;
-  font-weight: 500;
-  letter-spacing: 0.2px;
-  color: var(--text-secondary);
-  background: var(--bg-elevated);
-  border: 1px solid var(--calculated-border-color);
-  white-space: nowrap;
-  transition:
-    border-color 0.2s,
-    color 0.2s,
-    background 0.2s;
-}
-
-.modalityBadge:hover {
-  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
-  color: var(--text-primary);
-}
-
-.modalityBadge svg {
-  flex-shrink: 0;
-}
-
 .modalityIcon {
   display: inline-flex;
   align-items: center;

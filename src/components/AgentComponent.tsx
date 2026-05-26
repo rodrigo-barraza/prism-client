@@ -645,6 +645,10 @@ export default function AgentComponent({
   agentSessionIdRef.current = agentSessionId;
   const isGeneratingRef = useRef<boolean>(isGenerating);
   isGeneratingRef.current = isGenerating;
+  // Distinguish client-initiated generation (active SSE via handleSend)
+  // from server-initiated generation (timer/scheduled task, passive DB load).
+  // Change-stream refresh is safe to skip only for client-driven generation.
+  const isClientDrivenGenerationRef = useRef<boolean>(false);
   // Track which sessions have active background generation (for history indicator)
   const [generatingSessionIds, setGeneratingSessionIds] = useState(
     () => new Set(),
@@ -2796,6 +2800,7 @@ export default function AgentComponent({
       }
 
       setIsGenerating(true);
+      isClientDrivenGenerationRef.current = true;
       // Re-engage sticky scroll when the user sends a message
       isUserNearBottomRef.current = true;
       // Track this session as generating (for history indicator even after switching away)
@@ -2935,6 +2940,7 @@ export default function AgentComponent({
         // Only update local UI state if this session is still displayed
         if (agentSessionIdRef.current === genId) {
           setIsGenerating(false);
+          isClientDrivenGenerationRef.current = false;
           abortRef.current = null;
           setCurrentTurnStart(null);
           setMessages((prev) => {
@@ -3218,6 +3224,8 @@ export default function AgentComponent({
         setTraceId(full.traceId || null);
         setActiveId(full.id ?? null);
         setIsGenerating(!!(full as any).isGenerating);
+        // Passive DB load — no active SSE connection for this generation
+        isClientDrivenGenerationRef.current = false;
 
         // Load pending approvals from the enriched session response
         const pendingApprovalData = (full as any).pendingApproval;
@@ -3432,9 +3440,12 @@ export default function AgentComponent({
       // backend writes the user message) would overwrite the local
       // optimistic messages with stale/incomplete database data, causing
       // the user's latest message and assistant placeholder to vanish.
-      if (isGeneratingRef.current) {
+      if (isGeneratingRef.current && isClientDrivenGenerationRef.current) {
+        // Only skip for client-driven generation (active SSE connection).
+        // Server-initiated generation (timers, scheduled tasks) has no SSE
+        // connection, so change-stream refresh is the only way to update.
         console.debug(
-          `[refreshActiveSession] skipping — session ${sessionId} is currently generating`,
+          `[refreshActiveSession] skipping — session ${sessionId} is currently generating (client-driven)`,
         );
         return;
       }
