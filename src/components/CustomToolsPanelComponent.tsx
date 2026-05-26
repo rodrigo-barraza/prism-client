@@ -695,28 +695,24 @@ export default function CustomToolsPanel({
 
   return (
     <div className={styles.container}>
-      <nav className={styles['subtab-navigation-bar']} aria-label="Tools Subtabs">
-        <button
-          className={`${styles['subtab-button-element']} ${
-            activeSubtab === "tools" ? styles['is-active-state'] : ""
-          }`}
+      <div className={styles['subtab-toggle-container']}>
+        <ButtonComponent
+          variant={activeSubtab === "tools" ? "tonal" : "text"}
+          size="small"
           onClick={() => setActiveSubtab("tools")}
-          aria-selected={activeSubtab === "tools"}
-          role="tab"
+          className={styles['subtab-toggle-button']}
         >
           Tools
-        </button>
-        <button
-          className={`${styles['subtab-button-element']} ${
-            activeSubtab === "custom" ? styles['is-active-state'] : ""
-          }`}
+        </ButtonComponent>
+        <ButtonComponent
+          variant={activeSubtab === "custom" ? "tonal" : "text"}
+          size="small"
           onClick={() => setActiveSubtab("custom")}
-          aria-selected={activeSubtab === "custom"}
-          role="tab"
+          className={styles['subtab-toggle-button']}
         >
           Custom Tools
-        </button>
-      </nav>
+        </ButtonComponent>
+      </div>
 
       {activeSubtab === "tools" && (
         <ToolSelectionComponent

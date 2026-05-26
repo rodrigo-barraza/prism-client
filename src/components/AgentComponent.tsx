@@ -4428,7 +4428,7 @@ export default function AgentComponent({
           />
         )}
 
-        <div ref={endRef} style={{ minHeight: 24 }} />
+        <div ref={endRef} style={{ minHeight: 1 }} />
       </div>
 
       {/* -- Status indicator bar (rainbow canvas above input) -- */}

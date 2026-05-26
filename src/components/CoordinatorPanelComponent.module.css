@@ -19,44 +19,59 @@
 .taskTextarea {
   width: 100%;
   min-height: 80px;
-  padding: 10px;
+  padding: 10px 12px;
   font-size: var(--font-size-sm);
-  font-family: inherit;
+  font-family: var(--font-sans);
   color: var(--text-primary);
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
-  border-radius: 6px;
-  resize: vertical;
+  border-radius: var(--border-radius-md);
+  resize: none;
   outline: none;
-  transition: border-color 0.2s ease;
+  line-height: 1.5;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus {
-    border-color: var(--color-violet);
+    border-color: var(--accent-primary);
+    box-shadow:
+      0 0 0 2px var(--calculated-accent-primary-glow),
+      0 4px 20px rgba(0, 0, 0, 0.3);
   }
 
   &::placeholder {
-    color: var(--text-muted);
+    color: var(--text-tertiary);
   }
 }
 
 .filesInput {
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   color: var(--text-primary);
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
-  border-radius: 6px;
+  border-radius: var(--border-radius-md);
+  resize: none;
   outline: none;
-  transition: border-color 0.2s ease;
+  line-height: 1.5;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus {
-    border-color: var(--color-violet);
+    border-color: var(--accent-primary);
+    box-shadow:
+      0 0 0 2px var(--calculated-accent-primary-glow),
+      0 4px 20px rgba(0, 0, 0, 0.3);
   }
 
   &::placeholder {
-    color: var(--text-muted);
+    color: var(--text-tertiary);
   }
 }
 

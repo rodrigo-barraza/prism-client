@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { TextAreaComponent } from "@rodrigo-barraza/components-library";
 import {
   GitBranch,
   RefreshCw,
@@ -222,18 +223,22 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
       {/* -- Input Phase -------------------------------------- */}
       {phase === "input" && (
         <div className={styles.inputSection}>
-          <textarea
+          <TextAreaComponent
             className={styles.taskTextarea}
-            placeholder="Describe the refactoring task…&#10;e.g. 'Refactor all services to use the new structured logger'"
+            placeholder="Describe the refactoring task…"
             value={task}
             onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setTask(e.target.value)}
+            minRows={3}
+            maxRows={10}
           />
-          <textarea
+          <TextAreaComponent
             className={styles.filesInput}
-            placeholder="Target file paths (one per line)&#10;e.g. /home/rodrigo/development/sun/prism/src/services/FileService.js"
+            placeholder="Target file paths (one per line)"
             value={filesInput}
             onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setFilesInput(e.target.value)}
-            rows={4}
+            minRows={3}
+            maxRows={8}
+            spellCheck={false}
           />
           <button
             className={styles.planButton}

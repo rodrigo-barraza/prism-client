@@ -164,7 +164,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 30px 30px 60px;
+  padding: 30px 30px 16px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -174,7 +174,7 @@
 /* Responsive spacing for mobile devices */
 @media (max-width: 767px) {
   .messagesList {
-    padding: 16px 16px 40px;
+    padding: 16px 16px 12px;
     gap: 16px;
   }
 }
@@ -182,7 +182,7 @@
 /* Responsive spacing for short viewports */
 @media (max-height: 680px) {
   .messagesList {
-    padding: 16px 16px 40px;
+    padding: 16px 16px 12px;
     gap: 16px;
   }
 }
