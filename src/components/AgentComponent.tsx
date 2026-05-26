@@ -3288,6 +3288,10 @@ export default function AgentComponent({
           .find((m) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
           const gs = lastAssistant.generationSettings || {};
+          // Session-level settings (from patchConversation) represent the
+          // user's latest explicit model choice and take priority over the
+          // last assistant message which may reflect a previous model.
+          const sessionSettings = full.settings as Partial<PrismSettings> | undefined;
           setSettings((prev) => ({
             ...prev,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
@@ -3305,6 +3309,11 @@ export default function AgentComponent({
             ...(full.systemPrompt != null && {
               systemPrompt: full.systemPrompt,
             }),
+            // Session-level settings override last-assistant-message values —
+            // the user may have changed the model without sending a message yet
+            ...(sessionSettings?.provider && { provider: sessionSettings.provider }),
+            ...(sessionSettings?.model && { model: sessionSettings.model }),
+            ...(sessionSettings?.temperature !== undefined && { temperature: sessionSettings.temperature }),
           }));
           // Model/agent URL params are stripped when conversation:change fires —
           // the loaded session's data is the source of truth.

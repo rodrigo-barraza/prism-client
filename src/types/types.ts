@@ -325,6 +325,7 @@ export interface AgentSession {
   traceId?: string;
   systemPrompt?: string;
   stats?: SessionStats;
+  settings?: PrismSettings;
   createdAt: string;
   updatedAt: string;
 }
