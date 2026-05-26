@@ -6,7 +6,6 @@ import {
   RefreshCw,
   Play,
   Check,
-  X,
   AlertTriangle,
   Loader,
 } from "lucide-react";
@@ -211,14 +210,6 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <span className={styles.headerTitle}>Coordinator Mode</span>
-        {phase !== "input" && (
-          <button className={styles.actionButton} onClick={handleReset}>
-            <X size={11} /> Reset
-          </button>
-        )}
-      </div>
 
       {toast && (
         <div

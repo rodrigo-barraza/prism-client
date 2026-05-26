@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import type { ReactNode } from "react";
 import { Plus, Trash2, Edit3, Save, X, BookOpen, Sparkles } from "lucide-react";
 import PrismService from "../services/PrismService";
 import {
@@ -21,7 +22,7 @@ const CONTENT_MAX_CHARS = 10000;
  * the LLM domain-specific context, coding conventions, or project
  * rules without consuming tool call slots.
  */
-export default function SkillsPanel({ skills, onSkillsChange, project, readOnly }: { skills: Skill[]; onSkillsChange: () => void; project?: string; readOnly?: boolean }) {
+export default function SkillsPanel({ skills, onSkillsChange, project, readOnly, onActionsChange }: { skills: Skill[]; onSkillsChange: () => void; project?: string; readOnly?: boolean; onActionsChange?: (actions: ReactNode) => void }) {
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -114,6 +115,33 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly 
       console.error("Failed to toggle all skills:", error);
     }
   }, [skills, onSkillsChange]);
+
+  // -- Push header action buttons to parent SidebarTabHeader ---
+  useEffect(() => {
+    onActionsChange?.(
+      <>
+        {skills.length > 0 && (
+          <ToggleComponent
+            checked={skills.length > 0 && skills.every((s: Skill) => s.enabled)}
+            onChange={handleToggleAll}
+            size="mini"
+          />
+        )}
+        <ButtonComponent
+          variant="disabled"
+          icon={Plus}
+          onClick={handleCreate}
+        >
+          New
+        </ButtonComponent>
+      </>,
+    );
+  }, [onActionsChange, skills, handleToggleAll, handleCreate]);
+
+  // Clear actions on unmount
+  useEffect(() => {
+    return () => onActionsChange?.(null);
+  }, [onActionsChange]);
 
   // -- Edit / Create Form ---------------------------------------
 
@@ -220,25 +248,6 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly 
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <span className={styles.headerTitle}>Skills ({skills.length})</span>
-        <div className={styles.headerActions}>
-          {skills.length > 0 && (
-            <ToggleComponent
-              checked={skills.length > 0 && skills.every((s: Skill) => s.enabled)}
-              onChange={handleToggleAll}
-              size="mini"
-            />
-          )}
-          <ButtonComponent
-            variant="disabled"
-            icon={Plus}
-            onClick={handleCreate}
-          >
-            New
-          </ButtonComponent>
-        </div>
-      </div>
 
       {skills.length === 0 && (
         <div className={styles.emptyState}>

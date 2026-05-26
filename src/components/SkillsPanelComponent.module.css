@@ -8,22 +8,6 @@
   --panel-accent: var(--color-purple);
 }
 
-/* ── Header ─────────────────────────────────────────────────── */
-
-.header {
-  composes: header from "./PanelShared.module.css";
-}
-
-.headerTitle {
-  composes: headerTitle from "./PanelShared.module.css";
-}
-
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 /* ── Empty State ────────────────────────────────────────────── */
 
 .emptyState {

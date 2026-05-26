@@ -8,21 +8,7 @@
   --panel-accent: var(--color-cyan);
 }
 
-/* ── Header ─────────────────────────────────────────────────── */
-
-.header {
-  composes: header from "./PanelShared.module.css";
-}
-
-.headerTitle {
-  composes: headerTitle from "./PanelShared.module.css";
-}
-
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+/* ── Add Button (rendered in SidebarTabHeader via actions) ──── */
 
 .addButton {
   display: inline-flex;

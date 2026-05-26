@@ -35,9 +35,10 @@
 .list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: clip;
   display: flex;
   flex-direction: column;
-  padding-inline-start: 4px;
+  padding-inline-start: 6px;
   padding-bottom: 80px;
 }
 

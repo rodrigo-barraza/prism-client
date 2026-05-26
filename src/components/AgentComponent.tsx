@@ -488,6 +488,9 @@ export default function AgentComponent({
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [memoriesHeaderActions, setMemoriesHeaderActions] = useState<ReactNode>(null);
   const [workersCount, setWorkersCount] = useState(0);
+  const [workersHeaderActions, setWorkersHeaderActions] = useState<ReactNode>(null);
+  const [mcpHeaderActions, setMcpHeaderActions] = useState<ReactNode>(null);
+  const [skillsHeaderActions, setSkillsHeaderActions] = useState<ReactNode>(null);
   const [workspaceTreeStats, setWorkspaceTreeStats] = useState<{ totalEntries: number; truncated: boolean } | null>(null);
   const [workerToolActivity, setWorkerToolActivity] = useState<Record<string, WorkerActivityEntry>>({});
 
@@ -4171,11 +4174,12 @@ export default function AgentComponent({
 
       {leftTab === "skills" && (
         <>
-        <SidebarTabHeaderComponent icon={BookOpen} title="Skills" count={skills.length} />
+        <SidebarTabHeaderComponent icon={BookOpen} title="Skills" count={skills.length} actions={skillsHeaderActions} />
         <SkillsPanel
           skills={skills}
           onSkillsChange={loadSkills}
           project={agentProject}
+          onActionsChange={setSkillsHeaderActions}
         />
         </>
       )}
@@ -4208,22 +4212,24 @@ export default function AgentComponent({
 
       {leftTab === "mcp" && (
         <>
-        <SidebarTabHeaderComponent icon={Plug} title="MCP Servers" count={mcpServers.filter((server) => server.connected).length} />
+        <SidebarTabHeaderComponent icon={Plug} title="MCP Servers" count={`${mcpServers.filter((server) => server.connected).length} / ${mcpServers.length}`} actions={mcpHeaderActions} />
         <MCPServersPanel
           servers={mcpServers}
           onServersChange={loadMCPServers}
           project={agentProject}
+          onActionsChange={setMcpHeaderActions}
         />
         </>
       )}
 
       {leftTab === "workers" && (
         <>
-        <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} />
+        <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} actions={workersHeaderActions} />
         <WorkersPanel
           agentSessionId={agentSessionId}
           refreshKey={tasksRefreshKey}
           onCountChange={setWorkersCount}
+          onActionsChange={setWorkersHeaderActions}
           workerToolActivity={workerToolActivity}
         />
         </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import type { ReactNode } from "react";
 import {
   Users,
   RefreshCw,
@@ -10,6 +11,9 @@ import {
   FileCode,
 } from "lucide-react";
 import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
+import {
+  ButtonComponent,
+} from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
 import { renderToolName } from "../utils/utilities";
@@ -60,8 +64,15 @@ export default function WorkersPanel({
   agentSessionId,
   refreshKey,
   onCountChange,
+  onActionsChange,
   workerToolActivity = {},
-}: any) {
+}: {
+  agentSessionId: string;
+  refreshKey?: number;
+  onCountChange?: (count: number) => void;
+  onActionsChange?: (actions: ReactNode) => void;
+  workerToolActivity?: Record<string, any>;
+}) {
   const [workers, setWorkers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +122,26 @@ export default function WorkersPanel({
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [workers, loadWorkers]);
 
+  // -- Push header action buttons to parent SidebarTabHeader ---
+  useEffect(() => {
+    onActionsChange?.(
+      <ButtonComponent
+        variant="text"
+        size="small"
+        icon={RefreshCw}
+        iconSize={11}
+        onClick={loadWorkers}
+        disabled={loading}
+        title="Refresh workers"
+      />,
+    );
+  }, [onActionsChange, loadWorkers, loading]);
+
+  // Clear actions on unmount
+  useEffect(() => {
+    return () => onActionsChange?.(null);
+  }, [onActionsChange]);
+
   // -- Loading -------------------------------------------------
 
   if (loading) {
@@ -138,20 +169,6 @@ export default function WorkersPanel({
 
   return (
     <div className={styles.container}>
-      {/* -- Header -------------------------------------------- */}
-      <div className={styles.header}>
-        <span className={styles.headerTitle}>
-          Workers {workers.length > 0 ? `(${workers.length})` : ""}
-        </span>
-        <button
-          className={styles.headerButton}
-          onClick={loadWorkers}
-          disabled={loading}
-          title="Refresh"
-        >
-          <RefreshCw size={11} className={loading ? styles.spin : ""} />
-        </button>
-      </div>
 
       {/* -- Empty ------------------------------------------- */}
       {workers.length === 0 && (

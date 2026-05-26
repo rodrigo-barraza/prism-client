@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -14,6 +14,7 @@ import {
 import PrismService from "../services/PrismService";
 import styles from "./MCPServersPanelComponent.module.css";
 import type { MCPServer } from "@/types/types";
+import type { ReactNode } from "react";
 import { getErrorMessage } from "../utils/errorMessage";
 
 /**
@@ -27,11 +28,13 @@ export default function MCPServersPanel({
   onServersChange,
   project,
   readOnly = false,
+  onActionsChange,
 }: {
   servers: MCPServer[];
   onServersChange: () => void;
   project?: string;
   readOnly?: boolean;
+  onActionsChange?: (actions: ReactNode) => void;
 }) {
   const [editingServer, setEditingServer] = useState<MCPServer | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -57,6 +60,21 @@ export default function MCPServersPanel({
     setIsNew(true);
     setError(null);
   }, []);
+
+  useEffect(() => {
+    if (onActionsChange) {
+      if (readOnly) {
+        onActionsChange(null);
+      } else {
+        onActionsChange(
+          <button className={styles.addButton} onClick={handleCreate}>
+            <Plus size={12} />
+            Add
+          </button>
+        );
+      }
+    }
+  }, [onActionsChange, readOnly, handleCreate]);
 
   const handleEdit = useCallback((server: MCPServer) => {
     setEditingServer({ ...server });
@@ -314,23 +332,8 @@ export default function MCPServersPanel({
 
   // -- List View ------------------------------------------------
 
-  const connectedCount = servers.filter((s: MCPServer) => s.connected).length;
-
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <span className={styles.headerTitle}>
-          MCP ({connectedCount}/{servers.length})
-        </span>
-        {!readOnly && (
-          <div className={styles.headerActions}>
-            <button className={styles.addButton} onClick={handleCreate}>
-              <Plus size={12} />
-              Add
-            </button>
-          </div>
-        )}
-      </div>
 
       {error && <div className={styles.errorMsg}>{error}</div>}
 

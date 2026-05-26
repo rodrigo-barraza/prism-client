@@ -7,40 +7,7 @@
   composes: container from "./PanelShared.module.css";
 }
 
-/* ── Header ─────────────────────────────────────────────────── */
 
-.header {
-  composes: header from "./PanelShared.module.css";
-}
-
-.headerTitle {
-  composes: headerTitle from "./PanelShared.module.css";
-}
-
-.headerButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 3px 6px;
-  font-size: 0.625rem;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: var(--text-primary);
-    border-color: var(--calculated-border-color);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
 
 /* ── Worker Card ──────────────────────────────────────────── */
 /* Mirrors .item + .isActiveState from HistoryItemComponent           */
