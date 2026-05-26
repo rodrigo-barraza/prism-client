@@ -1301,9 +1301,14 @@ export default function MessageList({
                   message.role === "user" &&
                   message.content &&
                   typeof message.content === "string" &&
-                  message.content.startsWith("⏰ Reminder fired: ");
+                  (message.content.startsWith("⏰ Reminder fired: ") ||
+                    message.content.startsWith("🔔 Notification: ") ||
+                    message.content.startsWith("🏮 Reminder fired: "));
                 if (isTimerFired) {
-                  const prompt = message.content.replace("⏰ Reminder fired: ", "");
+                  const prompt = message.content
+                    .replace("⏰ Reminder fired: ", "")
+                    .replace("🔔 Notification: ", "")
+                    .replace("🏮 Reminder fired: ", "");
                   return (
                     <div className={styles.scheduleFiredDivider}>
                       <span className={styles.scheduleFiredLine} />
