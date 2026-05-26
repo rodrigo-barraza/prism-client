@@ -52,7 +52,7 @@ import {
   SSEData,
   ContentSegment,
 } from "../types/types";
-import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent";
+import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import HistoryPanel from "./HistoryPanelComponent";
 import SettingsPanel, { SessionStats as DisplaySessionStats } from "./SettingsPanelComponent";
@@ -108,6 +108,7 @@ import ChatInputButton from "./ChatInputButtonComponent";
 import {
   ButtonComponent,
   EmptyStateComponent,
+  layoutHeaderStyles,
   TabBarComponent,
   tabBarStyles,
   ToastComponent,
@@ -4776,7 +4777,7 @@ export default function AgentComponent({
       rightTitle={`${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`}
       sessionType="agent"
       headerCenter={
-        <div className={layoutStyles['header-center-group']}>
+        <div className={layoutHeaderStyles['header-center-group']}>
           {agents.length > 1 && (
             <AgentPickerComponent
               agents={agents}

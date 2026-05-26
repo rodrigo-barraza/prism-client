@@ -46,8 +46,9 @@ import CoordinatorPanel from "./CoordinatorPanelComponent";
 import WorkersPanel from "./WorkersPanelComponent";
 import SessionRequestsListComponent from "./SessionRequestsListComponent";
 
-import ThreePanelLayout, { layoutStyles } from "./ThreePanelLayoutComponent";
+import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import {
+  layoutHeaderStyles,
   SelectComponent,
   TabBarComponent,
   tabBarStyles,
@@ -981,7 +982,7 @@ export default function AdminChatViewerComponent({
             )
           }
           headerCenter={
-            <div className={layoutStyles['header-center-group']}>
+            <div className={layoutHeaderStyles['header-center-group']}>
               <AgentPickerComponent
                 agents={agents}
                 activeAgentId={activeAgentId}
