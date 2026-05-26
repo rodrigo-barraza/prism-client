@@ -8,6 +8,7 @@ interface SidebarTabHeaderProps {
   count?: number | string | null;
   countSuffix?: string;
   actions?: ReactNode;
+  hasOnlyCoreToolsActive?: boolean;
 }
 
 export default function SidebarTabHeaderComponent({
@@ -16,6 +17,7 @@ export default function SidebarTabHeaderComponent({
   count,
   countSuffix,
   actions,
+  hasOnlyCoreToolsActive,
 }: SidebarTabHeaderProps) {
   return (
     <div className={styles["sidebar-tab-header"]}>
@@ -24,11 +26,25 @@ export default function SidebarTabHeaderComponent({
       {actions && (
         <div className={styles["sidebar-tab-header-actions"]}>{actions}</div>
       )}
-      {count != null && count !== "" && count !== 0 && (
-        <span className={styles["sidebar-tab-header-count"]}>
-          {count}{countSuffix ?? ""}
-        </span>
-      )}
+      {count != null && count !== "" && count !== 0 && (() => {
+        const countString = String(count);
+        if (countString.includes(" / ") && hasOnlyCoreToolsActive) {
+          const [enabledPart, totalPart] = countString.split(" / ");
+          return (
+            <span className={styles["sidebar-tab-header-count"]}>
+              <span className={styles["sidebar-tab-header-count-blue"]}>{enabledPart}</span>
+              {" / "}
+              {totalPart}
+              {countSuffix ?? ""}
+            </span>
+          );
+        }
+        return (
+          <span className={styles["sidebar-tab-header-count"]}>
+            {count}{countSuffix ?? ""}
+          </span>
+        );
+      })()}
     </div>
   );
 }

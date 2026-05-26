@@ -242,6 +242,7 @@
 
 body {
   height: 100dvh;
+  height: var(--visual-viewport-height, 100dvh);
   overflow: hidden;
   display: flex;
 }

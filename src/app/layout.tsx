@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import { Inter, Noto_Color_Emoji, Noto_Emoji } from "next/font/google";
 import {
   ThemeProvider,
@@ -38,6 +39,12 @@ export const metadata = {
   icons: { icon: "/favicon.ico" },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  interactiveWidget: "resizes-content",
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -52,6 +59,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       document.documentElement.setAttribute('data-navigation-is-collapsed', 'true');
     }
   } catch (error) { console.warn('Nav initialization failed:', error.message); }
+})();
+(function(){
+  if (!window.visualViewport) return;
+  var root = document.documentElement;
+  function syncViewportHeight() {
+    root.style.setProperty('--visual-viewport-height', window.visualViewport.height + 'px');
+  }
+  syncViewportHeight();
+  window.visualViewport.addEventListener('resize', syncViewportHeight);
 })();</script>`,
           }}
           suppressHydrationWarning

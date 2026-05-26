@@ -48,4 +48,10 @@
   opacity: 0.5;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
+
+  & .sidebar-tab-header-count-blue {
+    color: var(--color-info-strong);
+    opacity: 1;
+    font-weight: 600;
+  }
 }

@@ -1279,6 +1279,10 @@ export default function AgentComponent({
     return configurableTools.filter((tool) => !disabledBuiltIns.has(tool.name)).length;
   }, [configurableTools, disabledBuiltIns]);
 
+  const coreToolsCount = useMemo(() => {
+    return builtInTools.filter((tool) => (tool as any).system === true).length;
+  }, [builtInTools]);
+
   // Derive whether the active agent has File Operations capability
   const hasFileOps = useMemo(
     () =>
@@ -4132,7 +4136,12 @@ export default function AgentComponent({
 
       {leftTab === "tools" && (
         <>
-        <SidebarTabHeaderComponent icon={Wrench} title="Tools" count={`${enabledConfigurableCount} / ${configurableTools.length}`} />
+        <SidebarTabHeaderComponent
+          icon={Wrench}
+          title="Tools"
+          count={`${enabledConfigurableCount + coreToolsCount} / ${configurableTools.length + coreToolsCount}`}
+          hasOnlyCoreToolsActive={enabledConfigurableCount === 0}
+        />
         <CustomToolsPanel
           tools={customTools}
           onToolsChange={loadCustomTools}
