@@ -30,13 +30,13 @@ import type {
 } from "../types/types";
 import {
   ButtonComponent,
-  DatePickerComponent,
   SearchInputComponent,
   LoadingIndicatorComponent,
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
 import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
 import BadgeComponent from "./BadgeComponent";
+import FilterDropdownComponent, { type FilterGroup } from "./FilterDropdownComponent";
 import styles from "./MemoriesPanelComponent.module.css";
 
 /**
@@ -62,6 +62,20 @@ const TYPE_BADGE_CLASSES: Record<MemoryType, string> = {
   project: "badgeProject",
   reference: "badgeReference",
 };
+
+const TYPE_FILTER_COLORS: Record<MemoryType, string> = {
+  user: "#818cf8",
+  feedback: "#34d399",
+  project: "#fbbf24",
+  reference: "#22d3ee",
+};
+
+const MEMORY_TYPE_FILTER_ITEMS = [
+  { key: "user", icon: User, title: "User", color: TYPE_FILTER_COLORS.user },
+  { key: "feedback", icon: MessageSquare, title: "Feedback", color: TYPE_FILTER_COLORS.feedback },
+  { key: "project", icon: FolderKanban, title: "Project", color: TYPE_FILTER_COLORS.project },
+  { key: "reference", icon: ExternalLink, title: "Reference", color: TYPE_FILTER_COLORS.reference },
+];
 
 const TRIGGER_LABELS: Record<string, string> = {
   manual: "Manual",
@@ -488,7 +502,7 @@ export default function MemoriesPanel({
         </div>
       )}
 
-      {/* -- Search & Time Filter -------------------------------- */}
+      {/* -- Search & Filters ------------------------------------- */}
       <div className={styles.filterBar}>
         <SearchInputComponent
           value={searchQuery}
@@ -496,48 +510,24 @@ export default function MemoriesPanel({
           placeholder="Search memories…"
           className={styles.searchField}
         />
-        <DatePickerComponent
-          from={dateFrom}
-          to={dateTo}
-          onChange={({ from, to }: { from: string; to: string }) => {
+        <FilterDropdownComponent
+          fullWidth
+          groups={[
+            {
+              label: "Type",
+              items: MEMORY_TYPE_FILTER_ITEMS,
+              activeKeys: selectedType === "all" ? null : selectedType,
+              isSingleSelect: true,
+              onToggle: (key: string | null) => setSelectedType(key ?? "all"),
+            },
+          ] as FilterGroup[]}
+          dateRange={{ from: dateFrom, to: dateTo }}
+          onDateChange={({ from, to }: { from: string; to: string }) => {
             setDateFrom(from);
             setDateTo(to);
           }}
-          placeholder="All time"
-          storageKey="memories-panel-date-range"
+          dateStorageKey="memories-panel-date-range"
         />
-      </div>
-
-      {/* -- Memory Type Filters -------------------------------- */}
-      <div className={styles.typeFilters}>
-        {(["all", "user", "feedback", "project", "reference"] as const).map((t) => {
-          const isActive = selectedType === t;
-          let activeClass = "";
-          if (isActive) {
-            if (t === "all") activeClass = styles.typePillActiveAll;
-            else if (t === "user") activeClass = styles.typePillActiveUser;
-            else if (t === "feedback") activeClass = styles.typePillActiveFeedback;
-            else if (t === "project") activeClass = styles.typePillActiveProject;
-            else if (t === "reference") activeClass = styles.typePillActiveReference;
-          }
-          
-          let PillIcon = Brain;
-          if (t === "user") PillIcon = User;
-          else if (t === "feedback") PillIcon = MessageSquare;
-          else if (t === "project") PillIcon = FolderKanban;
-          else if (t === "reference") PillIcon = ExternalLink;
-
-          return (
-            <button
-              key={t}
-              className={`${styles.typePill} ${activeClass}`}
-              onClick={() => setSelectedType(t)}
-            >
-              <PillIcon size={10} />
-              {t}
-            </button>
-          );
-        })}
       </div>
 
       {/* -- Consolidation History ------------------------------- */}

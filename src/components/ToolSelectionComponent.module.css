@@ -9,12 +9,6 @@
   overflow: hidden;
 }
 
-.toolsSummary {
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-  padding: 0 2px;
-}
-
 .toolsSectionHeaderRight {
   display: flex;
   align-items: center;

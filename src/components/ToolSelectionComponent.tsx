@@ -531,9 +531,6 @@ export default function ToolSelectionComponent({
               Label
             </ButtonComponent>
           </div>
-          <span className={styles.toolsSummary}>
-            {enabledConfigurableCount} / {configurableTools.length}
-          </span>
         </div>
 
         {/* Master select-all checkbox */}

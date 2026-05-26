@@ -82,6 +82,7 @@ function AgentsPageInner() {
   // -- Deep-link params: model + session ------------------------
   const initialModel = searchParams.get("model") || null;
   const initialSessionId = searchParams.get("session") || null;
+  const initialTabKey = searchParams.get("tab") || null;
 
   // Fetch agent personas on mount — prepend "No Agent" synthetic entry
   useEffect(() => {
@@ -171,10 +172,25 @@ function AgentsPageInner() {
     [activeAgentId, router, searchParams],
   );
 
+  const handleSidebarTabChangeNotification = useCallback(
+    (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { tab: activeTabKey } = customEvent.detail || {};
+      if (!activeTabKey) return;
+      const currentSidebarTabKey = searchParams.get("tab");
+      if (currentSidebarTabKey === activeTabKey) return;
+      router.replace(buildUrl(searchParams, { tab: activeTabKey }), {
+        scroll: false,
+      });
+    },
+    [router, searchParams],
+  );
+
   useEffect(() => {
     window.addEventListener("agent:switch", handleAgentSwitch);
     window.addEventListener("model:change", handleModelChange);
     window.addEventListener("conversation:change", handleConversationChange);
+    window.addEventListener("sidebarTab:change", handleSidebarTabChangeNotification);
     return () => {
       window.removeEventListener("agent:switch", handleAgentSwitch);
       window.removeEventListener("model:change", handleModelChange);
@@ -182,8 +198,12 @@ function AgentsPageInner() {
         "conversation:change",
         handleConversationChange,
       );
+      window.removeEventListener(
+        "sidebarTab:change",
+        handleSidebarTabChangeNotification,
+      );
     };
-  }, [handleAgentSwitch, handleModelChange, handleConversationChange]);
+  }, [handleAgentSwitch, handleModelChange, handleConversationChange, handleSidebarTabChangeNotification]);
 
   // Persist to localStorage on change
   useEffect(() => {
@@ -200,6 +220,7 @@ function AgentsPageInner() {
         initialThinkingEnabled={forceThinking}
         initialModel={initialModel}
         initialSessionId={initialSessionId}
+        initialTabKey={initialTabKey}
       />
     </main>
   );

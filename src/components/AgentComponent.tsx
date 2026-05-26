@@ -380,6 +380,7 @@ export interface AgentComponentProps {
   initialThinkingEnabled?: boolean;
   initialModel?: string | null;
   initialSessionId?: string | null;
+  initialTabKey?: string | null;
 }
 
 export default function AgentComponent({
@@ -389,6 +390,7 @@ export default function AgentComponent({
   initialThinkingEnabled = false,
   initialModel = null,
   initialSessionId = null,
+  initialTabKey = null,
 }: AgentComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<boolean>(false);
@@ -441,7 +443,7 @@ export default function AgentComponent({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState(isNoAgent ? "Direct Chat" : "Agent");
-  const [leftTab, setLeftTab] = useState("settings"); // "settings" | "tools"
+  const [leftTab, setLeftTab] = useState(initialTabKey || "settings"); // "settings" | "tools"
   const [customTools, setCustomTools] = useState<CustomTool[]>([]);
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -492,6 +494,22 @@ export default function AgentComponent({
   const [newDataTabs, setNewDataTabs] = useState(new Set());
   const leftTabRef = useRef<string>(leftTab);
   leftTabRef.current = leftTab;
+
+  useEffect(() => {
+    if (leftTab) {
+      window.dispatchEvent(
+        new CustomEvent("sidebarTab:change", {
+          detail: { tab: leftTab },
+        }),
+      );
+    }
+  }, [leftTab]);
+
+  useEffect(() => {
+    if (initialTabKey && initialTabKey !== leftTab) {
+      setLeftTab(initialTabKey);
+    }
+  }, [initialTabKey]);
 
   /** Mark a tab as having new unseen data (only if user isn't already viewing it). */
   const markTabNew = useCallback((tabKey: string) => {
@@ -1251,6 +1269,14 @@ export default function AgentComponent({
     () => buildToolSchemas(builtInTools, disabledBuiltIns, customTools),
     [customTools, builtInTools, disabledBuiltIns],
   );
+
+  const configurableTools = useMemo(() => {
+    return builtInTools.filter((tool) => (tool as any).system !== true);
+  }, [builtInTools]);
+
+  const enabledConfigurableCount = useMemo(() => {
+    return configurableTools.filter((tool) => !disabledBuiltIns.has(tool.name)).length;
+  }, [configurableTools, disabledBuiltIns]);
 
   // Derive whether the active agent has File Operations capability
   const hasFileOps = useMemo(
@@ -3658,7 +3684,7 @@ export default function AgentComponent({
             key: "tools",
             icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
             ...badgeProps(allToolSchemas.length, "tools"),
-            tooltip: "Tool Calling",
+            tooltip: "Tools",
             tooltipDisabled: !settings.functionCallingEnabled,
           },
           ...(isNoAgent
@@ -4105,7 +4131,7 @@ export default function AgentComponent({
 
       {leftTab === "tools" && (
         <>
-        <SidebarTabHeaderComponent icon={Wrench} title="Tool Calling" count={allToolSchemas.length} />
+        <SidebarTabHeaderComponent icon={Wrench} title="Tools" count={`${enabledConfigurableCount} / ${configurableTools.length}`} />
         <CustomToolsPanel
           tools={customTools}
           onToolsChange={loadCustomTools}

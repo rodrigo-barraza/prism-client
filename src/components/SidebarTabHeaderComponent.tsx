@@ -5,7 +5,7 @@ import styles from "./SidebarTabHeaderComponent.module.css";
 interface SidebarTabHeaderProps {
   icon: LucideIcon;
   title: string;
-  count?: number | null;
+  count?: number | string | null;
   countSuffix?: string;
   actions?: ReactNode;
 }
@@ -24,7 +24,7 @@ export default function SidebarTabHeaderComponent({
       {actions && (
         <div className={styles["sidebar-tab-header-actions"]}>{actions}</div>
       )}
-      {count != null && count > 0 && (
+      {count != null && count !== "" && count !== 0 && (
         <span className={styles["sidebar-tab-header-count"]}>
           {count}{countSuffix ?? ""}
         </span>
