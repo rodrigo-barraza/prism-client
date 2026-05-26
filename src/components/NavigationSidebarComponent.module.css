@@ -13,6 +13,7 @@
 }
 
 .wrapper.noTransition {
+
   &,
   & * {
     transition-duration: 0s !important;
@@ -61,7 +62,7 @@
     padding: 0;
     margin: 0;
 
-    & > span {
+    &>span {
       display: none;
     }
 
@@ -90,7 +91,7 @@
     justify-content: center;
     padding: 4px 0;
 
-    & > span:last-child {
+    &>span:last-child {
       display: none;
     }
   }
@@ -138,8 +139,8 @@
 .logoBanner {
   position: relative;
   width: 100%;
-  height: 80px;
-  min-height: 80px;
+  height: 50px;
+  min-height: 50px;
   overflow: hidden;
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
@@ -325,7 +326,7 @@
   padding: 10px 12px 4px;
   margin-top: 4px;
 
-  & > span {
+  &>span {
     font-size: 0.625rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -356,10 +357,12 @@
 }
 
 @keyframes attentionPulse {
+
   0%,
   100% {
     opacity: 0.6;
   }
+
   50% {
     opacity: 1;
   }
@@ -417,10 +420,12 @@
 }
 
 @keyframes statusDotPulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.55;
   }
@@ -525,6 +530,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
