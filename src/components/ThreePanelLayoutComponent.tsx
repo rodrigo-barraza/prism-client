@@ -7,6 +7,7 @@ import {
   PanelRightClose,
   PanelRight,
 } from "lucide-react";
+import { LayoutHeaderComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ThreePanelLayoutComponent.module.css";
 import { LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
 
@@ -184,45 +185,30 @@ export default function ThreePanelLayout({
       {navSidebar}
       <div className={styles['layout-page-column']}>
         {/* Full-width header */}
-        <header className={styles['layout-page-header']}>
-          <button
-            className={`${styles['header-toggle-button']} ${!showLeft ? styles['is-panel-hidden'] : ""}`}
-            onClick={toggleLeft}
-            title={
-              showLeft
-                ? `Hide ${(leftTitle || "panel").toLowerCase()}`
-                : `Show ${(leftTitle || "panel").toLowerCase()}`
-            }
-          >
-            {showLeft ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
-          </button>
-          {!isMobile && headerMeta}
-          {headerCenter && (
-            <div className={styles['header-center-area']}>{headerCenter}</div>
-          )}
-          {headerControls}
-          {rightPanel && (
-            <button
-              className={`${styles['header-toggle-button']} ${!showRight ? styles['is-panel-hidden'] : ""}`}
-              onClick={toggleRight}
-              title={
-                showRight
-                  ? `Hide ${resolvedRightTitle.toLowerCase()}`
-                  : `Show ${resolvedRightTitle.toLowerCase()}`
-              }
-            >
-              {showRight ? (
-                <PanelRightClose size={16} />
-              ) : (
-                <PanelRight size={16} />
-              )}
-            </button>
-          )}
-        </header>
-        {/* Mobile: meta info row below the header */}
-        {isMobile && headerMeta && (
-          <div className={styles['mobile-metadata-bar']}>{headerMeta}</div>
-        )}
+        <LayoutHeaderComponent
+          isMobile={isMobile}
+          metaContent={headerMeta}
+          centerContent={headerCenter}
+          controls={headerControls}
+          leadingToggle={{
+            isVisible: showLeft,
+            onToggle: toggleLeft,
+            visibleIcon: <PanelLeftClose size={16} />,
+            hiddenIcon: <PanelLeft size={16} />,
+            label: (leftTitle || "panel").toLowerCase(),
+          }}
+          trailingToggle={
+            rightPanel
+              ? {
+                  isVisible: showRight,
+                  onToggle: toggleRight,
+                  visibleIcon: <PanelRightClose size={16} />,
+                  hiddenIcon: <PanelRight size={16} />,
+                  label: resolvedRightTitle.toLowerCase(),
+                }
+              : undefined
+          }
+        />
 
         {/* Body: sidebars + main content */}
         <div className={styles['layout-body-row']}>
