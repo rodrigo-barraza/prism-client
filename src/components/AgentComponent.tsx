@@ -3209,6 +3209,62 @@ export default function AgentComponent({
         setTraceId(full.traceId || null);
         setActiveId(full.id ?? null);
         setIsGenerating(!!(full as any).isGenerating);
+
+        // Load pending approvals from the enriched session response
+        const pendingApprovalData = (full as any).pendingApproval;
+        if (pendingApprovalData && pendingApprovalData.pending) {
+          if (pendingApprovalData.type === "plan") {
+            const lastAssistantMessage = [...(full.messages || [])]
+              .reverse()
+              .find((message) => message.role === "assistant");
+            if (lastAssistantMessage && lastAssistantMessage.content) {
+              const planText = lastAssistantMessage.content;
+              const planSteps = planText
+                .split("\n")
+                .filter((line) => line.trim().startsWith("-") || /^\d+\./.test(line.trim()));
+              setPlanProposal({
+                plan: planText,
+                steps: planSteps,
+                status: "pending",
+              });
+            }
+          } else if (pendingApprovalData.toolCalls) {
+            setPendingApprovals(
+              pendingApprovalData.toolCalls.map((toolCall: any) => ({
+                id: toolCall.id || `ap-${Date.now()}`,
+                toolName: toolCall.name || "",
+                toolArgs: toolCall.args || {},
+                tier: toolCall._approval?.tier,
+                status: "pending",
+              }))
+            );
+          } else if (pendingApprovalData.tools) {
+            setPendingApprovals(
+              pendingApprovalData.tools.map((toolName: string) => ({
+                id: `ap-${Date.now()}`,
+                toolName: toolName,
+                toolArgs: {},
+                status: "pending",
+              }))
+            );
+          }
+        } else {
+          setPendingApprovals([]);
+          setPlanProposal(null);
+        }
+
+        // Load pending questions from the enriched session response
+        const pendingQuestionData = (full as any).pendingQuestion;
+        if (pendingQuestionData && pendingQuestionData.pending) {
+          setPendingUserQuestion({
+            questions: pendingQuestionData.questions || [],
+            question: pendingQuestionData.question || "",
+            choices: pendingQuestionData.choices || [],
+          });
+        } else {
+          setPendingUserQuestion(null);
+        }
+
         window.dispatchEvent(
           new CustomEvent("conversation:change", {
             detail: { conversationId: full.id },

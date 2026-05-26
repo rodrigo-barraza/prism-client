@@ -91,15 +91,14 @@ function AgentsPageInner() {
   }, []);
 
   // -- Strip stale URL params on mount when session is present ----
-  // If the URL arrives with ?session=...&model=...&agent=..., remove
-  // model and agent immediately — the session data owns those values.
+  // If the URL arrives with ?session=...&model=..., remove
+  // model immediately — the session data owns those values.
   useEffect(() => {
     const sessionId = searchParams.get("session");
     if (!sessionId) return;
     const hasModel = searchParams.has("model");
-    const hasAgent = searchParams.has("agent");
-    if (hasModel || hasAgent) {
-      router.replace(buildUrl(searchParams, { model: null, agent: null }), {
+    if (hasModel) {
+      router.replace(buildUrl(searchParams, { model: null }), {
         scroll: false,
       });
     }
@@ -143,8 +142,9 @@ function AgentsPageInner() {
   );
 
   // Listen for conversation:change events from AgentComponent — sync URL
-  // When a session is active, strip model & agent from URL — the
-  // session data is the source of truth for those values.
+  // When a session is active, strip model from URL but keep agent — the
+  // session data is the source of truth for the model, and we keep agent
+  // in the URL to prevent AgentComponent remounting.
   const handleConversationChange = useCallback(
     (e: Event) => {
       const customEvent = e as CustomEvent;
@@ -152,12 +152,12 @@ function AgentsPageInner() {
       const current = searchParams.get("session");
       if (current === (conversationId || null)) return;
       if (conversationId) {
-        // Session active → keep only session param
+        // Session active → keep session and agent params
         router.replace(
           buildUrl(searchParams, {
             session: conversationId,
             model: null,
-            agent: null,
+            agent: activeAgentId,
           }),
           { scroll: false },
         );
@@ -168,7 +168,7 @@ function AgentsPageInner() {
         });
       }
     },
-    [router, searchParams],
+    [activeAgentId, router, searchParams],
   );
 
   useEffect(() => {
