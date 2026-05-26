@@ -336,7 +336,7 @@ function CoinStatic({ agent, size }: any) {
         context.beginPath();
         context.roundRect(0, 0, TEX_SIZE, TEX_SIZE, r);
         context.closePath();
-        const g = context.createLinearGradient(0, 0, TEX_SIZE, TEX_SIZE);
+        const gradient = context.createLinearGradient(0, 0, TEX_SIZE, TEX_SIZE);
         g.addColorStop(0, gradient[0]);
         g.addColorStop(1, gradient[1]);
         context.fillStyle = g;

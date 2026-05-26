@@ -681,7 +681,7 @@ export default function StarfieldComponent({
     const draw = (time: number) => {
       const elapsedSeconds = time / 1000;
       const scaledWidth = sizeRef.current.w;
-      const h = sizeRef.current.h;
+      const scaledHeight = sizeRef.current.h;
       const fieldStars = starsRef.current;
       const constellations = constellationStarsRef.current;
       if (!fieldStars) {
