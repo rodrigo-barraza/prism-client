@@ -94,8 +94,6 @@
 
 /* When the associated panel is hidden */
 .is-panel-hidden {
-  background: color-mix(in oklch, var(--accent-primary) 15%, transparent);
-  border-color: var(--accent-primary);
   color: var(--accent-primary);
   opacity: 1;
 }

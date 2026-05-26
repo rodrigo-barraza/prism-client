@@ -65,6 +65,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid transparent !important;
+  background: var(--bg-base) !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
@@ -456,23 +457,6 @@
 .mentionItemPath {
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.hint {
-  max-width: 800px;
-  margin: 8px auto 0;
-  text-align: right;
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-}
-
-.hint kbd {
-  background: var(--bg-surface);
-  border: 1px solid var(--calculated-border-color);
-  padding: 2px 4px;
-  border-radius: 2px;
-  font-family: inherit;
-  font-size: 0.625rem;
 }
 
 .pendingImages {

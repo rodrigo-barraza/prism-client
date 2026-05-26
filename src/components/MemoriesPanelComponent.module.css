@@ -21,52 +21,7 @@
   /* No overrides — render SearchInputComponent at its default size */
 }
 
-/* ── Header ─────────────────────────────────────────────────── */
-
-.header {
-  composes: header from "./PanelShared.module.css";
-}
-
-.headerTitle {
-  composes: headerTitle from "./PanelShared.module.css";
-}
-
-.refreshBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--calculated-border-color);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: var(--text-primary);
-    border-color: var(--text-secondary);
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-}
-
-.refreshSpin {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* ── (Header actions moved to SidebarTabHeaderComponent) ───── */
 
 /* ── Empty State ────────────────────────────────────────────── */
 
@@ -401,14 +356,6 @@
   color: var(--color-danger-light);
   border: 1px solid
     color-mix(in srgb, var(--color-danger-light) 25%, transparent);
-}
-
-/* ── History Toggle ───────────────────────────────────────── */
-
-.historyBtnActive {
-  color: var(--color-violet);
-  border-color: color-mix(in srgb, var(--color-violet) 40%, transparent);
-  background: color-mix(in srgb, var(--color-violet) 8%, transparent);
 }
 
 /* ── Consolidation History Section ─────────────────────────── */

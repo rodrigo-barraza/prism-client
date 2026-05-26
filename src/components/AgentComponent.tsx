@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import type { ReactNode } from "react";
 import {
   BotMessageSquare,
   Paperclip,
@@ -25,6 +26,8 @@ import {
   FolderOpen,
   FolderTree,
   Plus,
+  Bot,
+  BarChart3,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, { IrisCollectionChangeEvent } from "../services/IrisService";
@@ -480,7 +483,9 @@ export default function AgentComponent({
     return stored ? Math.max(300, Math.min(Number(stored), 1200)) : 500;
   });
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
+  const [memoriesHeaderActions, setMemoriesHeaderActions] = useState<ReactNode>(null);
   const [workersCount, setWorkersCount] = useState(0);
+  const [workspaceTreeStats, setWorkspaceTreeStats] = useState<{ totalEntries: number; truncated: boolean } | null>(null);
   const [workerToolActivity, setWorkerToolActivity] = useState<Record<string, WorkerActivityEntry>>({});
 
   // Track which tabs have received new data the user hasn't viewed yet
@@ -3750,7 +3755,7 @@ export default function AgentComponent({
 
       {leftTab === "settings" && (
         <>
-        <SidebarTabHeaderComponent title="Settings" />
+        <SidebarTabHeaderComponent icon={Settings} title="Settings" />
         <SettingsPanel
           config={filteredConfig}
           settings={settings}
@@ -4063,11 +4068,20 @@ export default function AgentComponent({
       )}
 
       {leftTab === "workspace" && (
+        <>
+        <SidebarTabHeaderComponent
+          icon={FolderOpen}
+          title="Workspace"
+          count={workspaceTreeStats?.totalEntries}
+          countSuffix={workspaceTreeStats?.truncated ? "+" : ""}
+        />
         <WorkspaceTreePanelComponent
           workspaceTreeRefreshKey={workspaceTreeRefreshKey}
           onMentionFile={handleMentionFile}
           locked={messages.length > 0}
           unavailableWorkspace={unavailableWorkspace}
+          hideHeader
+          onTreeStats={setWorkspaceTreeStats}
           onOpenFile={(relativePath: string) => {
             // Build absolute path from workspace root + relative path
             const absPath = currentWorkspace?.path
@@ -4076,11 +4090,12 @@ export default function AgentComponent({
             handleOpenFileInViewer(absPath);
           }}
         />
+        </>
       )}
 
       {leftTab === "info" && (
         <>
-        <SidebarTabHeaderComponent title="Model Info" />
+        <SidebarTabHeaderComponent icon={Info} title="Model Info" />
         <ModelInfoPanel
           config={filteredConfig}
           settings={settings}
@@ -4090,7 +4105,7 @@ export default function AgentComponent({
 
       {leftTab === "tools" && (
         <>
-        <SidebarTabHeaderComponent title="Tool Calling" count={allToolSchemas.length} />
+        <SidebarTabHeaderComponent icon={Wrench} title="Tool Calling" count={allToolSchemas.length} />
         <CustomToolsPanel
           tools={customTools}
           onToolsChange={loadCustomTools}
@@ -4107,7 +4122,7 @@ export default function AgentComponent({
 
       {leftTab === "params" && (
         <>
-        <SidebarTabHeaderComponent title="Parameters" />
+        <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
         <ParametersPanelComponent
           settings={settings}
           onChange={(updates: Partial<PrismSettings>) =>
@@ -4120,7 +4135,7 @@ export default function AgentComponent({
 
       {leftTab === "skills" && (
         <>
-        <SidebarTabHeaderComponent title="Skills" count={skills.length} />
+        <SidebarTabHeaderComponent icon={BookOpen} title="Skills" count={skills.length} />
         <SkillsPanel
           skills={skills}
           onSkillsChange={loadSkills}
@@ -4131,12 +4146,13 @@ export default function AgentComponent({
 
       {leftTab === "memories" && (
         <>
-        <SidebarTabHeaderComponent title="Memories" count={totalMemoriesCount} />
+        <SidebarTabHeaderComponent icon={Brain} title="Memories" count={totalMemoriesCount} actions={memoriesHeaderActions} />
         <MemoriesPanel
           project={agentProject}
           agent={agentId}
           refreshKey={memoriesRefreshKey}
           onCountChange={setTotalMemoriesCount}
+          onActionsChange={setMemoriesHeaderActions}
           memoryConfigured={memoryConfigured}
         />
         </>
@@ -4144,7 +4160,7 @@ export default function AgentComponent({
 
       {leftTab === "tasks" && (
         <>
-        <SidebarTabHeaderComponent title="Tasks" count={tasksCount} />
+        <SidebarTabHeaderComponent icon={ListChecks} title="Tasks" count={tasksCount} />
         <TasksPanel
           project={agentProject}
           refreshKey={tasksRefreshKey}
@@ -4156,7 +4172,7 @@ export default function AgentComponent({
 
       {leftTab === "mcp" && (
         <>
-        <SidebarTabHeaderComponent title="MCP Servers" count={mcpServers.filter((server) => server.connected).length} />
+        <SidebarTabHeaderComponent icon={Plug} title="MCP Servers" count={mcpServers.filter((server) => server.connected).length} />
         <MCPServersPanel
           servers={mcpServers}
           onServersChange={loadMCPServers}
@@ -4167,7 +4183,7 @@ export default function AgentComponent({
 
       {leftTab === "workers" && (
         <>
-        <SidebarTabHeaderComponent title="Workers" count={workersCount} />
+        <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} />
         <WorkersPanel
           agentSessionId={agentSessionId}
           refreshKey={tasksRefreshKey}
@@ -4179,7 +4195,7 @@ export default function AgentComponent({
 
       {leftTab === "requests" && (
         <>
-        <SidebarTabHeaderComponent title="Requests" count={backendSessionStats?.requestCount || 0} />
+        <SidebarTabHeaderComponent icon={BarChart3} title="Requests" count={backendSessionStats?.requestCount || 0} />
         <SessionRequestsListComponent
           agentSessionId={agentSessionId}
           refreshKey={requestsRefreshKey}
@@ -4189,7 +4205,7 @@ export default function AgentComponent({
 
       {leftTab === "coordinator" && (
         <>
-        <SidebarTabHeaderComponent title="Coordinator" />
+        <SidebarTabHeaderComponent icon={GitBranch} title="Coordinator" />
         <CoordinatorPanel project={agentProject} />
         </>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import type { ReactNode } from "react";
 import {
   Brain,
   RefreshCw,
@@ -28,6 +29,7 @@ import type {
   MemoryType,
 } from "../types/types";
 import {
+  ButtonComponent,
   DatePickerComponent,
   SearchInputComponent,
   LoadingIndicatorComponent,
@@ -91,6 +93,7 @@ interface MemoriesPanelProps {
   refreshKey?: number;
   consolidationEvent?: ConsolidationEvent | null;
   onCountChange?: (count: number) => void;
+  onActionsChange?: (actions: ReactNode) => void;
   memoryConfigured?: boolean;
 }
 
@@ -100,6 +103,7 @@ export default function MemoriesPanel({
   refreshKey,
   consolidationEvent,
   onCountChange,
+  onActionsChange,
   memoryConfigured = true,
 }: MemoriesPanelProps) {
   const [memories, setMemories] = useState<AgentMemory[]>([]);
@@ -426,41 +430,48 @@ export default function MemoriesPanel({
     );
   }
 
-  // -- List ----------------------------------------------------
-  return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <span className={styles.headerTitle}>
-          Memories (
-          {isFiltered ? `${filteredMemories.length} / ${total}` : total})
-        </span>
-        <button
-          className={styles.refreshBtn}
+  // -- Push header action buttons to parent SidebarTabHeader ---
+  useEffect(() => {
+    onActionsChange?.(
+      <>
+        <ButtonComponent
+          variant="text"
+          size="small"
+          icon={Sparkles}
+          iconSize={11}
           onClick={handleConsolidate}
           disabled={consolidating || total < 2}
           title="Consolidate memories — merge duplicates and clean stale entries"
-        >
-          <Sparkles
-            size={11}
-            className={consolidating ? styles.refreshSpin : ""}
-          />
-        </button>
-        <button
-          className={`${styles.refreshBtn} ${historyOpen ? styles.historyBtnActive : ""}`}
-          onClick={() => setHistoryOpen((prev) => !prev)}
+        />
+        <ButtonComponent
+          variant={historyOpen ? "tonal" : "text"}
+          size="small"
+          icon={History}
+          iconSize={11}
+          onClick={() => setHistoryOpen((previous) => !previous)}
           title="Consolidation history"
-        >
-          <History size={11} />
-        </button>
-        <button
-          className={styles.refreshBtn}
+        />
+        <ButtonComponent
+          variant="text"
+          size="small"
+          icon={RefreshCw}
+          iconSize={11}
           onClick={() => loadMemories(false)}
           disabled={loading}
           title="Refresh memories"
-        >
-          <RefreshCw size={11} className={loading ? styles.refreshSpin : ""} />
-        </button>
-      </div>
+        />
+      </>,
+    );
+  }, [onActionsChange, handleConsolidate, consolidating, total, historyOpen, loading, loadMemories]);
+
+  // Clear actions on unmount
+  useEffect(() => {
+    return () => onActionsChange?.(null);
+  }, [onActionsChange]);
+
+  // -- List ----------------------------------------------------
+  return (
+    <div className={styles.container}>
 
       {toast && (
         <div

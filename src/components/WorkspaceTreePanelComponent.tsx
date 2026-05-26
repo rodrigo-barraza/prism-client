@@ -34,6 +34,8 @@ interface WorkspaceTreePanelProps {
   onOpenFile?: ((path: string) => void) | null;
   locked?: boolean;
   unavailableWorkspace?: string | null;
+  hideHeader?: boolean;
+  onTreeStats?: (stats: { totalEntries: number; truncated: boolean } | null) => void;
 }
 
 // ─── Recursive Directory Tree Node ──────────────────────────
@@ -140,6 +142,8 @@ export default function WorkspaceTreePanelComponent({
   onOpenFile,
   locked = false,
   unavailableWorkspace = null,
+  hideHeader = false,
+  onTreeStats,
 }: WorkspaceTreePanelProps) {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
   const [treeData, setTreeData] = useState<WorkspaceTreeResponse | null>(null);
@@ -249,6 +253,16 @@ export default function WorkspaceTreePanelComponent({
     };
   }, [workspaceTreeRefreshKey, silentRefresh]);
 
+  // Propagate tree stats to parent (for standardized tab header count)
+  useEffect(() => {
+    if (!onTreeStats) return;
+    if (treeData?.totalEntries !== undefined) {
+      onTreeStats({ totalEntries: treeData.totalEntries, truncated: !!treeData.truncated });
+    } else {
+      onTreeStats(null);
+    }
+  }, [treeData?.totalEntries, treeData?.truncated, onTreeStats]);
+
   if (!currentWorkspace && !unavailableWorkspace) return null;
 
   // ── Session workspace not currently connected ──
@@ -259,12 +273,14 @@ export default function WorkspaceTreePanelComponent({
       unavailableWorkspace;
     return (
       <div className={styles.container}>
-        <div className={styles.headerWrapper}>
-          <div className={styles.header}>
-            <FolderOpen size={11} className={styles.headerIcon} />
-            <span className={styles.headerLabel}>{label}</span>
+        {!hideHeader && (
+          <div className={styles.headerWrapper}>
+            <div className={styles.header}>
+              <FolderOpen size={11} className={styles.headerIcon} />
+              <span className={styles.headerLabel}>{label}</span>
+            </div>
           </div>
-        </div>
+        )}
         <div className={styles.treeScroll}>
           <div className={styles.unavailableState}>
             <WifiOff size={20} className={styles.unavailableIcon} />
@@ -290,64 +306,66 @@ export default function WorkspaceTreePanelComponent({
   return (
     <div className={styles.container}>
       {/* ── Header — static label or workspace switcher ── */}
-      <div className={styles.headerWrapper} ref={switcherRef}>
-        <div
-          className={`${styles.header} ${hasMultiple ? styles.headerClickable : ""}`}
-          onClick={
-            hasMultiple ? () => setSwitcherOpen((v) => !v) : undefined
-          }
-          role={hasMultiple ? "button" : undefined}
-          tabIndex={hasMultiple ? 0 : undefined}
-          title={
-            hasMultiple
-              ? `Switch workspace — ${currentWorkspace!.path}`
-              : currentWorkspace!.path
-          }
-        >
-          <FolderOpen size={11} className={styles.headerIcon} />
-          <span className={styles.headerLabel}>{currentWorkspace!.name}</span>
-          {locked && <Lock size={9} className={styles.headerLock} />}
-          {hasMultiple && (
-            <ChevronDown
-              size={10}
-              className={`${styles.headerChevron} ${switcherOpen ? styles.headerChevronOpen : ""}`}
-            />
-          )}
-          {treeData?.totalEntries !== undefined && treeData.totalEntries > 0 && (
-            <span className={styles.headerCount}>
-              {treeData.totalEntries}
-              {treeData.truncated ? "+" : ""}
-            </span>
+      {!hideHeader && (
+        <div className={styles.headerWrapper} ref={switcherRef}>
+          <div
+            className={`${styles.header} ${hasMultiple ? styles.headerClickable : ""}`}
+            onClick={
+              hasMultiple ? () => setSwitcherOpen((v) => !v) : undefined
+            }
+            role={hasMultiple ? "button" : undefined}
+            tabIndex={hasMultiple ? 0 : undefined}
+            title={
+              hasMultiple
+                ? `Switch workspace — ${currentWorkspace!.path}`
+                : currentWorkspace!.path
+            }
+          >
+            <FolderOpen size={11} className={styles.headerIcon} />
+            <span className={styles.headerLabel}>{currentWorkspace!.name}</span>
+            {locked && <Lock size={9} className={styles.headerLock} />}
+            {hasMultiple && (
+              <ChevronDown
+                size={10}
+                className={`${styles.headerChevron} ${switcherOpen ? styles.headerChevronOpen : ""}`}
+              />
+            )}
+            {treeData?.totalEntries !== undefined && treeData.totalEntries > 0 && (
+              <span className={styles.headerCount}>
+                {treeData.totalEntries}
+                {treeData.truncated ? "+" : ""}
+              </span>
+            )}
+          </div>
+
+          {/* ── Workspace switcher dropdown ── */}
+          {switcherOpen && (
+            <div className={styles.switcherDropdown}>
+              {workspaces.map((w: WorkspaceItem) => {
+                const isActive = currentWorkspace?.path === w.path;
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    className={`${styles.switcherItem} ${isActive ? styles.switcherItemActive : ""}`}
+                    onClick={() => {
+                      setCurrentWorkspace(w);
+                      setSwitcherOpen(false);
+                    }}
+                    title={w.path}
+                  >
+                    <FolderOpen size={10} className={styles.switcherItemIcon} />
+                    <span className={styles.switcherItemName}>{w.name}</span>
+                    {isActive && (
+                      <Check size={10} className={styles.switcherItemCheck} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
-
-        {/* ── Workspace switcher dropdown ── */}
-        {switcherOpen && (
-          <div className={styles.switcherDropdown}>
-            {workspaces.map((w: WorkspaceItem) => {
-              const isActive = currentWorkspace?.path === w.path;
-              return (
-                <button
-                  key={w.id}
-                  type="button"
-                  className={`${styles.switcherItem} ${isActive ? styles.switcherItemActive : ""}`}
-                  onClick={() => {
-                    setCurrentWorkspace(w);
-                    setSwitcherOpen(false);
-                  }}
-                  title={w.path}
-                >
-                  <FolderOpen size={10} className={styles.switcherItemIcon} />
-                  <span className={styles.switcherItemName}>{w.name}</span>
-                  {isActive && (
-                    <Check size={10} className={styles.switcherItemCheck} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      )}
 
       <div className={styles.treeScroll}>
         {treeLoading && <div className={styles.treeLoading}>Loading…</div>}
