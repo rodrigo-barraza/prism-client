@@ -493,6 +493,7 @@ export default function BadgeComponent(props: BadgeProps) {
           icon={showIcon ? <Coins size={mini ? 8 : 10} /> : undefined}
           color="green"
           tween
+          round={false}
           mini={mini}
           className={className}
           tooltip={`Estimated cost: ${formatCost(cost)}`}
