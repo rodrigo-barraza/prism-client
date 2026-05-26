@@ -872,28 +872,15 @@
   }
 }
 
-/* ── Raw Prefix (greyed out system context headers) ── */
+/* ── Raw Prefix (faded system context text) ── */
 .rawPrefix {
-  opacity: 0.45;
+  opacity: 0.4;
   color: var(--text-muted);
-  font-family: var(--font-mono, monospace);
-  font-size: var(--font-size-xs, 11px);
-  display: block;
-  margin-bottom: 12px;
-  background: color-mix(in srgb, var(--bg-elevated) 40%, var(--bg-base));
-  padding: 8px 12px;
-  border-left: 2px solid var(--calculated-border-color);
-  border-radius: 0 4px 4px 0;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
-  transition: opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-
-  &:hover {
-    opacity: 0.75;
-    border-color: var(--accent-primary);
-    background: var(--bg-elevated);
-  }
+  margin-bottom: 4px;
 }
 
 
