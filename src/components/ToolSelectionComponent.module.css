@@ -9,13 +9,6 @@
   overflow: hidden;
 }
 
-.toolsSectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .toolsSummary {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);

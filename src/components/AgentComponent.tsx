@@ -64,6 +64,7 @@ import WorkersPanel from "./WorkersPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
 import SessionRequestsListComponent from "./SessionRequestsListComponent";
 import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent";
+import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
 import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
@@ -3748,6 +3749,8 @@ export default function AgentComponent({
       />
 
       {leftTab === "settings" && (
+        <>
+        <SidebarTabHeaderComponent title="Settings" />
         <SettingsPanel
           config={filteredConfig}
           settings={settings}
@@ -4056,6 +4059,7 @@ export default function AgentComponent({
               : null) as DisplaySessionStats | null
           }
         />
+        </>
       )}
 
       {leftTab === "workspace" && (
@@ -4075,13 +4079,18 @@ export default function AgentComponent({
       )}
 
       {leftTab === "info" && (
+        <>
+        <SidebarTabHeaderComponent title="Model Info" />
         <ModelInfoPanel
           config={filteredConfig}
           settings={settings}
         />
+        </>
       )}
 
       {leftTab === "tools" && (
+        <>
+        <SidebarTabHeaderComponent title="Tool Calling" count={allToolSchemas.length} />
         <CustomToolsPanel
           tools={customTools}
           onToolsChange={loadCustomTools}
@@ -4093,9 +4102,12 @@ export default function AgentComponent({
           lockedOffTools={lockedOffTools}
           agent={!isNoAgent}
         />
+        </>
       )}
 
       {leftTab === "params" && (
+        <>
+        <SidebarTabHeaderComponent title="Parameters" />
         <ParametersPanelComponent
           settings={settings}
           onChange={(updates: Partial<PrismSettings>) =>
@@ -4103,17 +4115,23 @@ export default function AgentComponent({
           }
           config={filteredConfig}
         />
+        </>
       )}
 
       {leftTab === "skills" && (
+        <>
+        <SidebarTabHeaderComponent title="Skills" count={skills.length} />
         <SkillsPanel
           skills={skills}
           onSkillsChange={loadSkills}
           project={agentProject}
         />
+        </>
       )}
 
       {leftTab === "memories" && (
+        <>
+        <SidebarTabHeaderComponent title="Memories" count={totalMemoriesCount} />
         <MemoriesPanel
           project={agentProject}
           agent={agentId}
@@ -4121,42 +4139,60 @@ export default function AgentComponent({
           onCountChange={setTotalMemoriesCount}
           memoryConfigured={memoryConfigured}
         />
+        </>
       )}
 
       {leftTab === "tasks" && (
+        <>
+        <SidebarTabHeaderComponent title="Tasks" count={tasksCount} />
         <TasksPanel
           project={agentProject}
           refreshKey={tasksRefreshKey}
           agentSessionId={agentSessionId}
           onCountChange={setTasksCount}
         />
+        </>
       )}
 
       {leftTab === "mcp" && (
+        <>
+        <SidebarTabHeaderComponent title="MCP Servers" count={mcpServers.filter((server) => server.connected).length} />
         <MCPServersPanel
           servers={mcpServers}
           onServersChange={loadMCPServers}
           project={agentProject}
         />
+        </>
       )}
 
       {leftTab === "workers" && (
+        <>
+        <SidebarTabHeaderComponent title="Workers" count={workersCount} />
         <WorkersPanel
           agentSessionId={agentSessionId}
           refreshKey={tasksRefreshKey}
           onCountChange={setWorkersCount}
           workerToolActivity={workerToolActivity}
         />
+        </>
       )}
 
       {leftTab === "requests" && (
+        <>
+        <SidebarTabHeaderComponent title="Requests" count={backendSessionStats?.requestCount || 0} />
         <SessionRequestsListComponent
           agentSessionId={agentSessionId}
           refreshKey={requestsRefreshKey}
         />
+        </>
       )}
 
-      {leftTab === "coordinator" && <CoordinatorPanel project={agentProject} />}
+      {leftTab === "coordinator" && (
+        <>
+        <SidebarTabHeaderComponent title="Coordinator" />
+        <CoordinatorPanel project={agentProject} />
+        </>
+      )}
     </div>
   );
 

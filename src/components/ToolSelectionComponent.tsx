@@ -498,19 +498,6 @@ export default function ToolSelectionComponent({
   // -- Render ---------------------------------------------------
   return (
     <div className={styles.toolsSection}>
-      <div className={styles.toolsSectionHeader}>
-        <label
-          style={{
-            margin: 0,
-            fontSize: 12,
-            fontWeight: 500,
-            color: "var(--text-secondary)",
-          }}
-        >
-          Tools
-        </label>
-      </div>
-
       <div className={styles.toolsListWrapper}>
         {/* Search */}
         <div className={styles.toolsSearch}>
