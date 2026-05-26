@@ -4508,21 +4508,7 @@ export default function AgentComponent({
       <div
         className={`${chatStyles.inputWrapper} ${!settings.provider || !settings.model ? chatStyles.inputWrapperDisabled : ""}`}
       >
-        {messages.length === 0 ? (
-          <div className={chatStyles.workspaceRow}>
-            <span className={chatStyles.workspaceLabel}>
-              New conversation in
-            </span>
-            <WorkspaceSelectorComponent />
-          </div>
-        ) : (
-          <div className={chatStyles.workspaceRowLocked}>
-            <WorkspaceSelectorComponent
-              locked
-              unavailableWorkspace={unavailableWorkspace}
-            />
-          </div>
-        )}
+
         <form
           onSubmit={handleSend}
           className={`${chatStyles.inputBox} ${isDragging ? chatStyles.inputBoxDragActive : ""} ${isGenerating ? chatStyles.inputBoxGenerating : ""}`}
@@ -4672,10 +4658,7 @@ export default function AgentComponent({
             />
           </div>
         </form>
-        <div className={chatStyles.hint}>
-          Press <kbd>Enter</kbd> to send, <kbd>Shift</kbd> + <kbd>Enter</kbd>{" "}
-          for new line
-        </div>
+
       </div>
       {lightboxSrc && (
         <ImagePreviewComponent
