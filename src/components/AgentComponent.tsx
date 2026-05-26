@@ -643,6 +643,8 @@ export default function AgentComponent({
 
   const agentSessionIdRef = useRef<string>(agentSessionId);
   agentSessionIdRef.current = agentSessionId;
+  const isGeneratingRef = useRef<boolean>(isGenerating);
+  isGeneratingRef.current = isGenerating;
   // Track which sessions have active background generation (for history indicator)
   const [generatingSessionIds, setGeneratingSessionIds] = useState(
     () => new Set(),
@@ -3415,6 +3417,18 @@ export default function AgentComponent({
   const refreshActiveSession = useCallback(
     async (sessionId: string) => {
       if (!sessionId || sessionId !== agentSessionIdRef.current) return;
+      // Skip change-stream refresh while actively generating — the SSE
+      // streaming callbacks are the source of truth for message state.
+      // Without this guard, a MongoDB change event (triggered when the
+      // backend writes the user message) would overwrite the local
+      // optimistic messages with stale/incomplete database data, causing
+      // the user's latest message and assistant placeholder to vanish.
+      if (isGeneratingRef.current) {
+        console.debug(
+          `[refreshActiveSession] skipping — session ${sessionId} is currently generating`,
+        );
+        return;
+      }
       try {
         const full = isNoAgent
           ? await PrismService.getConversation(sessionId)
