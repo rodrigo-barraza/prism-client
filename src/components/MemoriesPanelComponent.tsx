@@ -364,6 +364,50 @@ export default function MemoriesPanel({
 
   const isFiltered = searchQuery.trim() || dateFrom || dateTo;
 
+  // -- Push header action buttons to parent SidebarTabHeader ---
+  // (Must live before early returns to satisfy Rules of Hooks)
+  useEffect(() => {
+    if (loading || error || memories.length === 0 || !memoryConfigured) {
+      onActionsChange?.(null);
+      return;
+    }
+    onActionsChange?.(
+      <>
+        <ButtonComponent
+          variant="text"
+          size="small"
+          icon={Sparkles}
+          iconSize={11}
+          onClick={handleConsolidate}
+          disabled={consolidating || total < 2}
+          title="Consolidate memories — merge duplicates and clean stale entries"
+        />
+        <ButtonComponent
+          variant={historyOpen ? "tonal" : "text"}
+          size="small"
+          icon={History}
+          iconSize={11}
+          onClick={() => setHistoryOpen((previous) => !previous)}
+          title="Consolidation history"
+        />
+        <ButtonComponent
+          variant="text"
+          size="small"
+          icon={RefreshCw}
+          iconSize={11}
+          onClick={() => loadMemories(false)}
+          disabled={loading}
+          title="Refresh memories"
+        />
+      </>,
+    );
+  }, [onActionsChange, handleConsolidate, consolidating, total, historyOpen, loading, loadMemories, error, memories.length, memoryConfigured]);
+
+  // Clear actions on unmount
+  useEffect(() => {
+    return () => onActionsChange?.(null);
+  }, [onActionsChange]);
+
   // -- Not configured ------------------------------------------
   if (!memoryConfigured) {
     return (
@@ -430,44 +474,7 @@ export default function MemoriesPanel({
     );
   }
 
-  // -- Push header action buttons to parent SidebarTabHeader ---
-  useEffect(() => {
-    onActionsChange?.(
-      <>
-        <ButtonComponent
-          variant="text"
-          size="small"
-          icon={Sparkles}
-          iconSize={11}
-          onClick={handleConsolidate}
-          disabled={consolidating || total < 2}
-          title="Consolidate memories — merge duplicates and clean stale entries"
-        />
-        <ButtonComponent
-          variant={historyOpen ? "tonal" : "text"}
-          size="small"
-          icon={History}
-          iconSize={11}
-          onClick={() => setHistoryOpen((previous) => !previous)}
-          title="Consolidation history"
-        />
-        <ButtonComponent
-          variant="text"
-          size="small"
-          icon={RefreshCw}
-          iconSize={11}
-          onClick={() => loadMemories(false)}
-          disabled={loading}
-          title="Refresh memories"
-        />
-      </>,
-    );
-  }, [onActionsChange, handleConsolidate, consolidating, total, historyOpen, loading, loadMemories]);
 
-  // Clear actions on unmount
-  useEffect(() => {
-    return () => onActionsChange?.(null);
-  }, [onActionsChange]);
 
   // -- List ----------------------------------------------------
   return (
