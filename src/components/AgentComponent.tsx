@@ -2889,17 +2889,24 @@ export default function AgentComponent({
                 displayMessages.length === 0 ? '⚠️ EMPTY — this clears the chat!' : '',
               );
               // Guard: don't replace streaming messages with stale/incomplete DB data
-              if (displayMessages.length < currentCount && attempt < 3) {
-                console.debug(
-                  `[PostStream] ⚠️ Fetched fewer messages (${displayMessages.length}) than streaming (${currentCount}), retrying in 2s (attempt ${attempt})`,
-                );
-                await new Promise((r) => setTimeout(r, 2000));
-                return attemptPostStreamRefresh(attempt + 1);
+              if (displayMessages.length < currentCount) {
+                if (attempt < 3) {
+                  console.debug(
+                    `[PostStream] ⚠️ Fetched fewer messages (${displayMessages.length}) than streaming (${currentCount}), retrying in 2s (attempt ${attempt})`,
+                  );
+                  await new Promise((resolve) => setTimeout(resolve, 2000));
+                  return attemptPostStreamRefresh(attempt + 1);
+                } else {
+                  console.warn(
+                    `[PostStream] ⚠️ Database is still missing the current turn's messages after ${attempt} attempts. Skipping overwrite to prevent disappearing messages.`
+                  );
+                  return;
+                }
               }
               setMessages(displayMessages);
             }
-          } catch (e) {
-            console.error("Failed to refresh session messages after done:", e);
+          } catch (error) {
+            console.error("Failed to refresh session messages after done:", error);
           }
         };
         await attemptPostStreamRefresh();
