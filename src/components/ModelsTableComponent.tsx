@@ -212,7 +212,7 @@ function ModalityCell({ inputTypes, outputTypes }: { inputTypes?: string[]; outp
   return (
     <span className={styles.modalities}>
       {(inputTypes || []).map((t: string) => {
-        const m = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
+        const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
         if (!m) return null;
         const Icon = m.icon;
         return (
@@ -225,7 +225,7 @@ function ModalityCell({ inputTypes, outputTypes }: { inputTypes?: string[]; outp
         <ArrowRight size={10} className={styles.modalityArrow} />
       )}
       {(outputTypes || []).map((t: string) => {
-        const m = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
+        const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
         if (!m) return null;
         const Icon = m.icon;
         return (
@@ -598,7 +598,7 @@ function ModelsTableInner({
   const allProviders = useMemo(() => {
     const set = new Set<string>();
     for (const m of models) {
-      const p = normalizeModel(m).provider;
+      const providerKey = normalizeModel(model).provider;
       if (p) set.add(p);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
@@ -666,13 +666,13 @@ function ModelsTableInner({
 
   const filtered = searchQuery.trim()
     ? providerFiltered.filter((m: RawModel) => {
-        const q = searchQuery.trim().toLowerCase();
+        const normalizedSearch = searchQuery.trim().toLowerCase();
         const norm = normalizeModel(m);
         return (
-          norm.key.toLowerCase().includes(q) ||
-          norm.name.toLowerCase().includes(q) ||
-          (norm.params || "").toLowerCase().includes(q) ||
-          (resolveProviderLabel(norm.provider) || "").toLowerCase().includes(q)
+          norm.key.toLowerCase().includes(normalizedSearch) ||
+          norm.name.toLowerCase().includes(normalizedSearch) ||
+          (norm.params || "").toLowerCase().includes(normalizedSearch) ||
+          (resolveProviderLabel(norm.provider) || "").toLowerCase().includes(normalizedSearch)
         );
       })
     : providerFiltered;
@@ -1058,7 +1058,7 @@ function ModelsTableInner({
         align: "right",
         sortValue: (row: RowData) => row._raw._benchTotal || 0,
         render: (row: RowData) => {
-          const v = row._raw._benchTotal || 0;
+          const sortValue = row._raw._benchTotal || 0;
           return v > 0 ? formatNumber(v) : "—";
         },
       });
@@ -1070,7 +1070,7 @@ function ModelsTableInner({
         align: "right",
         sortValue: (row: RowData) => row._raw._benchAvgLatency || 0,
         render: (row: RowData) => {
-          const v = row._raw._benchAvgLatency;
+          const sortValue = row._raw._benchAvgLatency;
           if (!v || v <= 0) return emptyDash();
           return (
             <span className={styles.benchLatencyCell}>
@@ -1089,7 +1089,7 @@ function ModelsTableInner({
         align: "right",
         sortValue: (row: RowData) => row._raw._benchTotalCost || 0,
         render: (row: RowData) => {
-          const v = row._raw._benchTotalCost;
+          const sortValue = row._raw._benchTotalCost;
           return v != null && v > 0 ? <BadgeComponent type="cost" cost={v} /> : emptyDash();
         },
       });
@@ -1159,7 +1159,7 @@ function ModelsTableInner({
         description: "Total input (prompt) tokens consumed",
         align: "right",
         render: (row: RowData) => {
-          const v = row._raw.totalInputTokens || 0;
+          const sortValue = row._raw.totalInputTokens || 0;
           return v > 0 ? (
             <BadgeComponent type="tokens" value={v} label="in" mini />
           ) : (
@@ -1173,7 +1173,7 @@ function ModelsTableInner({
         description: "Total output (completion) tokens generated",
         align: "right",
         render: (row: RowData) => {
-          const v = row._raw.totalOutputTokens || 0;
+          const sortValue = row._raw.totalOutputTokens || 0;
           return v > 0 ? (
             <BadgeComponent type="tokens" value={v} label="out" mini />
           ) : (
@@ -1371,7 +1371,7 @@ function ModelsTableInner({
         align: "right",
         sortValue: (row: RowData) => row._raw.avgLatency || 0,
         render: (row: RowData) => {
-          const v = row._raw.avgLatency;
+          const sortValue = row._raw.avgLatency;
           return typeof v === "number" && v > 0 ? formatLatency(v) : emptyDash();
         },
       });
@@ -1465,7 +1465,7 @@ function ModelsTableInner({
                     label: "Modality",
                     items: allModalities
                       .map((t: string) => {
-                        const m = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
+                        const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
                         return m
                           ? {
                               key: t,
@@ -1532,9 +1532,9 @@ function ModelsTableInner({
         getRowKey={(row: RowData) => {
           if (isBenchmark) {
             // Composite key: same model with different thinking/tools/agent configs must be separate rows
-            const t = row._benchThinking ? "T" : "";
-            const f = row._benchTools ? "F" : "";
-            const a = row._benchAgent || "";
+            const thinkingTag = row._benchThinking ? "T" : "";
+            const toolsTag = row._benchTools ? "F" : "";
+            const agentTag = row._benchAgent || "";
             return `${row._model.provider}-${row._model.key}-${t}${f}${a}`;
           }
           return `${row._model.provider}-${row._model.key}`;

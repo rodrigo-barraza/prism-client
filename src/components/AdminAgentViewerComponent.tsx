@@ -290,7 +290,7 @@ export default function AdminAgentViewerComponent() {
         tabs={[
           {
             key: "settings",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🛠️</span>,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
             tooltip: "Settings",
           },
           { key: "info", icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>, tooltip: "Info" },

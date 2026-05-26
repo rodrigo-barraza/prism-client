@@ -1045,10 +1045,10 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
       const data = JSON.stringify(wf, null, 2);
       const blob = new Blob([data], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `workflow-${id}.json`;
-      a.click();
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.href = url;
+      downloadAnchor.download = `workflow-${id}.json`;
+      downloadAnchor.click();
       URL.revokeObjectURL(url);
       addToast("Workflow downloaded");
     } catch (error: unknown) {
@@ -1245,10 +1245,10 @@ export default function WorkflowsPage({ initialWorkflowId }: WorkflowsPageProps)
               const data = JSON.stringify({ nodes, edges }, null, 2);
               const blob = new Blob([data], { type: "application/json" });
               const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `workflow-${Date.now()}.json`;
-              a.click();
+              const downloadAnchor = document.createElement("a");
+              downloadAnchor.href = url;
+              downloadAnchor.download = `workflow-${Date.now()}.json`;
+              downloadAnchor.click();
               URL.revokeObjectURL(url);
             }}
             title="Export workflow"

@@ -193,7 +193,7 @@ export default function AgentAssertionsComponent({
             if (!typeDef) return null;
             const Icon = typeDef.icon;
             return (
-              <div key={`${a.type}-${i}`} className={styles.row}>
+              <div key={`${a.type}-${i}`} className={styles.assertionRow}>
                 {/* Operator divider between assertions */}
                 {i > 0 && (
                   <div className={styles.operatorDivider}>

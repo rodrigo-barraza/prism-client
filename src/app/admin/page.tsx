@@ -270,7 +270,7 @@ export default function DashboardPage() {
         sessionCount: 0,
       };
     }
-    const p = providerAgg[m.provider];
+    const providerData = providerAgg[model.provider];
     p.totalRequests += m.totalRequests;
     p.totalInputTokens += m.totalInputTokens || 0;
     p.totalOutputTokens += m.totalOutputTokens || 0;

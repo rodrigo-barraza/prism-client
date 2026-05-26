@@ -37,6 +37,6 @@ export function lerpRgb(a: RgbTriplet, b: RgbTriplet, t: number): RgbTriplet {
 export function paletteAt(colors: RgbTriplet[], t: number): RgbTriplet {
   const scaled = (((t % 1) + 1) % 1) * colors.length;
   const i = Math.floor(scaled);
-  const f = scaled - i;
+  const fractionalPart = scaled - i;
   return lerpRgb(colors[i % colors.length], colors[(i + 1) % colors.length], f);
 }

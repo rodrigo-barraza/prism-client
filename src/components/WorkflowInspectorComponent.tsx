@@ -37,9 +37,9 @@ const DEFAULT_WIDTH = 320;
 
 function getStoredWidth(): number {
   try {
-    const v = localStorage.getItem(LS_WORKFLOW_INSPECTOR_WIDTH);
+    const storedWidth = localStorage.getItem(LS_WORKFLOW_INSPECTOR_WIDTH);
     if (v) {
-      const n = parseInt(v, 10);
+      const parsedWidth = parseInt(storedWidth, 10);
       if (!isNaN(n) && n >= MIN_WIDTH && n <= MAX_WIDTH) return n;
     }
   } catch {
@@ -197,12 +197,12 @@ export default function WorkflowInspector({
   // Filtered by search
   const filteredModels = useMemo(() => {
     if (!modelSearch.trim()) return compatibleModels;
-    const q = modelSearch.trim().toLowerCase();
+    const normalizedSearch = modelSearch.trim().toLowerCase();
     return compatibleModels.filter((m: ModelOption) => {
       const name = m.display_name || m.label || m.name || "";
       const provider = m.provider || "";
       return (
-        name.toLowerCase().includes(q) || provider.toLowerCase().includes(q)
+        name.toLowerCase().includes(normalizedSearch) || provider.toLowerCase().includes(normalizedSearch)
       );
     });
   }, [compatibleModels, modelSearch]);
@@ -215,7 +215,7 @@ export default function WorkflowInspector({
   const isViewer = node.nodeType === "viewer";
 
   const getNodeLabel = (id: string) => {
-    const n = (nodes || []).find((nd: WorkflowNode) => nd.id === id);
+    const matchedNode = (nodes || []).find((nd: WorkflowNode) => nd.id === id);
     if (!n) return id;
     if (n.nodeType === "input") {
       const labels: Record<string, string> = {

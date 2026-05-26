@@ -102,7 +102,7 @@ export default function SettingsPageComponent() {
   /** Detect Windows-style path for instant client-side preview */
   const isWindowsPath = (p: string) => /^[A-Za-z]:[/\\]/.test(p);
   const windowsToWslPreview = (p: string) => {
-    const m = p.match(/^([A-Za-z]):[/\\](.*)/);
+    const pathMatch = p.match(/^([A-Za-z]):[/\\](.*)/);
     if (!m) return null;
     return `/mnt/${m[1].toLowerCase()}/${m[2].replace(/\\/g, "/")}`;
   };
@@ -1094,7 +1094,7 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Extraction Model */}
-          <div className={styles.row}>
+          <div className={styles.settingsRow}>
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Extraction Model</span>
               <span className={styles.rowDescription}>
@@ -1116,7 +1116,7 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Consolidation Model */}
-          <div className={styles.row}>
+          <div className={styles.settingsRow}>
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Consolidation Model</span>
               <span className={styles.rowDescription}>
@@ -1138,7 +1138,7 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Embedding Model */}
-          <div className={styles.row}>
+          <div className={styles.settingsRow}>
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Embedding Model</span>
               <span className={styles.rowDescription}>
@@ -1183,7 +1183,7 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Harness Selector */}
-          <div className={styles.row}>
+          <div className={styles.settingsRow}>
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Agentic Harness</span>
               <span className={styles.rowDescription}>
@@ -1219,7 +1219,7 @@ export default function SettingsPageComponent() {
           <div className={styles.harnessDivider} />
 
           {/* Subagent Model */}
-          <div className={styles.row}>
+          <div className={styles.settingsRow}>
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Subagent Model</span>
               <span className={styles.rowDescription}>
@@ -1265,7 +1265,7 @@ export default function SettingsPageComponent() {
         />
 
         <CardComponent.Body>
-          <div className={styles.row}>
+          <div className={styles.settingsRow}>
             <div className={styles.rowLabel}>
               <span className={styles.rowTitle}>Allow `.env` & Sensitive Files Access</span>
               <span className={styles.rowDescription}>

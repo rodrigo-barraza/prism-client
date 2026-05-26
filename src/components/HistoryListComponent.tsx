@@ -173,11 +173,11 @@ export default function HistoryList({
         if (!(favorites || []).includes(item.id)) return false;
       }
       if (searchQuery.trim()) {
-        const q = searchQuery.trim().toLowerCase();
+        const normalizedSearch = searchQuery.trim().toLowerCase();
         const matchesSearch =
-          (item.title || "").toLowerCase().includes(q) ||
-          (item.subtitle || "").toLowerCase().includes(q) ||
-          (item.searchText || "").toLowerCase().includes(q);
+          (item.title || "").toLowerCase().includes(normalizedSearch) ||
+          (item.subtitle || "").toLowerCase().includes(normalizedSearch) ||
+          (item.searchText || "").toLowerCase().includes(normalizedSearch);
         if (!matchesSearch) return false;
       }
       if (activeModalities.size > 0) {

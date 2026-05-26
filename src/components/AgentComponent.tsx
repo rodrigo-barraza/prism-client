@@ -1042,7 +1042,7 @@ export default function AgentComponent({
   // Load skills
   const loadSkills = useCallback(async () => {
     try {
-      const s = await PrismService.getSkills(agentProject);
+      const skills = await PrismService.getSkills(agentProject);
       setSkills(s);
     } catch (error: unknown) {
       console.error("Failed to load skills:", error);
@@ -1056,7 +1056,7 @@ export default function AgentComponent({
   // Load MCP servers
   const loadMCPServers = useCallback(async () => {
     try {
-      const s = await PrismService.getMCPServers(agentProject);
+      const mcpServers = await PrismService.getMCPServers(agentProject);
       setMcpServers(s);
     } catch (error: unknown) {
       console.error("Failed to load MCP servers:", error);
@@ -3671,7 +3671,7 @@ export default function AgentComponent({
         tabs={[
           {
             key: "settings",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🛠️</span>,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
             tooltip: "Settings",
           },
           ...((currentWorkspace && hasFileOps) || unavailableWorkspace
@@ -3942,7 +3942,7 @@ export default function AgentComponent({
                       uniqueProviders,
                       totalTokens: (() => {
                         const hwm = tokenHwmRef.current;
-                        const t = {
+                        const threadMessage = {
                           input: Math.max(hwm.input, tokenInput),
                           output: Math.max(hwm.output, tokenOutput),
                           total: Math.max(hwm.total, tokenTotal),
@@ -4049,7 +4049,7 @@ export default function AgentComponent({
                       uniqueProviders,
                       totalTokens: (() => {
                         const hwm = tokenHwmRef.current;
-                        const t = {
+                        const threadMessage = {
                           input: Math.max(hwm.input, fallbackTokens.input || 0),
                           output: Math.max(
                             hwm.output,

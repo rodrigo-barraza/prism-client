@@ -921,13 +921,13 @@
 
 /* ── Raw Prefix (faded system context text) ── */
 .rawPrefix {
-  opacity: 0.4;
-  color: var(--text-muted);
+  color: var(--raw-prefix-contrast-color, var(--text-muted));
+  opacity: var(--raw-prefix-contrast-opacity, 0.4);
   font-size: var(--font-size-sm);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
-  margin-bottom: 4px;
+  margin-block-end: 4px;
 }
 
 

@@ -572,8 +572,8 @@ const SCATTER_MODES = [
     key: "vram_vs_speed",
     label: "VRAM vs Speed",
     desc: "Position reveals the VRAM/throughput trade-off.",
-    getX: (m: VramBenchmarkEntry) => m.modelVramGiB,
-    getY: (m: VramBenchmarkEntry) => m.tokensPerSecond,
+    getX: (entry: VramBenchmarkEntry) => entry.modelVramGiB,
+    getY: (entry: VramBenchmarkEntry) => entry.tokensPerSecond,
     xLabel: "VRAM Usage (GiB)",
     yLabel: "Tokens / sec",
     xMin: 0,
@@ -583,8 +583,8 @@ const SCATTER_MODES = [
     key: "vram_vs_efficiency",
     label: "VRAM vs Efficiency",
     desc: "How many tokens each GiB of VRAM produces — higher is better.",
-    getX: (m: VramBenchmarkEntry) => m.modelVramGiB,
-    getY: (m: VramBenchmarkEntry) =>
+    getX: (entry: VramBenchmarkEntry) => entry.modelVramGiB,
+    getY: (entry: VramBenchmarkEntry) =>
       m.modelVramGiB && m.tokensPerSecond ? m.tokensPerSecond / m.modelVramGiB : 0,
     xLabel: "VRAM Usage (GiB)",
     yLabel: "Efficiency (TPS / GiB)",
@@ -595,20 +595,20 @@ const SCATTER_MODES = [
     key: "vram_vs_ttft",
     label: "VRAM vs TTFT",
     desc: "Time to First Token — critical for interactive chat responsiveness.",
-    getX: (m: VramBenchmarkEntry) => m.modelVramGiB,
-    getY: (m: VramBenchmarkEntry) => m.ttft?.ms,
+    getX: (entry: VramBenchmarkEntry) => entry.modelVramGiB,
+    getY: (entry: VramBenchmarkEntry) => entry.ttft?.ms,
     xLabel: "VRAM Usage (GiB)",
     yLabel: "Time to First Token (ms)",
     xMin: 0,
     yMin: -50,
-    filter: (m: VramBenchmarkEntry) => !!m.ttft?.ms && m.ttft.ms > 0,
+    filter: (entry: VramBenchmarkEntry) => !!m.ttft?.ms && m.ttft.ms > 0,
   },
   {
     key: "filesize_vs_speed",
     label: "File Size vs Speed",
     desc: "Disk footprint against inference speed — find the sweet spot for your storage.",
-    getX: (m: VramBenchmarkEntry) => m.fileSizeGB,
-    getY: (m: VramBenchmarkEntry) => m.tokensPerSecond,
+    getX: (entry: VramBenchmarkEntry) => entry.fileSizeGB,
+    getY: (entry: VramBenchmarkEntry) => entry.tokensPerSecond,
     xLabel: "File Size (GB)",
     yLabel: "Tokens / sec",
     xMin: 0,
@@ -618,25 +618,25 @@ const SCATTER_MODES = [
     key: "vram_vs_loadtime",
     label: "VRAM vs Load Time",
     desc: "Model load time — important for cold-start and multi-model switching.",
-    getX: (m: VramBenchmarkEntry) => m.modelVramGiB,
-    getY: (m: VramBenchmarkEntry) => (m.loadTimeMs ? m.loadTimeMs / 1000 : null),
+    getX: (entry: VramBenchmarkEntry) => entry.modelVramGiB,
+    getY: (entry: VramBenchmarkEntry) => (m.loadTimeMs ? m.loadTimeMs / 1000 : null),
     xLabel: "VRAM Usage (GiB)",
     yLabel: "Load Time (sec)",
     xMin: 0,
     yMin: -1,
-    filter: (m: VramBenchmarkEntry) => !!m.loadTimeMs && m.loadTimeMs > 0,
+    filter: (entry: VramBenchmarkEntry) => !!m.loadTimeMs && m.loadTimeMs > 0,
   },
   {
     key: "bpw_vs_speed",
     label: "Quantization vs Speed",
     desc: "Bits per weight against throughput — see how quantization affects performance.",
-    getX: (m: VramBenchmarkEntry) => m.bitsPerWeight,
-    getY: (m: VramBenchmarkEntry) => m.tokensPerSecond,
+    getX: (entry: VramBenchmarkEntry) => entry.bitsPerWeight,
+    getY: (entry: VramBenchmarkEntry) => entry.tokensPerSecond,
     xLabel: "Bits per Weight",
     yLabel: "Tokens / sec",
     xMin: 0,
     yMin: -30,
-    filter: (m: VramBenchmarkEntry) => !!m.bitsPerWeight && m.bitsPerWeight > 0,
+    filter: (entry: VramBenchmarkEntry) => !!m.bitsPerWeight && m.bitsPerWeight > 0,
   },
 ];
 
@@ -685,38 +685,38 @@ export default function VramBenchmarkComponent() {
 
   // Parsed clip values — undefined means "auto" (Chart.js default)
   const clipMin = useMemo(() => {
-    const v = parseFloat(vramClipMin);
-    return isNaN(v) || v < 0 ? undefined : v;
+    const parsedValue = parseFloat(vramClipMin);
+    return isNaN(parsedValue) || parsedValue < 0 ? undefined : parsedValue;
   }, [vramClipMin]);
   const clipMax = useMemo(() => {
-    const v = parseFloat(vramClipMax);
-    return isNaN(v) || v <= 0 ? undefined : v;
+    const parsedValue = parseFloat(vramClipMax);
+    return isNaN(parsedValue) || parsedValue <= 0 ? undefined : parsedValue;
   }, [vramClipMax]);
   const tpsClipMinVal = useMemo(() => {
-    const v = parseFloat(tpsClipMin);
-    return isNaN(v) || v < 0 ? undefined : v;
+    const parsedValue = parseFloat(tpsClipMin);
+    return isNaN(parsedValue) || parsedValue < 0 ? undefined : parsedValue;
   }, [tpsClipMin]);
   const tpsClipMaxVal = useMemo(() => {
-    const v = parseFloat(tpsClipMax);
-    return isNaN(v) || v <= 0 ? undefined : v;
+    const parsedValue = parseFloat(tpsClipMax);
+    return isNaN(parsedValue) || parsedValue <= 0 ? undefined : parsedValue;
   }, [tpsClipMax]);
   const scatterClipXMinVal = useMemo(() => {
-    const v = parseFloat(scatterClipXMin);
-    return isNaN(v) || v < 0 ? undefined : v;
+    const parsedValue = parseFloat(scatterClipXMin);
+    return isNaN(parsedValue) || parsedValue < 0 ? undefined : parsedValue;
   }, [scatterClipXMin]);
   const scatterClipXMaxVal = useMemo(() => {
-    const v = parseFloat(scatterClipXMax);
-    return isNaN(v) || v <= 0 ? undefined : v;
+    const parsedValue = parseFloat(scatterClipXMax);
+    return isNaN(parsedValue) || parsedValue <= 0 ? undefined : parsedValue;
   }, [scatterClipXMax]);
 
   // Parsed context range values (in thousands → multiply by 1024 for actual ctx)
   const ctxMinVal = useMemo(() => {
-    const v = parseFloat(ctxMin);
-    return isNaN(v) || v < 0 ? undefined : v * 1024;
+    const parsedValue = parseFloat(ctxMin);
+    return isNaN(parsedValue) || parsedValue < 0 ? undefined : parsedValue * 1024;
   }, [ctxMin]);
   const ctxMaxVal = useMemo(() => {
-    const v = parseFloat(ctxMax);
-    return isNaN(v) || v <= 0 ? undefined : v * 1024;
+    const parsedValue = parseFloat(ctxMax);
+    return isNaN(parsedValue) || parsedValue <= 0 ? undefined : parsedValue * 1024;
   }, [ctxMax]);
 
   const parallelOptions = useMemo(() => {
@@ -962,10 +962,10 @@ export default function VramBenchmarkComponent() {
 
   const stats = useMemo(() => {
     if (models.length === 0) return null;
-    const n = models.length;
+    const modelCount = models.length;
 
     // VRAM range — min→max across profiled models
-    const vramValues = models.map((m: VramBenchmarkEntry) => m.modelVramGiB || 0);
+    const vramValues = models.map((entry: VramBenchmarkEntry) => entry.modelVramGiB || 0);
     const minVram = Math.min(...vramValues).toFixed(1);
     const maxVram = Math.max(...vramValues).toFixed(1);
 
@@ -975,11 +975,11 @@ export default function VramBenchmarkComponent() {
     );
 
     // Median TTFT — more meaningful than average (resistant to outliers)
-    const ttftModels = models.filter((m: VramBenchmarkEntry) => m.ttft?.ms && m.ttft.ms > 0);
+    const ttftModels = models.filter((entry: VramBenchmarkEntry) => entry.ttft?.ms && m.ttft.ms > 0);
     let medianTtft = null;
     if (ttftModels.length > 0) {
       const sorted = ttftModels
-        .map((m: VramBenchmarkEntry) => m.ttft?.ms || 0)
+        .map((entry: VramBenchmarkEntry) => entry.ttft?.ms || 0)
         .sort((a, b) => a - b);
       const mid = Math.floor(sorted.length / 2);
       medianTtft =
@@ -997,14 +997,14 @@ export default function VramBenchmarkComponent() {
     ).toFixed(2);
 
     // Count how many don't fit in GPU VRAM
-    const oomCount = models.filter((m: VramBenchmarkEntry) => m.fitsInVram === false).length;
+    const oomCount = models.filter((entry: VramBenchmarkEntry) => entry.fitsInVram === false).length;
 
     // Scope stats — distinct quant formats & providers
     const quantCount = new Set(
-      models.map((m: VramBenchmarkEntry) => m.quantization).filter(Boolean),
+      models.map((entry: VramBenchmarkEntry) => entry.quantization).filter(Boolean),
     ).size;
     const providerCount = new Set(
-      models.map((m: VramBenchmarkEntry) => m.provider).filter(Boolean),
+      models.map((entry: VramBenchmarkEntry) => entry.provider).filter(Boolean),
     ).size;
 
     // -- Best Model cards for practical LLM usage --
@@ -1020,7 +1020,7 @@ export default function VramBenchmarkComponent() {
     // 2. Best for Chat — largest model (by VRAM) that still runs ≥30 TPS
     const CHAT_TPS_THRESHOLD = 30;
     const chatCandidates = models.filter(
-      (m: VramBenchmarkEntry) =>
+      (entry: VramBenchmarkEntry) =>
         (m.tokensPerSecond || 0) >= CHAT_TPS_THRESHOLD && m.fitsInVram !== false,
     );
     const bestForChat =
@@ -1031,7 +1031,7 @@ export default function VramBenchmarkComponent() {
         : null;
 
     // 3. Largest Runnable — biggest model by VRAM that fits in GPU
-    const fittingModels = models.filter((m: VramBenchmarkEntry) => m.fitsInVram !== false);
+    const fittingModels = models.filter((entry: VramBenchmarkEntry) => entry.fitsInVram !== false);
     const largestRunnable =
       fittingModels.length > 0
         ? fittingModels.reduce((best: VramBenchmarkEntry, m: VramBenchmarkEntry) =>
@@ -1046,7 +1046,7 @@ export default function VramBenchmarkComponent() {
 
     // 5. Best Prefill — highest prefill tokens/sec (prompt processing for RAG)
     const prefillModels = models.filter(
-      (m: VramBenchmarkEntry) => m.ttft?.prefillTokPerSec && m.ttft.prefillTokPerSec > 0,
+      (entry: VramBenchmarkEntry) => entry.ttft?.prefillTokPerSec && m.ttft.prefillTokPerSec > 0,
     );
     const bestPrefill =
       prefillModels.length > 0
@@ -1058,7 +1058,7 @@ export default function VramBenchmarkComponent() {
     // 6. Best Large Model — highest TPS among models ≥8 GiB VRAM
     const LARGE_VRAM_THRESHOLD = 8;
     const largeModels = models.filter(
-      (m: VramBenchmarkEntry) =>
+      (entry: VramBenchmarkEntry) =>
         (m.modelVramGiB || 0) >= LARGE_VRAM_THRESHOLD && m.fitsInVram !== false,
     );
     const bestLargeModel =
@@ -1115,10 +1115,10 @@ export default function VramBenchmarkComponent() {
     // -- Build sorted card arrays by model name --
 
     // Helper — short settings tag for card subtitles
-    const stag = (m: VramBenchmarkEntry) =>
+    const stag = (entry: VramBenchmarkEntry) =>
       m.settings?.label ? ` · ⚙ ${m.settings.label}` : "";
     // Helper — context length tag for card subtitles
-    const ctag = (m: VramBenchmarkEntry) =>
+    const ctag = (entry: VramBenchmarkEntry) =>
       m.contextLength ? ` · ${(m.contextLength / 1024).toFixed(0)}K ctx` : "";
 
     const bestCards = [
@@ -1271,7 +1271,7 @@ export default function VramBenchmarkComponent() {
         .map((m: VramBenchmarkMachine) => `${shortGPU(m.gpu || "Unknown")} ${m.gpuVramGB || 0} GB`)
         .join(" · ");
     }
-    const m = machines.find((x: VramBenchmarkMachine) => x.hostname === machineFilter);
+    const matchedMachine = machines.find((x: VramBenchmarkMachine) => x.hostname === machineFilter);
     return m
       ? `${shortGPU(m.gpu || "Unknown")} ${m.gpuVramGB || 0} GB`
       : "Unknown";
@@ -1419,7 +1419,7 @@ export default function VramBenchmarkComponent() {
     const fadeBg = (rgba: string) => rgba.replace(/[\d.]+\)$/, "0.12)");
     // Helper to fade a #hex border color
     const fadeBorder = (hex: string) => {
-      const h = hex.replace("#", "");
+      const hexClean = hex.replace("#", "");
       const r = parseInt(h.substring(0, 2), 16);
       const g = parseInt(h.substring(2, 4), 16);
       const b = parseInt(h.substring(4, 6), 16);
@@ -1427,7 +1427,7 @@ export default function VramBenchmarkComponent() {
     };
 
     // Compute bestKeys: for "all contexts", find the highest-TPS entry per group
-    const computeBestKeys = (entries: VramBenchmarkEntry[], groupKeyFn: (m: VramBenchmarkEntry) => string) => {
+    const computeBestKeys = (entries: VramBenchmarkEntry[], groupKeyFn: (entry: VramBenchmarkEntry) => string) => {
       if (!showAllCtx) return null;
       const bestByGroup: Record<string, VramBenchmarkEntry> = {};
       for (const m of entries) {
@@ -1448,7 +1448,7 @@ export default function VramBenchmarkComponent() {
       return set;
     };
 
-    const entryKey = (m: VramBenchmarkEntry) =>
+    const entryKey = (entry: VramBenchmarkEntry) =>
       `${m.displayName}__${m.system?.gpu?.name || "Unknown"}__${m.contextLength}`;
 
     if (machineFilter === "all") {
@@ -1475,7 +1475,7 @@ export default function VramBenchmarkComponent() {
 
       const bestKeys = computeBestKeys(
         scatterModels,
-        (m: VramBenchmarkEntry) => `${m.displayName}__${m.system?.gpu?.name || "Unknown"}`,
+        (entry: VramBenchmarkEntry) => `${m.displayName}__${m.system?.gpu?.name || "Unknown"}`,
       );
 
       // Group by GPU for bubble coloring
@@ -1584,11 +1584,11 @@ export default function VramBenchmarkComponent() {
       }
       const scatterData = Object.values(byKey);
 
-      const bestKeys = computeBestKeys(scatterData as VramBenchmarkEntry[], (m: VramBenchmarkEntry) => m.displayName || "unknown");
+      const bestKeys = computeBestKeys(scatterData as VramBenchmarkEntry[], (entry: VramBenchmarkEntry) => entry.displayName || "unknown");
 
       const quantGroups: Record<string, VramBenchmarkEntry[]> = {};
       for (const m of scatterData) {
-        const q = m.quantization || "unknown";
+        const quantizationKey = model.quantization || "unknown";
         if (!quantGroups[q]) quantGroups[q] = [];
         quantGroups[q].push(m);
       }
@@ -1712,7 +1712,7 @@ export default function VramBenchmarkComponent() {
                 label: (item: import("chart.js").TooltipItem<"line" | "scatter">) => {
                   const raw = item.raw;
                   if (!isCustomPoint(raw)) return "";
-                  const m = raw.model;
+                  const modelName = raw.model;
                   if (!m) return "";
                   const sInfo = (SETTINGS_INFO as Record<string, { parallel: number; batch: number }>)[m.settings?.label || ""];
                   const lines = [
@@ -1768,9 +1768,9 @@ export default function VramBenchmarkComponent() {
         : rawData.filter((d: VramBenchmarkEntry) => d.modelVramGiB && d.modelVramGiB > 0);
     for (const d of source) {
       const name = d.displayName || d.model;
-      const v = d.modelVramGiB || 0;
-      const t = d.tokensPerSecond || 0;
-      const c = d.contextLength || 0;
+      const vramValue = d.modelVramGiB || 0;
+      const tokensPerSecond = d.tokensPerSecond || 0;
+      const contextLength = d.contextLength || 0;
       // VRAM ranges (store full entries for per-dot tooltips)
       if (!vram[name]) {
         vram[name] = {
@@ -1910,7 +1910,7 @@ export default function VramBenchmarkComponent() {
     // Build scatter overlay: individual entries as interactive dots
     const scatterData: { x: number; y: string; entry: VramBenchmarkEntry }[] = [];
     for (let i = 0; i < models.length; i++) {
-      const m = models[i];
+      const model = models[i];
       const range = (vramRanges as Record<string, RangeStats>)[m.displayName || "unknown"];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
@@ -1960,7 +1960,7 @@ export default function VramBenchmarkComponent() {
       plugins: [
         makeDatalabelsPlugin({
           getLabel: (_raw: import("chart.js").Point & { entry?: VramBenchmarkEntry }, i: number) => {
-            const m = models[i];
+            const model = models[i];
             if (!m) return "";
             const range = vramRanges[m.displayName || ""];
             if (range && range.count > 1) {
@@ -2020,7 +2020,7 @@ export default function VramBenchmarkComponent() {
                   if (!e) return "";
                   return `${e.quantization} · ${e.architecture} · ${(e.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name)}`;
                 }
-                const m = models[item.dataIndex];
+                const model = models[item.dataIndex];
                 if (!m) return "";
                 return `${m.quantization} · ${m.architecture} · ${(m.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU((m.system as { gpu?: { name?: string } })?.gpu?.name || "")}`;
               },
@@ -2031,7 +2031,7 @@ export default function VramBenchmarkComponent() {
                   if (!e) return "";
                   return ` VRAM: ${(e.modelVramGiB || 0).toFixed(2)} GiB`;
                 }
-                const m = models[item.dataIndex];
+                const model = models[item.dataIndex];
                 const range = (vramRanges as Record<string, RangeStats>)[m?.displayName || ""];
                 if (range && range.count > 1) {
                   return ` VRAM: ${range.min.toFixed(2)}–${range.max.toFixed(2)} GiB (${range.count} runs)`;
@@ -2129,7 +2129,7 @@ export default function VramBenchmarkComponent() {
       if (range && range.count > 1) {
         return [range.min, range.max];
       }
-      const t = m.tokensPerSecond || 0;
+      const tokensPerSecond = model.tokensPerSecond || 0;
       return [Math.max(0, t - 0.5), t + 0.5];
     });
 
@@ -2154,7 +2154,7 @@ export default function VramBenchmarkComponent() {
     // Build scatter overlay: individual TPS entries as interactive dots
     const scatterData: (import("chart.js").Point & { entry: VramBenchmarkEntry })[] = [];
     for (let i = 0; i < sorted.length; i++) {
-      const m = sorted[i];
+      const model = sorted[i];
       const range = (tpsRanges as Record<string, RangeStats>)[m.displayName || "unknown"];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
@@ -2206,7 +2206,7 @@ export default function VramBenchmarkComponent() {
       plugins: [
         makeDatalabelsPlugin({
           getLabel: (_raw: import("chart.js").Point & { entry?: VramBenchmarkEntry }, i: number) => {
-            const m = sorted[i];
+            const model = sorted[i];
             if (!m) return "";
             const range = tpsRanges[m.displayName || ""];
             if (range && range.count > 1) {
@@ -2265,7 +2265,7 @@ export default function VramBenchmarkComponent() {
                   if (!e) return "";
                   return `${e.quantization} · ${e.architecture} · ${(e.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name)}`;
                 }
-                const m = sorted[item.dataIndex];
+                const model = sorted[item.dataIndex];
                 if (!m) return "";
                 return `${m.quantization} · ${m.architecture} · ${(m.contextLength / 1024).toFixed(0)}K ctx`;
               },
@@ -2275,7 +2275,7 @@ export default function VramBenchmarkComponent() {
                   if (!e) return "";
                   return ` Speed: ${(e.tokensPerSecond || 0).toFixed(1)} tok/s`;
                 }
-                const m = sorted[item.dataIndex];
+                const model = sorted[item.dataIndex];
                 const range = (tpsRanges as Record<string, RangeStats>)[m?.displayName || ""];
                 if (range && range.count > 1) {
                   return ` Speed: ${range.min.toFixed(1)}–${range.max.toFixed(1)} tok/s (${range.count} runs)`;
@@ -2348,7 +2348,7 @@ export default function VramBenchmarkComponent() {
     // Group by quantization
     const quantGroups: Record<string, QuantGroupStats> = {};
     for (const m of models) {
-      const q = m.quantization || "unknown";
+      const quantizationKey = model.quantization || "unknown";
       if (!quantGroups[q]) {
         quantGroups[q] = {
           count: 0,
@@ -2422,7 +2422,7 @@ export default function VramBenchmarkComponent() {
       return ra - rb || a.localeCompare(b);
     });
     for (const q of quantLabels) {
-      const g = quantGroups[q];
+      const quantGroup = quantGroups[quantizationKey];
       g.avgVram = g.totalVram / g.count;
       g.avgTps = g.totalTps / g.count;
       g.avgBpw = g.totalBpw / g.count;
@@ -2451,7 +2451,7 @@ export default function VramBenchmarkComponent() {
 
           for (let i = 0; i < meta.data.length; i++) {
             const bar = meta.data[i];
-            const q = quantLabels[i];
+            const quantLabel = quantLabels[i];
             const avg = getAvg(quantGroups[q]);
             if (avg === undefined) continue;
             const yPx = scale.getPixelForValue(avg);
@@ -2554,12 +2554,12 @@ export default function VramBenchmarkComponent() {
               title: (items) =>
                 `${quantLabels[items[0]?.dataIndex]} Quantization`,
               afterTitle: (items) => {
-                const q = quantLabels[items[0]?.dataIndex];
+                const quantLabel = quantLabels[items[0]?.dataIndex];
                 return `${quantGroups[q].count} model${quantGroups[q].count > 1 ? "s" : ""}`;
               },
               label: (item: import("chart.js").TooltipItem<"bar" | "scatter">) => {
-                const q = quantLabels[item.dataIndex];
-                const g = quantGroups[q];
+                const quantLabel = quantLabels[item.dataIndex];
+                const quantGroup = quantGroups[quantizationKey];
                 if (item.datasetIndex === 0) {
                   return [
                     ` Avg VRAM: ${(g.avgVram || 0).toFixed(2)} GiB`,
@@ -2572,9 +2572,9 @@ export default function VramBenchmarkComponent() {
                 ];
               },
               afterBody: (items) => {
-                const q = quantLabels[items[0]?.dataIndex];
+                const quantLabel = quantLabels[items[0]?.dataIndex];
                 if (!q) return "";
-                const g = quantGroups[q];
+                const quantGroup = quantGroups[quantizationKey];
                 const lines = [];
                 if (g.avgBpw && g.avgBpw > 0)
                   lines.push(`Avg bits/weight: ${g.avgBpw.toFixed(1)} bpw`);
@@ -2639,7 +2639,7 @@ export default function VramBenchmarkComponent() {
       if (range && range.count > 1) {
         return [range.min, range.max];
       }
-      const t = m.tokensPerSecond || 0;
+      const tokensPerSecond = model.tokensPerSecond || 0;
       return [Math.max(0, t - 0.5), t + 0.5];
     });
 
@@ -2667,7 +2667,7 @@ export default function VramBenchmarkComponent() {
     // Build scatter overlay: individual context entries as interactive dots
     const ctxScatterData: (import("chart.js").Point & { entry: VramBenchmarkEntry })[] = [];
     for (let i = 0; i < sorted.length; i++) {
-      const m = sorted[i];
+      const model = sorted[i];
       const range = ctxRanges[m?.displayName || ""];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
@@ -2682,7 +2682,7 @@ export default function VramBenchmarkComponent() {
     // Build scatter overlay: individual TPS entries as interactive dots
     const tpsScatterData: (import("chart.js").Point & { entry: VramBenchmarkEntry })[] = [];
     for (let i = 0; i < sorted.length; i++) {
-      const m = sorted[i];
+      const model = sorted[i];
       const range = tpsRanges[m?.displayName || ""];
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
@@ -2775,7 +2775,7 @@ export default function VramBenchmarkComponent() {
       plugins: [
         makeDatalabelsPlugin({
           getLabel: (_raw: import("chart.js").Point & { entry?: VramBenchmarkEntry }, i: number) => {
-            const m = sorted[i];
+            const model = sorted[i];
             if (!m) return "";
             // Context range label
             const cRange = ctxRanges[m.displayName || ""];
@@ -2861,7 +2861,7 @@ export default function VramBenchmarkComponent() {
                   if (!e) return "";
                   return `${e.quantization} · ${e.architecture} · ${(e.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name || "")}`;
                 }
-                const m = sorted[item.dataIndex];
+                const model = sorted[item.dataIndex];
                 if (!m) return "";
                 return `${m.quantization} · ${m.architecture} · ${(m.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(m.system?.gpu?.name || "")}`;
               },
@@ -2877,7 +2877,7 @@ export default function VramBenchmarkComponent() {
                   if (!e) return "";
                   return ` Speed: ${(e.tokensPerSecond || 0).toFixed(1)} tok/s`;
                 }
-                const m = sorted[item.dataIndex];
+                const model = sorted[item.dataIndex];
                 if (!m) return "";
                 if (item.datasetIndex === 0) {
                   const range = ctxRanges[m.displayName || ""];
@@ -3084,7 +3084,7 @@ export default function VramBenchmarkComponent() {
               title: (items: import("chart.js").TooltipItem<"scatter">[]) => items[0]?.dataset?.label || "",
               label: (item: import("chart.js").TooltipItem<"scatter">) => {
                 const rawItem = item.raw as { x: number; y: number; ctx: VramBenchmarkEntry };
-                const d = rawItem.ctx;
+                const contextData = rawItem.ctx;
                 const sInfo = d?.settings?.label ? SETTINGS_INFO[d.settings.label] : undefined;
                 const lines = [
                   ` VRAM: ${rawItem.y.toFixed(2)} GiB`,
@@ -3188,7 +3188,7 @@ export default function VramBenchmarkComponent() {
         }
         // #hex
         if (color.startsWith("#")) {
-          const h = color.replace("#", "");
+          const hexClean = color.replace("#", "");
           const r = parseInt(h.substring(0, 2), 16);
           const g = parseInt(h.substring(2, 4), 16);
           const b = parseInt(h.substring(4, 6), 16);

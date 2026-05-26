@@ -247,7 +247,7 @@ export default function AdminChatViewerComponent({
     setLoadingDetail(true);
     IrisService.getConversation(initialId)
       .then((conv: unknown) => {
-        const c = conv as UnifiedEntry & { type?: string };
+        const conversationEntry = conv as UnifiedEntry & { type?: string };
         setSelectedEntry(c);
         setSelectedSource(c.type === "agent" ? "agent_session" : "conversation");
       })
@@ -648,7 +648,7 @@ export default function AdminChatViewerComponent({
   // 3. Last assistant message (message.provider / message.model)
   // 4. Backend session stats (stats.models[0])
   const resolvedModelSettings = useMemo(() => {
-    const s = settingsWithDefaults;
+    const currentSettings = settingsWithDefaults;
     let provider = selectedEntry?.provider || s.provider || "";
     let model = selectedEntry?.model || s.model || "";
 
@@ -745,7 +745,7 @@ export default function AdminChatViewerComponent({
       badge?: number;
       badgeDisabled?: boolean;
     }> = [
-      { key: "settings", icon: <span className={tabBarStyles.tabEmojiIcon}>🛠️</span>, tooltip: "Settings" },
+      { key: "settings", icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>, tooltip: "Settings" },
       { key: "info", icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>, tooltip: "Info" },
     ];
 

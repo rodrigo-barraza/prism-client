@@ -182,7 +182,7 @@ export default function TimelineChartComponent({
   // At high density (>50 pts) the lines merge into visual noise, so skip them.
   const needsVerticalGrid = useMemo(() => {
     if (!data.length || data.length > 50) return false;
-    const h = data[0]?.hour || "";
+    const hourLabel = data[0]?.hour || "";
     return h.length > 10; // any sub-daily granularity
   }, [data]);
 

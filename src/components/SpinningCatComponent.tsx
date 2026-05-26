@@ -167,10 +167,10 @@ export default function SpinningCatComponent({
         return;
       }
 
-      const s = stateRef.current;
-      if (!s.lastTimestamp) s.lastTimestamp = now;
-      const dt = now - s.lastTimestamp;
-      s.lastTimestamp = now;
+      const currentState = stateRef.current;
+      if (!currentState.lastTimestamp) currentState.lastTimestamp = now;
+      const dt = now - currentState.lastTimestamp;
+      currentState.lastTimestamp = now;
 
       if (animateRef.current) {
         s.accelTime += dt / 1000;

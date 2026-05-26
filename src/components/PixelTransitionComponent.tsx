@@ -93,7 +93,7 @@ export default function PixelTransitionComponent({
   tickRef.current = (timestamp: any) => {
     if (!startTimeRef.current) startTimeRef.current = timestamp;
 
-    const p = propsRef.current;
+    const currentProps = propsRef.current;
     const elapsed = timestamp - (startTimeRef.current ?? 0);
     const rawProgress = Math.min(elapsed / p.duration, 1);
 

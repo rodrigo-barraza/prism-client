@@ -95,14 +95,14 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: { activ
   // -- Filtered list ------------------------------------------
   const filtered = useMemo(() => {
     if (!search.trim()) return benchmarks;
-    const q = search.toLowerCase();
+    const normalizedSearch = search.toLowerCase();
     return benchmarks.filter(
       (b) =>
-        b.name.toLowerCase().includes(q) ||
-        b.prompt?.toLowerCase().includes(q) ||
-        b.expectedValue?.toLowerCase().includes(q) ||
+        b.name.toLowerCase().includes(normalizedSearch) ||
+        b.prompt?.toLowerCase().includes(normalizedSearch) ||
+        b.expectedValue?.toLowerCase().includes(normalizedSearch) ||
         b.assertions?.some((a: BenchmarkAssertion) =>
-          a.expectedValue?.toLowerCase().includes(q),
+          a.expectedValue?.toLowerCase().includes(normalizedSearch),
         ),
     );
   }, [benchmarks, search]);

@@ -102,7 +102,7 @@ export default function ProvidersPage() {
           _latencyCount: 0,
         };
       }
-      const p = map[m.provider];
+      const providerData = map[model.provider];
       p.totalRequests += m.totalRequests;
       p.totalCost += m.totalCost;
       p.totalTokens += m.totalTokens;

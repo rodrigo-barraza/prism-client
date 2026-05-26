@@ -212,15 +212,15 @@ export default function ModelPickerPopoverComponent({
   // -- Filter by search -------------------------------------------------
   const filteredModels = search.trim()
     ? allModels.filter((m: ExtendedModelOption) => {
-        const q = search.toLowerCase();
+        const normalizedSearch = search.toLowerCase();
         return (
-          (m.name || "").toLowerCase().includes(q) ||
-          (m.label || "").toLowerCase().includes(q) ||
+          (m.name || "").toLowerCase().includes(normalizedSearch) ||
+          (m.label || "").toLowerCase().includes(normalizedSearch) ||
           (resolveProviderLabel(m.provider || "") || "")
             .toLowerCase()
-            .includes(q) ||
-          (m.organization || "").toLowerCase().includes(q) ||
-          ((m.params as string) || "").toLowerCase().includes(q)
+            .includes(normalizedSearch) ||
+          (m.organization || "").toLowerCase().includes(normalizedSearch) ||
+          ((m.params as string) || "").toLowerCase().includes(normalizedSearch)
         );
       })
     : allModels;

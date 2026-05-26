@@ -166,10 +166,10 @@ export default function ToolRequestsPage() {
     const csv = [headers, ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `tool-requests-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.href = url;
+    downloadAnchor.download = `tool-requests-${new Date().toISOString().slice(0, 10)}.csv`;
+    downloadAnchor.click();
     URL.revokeObjectURL(url);
   }, [toolCalls]);
 

@@ -875,7 +875,7 @@ function ansi256ToHex(n: number): string | null | undefined {
     const b = (index % 6) * 51;
     return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }
-  const v = (n - 232) * 10 + 8;
+  const grayscaleValue = (n - 232) * 10 + 8;
   return `#${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}${v.toString(16).padStart(2, "0")}`;
 }
 
@@ -919,7 +919,7 @@ function parseAnsi(text: string): string | React.ReactNode | React.ReactNode[] {
     lastIndex = match.index + match[0].length;
     const codes = match[1] ? match[1].split(";").map(Number) : [0];
     for (let i = 0; i < codes.length; i++) {
-      const c = codes[i];
+      const colorCode = codes[i];
       if (c === 0) {
         color = null;
         bgColor = null;

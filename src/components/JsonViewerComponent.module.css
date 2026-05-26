@@ -58,7 +58,7 @@
   user-select: text;
 }
 
-.row {
+.jsonRow {
   display: inline-flex;
   align-items: baseline;
   gap: 0;

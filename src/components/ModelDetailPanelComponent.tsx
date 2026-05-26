@@ -108,7 +108,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
   }, [handleKeyDown]);
 
   // Normalize model fields
-  const m = useMemo(() => {
+  const modelDetail = useMemo(() => {
     if (!model) return null;
     const name = model.display_name || model.label || model.key || model.name;
     const provider = model.provider || "lm-studio";
@@ -174,7 +174,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
     };
   }, [model]);
 
-  if (!m) return null;
+  if (!modelDetail) return null;
 
   // Determine the biggest context for the bar (1M is the max reference)
   const MAX_CONTEXT_REF = 1_048_576;
@@ -184,14 +184,14 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
   // Collect pricing entries
   const pricingEntries = m.pricing
-    ? Object.entries(m.pricing).filter(
+    ? Object.entries(modelDetail.pricing).filter(
         ([, value]: any) => value != null && value > 0,
       )
     : [];
 
   // Collect arena entries
   const arenaEntries = m.arena
-    ? Object.entries(m.arena).filter(
+    ? Object.entries(modelDetail.arena).filter(
         ([, value]: any) => value != null && value > 0,
       )
     : [];
@@ -199,13 +199,13 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
   // Capability flags
   const capabilities = [];
   if (m.streaming) capabilities.push("Streaming");
-  if (m.jsonMode) capabilities.push("JSON Mode");
-  if (m.liveAPI) capabilities.push("Live API");
-  if (m.responsesAPI) capabilities.push("Responses API");
-  if (m.imageAPI) capabilities.push("Image API");
-  if (m.verbosity) capabilities.push("Verbosity Control");
-  if (m.reasoningSummary) capabilities.push("Reasoning Summary");
-  if (m.webFetch) capabilities.push("Web Fetch");
+  if (modelDetail.jsonMode) capabilities.push("JSON Mode");
+  if (modelDetail.liveAPI) capabilities.push("Live API");
+  if (modelDetail.responsesAPI) capabilities.push("Responses API");
+  if (modelDetail.imageAPI) capabilities.push("Image API");
+  if (modelDetail.verbosity) capabilities.push("Verbosity Control");
+  if (modelDetail.reasoningSummary) capabilities.push("Reasoning Summary");
+  if (modelDetail.webFetch) capabilities.push("Web Fetch");
   if (m.urlContext) capabilities.push("URL Context");
   if (m.codeExecution) capabilities.push("Code Execution");
   if (m.supportsSystemPrompt !== false) capabilities.push("System Prompt");
@@ -217,11 +217,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
       <div className={styles.panel}>
         {/* -- Header ---------------------------------------- */}
         <div className={styles.header}>
-          <ProviderLogo provider={m.provider} size={28} />
+          <ProviderLogo provider={modelDetail.provider} size={28} />
           <div className={styles.headerInfo}>
-            <div className={styles.headerName}>{m.name}</div>
+            <div className={styles.headerName}>{modelDetail.name}</div>
             <div className={styles.headerProvider}>
-              {m.providerLabel}
+              {modelDetail.providerLabel}
               {m.year && <span>· {m.year}</span>}
               {m.modelType && (
                 <BadgeComponent type="model-type" modelType={m.modelType} />
@@ -243,9 +243,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               fullWidth
               onClick={() => {
                 StorageService.set(SK_MODEL_MEMORY_AGENT, {
-                  provider: m.provider,
+                  provider: modelDetail.provider,
                   model: m.key,
-                  isLocal: LOCAL_PROVIDERS.has(m.provider),
+                  isLocal: LOCAL_PROVIDERS.has(modelDetail.provider),
                 });
                 router.push("/chat");
               }}
@@ -266,7 +266,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               <span className={styles.kvLabel}>Provider</span>
               <span className={styles.kvValue}>
-                <BadgeComponent type="providers" providers={[m.provider]} />
+                <BadgeComponent type="providers" providers={[modelDetail.provider]} />
               </span>
 
               {m.year && (
@@ -290,7 +290,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 </>
               )}
 
-              {m.provider === "lm-studio" && (
+              {modelDetail.provider === "lm-studio" && (
                 <>
                   <span className={styles.kvLabel}>Status</span>
                   <span className={styles.kvValue}>
@@ -308,7 +308,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           <div className={styles.divider} />
 
           {/* -- Context & Tokens --------------------------- */}
-          {(m.contextLength || m.maxOutputTokens || m.params || m.size) && (
+          {(m.contextLength || modelDetail.maxOutputTokens || m.params || m.size) && (
             <>
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>
@@ -335,11 +335,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                     </>
                   )}
 
-                  {m.maxOutputTokens && (
+                  {modelDetail.maxOutputTokens && (
                     <>
                       <span className={styles.kvLabel}>Max Output</span>
                       <span className={styles.kvValueMono}>
-                        {formatContextTokens(m.maxOutputTokens)}
+                        {formatContextTokens(modelDetail.maxOutputTokens)}
                       </span>
                     </>
                   )}

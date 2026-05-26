@@ -542,11 +542,11 @@ function renderNebulaLayer(w: number, h: number, rng: SeededRng): HTMLCanvasElem
     context.translate(patchX, patchY);
     context.rotate(bandAngle + (rng() - 0.5) * 0.3);
     context.scale(1.5 + rng() * 0.8, 1);
-    const g = context.createRadialGradient(0, 0, 0, 0, 0, patchR);
-    g.addColorStop(0, `rgba(200, 195, 180, ${alpha})`);
-    g.addColorStop(0.5, `rgba(180, 175, 165, ${alpha * 0.5})`);
-    g.addColorStop(1, "rgba(150, 145, 140, 0)");
-    context.fillStyle = g;
+    const gradient = context.createRadialGradient(0, 0, 0, 0, 0, patchR);
+    gradient.addColorStop(0, `rgba(200, 195, 180, ${alpha})`);
+    gradient.addColorStop(0.5, `rgba(180, 175, 165, ${alpha * 0.5})`);
+    gradient.addColorStop(1, "rgba(150, 145, 140, 0)");
+    context.fillStyle = gradient;
     context.fillRect(-patchR * 2, -patchR, patchR * 4, patchR * 2);
     context.restore();
   }
@@ -583,12 +583,12 @@ function renderNebulaLayer(w: number, h: number, rng: SeededRng): HTMLCanvasElem
     context.translate(nx, ny);
     context.rotate((rng() - 0.5) * 1.2);
     context.scale(1 + rng() * 0.6, 1);
-    const g = context.createRadialGradient(0, 0, 0, 0, 0, nr);
-    g.addColorStop(0, `rgba(${cr}, ${cg}, ${callback}, ${n.a})`);
-    g.addColorStop(0.4, `rgba(${cr}, ${cg}, ${callback}, ${n.a * 0.5})`);
-    g.addColorStop(0.7, `rgba(${cr}, ${cg}, ${callback}, ${n.a * 0.2})`);
-    g.addColorStop(1, `rgba(${cr}, ${cg}, ${callback}, 0)`);
-    context.fillStyle = g;
+    const gradient = context.createRadialGradient(0, 0, 0, 0, 0, nr);
+    gradient.addColorStop(0, `rgba(${cr}, ${cg}, ${callback}, ${n.a})`);
+    gradient.addColorStop(0.4, `rgba(${cr}, ${cg}, ${callback}, ${n.a * 0.5})`);
+    gradient.addColorStop(0.7, `rgba(${cr}, ${cg}, ${callback}, ${n.a * 0.2})`);
+    gradient.addColorStop(1, `rgba(${cr}, ${cg}, ${callback}, 0)`);
+    context.fillStyle = gradient;
     context.fillRect(-nr * 2, -nr, nr * 4, nr * 2);
     context.restore();
   }
@@ -666,8 +666,8 @@ export default function StarfieldComponent({
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
+      const canvasWidth = rect.width;
+      const canvasHeight = rect.height;
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -679,8 +679,8 @@ export default function StarfieldComponent({
     ro.observe(canvas);
 
     const draw = (time: number) => {
-      const t = time / 1000;
-      const w = sizeRef.current.w;
+      const elapsedSeconds = time / 1000;
+      const scaledWidth = sizeRef.current.w;
       const h = sizeRef.current.h;
       const fieldStars = starsRef.current;
       const constellations = constellationStarsRef.current;

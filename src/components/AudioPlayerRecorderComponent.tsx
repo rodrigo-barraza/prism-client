@@ -39,12 +39,12 @@ function drawBars(
 ) {
   const context = canvas.getContext("2d");
   if (!context) return;
-  const w = canvas.width;
-  const h = canvas.height;
-  context.clearRect(0, 0, w, h);
+  const canvasWidth = canvas.width;
+  const canvasHeight = canvas.height;
+  context.clearRect(0, 0, canvasWidth, canvasHeight);
 
   const totalBars = Math.floor(w / (BAR_WIDTH + BAR_GAP));
-  const mid = h / 2;
+  const mid = canvasHeight / 2;
 
   for (let i = 0; i < totalBars; i++) {
     const peakIdx = Math.floor((i / totalBars) * peaks.length);
@@ -176,7 +176,7 @@ export default function AudioPlayerRecorderComponent({
       if (cancelled) return;
       setPeaks(p);
       // Use decoded duration as source of truth (WebM metadata often reports Infinity)
-      if (d != null && Number.isFinite(d) && d > 0) setDuration(d);
+      if (d != null && Number.isFinite(d) && audioDuration > 0) setDuration(d);
     });
     return () => {
       cancelled = true;
@@ -244,7 +244,7 @@ export default function AudioPlayerRecorderComponent({
       if (frameCount % 4 === 0) {
         let sum = 0;
         for (let i = 0; i < bufferLength; i++) {
-          const v = (dataArray[i] - 128) / 128;
+          const normalizedSample = (dataArray[i] - 128) / 128;
           sum += v * v;
         }
         const rms = Math.sqrt(sum / bufferLength);
@@ -260,12 +260,12 @@ export default function AudioPlayerRecorderComponent({
       // Redraw every frame for smoothness
       const context = canvas.getContext("2d");
       if (!context) return;
-      const w = canvas.width;
-      const h = canvas.height;
-      context.clearRect(0, 0, w, h);
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      context.clearRect(0, 0, canvasWidth, canvasHeight);
 
       const curPeaks = recPeaksRef.current;
-      const mid = h / 2;
+      const mid = canvasHeight / 2;
       const startX = w - curPeaks.length * (BAR_WIDTH + BAR_GAP);
       for (let i = 0; i < curPeaks.length; i++) {
         const amp = curPeaks[i];
@@ -374,11 +374,11 @@ export default function AudioPlayerRecorderComponent({
 
   const handleDownload = () => {
     if (!src) return;
-    const a = document.createElement("a");
-    a.href = src;
-    a.download = "audio.webm";
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.href = src;
+    downloadAnchor.download = "audio.webm";
     document.body.appendChild(a);
-    a.click();
+    downloadAnchor.click();
     document.body.removeChild(a);
   };
 
@@ -427,11 +427,11 @@ export default function AudioPlayerRecorderComponent({
             src={src}
             preload="metadata"
             onLoadedMetadata={(e: React.SyntheticEvent<HTMLAudioElement>) => {
-              const d = e.currentTarget.duration;
+              const audioDuration = e.currentTarget.duration;
               if (Number.isFinite(d)) setDuration(d);
             }}
             onDurationChange={(e: React.SyntheticEvent<HTMLAudioElement>) => {
-              const d = e.currentTarget.duration;
+              const audioDuration = e.currentTarget.duration;
               if (Number.isFinite(d)) setDuration(d);
             }}
             onTimeUpdate={(e: React.SyntheticEvent<HTMLAudioElement>) => setCurrentTime(e.currentTarget.currentTime || 0)}
@@ -483,11 +483,11 @@ export default function AudioPlayerRecorderComponent({
           src={src}
           preload="metadata"
           onLoadedMetadata={(e: React.SyntheticEvent<HTMLAudioElement>) => {
-            const d = e.currentTarget.duration;
+            const audioDuration = e.currentTarget.duration;
             if (Number.isFinite(d)) setDuration(d);
           }}
           onDurationChange={(e: React.SyntheticEvent<HTMLAudioElement>) => {
-            const d = e.currentTarget.duration;
+            const audioDuration = e.currentTarget.duration;
             if (Number.isFinite(d)) setDuration(d);
           }}
           onTimeUpdate={(e: React.SyntheticEvent<HTMLAudioElement>) => setCurrentTime(e.currentTarget.currentTime || 0)}

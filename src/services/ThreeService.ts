@@ -160,8 +160,8 @@ function handleResize(inst: ThreeInstance): void {
   if (!parent) return;
 
   const rect = parent.getBoundingClientRect();
-  const w = rect.width;
-  const h = rect.height;
+  const canvasWidth = rect.width;
+  const canvasHeight = rect.height;
 
   if (w === 0 || h === 0) return;
   if (w === inst.width && h === inst.height) return;

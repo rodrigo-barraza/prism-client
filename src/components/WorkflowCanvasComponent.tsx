@@ -486,7 +486,7 @@ export default function WorkflowCanvas({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      const t = touchRef.current;
+      const touchState = touchRef.current;
 
       if (t.type === "pinch" && e.touches.length === 2) {
         e.preventDefault();

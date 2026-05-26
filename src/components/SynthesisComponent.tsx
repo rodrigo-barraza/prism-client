@@ -747,10 +747,10 @@ export default function SynthesisComponent() {
   const handleDownload = useCallback(() => {
     const blob = new Blob([sftJsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `sft-conversation-${Date.now()}.json`;
-    a.click();
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.href = url;
+    downloadAnchor.download = `sft-conversation-${Date.now()}.json`;
+    downloadAnchor.click();
     URL.revokeObjectURL(url);
   }, [sftJsonString]);
 
@@ -927,7 +927,7 @@ export default function SynthesisComponent() {
                       setTargetTurns("");
                       return;
                     }
-                    const v = parseInt(raw, 10);
+                    const parsedValue = parseInt(raw, 10);
                     if (!isNaN(v)) setTargetTurns(v);
                   }}
                   onBlur={() => {

@@ -45,12 +45,12 @@ export default function RainbowCanvasComponent({
     const { width, height } = canvas;
     const cols = Math.ceil(width / PIXEL_SIZE);
     const rows = Math.ceil(height / PIXEL_SIZE);
-    const s = stateRef.current;
+    const animationState = stateRef.current;
     const colors = paletteRef.current || RAINBOW;
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
-        const t = (x / cols + y / rows) * 0.5 + s.offset / 360;
+        const huePosition = (x / cols + y / rows) * 0.5 + animationState.offset / 360;
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(colors, t + dither);
         context.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
@@ -78,10 +78,10 @@ export default function RainbowCanvasComponent({
     if (shouldRun && !rafRef.current) {
       stateRef.current.lastTime = 0;
       const tick = (now: any) => {
-        const s = stateRef.current;
-        if (!s.lastTime) s.lastTime = now;
-        const dt = (now - s.lastTime) / 1000;
-        s.lastTime = now;
+        const animationState = stateRef.current;
+        if (!animationState.lastTime) animationState.lastTime = now;
+        const dt = (now - animationState.lastTime) / 1000;
+        animationState.lastTime = now;
 
         if (turboRef.current) {
           s.turboTime += dt;
@@ -103,7 +103,7 @@ export default function RainbowCanvasComponent({
         }
 
         const speed = BASE_SPEED + s.turboVelocity;
-        s.offset = (s.offset + speed * dt) % 360;
+        animationState.offset = (animationState.offset + speed * dt) % 360;
         draw();
         rafRef.current = requestAnimationFrame(tick);
       };

@@ -21,6 +21,7 @@ import {
 import PrismService from "../../services/PrismService";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
 import {
+  LayoutHeaderComponent,
   ModalComponent,
   SelectComponent,
   InputComponent,
@@ -385,11 +386,11 @@ export default function ScheduledTasksPage() {
   // -- Filtered tasks based on search query --
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
-      const q = searchQuery.toLowerCase();
+      const normalizedSearch = searchQuery.toLowerCase();
       return (
-        t.name.toLowerCase().includes(q) ||
-        t.prompt.toLowerCase().includes(q) ||
-        t.model.toLowerCase().includes(q)
+        t.name.toLowerCase().includes(normalizedSearch) ||
+        t.prompt.toLowerCase().includes(normalizedSearch) ||
+        t.model.toLowerCase().includes(normalizedSearch)
       );
     });
   }, [tasks, searchQuery]);
@@ -398,7 +399,9 @@ export default function ScheduledTasksPage() {
     <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
       
-      <div className={styles.page}>
+      <div className={styles["layout-page-column"]}>
+        <LayoutHeaderComponent />
+        <div className={styles["page-content-area"]}>
         <div className={styles.content}>
         {/* Sleek toast list */}
         <div className={styles.toastContainer}>
@@ -839,7 +842,7 @@ export default function ScheduledTasksPage() {
                       value={formTimeHour}
                       onChange={(val: string) => setFormTimeHour(val)}
                       options={Array.from({ length: 12 }, (_, i) => {
-                        const h = String(i === 0 ? 12 : i).padStart(2, "0");
+                        const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
                         return { value: h, label: h };
                       })}
                     />
@@ -881,7 +884,7 @@ export default function ScheduledTasksPage() {
                       value={formTimeHour}
                       onChange={(val: string) => setFormTimeHour(val)}
                       options={Array.from({ length: 12 }, (_, i) => {
-                        const h = String(i === 0 ? 12 : i).padStart(2, "0");
+                        const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
                         return { value: h, label: h };
                       })}
                     />
@@ -915,7 +918,7 @@ export default function ScheduledTasksPage() {
                       value={formTimeHour}
                       onChange={(val: string) => setFormTimeHour(val)}
                       options={Array.from({ length: 12 }, (_, i) => {
-                        const h = String(i === 0 ? 12 : i).padStart(2, "0");
+                        const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
                         return { value: h, label: h };
                       })}
                     />
@@ -952,6 +955,7 @@ export default function ScheduledTasksPage() {
             </form>
           </ModalComponent>
         )}
+        </div>
         </div>
       </div>
     </div>

@@ -144,13 +144,13 @@ export default function RequestsPage() {
     for (const id of previousJustNowIds) {
       if (!justNowIds.has(id) && !fadingTimers.current.has(id)) {
         setFadingIds((s: Set<string>) => {
-          const n = new Set(s);
+          const updatedSet = new Set(s);
           n.add(id);
           return n;
         });
         const timer = setTimeout(() => {
           setFadingIds((s: Set<string>) => {
-            const n = new Set(s);
+            const updatedSet = new Set(s);
             n.delete(id);
             return n;
           });
@@ -317,10 +317,10 @@ export default function RequestsPage() {
     const csv = [headers, ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `iris-requests-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.href = url;
+    downloadAnchor.download = `iris-requests-${new Date().toISOString().slice(0, 10)}.csv`;
+    downloadAnchor.click();
     URL.revokeObjectURL(url);
   }, [requests]);
 

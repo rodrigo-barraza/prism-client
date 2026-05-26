@@ -34,7 +34,7 @@ function generateFrames() {
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
-        const t = (x / cols + y / rows) * 0.5 + offset;
+        const huePosition = (x / cols + y / rows) * 0.5 + offset;
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(RAINBOW, t + dither);
         context!.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;

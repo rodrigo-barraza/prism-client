@@ -95,7 +95,7 @@ function JsonNode({
     return (
       <div className={styles.node}>
         <div
-          className={styles.row}
+          className={styles.jsonRow}
           onClick={() => !isEmpty && setExpanded((prev) => !prev)}
           style={{ cursor: isEmpty ? "default" : "pointer" }}
         >
@@ -143,7 +143,7 @@ function JsonNode({
                 />
               ))}
             </div>
-            <div className={styles.row}>
+            <div className={styles.jsonRow}>
               <span className={styles.bracket}>{bracket[1]}</span>
               {!isLast && <span className={styles.comma}>,</span>}
             </div>
@@ -156,7 +156,7 @@ function JsonNode({
   // Primitive value
   return (
     <div className={styles.node}>
-      <div className={styles.row}>
+      <div className={styles.jsonRow}>
         {keyName !== undefined && (
           <span className={styles.key}>
             {JSON.stringify(String(keyName))}:{" "}

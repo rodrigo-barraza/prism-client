@@ -425,12 +425,12 @@ interface CatState {
         // FX helper (SpinningCat-style quadratic ramp)
         const computeFx = () => {
           const sm = 0.2 + 0.08 * p.accelTime * p.accelTime;
-          const t = Math.min((sm - 0.2) / 4.8, 1);
+          const interpolation = Math.min((sm - 0.2) / 4.8, 1);
           return {
-            scale: 1 + t * 0.5,
-            brightness: 1 + t * 2,
-            glowR: t * 12,
-            glowO: t * 0.9,
+            scale: 1 + interpolation * 0.5,
+            brightness: 1 + interpolation * 2,
+            glowR: interpolation * 12,
+            glowO: interpolation * 0.9,
           };
         };
 
@@ -542,14 +542,14 @@ interface CatState {
       const computedStyle = getComputedStyle(sidebarElement);
       const backgroundColorValue = computedStyle.backgroundColor;
 
-      const rgbMatch = backgroundColorValue.match(
+      const redGreenBlueMatch = backgroundColorValue.match(
         /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/
       );
-      if (!rgbMatch) return;
+      if (!redGreenBlueMatch) return;
 
-      const redChannel = parseInt(rgbMatch[1], 10);
-      const greenChannel = parseInt(rgbMatch[2], 10);
-      const blueChannel = parseInt(rgbMatch[3], 10);
+      const redChannel = parseInt(redGreenBlueMatch[1], 10);
+      const greenChannel = parseInt(redGreenBlueMatch[2], 10);
+      const blueChannel = parseInt(redGreenBlueMatch[3], 10);
 
       const toLinearComponent = (channelValue: number): number => {
         const normalizedValue = channelValue / 255;
@@ -776,7 +776,7 @@ interface CatState {
         </div>
 
         {/* Navigation */}
-        <nav className={styles.nav}>
+        <nav className={styles.navigationList}>
           {navSections.map((section: { label: string | null, items: any[] }, sectionIdx: number) => (
             <React.Fragment key={section.label || sectionIdx}>
               {/* Section divider */}

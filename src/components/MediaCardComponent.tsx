@@ -82,7 +82,7 @@ export default function MediaCardComponent({
   onImageClick,
 }: MediaCardProps) {
   const resolvedUrl = resolveUrl(media.url);
-  const m = media as any;
+  const mediaItem = media as any;
 
   const cardClasses = [
     styles.card,

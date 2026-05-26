@@ -1,10 +1,20 @@
 /* ── ScheduledTasksPage ─────────────────────────────────────── */
 
-.page {
+.layout-page-column {
+  display: flex;
+  flex-direction: column;
   flex: 1;
-  min-width: 0;
+  min-inline-size: 0;
+  block-size: 100%;
+  overflow: hidden;
+}
+
+.page-content-area {
+  flex: 1;
+  min-block-size: 0;
   overflow-y: auto;
 }
+
 
 .content {
   display: flex;

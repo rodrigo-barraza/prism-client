@@ -70,8 +70,8 @@ function parseTaskNotification(content: string | undefined | null) {
   if (!content || !content.includes("<task-notification>")) return null;
   const tag = (name: string) => {
     const regex = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
-    const m = content.match(regex);
-    return m ? m[1].trim() : null;
+    const regexMatch = content.match(regex);
+    return m ? regexMatch[1].trim() : null;
   };
   return {
     taskId: tag("task-id"),
@@ -629,6 +629,113 @@ export default function MessageList({
   const [expandedDeletedSet, setExpandedDeletedSet] = useState<Set<number>>(new Set());
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
+  const containerReference = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const messagesListElement = containerReference.current;
+    if (!messagesListElement) return;
+
+    const computeAndApplyContrastColor = () => {
+      let currentAncestorElement = messagesListElement.parentElement;
+      let backgroundColorValue = "rgba(0, 0, 0, 0)";
+
+      while (currentAncestorElement) {
+        const computedStyle = getComputedStyle(currentAncestorElement);
+        backgroundColorValue = computedStyle.backgroundColor;
+
+        const redGreenBlueMatch = backgroundColorValue.match(
+          /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/
+        );
+        if (redGreenBlueMatch) {
+          const alphaValue = redGreenBlueMatch[4] !== undefined ? parseFloat(redGreenBlueMatch[4]) : 1;
+          if (alphaValue > 0) {
+            break;
+          }
+        }
+        currentAncestorElement = currentAncestorElement.parentElement;
+      }
+
+      const redGreenBlueMatch = backgroundColorValue.match(
+        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/
+      );
+      if (!redGreenBlueMatch) return;
+
+      const redChannel = parseInt(redGreenBlueMatch[1], 10);
+      const greenChannel = parseInt(redGreenBlueMatch[2], 10);
+      const blueChannel = parseInt(redGreenBlueMatch[3], 10);
+
+      const toLinearComponent = (channelValue: number): number => {
+        const normalizedValue = channelValue / 255;
+        return normalizedValue <= 0.03928
+          ? normalizedValue / 12.92
+          : Math.pow((normalizedValue + 0.055) / 1.055, 2.4);
+      };
+
+      const relativeLuminance =
+        0.2126 * toLinearComponent(redChannel) +
+        0.7152 * toLinearComponent(greenChannel) +
+        0.0722 * toLinearComponent(blueChannel);
+
+      const isLightBackground = relativeLuminance > 0.179;
+
+      messagesListElement.style.setProperty(
+        "--raw-prefix-contrast-color",
+        isLightBackground ? "rgba(0, 0, 0, 0.87)" : "rgba(255, 255, 255, 0.92)"
+      );
+      messagesListElement.style.setProperty(
+        "--raw-prefix-contrast-opacity",
+        isLightBackground ? "0.55" : "0.6"
+      );
+    };
+
+    computeAndApplyContrastColor();
+
+    const listMutationObserver = new MutationObserver(computeAndApplyContrastColor);
+    listMutationObserver.observe(messagesListElement, {
+      attributes: true,
+      attributeFilter: ["style", "class"],
+    });
+
+    let closestAncestorElement = messagesListElement.parentElement;
+    while (closestAncestorElement) {
+      const computedStyle = getComputedStyle(closestAncestorElement);
+      const ancestorBackgroundColorValue = computedStyle.backgroundColor;
+      const redGreenBlueMatch = ancestorBackgroundColorValue.match(
+        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/
+      );
+      if (redGreenBlueMatch) {
+        const alphaValue = redGreenBlueMatch[4] !== undefined ? parseFloat(redGreenBlueMatch[4]) : 1;
+        if (alphaValue > 0) {
+          break;
+        }
+      }
+      closestAncestorElement = closestAncestorElement.parentElement;
+    }
+
+    let ancestorMutationObserver: MutationObserver | null = null;
+    if (closestAncestorElement) {
+      ancestorMutationObserver = new MutationObserver(computeAndApplyContrastColor);
+      ancestorMutationObserver.observe(closestAncestorElement, {
+        attributes: true,
+        attributeFilter: ["style", "class"],
+      });
+    }
+
+    const documentMutationObserver = new MutationObserver(computeAndApplyContrastColor);
+    documentMutationObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+
+    return () => {
+      listMutationObserver.disconnect();
+      if (ancestorMutationObserver) {
+        ancestorMutationObserver.disconnect();
+      }
+      documentMutationObserver.disconnect();
+    };
+  }, []);
+
   const handleImageClick = (url: string) => {
     if (onImageClick) {
       onImageClick(url);
@@ -909,7 +1016,7 @@ export default function MessageList({
   }, [displayMessages, swapBefore]);
 
   return (
-    <div className={styles.messagesList}>
+    <div ref={containerReference} className={styles.messagesList}>
 
       {/* -- Sticky pinned user message -- */}
       <div

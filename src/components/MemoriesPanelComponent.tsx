@@ -338,11 +338,11 @@ export default function MemoriesPanel({
 
     // Text search — match against title or content (case-insensitive)
     if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
+      const normalizedSearch = searchQuery.trim().toLowerCase();
       result = result.filter((m) => {
         const title = (m.title || "").toLowerCase();
         const content = (m.content || "").toLowerCase();
-        return title.includes(q) || content.includes(q);
+        return title.includes(normalizedSearch) || content.includes(normalizedSearch);
       });
     }
 
@@ -366,7 +366,7 @@ export default function MemoriesPanel({
 
       result = result.filter((m) => {
         if (!m.createdAt) return false;
-        const d = new Date(m.createdAt);
+        const memoryDate = new Date(memory.createdAt);
         if (from && d < from) return false;
         if (toEnd && d > toEnd) return false;
         return true;

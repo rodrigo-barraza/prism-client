@@ -15,7 +15,7 @@
 
 /* ── Settings row ─────────────────────────────────────────────────── */
 
-.row {
+.settingsRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -24,11 +24,11 @@
   transition: background var(--transition-fast);
 }
 
-.row:hover {
+.settingsRow:hover {
   background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
-.row + .row {
+.settingsRow + .settingsRow {
   border-top: 1px solid var(--calculated-border-subtle);
 }
 

@@ -98,7 +98,7 @@ export default function BenchmarksTableComponent({
 
     // First pass: count how many times each target key appears
     for (let i = 0; i < pendingTargets.length; i++) {
-      const t = pendingTargets[i];
+      const benchmarkTarget = pendingTargets[i];
       const tKey = `${t.provider}:${t.model}`;
       if (!targetCounters.has(tKey)) targetCounters.set(tKey, []);
       targetCounters.get(tKey).push(i);

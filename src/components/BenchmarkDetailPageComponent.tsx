@@ -261,12 +261,12 @@ export default function BenchmarkDetailPageComponent({
       setViewedModelKey(key);
       setSelectedResult(null);
       // Immediately flush this model's accumulated data so the preview updates instantly
-      const d = liveDataRef.current.get(key);
-      if (d) {
+      const benchmarkData = liveDataRef.current.get(key);
+      if (benchmarkData) {
         setLiveSnapshot({
-          text: d.text,
-          thinking: d.thinking,
-          toolCalls: [...d.toolCalls],
+          text: benchmarkData.text,
+          thinking: benchmarkData.thinking,
+          toolCalls: [...benchmarkData.toolCalls],
         });
       }
     } else if (row._pending) {
@@ -411,12 +411,12 @@ export default function BenchmarkDetailPageComponent({
           liveFlushRef.current = setInterval(() => {
             setViewedModelKey((currentKey: string | null) => {
               if (!currentKey) return currentKey;
-              const d = liveDataRef.current.get(currentKey);
-              if (d) {
+              const benchmarkData = liveDataRef.current.get(currentKey);
+              if (benchmarkData) {
                 setLiveSnapshot({
-                  text: d.text,
-                  thinking: d.thinking,
-                  toolCalls: [...d.toolCalls],
+                  text: benchmarkData.text,
+                  thinking: benchmarkData.thinking,
+                  toolCalls: [...benchmarkData.toolCalls],
                 });
               }
               return currentKey;
@@ -512,15 +512,15 @@ export default function BenchmarkDetailPageComponent({
       onChunk: (content: string, sourceModel?: string) => {
         const key = resolveModelKeyForContent(liveDataRef.current, sourceModel);
         if (key) {
-          const d = liveDataRef.current.get(key);
-          if (d) d.text += content;
+          const benchmarkData = liveDataRef.current.get(key);
+          if (benchmarkData) benchmarkData.text += content;
         }
       },
       onThinking: (content: string, sourceModel?: string) => {
         const key = resolveModelKeyForContent(liveDataRef.current, sourceModel);
         if (key) {
-          const d = liveDataRef.current.get(key);
-          if (d) d.thinking += content;
+          const benchmarkData = liveDataRef.current.get(key);
+          if (benchmarkData) benchmarkData.thinking += content;
         }
       },
 
@@ -531,7 +531,7 @@ export default function BenchmarkDetailPageComponent({
           toolCall._sourceModel,
         );
         if (!key) return;
-        const d = liveDataRef.current.get(key);
+        const benchmarkData = liveDataRef.current.get(key);
         if (!d) return;
         if (toolCall.status === "calling") {
           d.toolCalls = [
@@ -557,7 +557,7 @@ export default function BenchmarkDetailPageComponent({
           (data as { _sourceModel?: string })._sourceModel,
         );
         if (!key) return;
-        const d = liveDataRef.current.get(key);
+        const benchmarkData = liveDataRef.current.get(key);
         if (!d) return;
         const tool = (data as Record<string, unknown>).tool as { id?: string; name?: string; args?: unknown; result?: unknown } || {};
         if ((data as Record<string, unknown>).status === "calling") {
@@ -1047,9 +1047,9 @@ export default function BenchmarkDetailPageComponent({
         return next;
       });
       setThinkingMap((prev) => {
-        const n = { ...prev };
+        const updatedState = { ...prev };
         delete n[instanceId];
-        return n;
+        return updatedState;
       });
     },
     [selectedInstances, thinkingMap, toolsMap],
@@ -1109,14 +1109,14 @@ export default function BenchmarkDetailPageComponent({
       });
       // Clean up thinking/tools state for removed instance
       setThinkingMap((prev) => {
-        const n = { ...prev };
+        const updatedState = { ...prev };
         delete n[instanceId];
-        return n;
+        return updatedState;
       });
       setToolsMap((prev) => {
-        const n = { ...prev };
+        const updatedState = { ...prev };
         delete n[instanceId];
-        return n;
+        return updatedState;
       });
     },
     [agentInstances, thinkingMap, toolsMap],
@@ -1679,7 +1679,7 @@ export default function BenchmarkDetailPageComponent({
                 loading={saving}
                 disabled={(() => {
                   if (!form.name || !form.prompt) return true;
-                  const m = form.benchmarkMode || "model";
+                  const benchmarkMode = form.benchmarkMode || "model";
                   if (m === "model")
                     return !form.assertions?.some((a) => a.expectedValue);
                   if (m === "agent") return !form.agentAssertions?.length;

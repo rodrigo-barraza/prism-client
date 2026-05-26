@@ -720,7 +720,7 @@ export default function ToolsPageComponent() {
   const toolAgentMap = useMemo(() => buildToolAgentMap(agents), [agents]);
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
+    const normalizedSearch = search.toLowerCase().trim();
     // Pre-compute agent filter set if active
     // Wildcard ("*") means all tools — treat as no filter
     const agentData = agentFilter
@@ -735,13 +735,13 @@ export default function ToolsPageComponent() {
       if (domainFilter && t.domain !== domainFilter) return false;
       if (labelFilter && !t.labels?.includes(labelFilter)) return false;
       if (agentToolSet && !agentToolSet.has(t.name)) return false;
-      if (q) {
+      if (normalizedSearch) {
         const agentNames = ((toolAgentMap as Record<string, { id: string; name: string }[]>)[t.name] || [])
           .map((a: { id: string; name: string }) => a.name)
           .join(" ");
         const haystack =
           `${t.name} ${t.description} ${t.domain || ""} ${(t.labels || []).join(" ")} ${agentNames}`.toLowerCase();
-        return haystack.includes(q);
+        return haystack.includes(normalizedSearch);
       }
       return true;
     });
