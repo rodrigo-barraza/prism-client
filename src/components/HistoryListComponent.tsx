@@ -379,7 +379,7 @@ export default function HistoryList({
         {hasMore && <div ref={sentinelRef} className={styles.sentinel} />}
         {loadingMore && (
           <div className={styles.loadingMore}>
-            <LoadingIndicatorComponent size={18} />
+            <LoadingIndicatorComponent size="small" />
           </div>
         )}
       </div>

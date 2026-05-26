@@ -145,14 +145,14 @@ export default function RequestsPage() {
       if (!justNowIds.has(id) && !fadingTimers.current.has(id)) {
         setFadingIds((s: Set<string>) => {
           const updatedSet = new Set(s);
-          n.add(id);
-          return n;
+          updatedSet.add(id);
+          return updatedSet;
         });
         const timer = setTimeout(() => {
           setFadingIds((s: Set<string>) => {
             const updatedSet = new Set(s);
-            n.delete(id);
-            return n;
+            updatedSet.delete(id);
+            return updatedSet;
           });
           fadingTimers.current.delete(id);
         }, 1000);

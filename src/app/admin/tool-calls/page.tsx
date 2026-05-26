@@ -91,7 +91,7 @@ function getToolColumns() {
       label: "Calls",
       description: "Total number of invocations",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: ToolStat) => formatNumber(r.count),
     },
     {
@@ -99,7 +99,7 @@ function getToolColumns() {
       label: "Avg Latency",
       description: "Mean execution time across all calls",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: ToolStat) => formatLatencyMs(r.avgMs),
     },
     {
@@ -107,7 +107,7 @@ function getToolColumns() {
       label: "Min",
       description: "Fastest execution time recorded",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: ToolStat) => formatLatencyMs(r.minMs),
     },
     {
@@ -115,7 +115,7 @@ function getToolColumns() {
       label: "Max",
       description: "Slowest execution time recorded",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: ToolStat) => formatLatencyMs(r.maxMs),
     },
     {
@@ -123,7 +123,7 @@ function getToolColumns() {
       label: "Errors",
       description: "Total failed invocations",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: ToolStat) =>
         r.errors > 0 ? (
           <span className={styles.errorCount}>{r.errors}</span>
@@ -136,7 +136,7 @@ function getToolColumns() {
       label: "Error %",
       description: "Percentage of calls that failed",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: ToolStat) => {
         if (r.errorRate === 0)
           return <span className={styles.zeroErrors}>0%</span>;
@@ -156,7 +156,7 @@ function getToolColumns() {
       label: "Transfer",
       description: "Total bytes transferred (in + out)",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: ToolStat) => {
         if (!r.totalTransferBytes || r.totalTransferBytes <= 0) return "—";
         return formatFileSize(r.totalTransferBytes);
@@ -180,21 +180,21 @@ function getDomainColumns() {
       key: "count",
       label: "Calls",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: DomainStat) => formatNumber(r.count),
     },
     {
       key: "avgMs",
       label: "Avg Latency",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: DomainStat) => formatLatencyMs(r.avgMs),
     },
     {
       key: "errors",
       label: "Errors",
       sortable: true,
-      align: "right",
+      align: "right" as const,
       render: (r: DomainStat) =>
         r.errors > 0 ? (
           <span className={styles.errorCount}>{r.errors}</span>
@@ -228,7 +228,7 @@ function getSlowestColumns() {
       key: "elapsedMs",
       label: "Latency",
       sortable: false,
-      align: "right",
+      align: "right" as const,
       render: (r: SlowestCall) => formatLatencyMs(r.elapsedMs),
     },
     {
@@ -440,7 +440,7 @@ export default function ToolCallsPage() {
         }}
         getRowKey={(r: ToolStat) => r.toolName}
         emptyText="No tool data"
-        maxHeight={null}
+        maxHeight={undefined}
         storageKey="tool-calls-by-tool"
       />
 
@@ -457,7 +457,7 @@ export default function ToolCallsPage() {
         }}
         getRowKey={(r: DomainStat) => r.domain}
         emptyText="No domain data"
-        maxHeight={null}
+        maxHeight={undefined}
         storageKey="tool-calls-by-domain"
       />
 
@@ -469,7 +469,7 @@ export default function ToolCallsPage() {
           data={stats.slowest}
           getRowKey={(r: SlowestCall, i: number) => r._id || `slow-${i}`}
           emptyText="No data"
-          maxHeight={null}
+          maxHeight={undefined}
           storageKey="tool-calls-slowest"
         />
       )}

@@ -39,7 +39,7 @@ export const getRequestsColumns = ({
     key: "toolsUsed",
     label: "Tools",
     sortable: true,
-    align: "left",
+    align: "left" as const,
     render: (r: IrisRequestEntry) => {
       if (!r.toolsUsed || !r.toolDisplayNames?.length) return emptyDash();
       return (
@@ -63,7 +63,7 @@ export const getRequestsColumns = ({
     label: "Duration",
     sortable: true,
     sortValue: (r: IrisRequestEntry) => r.totalTime || 0,
-    align: "right",
+    align: "right" as const,
     render: (r: IrisRequestEntry) => valueOrDash(r.totalTime, (v: number) => formatLatency(v)),
   },
   {

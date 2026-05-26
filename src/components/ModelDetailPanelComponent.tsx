@@ -178,19 +178,19 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
   // Determine the biggest context for the bar (1M is the max reference)
   const MAX_CONTEXT_REF = 1_048_576;
-  const contextPct = m.contextLength
-    ? Math.min((m.contextLength / MAX_CONTEXT_REF) * 100, 100)
+  const contextPct = modelDetail.contextLength
+    ? Math.min((modelDetail.contextLength / MAX_CONTEXT_REF) * 100, 100)
     : 0;
 
   // Collect pricing entries
-  const pricingEntries = m.pricing
+  const pricingEntries = modelDetail.pricing
     ? Object.entries(modelDetail.pricing).filter(
         ([, value]: any) => value != null && value > 0,
       )
     : [];
 
   // Collect arena entries
-  const arenaEntries = m.arena
+  const arenaEntries = modelDetail.arena
     ? Object.entries(modelDetail.arena).filter(
         ([, value]: any) => value != null && value > 0,
       )
@@ -198,7 +198,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
   // Capability flags
   const capabilities = [];
-  if (m.streaming) capabilities.push("Streaming");
+  if (modelDetail.streaming) capabilities.push("Streaming");
   if (modelDetail.jsonMode) capabilities.push("JSON Mode");
   if (modelDetail.liveAPI) capabilities.push("Live API");
   if (modelDetail.responsesAPI) capabilities.push("Responses API");
@@ -206,10 +206,10 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
   if (modelDetail.verbosity) capabilities.push("Verbosity Control");
   if (modelDetail.reasoningSummary) capabilities.push("Reasoning Summary");
   if (modelDetail.webFetch) capabilities.push("Web Fetch");
-  if (m.urlContext) capabilities.push("URL Context");
-  if (m.codeExecution) capabilities.push("Code Execution");
-  if (m.supportsSystemPrompt !== false) capabilities.push("System Prompt");
-  if (m.assistantImages === false) capabilities.push("No Assistant Images");
+  if (modelDetail.urlContext) capabilities.push("URL Context");
+  if (modelDetail.codeExecution) capabilities.push("Code Execution");
+  if (modelDetail.supportsSystemPrompt !== false) capabilities.push("System Prompt");
+  if (modelDetail.assistantImages === false) capabilities.push("No Assistant Images");
 
   return (
     <div className={styles.overlay}>
@@ -222,9 +222,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
             <div className={styles.headerName}>{modelDetail.name}</div>
             <div className={styles.headerProvider}>
               {modelDetail.providerLabel}
-              {m.year && <span>· {m.year}</span>}
-              {m.modelType && (
-                <BadgeComponent type="model-type" modelType={m.modelType} />
+              {modelDetail.year && <span>· {modelDetail.year}</span>}
+              {modelDetail.modelType && (
+                <BadgeComponent type="model-type" modelType={modelDetail.modelType} />
               )}
             </div>
           </div>
@@ -244,7 +244,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               onClick={() => {
                 StorageService.set(SK_MODEL_MEMORY_AGENT, {
                   provider: modelDetail.provider,
-                  model: m.key,
+                  model: modelDetail.key,
                   isLocal: LOCAL_PROVIDERS.has(modelDetail.provider),
                 });
                 router.push("/chat");
@@ -262,31 +262,31 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
             </div>
             <div className={styles.kvGrid}>
               <span className={styles.kvLabel}>API Name</span>
-              <span className={styles.kvValueMono}>{m.key}</span>
+              <span className={styles.kvValueMono}>{modelDetail.key}</span>
 
               <span className={styles.kvLabel}>Provider</span>
               <span className={styles.kvValue}>
                 <BadgeComponent type="providers" providers={[modelDetail.provider]} />
               </span>
 
-              {m.year && (
+              {modelDetail.year && (
                 <>
                   <span className={styles.kvLabel}>Release Year</span>
-                  <span className={styles.kvValue}>{m.year}</span>
+                  <span className={styles.kvValue}>{modelDetail.year}</span>
                 </>
               )}
 
-              {m.publisher && (
+              {modelDetail.publisher && (
                 <>
                   <span className={styles.kvLabel}>Publisher</span>
-                  <span className={styles.kvValue}>{m.publisher}</span>
+                  <span className={styles.kvValue}>{modelDetail.publisher}</span>
                 </>
               )}
 
-              {m.architecture && (
+              {modelDetail.architecture && (
                 <>
                   <span className={styles.kvLabel}>Architecture</span>
-                  <span className={styles.kvValue}>{m.architecture}</span>
+                  <span className={styles.kvValue}>{modelDetail.architecture}</span>
                 </>
               )}
 
@@ -295,9 +295,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   <span className={styles.kvLabel}>Status</span>
                   <span className={styles.kvValue}>
                     <span
-                      className={`${styles.statusBadge} ${m.isLoaded ? styles.loaded : styles.available}`}
+                      className={`${styles.statusBadge} ${modelDetail.isLoaded ? styles.loaded : styles.available}`}
                     >
-                      {m.isLoaded ? "● Loaded" : "○ Available"}
+                      {modelDetail.isLoaded ? "● Loaded" : "○ Available"}
                     </span>
                   </span>
                 </>
@@ -308,7 +308,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           <div className={styles.divider} />
 
           {/* -- Context & Tokens --------------------------- */}
-          {(m.contextLength || modelDetail.maxOutputTokens || m.params || m.size) && (
+          {(modelDetail.contextLength || modelDetail.maxOutputTokens || modelDetail.params || modelDetail.size) && (
             <>
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>
@@ -316,7 +316,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Specifications
                 </div>
                 <div className={styles.kvGrid}>
-                  {m.contextLength && (
+                  {modelDetail.contextLength && (
                     <>
                       <span className={styles.kvLabel}>Context Window</span>
                       <span className={styles.kvValue}>
@@ -328,7 +328,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                             />
                           </div>
                           <span className={styles.contextBarLabel}>
-                            {formatContextTokens(m.contextLength)}
+                            {formatContextTokens(modelDetail.contextLength)}
                           </span>
                         </div>
                       </span>
@@ -344,43 +344,43 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                     </>
                   )}
 
-                  {m.params && (
+                  {modelDetail.params && (
                     <>
                       <span className={styles.kvLabel}>Parameters</span>
-                      <span className={styles.kvValue}>{m.params}</span>
+                      <span className={styles.kvValue}>{modelDetail.params}</span>
                     </>
                   )}
 
-                  {m.size && (
+                  {modelDetail.size && (
                     <>
                       <span className={styles.kvLabel}>Size on Disk</span>
-                      <span className={styles.kvValue}>{m.size}</span>
+                      <span className={styles.kvValue}>{modelDetail.size}</span>
                     </>
                   )}
 
-                  {m.quantization && (
+                  {modelDetail.quantization && (
                     <>
                       <span className={styles.kvLabel}>Quantization</span>
                       <span className={styles.kvValueMono}>
-                        {m.quantization}
+                        {modelDetail.quantization}
                       </span>
                     </>
                   )}
 
-                  {m.bitsPerWeight != null && (
+                  {modelDetail.bitsPerWeight != null && (
                     <>
                       <span className={styles.kvLabel}>Bits per Weight</span>
                       <span className={styles.kvValueMono}>
-                        {m.bitsPerWeight}
+                        {modelDetail.bitsPerWeight}
                       </span>
                     </>
                   )}
 
-                  {m.defaultTemperature != null && (
+                  {modelDetail.defaultTemperature != null && (
                     <>
                       <span className={styles.kvLabel}>Default Temp</span>
                       <span className={styles.kvValueMono}>
-                        {m.defaultTemperature}
+                        {modelDetail.defaultTemperature}
                       </span>
                     </>
                   )}
@@ -391,7 +391,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           )}
 
           {/* -- Modalities --------------------------------- */}
-          {(m.inputTypes.length > 0 || m.outputTypes.length > 0) && (
+          {(modelDetail.inputTypes.length > 0 || modelDetail.outputTypes.length > 0) && (
             <>
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>
@@ -399,7 +399,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Modalities
                 </div>
                 <div className={styles.modalitiesRow}>
-                  {m.inputTypes.map((t: string) => {
+                  {modelDetail.inputTypes.map((t: string) => {
                     const meta = (MODALITY_ICONS as any)[t];
                     if (!meta) return null;
                     const Icon = meta.icon;
@@ -414,10 +414,10 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                       </span>
                     );
                   })}
-                  {m.inputTypes.length > 0 && m.outputTypes.length > 0 && (
+                  {modelDetail.inputTypes.length > 0 && modelDetail.outputTypes.length > 0 && (
                     <ArrowRight size={14} className={styles.modalityArrow} />
                   )}
-                  {m.outputTypes.map((t: string) => {
+                  {modelDetail.outputTypes.map((t: string) => {
                     const meta = (MODALITY_ICONS as any)[t];
                     if (!meta) return null;
                     const Icon = meta.icon;
@@ -439,7 +439,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           )}
 
           {/* -- Media Limits ------------------------------- */}
-          {m.mediaLimits && Object.keys(m.mediaLimits).length > 0 && (
+          {modelDetail.mediaLimits && Object.keys(modelDetail.mediaLimits).length > 0 && (
             <>
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>
@@ -447,7 +447,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Media Limits
                 </div>
                 <div className={styles.mediaLimitsGrid}>
-                  {Object.entries(m.mediaLimits).map(([type, limits]: any) => (
+                  {Object.entries(modelDetail.mediaLimits).map(([type, limits]: any) => (
                     <div key={type} className={styles.mediaLimitCard}>
                       <span className={styles.mediaLimitType}>{type}</span>
                       {limits.maxCount && (
@@ -469,7 +469,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           )}
 
           {/* -- Tools -------------------------------------- */}
-          {m.tools.length > 0 && (
+          {modelDetail.tools.length > 0 && (
             <>
               <div className={styles.section}>
                 <div className={styles.sectionTitle}>
@@ -477,7 +477,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Tools & Capabilities
                 </div>
                 <div className={styles.toolsGrid}>
-                  {m.tools.map((tool: string) => {
+                  {modelDetail.tools.map((tool: string) => {
                     const Icon = (TOOL_ICONS as any)[tool];
                     const color = (TOOL_COLORS as any)[tool];
                     return (
@@ -498,11 +498,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 </div>
 
                 {/* Thinking levels */}
-                {m.thinkingLevels && m.thinkingLevels.length > 0 && (
+                {modelDetail.thinkingLevels && modelDetail.thinkingLevels.length > 0 && (
                   <div className={styles.kvGrid} style={{ marginTop: 10 }}>
                     <span className={styles.kvLabel}>Thinking Levels</span>
                     <span className={styles.kvValue}>
-                      {m.thinkingLevels.join(", ")}
+                      {modelDetail.thinkingLevels.join(", ")}
                     </span>
                   </div>
                 )}
@@ -583,7 +583,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           )}
 
           {/* -- Lifetime Stats ------------------------------ */}
-          {m.usageCount > 0 && (
+          {modelDetail.usageCount > 0 && (
             <div className={styles.section}>
               <div className={styles.sectionTitle}>
                 <Activity size={12} />
@@ -595,41 +595,41 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 <div className={styles.statsCard}>
                   <Hash size={14} className={styles.statsCardIcon} />
                   <span className={styles.statsCardValue}>
-                    {formatNumber(m.usageCount)}
+                    {formatNumber(modelDetail.usageCount)}
                   </span>
                   <span className={styles.statsCardLabel}>Total Requests</span>
                 </div>
 
-                {m.totalTokens > 0 && (
+                {modelDetail.totalTokens > 0 && (
                   <div className={styles.statsCard}>
                     <Layers size={14} className={styles.statsCardIcon} />
                     <span className={styles.statsCardValue}>
-                      {formatTokenCount(m.totalTokens)}
+                      {formatTokenCount(modelDetail.totalTokens)}
                     </span>
                     <span className={styles.statsCardLabel}>Total Tokens</span>
                   </div>
                 )}
 
-                {m.totalCost > 0 && (
+                {modelDetail.totalCost > 0 && (
                   <div
                     className={`${styles.statsCard} ${styles.statsCardCost}`}
                   >
                     <DollarSign size={14} className={styles.statsCardIcon} />
                     <span className={styles.statsCardValue}>
                       $
-                      {m.totalCost < 0.01
-                        ? m.totalCost.toFixed(4)
-                        : m.totalCost.toFixed(2)}
+                      {modelDetail.totalCost < 0.01
+                        ? modelDetail.totalCost.toFixed(4)
+                        : modelDetail.totalCost.toFixed(2)}
                     </span>
                     <span className={styles.statsCardLabel}>Total Cost</span>
                   </div>
                 )}
 
-                {m.avgTokensPerSec > 0 && (
+                {modelDetail.avgTokensPerSec > 0 && (
                   <div className={styles.statsCard}>
                     <TrendingUp size={14} className={styles.statsCardIcon} />
                     <span className={styles.statsCardValue}>
-                      {m.avgTokensPerSec.toFixed(1)}
+                      {modelDetail.avgTokensPerSec.toFixed(1)}
                     </span>
                     <span className={styles.statsCardLabel}>Avg tok/s</span>
                   </div>
@@ -637,25 +637,25 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               </div>
 
               {/* -- Success / Error Rate Bar ---------- */}
-              {(m.successCount > 0 || m.errorCount > 0) && (
+              {(modelDetail.successCount > 0 || modelDetail.errorCount > 0) && (
                 <div className={styles.successRateRow}>
                   <div className={styles.successRateBar}>
                     <div
                       className={styles.successRateFill}
                       style={{
-                        width: `${(m.successCount / m.usageCount) * 100}%`,
+                        width: `${(modelDetail.successCount / modelDetail.usageCount) * 100}%`,
                       }}
                     />
                   </div>
                   <div className={styles.successRateLabels}>
                     <span className={styles.successLabel}>
                       <CheckCircle size={10} />
-                      {formatNumber(m.successCount)}
+                      {formatNumber(modelDetail.successCount)}
                     </span>
-                    {m.errorCount > 0 && (
+                    {modelDetail.errorCount > 0 && (
                       <span className={styles.errorLabel}>
                         <XCircle size={10} />
-                        {formatNumber(m.errorCount)}
+                        {formatNumber(modelDetail.errorCount)}
                       </span>
                     )}
                   </div>
@@ -664,36 +664,36 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               {/* -- Detail Rows ----------------------- */}
               <div className={styles.kvGrid} style={{ marginTop: 12 }}>
-                {m.totalInputTokens > 0 && (
+                {modelDetail.totalInputTokens > 0 && (
                   <>
                     <span className={styles.kvLabel}>Input Tokens</span>
                     <span className={styles.kvValueMono}>
-                      {formatTokenCount(m.totalInputTokens)}
+                      {formatTokenCount(modelDetail.totalInputTokens)}
                     </span>
                   </>
                 )}
 
-                {m.totalOutputTokens > 0 && (
+                {modelDetail.totalOutputTokens > 0 && (
                   <>
                     <span className={styles.kvLabel}>Output Tokens</span>
                     <span className={styles.kvValueMono}>
-                      {formatTokenCount(m.totalOutputTokens)}
+                      {formatTokenCount(modelDetail.totalOutputTokens)}
                     </span>
                   </>
                 )}
 
-                {m.avgLatency > 0 && (
+                {modelDetail.avgLatency > 0 && (
                   <>
                     <span className={styles.kvLabel}>Avg Latency</span>
                     <span className={styles.kvValueMono}>
-                      {m.avgLatency >= 1000
-                        ? `${(m.avgLatency / 1000).toFixed(1)}s`
-                        : `${Math.round(m.avgLatency)}ms`}
+                      {modelDetail.avgLatency >= 1000
+                        ? `${(modelDetail.avgLatency / 1000).toFixed(1)}s`
+                        : `${Math.round(modelDetail.avgLatency)}ms`}
                     </span>
                   </>
                 )}
 
-                {m.firstUsed && (
+                {modelDetail.firstUsed && (
                   <>
                     <span className={styles.kvLabel}>
                       <Calendar
@@ -703,7 +703,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                       First Used
                     </span>
                     <span className={styles.kvValueMono}>
-                      {new Date(m.firstUsed).toLocaleDateString(undefined, {
+                      {new Date(modelDetail.firstUsed).toLocaleDateString(undefined, {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
@@ -712,7 +712,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   </>
                 )}
 
-                {m.lastUsed && (
+                {modelDetail.lastUsed && (
                   <>
                     <span className={styles.kvLabel}>
                       <Clock
@@ -722,7 +722,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                       Last Used
                     </span>
                     <span className={styles.kvValueMono}>
-                      {new Date(m.lastUsed).toLocaleDateString(undefined, {
+                      {new Date(modelDetail.lastUsed).toLocaleDateString(undefined, {
                         year: "numeric",
                         month: "short",
                         day: "numeric",

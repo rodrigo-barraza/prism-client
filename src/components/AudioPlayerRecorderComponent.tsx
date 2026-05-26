@@ -43,13 +43,13 @@ function drawBars(
   const canvasHeight = canvas.height;
   context.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  const totalBars = Math.floor(w / (BAR_WIDTH + BAR_GAP));
+  const totalBars = Math.floor(canvasWidth / (BAR_WIDTH + BAR_GAP));
   const mid = canvasHeight / 2;
 
   for (let i = 0; i < totalBars; i++) {
     const peakIdx = Math.floor((i / totalBars) * peaks.length);
     const amp = peaks[peakIdx] ?? 0;
-    const barH = Math.max(2, amp * (h * 0.8));
+    const barH = Math.max(2, amp * (canvasHeight * 0.8));
 
     context.fillStyle = i / totalBars <= progress ? playedColor : unplayedColor;
     context.fillRect(
@@ -176,7 +176,7 @@ export default function AudioPlayerRecorderComponent({
       if (cancelled) return;
       setPeaks(p);
       // Use decoded duration as source of truth (WebM metadata often reports Infinity)
-      if (d != null && Number.isFinite(d) && audioDuration > 0) setDuration(d);
+      if (d != null && Number.isFinite(d) && d > 0) setDuration(d);
     });
     return () => {
       cancelled = true;
@@ -245,7 +245,7 @@ export default function AudioPlayerRecorderComponent({
         let sum = 0;
         for (let i = 0; i < bufferLength; i++) {
           const normalizedSample = (dataArray[i] - 128) / 128;
-          sum += v * v;
+          sum += normalizedSample * normalizedSample;
         }
         const rms = Math.sqrt(sum / bufferLength);
         // Amplify heavily and add a small noise floor
@@ -266,10 +266,10 @@ export default function AudioPlayerRecorderComponent({
 
       const curPeaks = recPeaksRef.current;
       const mid = canvasHeight / 2;
-      const startX = w - curPeaks.length * (BAR_WIDTH + BAR_GAP);
+      const startX = mid - curPeaks.length * (BAR_WIDTH + BAR_GAP);
       for (let i = 0; i < curPeaks.length; i++) {
         const amp = curPeaks[i];
-        const barH = Math.max(2, amp * (h * 0.85));
+        const barH = Math.max(2, amp * (canvasHeight * 0.85));
         context.fillStyle = "#ef4444";
         context.fillRect(
           startX + i * (BAR_WIDTH + BAR_GAP),
@@ -377,9 +377,9 @@ export default function AudioPlayerRecorderComponent({
     const downloadAnchor = document.createElement("a");
     downloadAnchor.href = src;
     downloadAnchor.download = "audio.webm";
-    document.body.appendChild(a);
+    document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
-    document.body.removeChild(a);
+    document.body.removeChild(downloadAnchor);
   };
 
   // -------------------------------------------
@@ -428,11 +428,11 @@ export default function AudioPlayerRecorderComponent({
             preload="metadata"
             onLoadedMetadata={(e: React.SyntheticEvent<HTMLAudioElement>) => {
               const audioDuration = e.currentTarget.duration;
-              if (Number.isFinite(d)) setDuration(d);
+              if (Number.isFinite(audioDuration)) setDuration(audioDuration);
             }}
             onDurationChange={(e: React.SyntheticEvent<HTMLAudioElement>) => {
               const audioDuration = e.currentTarget.duration;
-              if (Number.isFinite(d)) setDuration(d);
+              if (Number.isFinite(audioDuration)) setDuration(audioDuration);
             }}
             onTimeUpdate={(e: React.SyntheticEvent<HTMLAudioElement>) => setCurrentTime(e.currentTarget.currentTime || 0)}
             onPlay={() => setIsPlaying(true)}
@@ -484,11 +484,11 @@ export default function AudioPlayerRecorderComponent({
           preload="metadata"
           onLoadedMetadata={(e: React.SyntheticEvent<HTMLAudioElement>) => {
             const audioDuration = e.currentTarget.duration;
-            if (Number.isFinite(d)) setDuration(d);
+            if (Number.isFinite(audioDuration)) setDuration(audioDuration);
           }}
           onDurationChange={(e: React.SyntheticEvent<HTMLAudioElement>) => {
             const audioDuration = e.currentTarget.duration;
-            if (Number.isFinite(d)) setDuration(d);
+            if (Number.isFinite(audioDuration)) setDuration(audioDuration);
           }}
           onTimeUpdate={(e: React.SyntheticEvent<HTMLAudioElement>) => setCurrentTime(e.currentTarget.currentTime || 0)}
           onPlay={() => setIsPlaying(true)}
@@ -542,7 +542,6 @@ export default function AudioPlayerRecorderComponent({
                 audioRef.current.muted = value === 0;
               }
             }}
-            compact
           />
         </div>
 

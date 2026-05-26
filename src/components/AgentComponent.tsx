@@ -1043,7 +1043,7 @@ export default function AgentComponent({
   const loadSkills = useCallback(async () => {
     try {
       const skills = await PrismService.getSkills(agentProject);
-      setSkills(s);
+      setSkills(skills);
     } catch (error: unknown) {
       console.error("Failed to load skills:", error);
     }
@@ -1057,7 +1057,7 @@ export default function AgentComponent({
   const loadMCPServers = useCallback(async () => {
     try {
       const mcpServers = await PrismService.getMCPServers(agentProject);
-      setMcpServers(s);
+      setMcpServers(mcpServers);
     } catch (error: unknown) {
       console.error("Failed to load MCP servers:", error);
     }
@@ -3957,11 +3957,11 @@ export default function AgentComponent({
                               .totalReasoningOutputTokens || 0,
                         };
                         tokenHwmRef.current = {
-                          input: t.input,
-                          output: t.output,
-                          total: t.total,
+                          input: threadMessage.input,
+                          output: threadMessage.output,
+                          total: threadMessage.total,
                         };
-                        return t;
+                        return threadMessage;
                       })(),
                       totalCost:
                         (backendSessionStats.totalCost || 0) +
@@ -4058,11 +4058,11 @@ export default function AgentComponent({
                           total: Math.max(hwm.total, fallbackTokens.total || 0),
                         };
                         tokenHwmRef.current = {
-                          input: t.input,
-                          output: t.output,
-                          total: t.total,
+                          input: threadMessage.input,
+                          output: threadMessage.output,
+                          total: threadMessage.total,
                         };
-                        return t;
+                        return threadMessage;
                       })(),
                       totalCost: (totalCost as number) + ((bgUsage?.cost || 0) as number),
                       originalTotalCost: 0,

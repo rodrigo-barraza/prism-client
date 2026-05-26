@@ -327,7 +327,7 @@ export default function ToolRequestsPage() {
           onRowClick={(tc: ToolCallRecord) => setSelectedCall(tc)}
           getRowKey={(tc: ToolCallRecord, i: number) => tc._id || `tc-${i}`}
           emptyText={loading ? "Loading..." : "No tool calls found"}
-          maxHeight={null}
+          maxHeight={undefined}
           storageKey="tool-requests"
         />
 

@@ -187,7 +187,7 @@ export const requestsColumn = () => ({
   key: "totalRequests",
   label: "Requests",
   description: "Total number of API requests made",
-  align: "right",
+  align: "right" as const,
   render: (row: TableRow) => (row.totalRequests as number | undefined)?.toLocaleString() ?? "0",
 });
 
@@ -196,7 +196,7 @@ export const requestCountColumn = () => ({
   label: "Requests",
   description: "Number of individual API calls",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (row: TableRow) =>
     ((row.requestCount as number | undefined) ?? 0) > 0 ? (
       <span className={styles.countCell}>
@@ -253,7 +253,7 @@ export const toolsColumn = ({ mini = false, configModels }: { mini?: boolean; co
   label: "Tools",
   description: "External tools and capabilities configured for this model",
   sortable: false,
-  align: "left",
+  align: "left" as const,
   render: (row: TableRow) => {
     // Support either direct toolDisplayNames array or config-based lookup
     if (configModels) {
@@ -289,7 +289,7 @@ export const tokenColumns = ({
     key: inputKey,
     label: "Tokens In",
     description: "Total input (prompt) tokens consumed",
-    align: "right",
+    align: "right" as const,
     render: (row: TableRow) => {
       const tokenValue = row[inputKey] as number | undefined;
       if (showDash && !(tokenValue && tokenValue > 0)) return emptyDash();
@@ -300,7 +300,7 @@ export const tokenColumns = ({
     key: outputKey,
     label: "Tokens Out",
     description: "Total output (completion) tokens generated",
-    align: "right",
+    align: "right" as const,
     render: (row: TableRow) => {
       const tokenValue = row[outputKey] as number | undefined;
       if (showDash && !(tokenValue && tokenValue > 0)) return emptyDash();
@@ -311,7 +311,7 @@ export const tokenColumns = ({
     key: "totalTokens",
     label: "Tokens",
     description: "Combined input + output token count",
-    align: "right",
+    align: "right" as const,
     sortValue: (row: TableRow) => ((row[inputKey] as number | undefined) ?? 0) + ((row[outputKey] as number | undefined) ?? 0),
     render: (row: TableRow) => {
       const total = ((row[inputKey] as number | undefined) ?? 0) + ((row[outputKey] as number | undefined) ?? 0);
@@ -323,7 +323,7 @@ export const tokenColumns = ({
     key: tpsKey,
     label: "Tok/s",
     description: "Average output throughput in tokens per second",
-    align: "right",
+    align: "right" as const,
     render: (row: TableRow) => formatTokensPerSec(row[tpsKey] as number | undefined),
   },
 ];
@@ -340,7 +340,7 @@ export const costColumns = (
     label: "Cost",
     description: "Total estimated cost in USD",
     sortable: true,
-    align: "right",
+    align: "right" as const,
     render: (row: TableRow) => (
       <BadgeComponent type="cost" cost={(row[costKey] as number) || 0} mini={mini} />
     ),
@@ -369,7 +369,7 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
   label,
   description: "Average round-trip response time",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (row: TableRow) => {
     const latencyValue = row[key] as number | undefined;
     if (!latencyValue || latencyValue <= 0) return emptyDash();
@@ -387,7 +387,7 @@ export const countLinkColumns = (entityKey: string, entityValue: (row: TableRow)
     key: "traceCount",
     label: "Traces",
     description: "Number of request traces that used this entity",
-    align: "right",
+    align: "right" as const,
     render: (row: TableRow) => (
       <CountLinkComponent
         count={row.traceCount as number | undefined}
@@ -400,7 +400,7 @@ export const countLinkColumns = (entityKey: string, entityValue: (row: TableRow)
     key: "conversationCount",
     label: "Conversations",
     description: "Number of conversations that used this entity",
-    align: "right",
+    align: "right" as const,
     render: (row: TableRow) => (
       <CountLinkComponent
         count={row.conversationCount as number | undefined}
@@ -413,7 +413,7 @@ export const countLinkColumns = (entityKey: string, entityValue: (row: TableRow)
     key: "workflowCount",
     label: "Workflows",
     description: "Number of workflows that used this entity",
-    align: "right",
+    align: "right" as const,
     render: (row: TableRow) => (
       <CountLinkComponent
         count={row.workflowCount as number | undefined}
@@ -431,7 +431,7 @@ export const conversationCountColumn = () => ({
   label: "Convos",
   description: "Total number of conversations",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (row: TableRow) => {
     const count =
       (row.conversationCount as number | undefined) ??
@@ -452,7 +452,7 @@ export const durationColumn = ({ useDurationMs = false }: { useDurationMs?: bool
   label: "Duration",
   description: "Elapsed wall-clock time from start to finish",
   sortable: false,
-  align: "right",
+  align: "right" as const,
   sortValue: (row: TableRow) => (useDurationMs ? getDurationMs(row) : 0),
   render: (row: TableRow) => {
     const ms = useDurationMs
@@ -498,7 +498,7 @@ export const createdAtColumn = (
   label: "Created",
   description: "When this record was first created",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (row: TableRow) =>
     row[key] ? (
       <BadgeComponent type="dateTime" date={row[key] as string} highlightNew={highlightNew} />
@@ -619,7 +619,7 @@ export const statusColumn = () => ({
   label: "Status",
   description:
     "Whether the request completed successfully (OK) or failed (ERR)",
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => (
     <BadgeComponent variant={r.success ? "success" : "error"}>
       {r.success ? "OK" : "ERR"}
@@ -762,7 +762,7 @@ export const benchmarkSizeColumn = ({ modelConfigMap = {} }: { modelConfigMap?: 
     if (unit === "MB") return value;
     return value / 1024;
   },
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => {
     const config = modelConfigMap[`${r.provider as string}:${r.model as string}`];
     if (!config?.size) return emptyDash();
@@ -861,7 +861,7 @@ export const benchmarkLatencyColumn = () => ({
   label: "Latency",
   description: "Time taken for the model to respond",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) =>
     r.latency ? (
       <span className={styles.monoCell}>{formatLatency(r.latency as number)}</span>
@@ -876,7 +876,7 @@ export const benchmarkDurationColumn = () => ({
   description: "Wall-clock time from request start to finish",
   sortable: true,
   sortValue: (r: TableRow) => (r.latency as number | undefined) ?? 0,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => {
     if (!r.latency) return emptyDash();
     return <BadgeComponent type="stopwatch" seconds={r.latency as number} />;
@@ -889,7 +889,7 @@ export const benchmarkTokensInColumn = () => ({
   description: "Input (prompt) tokens consumed by this model",
   sortable: true,
   sortValue: (r: TableRow) => getTotalInputTokens(r.usage as TokenUsage | undefined) ?? 0,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => {
     const inputTokens = getTotalInputTokens(r.usage as TokenUsage | undefined);
     return inputTokens > 0 ? (
@@ -906,7 +906,7 @@ export const benchmarkTokensOutColumn = () => ({
   description: "Output (completion) tokens generated by this model",
   sortable: true,
   sortValue: (r: TableRow) => (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => {
     const outputTokens = (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
     return outputTokens > 0 ? (
@@ -928,7 +928,7 @@ export const benchmarkTokPerSecColumn = () => ({
     const lat = r.latency as number | undefined;
     return lat && lat > 0 && out > 0 ? out / lat : 0;
   },
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => {
     const usage = r.usage as { outputTokens?: number } | undefined;
     const out = usage?.outputTokens ?? 0;
@@ -949,7 +949,7 @@ export const benchmarkCostColumn = () => ({
   label: "Cost",
   description: "Estimated cost for this individual model run",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) =>
     r.estimatedCost != null ? (
       <BadgeComponent type="cost" cost={r.estimatedCost as number} mini />
@@ -963,7 +963,7 @@ export const benchmarkDateColumn = () => ({
   label: "Date",
   description: "When this model was tested",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) =>
     r.completedAt ? (
       <BadgeComponent type="dateTime" date={r.completedAt as string} />
@@ -1022,7 +1022,7 @@ export const dashboardTestsColumn = () => ({
   label: "Tests",
   description: "Total number of benchmark tests run for this model",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => <span className={styles.monoCell}>{r.total as number}</span>,
 });
 
@@ -1031,7 +1031,7 @@ export const dashboardPassedColumn = () => ({
   label: "Pass",
   description: "Number of benchmark tests this model passed",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => (
     <span className={styles.dashboardPassedCell}>
       <CheckCircle2 size={12} />
@@ -1046,7 +1046,7 @@ export const dashboardFailedColumn = () => ({
   description: "Number of benchmark tests this model failed or errored",
   sortable: true,
   sortValue: (r: TableRow) => (r.failed as number) + (r.errored as number),
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => (
     <span className={styles.dashboardFailedCell}>
       <XCircle size={12} />
@@ -1090,7 +1090,7 @@ export const dashboardAvgLatencyColumn = () => ({
   label: "Avg Latency",
   description: "Average response latency across all benchmark tests",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) => <BadgeComponent type="stopwatch" seconds={r.avgLatency as number} />,
 });
 
@@ -1099,7 +1099,7 @@ export const dashboardCostColumn = () => ({
   label: "Cost",
   description: "Total estimated cost across all benchmark tests for this model",
   sortable: true,
-  align: "right",
+  align: "right" as const,
   render: (r: TableRow) =>
     (r.totalCost as number | undefined) ?? 0 > 0 ? (
       <BadgeComponent type="cost" cost={r.totalCost as number} mini />

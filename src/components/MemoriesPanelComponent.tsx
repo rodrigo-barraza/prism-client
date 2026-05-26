@@ -366,9 +366,9 @@ export default function MemoriesPanel({
 
       result = result.filter((m) => {
         if (!m.createdAt) return false;
-        const memoryDate = new Date(memory.createdAt);
-        if (from && d < from) return false;
-        if (toEnd && d > toEnd) return false;
+        const memoryDate = new Date(m.createdAt);
+        if (from && memoryDate < from) return false;
+        if (toEnd && memoryDate > toEnd) return false;
         return true;
       });
     }

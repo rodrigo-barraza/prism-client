@@ -213,10 +213,10 @@ function ModalityCell({ inputTypes, outputTypes }: { inputTypes?: string[]; outp
     <span className={styles.modalities}>
       {(inputTypes || []).map((t: string) => {
         const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
-        if (!m) return null;
-        const Icon = m.icon;
+        if (!modalityEntry) return null;
+        const Icon = modalityEntry.icon;
         return (
-          <TooltipComponent key={`in-${t}`} label={m.label} position="top">
+          <TooltipComponent key={`in-${t}`} label={modalityEntry.label} position="top">
             <Icon size={12} style={{ color: (MODALITY_COLORS as Record<string, string>)[t] }} />
           </TooltipComponent>
         );
@@ -226,10 +226,10 @@ function ModalityCell({ inputTypes, outputTypes }: { inputTypes?: string[]; outp
       )}
       {(outputTypes || []).map((t: string) => {
         const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
-        if (!m) return null;
-        const Icon = m.icon;
+        if (!modalityEntry) return null;
+        const Icon = modalityEntry.icon;
         return (
-          <TooltipComponent key={`out-${t}`} label={m.label} position="top">
+          <TooltipComponent key={`out-${t}`} label={modalityEntry.label} position="top">
             <Icon size={12} style={{ color: (MODALITY_COLORS as Record<string, string>)[t] }} />
           </TooltipComponent>
         );
@@ -503,7 +503,7 @@ export default function ModelsTableComponent({
       <TableComponent
         title={title || "Models"}
         maxHeight={maxHeight ?? 420}
-        columns={columns}
+        columns={columns as any}
         data={models}
         getRowKey={(m: RawModel, i: number) => `${m.provider}-${m.model}-${i}`}
         emptyText={emptyText || "No data yet"}
@@ -598,8 +598,8 @@ function ModelsTableInner({
   const allProviders = useMemo(() => {
     const set = new Set<string>();
     for (const m of models) {
-      const providerKey = normalizeModel(model).provider;
-      if (p) set.add(p);
+      const providerKey = normalizeModel(m).provider;
+      if (providerKey) set.add(providerKey);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
     return [...set].sort((a: string, b: string) => {
@@ -1059,7 +1059,7 @@ function ModelsTableInner({
         sortValue: (row: RowData) => row._raw._benchTotal || 0,
         render: (row: RowData) => {
           const sortValue = row._raw._benchTotal || 0;
-          return v > 0 ? formatNumber(v) : "—";
+          return sortValue > 0 ? formatNumber(sortValue) : "—";
         },
       });
       cols.push({
@@ -1071,11 +1071,11 @@ function ModelsTableInner({
         sortValue: (row: RowData) => row._raw._benchAvgLatency || 0,
         render: (row: RowData) => {
           const sortValue = row._raw._benchAvgLatency;
-          if (!v || v <= 0) return emptyDash();
+          if (!sortValue || sortValue <= 0) return emptyDash();
           return (
             <span className={styles.benchLatencyCell}>
               <Clock size={12} />
-              {v.toFixed(1)}s
+              {sortValue.toFixed(1)}s
             </span>
           );
         },
@@ -1090,7 +1090,7 @@ function ModelsTableInner({
         sortValue: (row: RowData) => row._raw._benchTotalCost || 0,
         render: (row: RowData) => {
           const sortValue = row._raw._benchTotalCost;
-          return v != null && v > 0 ? <BadgeComponent type="cost" cost={v} /> : emptyDash();
+          return sortValue != null && sortValue > 0 ? <BadgeComponent type="cost" cost={sortValue} /> : emptyDash();
         },
       });
     }
@@ -1160,8 +1160,8 @@ function ModelsTableInner({
         align: "right",
         render: (row: RowData) => {
           const sortValue = row._raw.totalInputTokens || 0;
-          return v > 0 ? (
-            <BadgeComponent type="tokens" value={v} label="in" mini />
+          return sortValue > 0 ? (
+            <BadgeComponent type="tokens" value={sortValue} label="in" mini />
           ) : (
             "—"
           );
@@ -1174,8 +1174,8 @@ function ModelsTableInner({
         align: "right",
         render: (row: RowData) => {
           const sortValue = row._raw.totalOutputTokens || 0;
-          return v > 0 ? (
-            <BadgeComponent type="tokens" value={v} label="out" mini />
+          return sortValue > 0 ? (
+            <BadgeComponent type="tokens" value={sortValue} label="out" mini />
           ) : (
             "—"
           );
@@ -1372,7 +1372,7 @@ function ModelsTableInner({
         sortValue: (row: RowData) => row._raw.avgLatency || 0,
         render: (row: RowData) => {
           const sortValue = row._raw.avgLatency;
-          return typeof v === "number" && v > 0 ? formatLatency(v) : emptyDash();
+          return typeof sortValue === "number" && sortValue > 0 ? formatLatency(sortValue) : emptyDash();
         },
       });
       cols.push({
@@ -1466,12 +1466,12 @@ function ModelsTableInner({
                     items: allModalities
                       .map((t: string) => {
                         const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ElementType, label: string }>)[t];
-                        return m
+                        return modalityEntry
                           ? {
                               key: t,
-                              icon: m.icon as React.ComponentType<any>,
+                              icon: modalityEntry.icon as React.ComponentType<any>,
                               color: (MODALITY_COLORS as Record<string, string>)[t],
-                              title: m.label,
+                              title: modalityEntry.label,
                             }
                           : null;
                       })
@@ -1527,7 +1527,7 @@ function ModelsTableInner({
       <TableComponent
         title={title}
         maxHeight={maxHeight}
-        columns={columns}
+        columns={columns as any}
         data={tableData}
         getRowKey={(row: RowData) => {
           if (isBenchmark) {
@@ -1535,7 +1535,7 @@ function ModelsTableInner({
             const thinkingTag = row._benchThinking ? "T" : "";
             const toolsTag = row._benchTools ? "F" : "";
             const agentTag = row._benchAgent || "";
-            return `${row._model.provider}-${row._model.key}-${t}${f}${a}`;
+            return `${row._model.provider}-${row._model.key}-${thinkingTag}${toolsTag}${agentTag}`;
           }
           return `${row._model.provider}-${row._model.key}`;
         }}
@@ -1551,7 +1551,7 @@ function ModelsTableInner({
         }
         activeRowKey={activeRowKey}
         highlightedRowKey={highlightedRowKey}
-        highlightedRowRef={highlightedRowRef}
+        highlightedRowRef={highlightedRowRef as any}
         storageKey={isBenchmark ? "models-benchmark" : "models"}
         getRowClassName={
           getRowClassNameProp

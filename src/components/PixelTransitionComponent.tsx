@@ -95,17 +95,17 @@ export default function PixelTransitionComponent({
 
     const currentProps = propsRef.current;
     const elapsed = timestamp - (startTimeRef.current ?? 0);
-    const rawProgress = Math.min(elapsed / p.duration, 1);
+    const rawProgress = Math.min(elapsed / currentProps.duration, 1);
 
     let blockSize;
-    if (p.phase === "out") {
+    if (currentProps.phase === "out") {
       // Ease-out: pixelation ramps up fast then decelerates
       const progress = easeOut(rawProgress);
-      blockSize = Math.round(1 + (p.maxBlockSize - 1) * progress);
-    } else if (p.phase === "in") {
+      blockSize = Math.round(1 + (currentProps.maxBlockSize - 1) * progress);
+    } else if (currentProps.phase === "in") {
       // Ease-in: depixelation starts slow then accelerates to sharp
       const progress = easeIn(rawProgress);
-      blockSize = Math.round(p.maxBlockSize - (p.maxBlockSize - 1) * progress);
+      blockSize = Math.round(currentProps.maxBlockSize - (currentProps.maxBlockSize - 1) * progress);
     } else {
       return;
     }
@@ -113,7 +113,7 @@ export default function PixelTransitionComponent({
     // Only mutate the DOM when the quantized block size actually changes
     if (blockSize !== lastBlockRef.current) {
       lastBlockRef.current = blockSize;
-      const element = p.targetRef?.current;
+      const element = currentProps.targetRef?.current;
       if (element) {
         element.style.filter = blockSize <= 1 ? "" : getFilterCSS(blockSize);
       }
@@ -123,13 +123,13 @@ export default function PixelTransitionComponent({
       rafRef.current = requestAnimationFrame(tickRef.current);
     } else {
       // Transition complete
-      const element = p.targetRef?.current;
-      if (p.phase === "in" && element) {
+      const element = currentProps.targetRef?.current;
+      if (currentProps.phase === "in" && element) {
         element.style.filter = "";
         element.style.willChange = "";
       }
       lastBlockRef.current = 0;
-      p.onComplete?.();
+      currentProps.onComplete?.();
     }
   };
 

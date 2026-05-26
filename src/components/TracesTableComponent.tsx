@@ -88,7 +88,7 @@ export default function TracesTableComponent({
       )}
       emptyText={emptyText}
       title={title}
-      maxHeight={maxHeight}
+      maxHeight={maxHeight ?? undefined}
       mini={mini}
       storageKey="traces"
     />

@@ -198,7 +198,7 @@ export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasPro
       const y = Math.min(stroke.start.y, stroke.end.y);
       const strokeWidth = Math.abs(stroke.end.x - stroke.start.x);
       const strokeHeight = Math.abs(stroke.end.y - stroke.start.y);
-      context.strokeRect(x, y, w, h);
+      context.strokeRect(x, y, strokeWidth, strokeHeight);
     } else if (stroke.tool === "circle") {
       const cx = (stroke.start.x + stroke.end.x) / 2;
       const cy = (stroke.start.y + stroke.end.y) / 2;

@@ -52,7 +52,7 @@ export default function RainbowCanvasComponent({
       for (let x = 0; x < cols; x++) {
         const huePosition = (x / cols + y / rows) * 0.5 + animationState.offset / 360;
         const dither = ((x * 7 + y * 13) % 5) / 40;
-        const [r, g, b] = paletteAt(colors, t + dither);
+        const [r, g, b] = paletteAt(colors, huePosition + dither);
         context.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
         context.fillRect(
           x * PIXEL_SIZE,
@@ -84,25 +84,25 @@ export default function RainbowCanvasComponent({
         animationState.lastTime = now;
 
         if (turboRef.current) {
-          s.turboTime += dt;
-          s.turboVelocity = TURBO_ACCEL * s.turboTime * s.turboTime;
-        } else if (s.turboVelocity > 0.5) {
-          s.turboTime = 0;
+          dt.turboTime += dt;
+          dt.turboVelocity = TURBO_ACCEL * dt.turboTime * dt.turboTime;
+        } else if (dt.turboVelocity > 0.5) {
+          dt.turboTime = 0;
           const smoothing = 1 - Math.pow(1 - TURBO_RELEASE, dt * 60);
-          s.turboVelocity += (0 - s.turboVelocity) * smoothing;
+          dt.turboVelocity += (0 - dt.turboVelocity) * smoothing;
         } else if (animateRef.current) {
           // Idle animation — constant slow speed, no turbo deceleration
-          s.turboVelocity = 0;
-          s.turboTime = 0;
+          dt.turboVelocity = 0;
+          dt.turboTime = 0;
         } else {
-          s.turboVelocity = 0;
-          s.turboTime = 0;
+          dt.turboVelocity = 0;
+          dt.turboTime = 0;
           draw();
           rafRef.current = null;
           return;
         }
 
-        const speed = BASE_SPEED + s.turboVelocity;
+        const speed = BASE_SPEED + dt.turboVelocity;
         animationState.offset = (animationState.offset + speed * dt) % 360;
         draw();
         rafRef.current = requestAnimationFrame(tick);

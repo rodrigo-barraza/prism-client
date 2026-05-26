@@ -183,7 +183,7 @@ export default function TimelineChartComponent({
   const needsVerticalGrid = useMemo(() => {
     if (!data.length || data.length > 50) return false;
     const hourLabel = data[0]?.hour || "";
-    return h.length > 10; // any sub-daily granularity
+    return hourLabel.length > 10; // any sub-daily granularity
   }, [data]);
 
   // Custom tick renderer that pulls tickLabel from data

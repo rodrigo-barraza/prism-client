@@ -99,7 +99,7 @@ export default function BenchmarksTableComponent({
     // First pass: count how many times each target key appears
     for (let i = 0; i < pendingTargets.length; i++) {
       const benchmarkTarget = pendingTargets[i];
-      const tKey = `${t.provider}:${t.model}`;
+      const tKey = `${benchmarkTarget.provider}:${benchmarkTarget.model}`;
       if (!targetCounters.has(tKey)) targetCounters.set(tKey, []);
       targetCounters.get(tKey).push(i);
     }
@@ -170,8 +170,8 @@ export default function BenchmarksTableComponent({
 
   // Build a custom style variable for progress width on running rows
   const getRowStyle = useCallback((row: any) => {
-    if (!row._running) return undefined;
-    return { "--progress": `${(row._progress || 0) * 100}%` };
+    if (!row._running) return {};
+    return { "--progress": `${(row._progress || 0) * 100}%` } as React.CSSProperties;
   }, []);
 
   return (

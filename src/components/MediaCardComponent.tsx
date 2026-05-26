@@ -108,7 +108,7 @@ export default function MediaCardComponent({
       )}
 
       <div className={styles.preview}>
-        {m.mediaType === "image" && resolvedUrl ? (
+        {mediaItem.mediaType === "image" && resolvedUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={resolvedUrl}
@@ -129,7 +129,7 @@ export default function MediaCardComponent({
               }
             }}
           />
-        ) : m.mediaType === "video" && resolvedUrl ? (
+        ) : mediaItem.mediaType === "video" && resolvedUrl ? (
           <video
             src={resolvedUrl}
             className={styles.previewVideo}
@@ -145,14 +145,14 @@ export default function MediaCardComponent({
               target.currentTime = 0;
             }}
           />
-        ) : m.mediaType === "audio" && resolvedUrl ? (
+        ) : mediaItem.mediaType === "audio" && resolvedUrl ? (
           <div
             className={styles.previewAudio}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             <AudioPlayerRecorderComponent src={resolvedUrl} square />
           </div>
-        ) : m.mediaType === "pdf" && resolvedUrl ? (
+        ) : mediaItem.mediaType === "pdf" && resolvedUrl ? (
           <iframe
             src={resolvedUrl}
             className={styles.previewPdf}
@@ -160,36 +160,36 @@ export default function MediaCardComponent({
           />
         ) : (
           <div className={styles.placeholder}>
-            <MediaTypeIcon type={m.mediaType} />
-            <span>{m.mediaType}</span>
+            <MediaTypeIcon type={mediaItem.mediaType} />
+            <span>{mediaItem.mediaType}</span>
           </div>
         )}
 
-        {showOrigin && m.origin && <OriginBadge origin={m.origin} />}
+        {showOrigin && mediaItem.origin && <OriginBadge origin={mediaItem.origin} />}
       </div>
 
       {showInfo && (
         <div className={styles.info}>
-          {m.convId && m.convTitle && (
+          {mediaItem.convId && mediaItem.convTitle && (
             <Link
-              href={`${convBasePath}/${m.convId}`}
+              href={`${convBasePath}/${mediaItem.convId}`}
               className={styles.convLink}
-              title={m.convTitle}
+              title={mediaItem.convTitle}
             >
               <ExternalLink size={10} />
-              <span>{m.convTitle}</span>
+              <span>{mediaItem.convTitle}</span>
             </Link>
           )}
           <div className={styles.meta}>
-            {m.model && (
+            {mediaItem.model && (
               <BadgeComponent
                 type="model"
-                models={[m.model.split("/").pop() || ""]}
-                provider={m.provider}
+                models={[mediaItem.model.split("/").pop() || ""]}
+                provider={mediaItem.provider}
                 mini
               />
             )}
-            {m.timestamp && <BadgeComponent type="dateTime" date={m.timestamp} />}
+            {mediaItem.timestamp && <BadgeComponent type="dateTime" date={mediaItem.timestamp} />}
           </div>
         </div>
       )}

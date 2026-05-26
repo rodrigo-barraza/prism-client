@@ -246,8 +246,8 @@ export default function VisionPageComponent() {
   // Video metadata loaded → update resolution
   const handleVideoMetadata = useCallback(() => {
     const videoElement = videoRef.current;
-    if (v && (v as HTMLVideoElement).videoWidth && (v as HTMLVideoElement).videoHeight) {
-      setResolution(`${(v as HTMLVideoElement).videoWidth}×${(v as HTMLVideoElement).videoHeight}`);
+    if (videoElement && (videoElement as HTMLVideoElement).videoWidth && (videoElement as HTMLVideoElement).videoHeight) {
+      setResolution(`${(videoElement as HTMLVideoElement).videoWidth}×${(videoElement as HTMLVideoElement).videoHeight}`);
     }
   }, []);
 

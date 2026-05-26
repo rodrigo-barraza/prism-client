@@ -843,7 +843,7 @@ export default function ScheduledTasksPage() {
                       onChange={(val: string) => setFormTimeHour(val)}
                       options={Array.from({ length: 12 }, (_, i) => {
                         const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
-                        return { value: h, label: h };
+                        return { value: formattedHour, label: formattedHour };
                       })}
                     />
                     <span className={styles.timeColon}>:</span>
@@ -885,7 +885,7 @@ export default function ScheduledTasksPage() {
                       onChange={(val: string) => setFormTimeHour(val)}
                       options={Array.from({ length: 12 }, (_, i) => {
                         const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
-                        return { value: h, label: h };
+                        return { value: formattedHour, label: formattedHour };
                       })}
                     />
                     <span className={styles.timeColon}>:</span>
@@ -919,7 +919,7 @@ export default function ScheduledTasksPage() {
                       onChange={(val: string) => setFormTimeHour(val)}
                       options={Array.from({ length: 12 }, (_, i) => {
                         const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
-                        return { value: h, label: h };
+                        return { value: formattedHour, label: formattedHour };
                       })}
                     />
                     <span className={styles.timeColon}>:</span>

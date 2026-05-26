@@ -98,7 +98,7 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: { totalDuration?: 
     label: "Latency",
     description: "Server-side execution time for this tool call",
     sortable: true,
-    align: "right",
+    align: "right" as const,
     render: (r: ToolCallRecord) => {
       if (!r.elapsedMs || r.elapsedMs <= 0) return emptyDash();
       // Convert ms to human-readable latency
@@ -124,7 +124,7 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: { totalDuration?: 
     label: "In",
     description: "Request payload size in bytes",
     sortable: true,
-    align: "right",
+    align: "right" as const,
     render: (r: ToolCallRecord) =>
       (r.inBytes || 0) > 0 ? formatFileSize(r.inBytes || 0) : emptyDash(),
   },
@@ -133,7 +133,7 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: { totalDuration?: 
     label: "Out",
     description: "Response payload size in bytes",
     sortable: true,
-    align: "right",
+    align: "right" as const,
     render: (r: ToolCallRecord) =>
       (r.outBytes || 0) > 0 ? formatFileSize(r.outBytes || 0) : emptyDash(),
   },
@@ -142,7 +142,7 @@ export const getToolRequestsColumns = ({ totalDuration = 1 }: { totalDuration?: 
     label: "Iteration",
     description: "The agentic loop iteration that dispatched this tool call",
     sortable: true,
-    align: "right",
+    align: "right" as const,
     render: (r: ToolCallRecord) =>
       r.callerIteration != null ? (
         <BadgeComponent variant="info">#{r.callerIteration}</BadgeComponent>

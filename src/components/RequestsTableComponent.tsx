@@ -54,7 +54,7 @@ export default function RequestsTableComponent({
   return (
     <TableComponent
       title={title}
-      maxHeight={maxHeight}
+      maxHeight={maxHeight ?? undefined}
       columns={columns}
       data={requests}
       sortKey={sortKey}

@@ -248,8 +248,8 @@ export default function AdminChatViewerComponent({
     IrisService.getConversation(initialId)
       .then((conv: unknown) => {
         const conversationEntry = conv as UnifiedEntry & { type?: string };
-        setSelectedEntry(c);
-        setSelectedSource(c.type === "agent" ? "agent_session" : "conversation");
+        setSelectedEntry(conversationEntry);
+        setSelectedSource(conversationEntry.type === "agent" ? "agent_session" : "conversation");
       })
       .catch(() => {
         setSelectedEntry(null);
@@ -649,8 +649,8 @@ export default function AdminChatViewerComponent({
   // 4. Backend session stats (stats.models[0])
   const resolvedModelSettings = useMemo(() => {
     const currentSettings = settingsWithDefaults;
-    let provider = selectedEntry?.provider || s.provider || "";
-    let model = selectedEntry?.model || s.model || "";
+    let provider = selectedEntry?.provider || currentSettings.provider || "";
+    let model = selectedEntry?.model || currentSettings.model || "";
 
     // Fallback: extract from last assistant message
     if (!model && selectedEntry?.messages?.length) {
@@ -669,7 +669,7 @@ export default function AdminChatViewerComponent({
       model = backendSessionStats.models[0];
     }
 
-    return { ...s, provider, model };
+    return { ...currentSettings, provider, model };
   }, [settingsWithDefaults, selectedEntry, backendSessionStats]);
 
   // Resolve whether selected entry is an agent session

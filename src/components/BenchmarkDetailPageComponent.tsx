@@ -532,14 +532,14 @@ export default function BenchmarkDetailPageComponent({
         );
         if (!key) return;
         const benchmarkData = liveDataRef.current.get(key);
-        if (!d) return;
+        if (!benchmarkData) return;
         if (toolCall.status === "calling") {
-          d.toolCalls = [
-            ...d.toolCalls,
+          benchmarkData.toolCalls = [
+            ...benchmarkData.toolCalls,
             { id: toolCall.id, name: toolCall.name, args: toolCall.args, status: "calling" },
           ];
         } else {
-          d.toolCalls = d.toolCalls.map((t) =>
+          benchmarkData.toolCalls = benchmarkData.toolCalls.map((t) =>
             t.id === toolCall.id
               ? {
                   ...t,
@@ -558,11 +558,11 @@ export default function BenchmarkDetailPageComponent({
         );
         if (!key) return;
         const benchmarkData = liveDataRef.current.get(key);
-        if (!d) return;
+        if (!benchmarkData) return;
         const tool = (data as Record<string, unknown>).tool as { id?: string; name?: string; args?: unknown; result?: unknown } || {};
         if ((data as Record<string, unknown>).status === "calling") {
-          d.toolCalls = [
-            ...d.toolCalls,
+          benchmarkData.toolCalls = [
+            ...benchmarkData.toolCalls,
             {
               id: tool.id,
               name: tool.name,
@@ -571,7 +571,7 @@ export default function BenchmarkDetailPageComponent({
             },
           ];
         } else {
-          d.toolCalls = d.toolCalls.map((t) =>
+          benchmarkData.toolCalls = benchmarkData.toolCalls.map((t) =>
             t.id === tool.id
               ? {
                   ...t,
@@ -1048,7 +1048,7 @@ export default function BenchmarkDetailPageComponent({
       });
       setThinkingMap((prev) => {
         const updatedState = { ...prev };
-        delete n[instanceId];
+        delete updatedState[instanceId];
         return updatedState;
       });
     },
@@ -1110,12 +1110,12 @@ export default function BenchmarkDetailPageComponent({
       // Clean up thinking/tools state for removed instance
       setThinkingMap((prev) => {
         const updatedState = { ...prev };
-        delete n[instanceId];
+        delete updatedState[instanceId];
         return updatedState;
       });
       setToolsMap((prev) => {
         const updatedState = { ...prev };
-        delete n[instanceId];
+        delete updatedState[instanceId];
         return updatedState;
       });
     },
@@ -1680,9 +1680,9 @@ export default function BenchmarkDetailPageComponent({
                 disabled={(() => {
                   if (!form.name || !form.prompt) return true;
                   const benchmarkMode = form.benchmarkMode || "model";
-                  if (m === "model")
+                  if (benchmarkMode === "model")
                     return !form.assertions?.some((a) => a.expectedValue);
-                  if (m === "agent") return !form.agentAssertions?.length;
+                  if (benchmarkMode === "agent") return !form.agentAssertions?.length;
                   return (
                     !form.assertions?.some((a) => a.expectedValue) &&
                     !form.agentAssertions?.length

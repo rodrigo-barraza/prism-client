@@ -102,13 +102,13 @@ export default function ProvidersPage() {
           _latencyCount: 0,
         };
       }
-      const providerData = map[model.provider];
-      p.totalRequests += m.totalRequests;
-      p.totalCost += m.totalCost;
-      p.totalTokens += m.totalTokens;
-      p._latencySum += (m.avgLatency || 0) * m.totalRequests;
-      p._latencyCount += m.totalRequests;
-      p.models.push(m);
+      const providerData = map[m.provider];
+      providerData.totalRequests += m.totalRequests;
+      providerData.totalCost += m.totalCost;
+      providerData.totalTokens += m.totalTokens;
+      providerData._latencySum += (m.avgLatency || 0) * m.totalRequests;
+      providerData._latencyCount += m.totalRequests;
+      providerData.models.push(m);
     });
 
     return Object.values(map)

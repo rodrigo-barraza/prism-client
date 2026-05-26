@@ -96,7 +96,7 @@ export default function ConversationsTableComponent({
       columns={columns}
       data={conversations}
       sortKey={sortKey}
-      sortDir={sortDir}
+      sortDir={sortDir ?? undefined}
       onSort={onSort}
       getRowKey={(c: any, i: number) => c.id || c._id || `conv-${i}`}
       onRowClick={(c: any) => {

@@ -928,7 +928,7 @@ export default function SynthesisComponent() {
                       return;
                     }
                     const parsedValue = parseInt(raw, 10);
-                    if (!isNaN(v)) setTargetTurns(v);
+                    if (!isNaN(parsedValue)) setTargetTurns(parsedValue);
                   }}
                   onBlur={() => {
                     const clamped = Math.max(

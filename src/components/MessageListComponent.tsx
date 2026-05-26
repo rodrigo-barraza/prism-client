@@ -71,7 +71,7 @@ function parseTaskNotification(content: string | undefined | null) {
   const tag = (name: string) => {
     const regex = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
     const regexMatch = content.match(regex);
-    return m ? regexMatch[1].trim() : null;
+    return regexMatch ? regexMatch[1].trim() : null;
   };
   return {
     taskId: tag("task-id"),

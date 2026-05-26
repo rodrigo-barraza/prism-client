@@ -270,20 +270,20 @@ export default function DashboardPage() {
         sessionCount: 0,
       };
     }
-    const providerData = providerAgg[model.provider];
-    p.totalRequests += m.totalRequests;
-    p.totalInputTokens += m.totalInputTokens || 0;
-    p.totalOutputTokens += m.totalOutputTokens || 0;
-    p.totalCost += m.totalCost || 0;
-    p.latencySum += (m.avgLatency || 0) * m.totalRequests;
-    p.modelCount += 1;
-    if (m.model) p.models.push(m.model);
-    p.conversationCount += m.conversationCount || 0;
-    p.workflowCount += m.workflowCount || 0;
-    p.sessionCount += m.sessionCount || 0;
+    const providerData = providerAgg[m.provider];
+    providerData.totalRequests += m.totalRequests;
+    providerData.totalInputTokens += m.totalInputTokens || 0;
+    providerData.totalOutputTokens += m.totalOutputTokens || 0;
+    providerData.totalCost += m.totalCost || 0;
+    providerData.latencySum += (m.avgLatency || 0) * m.totalRequests;
+    providerData.modelCount += 1;
+    if (m.model) providerData.models.push(m.model);
+    providerData.conversationCount += m.conversationCount || 0;
+    providerData.workflowCount += m.workflowCount || 0;
+    providerData.sessionCount += m.sessionCount || 0;
     if (m.avgTokensPerSec) {
-      p.tpsSum += m.avgTokensPerSec * m.totalRequests;
-      p.tpsCount += m.totalRequests;
+      providerData.tpsSum += m.avgTokensPerSec * m.totalRequests;
+      providerData.tpsCount += m.totalRequests;
     }
   });
   const providerData: ProviderAggregationComputed[] = Object.values(providerAgg)
