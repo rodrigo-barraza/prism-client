@@ -27,7 +27,7 @@ const notoColorEmoji = Noto_Color_Emoji({
 
 const notoEmoji = Noto_Emoji({
   variable: "--font-emoji-mono",
-  weight: ["400", "500", "600", "700"],
+  weight: "700",
   subsets: ["emoji"],
   display: "swap",
 });
