@@ -92,6 +92,7 @@ import {
   toolCountsToUsedTools,
   generateUUID,
   resolveDefaultModel,
+  renderToolName,
 } from "../utils/utilities";
 import {
   PROJECT_AGENT,
@@ -4481,9 +4482,30 @@ export default function AgentComponent({
       {/* -- Status indicator bar (rainbow canvas above input) -- */}
       {(() => {
         const lastMsg = messages[messages.length - 1];
+
+        // Derive raw status phase/label with robust local fallbacks when cloud models
+        // do not emit explicit status events or when messages lack statusPhase metadata.
+        let derivedPhase = null;
+        let derivedLabel = null;
+
+        if (isGenerating && lastMsg?.role === "assistant") {
+          if (lastMsg.content && lastMsg.content.trim().length > 0) {
+            derivedPhase = "generating";
+            derivedLabel = "Generating...";
+          } else if (lastMsg.thinking && lastMsg.thinking.trim().length > 0) {
+            derivedPhase = "thinking";
+            derivedLabel = "Thinking...";
+          }
+        }
+
         const rawPhase = isGenerating
-          ? lastMsg?.statusPhase || "starting"
+          ? derivedPhase || lastMsg?.statusPhase || "starting"
           : null;
+
+        const rawLabel = isGenerating
+          ? derivedLabel || lastMsg?.status || "Starting..."
+          : undefined;
+
         const hasActiveTools = toolActivity.some(
           (t) => t.status === "calling",
         );
@@ -4536,10 +4558,15 @@ export default function AgentComponent({
           }
         }
 
+        const activeTool = toolActivity.find((t) => t.status === "calling");
+        const activeToolLabel = activeTool
+          ? `Running tool ${renderToolName(activeTool.name)}...`
+          : "Processing...";
+
         const phase = isGenerating
           ? isAwaitingApproval
             ? "awaiting"
-            : workerDerivedPhase || (hasActiveTools ? "thinking" : rawPhase)
+            : workerDerivedPhase || (hasActiveTools ? "processing" : rawPhase)
           : null;
         const label = isGenerating
           ? isAwaitingApproval
@@ -4547,8 +4574,8 @@ export default function AgentComponent({
             : workerDerivedPhase
               ? workerDerivedLabel
               : hasActiveTools
-                ? "Thinking..."
-                : lastMsg?.status || undefined
+                ? activeToolLabel
+                : rawLabel
           : undefined;
         // Structured progress (0-1) from LM Studio prompt processing / model loading
         const progress =
