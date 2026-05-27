@@ -471,17 +471,17 @@ export function getModalities(messages: Message[]) {
       if (isAssistant) modalities.audioOut = true;
     }
     if (message.images && message.images.length > 0) {
-      for (const ref of message.images) {
-        if (typeof ref !== "string") continue;
+      for (const imageReference of message.images) {
+        if (typeof imageReference !== "string") continue;
         const isDoc =
-          ref.startsWith("data:application/") ||
-          ref.startsWith("data:text/") ||
-          ref.endsWith(".pdf") ||
-          ref.endsWith(".txt");
+          imageReference.startsWith("data:application/") ||
+          imageReference.startsWith("data:text/") ||
+          imageReference.endsWith(".pdf") ||
+          imageReference.endsWith(".txt");
         const isVideo =
-          ref.startsWith("data:video/") ||
+          imageReference.startsWith("data:video/") ||
           [".mp4", ".mov", ".avi", ".webm"].some((ext) =>
-            ref.endsWith(ext),
+            imageReference.endsWith(ext),
           );
         if (isDoc) {
           modalities.docIn = true;

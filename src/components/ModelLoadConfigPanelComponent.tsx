@@ -13,7 +13,7 @@ import styles from "./ModelLoadConfigPanelComponent.module.css";
 
 const LS_KEY_PREFIX = "lm-studio-load-config:";
 
-// Architecture params are resolved server-side by Prism (gguf-arch.js).
+// Architecture modelParameters are resolved server-side by Prism (gguf-arch.js).
 // This fallback is used only if the API response doesn't include archParams.
 const DEFAULT_ARCH_PARAMS = {
   layers: 32,
@@ -63,13 +63,13 @@ export default function ModelLoadConfigPanel({
   const maxContext = model.max_context_length || model.contextLength || 131072;
   const sizeBytes = model.size_bytes || 0;
   const architecture = model.architecture || null;
-  const params = model.params_string || model.params || null;
+  const modelParameters = model.params_string || model.modelParameters || null;
   const quantization =
     (typeof model.quantization === "object"
       ? model.quantization?.name
       : model.quantization) || null;
 
-  // Architecture params come from the Prism backend (gguf-arch.js)
+  // Architecture modelParameters come from the Prism backend (gguf-arch.js)
   const archParams = model.archParams || DEFAULT_ARCH_PARAMS;
   const totalLayers = archParams.layers;
 
@@ -253,10 +253,10 @@ export default function ModelLoadConfigPanel({
             {formatFileSize(sizeBytes)}
           </span>
         )}
-        {params && (
+        {modelParameters && (
           <span className={styles.infoBadge}>
             <Cpu size={11} />
-            {params}
+            {modelParameters}
           </span>
         )}
         {quantization && (

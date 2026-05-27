@@ -343,14 +343,14 @@ interface MediaPreviewProps {
 }
 
 function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
-  const src = PrismService.getFileUrl(rawUrl);
+  const sourceUrl = PrismService.getFileUrl(rawUrl);
   const cat = getMimeCategory(rawUrl);
 
   if (cat === "image") {
     return (
       /* eslint-disable-next-line @next/next/no-img-element */
       <img
-        src={src}
+        src={sourceUrl}
         alt="Attached"
         className={styles.messageImage}
         onClick={onClick}
@@ -360,7 +360,7 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
   if (cat === "audio") {
     return (
       <div className={styles.audioCard}>
-        <AudioPlayerRecorderComponent src={src} compact />
+        <AudioPlayerRecorderComponent src={sourceUrl} compact />
       </div>
     );
   }
@@ -369,7 +369,7 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
       <div className={styles.videoCard}>
         <video
           controls
-          src={src}
+          src={sourceUrl}
           preload="metadata"
           className={styles.videoPreview}
         />
@@ -383,7 +383,7 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
           <FileText size={14} className={styles.pdfHeaderIcon} />
           <span className={styles.pdfHeaderLabel}>PDF Document</span>
           <a
-            href={src}
+            href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.pdfOpenLink}
@@ -391,7 +391,7 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
             Open ↗
           </a>
         </div>
-        <iframe src={src} className={styles.pdfFrame} title="PDF preview" />
+        <iframe src={sourceUrl} className={styles.pdfFrame} title="PDF preview" />
       </div>
     );
   }

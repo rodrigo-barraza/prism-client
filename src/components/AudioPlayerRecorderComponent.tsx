@@ -64,8 +64,8 @@ function drawBars(
 /* -- Decode audio src into peaks + true duration -- */
 async function decodePeaks(src: string, numPeaks = 200): Promise<{ peaks: number[]; duration: number | null }> {
   try {
-    const resp = await fetch(src);
-    const buffer = await resp.arrayBuffer();
+    const response = await fetch(src);
+    const buffer = await response.arrayBuffer();
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const audioCtx = new AudioContextClass();
     const decoded = await audioCtx.decodeAudioData(buffer);

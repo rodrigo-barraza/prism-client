@@ -316,43 +316,43 @@ export default function WorkflowCanvas({
 
             if (overlapX < overlapY) {
               const push = overlapX * PUSH_FACTOR;
-              const dir = bCx >= aCx ? 1 : -1;
+              const direction = bCx >= aCx ? 1 : -1;
               if (aIsDragged) {
                 if (!updates[nB.id])
                   updates[nB.id] = { ...(nB.position || {x:0, y:0}) };
-                updates[nB.id].x += dir * push;
+                updates[nB.id].x += direction * push;
               } else if (bIsDragged) {
                 if (!updates[nA.id])
                   updates[nA.id] = { ...(nA.position || {x:0, y:0}) };
-                updates[nA.id].x -= dir * push;
+                updates[nA.id].x -= direction * push;
               } else {
                 const half = push / 2;
                 if (!updates[nA.id])
                   updates[nA.id] = { ...(nA.position || {x:0, y:0}) };
                 if (!updates[nB.id])
                   updates[nB.id] = { ...(nB.position || {x:0, y:0}) };
-                updates[nA.id].x -= dir * half;
-                updates[nB.id].x += dir * half;
+                updates[nA.id].x -= direction * half;
+                updates[nB.id].x += direction * half;
               }
             } else {
               const push = overlapY * PUSH_FACTOR;
-              const dir = bCy >= aCy ? 1 : -1;
+              const direction = bCy >= aCy ? 1 : -1;
               if (aIsDragged) {
                 if (!updates[nB.id])
                   updates[nB.id] = { ...(nB.position || {x:0, y:0}) };
-                updates[nB.id].y += dir * push;
+                updates[nB.id].y += direction * push;
               } else if (bIsDragged) {
                 if (!updates[nA.id])
                   updates[nA.id] = { ...(nA.position || {x:0, y:0}) };
-                updates[nA.id].y -= dir * push;
+                updates[nA.id].y -= direction * push;
               } else {
                 const half = push / 2;
                 if (!updates[nA.id])
                   updates[nA.id] = { ...(nA.position || {x:0, y:0}) };
                 if (!updates[nB.id])
                   updates[nB.id] = { ...(nB.position || {x:0, y:0}) };
-                updates[nA.id].y -= dir * half;
-                updates[nB.id].y += dir * half;
+                updates[nA.id].y -= direction * half;
+                updates[nB.id].y += direction * half;
               }
             }
           }

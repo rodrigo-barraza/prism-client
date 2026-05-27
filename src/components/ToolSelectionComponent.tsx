@@ -248,18 +248,18 @@ const LABEL_ORDER = [
 
 // -- Tri-state checkbox: global select-all -----------------------
 function MasterCheckbox({ enabledCount, totalCount, onToggle, label }: MasterCheckboxProps) {
-  const ref = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const allChecked = totalCount > 0 && enabledCount === totalCount;
   const partial = enabledCount > 0 && !allChecked;
 
   useEffect(() => {
-    if (ref.current) ref.current.indeterminate = partial;
+    if (inputRef.current) inputRef.current.indeterminate = partial;
   }, [partial]);
 
   return (
     <label className={styles.bulkCheckboxRow}>
       <input
-        ref={ref}
+        ref={inputRef}
         type="checkbox"
         className={styles.toolCheckbox}
         checked={allChecked}
@@ -272,17 +272,17 @@ function MasterCheckbox({ enabledCount, totalCount, onToggle, label }: MasterChe
 
 // -- Tri-state checkbox: per-domain select-all -------------------
 function DomainCheckbox({ domainEnabled, totalCount, onToggle }: DomainCheckboxProps) {
-  const ref = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const allChecked = totalCount > 0 && domainEnabled === totalCount;
   const partial = domainEnabled > 0 && !allChecked;
 
   useEffect(() => {
-    if (ref.current) ref.current.indeterminate = partial;
+    if (inputRef.current) inputRef.current.indeterminate = partial;
   }, [partial]);
 
   return (
     <input
-      ref={ref}
+      ref={inputRef}
       type="checkbox"
       className={styles.domainCheckbox}
       checked={allChecked}

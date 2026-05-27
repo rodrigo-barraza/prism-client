@@ -9,7 +9,6 @@ import {
   MessageSquare,
   FolderKanban,
   ExternalLink,
-  Trash2,
   Sparkles,
   History,
   GitMerge,
@@ -35,33 +34,9 @@ import {
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
 import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
-import BadgeComponent from "./BadgeComponent";
 import FilterDropdownComponent, { type FilterGroup } from "./FilterDropdownComponent";
+import MemoryCardComponent from "./MemoryCardComponent";
 import styles from "./MemoriesPanelComponent.module.css";
-
-/**
- * Type → icon mapping for memory categories.
- */
-const TYPE_ICONS: Record<MemoryType, typeof User> = {
-  user: User,
-  feedback: MessageSquare,
-  project: FolderKanban,
-  reference: ExternalLink,
-};
-
-const TYPE_ICON_CLASSES: Record<MemoryType, string> = {
-  user: "memoryIconUser",
-  feedback: "memoryIconFeedback",
-  project: "memoryIconProject",
-  reference: "memoryIconReference",
-};
-
-const TYPE_BADGE_CLASSES: Record<MemoryType, string> = {
-  user: "badgeUser",
-  feedback: "badgeFeedback",
-  project: "badgeProject",
-  reference: "badgeReference",
-};
 
 const TYPE_FILTER_COLORS: Record<MemoryType, string> = {
   user: "#818cf8",
@@ -588,74 +563,18 @@ export default function MemoriesPanel({
 
       {filteredMemories.map((memory) => {
         const memoryId = memory.id || memory._id;
-        const type = (memory.type || "project") as MemoryType;
-        const IconComponent = TYPE_ICONS[type] || FolderKanban;
-        const iconClass =
-          TYPE_ICON_CLASSES[type] || "memoryIconProject";
-        const badgeClass = TYPE_BADGE_CLASSES[type] || "badgeProject";
-        const isConfirming = confirmingDeleteId === memoryId;
-        const isNew = newMemoryIds.has(memoryId);
-
         return (
-          <div
+          <MemoryCardComponent
             key={memoryId}
-            className={`${styles.memoryCard} ${isNew ? styles.memoryCardNew : ""}`}
-          >
-            <div className={styles.memoryCardHeader}>
-              <div className={`${styles.memoryIcon} ${styles[iconClass]}`}>
-                <IconComponent size={14} />
-              </div>
-              <div className={styles.memoryInfo}>
-                <div className={styles.memoryTitle}>
-                  {memory.title ||
-                    (memory.content
-                      ? memory.content.substring(0, 60)
-                      : "Untitled")}
-                </div>
-                <div className={styles.memoryMeta}>
-                  <span
-                    className={`${styles.memoryTypeBadge} ${styles[badgeClass]}`}
-                  >
-                    {type}
-                  </span>
-                  {memory.createdAt && (
-                    <BadgeComponent type="dateTime" date={memory.createdAt} />
-                  )}
-                </div>
-              </div>
-              <button
-                className={styles.deleteButton}
-                onClick={() =>
-                  setConfirmingDeleteId(isConfirming ? null : memoryId)
-                }
-                title="Delete memory"
-              >
-                <Trash2 size={12} />
-              </button>
-            </div>
-
-            {memory.content && (
-              <div className={styles.memoryContent}>{memory.content}</div>
-            )}
-
-            {isConfirming && (
-              <div className={styles.confirmRow}>
-                <span className={styles.confirmLabel}>Delete this memory?</span>
-                <button
-                  className={`${styles.confirmButton} ${styles.confirmBtnYes}`}
-                  onClick={() => handleDelete(memoryId)}
-                >
-                  Delete
-                </button>
-                <button
-                  className={`${styles.confirmButton} ${styles.confirmBtnNo}`}
-                  onClick={() => setConfirmingDeleteId(null)}
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
+            memory={memory}
+            isNew={newMemoryIds.has(memoryId)}
+            isConfirmingDelete={confirmingDeleteId === memoryId}
+            onDeleteRequest={(id) =>
+              setConfirmingDeleteId(id || null)
+            }
+            onDeleteConfirm={handleDelete}
+            onDeleteCancel={() => setConfirmingDeleteId(null)}
+          />
         );
       })}
 

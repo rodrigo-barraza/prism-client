@@ -124,9 +124,9 @@ const GLITCH_CHARS = "ΣΩΨΞΘΔΛΠΦψξθδλπφ¿¡«»░▒▓█▄▀
 /** Generate a short randomised glitch string (1–3 chars + zalgo). */
 function glitchText(): string {
   const pool = SYMBOLS + GLITCH_CHARS;
-  const len = 1 + Math.floor(Math.random() * 2); // 1-2 base chars
+  const characterLength = 1 + Math.floor(Math.random() * 2); // 1-2 base chars
   let result = "";
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < characterLength; i++) {
     result += pool[Math.floor(Math.random() * pool.length)];
     // Add 1-3 zalgo combining marks
     const marks = 1 + Math.floor(Math.random() * 3);

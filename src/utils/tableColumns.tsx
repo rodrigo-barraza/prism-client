@@ -793,14 +793,14 @@ function highlightExpected(text: string, expected: string, matchMode: string) {
       const match = text.match(regex);
       if (!match || match.index === undefined) return text;
       const index = match.index;
-      const len = match[0].length;
+      const matchLength = match[0].length;
       return (
         <>
           {text.slice(0, index)}
           <mark className={styles.benchmarkHighlight}>
-            {text.slice(index, index + len)}
+            {text.slice(index, index + matchLength)}
           </mark>
-          {text.slice(index + len)}
+          {text.slice(index + matchLength)}
         </>
       );
     } catch {

@@ -317,9 +317,9 @@ function makeConnectorHighlightPlugin() {
         }
       }
 
-      const prev = (chart as import("chart.js").Chart & { _hoveredConnectorModel?: string | null })._hoveredConnectorModel;
+      const previousHoveredModel = (chart as import("chart.js").Chart & { _hoveredConnectorModel?: string | null })._hoveredConnectorModel;
       (chart as import("chart.js").Chart & { _hoveredConnectorModel?: string | null })._hoveredConnectorModel = hoveredModel;
-      if (prev !== hoveredModel) args.changed = true;
+      if (previousHoveredModel !== hoveredModel) args.changed = true;
     },
     afterDraw(chart: Chart) {
       const hoveredModel = (chart as import("chart.js").Chart & { _hoveredConnectorModel?: string | null })._hoveredConnectorModel;
@@ -3118,11 +3118,11 @@ export default function VramBenchmarkComponent() {
   // -- Destroy chart when switching tabs --
   const prevViewRef = useRef<ChartViewKey>(activeView);
   useEffect(() => {
-    const prev = prevViewRef.current;
-    if (prev !== activeView) {
-      destroyChart(prev);
+    const previousView = prevViewRef.current;
+    if (previousView !== activeView) {
+      destroyChart(previousView);
       // Clear cached original colors for the destroyed chart
-      delete searchOrigColors.current[prev];
+      delete searchOrigColors.current[previousView];
       prevViewRef.current = activeView;
     }
     return () => destroyChart(activeView);
@@ -3274,14 +3274,14 @@ export default function VramBenchmarkComponent() {
           const name = getSearchableName(raw, labels?.[i] as string | undefined, ds.label);
           const matches = name.toLowerCase().includes(needle);
 
-          const bg = Array.isArray(origBg) ? origBg[i] : origBg;
+          const backgroundColor = Array.isArray(origBg) ? origBg[i] : origBg;
           const border = Array.isArray(origBorder) ? origBorder[i] : origBorder;
 
           if (matches) {
-            newBg.push(bg);
+            newBg.push(backgroundColor);
             newBorder.push(border);
           } else {
-            newBg.push(dimColor(bg, 0.06));
+            newBg.push(dimColor(backgroundColor, 0.06));
             newBorder.push(dimColor(border, 0.1));
           }
         }

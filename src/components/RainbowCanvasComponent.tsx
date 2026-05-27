@@ -43,14 +43,14 @@ export default function RainbowCanvasComponent({
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) return;
     const { width, height } = canvas;
-    const cols = Math.ceil(width / PIXEL_SIZE);
+    const columnCount = Math.ceil(width / PIXEL_SIZE);
     const rows = Math.ceil(height / PIXEL_SIZE);
     const animationState = stateRef.current;
     const colors = paletteRef.current || RAINBOW;
 
     for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const huePosition = (x / cols + y / rows) * 0.5 + animationState.offset / 360;
+      for (let x = 0; x < columnCount; x++) {
+        const huePosition = (x / columnCount + y / rows) * 0.5 + animationState.offset / 360;
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(colors, huePosition + dither);
         context.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;

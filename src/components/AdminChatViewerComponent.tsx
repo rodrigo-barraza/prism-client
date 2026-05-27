@@ -655,10 +655,10 @@ export default function AdminChatViewerComponent({
     // Fallback: extract from last assistant message
     if (!model && selectedEntry?.messages?.length) {
       for (let i = selectedEntry.messages.length - 1; i >= 0; i--) {
-        const msg = selectedEntry.messages[i];
-        if (msg.role === "assistant" && msg.model) {
-          model = msg.model;
-          provider = msg.provider || provider;
+        const message = selectedEntry.messages[i];
+        if (message.role === "assistant" && message.model) {
+          model = message.model;
+          provider = message.provider || provider;
           break;
         }
       }

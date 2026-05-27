@@ -520,9 +520,9 @@ export default function AgentComponent({
   /** Mark a tab as having new unseen data (only if user isn't already viewing it). */
   const markTabNew = useCallback((tabKey: string) => {
     if (leftTabRef.current === tabKey) return;
-    setNewDataTabs((prev) => {
-      if (prev.has(tabKey)) return prev;
-      const next = new Set(prev);
+    setNewDataTabs((previousPixelSize) => {
+      if (previousPixelSize.has(tabKey)) return previousPixelSize;
+      const next = new Set(previousPixelSize);
       next.add(tabKey);
       return next;
     });
@@ -657,8 +657,8 @@ export default function AgentComponent({
   const recordPixelLoadTime = useCallback((elapsed: number) => {
     const stored = localStorage.getItem(PIXEL_LS_KEY);
     const alpha = 0.3; // EMA smoothing — higher = more reactive to recent loads
-    const prev = stored ? Number(stored) : PIXEL_DEFAULT_OUT;
-    const next = alpha * elapsed + (1 - alpha) * prev;
+    const previousPixelSize = stored ? Number(stored) : PIXEL_DEFAULT_OUT;
+    const next = alpha * elapsed + (1 - alpha) * previousPixelSize;
     localStorage.setItem(PIXEL_LS_KEY, String(Math.round(next)));
   }, []);
 
@@ -709,10 +709,10 @@ export default function AgentComponent({
     // calculating.  Without this, statusPhase / _processingStartTime /
     // _streamingLastChunkTime remain on the message and the SettingsPanel
     // ticker keeps running after the user hits stop.
-    setMessages((prev) => {
-      const last = prev[prev.length - 1];
+    setMessages((previousPixelSize) => {
+      const last = previousPixelSize[previousPixelSize.length - 1];
       if (last?.role === "assistant" && !last.completedAt) {
-        const updated = [...prev];
+        const updated = [...previousPixelSize];
         updated[updated.length - 1] = {
           ...last,
           statusPhase: undefined,
@@ -723,19 +723,19 @@ export default function AgentComponent({
         };
         return updated;
       }
-      return prev;
+      return previousPixelSize;
     });
 
     // Force all active workers to terminal state so their StatusBarComponent
     // bars stop animating — the SSE stream was aborted before "complete" events
     // could arrive, leaving activity entries stuck in active phases.
-    setWorkerToolActivity((prev) => {
-      const hasActive = Object.values(prev).some(
+    setWorkerToolActivity((previousPixelSize) => {
+      const hasActive = Object.values(previousPixelSize).some(
         (w: WorkerActivityEntry) => w.phase && w.phase !== "complete" && w.phase !== "failed",
       );
-      if (!hasActive) return prev;
+      if (!hasActive) return previousPixelSize;
       const next: Record<string, WorkerActivityEntry> = {};
-      for (const [id, w] of Object.entries(prev)) {
+      for (const [id, w] of Object.entries(previousPixelSize)) {
         next[id] =
           w.phase && w.phase !== "complete" && w.phase !== "failed"
             ? { ...w, phase: "complete", currentTool: null }
@@ -960,7 +960,7 @@ export default function AgentComponent({
       const result = isNoAgent
         ? await PrismService.getConversations(fetchOptions)
         : await PrismService.getAgentSessions(agentProject!, fetchOptions);
-      setSessions((prev) => [...prev, ...result.items]);
+      setSessions((previousPixelSize) => [...previousPixelSize, ...result.items]);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
     } catch (error: unknown) {
@@ -1005,8 +1005,8 @@ export default function AgentComponent({
           .find((m) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
           const gs = (lastAssistant.generationSettings || {}) as Record<string, string | number | boolean | undefined>;
-          setSettings((prev) => ({
-            ...prev,
+          setSettings((previousPixelSize) => ({
+            ...previousPixelSize,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
             ...(lastAssistant.model && { model: lastAssistant.model }),
             ...(gs.temperature !== undefined && {
@@ -1174,10 +1174,10 @@ export default function AgentComponent({
   // generation — no full loadSessions() round-trip needed.
   useEffect(() => {
     if (!activeId || messages.length === 0) return;
-    setSessions((prev) => {
-      const index = prev.findIndex((s) => s.id === activeId);
-      if (index === -1) return prev;
-      const existing = prev[index] as unknown as Record<string, unknown>;
+    setSessions((previousPixelSize) => {
+      const index = previousPixelSize.findIndex((s) => s.id === activeId);
+      if (index === -1) return previousPixelSize;
+      const existing = previousPixelSize[index] as unknown as Record<string, unknown>;
       // Only patch if something actually changed to avoid churn
       const resolvedCost = (backendSessionStats?.totalCost ?? totalCost) as number;
       const resolvedModalities: Record<string, number> =
@@ -1203,9 +1203,9 @@ export default function AgentComponent({
           JSON.stringify(resolvedModels) &&
         JSON.stringify(existing.providers) === JSON.stringify(resolvedProviders)
       ) {
-        return prev;
+        return previousPixelSize;
       }
-      const updated = [...prev] as unknown as Record<string, unknown>[];
+      const updated = [...previousPixelSize] as unknown as Record<string, unknown>[];
       updated[index] = {
         ...existing,
         title,
@@ -1249,17 +1249,17 @@ export default function AgentComponent({
               setRequestsRefreshKey((k) => k + 1);
               // Clear incremental background usage from the message —
               // the backend aggregate now includes those requests.
-              setMessages((prev) => {
-                const last = prev[prev.length - 1];
+              setMessages((previousPixelSize) => {
+                const last = previousPixelSize[previousPixelSize.length - 1];
                 if (last?.role === "assistant" && last._backgroundUsage) {
-                  const updated = [...prev];
+                  const updated = [...previousPixelSize];
                   updated[updated.length - 1] = {
                     ...last,
                     _backgroundUsage: undefined,
                   };
                   return updated;
                 }
-                return prev;
+                return previousPixelSize;
               });
             }
           })
@@ -1338,7 +1338,7 @@ export default function AgentComponent({
     const value = serializeEditable(element);
     inputValueRef.current = value;
     const nowHasInput = value.trim().length > 0;
-    setHasInput((prev) => (prev !== nowHasInput ? nowHasInput : prev));
+    setHasInput((previousPixelSize) => (previousPixelSize !== nowHasInput ? nowHasInput : previousPixelSize));
     // -- Mention autocomplete detection --
     detectMentionQueryRef.current?.(element);
   }, []);
@@ -1356,9 +1356,9 @@ export default function AgentComponent({
   const handleEditablePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     const text = e.clipboardData.getData("text/plain");
-    const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return;
-    const range = sel.getRangeAt(0);
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+    const range = selection.getRangeAt(0);
     range.deleteContents();
     const textNode = document.createTextNode(text);
     range.insertNode(textNode);
@@ -1385,10 +1385,10 @@ export default function AgentComponent({
         isDir ? "directory" : "file",
       );
       const space = document.createTextNode(" ");
-      const sel = window.getSelection();
+      const selection = window.getSelection();
       const range =
-        sel && sel.rangeCount && element.contains(sel.anchorNode)
-          ? sel.getRangeAt(0)
+        selection && selection.rangeCount && element.contains(selection.anchorNode)
+          ? selection.getRangeAt(0)
           : null;
       if (range) {
         const container = range.startContainer;
@@ -1429,10 +1429,10 @@ export default function AgentComponent({
         lineEnd: endLine,
       });
       const space = document.createTextNode(" ");
-      const sel = window.getSelection();
+      const selection = window.getSelection();
       const range =
-        sel && sel.rangeCount && element.contains(sel.anchorNode)
-          ? sel.getRangeAt(0)
+        selection && selection.rangeCount && element.contains(selection.anchorNode)
+          ? selection.getRangeAt(0)
           : null;
       if (range) {
         const container = range.startContainer;
@@ -1506,12 +1506,12 @@ export default function AgentComponent({
   /** Detect @query from cursor position inside contentEditable. */
   const detectMentionQuery = useCallback(
     (element: HTMLDivElement) => {
-      const sel = window.getSelection();
-      if (!sel || !sel.rangeCount || !element.contains(sel.anchorNode)) {
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount || !element.contains(selection.anchorNode)) {
         setMentionOpen(false);
         return;
       }
-      const anchor = sel.anchorNode as Text | null;
+      const anchor = selection.anchorNode as Text | null;
       if (
         !anchor ||
         anchor.nodeType !== Node.TEXT_NODE ||
@@ -1520,7 +1520,7 @@ export default function AgentComponent({
         setMentionOpen(false);
         return;
       }
-      const result = detectMentionToken(anchor.textContent, sel.anchorOffset);
+      const result = detectMentionToken(anchor.textContent, selection.anchorOffset);
       if (result) {
         mentionAnchorRef.current = {
           node: anchor,
@@ -1550,13 +1550,13 @@ export default function AgentComponent({
       const element = textareaRef.current;
       if (!element || !mentionAnchorRef.current) return;
       const { node, offset } = mentionAnchorRef.current;
-      const sel = window.getSelection();
-      if (!sel || !sel.rangeCount) return;
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount) return;
       const badge = createMentionBadge(entry.path || '', entry.name, entry.type);
       const space = applyMentionToTextNode(
         node,
         offset,
-        sel.anchorOffset,
+        selection.anchorOffset,
         badge,
       );
       placeCaretAfter(space);
@@ -1575,7 +1575,7 @@ export default function AgentComponent({
       const reader = new FileReader();
       reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
         if (readerEvent.target?.result) {
-          setPendingImages((prev) => [...prev, readerEvent.target?.result as string]);
+          setPendingImages((previousPixelSize) => [...previousPixelSize, readerEvent.target?.result as string]);
         }
       };
       reader.readAsDataURL(file);
@@ -1584,8 +1584,8 @@ export default function AgentComponent({
   }, []);
 
   const removeImage = useCallback((index: number) => {
-    setPendingImages((prev) =>
-      prev.filter((_, i) => i !== index),
+    setPendingImages((previousPixelSize) =>
+      previousPixelSize.filter((_, i) => i !== index),
     );
   }, []);
 
@@ -1628,7 +1628,7 @@ export default function AgentComponent({
         const reader = new FileReader();
         reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
           if (readerEvent.target?.result) {
-            setPendingImages((prev) => [...prev, readerEvent.target?.result as string]);
+            setPendingImages((previousPixelSize) => [...previousPixelSize, readerEvent.target?.result as string]);
           }
         };
         reader.readAsDataURL(file);
@@ -1653,7 +1653,7 @@ export default function AgentComponent({
         const reader = new FileReader();
         reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
           if (readerEvent.target?.result) {
-            setPendingImages((prev) => [...prev, readerEvent.target?.result as string]);
+            setPendingImages((previousPixelSize) => [...previousPixelSize, readerEvent.target?.result as string]);
           }
         };
         reader.readAsDataURL(file);
@@ -1843,8 +1843,8 @@ export default function AgentComponent({
             prevCleanLen = streamedText.length;
 
             const cleanText = streamedText.trim();
-            setMessages((prev) => {
-              const updated = [...prev];
+            setMessages((previousPixelSize) => {
+              const updated = [...previousPixelSize];
               const lastMsg = updated[updated.length - 1];
               if (lastMsg?.role === "assistant") {
                 lastMsg.content = cleanText;
@@ -1913,8 +1913,8 @@ export default function AgentComponent({
             }
             prevThinkingLen = streamedThinking.length;
 
-            setMessages((prev) => {
-              const updated = [...prev];
+            setMessages((previousPixelSize) => {
+              const updated = [...previousPixelSize];
               const lastMsg = updated[updated.length - 1];
               if (lastMsg?.role === "assistant") {
                 lastMsg.thinking = streamedThinking;
@@ -1946,8 +1946,8 @@ export default function AgentComponent({
             if (isStale()) return;
             const imgRef = minioRef || dataStr;
             if (!imgRef) return;
-            setMessages((prev) => {
-              const updated = [...prev];
+            setMessages((previousPixelSize) => {
+              const updated = [...previousPixelSize];
               const last = updated[updated.length - 1];
               if (last?.role === "assistant") {
                 const existingImages = last.images || [];
@@ -1974,15 +1974,15 @@ export default function AgentComponent({
             const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
             console.debug(`[ToolExec] ${data.status} ${toolData.name} id=${resolvedId}`);
 
-            setToolActivity((prev: ToolCallEvent[]) => {
-              const next = applyToolExecutionToActivity(prev, resolvedId, {
+            setToolActivity((previousPixelSize: ToolCallEvent[]) => {
+              const next = applyToolExecutionToActivity(previousPixelSize, resolvedId, {
                 id: toolData.id,
                 name: toolData.name,
                 args: toolData.args,
                 status: data.status as string,
                 result: toolData.result,
               });
-              return next ?? prev;
+              return next ?? previousPixelSize;
             });
 
             // Track segment ordering: group consecutive tool events
@@ -2026,7 +2026,7 @@ export default function AgentComponent({
                 },
                 execSnapshot,
               ) as ClientMessage[];
-              console.debug(`[ToolExec setMessages] ${data.status} ${toolData.name}: prev=${msgPrev.length} → next=${next.length}`);
+              console.debug(`[ToolExec setMessages] ${data.status} ${toolData.name}: previousPixelSize=${msgPrev.length} → next=${next.length}`);
               return next;
             });
 
@@ -2061,13 +2061,13 @@ export default function AgentComponent({
                     (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
                   if (deleted) {
-                    setViewerOpenFiles((prev) => {
-                      const next = prev.filter(
+                    setViewerOpenFiles((previousPixelSize) => {
+                      const next = previousPixelSize.filter(
                         (f: ViewerOpenFile) => f.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
-                        const closedIdx = prev.findIndex(
+                        const closedIdx = previousPixelSize.findIndex(
                           (f: ViewerOpenFile) => f.id === deleted.id,
                         );
                         const newActive =
@@ -2091,15 +2091,15 @@ export default function AgentComponent({
             const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
             console.debug(`[ToolCall MCP] ${toolData.status} ${toolData.name} id=${resolvedId}`);
 
-            setToolActivity((prev) => {
-              const next = applyToolExecutionToActivity(prev, resolvedId, {
+            setToolActivity((previousPixelSize) => {
+              const next = applyToolExecutionToActivity(previousPixelSize, resolvedId, {
                 id: toolData.id,
                 name: toolData.name,
                 args: toolData.args,
                 status: toolData.status as string,
                 result: toolData.result,
               });
-              return next ?? prev;
+              return next ?? previousPixelSize;
             });
 
             // Track segment ordering: group consecutive tool events
@@ -2135,7 +2135,7 @@ export default function AgentComponent({
                 toolData,
                 callSnapshot,
               ) as ClientMessage[];
-              console.debug(`[ToolCall MCP setMessages] ${toolData.status} ${toolData.name}: prev=${msgPrev.length} → next=${next.length}`);
+              console.debug(`[ToolCall MCP setMessages] ${toolData.status} ${toolData.name}: previousPixelSize=${msgPrev.length} → next=${next.length}`);
               return next;
             });
 
@@ -2169,13 +2169,13 @@ export default function AgentComponent({
                     (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
                   if (deleted) {
-                    setViewerOpenFiles((prev) => {
-                      const next = prev.filter(
+                    setViewerOpenFiles((previousPixelSize) => {
+                      const next = previousPixelSize.filter(
                         (f: ViewerOpenFile) => f.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
-                        const closedIdx = prev.findIndex(
+                        const closedIdx = previousPixelSize.findIndex(
                           (f: ViewerOpenFile) => f.id === deleted.id,
                         );
                         const newActive =
@@ -2194,8 +2194,8 @@ export default function AgentComponent({
           onToolOutput: (data: SSEData) => {
             if (isStale()) return;
             if (data.event === "stdout" || data.event === "stderr") {
-              setStreamingOutputs((prev: Map<string, string>) => {
-                const updated = new Map<string, string>(prev);
+              setStreamingOutputs((previousPixelSize: Map<string, string>) => {
+                const updated = new Map<string, string>(previousPixelSize);
                 const key = data.toolCallId || data.name || "";
                 const existing = updated.get(key) || "";
                 updated.set(key, existing + (data.data || ""));
@@ -2207,8 +2207,8 @@ export default function AgentComponent({
             if (isStale()) return;
             const toolCall = data.toolCall;
             if (!toolCall) return;
-            setPendingApprovals((prev) => [
-              ...prev,
+            setPendingApprovals((previousPixelSize) => [
+              ...previousPixelSize,
               {
                 id: toolCall.id || `ap-${Date.now()}`,
                 toolName: toolCall.name || "",
@@ -2220,8 +2220,8 @@ export default function AgentComponent({
             // Clear processing metadata so the live TTFT badge stops
             // counting — user deliberation time on approval gates
             // should not inflate time-to-first-token.
-            setMessages((prev) => {
-              const updated = [...prev];
+            setMessages((previousPixelSize) => {
+              const updated = [...previousPixelSize];
               const last = updated[updated.length - 1];
               if (
                 last?.role === "assistant" &&
@@ -2248,8 +2248,8 @@ export default function AgentComponent({
             });
             // Clear processing metadata — user deliberation time should
             // not inflate TTFT (same pattern as approval gates).
-            setMessages((prev) => {
-              const updated = [...prev];
+            setMessages((previousPixelSize) => {
+              const updated = [...previousPixelSize];
               const last = updated[updated.length - 1];
               if (
                 last?.role === "assistant" &&
@@ -2277,8 +2277,8 @@ export default function AgentComponent({
             // clear processing metadata so the live TTFT badge stops
             // counting — user deliberation time is not part of TTFT.
             const isPending = !data.autoApproved;
-            setMessages((prev) => {
-              const updated = [...prev];
+            setMessages((previousPixelSize) => {
+              const updated = [...previousPixelSize];
               const last = updated[updated.length - 1];
               if (last?.role === "assistant") {
                 updated[updated.length - 1] = {
@@ -2377,8 +2377,8 @@ export default function AgentComponent({
               loadCustomTools();
             } else if (statusData?.message === "generation_started") {
               // Server-computed TTFT — accumulate per-iteration samples for averaging
-              setMessages((prev) => {
-                const updated = [...prev];
+              setMessages((previousPixelSize) => {
+                const updated = [...previousPixelSize];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
@@ -2395,8 +2395,8 @@ export default function AgentComponent({
               // Backend-computed metrics from SessionGenerationTracker —
               // authoritative aggregate across orchestrator, workers,
               // and tool sub-requests.
-              setMessages((prev) => {
-                const updated = [...prev];
+              setMessages((previousPixelSize) => {
+                const updated = [...previousPixelSize];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
@@ -2416,8 +2416,8 @@ export default function AgentComponent({
               });
             } else if (statusData?.phase) {
               // LM Studio lifecycle status (loading, processing, generating)
-              setMessages((prev) => {
-                const updated = [...prev];
+              setMessages((previousPixelSize) => {
+                const updated = [...previousPixelSize];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
@@ -2464,8 +2464,8 @@ export default function AgentComponent({
             if (isStale()) return;
             const workerId = data.workerId;
             if (!workerId) return;
-            setWorkerToolActivity((prev) => {
-              const raw = prev[workerId];
+            setWorkerToolActivity((previousPixelSize) => {
+              const raw = previousPixelSize[workerId];
               const entry = {
                 toolCount: 0,
                 currentTool: null as string | null,
@@ -2475,7 +2475,7 @@ export default function AgentComponent({
                 ...raw,
               };
               const toolData = data.tool;
-              if (!toolData) return prev;
+              if (!toolData) return previousPixelSize;
 
               let updatedCalls = [...entry.toolCalls];
               if (data.status === "calling") {
@@ -2493,7 +2493,7 @@ export default function AgentComponent({
                   [toolName]: (entry.toolNames[toolName] || 0) + 1,
                 };
                 return {
-                  ...prev,
+                  ...previousPixelSize,
                   [workerId]: {
                     ...entry,
                     currentTool: toolName,
@@ -2515,7 +2515,7 @@ export default function AgentComponent({
                   return toolCall;
                 });
                 return {
-                  ...prev,
+                  ...previousPixelSize,
                   [workerId]: {
                     ...entry,
                     currentTool: null,
@@ -2524,7 +2524,7 @@ export default function AgentComponent({
                   },
                 };
               }
-              return prev;
+              return previousPixelSize;
             });
           },
           onWorkerToolOutput: (data: SSEData) => {
@@ -2532,8 +2532,8 @@ export default function AgentComponent({
             const workerId = data.workerId;
             const key = data.toolCallId || data.name || "";
             if (!workerId || !key) return;
-            setStreamingOutputs((prev) => {
-              const updated = new Map<string, string>(prev);
+            setStreamingOutputs((previousPixelSize) => {
+              const updated = new Map<string, string>(previousPixelSize);
               const existing = updated.get(key) || "";
               updated.set(key, existing + (data.data || ""));
               return updated;
@@ -2546,10 +2546,10 @@ export default function AgentComponent({
             if (data.message === "spawned") {
               // Early mapping: store workerId indexed by description
               // so SpawnAgentRenderer can look up activity before tool result arrives
-              setWorkerToolActivity((prev) => ({
-                ...prev,
+              setWorkerToolActivity((previousPixelSize) => ({
+                ...previousPixelSize,
                 [workerId]: {
-                  ...(prev[workerId] || {
+                  ...(previousPixelSize[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                     iteration: 0,
@@ -2560,10 +2560,10 @@ export default function AgentComponent({
                 },
               }));
             } else if (data.message === "iteration_progress") {
-              setWorkerToolActivity((prev) => ({
-                ...prev,
+              setWorkerToolActivity((previousPixelSize) => ({
+                ...previousPixelSize,
                 [workerId]: {
-                  ...(prev[workerId] || {
+                  ...(previousPixelSize[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                   }),
@@ -2573,10 +2573,10 @@ export default function AgentComponent({
               }));
             } else if (data.message === "phase") {
               // Worker LLM phase updates (generating, thinking, processing, loading)
-              setWorkerToolActivity((prev) => ({
-                ...prev,
+              setWorkerToolActivity((previousPixelSize) => ({
+                ...previousPixelSize,
                 [workerId]: {
-                  ...(prev[workerId] || {
+                  ...(previousPixelSize[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                     iteration: 0,
@@ -2586,13 +2586,13 @@ export default function AgentComponent({
                   phaseProgress:
                     data.progress != null
                       ? data.progress
-                      : (prev[workerId]?.phaseProgress ?? undefined),
+                      : (previousPixelSize[workerId]?.phaseProgress ?? undefined),
                 },
               }));
             } else if (data.message === "generation_started") {
               // Worker server-computed TTFT — push into the shared samples array
-              setMessages((prev) => {
-                const updated = [...prev];
+              setMessages((previousPixelSize) => {
+                const updated = [...previousPixelSize];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
@@ -2606,8 +2606,8 @@ export default function AgentComponent({
                 return updated;
               });
             } else if (data.message === "generation_progress") {
-              setMessages((prev) => {
-                const updated = [...prev];
+              setMessages((previousPixelSize) => {
+                const updated = [...previousPixelSize];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   const wp = last._workerGenerationProgress || {};
@@ -2650,15 +2650,15 @@ export default function AgentComponent({
               });
               // Also store on workerToolActivity so TeamCreateRenderer can
               // display live per-worker metrics on each worker's header
-              setWorkerToolActivity((prev) => {
-                const existing = prev[workerId] || {
+              setWorkerToolActivity((previousPixelSize) => {
+                const existing = previousPixelSize[workerId] || {
                   toolCount: 0,
                   currentTool: null,
                   iteration: 0,
                   toolNames: {},
                 };
                 return {
-                  ...prev,
+                  ...previousPixelSize,
                   [workerId]: {
                     ...existing,
                     // Burst-scoped values — only update when present to prevent undefined overwrites
@@ -2689,21 +2689,21 @@ export default function AgentComponent({
               });
             } else if (data.message === "complete") {
               // Worker finished — clear phase so StatusBar stops showing "Generating..."
-              setWorkerToolActivity((prev) => ({
-                ...prev,
+              setWorkerToolActivity((previousPixelSize) => ({
+                ...previousPixelSize,
                 [workerId]: {
-                  ...(prev[workerId] || {}),
+                  ...(previousPixelSize[workerId] || {}),
                   phase: "complete",
                   currentTool: null,
                   durationMs: data.durationMs,
-                  toolCount: data.toolCount ?? prev[workerId]?.toolCount,
+                  toolCount: data.toolCount ?? previousPixelSize[workerId]?.toolCount,
                 },
               }));
               // Accumulate worker usage into the streaming assistant message
               // so stats badges update in real-time per worker completion
               if (data.usage) {
-                setMessages((prev) => {
-                  const updated = [...prev];
+                setMessages((previousPixelSize) => {
+                  const updated = [...previousPixelSize];
                   const last = updated[updated.length - 1];
                   if (last?.role === "assistant") {
                     const wt = last._workerTokens || {
@@ -2730,10 +2730,10 @@ export default function AgentComponent({
               }
             } else if (data.message === "failed") {
               // Worker errored — mark as failed
-              setWorkerToolActivity((prev) => ({
-                ...prev,
+              setWorkerToolActivity((previousPixelSize) => ({
+                ...previousPixelSize,
                 [workerId]: {
-                  ...(prev[workerId] || {}),
+                  ...(previousPixelSize[workerId] || {}),
                   phase: "failed",
                   currentTool: null,
                   error: data.error,
@@ -2743,10 +2743,10 @@ export default function AgentComponent({
           },
           onUsageUpdate: (data: SSEData) => {
             if (isStale()) return;
-            setMessages((prev) => {
-              const updated = [...prev];
+            setMessages((previousPixelSize) => {
+              const updated = [...previousPixelSize];
               const last = updated[updated.length - 1];
-              if (last?.role !== "assistant") return prev;
+              if (last?.role !== "assistant") return previousPixelSize;
 
               // Background operations (memory extraction, consolidation, embeddings,
               // compaction) emit incremental usage_update events. Accumulate them
@@ -2758,7 +2758,7 @@ export default function AgentComponent({
                 op.startsWith("embed:") ||
                 op.startsWith("compact:");
               if (isBackground) {
-                const bg = last._backgroundUsage || {
+                const backgroundUsage = last._backgroundUsage || {
                   inputTokens: 0,
                   outputTokens: 0,
                   cost: 0,
@@ -2767,11 +2767,11 @@ export default function AgentComponent({
                   ...last,
                   _backgroundUsage: {
                     inputTokens:
-                      (bg.inputTokens || 0) + (data.usage?.inputTokens || 0),
+                      (backgroundUsage.inputTokens || 0) + (data.usage?.inputTokens || 0),
                     outputTokens:
-                      (bg.outputTokens || 0) + (data.usage?.outputTokens || 0),
-                    requests: (bg.requests || 0) + (data.usage?.requests || 1),
-                    cost: (bg.cost || 0) + (data.estimatedCost || 0),
+                      (backgroundUsage.outputTokens || 0) + (data.usage?.outputTokens || 0),
+                    requests: (backgroundUsage.requests || 0) + (data.usage?.requests || 1),
+                    cost: (backgroundUsage.cost || 0) + (data.estimatedCost || 0),
                   },
                 };
               } else if (!last.usage) {
@@ -2789,10 +2789,10 @@ export default function AgentComponent({
           onDone: (data: SSEData) => {
             console.debug(`[onDone] stream finished, isStale=${isStale()}`);
             if (!isStale()) {
-              setMessages((prev) => {
-                const updated = [...prev];
+              setMessages((previousPixelSize) => {
+                const updated = [...previousPixelSize];
                 const last = updated[updated.length - 1];
-                console.debug(`[onDone setMessages] prev=${prev.length}, last.role=${last?.role}`);
+                console.debug(`[onDone setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}`);
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
                     ...last,
@@ -2932,7 +2932,7 @@ export default function AgentComponent({
       // Track this session as generating (for history indicator even after switching away)
       const genId = agentSessionIdRef.current;
       console.debug(`[handleSend] starting generation, sessionId=${genId}, currentMessages=${messagesRef.current.length}`);
-      setGeneratingSessionIds((prev) => new Set(prev).add(genId));
+      setGeneratingSessionIds((previousPixelSize) => new Set(previousPixelSize).add(genId));
       setToolActivity([]);
       setWorkerToolActivity({});
       setStreamingOutputs(new Map());
@@ -2959,14 +2959,14 @@ export default function AgentComponent({
             detail: { conversationId: agentSessionId },
           }),
         );
-        setSessions((prev) => [
+        setSessions((previousPixelSize) => [
           {
             id: agentSessionId,
             title: resolvedTitle,
             updatedAt: now,
             createdAt: now,
           } as AgentSession,
-          ...prev,
+          ...previousPixelSize,
         ]);
       }
 
@@ -3021,7 +3021,7 @@ export default function AgentComponent({
                 `[PostStream setMessages] attempt=${attempt} raw=${full.messages.length} → display=${displayMessages.length}, currentStreaming=${currentCount}`,
                 displayMessages.length === 0 ? '⚠️ EMPTY — this clears the chat!' : '',
               );
-              // Guard: don't replace streaming messages with stale/incomplete DB data
+              // Guard 1: don't replace streaming messages with stale/incomplete DB data
               if (displayMessages.length < currentCount) {
                 if (attempt < 3) {
                   console.debug(
@@ -3036,6 +3036,33 @@ export default function AgentComponent({
                   return;
                 }
               }
+              // Guard 2: content-aware — verify that the last streaming user
+              // message exists in the DB data. This catches the edge case where
+              // DB has the right count but wrong content (e.g. user message was
+              // dropped and replaced with an extra assistant message).
+              const lastStreamingUserMessage = [...messagesRef.current]
+                .reverse()
+                .find((message: ClientMessage) => message.role === "user");
+              if (lastStreamingUserMessage?.content) {
+                const databaseUserContents = displayMessages
+                  .filter((message: ClientMessage) => message.role === "user")
+                  .map((message: ClientMessage) => message.content?.toString().trim());
+                const streamingUserContent = lastStreamingUserMessage.content.toString().trim();
+                if (streamingUserContent && !databaseUserContents.includes(streamingUserContent)) {
+                  if (attempt < 3) {
+                    console.debug(
+                      `[PostStream] ⚠️ Last user message "${streamingUserContent.slice(0, 50)}…" not found in DB data, retrying in 2s (attempt ${attempt})`,
+                    );
+                    await new Promise((resolve) => setTimeout(resolve, 2000));
+                    return attemptPostStreamRefresh(attempt + 1);
+                  } else {
+                    console.warn(
+                      `[PostStream] ⚠️ Database is missing the latest user message after ${attempt} attempts. Skipping overwrite to preserve streaming state.`,
+                    );
+                    return;
+                  }
+                }
+              }
               setMessages(displayMessages);
             }
           } catch (error) {
@@ -3045,8 +3072,8 @@ export default function AgentComponent({
         await attemptPostStreamRefresh();
       } catch (error: unknown) {
         console.error(`[handleSend] orchestration error:`, error);
-        setMessages((prev) => [
-          ...prev,
+        setMessages((previousPixelSize) => [
+          ...previousPixelSize,
           {
             role: "assistant",
             content: `⚠️ Error: ${error instanceof Error ? error.message : String(error)}`,
@@ -3056,8 +3083,8 @@ export default function AgentComponent({
       } finally {
         console.debug(`[handleSend finally] genId=${genId}, currentSessionId=${agentSessionIdRef.current}, match=${agentSessionIdRef.current === genId}`);
         // Remove this session from the generating set
-        setGeneratingSessionIds((prev) => {
-          const next = new Set(prev);
+        setGeneratingSessionIds((previousPixelSize) => {
+          const next = new Set(previousPixelSize);
           next.delete(genId);
           return next;
         });
@@ -3069,18 +3096,18 @@ export default function AgentComponent({
           isClientDrivenGenerationRef.current = false;
           abortRef.current = null;
           setCurrentTurnStart(null);
-          setMessages((prev) => {
-            const last = prev[prev.length - 1];
-            console.debug(`[handleSend finally setMessages] prev=${prev.length}, last.role=${last?.role}, last.completedAt=${last?.completedAt}`);
+          setMessages((previousPixelSize) => {
+            const last = previousPixelSize[previousPixelSize.length - 1];
+            console.debug(`[handleSend finally setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}, last.completedAt=${last?.completedAt}`);
             if (last?.role === "assistant" && !last.completedAt) {
-              const updated = [...prev];
+              const updated = [...previousPixelSize];
               updated[updated.length - 1] = {
                 ...last,
                 completedAt: new Date().toISOString(),
               };
               return updated;
             }
-            return prev;
+            return previousPixelSize;
           });
         } else {
           console.debug(`[handleSend finally] session switched away, skipping UI updates`);
@@ -3149,9 +3176,9 @@ export default function AgentComponent({
       } else if (e.key === "Enter" && e.shiftKey) {
         // Shift+Enter: insert a <br> for newline in contentEditable
         e.preventDefault();
-        const sel = window.getSelection();
-        if (sel && sel.rangeCount) {
-          const range = sel.getRangeAt(0);
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount) {
+          const range = selection.getRangeAt(0);
           range.deleteContents();
           const br = document.createElement("br");
           range.insertNode(br);
@@ -3159,8 +3186,8 @@ export default function AgentComponent({
           const newRange = document.createRange();
           newRange.setStartAfter(br);
           newRange.collapse(true);
-          sel.removeAllRanges();
-          sel.addRange(newRange);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
         }
       }
     },
@@ -3332,7 +3359,7 @@ export default function AgentComponent({
         setPendingUserQuestion(snap.pendingUserQuestion || null);
         setPlanProposal(snap.planProposal || null);
         setAgenticProgress(snap.agenticProgress || null);
-        setSettings((prev) => ({ ...prev, ...(snap.settings as Partial<typeof prev>) }));
+        setSettings((previousPixelSize) => ({ ...previousPixelSize, ...(snap.settings as Partial<typeof previousPixelSize>) }));
         setBackendSessionStats(snap.backendSessionStats || null);
         // Re-attach: mark as generating so the UI shows the active state
         setIsGenerating(true);
@@ -3426,8 +3453,8 @@ export default function AgentComponent({
           // user's latest explicit model choice and take priority over the
           // last assistant message which may reflect a previous model.
           const sessionSettings = full.settings as Partial<PrismSettings> | undefined;
-          setSettings((prev) => ({
-            ...prev,
+          setSettings((previousPixelSize) => ({
+            ...previousPixelSize,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
             ...(lastAssistant.model && { model: lastAssistant.model }),
             ...(gs.temperature !== undefined && {
@@ -3617,9 +3644,9 @@ export default function AgentComponent({
         pendingDeletionsRef.current.delete(convId);
 
         // Restore the session to sessions state
-        setSessions((prev) => {
-          if (prev.some((s) => s.id === convId)) return prev;
-          const updated = [...prev, pending.session];
+        setSessions((previousPixelSize) => {
+          if (previousPixelSize.some((s) => s.id === convId)) return previousPixelSize;
+          const updated = [...previousPixelSize, pending.session];
           // Sort by updatedAt or createdAt descending
           return updated.sort((a, b) => {
             const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
@@ -3648,7 +3675,7 @@ export default function AgentComponent({
         const wasActive = activeId === convId;
 
         // Optimistically remove from state
-        setSessions((prev) => prev.filter((c) => c.id !== convId));
+        setSessions((previousPixelSize) => previousPixelSize.filter((c) => c.id !== convId));
         if (wasActive) {
           handleNewChat();
         }
@@ -3728,7 +3755,7 @@ export default function AgentComponent({
         setViewerActiveFileId(existingTab.id);
       } else {
         const id = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        setViewerOpenFiles((prev) => [...prev, { id, path: absPath }]);
+        setViewerOpenFiles((previousPixelSize) => [...previousPixelSize, { id, path: absPath }]);
         setViewerActiveFileId(id);
       }
     },
@@ -3864,9 +3891,9 @@ export default function AgentComponent({
             tabRevertTimerRef.current = null;
           }
           // Clear "new data" flag — user is now viewing this tab
-          setNewDataTabs((prev) => {
-            if (!prev.has(tab)) return prev;
-            const next = new Set(prev);
+          setNewDataTabs((previousPixelSize) => {
+            if (!previousPixelSize.has(tab)) return previousPixelSize;
+            const next = new Set(previousPixelSize);
             next.delete(tab);
             return next;
           });
@@ -4464,8 +4491,8 @@ export default function AgentComponent({
               toolArgs={approval.toolArgs}
               tier={approval.tier}
               onApprove={() => {
-                setPendingApprovals((prev) =>
-                  prev.map((a) =>
+                setPendingApprovals((previousPixelSize) =>
+                  previousPixelSize.map((a) =>
                     a.id === approval.id ? { ...a, status: "approved" } : a,
                   ),
                 );
@@ -4474,8 +4501,8 @@ export default function AgentComponent({
                 );
               }}
               onReject={() => {
-                setPendingApprovals((prev) =>
-                  prev.map((a) =>
+                setPendingApprovals((previousPixelSize) =>
+                  previousPixelSize.map((a) =>
                     a.id === approval.id ? { ...a, status: "rejected" } : a,
                   ),
                 );
@@ -4484,8 +4511,8 @@ export default function AgentComponent({
                 );
               }}
               onApproveAll={() => {
-                setPendingApprovals((prev) =>
-                  prev.map((a) =>
+                setPendingApprovals((previousPixelSize) =>
+                  previousPixelSize.map((a) =>
                     a.status === "pending" ? { ...a, status: "approved" } : a,
                   ),
                 );
@@ -4819,7 +4846,7 @@ export default function AgentComponent({
           src={lightboxSrc}
           onClose={() => setLightboxSrc(null)}
           onUseAnnotated={(dataUrl: string) => {
-            setPendingImages((prev) => [...prev, dataUrl]);
+            setPendingImages((previousPixelSize) => [...previousPixelSize, dataUrl]);
             setLightboxSrc(null);
           }}
         />
@@ -4848,11 +4875,11 @@ export default function AgentComponent({
             activeFileId={viewerActiveFileId}
             onSelectFile={setViewerActiveFileId}
             onCloseFile={(id: string) => {
-              setViewerOpenFiles((prev) => {
-                const next = prev.filter((f) => f.id !== id);
+              setViewerOpenFiles((previousPixelSize) => {
+                const next = previousPixelSize.filter((f) => f.id !== id);
                 // If the closed tab was active, switch to the nearest tab
                 if (id === viewerActiveFileId) {
-                  const closedIdx = prev.findIndex((f: ViewerOpenFile) => f.id === id);
+                  const closedIdx = previousPixelSize.findIndex((f: ViewerOpenFile) => f.id === id);
                   const newActive = next[Math.min(closedIdx, next.length - 1)];
                   setViewerActiveFileId(newActive?.id || null);
                 }
@@ -4861,11 +4888,11 @@ export default function AgentComponent({
             }}
             onFileNotFound={(id: string) => {
               // Auto-close tabs for files that no longer exist
-              setViewerOpenFiles((prev) => {
-                const next = prev.filter((f) => f.id !== id);
+              setViewerOpenFiles((previousPixelSize) => {
+                const next = previousPixelSize.filter((f) => f.id !== id);
                 setViewerActiveFileId((activeId: string | null) => {
                   if (activeId !== id) return activeId;
-                  const closedIdx = prev.findIndex((f: ViewerOpenFile) => f.id === id);
+                  const closedIdx = previousPixelSize.findIndex((f: ViewerOpenFile) => f.id === id);
                   const newActive = next[Math.min(closedIdx, next.length - 1)];
                   return newActive?.id || null;
                 });
@@ -4960,12 +4987,12 @@ export default function AgentComponent({
             favorites={favoriteKeys}
             onToggleFavorite={async (key: string) => {
               if (favoriteKeys.includes(key)) {
-                setFavoriteKeys((prev) =>
-                  prev.filter((k) => k !== key),
+                setFavoriteKeys((previousPixelSize) =>
+                  previousPixelSize.filter((k) => k !== key),
                 );
                 PrismService.removeFavorite("model", key).catch(() => {});
               } else {
-                setFavoriteKeys((prev) => [...prev, key]);
+                setFavoriteKeys((previousPixelSize) => [...previousPixelSize, key]);
                 const [provider, ...rest] = key.split(":");
                 PrismService.addFavorite("model", key, {
                   provider,

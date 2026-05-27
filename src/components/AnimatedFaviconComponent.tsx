@@ -25,7 +25,7 @@ function generateFrames() {
   canvas.width = FAVICON_SIZE;
   canvas.height = FAVICON_SIZE;
   const context = canvas.getContext("2d", { alpha: false });
-  const cols = Math.ceil(FAVICON_SIZE / PIXEL_SIZE);
+  const columnCount = Math.ceil(FAVICON_SIZE / PIXEL_SIZE);
   const rows = Math.ceil(FAVICON_SIZE / PIXEL_SIZE);
   const frames = [];
 
@@ -33,8 +33,8 @@ function generateFrames() {
     const offset = frame / FRAME_COUNT;
 
     for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const huePosition = (x / cols + y / rows) * 0.5 + offset;
+      for (let x = 0; x < columnCount; x++) {
+        const huePosition = (x / columnCount + y / rows) * 0.5 + offset;
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(RAINBOW, huePosition + dither);
         context!.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;

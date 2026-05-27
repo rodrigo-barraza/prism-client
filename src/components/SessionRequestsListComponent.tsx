@@ -29,10 +29,10 @@ export default function SessionRequestsListComponent({
       const result = await IrisService.getSessionRequests(agentSessionId);
       setData(result);
     } catch (error: unknown) {
-      const msg = getErrorMessage(error);
+      const errorMessage = getErrorMessage(error);
       // 404 = no requests yet, don't show error
-      if (!msg.includes("404")) {
-        setError(msg);
+      if (!errorMessage.includes("404")) {
+        setError(errorMessage);
       }
       setData(null);
     } finally {

@@ -157,8 +157,8 @@ export default function VisionPageComponent() {
           setIsStreaming(true);
         })
         .catch((error: unknown) => {
-          const msg = error instanceof Error ? error.message : String(error);
-          console.warn("Video play() interrupted:", msg);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.warn("Video play() interrupted:", errorMessage);
         });
     }
 
@@ -357,11 +357,11 @@ export default function VisionPageComponent() {
 
       abortRef.current = abort;
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       setResults((prev) =>
         prev.map((r) =>
           r.id === resultId
-            ? { ...r, text: `Error: ${msg}`, streaming: false }
+            ? { ...r, text: `Error: ${errorMessage}`, streaming: false }
             : r,
         ),
       );
