@@ -40,6 +40,14 @@
     border-radius: 0;
   }
 
+  & .activeStateLayer {
+    margin: 0;
+    padding: 0;
+    background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+    border-radius: 0;
+    justify-content: center;
+  }
+
   & .navigationLink.isActiveState {
     &::before {
       top: 0;
@@ -235,7 +243,7 @@
 }
 
 .navigationLink.isActiveState {
-  background: var(--calculated-accent-primary-subtle);
+  background: transparent;
   color: var(--accent-primary);
 
   &::before {
@@ -257,6 +265,18 @@
     animation: rainbowHue 4s linear infinite;
     will-change: filter;
   }
+}
+
+.activeStateLayer {
+  display: flex;
+  align-items: center;
+  gap: inherit;
+  width: 100%;
+  margin: 0 4px;
+  padding: 6px 8px;
+  border-radius: var(--border-radius-sm);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  transition: background var(--transition-fast);
 }
 
 .themeToggle {

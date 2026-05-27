@@ -684,24 +684,49 @@ interface CatState {
                             localStorage.setItem(LS_PANEL_RIGHT, "false");
                           }}
                         >
-                          <Icon className={styles.navigationIcon} />
-                          <span className={styles.navigationLabel}>{item.label}</span>
-                          {item.href === "/settings" && !memoryConfigured && (
-                            <span
-                              className={styles.attentionDot}
-                              title="Memory models need to be configured"
-                            >
-                              <AlertCircle size={13} />
+                          {isActive ? (
+                            <span className={styles.activeStateLayer}>
+                              <Icon className={styles.navigationIcon} />
+                              <span className={styles.navigationLabel}>{item.label}</span>
+                              {item.href === "/settings" && !memoryConfigured && (
+                                <span
+                                  className={styles.attentionDot}
+                                  title="Memory models need to be configured"
+                                >
+                                  <AlertCircle size={13} />
+                                </span>
+                              )}
+                              {item.showBadge &&
+                                (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
+                                  <span
+                                    className={`${styles.badge} ${styles.live}`}
+                                  >
+                                    {(badgeCounts as Record<string, number>)[item.showBadge]}
+                                  </span>
+                                )}
                             </span>
+                          ) : (
+                            <>
+                              <Icon className={styles.navigationIcon} />
+                              <span className={styles.navigationLabel}>{item.label}</span>
+                              {item.href === "/settings" && !memoryConfigured && (
+                                <span
+                                  className={styles.attentionDot}
+                                  title="Memory models need to be configured"
+                                >
+                                  <AlertCircle size={13} />
+                                </span>
+                              )}
+                              {item.showBadge &&
+                                (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
+                                  <span
+                                    className={`${styles.badge} ${styles.live}`}
+                                  >
+                                    {(badgeCounts as Record<string, number>)[item.showBadge]}
+                                  </span>
+                                )}
+                            </>
                           )}
-                          {item.showBadge &&
-                            (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
-                              <span
-                                className={`${styles.badge} ${styles.live}`}
-                              >
-                                {(badgeCounts as Record<string, number>)[item.showBadge]}
-                              </span>
-                            )}
                         </Link>
                       );
                     })}
@@ -833,22 +858,45 @@ interface CatState {
                       onNavClick?.(item.href);
                     }}
                   >
-                    <Icon className={styles.navigationIcon} />
-                    <span className={styles.navigationLabel}>{item.label}</span>
-                    {item.href === "/settings" && !memoryConfigured && (
-                      <span
-                        className={styles.attentionDot}
-                        title="Memory models need to be configured"
-                      >
-                        <AlertCircle size={13} />
+                    {isActive ? (
+                      <span className={styles.activeStateLayer}>
+                        <Icon className={styles.navigationIcon} />
+                        <span className={styles.navigationLabel}>{item.label}</span>
+                        {item.href === "/settings" && !memoryConfigured && (
+                          <span
+                            className={styles.attentionDot}
+                            title="Memory models need to be configured"
+                          >
+                            <AlertCircle size={13} />
+                          </span>
+                        )}
+                        {item.showBadge &&
+                          (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
+                            <span className={`${styles.badge} ${styles.live}`}>
+                              {(badgeCounts as Record<string, number>)[item.showBadge]}
+                            </span>
+                          )}
                       </span>
+                    ) : (
+                      <>
+                        <Icon className={styles.navigationIcon} />
+                        <span className={styles.navigationLabel}>{item.label}</span>
+                        {item.href === "/settings" && !memoryConfigured && (
+                          <span
+                            className={styles.attentionDot}
+                            title="Memory models need to be configured"
+                          >
+                            <AlertCircle size={13} />
+                          </span>
+                        )}
+                        {item.showBadge &&
+                          (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
+                            <span className={`${styles.badge} ${styles.live}`}>
+                              {(badgeCounts as Record<string, number>)[item.showBadge]}
+                            </span>
+                          )}
+                      </>
                     )}
-                    {item.showBadge &&
-                      (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
-                        <span className={`${styles.badge} ${styles.live}`}>
-                          {(badgeCounts as Record<string, number>)[item.showBadge]}
-                        </span>
-                      )}
                   </Link>
                 );
 
