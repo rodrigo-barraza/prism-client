@@ -308,7 +308,8 @@ interface WorkerActivityEntry {
   tokPerSec?: number;
   toolCount?: number;
   toolNames?: Record<string, number>;
-  [key: string]: string | number | boolean | null | undefined | Record<string, number>;
+  toolCalls?: ToolCallEvent[];
+  [key: string]: string | number | boolean | null | undefined | Record<string, number> | ToolCallEvent[];
 }
 
 /** Approval request from an agentic tool call. */
@@ -586,6 +587,10 @@ export default function AgentComponent({
       ? true
       : SETTINGS_DEFAULTS.thinkingEnabled || false,
   });
+
+  const placeholderText = isNoAgent
+    ? `Message ${settings.model || "model"}`
+    : `Message ${activeAgentData?.name || "agent"}`;
 
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
@@ -2429,10 +2434,23 @@ export default function AgentComponent({
                 currentTool: null as string | null,
                 iteration: 0,
                 toolNames: {} as Record<string, number>,
+                toolCalls: [] as ToolCallEvent[],
                 ...raw,
               };
+              const toolData = data.tool;
+              if (!toolData) return prev;
+
+              let updatedCalls = [...entry.toolCalls];
               if (data.status === "calling") {
-                const toolName = data.tool?.name || "unknown";
+                const newCall: ToolCallEvent = {
+                  id: toolData.id || `wtc-${Date.now()}`,
+                  name: toolData.name || "unknown",
+                  args: toolData.args || {},
+                  status: "calling",
+                };
+                updatedCalls.push(newCall);
+
+                const toolName = toolData.name || "unknown";
                 const updatedToolNames: Record<string, number> = {
                   ...entry.toolNames,
                   [toolName]: (entry.toolNames[toolName] || 0) + 1,
@@ -2444,15 +2462,44 @@ export default function AgentComponent({
                     currentTool: toolName,
                     toolCount: entry.toolCount + 1,
                     toolNames: updatedToolNames,
+                    toolCalls: updatedCalls,
                     phase: undefined, // Clear phase — tool is now active
                   },
                 };
+              } else if (data.status === "done" || data.status === "error") {
+                updatedCalls = updatedCalls.map((toolCall) => {
+                  if (toolCall.id === toolData.id || (toolCall.name === toolData.name && toolCall.status === "calling")) {
+                    return {
+                      ...toolCall,
+                      status: data.status === "done" ? "done" : "error",
+                      result: toolData.result,
+                    };
+                  }
+                  return toolCall;
+                });
+                return {
+                  ...prev,
+                  [workerId]: {
+                    ...entry,
+                    currentTool: null,
+                    toolCalls: updatedCalls,
+                    phase: undefined,
+                  },
+                };
               }
-              // done/error — clear currentTool, phase will be set by next chunk event
-              return {
-                ...prev,
-                [workerId]: { ...entry, currentTool: null, phase: undefined },
-              };
+              return prev;
+            });
+          },
+          onWorkerToolOutput: (data: SSEData) => {
+            if (isStale()) return;
+            const workerId = data.workerId;
+            const key = data.toolCallId || data.name || "";
+            if (!workerId || !key) return;
+            setStreamingOutputs((prev) => {
+              const updated = new Map<string, string>(prev);
+              const existing = updated.get(key) || "";
+              updated.set(key, existing + (data.data || ""));
+              return updated;
             });
           },
           onWorkerStatus: (data: SSEData) => {
@@ -4649,7 +4696,7 @@ export default function AgentComponent({
               onKeyDown={handleKeyDown}
               onPaste={handleEditablePaste}
               onBlur={() => setTimeout(() => setMentionOpen(false), 150)}
-              data-placeholder={emptyState.placeholder}
+              data-placeholder={placeholderText}
               suppressContentEditableWarning
             />
             {/* ── Mention Autocomplete Dropdown ── */}

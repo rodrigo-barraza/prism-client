@@ -49,16 +49,17 @@ import { parseMentionTokens } from "../utils/mentionUtils";
 import type { Message, ToolCallEvent, ContentSegment } from "../types/types";
 
 export interface WorkerToolActivityItem {
-  toolNames?: Record<string, number>;
+  toolNames?: string[] | Record<string, number> | Record<string, string>;
   currentTool?: string | null;
   description?: string;
   tokPerSec?: number | null;
-  phase?: string;
+  phase?: string | null;
   phaseLabel?: string;
   phaseProgress?: number | null;
   toolCount?: number;
   iteration?: number;
   maxIterations?: number;
+  toolCalls?: import("../types/types").ToolCallEvent[];
 }
 
 /* -- Task notification detection (Claude Code pattern) -------
@@ -254,66 +255,81 @@ function ThinkingBlock({ thinking, isStreaming, children }: ThinkingBlockProps) 
 export function prepareDisplayMessages(rawMessages: Message[] | undefined | null): Message[] {
   if (!rawMessages || rawMessages.length === 0) return [];
 
+  // Normalize any snake_case tool_calls to camelCase toolCalls
+  const normalizedMessages = rawMessages.map((message) => {
+    if ((message as any).tool_calls && !message.toolCalls) {
+      const normalizedCalls = (message as any).tool_calls.map((toolCall: any) => ({
+        id: toolCall.id,
+        name: toolCall.name || toolCall.function?.name,
+        args: typeof toolCall.args === "string" ? JSON.parse(toolCall.args) : (toolCall.args || (typeof toolCall.function?.arguments === "string" ? JSON.parse(toolCall.function.arguments) : toolCall.function?.arguments) || {}),
+        result: toolCall.result,
+        status: toolCall.status,
+      }));
+      return { ...message, toolCalls: normalizedCalls };
+    }
+    return message;
+  });
+
   console.debug(
-    `[prepareDisplayMessages] input: ${rawMessages.length} messages`,
-    rawMessages.map((m, i) => `  [${i}] role=${m.role} content=${(m.content || '').length}ch toolCalls=${m.toolCalls?.length || 0} images=${m.images?.length || 0} audio=${!!m.audio} error=${!!m.error}`).join('\n'),
+    `[prepareDisplayMessages] input: ${normalizedMessages.length} messages`,
+    normalizedMessages.map((message, index) => `  [${index}] role=${message.role} content=${(message.content || '').length}ch toolCalls=${message.toolCalls?.length || 0} images=${message.images?.length || 0} audio=${!!message.audio} error=${!!message.error}`).join('\n'),
   );
 
   // First pass: collect tool results keyed by tool_call_id
   // Support both snake_case (API) and camelCase (normalized) property names
   const toolResults: Record<string, string> = {};
-  for (const m of rawMessages) {
-    if (m.role === "tool") {
-      const id = m.tool_call_id || m.toolCallId;
-      if (id) toolResults[id] = m.content || "";
+  for (const message of normalizedMessages) {
+    if (message.role === "tool") {
+      const id = message.tool_call_id || message.toolCallId;
+      if (id) toolResults[id] = message.content || "";
     }
   }
 
   // Second pass: filter and enrich
-  const filtered = rawMessages
+  const filtered = normalizedMessages
     .filter(
-      (m, i) => {
+      (message, index) => {
         // Filter out tool role messages (they're merged into toolCalls)
-        if (m.role === "tool") return false;
+        if (message.role === "tool") return false;
         // Filter out system messages
-        if (m.role === "system") return false;
+        if (message.role === "system") return false;
         // Filter out empty assistant messages with no useful content
         const isEmptyAssistant =
-          m.role === "assistant" &&
-          !m.content?.trim() &&
-          !m.toolCalls?.length &&
-          !m.images?.length &&
-          !m.audio &&
-          !m.error;
+          message.role === "assistant" &&
+          !message.content?.trim() &&
+          !message.toolCalls?.length &&
+          !message.images?.length &&
+          !message.audio &&
+          !message.error;
         if (isEmptyAssistant) {
           console.debug(
-            `[prepareDisplayMessages] ⚠️ FILTERING OUT empty assistant msg [${i}]:`,
-            `content="${(m.content || '').slice(0, 50)}" toolCalls=${m.toolCalls?.length || 0}`,
-            `images=${m.images?.length || 0} audio=${!!m.audio} error=${!!m.error}`,
+            `[prepareDisplayMessages] ⚠️ FILTERING OUT empty assistant msg [${index}]:`,
+            `content="${(message.content || '').slice(0, 50)}" toolCalls=${message.toolCalls?.length || 0}`,
+            `images=${message.images?.length || 0} audio=${!!message.audio} error=${!!message.error}`,
           );
         }
         return !isEmptyAssistant;
       },
     )
-    .map((m) => {
+    .map((message) => {
       // Merge tool results into toolCalls
-      if (m.toolCalls && m.toolCalls.length > 0 && Object.keys(toolResults).length > 0) {
-        const enrichedCalls = m.toolCalls.map((tc) => ({
-          ...tc,
+      if (message.toolCalls && message.toolCalls.length > 0 && Object.keys(toolResults).length > 0) {
+        const enrichedCalls = message.toolCalls.map((toolCall: ToolCallEvent) => ({
+          ...toolCall,
           result:
-            tc.result ||
-            toolResults[tc.id] ||
-            toolResults[(tc as any).tool_call_id || ""] ||
+            toolCall.result ||
+            toolResults[toolCall.id] ||
+            toolResults[(toolCall as any).tool_call_id || ""] ||
             null,
         }));
-        return { ...m, toolCalls: enrichedCalls };
+        return { ...message, toolCalls: enrichedCalls };
       }
-      return m;
+      return message;
     });
 
   console.debug(
-    `[prepareDisplayMessages] output: ${filtered.length} messages (filtered ${rawMessages.length - filtered.length})`,
-    filtered.length === 0 && rawMessages.length > 0
+    `[prepareDisplayMessages] output: ${filtered.length} messages (filtered ${normalizedMessages.length - filtered.length})`,
+    filtered.length === 0 && normalizedMessages.length > 0
       ? '⚠️ ALL MESSAGES FILTERED — this will empty the chat!'
       : '',
   );

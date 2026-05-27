@@ -30,13 +30,21 @@ import {
   StopCircle,
   Zap,
   Download,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Music,
 } from "lucide-react";
+
+import { SliderComponent } from "@rodrigo-barraza/components-library";
 
 import MarkdownContent from "./MarkdownContentComponent";
 const LazyMessageList = lazy(() => import("./MessageListComponent"));
 import { prepareDisplayMessages, type WorkerToolActivityItem } from "./MessageListComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent";
+import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import PrismService from "../services/PrismService";
 import { formatLatency, renderToolName } from "../utils/utilities";
 import styles from "./ToolResultRenderersComponent.module.css";
@@ -55,6 +63,7 @@ export interface WorkerActivity {
   tokPerSec?: number | null;
   toolNames?: string[] | Record<string, number> | Record<string, string>;
   description?: string;
+  toolCalls?: import('../types/types').ToolCallEvent[];
 }
 
 export interface ToolArgs {
@@ -188,6 +197,12 @@ export interface ParsedToolResult {
   height?: number;
   asciiEmbedUrl?: string;
   ascii?: string;
+  audio?: {
+    data: string;
+    mimeType?: string;
+  };
+  duration?: number;
+  sampleCount?: number;
 }
 
 export interface RendererProps {
@@ -815,6 +830,173 @@ function FetchUrlRenderer({ result, args }: RendererProps) {
           </code>
         </pre>
       )}
+    </div>
+  );
+}
+
+// -- 8.5. Audio Generator Renderer --------------------------------------
+
+function AudioGeneratorRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const audioSrc = useMemo(() => {
+    if (!parsed.audio?.data) return "";
+    const mimeType = parsed.audio.mimeType || "audio/wav";
+    return `data:${mimeType};base64,${parsed.audio.data}`;
+  }, [parsed]);
+
+  const duration = parsed.duration || 0;
+  const sampleCount = parsed.sampleCount || 0;
+
+  const togglePlay = useCallback(() => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch((error) => {
+        console.error("Failed to play audio:", error);
+      });
+      setIsPlaying(true);
+    }
+  }, [isPlaying]);
+
+  const toggleMute = useCallback(() => {
+    if (!audioRef.current) return;
+    const nextMuted = !isMuted;
+    audioRef.current.muted = nextMuted;
+    setIsMuted(nextMuted);
+  }, [isMuted]);
+
+  const handleTimeUpdate = useCallback(() => {
+    if (!audioRef.current) return;
+    setCurrentTime(audioRef.current.currentTime);
+  }, []);
+
+  const handleEnded = useCallback(() => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  const totalDuration = duration || (audioRef.current ? audioRef.current.duration : 0) || 0;
+  const visualizerBarsCount = 36;
+
+  return (
+    <div className={styles["audio-player-container"]}>
+      {audioSrc && (
+        <audio
+          ref={audioRef}
+          src={audioSrc}
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleEnded}
+        />
+      )}
+
+      <div className={styles["audio-player-header-section"]}>
+        <div className={styles["audio-player-title-container"]}>
+          <Music size={14} className={styles.dirIcon} />
+          <span className={styles["audio-player-title"]}>
+            {args?.presetEffect
+              ? `Retro Sound Preset: '${args.presetEffect}'`
+              : `Procedural Synth (${args?.waveform || "sine"} wave)`}
+          </span>
+        </div>
+        <span className={styles["audio-player-meta-text"]}>
+          {totalDuration.toFixed(2)}s · {sampleCount.toLocaleString()} samples
+        </span>
+      </div>
+
+      <div
+        className={`${styles["audio-player-waveform-visualizer"]} ${
+          isPlaying ? styles["is-playing-state"] : ""
+        }`}
+      >
+        {Array.from({ length: visualizerBarsCount }).map((_, index) => {
+          const baseHeight = 20 + Math.sin((index / visualizerBarsCount) * Math.PI) * 70;
+          const animationDelay = `${(index * 0.035).toFixed(3)}s`;
+          const animationDuration = `${(0.45 + (index % 4) * 0.12).toFixed(3)}s`;
+
+          return (
+            <div
+              key={index}
+              className={`${styles["audio-player-wave-bar"]} ${
+                isPlaying ? styles["audio-player-wave-bar-animated"] : ""
+              }`}
+              style={{
+                height: `${baseHeight}%`,
+                animationDelay: isPlaying ? animationDelay : undefined,
+                animationDuration: isPlaying ? animationDuration : undefined,
+              }}
+            />
+          );
+        })}
+      </div>
+
+      <div className={styles["audio-player-control-panel"]}>
+        <button
+          onClick={togglePlay}
+          className={styles["audio-player-play-button"]}
+          aria-label={isPlaying ? "Pause" : "Play"}
+        >
+          {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+        </button>
+
+        <div className={styles["audio-player-slider-wrapper"]}>
+          <SliderComponent
+            value={currentTime}
+            min={0}
+            max={totalDuration || 1}
+            step={0.01}
+            showValue={false}
+            onChange={(value) => {
+              if (audioRef.current) {
+                audioRef.current.currentTime = value as number;
+                setCurrentTime(value as number);
+              }
+            }}
+          />
+        </div>
+
+        <div className={styles["audio-player-time-display"]}>
+          {formatTime(currentTime)} / {formatTime(totalDuration)}
+        </div>
+
+        <button
+          onClick={toggleMute}
+          className={styles["audio-player-icon-button"]}
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+        </button>
+
+        {audioSrc && (
+          <a
+            href={audioSrc}
+            download={
+              args?.presetEffect
+                ? `synth_${args.presetEffect}.wav`
+                : `synth_audio.wav`
+            }
+            className={styles["audio-player-icon-button"]}
+            aria-label="Download WAV"
+            title="Download WAV"
+          >
+            <Download size={14} />
+          </a>
+        )}
+      </div>
     </div>
   );
 }
@@ -1664,32 +1846,26 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
   const [expandedMembers, setExpandedMembers] = useState<Set<number>>(new Set());
   const parsed = tryParse(result);
 
-  // Extract members from args (calling state) or result (done state)
   const rawArgMembers = args?.members;
   const argMembers = Array.isArray(rawArgMembers) ? rawArgMembers : [];
   const rawResultMembers = parsed?.members;
   const resultMembers = Array.isArray(rawResultMembers) ? rawResultMembers : [];
   const teamName = args?.name || parsed?.team || "";
 
-  // -- Live tok/s ticker ----------------------------------------
-  // Tick every 500ms while any worker is actively generating so
-  // the per-worker speed badge stays current.
   const hasActiveWorkers = useMemo(() => {
     if (!workerToolActivity) return false;
     return Object.values(workerToolActivity).some(
-      (a) => a.phase === "generating" || a.phase === "thinking",
+      (activity) => activity.phase === "generating" || activity.phase === "thinking",
     );
   }, [workerToolActivity]);
 
   const [, setTick] = useState(0);
   useEffect(() => {
     if (!hasActiveWorkers) return;
-    const id = setInterval(() => setTick((t) => t + 1), 500);
-    return () => clearInterval(id);
+    const intervalId = setInterval(() => setTick((tick) => tick + 1), 500);
+    return () => clearInterval(intervalId);
   }, [hasActiveWorkers]);
 
-  // Use backend-computed per-worker tok/s directly. Only show when the
-  // worker is in an active generation phase.
   const getWorkerTokPerSec = (activity: WorkerActivity | null) => {
     if (!activity?.tokPerSec) return null;
     if (activity.phase !== "generating" && activity.phase !== "thinking")
@@ -1697,33 +1873,22 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
     return activity.tokPerSec;
   };
 
-  // Build an ordered list of workerIds from workerToolActivity.
-  // Keys arrive in insertion order (Map-like semantics of plain objects in V8),
-  // which matches the spawn order from the coordinator.
   const orderedWorkerIds = useMemo(() => {
     if (!workerToolActivity) return [];
     return Object.keys(workerToolActivity);
   }, [workerToolActivity]);
 
-  // Resolve live worker activity for a member — by agentId, positional
-  // index, or description match.  Positional matching is the primary
-  // strategy for the "calling" state (before tool result arrives and
-  // agent_id is available), because workers with identical descriptions
-  // would all resolve to the first match via description.includes().
   const getActivity = (member: { agent_id?: string; description?: string; [key: string]: unknown }, memberIndex: number) => {
     if (!workerToolActivity) return null;
-    // 1. Exact match by agent_id (available in result/done state)
     if (member.agent_id) return workerToolActivity[member.agent_id] || null;
-    // 2. Positional match by spawn order (calling state — most reliable)
     if (memberIndex != null && orderedWorkerIds[memberIndex]) {
       return workerToolActivity[orderedWorkerIds[memberIndex]] || null;
     }
-    // 3. Fallback: description match (only reliable when descriptions are unique)
     if (member.description) {
       return (
         Object.values(workerToolActivity).find(
-          (v) =>
-            v.description && member.description && v.description.includes(member.description),
+          (activity) =>
+            activity.description && member.description && activity.description.includes(member.description),
         ) || null
       );
     }
@@ -1731,122 +1896,100 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
   };
 
   const toggleMember = (index: number) => {
-    setExpandedMembers((prev) => {
-      const next = new Set(prev);
+    setExpandedMembers((previous) => {
+      const next = new Set(previous);
       if (next.has(index)) next.delete(index);
       else next.add(index);
       return next;
     });
   };
 
-  // -- Calling state: no result yet, workers are running --
-  if (!parsed) {
-    return (
-      <div className={styles.rendererBlock}>
-        <div className={styles.rendererHeader}>
-          <Users size={13} />
-          <span className={styles.rendererTitle}>
-            Team <strong>{teamName}</strong> — {argMembers.length} worker
-            {argMembers.length !== 1 ? "s" : ""}
-          </span>
-          <StatusBadge success={true} label="running" />
-        </div>
-        {argMembers.map((member: { description?: string; [key: string]: unknown }, i: number) => {
-          const activity = getActivity(member, i);
-          const tokPerSec = getWorkerTokPerSec(activity);
-          return (
-            <div
-              key={i}
-              className={styles.rendererBlock}
-              style={{ marginTop: 4 }}
-            >
-              <div className={styles.rendererHeader}>
-                <span className={styles.rendererTitle}>
-                  Worker {i + 1}: <strong>{member.description}</strong>
-                </span>
-                {tokPerSec !== null && (
-                  <span className={styles.workerSpeedBadge}>
-                    ⚡ {tokPerSec.toFixed(1)} tok/s
-                  </span>
-                )}
-                {activity?.phase && (
-                  <StatusBadge success={true} label={activity.phase} />
-                )}
-              </div>
-              {activity?.toolNames && (
-                <ToolBadgeRow
-                  tools={normalizeToolCounts(activity.toolNames)}
-                  activeTool={activity.currentTool}
-                  variant="compact"
-                />
-              )}
-              {activity && <WorkerStatusBar activity={activity} />}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  // -- Done state: result available --
-  const hasError = !!parsed.error;
+  const hasError = !!parsed?.error;
   const succeeded =
-    parsed.succeeded ??
-    resultMembers.filter((m) => m.status === "completed").length;
+    parsed?.succeeded ??
+    resultMembers.filter((member) => member.status === "completed").length;
   const failed =
-    parsed.failed ??
-    resultMembers.filter((m) => m.status === "failed").length;
-  const allDone = resultMembers.every(
-    (m) =>
-      m.status === "completed" ||
-      m.status === "failed" ||
-      m.status === "stopped",
-  );
+    parsed?.failed ??
+    resultMembers.filter((member) => member.status === "failed").length;
+  const allDone = parsed
+    ? resultMembers.every(
+        (member) =>
+          member.status === "completed" ||
+          member.status === "failed" ||
+          member.status === "stopped",
+      )
+    : false;
   const teamSuccess = failed === 0 && !hasError;
+
+  const membersList = parsed
+    ? resultMembers
+    : argMembers.map((member) => ({
+        agent_id: undefined,
+        description: member.description || "",
+        status: "running",
+        durationMs: 0,
+        toolUses: 0,
+        iterations: 0,
+        toolNames: undefined,
+        messages: undefined,
+        result: undefined,
+        error: undefined,
+        summary: "",
+      }));
 
   return (
     <div className={styles.rendererBlock}>
       <div className={styles.rendererHeader}>
         <Users size={13} />
         <span className={styles.rendererTitle}>
-          Team <strong>{teamName}</strong> — {resultMembers.length} worker
-          {resultMembers.length !== 1 ? "s" : ""}
+          Team <strong>{teamName}</strong> — {membersList.length} worker
+          {membersList.length !== 1 ? "s" : ""}
         </span>
         <StatusBadge
-          success={teamSuccess}
+          success={!parsed ? true : teamSuccess}
           label={
-            allDone
-              ? `${succeeded} done${failed ? `, ${failed} failed` : ""}`
-              : "running"
+            !parsed
+              ? "running"
+              : allDone
+                ? `${succeeded} done${failed ? `, ${failed} failed` : ""}`
+                : "running"
           }
         />
       </div>
 
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
 
-      {resultMembers.map((member, i) => {
-        const activity = getActivity(member, i);
+      {membersList.map((member, index) => {
+        const activity = getActivity(member, index);
         const isTerminal =
           member.status === "completed" ||
           member.status === "failed" ||
           member.status === "stopped";
         const isCompleted = member.status === "completed";
         const isFailed = member.status === "failed";
-        const memberExpanded = expandedMembers.has(i);
+        const memberExpanded = expandedMembers.has(index);
         const durationLabel = member.durationMs
           ? formatLatency(Number(member.durationMs) / 1000)
           : null;
         const tokPerSec = !isTerminal ? getWorkerTokPerSec(activity) : null;
 
+        const toolNames = activity?.toolNames || member.toolNames;
+        const toolUsesCount = !isTerminal
+          ? activity?.toolCount ?? 0
+          : member.toolUses ?? 0;
+        const iterationsCount = !isTerminal
+          ? activity?.iteration ?? 0
+          : member.iterations ?? 0;
+
         return (
           <div
-            key={i}
+            key={index}
             className={styles.rendererBlock}
             style={{ marginTop: 4 }}
           >
             <div className={styles.rendererHeader}>
               <span className={styles.rendererTitle}>
-                Worker {i + 1}: <strong>{member.description}</strong>
+                Worker {index + 1}: <strong>{member.description}</strong>
               </span>
               {tokPerSec !== null && (
                 <span className={styles.workerSpeedBadge}>
@@ -1854,86 +1997,90 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
                 </span>
               )}
               <StatusBadge
-                success={isCompleted}
-                label={member.status || "unknown"}
+                success={!isTerminal ? true : isCompleted}
+                label={!isTerminal ? (activity?.phase || member.status || "running") : (member.status || "unknown")}
               />
             </div>
 
-            {/* Per-worker tool badges — live from activity, static from result */}
-            {(() => {
-              const toolNames = activity?.toolNames || member.toolNames;
-              if (!toolNames || Object.keys(toolNames).length === 0)
-                return null;
-              return (
-                <ToolBadgeRow
-                  tools={normalizeToolCounts(toolNames)}
-                  activeTool={!isTerminal ? activity?.currentTool : null}
-                  variant="compact"
-                />
-              );
-            })()}
+            {toolNames && Object.keys(toolNames).length > 0 && (
+              <ToolBadgeRow
+                tools={normalizeToolCounts(toolNames)}
+                activeTool={!isTerminal ? activity?.currentTool : null}
+                variant="compact"
+              />
+            )}
 
             {member.error && (
               <div className={styles.errorText}>{member.error}</div>
             )}
 
-            {/* Live status bar — shown while the worker is still running */}
             {activity && !isTerminal && <WorkerStatusBar activity={activity} />}
 
-            {/* Inline completion card */}
-            {isTerminal && (
-              <div className={styles.workerResultCard}>
-                <button
-                  className={styles.workerResultToggle}
-                  onClick={() => toggleMember(i)}
-                >
-                  <Zap size={12} />
-                  <span className={styles.workerResultSummary}>
-                    {member.summary ||
-                      (isCompleted
+            <div className={styles.workerResultCard}>
+              <button
+                className={styles.workerResultToggle}
+                onClick={() => toggleMember(index)}
+              >
+                <Zap size={12} />
+                <span className={styles.workerResultSummary}>
+                  {member.summary ||
+                    (!isTerminal
+                      ? activity?.currentTool
+                        ? `Executing ${renderToolName(activity.currentTool)}...`
+                        : "Worker running..."
+                      : isCompleted
                         ? "Worker completed"
                         : isFailed
                           ? "Worker failed"
                           : "Worker finished")}
+                </span>
+                {durationLabel && (
+                  <span className={styles.workerResultMeta}>
+                    {durationLabel}
                   </span>
-                  {durationLabel && (
-                    <span className={styles.workerResultMeta}>
-                      {durationLabel}
-                    </span>
-                  )}
-                  {(member.toolUses ?? 0) > 0 && (
-                    <span className={styles.workerResultMeta}>
-                      {member.toolUses} tools
-                    </span>
-                  )}
-                  {(member.iterations ?? 0) > 0 && (
-                    <span className={styles.workerResultMeta}>
-                      {member.iterations} iteration
-                      {member.iterations !== 1 ? "s" : ""}
-                    </span>
-                  )}
-                  {memberExpanded ? (
-                    <ChevronDown size={12} />
-                  ) : (
-                    <ChevronRight size={12} />
-                  )}
-                </button>
-                {memberExpanded && (
-                  <div className={styles.workerResultBody}>
-                    {(member.messages?.length ?? 0) > 0 ? (
-                      <Suspense fallback={null}>
-                        <LazyMessageList
-                          messages={prepareDisplayMessages(member.messages as import('../types/types').Message[])}
-                          readOnly
-                        />
-                      </Suspense>
-                    ) : member.result ? (
-                      <MarkdownContent content={String(member.result)} />
-                    ) : null}
-                  </div>
                 )}
-              </div>
-            )}
+                {toolUsesCount > 0 && (
+                  <span className={styles.workerResultMeta}>
+                    {toolUsesCount} tools
+                  </span>
+                )}
+                {iterationsCount > 0 && (
+                  <span className={styles.workerResultMeta}>
+                    {iterationsCount} iteration{iterationsCount !== 1 ? "s" : ""}
+                  </span>
+                )}
+                {memberExpanded ? (
+                  <ChevronDown size={12} />
+                ) : (
+                  <ChevronRight size={12} />
+                )}
+              </button>
+              {memberExpanded && (
+                <div className={styles.workerResultBody}>
+                  {isTerminal && (member.messages?.length ?? 0) > 0 ? (
+                    <Suspense fallback={null}>
+                      <LazyMessageList
+                        messages={prepareDisplayMessages(member.messages as import('../types/types').Message[])}
+                        readOnly
+                      />
+                    </Suspense>
+                  ) : !isTerminal && activity?.toolCalls && activity.toolCalls.length > 0 ? (
+                    <div style={{ padding: "4px 0" }}>
+                      <ToolCallsBlockComponent
+                        toolCalls={activity.toolCalls}
+                        workerToolActivity={workerToolActivity}
+                      />
+                    </div>
+                  ) : member.result ? (
+                    <MarkdownContent content={String(member.result)} />
+                  ) : (
+                    <div style={{ fontStyle: "italic", opacity: 0.5, fontSize: "0.85rem", padding: "4px 8px" }}>
+                      No messages or tool calls yet.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         );
       })}
@@ -2046,6 +2193,9 @@ const TOOL_RESULT_REGISTRY = {
   // Emoji Kitchen
   get_emoji_combination: { Renderer: EmojiCombinationRenderer },
   get_emoji_combinations: { Renderer: EmojiCombinationsRenderer },
+
+  // Audio Generation
+  generate_audio: { Renderer: AudioGeneratorRenderer },
 
 
   // Coordinator
