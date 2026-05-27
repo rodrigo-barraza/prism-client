@@ -39,6 +39,12 @@ let buttonHoverBuffer: AudioBuffer | null = null;
 /** Cached button click buffer */
 let buttonClickBuffer: AudioBuffer | null = null;
 
+/** Cached generation-start beep buffer (higher pitch) */
+let generationStartBuffer: AudioBuffer | null = null;
+
+/** Cached generation-end beep buffer (lower pitch) */
+let generationEndBuffer: AudioBuffer | null = null;
+
 /**
  * Lazily initialise the shared AudioContext.
  * Must be called from a user-gesture context on first invocation.
@@ -212,6 +218,85 @@ function getButtonClickBuffer(): AudioBuffer {
   return buttonClickBuffer;
 }
 
+// --- Generation lifecycle beep generators ------------------------------
+
+/**
+ * Build (or return cached) a mono AudioBuffer for a gentle ascending
+ * sine beep — played when generation starts.
+ *
+ * Technique: sine sweep from 880 → 1100 Hz (rising pitch) with a
+ * smooth exponential decay. Duration ~80 ms — subtle and non-intrusive.
+ */
+function getGenerationStartBuffer(): AudioBuffer {
+  if (generationStartBuffer) return generationStartBuffer;
+
+  const audio = ensureContext();
+  const sampleRate = audio.sampleRate;
+  const duration = 0.08;
+  const length = Math.ceil(sampleRate * duration);
+
+  generationStartBuffer = audio.createBuffer(1, length, sampleRate);
+  const data = generationStartBuffer.getChannelData(0);
+
+  const frequencyStart = 880;
+  const frequencyEnd = 1100;
+  let phase = 0;
+
+  for (let i = 0; i < length; i++) {
+    const time = i / sampleRate;
+    const progress = i / length;
+
+    const frequency = frequencyStart + (frequencyEnd - frequencyStart) * progress;
+    phase += (2 * Math.PI * frequency) / sampleRate;
+
+    const sine = Math.sin(phase);
+    const envelope = Math.exp(-time * 40) * (1 - Math.pow(progress, 3));
+
+    data[i] = sine * envelope * 0.04;
+  }
+
+  return generationStartBuffer;
+}
+
+/**
+ * Build (or return cached) a mono AudioBuffer for a gentle descending
+ * sine beep — played when generation ends.
+ *
+ * Technique: sine sweep from 660 → 440 Hz (falling pitch) with a
+ * longer exponential tail. Duration ~100 ms — a satisfying soft chime
+ * signaling completion.
+ */
+function getGenerationEndBuffer(): AudioBuffer {
+  if (generationEndBuffer) return generationEndBuffer;
+
+  const audio = ensureContext();
+  const sampleRate = audio.sampleRate;
+  const duration = 0.1;
+  const length = Math.ceil(sampleRate * duration);
+
+  generationEndBuffer = audio.createBuffer(1, length, sampleRate);
+  const data = generationEndBuffer.getChannelData(0);
+
+  const frequencyStart = 660;
+  const frequencyEnd = 440;
+  let phase = 0;
+
+  for (let i = 0; i < length; i++) {
+    const time = i / sampleRate;
+    const progress = i / length;
+
+    const frequency = frequencyStart + (frequencyEnd - frequencyStart) * progress;
+    phase += (2 * Math.PI * frequency) / sampleRate;
+
+    const sine = Math.sin(phase);
+    const envelope = Math.exp(-time * 30) * (1 - Math.pow(progress, 4));
+
+    data[i] = sine * envelope * 0.04;
+  }
+
+  return generationEndBuffer;
+}
+
 // --- Stereo routing helper -----------------------------------------
 
 /**
@@ -352,6 +437,36 @@ const SoundService = {
   },
 
   /**
+   * Play a gentle ascending beep when generation starts.
+   * Higher pitch (880→1100 Hz), centered stereo.
+   */
+  playGenerationStart(): void {
+    const audio = ensureContext();
+    const buffer = getGenerationStartBuffer();
+
+    const source = audio.createBufferSource();
+    source.buffer = buffer;
+
+    connectStereo(source, 50, 50);
+    source.start(0);
+  },
+
+  /**
+   * Play a gentle descending beep when generation ends.
+   * Lower pitch (660→440 Hz), centered stereo.
+   */
+  playGenerationEnd(): void {
+    const audio = ensureContext();
+    const buffer = getGenerationEndBuffer();
+
+    const source = audio.createBufferSource();
+    source.buffer = buffer;
+
+    connectStereo(source, 50, 50);
+    source.start(0);
+  },
+
+  /**
    * Returns `{ onClick, onMouseEnter }` event-handler props that play
    * the appropriate hover/click sounds with spatial stereo, then call
    * through to optional consumer callbacks.
@@ -387,6 +502,8 @@ const SoundService = {
     clickBuffer = null;
     buttonHoverBuffer = null;
     buttonClickBuffer = null;
+    generationStartBuffer = null;
+    generationEndBuffer = null;
   },
 };
 

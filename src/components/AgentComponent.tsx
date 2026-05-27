@@ -131,6 +131,7 @@ import {
   placeCaretAfter,
   applyMentionToTextNode,
 } from "../utils/mentionUtils";
+import SoundService from "../services/SoundService";
 
 // -- Per-agent empty state config ---------------------------------
 const AGENT_EMPTY_STATE = {
@@ -2926,6 +2927,7 @@ export default function AgentComponent({
       }
 
       setIsGenerating(true);
+      SoundService.playGenerationStart();
       isClientDrivenGenerationRef.current = true;
       // Re-engage sticky scroll when the user sends a message
       isUserNearBottomRef.current = true;
@@ -3093,6 +3095,7 @@ export default function AgentComponent({
         // Only update local UI state if this session is still displayed
         if (agentSessionIdRef.current === genId) {
           setIsGenerating(false);
+          SoundService.playGenerationEnd();
           isClientDrivenGenerationRef.current = false;
           abortRef.current = null;
           setCurrentTurnStart(null);
