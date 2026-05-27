@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef, memo } from "react";
+import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
 import {
   FolderOpen,
   ChevronRight,
@@ -13,6 +13,7 @@ import FileTypeIconComponent from "./FileTypeIconComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
 import type { WorkspaceTreeResponse, WorkspaceTreeNode, WorkspaceItem } from "../services/WorkspaceService";
+import { SearchInputComponent } from "@rodrigo-barraza/components-library";
 import styles from "./WorkspaceTreePanelComponent.module.css";
 
 // ── Type Definitions ──────────────────────────────────────────
@@ -150,6 +151,7 @@ export default function WorkspaceTreePanelComponent({
   const [treeLoading, setTreeLoading] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // ── Lifted expanded-state: persists across data refreshes ──
   const expandedPathsRef = useRef<Set<string>>(new Set());
@@ -236,6 +238,7 @@ export default function WorkspaceTreePanelComponent({
     setTreeData(null);
     expandedPathsRef.current = new Set();
     autoExpandedRef.current = false;
+    setSearchQuery("");
   }, [currentWorkspace?.path]);
 
   // Live-refresh: debounced silent re-fetch when workspaceTreeRefreshKey changes
@@ -300,8 +303,46 @@ export default function WorkspaceTreePanelComponent({
     );
   }
 
-  // Snapshot the Set into a stable reference for this render
-  const expandedPaths = expandedPathsRef.current;
+  // ── Substring Path Matching & Recursive Tree Filtering ──
+  const { filteredTree, autoExpandedPaths } = useMemo(() => {
+    if (!searchQuery.trim() || !treeData?.tree) {
+      return { filteredTree: treeData?.tree || [], autoExpandedPaths: null };
+    }
+    const lowerQuery = searchQuery.trim().toLowerCase();
+    const autoPaths = new Set<string>();
+
+    const process = (items: WorkspaceTreeNode[], currentParent: string): WorkspaceTreeNode[] => {
+      const result: WorkspaceTreeNode[] = [];
+      for (const node of items) {
+        const nodePath = currentParent ? `${currentParent}/${node.name}` : node.name;
+        const nameMatches = node.name.toLowerCase().includes(lowerQuery);
+        
+        if (node.type === "directory" && node.children) {
+          const filteredChildren = process(node.children, nodePath);
+          const hasMatchingChildren = filteredChildren.length > 0;
+          
+          if (nameMatches || hasMatchingChildren) {
+            autoPaths.add(nodePath);
+            result.push({
+              ...node,
+              children: filteredChildren,
+            });
+          }
+        } else {
+          if (nameMatches) {
+            result.push(node);
+          }
+        }
+      }
+      return result;
+    };
+
+    const filtered = process(treeData.tree, "");
+    return { filteredTree: filtered, autoExpandedPaths: autoPaths };
+  }, [treeData?.tree, searchQuery]);
+
+  // Snapshot the Set into a stable reference for this render, merging auto-expanded paths if searching
+  const expandedPaths = autoExpandedPaths || expandedPathsRef.current;
 
   return (
     <div className={styles.container}>
@@ -368,12 +409,25 @@ export default function WorkspaceTreePanelComponent({
       )}
 
       <div className={styles.treeScroll}>
+        {/* Search input is ALWAYS rendered here once the tree is loaded and not empty */}
+        {!treeLoading && treeData?.tree && treeData.tree.length > 0 && (
+          <div className={styles["search-input-container-section"]}>
+            <SearchInputComponent
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Filter files…"
+              compact
+              className={styles["search-input-element-field"]}
+            />
+          </div>
+        )}
+
         {treeLoading && <div className={styles.treeLoading}>Loading…</div>}
         {!treeLoading &&
           treeData?.tree &&
-          treeData.tree.length > 0 && (
+          filteredTree.length > 0 && (
             <div className={styles.treeRoot}>
-              {treeData.tree.map((node) => (
+              {filteredTree.map((node: WorkspaceTreeNode) => (
                 <TreeNode
                   key={node.name}
                   node={node}
@@ -384,6 +438,17 @@ export default function WorkspaceTreePanelComponent({
                   onOpenFile={onOpenFile}
                 />
               ))}
+            </div>
+          )}
+        {!treeLoading &&
+          treeData?.tree &&
+          treeData.tree.length > 0 &&
+          filteredTree.length === 0 && (
+            <div className={styles["search-no-results-state"]}>
+              <span className={styles["search-no-results-title"]}>No matching files</span>
+              <span className={styles["search-no-results-subtitle"]}>
+                Try adjusting your filter query.
+              </span>
             </div>
           )}
         {!treeLoading &&

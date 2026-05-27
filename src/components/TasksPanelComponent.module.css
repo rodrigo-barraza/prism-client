@@ -9,14 +9,6 @@
 
 /* ── Header ─────────────────────────────────────────────────── */
 
-.header {
-  composes: header from "./PanelShared.module.css";
-}
-
-.headerTitle {
-  composes: headerTitle from "./PanelShared.module.css";
-}
-
 .headerButton {
   display: inline-flex;
   align-items: center;
@@ -52,6 +44,19 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ── Filter Controls Section ─────────────────────────────────── */
+
+.filter-controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.search-input-wrapper {
+  width: 100%;
 }
 
 /* ── Summary badges ──────────────────────────────────────────── */

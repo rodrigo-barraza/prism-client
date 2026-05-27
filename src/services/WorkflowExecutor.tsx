@@ -289,12 +289,12 @@ async function executeModelNode(
       }
     } else {
       // No messages — build from piped input only
-      const userMsg = {
+      const userMessage = {
         role: "user",
         content: pipedText || "",
         ...buildMediaFields(),
       };
-      finalMessages = [userMsg];
+      finalMessages = [userMessage];
     }
 
     const generatePayload = {

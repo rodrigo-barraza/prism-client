@@ -38,7 +38,7 @@ import {
   Lock,
 } from "lucide-react";
 import { renderToolName } from "../utils/utilities";
-import { TooltipComponent, ButtonComponent } from "@rodrigo-barraza/components-library";
+import { TooltipComponent, ButtonComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ToolSelectionComponent.module.css";
 
 // -- Interfaces --------------------------------------------------
@@ -68,6 +68,7 @@ interface ToolSelectionProps {
   availableTools?: ToolSchema[];
   enabledTools?: string[];
   onEnabledToolsChange: (tools: string[]) => void;
+  agent?: boolean;
 }
 
 // -- Domain icon mapping (mirrors CustomToolsPanel) --------------
@@ -308,13 +309,14 @@ export default function ToolSelectionComponent({
   availableTools = [],
   enabledTools = [],
   onEnabledToolsChange,
+  agent = true,
 }: ToolSelectionProps) {
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set<string>());
   const [groupMode, setGroupMode] = useState("domain");
   const [coreCollapsed, setCoreCollapsed] = useState(true);
 
-  // -- Split availableTools into Core System and Configurable ----
+  // -- Split availableTools into Core Agentic and Configurable ----
   const { coreTools, configurableTools } = useMemo(() => {
     const core: ToolSchema[] = [];
     const config: ToolSchema[] = [];
@@ -356,6 +358,17 @@ export default function ToolSelectionComponent({
     () => resolveEnabledTools(enabledTools),
     [resolveEnabledTools, enabledTools],
   );
+
+  // -- Core tools enabled count ---------------------------------
+  const enabledCoreCount = useMemo(() => {
+    let count = 0;
+    for (const t of coreTools) {
+      if (resolvedEnabledSet.has(t.name)) {
+        count++;
+      }
+    }
+    return count;
+  }, [coreTools, resolvedEnabledSet]);
 
   // -- Configurable enabled count --------------------------------
   const enabledConfigurableCount = useMemo(() => {
@@ -474,11 +487,23 @@ export default function ToolSelectionComponent({
       const isDomain = groupMode === "domain";
       const prefix = isDomain ? `domain:${groupKey}` : `label:${groupKey}`;
 
-      const hasGroupRef = currentTools.includes(prefix);
       const resolved = resolveEnabledTools(currentTools);
       const groupNames = groupTools.map((t) => t.name);
       const allEnabled = groupNames.every((n) => resolved.has(n));
 
+      if (groupKey === "core") {
+        if (allEnabled) {
+          onEnabledToolsChange(
+            currentTools.filter((t) => !groupNames.includes(t)),
+          );
+        } else {
+          const cleaned = currentTools.filter((t) => !groupNames.includes(t));
+          onEnabledToolsChange([...cleaned, ...groupNames]);
+        }
+        return;
+      }
+
+      const hasGroupRef = currentTools.includes(prefix);
       if (hasGroupRef || allEnabled) {
         onEnabledToolsChange(
           currentTools.filter(
@@ -500,15 +525,12 @@ export default function ToolSelectionComponent({
     <div className={styles.toolsSection}>
       <div className={styles.toolsListWrapper}>
         {/* Search */}
-        <div className={styles.toolsSearch}>
-          <input
-            type="text"
-            className={styles.toolsSearchInput}
-            placeholder="Search tools..."
-            value={toolSearch}
-            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setToolSearch(e.target.value)}
-          />
-        </div>
+        <SearchInputComponent
+          value={toolSearch}
+          onChange={setToolSearch}
+          placeholder="Search tools..."
+          className={styles.toolsSearch}
+        />
 
         <div className={styles.toolsSectionHeaderRight}>
           <div className={styles.segmentedControl}>
@@ -547,7 +569,7 @@ export default function ToolSelectionComponent({
           label="Select All"
         />
 
-        {/* Core System Tools Section */}
+        {/* Core Agentic Tools Section */}
         {filteredCoreTools.length > 0 && (
           <div className={styles.coreGroup}>
             <div
@@ -562,8 +584,21 @@ export default function ToolSelectionComponent({
               <span className={styles.coreIcon}>
                 <Bot size={12} />
               </span>
-              <span className={styles.coreLabel}>Core System Tools</span>
-              <span className={styles.coreBadge}>Locked On</span>
+              <span className={styles.coreLabel}>Core Agentic Tools</span>
+              {agent ? (
+                <span className={styles.coreBadge}>Locked On</span>
+              ) : (
+                <>
+                  <span className={styles.domainCount}>
+                    {enabledCoreCount}/{coreTools.length}
+                  </span>
+                  <DomainCheckbox
+                    domainEnabled={enabledCoreCount}
+                    totalCount={coreTools.length}
+                    onToggle={() => toggleGroupTools("core", coreTools)}
+                  />
+                </>
+              )}
             </div>
 
             {!coreCollapsed && (
@@ -575,18 +610,32 @@ export default function ToolSelectionComponent({
                     position="right"
                     delay={400}
                   >
-                    <label className={`${styles.toolRow} ${styles.coreToolRow}`}>
-                      <input
-                        type="checkbox"
-                        className={`${styles.toolCheckbox} ${styles.coreCheckbox}`}
-                        checked={true}
-                        disabled={true}
-                      />
-                      <span className={`${styles.toolName} ${styles.coreToolName}`}>
-                        {renderToolName(tool.name)}
-                      </span>
-                      <Lock size={10} className={styles.lockIcon} />
-                    </label>
+                    {agent ? (
+                      <label className={`${styles.toolRow} ${styles.coreToolRow}`}>
+                        <input
+                          type="checkbox"
+                          className={`${styles.toolCheckbox} ${styles.coreCheckbox}`}
+                          checked={true}
+                          disabled={true}
+                        />
+                        <span className={`${styles.toolName} ${styles.coreToolName}`}>
+                          {renderToolName(tool.name)}
+                        </span>
+                        <Lock size={10} className={styles.lockIcon} />
+                      </label>
+                    ) : (
+                      <label className={styles.toolRow}>
+                        <input
+                          type="checkbox"
+                          className={styles.toolCheckbox}
+                          checked={resolvedEnabledSet.has(tool.name)}
+                          onChange={() => toggleTool(tool.name)}
+                        />
+                        <span className={styles.toolName}>
+                          {renderToolName(tool.name)}
+                        </span>
+                      </label>
+                    )}
                   </TooltipComponent>
                 ))}
               </div>

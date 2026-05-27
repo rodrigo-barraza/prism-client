@@ -329,9 +329,9 @@ export default function ScheduledTasksPage() {
   const formatScheduleText = (task: Task) => {
     if (task.scheduleType === "hourly") return "Hourly";
     
-    const formatTime = (timeStr?: string) => {
-      if (!timeStr) return "";
-      const [h, m] = timeStr.split(":").map(Number);
+    const formatTime = (timeValue?: string) => {
+      if (!timeValue) return "";
+      const [h, m] = timeValue.split(":").map(Number);
       const ampm = h >= 12 ? "PM" : "AM";
       const displayHour = h % 12 || 12;
       const displayMin = String(m).padStart(2, "0");

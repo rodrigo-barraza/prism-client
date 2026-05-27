@@ -22,9 +22,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return userEmailAddress ? ALLOWED_EMAILS.includes(userEmailAddress) : false;
     },
 
-    authorized({ auth: userSession }) {
-      if (!AUTH_ENABLED) return true;
-      return !!userSession?.user;
+    authorized() {
+      return true;
     },
   },
 });

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import type { ReactNode } from "react";
 import BadgeComponent from "./BadgeComponent";
 import {
   ListChecks,
@@ -18,6 +19,7 @@ import {
 import ToolsApiService from "../services/ToolsApiService";
 import type { AgenticTask } from "../services/ToolsApiService";
 import { getErrorMessage } from "../utils/errorMessage";
+import { SearchInputComponent } from "@rodrigo-barraza/components-library";
 import styles from "./TasksPanelComponent.module.css";
 
 interface StatusConfigEntry {
@@ -52,6 +54,7 @@ interface TasksPanelProps {
   refreshKey?: number;
   agentSessionId?: string;
   onCountChange?: (count: number) => void;
+  onActionsChange?: (actions: ReactNode) => void;
 }
 
 /**
@@ -66,6 +69,7 @@ export default function TasksPanel({
   refreshKey,
   agentSessionId,
   onCountChange,
+  onActionsChange,
 }: TasksPanelProps) {
   const [tasks, setTasks] = useState<AgenticTask[]>([]);
   const [summary, setSummary] = useState<TaskSummary | null>(null);
@@ -74,6 +78,7 @@ export default function TasksPanel({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const hasData = useRef<boolean>(false);
 
   // New task form
@@ -190,6 +195,57 @@ export default function TasksPanel({
     [loadTasks],
   );
 
+  // -- Filtered tasks (client-side) ---------------------------
+  const filteredTasks = useMemo(() => {
+    let result = tasks;
+
+    // Text search — match against subject, description, project, taskId
+    if (searchQuery.trim()) {
+      const normalizedSearch = searchQuery.trim().toLowerCase();
+      result = result.filter((task) => {
+        const subject = (task.subject || "").toLowerCase();
+        const description = (task.description || "").toLowerCase();
+        const project = (task.project || "").toLowerCase();
+        const taskId = (task.taskId || "").toLowerCase();
+        return (
+          subject.includes(normalizedSearch) ||
+          description.includes(normalizedSearch) ||
+          project.includes(normalizedSearch) ||
+          taskId.includes(normalizedSearch)
+        );
+      });
+    }
+
+    return result;
+  }, [tasks, searchQuery]);
+
+  // -- Push header action buttons to parent SidebarTabHeader ---
+  useEffect(() => {
+    onActionsChange?.(
+      <>
+        <button
+          className={styles.headerButton}
+          onClick={() => setShowNewForm((previous) => !previous)}
+          title="Create task"
+        >
+          {showNewForm ? <X size={11} /> : <Plus size={11} />}
+        </button>
+        <button
+          className={styles.headerButton}
+          onClick={loadTasks}
+          disabled={loading}
+          title="Refresh"
+        >
+          <RefreshCw size={11} className={loading ? styles.spin : ""} />
+        </button>
+      </>,
+    );
+  }, [onActionsChange, showNewForm, loading, loadTasks]);
+
+  useEffect(() => {
+    return () => onActionsChange?.(null);
+  }, [onActionsChange]);
+
   // -- Loading ------------------------------------------------
 
   if (loading) {
@@ -217,48 +273,39 @@ export default function TasksPanel({
 
   return (
     <div className={styles.container}>
-      {/* -- Header -------------------------------------------- */}
-      <div className={styles.header}>
-        <span className={styles.headerTitle}>
-          Tasks {summary ? `(${summary.total})` : ""}
-        </span>
-        <button
-          className={styles.headerButton}
-          onClick={() => setShowNewForm((v) => !v)}
-          title="Create task"
-        >
-          {showNewForm ? <X size={11} /> : <Plus size={11} />}
-        </button>
-        <button
-          className={styles.headerButton}
-          onClick={loadTasks}
-          disabled={loading}
-          title="Refresh"
-        >
-          <RefreshCw size={11} className={loading ? styles.spin : ""} />
-        </button>
-      </div>
 
-      {/* -- Summary badges ------------------------------------ */}
-      {summary && summary.total > 0 && (
-        <div className={styles.summaryRow}>
-          {STATUS_CYCLE.map((s) => {
-            const config = STATUS_CONFIG[s];
-            const count = summary[s] || 0;
-            if (count === 0 && statusFilter !== s) return null;
-            const isActive = statusFilter === s;
-            return (
-              <button
-                key={s}
-                className={`${styles.summaryBadge} ${styles[config.colorClass]} ${isActive ? styles.summaryBadgeActive : ""}`}
-                onClick={() => setStatusFilter(isActive ? null : s)}
-                title={`${isActive ? "Clear" : "Filter"}: ${config.label}`}
-              >
-                <config.icon size={9} />
-                {count}
-              </button>
-            );
-          })}
+      {/* -- Search & Filters ------------------------------------- */}
+      {((summary && summary.total > 0) || tasks.length > 0) && (
+        <div className={styles["filter-controls-section"]}>
+          <SearchInputComponent
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search tasks…"
+            className={styles["search-input-wrapper"]}
+          />
+
+          {/* -- Summary badges ------------------------------------ */}
+          {summary && summary.total > 0 && (
+            <div className={styles.summaryRow}>
+              {STATUS_CYCLE.map((s) => {
+                const config = STATUS_CONFIG[s];
+                const count = summary[s] || 0;
+                if (count === 0 && statusFilter !== s) return null;
+                const isActive = statusFilter === s;
+                return (
+                  <button
+                    key={s}
+                    className={`${styles.summaryBadge} ${styles[config.colorClass]} ${isActive ? styles.summaryBadgeActive : ""}`}
+                    onClick={() => setStatusFilter(isActive ? null : s)}
+                    title={`${isActive ? "Clear" : "Filter"}: ${config.label}`}
+                  >
+                    <config.icon size={9} />
+                    {count}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -324,8 +371,18 @@ export default function TasksPanel({
         </div>
       )}
 
+      {/* -- No results after filtering -------------------------- */}
+      {tasks.length > 0 && filteredTasks.length === 0 && (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyTitle}>No matching tasks</div>
+          <div className={styles.emptySubtitle}>
+            Try adjusting your search query.
+          </div>
+        </div>
+      )}
+
       {/* -- Task list --------------------------------------- */}
-      {tasks.map((task) => {
+      {filteredTasks.map((task) => {
         const config =
           STATUS_CONFIG[task.status ?? "pending"] || STATUS_CONFIG.pending;
         const StatusIcon = config.icon;

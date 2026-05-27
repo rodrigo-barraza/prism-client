@@ -521,14 +521,14 @@ export default function SynthesisComponent() {
           if (abortedRef.current) break;
 
           // Append the generated user message to the conversation in Prism
-          const userMsg = { role: "user" as const, content: userContent as string };
-          conversation.push(userMsg);
+          const userMessage = { role: "user" as const, content: userContent as string };
+          conversation.push(userMessage);
           try {
             // Pass meta on the first call to create the conversation record
             const appendMeta = conversationCreated ? undefined : convMeta;
             await PrismService.appendMessages(
               convId,
-              [userMsg],
+              [userMessage],
               undefined,
               appendMeta,
             );

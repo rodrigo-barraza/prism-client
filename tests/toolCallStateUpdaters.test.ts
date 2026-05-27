@@ -289,8 +289,8 @@ describe("applyToolExecutionToMessages", () => {
     });
 
     it("does not mutate the last message object", () => {
-      const lastMsg = makeAssistantMsg({ content: "hello" });
-      const messages: ToolMessageSlice[] = [makeUserMsg(), lastMsg];
+      const lastMessage = makeAssistantMsg({ content: "hello" });
+      const messages: ToolMessageSlice[] = [makeUserMsg(), lastMessage];
 
       applyToolExecutionToMessages(
         messages,
@@ -299,7 +299,7 @@ describe("applyToolExecutionToMessages", () => {
         makeSnapshot(),
       );
 
-      expect(lastMsg.toolCalls).toEqual([]); // Unchanged
+      expect(lastMessage.toolCalls).toEqual([]); // Unchanged
     });
   });
 

@@ -151,11 +151,11 @@ const PALETTE: PaletteEntry[] = [
   { bg: "rgba(34,211,238,0.55)", border: "#22d3ee" },
 ];
 
-let colorIdx = 0;
+let paletteIndex = 0;
 function getQuantColor(q: string): PaletteEntry {
   if (QUANT_COLORS[q]) return QUANT_COLORS[q];
-  const fallbackColor = PALETTE[colorIdx % PALETTE.length];
-  colorIdx++;
+  const fallbackColor = PALETTE[paletteIndex % PALETTE.length];
+  paletteIndex++;
   return fallbackColor;
 }
 
@@ -1396,10 +1396,10 @@ export default function VramBenchmarkComponent() {
     if (!context) return;
     const mode = activeScatterMode;
     // With range-based context filter, check if multiple distinct contexts exist
-    const distinctCtx = new Set(
+    const distinctContextLengths = new Set(
       allFilteredData.map((d) => d.contextLength),
     );
-    const showAllCtx = distinctCtx.size > 1;
+    const hasMultipleContextLengths = distinctContextLengths.size > 1;
     let datasets: import("chart.js").ChartDataset[] = [];
 
     // Helper to build bubble data point from a model entry
@@ -1428,7 +1428,7 @@ export default function VramBenchmarkComponent() {
 
     // Compute bestKeys: for "all contexts", find the highest-TPS entry per group
     const computeBestKeys = (entries: VramBenchmarkEntry[], groupKeyFn: (entry: VramBenchmarkEntry) => string) => {
-      if (!showAllCtx) return null;
+      if (!hasMultipleContextLengths) return null;
       const bestByGroup: Record<string, VramBenchmarkEntry> = {};
       for (const m of entries) {
         const gk = groupKeyFn(m);
@@ -1461,7 +1461,7 @@ export default function VramBenchmarkComponent() {
       const byKey: Record<string, VramBenchmarkEntry> = {};
       for (const d of source) {
         const gpu = d.system?.gpu?.name || "Unknown";
-        const key = showAllCtx
+        const key = hasMultipleContextLengths
           ? `${d.displayName}__${gpu}__${d.contextLength}`
           : `${d.displayName}__${gpu}`;
         if (
@@ -1559,7 +1559,7 @@ export default function VramBenchmarkComponent() {
     } else {
       // Single machine — use allFilteredData when showing all contexts
       let source;
-      if (showAllCtx) {
+      if (hasMultipleContextLengths) {
         source = allFilteredData.filter(
           (d) => (d.system?.hostname || "unknown") === machineFilter,
         );
@@ -1571,7 +1571,7 @@ export default function VramBenchmarkComponent() {
       // Dedup per model (+context when showing all)
       const byKey: Record<string, VramBenchmarkEntry> = {};
       for (const d of source) {
-        const key = showAllCtx
+        const key = hasMultipleContextLengths
           ? `${d.displayName || "unknown"}__${d.contextLength}`
           : (d.displayName || "unknown");
         const existing = byKey[key];
@@ -2644,16 +2644,16 @@ export default function VramBenchmarkComponent() {
     });
 
     // Color gradient for context bars: cyan → emerald → teal by context magnitude
-    const allCtx = sorted.map(
+    const allContextValues = sorted.map(
       (m) =>
         (ctxRanges as Record<string, RangeStats>)[m.displayName || "unknown"]?.max || (m.contextLength || 0) / 1024,
     );
-    const cMin = Math.min(...allCtx);
-    const cMax = Math.max(...allCtx);
-    const cSpan = cMax - cMin || 1;
+    const contextMinimum = Math.min(...allContextValues);
+    const contextMaximum = Math.max(...allContextValues);
+    const contextSpan = contextMaximum - contextMinimum || 1;
 
     function ctxColor(k: number, alpha = 0.55) {
-      const t = (k - cMin) / cSpan; // 0 → 1
+      const t = (k - contextMinimum) / contextSpan; // 0 → 1
       // HSL sweep: 190 (cyan/small) → 160 (emerald/medium) → 140 (teal/large)
       const hue = 190 - t * 50;
       const sat = 60 + t * 20;

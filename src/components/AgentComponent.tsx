@@ -494,6 +494,7 @@ export default function AgentComponent({
   const [workersHeaderActions, setWorkersHeaderActions] = useState<ReactNode>(null);
   const [mcpHeaderActions, setMcpHeaderActions] = useState<ReactNode>(null);
   const [skillsHeaderActions, setSkillsHeaderActions] = useState<ReactNode>(null);
+  const [tasksHeaderActions, setTasksHeaderActions] = useState<ReactNode>(null);
   const [workspaceTreeStats, setWorkspaceTreeStats] = useState<{ totalEntries: number; truncated: boolean } | null>(null);
   const [workerToolActivity, setWorkerToolActivity] = useState<Record<string, WorkerActivityEntry>>({});
 
@@ -1846,17 +1847,17 @@ export default function AgentComponent({
             const cleanText = streamedText.trim();
             setMessages((previousPixelSize) => {
               const updated = [...previousPixelSize];
-              const lastMsg = updated[updated.length - 1];
-              if (lastMsg?.role === "assistant") {
-                lastMsg.content = cleanText;
-                lastMsg.contentSegments = snapshotSegments();
-                lastMsg.textFragments = [...textFragments];
-                lastMsg.thinkingFragments = [...thinkingFragments];
-                lastMsg._streamingOutputCharacters = outputCharacters || 0;
-                lastMsg._streamingStartTime = firstChunkTime;
-                lastMsg._streamingLastChunkTime = now;
-                lastMsg._streamingBurstTokens = burstTokens;
-                lastMsg._streamingBurstElapsed = burstElapsed;
+              const lastMessage = updated[updated.length - 1];
+              if (lastMessage?.role === "assistant") {
+                lastMessage.content = cleanText;
+                lastMessage.contentSegments = snapshotSegments();
+                lastMessage.textFragments = [...textFragments];
+                lastMessage.thinkingFragments = [...thinkingFragments];
+                lastMessage._streamingOutputCharacters = outputCharacters || 0;
+                lastMessage._streamingStartTime = firstChunkTime;
+                lastMessage._streamingLastChunkTime = now;
+                lastMessage._streamingBurstTokens = burstTokens;
+                lastMessage._streamingBurstElapsed = burstElapsed;
               } else {
                 updated.push({
                   role: "assistant",
@@ -1916,16 +1917,16 @@ export default function AgentComponent({
 
             setMessages((previousPixelSize) => {
               const updated = [...previousPixelSize];
-              const lastMsg = updated[updated.length - 1];
-              if (lastMsg?.role === "assistant") {
-                lastMsg.thinking = streamedThinking;
-                lastMsg.contentSegments = snapshotSegments();
-                lastMsg.thinkingFragments = [...thinkingFragments];
-                lastMsg._streamingOutputCharacters = outputCharacters || 0;
-                lastMsg._streamingStartTime = firstChunkTime;
-                lastMsg._streamingLastChunkTime = now;
-                lastMsg._streamingBurstTokens = burstTokens;
-                lastMsg._streamingBurstElapsed = burstElapsed;
+              const lastMessage = updated[updated.length - 1];
+              if (lastMessage?.role === "assistant") {
+                lastMessage.thinking = streamedThinking;
+                lastMessage.contentSegments = snapshotSegments();
+                lastMessage.thinkingFragments = [...thinkingFragments];
+                lastMessage._streamingOutputCharacters = outputCharacters || 0;
+                lastMessage._streamingStartTime = firstChunkTime;
+                lastMessage._streamingLastChunkTime = now;
+                lastMessage._streamingBurstTokens = burstTokens;
+                lastMessage._streamingBurstElapsed = burstElapsed;
               } else {
                 updated.push({
                   role: "assistant",
@@ -2068,11 +2069,11 @@ export default function AgentComponent({
                       );
                       setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
-                        const closedIdx = previousPixelSize.findIndex(
+                        const closedTabIndex = previousPixelSize.findIndex(
                           (f: ViewerOpenFile) => f.id === deleted.id,
                         );
                         const newActive =
-                          next[Math.min(closedIdx, next.length - 1)];
+                          next[Math.min(closedTabIndex, next.length - 1)];
                         return newActive?.id || null;
                       });
                       return next;
@@ -2176,11 +2177,11 @@ export default function AgentComponent({
                       );
                       setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
-                        const closedIdx = previousPixelSize.findIndex(
+                        const closedTabIndex = previousPixelSize.findIndex(
                           (f: ViewerOpenFile) => f.id === deleted.id,
                         );
                         const newActive =
-                          next[Math.min(closedIdx, next.length - 1)];
+                          next[Math.min(closedTabIndex, next.length - 1)];
                         return newActive?.id || null;
                       });
                       return next;
@@ -4017,14 +4018,14 @@ export default function AgentComponent({
                     // _backgroundUsage accumulates tokens from fire-and-forget LLM calls
                     // (memory extraction, consolidation) as they complete.
                     // When done, use backendSessionStats which includes everything.
-                    const lastMsg = messages[messages.length - 1];
+                    const lastMessage = messages[messages.length - 1];
                     const liveGP =
-                      lastMsg?.role === "assistant"
-                        ? lastMsg._liveGenProgress
+                      lastMessage?.role === "assistant"
+                        ? lastMessage._liveGenProgress
                         : null;
                     const bgUsage =
-                      lastMsg?.role === "assistant"
-                        ? lastMsg._backgroundUsage
+                      lastMessage?.role === "assistant"
+                        ? lastMessage._backgroundUsage
                         : null;
                     const bgInput = bgUsage?.inputTokens || 0;
                     const bgOutput = bgUsage?.outputTokens || 0;
@@ -4131,14 +4132,14 @@ export default function AgentComponent({
                     // When _liveGenProgress exists, use backend-authoritative token
                     // counts instead of the client-side computeSessionStats math.
                     // Include _backgroundUsage from fire-and-forget LLM calls.
-                    const lastMsg = messages[messages.length - 1];
+                    const lastMessage = messages[messages.length - 1];
                     const gp =
-                      lastMsg?.role === "assistant"
-                        ? lastMsg._liveGenProgress
+                      lastMessage?.role === "assistant"
+                        ? lastMessage._liveGenProgress
                         : null;
                     const bgUsage =
-                      lastMsg?.role === "assistant"
-                        ? lastMsg._backgroundUsage
+                      lastMessage?.role === "assistant"
+                        ? lastMessage._backgroundUsage
                         : null;
                     const bgIn = bgUsage?.inputTokens || 0;
                     const bgOut = bgUsage?.outputTokens || 0;
@@ -4316,12 +4317,13 @@ export default function AgentComponent({
 
       {leftTab === "tasks" && (
         <>
-        <SidebarTabHeaderComponent icon={ListChecks} title="Tasks" count={tasksCount} />
+        <SidebarTabHeaderComponent icon={ListChecks} title="Tasks" count={tasksCount} actions={tasksHeaderActions} />
         <TasksPanel
           project={agentProject}
           refreshKey={tasksRefreshKey}
           agentSessionId={agentSessionId}
           onCountChange={setTasksCount}
+          onActionsChange={setTasksHeaderActions}
         />
         </>
       )}
@@ -4549,29 +4551,29 @@ export default function AgentComponent({
 
       {/* -- Status indicator bar (rainbow canvas above input) -- */}
       {(() => {
-        const lastMsg = messages[messages.length - 1];
+        const lastMessage = messages[messages.length - 1];
 
         // Derive raw status phase/label with robust local fallbacks when cloud models
         // do not emit explicit status events or when messages lack statusPhase metadata.
         let derivedPhase = null;
         let derivedLabel = null;
 
-        if (isGenerating && lastMsg?.role === "assistant") {
-          if (lastMsg.content && lastMsg.content.trim().length > 0) {
+        if (isGenerating && lastMessage?.role === "assistant") {
+          if (lastMessage.content && lastMessage.content.trim().length > 0) {
             derivedPhase = "generating";
             derivedLabel = "Generating...";
-          } else if (lastMsg.thinking && lastMsg.thinking.trim().length > 0) {
+          } else if (lastMessage.thinking && lastMessage.thinking.trim().length > 0) {
             derivedPhase = "thinking";
             derivedLabel = "Thinking...";
           }
         }
 
         const rawPhase = isGenerating
-          ? derivedPhase || lastMsg?.statusPhase || "starting"
+          ? derivedPhase || lastMessage?.statusPhase || "starting"
           : null;
 
         const rawLabel = isGenerating
-          ? derivedLabel || lastMsg?.status || "Starting..."
+          ? derivedLabel || lastMessage?.status || "Starting..."
           : undefined;
 
         const hasActiveTools = toolActivity.some(
@@ -4648,7 +4650,7 @@ export default function AgentComponent({
         // Structured progress (0-1) from LM Studio prompt processing / model loading
         const progress =
           phase === "processing" || phase === "loading"
-            ? (lastMsg?._statusProgress ?? null)
+            ? (lastMessage?._statusProgress ?? null)
             : null;
 
         // Orchestrator tok/s from burst-scoped generation metrics.
@@ -4882,8 +4884,8 @@ export default function AgentComponent({
                 const next = previousPixelSize.filter((f) => f.id !== id);
                 // If the closed tab was active, switch to the nearest tab
                 if (id === viewerActiveFileId) {
-                  const closedIdx = previousPixelSize.findIndex((f: ViewerOpenFile) => f.id === id);
-                  const newActive = next[Math.min(closedIdx, next.length - 1)];
+                  const closedTabIndex = previousPixelSize.findIndex((f: ViewerOpenFile) => f.id === id);
+                  const newActive = next[Math.min(closedTabIndex, next.length - 1)];
                   setViewerActiveFileId(newActive?.id || null);
                 }
                 return next;
@@ -4895,8 +4897,8 @@ export default function AgentComponent({
                 const next = previousPixelSize.filter((f) => f.id !== id);
                 setViewerActiveFileId((activeId: string | null) => {
                   if (activeId !== id) return activeId;
-                  const closedIdx = previousPixelSize.findIndex((f: ViewerOpenFile) => f.id === id);
-                  const newActive = next[Math.min(closedIdx, next.length - 1)];
+                  const closedTabIndex = previousPixelSize.findIndex((f: ViewerOpenFile) => f.id === id);
+                  const newActive = next[Math.min(closedTabIndex, next.length - 1)];
                   return newActive?.id || null;
                 });
                 return next;

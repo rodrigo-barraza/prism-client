@@ -172,7 +172,7 @@ export default function StatusBarComponent({
     active && isColorPhase ? (PHASE_PALETTES as Record<string, any>)[phase] || null : null;
 
   // Progress percentage
-  const progressPct = hasEffectiveProgress
+  const progressPercentage = hasEffectiveProgress
     ? Math.round(effectiveProgress * 100)
     : null;
 
@@ -191,7 +191,7 @@ export default function StatusBarComponent({
       {active && hasEffectiveProgress && (
         <div
           className={styles.statusBarProgressFill}
-          style={{ width: `${progressPct}%` }}
+          style={{ width: `${progressPercentage}%` }}
         />
       )}
       <div
@@ -205,7 +205,7 @@ export default function StatusBarComponent({
             <span className={styles.statusBarMessage}>
               {resolvedLabel}
               {hasEffectiveProgress && (
-                <span className={styles.statusBarProgress}>{progressPct}%</span>
+                <span className={styles.statusBarProgress}>{progressPercentage}%</span>
               )}
               {tokPerSec != null && tokPerSec > 0 && (
                 <span className={styles.statusBarSpeed}>

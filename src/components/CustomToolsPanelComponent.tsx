@@ -674,6 +674,7 @@ export default function CustomToolsPanel({
               onToggleBuiltIn?.(tool.name);
           }
         }}
+        agent={agent}
       />
     );
   }
@@ -719,6 +720,7 @@ export default function CustomToolsPanel({
           availableTools={builtInTools}
           enabledTools={derivedEnabled}
           onEnabledToolsChange={handleSelectionChange}
+          agent={agent}
         />
       )}
 

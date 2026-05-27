@@ -597,6 +597,7 @@ export default function CustomAgentsPanel({
             onEnabledToolsChange={(tools: string[]) =>
               updateField("enabledTools", tools)
             }
+            agent={true}
           />
 
           {/* Policy Editor */}

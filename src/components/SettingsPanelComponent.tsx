@@ -379,24 +379,26 @@ export default function SettingsPanel({
   return (
     <>
       <div className={styles.container}>
-        <div className={styles.sessionStats}>
-          <div className={styles.statsHeader}>
-            <Layers size={12} style={{ marginRight: 4 }} /> {sessionLabel}
-            {showStatsTabBar && (
-              <StatsTabBarComponent
-                activeTab={statsTab}
-                onChange={setStatsTab}
-              />
+        {sessionStats && (
+          <div className={styles.sessionStats}>
+            <div className={styles.statsHeader}>
+              <Layers size={12} style={{ marginRight: 4 }} /> {sessionLabel}
+              {showStatsTabBar && (
+                <StatsTabBarComponent
+                  activeTab={statsTab}
+                  onChange={setStatsTab}
+                />
+              )}
+            </div>
+            {activeStats ? (
+              renderStatsBadges(activeStats, statsTab === "all")
+            ) : (
+              <div className={styles.statsBadges}>
+                <BadgeComponent type="messages" count={0} />
+              </div>
             )}
           </div>
-          {activeStats ? (
-            renderStatsBadges(activeStats, statsTab === "all")
-          ) : (
-            <div className={styles.statsBadges}>
-              <BadgeComponent type="messages" count={0} />
-            </div>
-          )}
-        </div>
+        )}
 
         {workflows.length > 0 && (
           <div className={styles.section} style={{ marginBottom: 12 }}>
