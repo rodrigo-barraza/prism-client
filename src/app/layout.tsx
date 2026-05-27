@@ -6,6 +6,7 @@ import {
   CustomThemeBootComponent,
   generateThemeInitScript,
 } from "@rodrigo-barraza/components-library";
+import { SessionProvider } from "next-auth/react";
 import { WorkspaceProvider } from "../components/WorkspaceContextComponent";
 import "./globals.css";
 import SessionTrackerComponent from "@/components/SessionTrackerComponent";
@@ -74,15 +75,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body className={`${inter.variable} ${notoColorEmoji.variable} ${notoEmoji.variable}`}>
-        <ThemeProvider storageKey="prism:theme" defaultTheme="light">
-          <CustomThemeBootComponent storageKey="prism:custom-themes" />
-          <ComponentsProvider sound>
-            <WorkspaceProvider>
-              {children}
-              <SessionTrackerComponent />
-            </WorkspaceProvider>
-          </ComponentsProvider>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider storageKey="prism:theme" defaultTheme="light">
+            <CustomThemeBootComponent storageKey="prism:custom-themes" />
+            <ComponentsProvider sound>
+              <WorkspaceProvider>
+                {children}
+                <SessionTrackerComponent />
+              </WorkspaceProvider>
+            </ComponentsProvider>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

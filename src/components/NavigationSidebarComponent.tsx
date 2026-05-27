@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
+import { useSession, signIn, signOut } from "next-auth/react";
 import PrismService from "../services/PrismService";
 import {
   LayoutDashboard,
@@ -29,6 +30,8 @@ import {
   AlertCircle,
   Eye,
   Clock,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import {
   useTheme,
@@ -177,6 +180,7 @@ export default function NavigationSidebarComponent({
     text: textCount,
   };
   const pathname = usePathname();
+  const { data: userSession, status: authStatus } = useSession();
   const { theme, themes, setTheme } = useTheme();
   const customThemeMeta = useMemo(() => CustomThemeService.getCustomThemeMetaMap(), []);
   const [showNav, setShowNav] = useState(() => {
@@ -707,6 +711,29 @@ interface CatState {
 
               {/* Footer actions */}
               <div className={styles.mobilePopoverFooter}>
+                {authStatus === "authenticated" ? (
+                  <button
+                    className={styles.navigationLink}
+                    onClick={() => {
+                      signOut();
+                      setMobileOpen(false);
+                    }}
+                  >
+                    <LogOut className={styles.navigationIcon} />
+                    <span className={styles.navigationLabel}>Log Out</span>
+                  </button>
+                ) : authStatus === "unauthenticated" ? (
+                  <button
+                    className={styles.navigationLink}
+                    onClick={() => {
+                      signIn("google");
+                      setMobileOpen(false);
+                    }}
+                  >
+                    <LogIn className={styles.navigationIcon} />
+                    <span className={styles.navigationLabel}>Log In</span>
+                  </button>
+                ) : null}
                 {isAdmin ? (
                   <Link
                     href="/"
@@ -844,6 +871,41 @@ interface CatState {
 
         {/* Footer */}
         <div className={styles.footer}>
+          {authStatus === "authenticated" ? (
+            <TooltipComponent
+              label="Log Out"
+              position="right"
+              delay={200}
+              disabled={showNav}
+              className={styles.tooltipFill}
+            >
+              <button
+                className={styles.navigationLink}
+                onClick={() => signOut()}
+                onMouseEnter={(e) => SoundService.playHover({ event: e.nativeEvent })}
+              >
+                <LogOut className={styles.navigationIcon} />
+                <span className={styles.navigationLabel}>Log Out</span>
+              </button>
+            </TooltipComponent>
+          ) : authStatus === "unauthenticated" ? (
+            <TooltipComponent
+              label="Log In"
+              position="right"
+              delay={200}
+              disabled={showNav}
+              className={styles.tooltipFill}
+            >
+              <button
+                className={styles.navigationLink}
+                onClick={() => signIn("google")}
+                onMouseEnter={(e) => SoundService.playHover({ event: e.nativeEvent })}
+              >
+                <LogIn className={styles.navigationIcon} />
+                <span className={styles.navigationLabel}>Log In</span>
+              </button>
+            </TooltipComponent>
+          ) : null}
           {isAdmin ? (
             <TooltipComponent
               label="Back to Prism"
