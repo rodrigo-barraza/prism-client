@@ -2313,6 +2313,42 @@ export default function AgentComponent({
               });
             } else if (statusData?.message === "skills_injected") {
               setInjectedSkills(statusData.skills || []);
+            } else if (statusData?.message === "compaction_started") {
+              setMessages((previousMessages) => {
+                const updatedMessages = [...previousMessages];
+                const lastMessage = updatedMessages[updatedMessages.length - 1];
+                if (lastMessage?.role === "assistant") {
+                  updatedMessages[updatedMessages.length - 1] = {
+                    ...lastMessage,
+                    status: "Compacting conversation...",
+                    statusPhase: "processing",
+                  };
+                } else {
+                  updatedMessages.push({
+                    role: "assistant",
+                    content: "",
+                    status: "Compacting conversation...",
+                    statusPhase: "processing",
+                  });
+                }
+                return updatedMessages;
+              });
+            } else if (
+              statusData?.message === "compaction_complete" ||
+              statusData?.message === "compaction_failed"
+            ) {
+              setMessages((previousMessages) => {
+                const updatedMessages = [...previousMessages];
+                const lastMessage = updatedMessages[updatedMessages.length - 1];
+                if (lastMessage?.role === "assistant" && lastMessage.statusPhase === "processing") {
+                  updatedMessages[updatedMessages.length - 1] = {
+                    ...lastMessage,
+                    status: undefined,
+                    statusPhase: undefined,
+                  };
+                }
+                return updatedMessages;
+              });
             } else if (statusData?.message === "context_truncated") {
               setContextTruncated({
                 strategy: statusData.strategy || "",
@@ -2712,13 +2748,15 @@ export default function AgentComponent({
               const last = updated[updated.length - 1];
               if (last?.role !== "assistant") return prev;
 
-              // Background operations (memory extraction, consolidation, embeddings)
-              // emit incremental usage_update events. Accumulate them separately so
-              // the token badge grows smoothly instead of jumping when
-              // fetchSessionStats discovers them all at once.
+              // Background operations (memory extraction, consolidation, embeddings,
+              // compaction) emit incremental usage_update events. Accumulate them
+              // separately so the token badge grows smoothly instead of jumping
+              // when fetchSessionStats discovers them all at once.
               const op = (data.operation as string) || "";
               const isBackground =
-                op.startsWith("memory:") || op.startsWith("embed:");
+                op.startsWith("memory:") ||
+                op.startsWith("embed:") ||
+                op.startsWith("compact:");
               if (isBackground) {
                 const bg = last._backgroundUsage || {
                   inputTokens: 0,
