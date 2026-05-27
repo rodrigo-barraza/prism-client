@@ -197,6 +197,7 @@ export interface ParsedToolResult {
     data: string;
     mimeType?: string;
   };
+  audioRef?: string;
   duration?: number;
   sampleCount?: number;
 }
@@ -836,7 +837,10 @@ function AudioGeneratorRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
-  const audioSrc = useMemo(() => {
+  const audioSource = useMemo(() => {
+    if (parsed.audioRef) {
+      return PrismService.getFileUrl(parsed.audioRef);
+    }
     if (!parsed.audio?.data) return null;
     const mimeType = parsed.audio.mimeType || "audio/wav";
     return `data:${mimeType};base64,${parsed.audio.data}`;
@@ -861,7 +865,7 @@ function AudioGeneratorRenderer({ result, args }: RendererProps) {
         />
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
-      {audioSrc && <AudioPlayerRecorderComponent src={audioSrc} />}
+      {audioSource && <AudioPlayerRecorderComponent src={audioSource} />}
     </div>
   );
 }
