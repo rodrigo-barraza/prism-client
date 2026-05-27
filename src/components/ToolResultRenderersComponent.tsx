@@ -30,14 +30,10 @@ import {
   StopCircle,
   Zap,
   Download,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
   Music,
 } from "lucide-react";
 
-import { SliderComponent } from "@rodrigo-barraza/components-library";
+import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 
 import MarkdownContent from "./MarkdownContentComponent";
 const LazyMessageList = lazy(() => import("./MessageListComponent"));
@@ -840,163 +836,32 @@ function AudioGeneratorRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
   const audioSrc = useMemo(() => {
-    if (!parsed.audio?.data) return "";
+    if (!parsed.audio?.data) return null;
     const mimeType = parsed.audio.mimeType || "audio/wav";
     return `data:${mimeType};base64,${parsed.audio.data}`;
   }, [parsed]);
 
-  const duration = parsed.duration || 0;
+  const totalDuration = parsed.duration || 0;
   const sampleCount = parsed.sampleCount || 0;
-
-  const togglePlay = useCallback(() => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play().catch((error) => {
-        console.error("Failed to play audio:", error);
-      });
-      setIsPlaying(true);
-    }
-  }, [isPlaying]);
-
-  const toggleMute = useCallback(() => {
-    if (!audioRef.current) return;
-    const nextMuted = !isMuted;
-    audioRef.current.muted = nextMuted;
-    setIsMuted(nextMuted);
-  }, [isMuted]);
-
-  const handleTimeUpdate = useCallback(() => {
-    if (!audioRef.current) return;
-    setCurrentTime(audioRef.current.currentTime);
-  }, []);
-
-  const handleEnded = useCallback(() => {
-    setIsPlaying(false);
-    setCurrentTime(0);
-  }, []);
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
-  const totalDuration = duration || (audioRef.current ? audioRef.current.duration : 0) || 0;
-  const visualizerBarsCount = 36;
+  const hasError = !!parsed.error;
 
   return (
-    <div className={styles["audio-player-container"]}>
-      {audioSrc && (
-        <audio
-          ref={audioRef}
-          src={audioSrc}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleEnded}
-        />
-      )}
-
-      <div className={styles["audio-player-header-section"]}>
-        <div className={styles["audio-player-title-container"]}>
-          <Music size={14} className={styles.dirIcon} />
-          <span className={styles["audio-player-title"]}>
-            {args?.presetEffect
-              ? `Retro Sound Preset: '${args.presetEffect}'`
-              : `Procedural Synth (${args?.waveform || "sine"} wave)`}
-          </span>
-        </div>
-        <span className={styles["audio-player-meta-text"]}>
-          {totalDuration.toFixed(2)}s · {sampleCount.toLocaleString()} samples
+    <div className={styles.rendererBlock}>
+      <div className={styles.rendererHeader}>
+        <Music size={13} />
+        <span className={styles.rendererTitle}>
+          {args?.presetEffect
+            ? `Sound Preset: '${args.presetEffect}'`
+            : `Synth (${args?.waveform || "sine"} · ${totalDuration.toFixed(2)}s · ${sampleCount.toLocaleString()} samples)`}
         </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : `${totalDuration.toFixed(2)}s`}
+        />
       </div>
-
-      <div
-        className={`${styles["audio-player-waveform-visualizer"]} ${
-          isPlaying ? styles["is-playing-state"] : ""
-        }`}
-      >
-        {Array.from({ length: visualizerBarsCount }).map((_, index) => {
-          const baseHeight = 20 + Math.sin((index / visualizerBarsCount) * Math.PI) * 70;
-          const animationDelay = `${(index * 0.035).toFixed(3)}s`;
-          const animationDuration = `${(0.45 + (index % 4) * 0.12).toFixed(3)}s`;
-
-          return (
-            <div
-              key={index}
-              className={`${styles["audio-player-wave-bar"]} ${
-                isPlaying ? styles["audio-player-wave-bar-animated"] : ""
-              }`}
-              style={{
-                height: `${baseHeight}%`,
-                animationDelay: isPlaying ? animationDelay : undefined,
-                animationDuration: isPlaying ? animationDuration : undefined,
-              }}
-            />
-          );
-        })}
-      </div>
-
-      <div className={styles["audio-player-control-panel"]}>
-        <button
-          onClick={togglePlay}
-          className={styles["audio-player-play-button"]}
-          aria-label={isPlaying ? "Pause" : "Play"}
-        >
-          {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
-        </button>
-
-        <div className={styles["audio-player-slider-wrapper"]}>
-          <SliderComponent
-            value={currentTime}
-            min={0}
-            max={totalDuration || 1}
-            step={0.01}
-            showValue={false}
-            onChange={(value) => {
-              if (audioRef.current) {
-                audioRef.current.currentTime = value as number;
-                setCurrentTime(value as number);
-              }
-            }}
-          />
-        </div>
-
-        <div className={styles["audio-player-time-display"]}>
-          {formatTime(currentTime)} / {formatTime(totalDuration)}
-        </div>
-
-        <button
-          onClick={toggleMute}
-          className={styles["audio-player-icon-button"]}
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-        </button>
-
-        {audioSrc && (
-          <a
-            href={audioSrc}
-            download={
-              args?.presetEffect
-                ? `synth_${args.presetEffect}.wav`
-                : `synth_audio.wav`
-            }
-            className={styles["audio-player-icon-button"]}
-            aria-label="Download WAV"
-            title="Download WAV"
-          >
-            <Download size={14} />
-          </a>
-        )}
-      </div>
+      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {audioSrc && <AudioPlayerRecorderComponent src={audioSrc} />}
     </div>
   );
 }
