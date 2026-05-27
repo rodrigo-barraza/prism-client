@@ -34,9 +34,9 @@ const TOKEN_GROUPS: { title: string; fields: TokenField[] }[] = [
   {
     title: "Surfaces",
     fields: [
-      { key: "background", label: "Base Background" },
-      { key: "surface", label: "Surface" },
-      { key: "elevated", label: "Elevated" },
+      { key: "backgroundBase", label: "Base Background" },
+      { key: "backgroundSurface", label: "Surface" },
+      { key: "backgroundElevated", label: "Elevated" },
     ],
   },
   {
@@ -422,9 +422,9 @@ export default function CustomThemeEditorComponent({
           <div
             className={styles.livePreview}
             style={{
-              "--preview-background": editTokens.background,
-              "--preview-background-secondary": editTokens.surface,
-              "--preview-background-tertiary": editTokens.elevated,
+              "--preview-background": editTokens.backgroundBase,
+              "--preview-background-secondary": editTokens.backgroundSurface,
+              "--preview-background-tertiary": editTokens.backgroundElevated,
               "--preview-accent": editTokens.primary,
               "--preview-accent2": editTokens.secondary,
               "--preview-text": editTokens.textPrimary,

@@ -567,11 +567,11 @@ interface CatState {
 
       sidebarElement.style.setProperty(
         "--sidebar-contrast-color",
-        isLightBackground ? "rgba(0, 0, 0, 0.87)" : "rgba(255, 255, 255, 0.92)"
+        isLightBackground ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.98)"
       );
       sidebarElement.style.setProperty(
         "--sidebar-contrast-color-muted",
-        isLightBackground ? "rgba(0, 0, 0, 0.5)" : "rgba(255, 255, 255, 0.55)"
+        isLightBackground ? "rgba(0, 0, 0, 0.68)" : "rgba(255, 255, 255, 0.78)"
       );
       sidebarElement.style.setProperty(
         "--sidebar-contrast-border",
