@@ -28,6 +28,8 @@ import {
   CheckCheck,
   Palette,
   Volume2,
+  Download,
+  HardDrive,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
@@ -88,7 +90,7 @@ export default function SettingsPageComponent() {
   const [customAgents, setCustomAgents] = useState<any[]>([]);
   const [availableTools, setAvailableTools] = useState<any[]>([]);
   const [harnesses, setHarnesses] = useState<any[]>([]);
-  const [expandedGuide, setExpandedGuide] = useState<any>(null); // 'docker' | 'local' | null
+  const [expandedGuide, setExpandedGuide] = useState<any>(null); // 'download' | 'docker' | 'local' | null
   const [copiedBlock, setCopiedBlock] = useState<any>(null);
 
   // -- Workspace state ------------------------------------------------
@@ -760,6 +762,125 @@ export default function SettingsPageComponent() {
                 access
               </span>
             </div>
+
+            {/* Single-file download (simplest path) */}
+            <button
+              className={`${styles.guideToggle} ${expandedGuide === "download" ? styles.guideExpanded : ""}`}
+              onClick={() =>
+                setExpandedGuide(expandedGuide === "download" ? null : "download")
+              }
+            >
+              <Download size={16} className={styles.guideToggleIcon} />
+              <div className={styles.guideToggleLabel}>
+                <span className={styles.guideToggleTitle}>Single File</span>
+                <span className={styles.guideToggleHint}>
+                  Download one file, run it anywhere — zero dependencies except
+                  Node.js 22+
+                </span>
+              </div>
+              <ChevronRight size={14} className={styles.guideChevron} />
+            </button>
+
+            {expandedGuide === "download" && (
+              <div className={styles.guideContent}>
+                <div className={styles.singleFileExplainer}>
+                  <div className={styles.singleFileExplainerIcon}>
+                    <HardDrive size={20} />
+                  </div>
+                  <div className={styles.singleFileExplainerText}>
+                    <span className={styles.singleFileExplainerHeadline}>
+                      Connect your local machine to Prism
+                    </span>
+                    <span className={styles.singleFileExplainerDescription}>
+                      The Workspace Agent is a single file that bridges your
+                      local project files to Prism&apos;s AI tools over
+                      WebSocket. Nothing is uploaded — all file access stays on
+                      your device. Works on Windows, macOS, and Linux.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>1</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>
+                      Download the agent
+                    </span>
+                    <a
+                      className={styles.singleFileDownloadButton}
+                      href={PrismService.getWorkspaceAgentDownloadUrl()}
+                      download="workspace-agent.mjs"
+                    >
+                      <Download size={14} />
+                      workspace-agent.mjs
+                    </a>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>2</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>
+                      Run it from your terminal
+                    </span>
+                    <div className={styles.codeBlock}>
+                      <code>
+                        node workspace-agent.mjs{"\n"}
+                        {"  "}--backend ws://YOUR_SERVER:5590{"\n"}
+                        {"  "}--workspace /path/to/your/project{"\n"}
+                        {"  "}--secret YOUR_API_SECRET
+                      </code>
+                      <button
+                        className={styles.copyButton}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            "node workspace-agent.mjs \\\n  --backend ws://YOUR_SERVER:5590 \\\n  --workspace /path/to/your/project \\\n  --secret YOUR_API_SECRET",
+                          );
+                          setCopiedBlock("download-2");
+                          setTimeout(
+                            () => setCopiedBlock(null),
+                            FEEDBACK_STANDARD_MS,
+                          );
+                        }}
+                      >
+                        {copiedBlock === "download-2" ? (
+                          <CheckCheck size={12} />
+                        ) : (
+                          <Copy size={12} />
+                        )}
+                      </button>
+                    </div>
+                    <span className={styles.stepHint}>
+                      Replace the backend URL, workspace path, and secret with
+                      your own values. Leave the terminal running — the agent
+                      reconnects automatically if interrupted.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.guideStep}>
+                  <span className={styles.stepNumber}>3</span>
+                  <div className={styles.stepBody}>
+                    <span className={styles.stepTitle}>
+                      Verify connection
+                    </span>
+                    <span className={styles.stepHint}>
+                      Look for{" "}
+                      <code className={styles.inlineCode}>
+                        Connected to ws://…
+                      </code>{" "}
+                      and{" "}
+                      <code className={styles.inlineCode}>
+                        Server confirmed registration
+                      </code>{" "}
+                      in the output. The agent will appear in this settings
+                      panel under Remote Agents.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Docker setup */}
             <button

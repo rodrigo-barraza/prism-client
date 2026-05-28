@@ -968,3 +968,78 @@
   color: var(--text-muted);
   font-style: italic;
 }
+
+/* ── Single-file download explainer ──────────────────────────────── */
+
+.singleFileExplainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0 6px;
+}
+
+.singleFileExplainerIcon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--accent-primary);
+  color: var(--background-surface, var(--background-base));
+  flex-shrink: 0;
+}
+
+.singleFileExplainerText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.singleFileExplainerHeadline {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.singleFileExplainerDescription {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+/* ── Download button ─────────────────────────────────────────────── */
+
+.singleFileDownloadButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-family: var(--font-mono, monospace);
+  color: var(--background-surface, var(--background-base));
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  width: fit-content;
+  transition:
+    opacity var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.singleFileDownloadButton:hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  transform: translateY(-1px);
+}
+
+.singleFileDownloadButton:active {
+  transform: translateY(0);
+}
+
