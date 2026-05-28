@@ -312,9 +312,6 @@ export default function AgentPickerComponent({
                             : `${agent.toolCount} tools`}
                         </span>
                       )}
-                      {addMode && agent.description && (
-                        <span>{agent.description}</span>
-                      )}
                     </div>
                   </div>
                   {addMode ? (
