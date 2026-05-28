@@ -1172,6 +1172,7 @@ export default function WorkflowsPage({
 
   return (
     <ThreePanelLayout
+      headerTitle="Workflows"
       navSidebar={<NavigationSidebarComponent mode="user" />}
       leftTitle="Assets"
       leftPanel={

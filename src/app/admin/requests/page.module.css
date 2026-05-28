@@ -2,6 +2,18 @@
   animation: fadeIn var(--transition-normal) ease-out;
 }
 
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+}
+
 /* Table */
 .tableWrapper {
   background: var(--background-surface);

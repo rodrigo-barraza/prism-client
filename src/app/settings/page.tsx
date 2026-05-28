@@ -10,7 +10,7 @@ export default function SettingsPage() {
     <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent />
+        <LayoutHeaderComponent title="Settings" />
         <div className={styles["page-content-area"]}>
           <SettingsPageComponent />
         </div>

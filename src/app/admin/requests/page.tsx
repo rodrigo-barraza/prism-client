@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Download, MessageSquare, GitBranch, FolderOpen } from "lucide-react";
+import {
+  Download,
+  MessageSquare,
+  GitBranch,
+  FolderOpen,
+  Filter,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import HistoryItemComponent from "../../../components/HistoryItemComponent";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
@@ -24,16 +30,11 @@ import {
   ButtonComponent,
   PaginationComponent,
   SelectComponent,
+  MultiSelectComponent,
 } from "@rodrigo-barraza/components-library";
 
 import { ErrorMessage } from "../../../components/StateMessageComponent";
-import {
-  FilterBarComponent,
-  FilterGroupComponent,
-  FilterInputComponent,
-  FilterSelectComponent,
-  FilterClearButton,
-} from "../../../components/FilterBarComponent";
+import { FilterInputComponent } from "../../../components/FilterBarComponent";
 import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
 import ChatPreviewComponent from "../../../components/ChatPreviewComponent";
 import MediaCardComponent from "../../../components/MediaCardComponent";
@@ -47,12 +48,11 @@ import { TransformedRequestItem } from "../../../types/types";
 type RequestItem = TransformedRequestItem;
 
 interface RequestFilters {
-  provider: string;
+  provider: string[];
   model: string;
-  endpoint: string;
-  operation: string;
-  success: string;
-  [key: string]: string;
+  endpoint: string[];
+  operation: string[];
+  success: string[];
 }
 
 interface RequestAssociations {
@@ -104,11 +104,11 @@ export default function RequestsPage() {
   );
   const [loadingAssociations, setLoadingAssociations] = useState(false);
   const [filters, setFilters] = useState<RequestFilters>({
-    provider: "",
+    provider: [],
     model: "",
-    endpoint: "",
-    operation: "",
-    success: "",
+    endpoint: [],
+    operation: [],
+    success: [],
   });
 
   const [hoveredConversationId, setHoveredConversationId] = useState<
@@ -187,8 +187,12 @@ export default function RequestsPage() {
         order,
       };
       if (projectFilter) params.project = projectFilter;
-      Object.entries(filters).forEach(([k, v]) => {
-        if (v) params[k] = v;
+      Object.entries(filters).forEach(([key, filterValue]) => {
+        if (Array.isArray(filterValue)) {
+          if (filterValue.length > 0) params[key] = filterValue.join(",");
+        } else if (filterValue) {
+          params[key] = filterValue;
+        }
       });
       Object.assign(params, buildDateRangeParams(dateRange));
 
@@ -277,21 +281,77 @@ export default function RequestsPage() {
     setPage(1);
   }
 
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev: RequestFilters) => ({ ...prev, [key]: value }));
+  const handleMultiFilterChange = useCallback(
+    (key: keyof RequestFilters, values: string[]) => {
+      setFilters((previous: RequestFilters) => ({ ...previous, [key]: values }));
+      setPage(1);
+    },
+    [],
+  );
+
+  const handleModelFilterChange = useCallback((value: string) => {
+    setFilters((previous: RequestFilters) => ({ ...previous, model: value }));
     setPage(1);
   }, []);
 
   function clearFilters() {
     setFilters({
-      provider: "",
+      provider: [],
       model: "",
-      endpoint: "",
-      operation: "",
-      success: "",
+      endpoint: [],
+      operation: [],
+      success: [],
     });
     setPage(1);
   }
+
+  const providerFilterOptions = useMemo(
+    () => [
+      { value: "openai", label: "OpenAI" },
+      { value: "anthropic", label: "Anthropic" },
+      { value: "google", label: "Google" },
+      { value: "elevenlabs", label: "ElevenLabs" },
+    ],
+    [],
+  );
+
+  const endpointFilterOptions = useMemo(
+    () => [
+      { value: "/chat", label: "/chat" },
+      { value: "/agent", label: "/coding-agent" },
+      { value: "/embed", label: "/embed" },
+      { value: "/live", label: "/live" },
+    ],
+    [],
+  );
+
+  const operationFilterOptions = useMemo(
+    () => [
+      { value: "chat", label: "Chat" },
+      { value: "chat:image", label: "Chat: Image" },
+      { value: "agent", label: "Agent" },
+      { value: "agent:iteration", label: "Agent: Iteration" },
+      { value: "agent:image", label: "Agent: Image" },
+      { value: "live", label: "Live" },
+      { value: "memory:extract", label: "Memory: Extract" },
+      { value: "memory:consolidate", label: "Memory: Consolidate" },
+      { value: "session:summarize", label: "Session: Summarize" },
+      { value: "coordinator:decompose", label: "Coordinator: Decompose" },
+      { value: "embed:memory", label: "Embed: Memory" },
+      { value: "embed:api", label: "Embed: API" },
+      { value: "embed:agent-memory", label: "Embed: Agent Memory" },
+      { value: "embed:skill-relevance", label: "Embed: Skill" },
+    ],
+    [],
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [
+      { value: "true", label: "Success" },
+      { value: "false", label: "Error" },
+    ],
+    [],
+  );
 
   const exportCSV = useCallback(() => {
     const headers = [
@@ -374,79 +434,59 @@ export default function RequestsPage() {
   return (
     <div className={styles.page}>
       {/* Filters */}
-      <FilterBarComponent>
-        <FilterGroupComponent label="Provider">
-          <FilterSelectComponent
-            value={filters.provider}
-            onChange={(value: string) => handleFilterChange("provider", value)}
-            options={[
-              { value: "", label: "All" },
-              { value: "openai", label: "OpenAI" },
-              { value: "anthropic", label: "Anthropic" },
-              { value: "google", label: "Google" },
-              { value: "elevenlabs", label: "ElevenLabs" },
-            ]}
-          />
-        </FilterGroupComponent>
-        <FilterGroupComponent label="Model">
-          <FilterInputComponent
-            placeholder="Filter by model..."
-            value={filters.model}
-            onChange={(value: string) => handleFilterChange("model", value)}
-          />
-        </FilterGroupComponent>
-        <FilterGroupComponent label="Endpoint">
-          <FilterSelectComponent
-            value={filters.endpoint}
-            onChange={(value: string) => handleFilterChange("endpoint", value)}
-            options={[
-              { value: "", label: "All" },
-              { value: "/chat", label: "/chat" },
-              { value: "/agent", label: "/coding-agent" },
-              { value: "/embed", label: "/embed" },
-              { value: "/live", label: "/live" },
-            ]}
-          />
-        </FilterGroupComponent>
-        <FilterGroupComponent label="Operation">
-          <FilterSelectComponent
-            value={filters.operation}
-            onChange={(value: string) => handleFilterChange("operation", value)}
-            options={[
-              { value: "", label: "All" },
-              { value: "chat", label: "Chat" },
-              { value: "chat:image", label: "Chat: Image" },
-              { value: "agent", label: "Agent" },
-              { value: "agent:iteration", label: "Agent: Iteration" },
-              { value: "agent:image", label: "Agent: Image" },
-              { value: "live", label: "Live" },
-              { value: "memory:extract", label: "Memory: Extract" },
-              { value: "memory:consolidate", label: "Memory: Consolidate" },
-              { value: "session:summarize", label: "Session: Summarize" },
-              {
-                value: "coordinator:decompose",
-                label: "Coordinator: Decompose",
-              },
-              { value: "embed:memory", label: "Embed: Memory" },
-              { value: "embed:api", label: "Embed: API" },
-              { value: "embed:agent-memory", label: "Embed: Agent Memory" },
-              { value: "embed:skill-relevance", label: "Embed: Skill" },
-            ]}
-          />
-        </FilterGroupComponent>
-        <FilterGroupComponent label="Status">
-          <FilterSelectComponent
-            value={filters.success}
-            onChange={(value: string) => handleFilterChange("success", value)}
-            options={[
-              { value: "", label: "All" },
-              { value: "true", label: "Success" },
-              { value: "false", label: "Error" },
-            ]}
-          />
-        </FilterGroupComponent>
-
-        <FilterClearButton onClick={clearFilters} />
+      <div className={styles.filterBar}>
+        <MultiSelectComponent
+          label="Provider"
+          icon={<Filter size={12} />}
+          value={filters.provider}
+          options={providerFilterOptions}
+          onChange={(values: string[]) =>
+            handleMultiFilterChange("provider", values)
+          }
+          allLabel="All Providers"
+          compact
+        />
+        <FilterInputComponent
+          placeholder="Filter by model…"
+          value={filters.model}
+          onChange={handleModelFilterChange}
+        />
+        <MultiSelectComponent
+          label="Endpoint"
+          icon={<Filter size={12} />}
+          value={filters.endpoint}
+          options={endpointFilterOptions}
+          onChange={(values: string[]) =>
+            handleMultiFilterChange("endpoint", values)
+          }
+          allLabel="All Endpoints"
+          compact
+        />
+        <MultiSelectComponent
+          label="Operation"
+          icon={<Filter size={12} />}
+          value={filters.operation}
+          options={operationFilterOptions}
+          onChange={(values: string[]) =>
+            handleMultiFilterChange("operation", values)
+          }
+          allLabel="All Operations"
+          compact
+        />
+        <MultiSelectComponent
+          label="Status"
+          icon={<Filter size={12} />}
+          value={filters.success}
+          options={statusFilterOptions}
+          onChange={(values: string[]) =>
+            handleMultiFilterChange("success", values)
+          }
+          allLabel="All Statuses"
+          compact
+        />
+        <ButtonComponent variant="ghost" onClick={clearFilters}>
+          Clear
+        </ButtonComponent>
         <ButtonComponent
           variant="secondary"
           icon={Download}
@@ -454,7 +494,7 @@ export default function RequestsPage() {
         >
           Export CSV
         </ButtonComponent>
-      </FilterBarComponent>
+      </div>
 
       {/* Table */}
       <div className={styles.tableWrapper}>

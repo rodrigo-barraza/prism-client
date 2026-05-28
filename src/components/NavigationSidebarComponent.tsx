@@ -15,7 +15,7 @@ import {
   LayoutDashboard,
   ScrollText,
   MessageSquare,
-  ArrowLeft,
+  ShieldCheck,
   Server,
   GitBranch,
   Image as ImageIcon,
@@ -35,7 +35,7 @@ import {
   AlertCircle,
   Eye,
   Clock,
-  LogIn,
+  CircleUser,
   LogOut,
 } from "lucide-react";
 import {
@@ -767,8 +767,10 @@ export default function NavigationSidebarComponent({
                       setMobileOpen(false);
                     }}
                   >
-                    <LogOut className={styles.navigationIcon} />
-                    <span className={styles.navigationLabel}>Log Out</span>
+                    <span className={styles.activeStateLayer}>
+                      <LogOut className={styles.navigationIcon} />
+                      <span className={styles.navigationLabel}>Log Out</span>
+                    </span>
                   </button>
                 ) : authStatus === "unauthenticated" ? (
                   <button
@@ -778,8 +780,10 @@ export default function NavigationSidebarComponent({
                       setMobileOpen(false);
                     }}
                   >
-                    <LogIn className={styles.navigationIcon} />
-                    <span className={styles.navigationLabel}>Log In</span>
+                    <span className={styles.activeStateLayer}>
+                      <CircleUser className={styles.navigationIcon} />
+                      <span className={styles.navigationLabel}>Log In</span>
+                    </span>
                   </button>
                 ) : null}
                 {isAdmin ? (
@@ -788,9 +792,11 @@ export default function NavigationSidebarComponent({
                     className={styles.navigationLink}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <ArrowLeft className={styles.navigationIcon} />
-                    <span className={styles.navigationLabel}>
-                      Back to Prism
+                    <span className={styles.activeStateLayer}>
+                      <ShieldCheck className={styles.navigationIcon} />
+                      <span className={styles.navigationLabel}>
+                        Admin
+                      </span>
                     </span>
                   </Link>
                 ) : isLocal ? (
@@ -799,8 +805,10 @@ export default function NavigationSidebarComponent({
                     className={styles.navigationLink}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <Settings className={styles.navigationIcon} />
-                    <span className={styles.navigationLabel}>Admin</span>
+                    <span className={styles.activeStateLayer}>
+                      <Settings className={styles.navigationIcon} />
+                      <span className={styles.navigationLabel}>Admin</span>
+                    </span>
                   </Link>
                 ) : null}
                 <ThemePickerComponent
@@ -963,8 +971,10 @@ export default function NavigationSidebarComponent({
                   SoundService.playHover({ event: e.nativeEvent })
                 }
               >
-                <LogOut className={styles.navigationIcon} />
-                <span className={styles.navigationLabel}>Log Out</span>
+                <span className={styles.activeStateLayer}>
+                  <LogOut className={styles.navigationIcon} />
+                  <span className={styles.navigationLabel}>Log Out</span>
+                </span>
               </button>
             </TooltipComponent>
           ) : authStatus === "unauthenticated" ? (
@@ -982,14 +992,16 @@ export default function NavigationSidebarComponent({
                   SoundService.playHover({ event: e.nativeEvent })
                 }
               >
-                <LogIn className={styles.navigationIcon} />
-                <span className={styles.navigationLabel}>Log In</span>
+                <span className={styles.activeStateLayer}>
+                  <CircleUser className={styles.navigationIcon} />
+                  <span className={styles.navigationLabel}>Log In</span>
+                </span>
               </button>
             </TooltipComponent>
           ) : null}
           {isAdmin ? (
             <TooltipComponent
-              label="Back to Prism"
+              label="Admin"
               position="right"
               delay={200}
               disabled={showNav}
@@ -1005,8 +1017,10 @@ export default function NavigationSidebarComponent({
                   SoundService.playClick({ event: e.nativeEvent })
                 }
               >
-                <ArrowLeft className={styles.navigationIcon} />
-                <span className={styles.navigationLabel}>Back to Prism</span>
+                <span className={styles.activeStateLayer}>
+                  <ShieldCheck className={styles.navigationIcon} />
+                  <span className={styles.navigationLabel}>Admin</span>
+                </span>
               </Link>
             </TooltipComponent>
           ) : isLocal ? (
@@ -1027,18 +1041,13 @@ export default function NavigationSidebarComponent({
                   SoundService.playClick({ event: e.nativeEvent })
                 }
               >
-                <Settings className={styles.navigationIcon} />
-                <span className={styles.navigationLabel}>Admin</span>
+                <span className={styles.activeStateLayer}>
+                  <Settings className={styles.navigationIcon} />
+                  <span className={styles.navigationLabel}>Admin</span>
+                </span>
               </Link>
             </TooltipComponent>
           ) : null}
-          <ThemePickerComponent
-            theme={theme}
-            themes={themes}
-            onSelectTheme={setTheme}
-            collapsed={!showNav}
-            customThemeMeta={customThemeMeta}
-          />
           {isAdmin && (
             <div className={styles.statusRow}>
               <span
@@ -1049,6 +1058,13 @@ export default function NavigationSidebarComponent({
               </span>
             </div>
           )}
+          <ThemePickerComponent
+            theme={theme}
+            themes={themes}
+            onSelectTheme={setTheme}
+            collapsed={!showNav}
+            customThemeMeta={customThemeMeta}
+          />
         </div>
       </aside>
     </div>

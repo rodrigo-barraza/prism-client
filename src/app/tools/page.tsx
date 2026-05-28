@@ -10,7 +10,7 @@ export default function ToolsPage() {
     <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent />
+        <LayoutHeaderComponent title="Tools" />
         <div className={styles["page-content-area"]}>
           <ToolsPageComponent />
         </div>

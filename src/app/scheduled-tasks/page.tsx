@@ -494,7 +494,7 @@ export default function ScheduledTasksPage() {
       <NavigationSidebarComponent mode="user" />
 
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent />
+        <LayoutHeaderComponent title="Scheduled Tasks" />
         <div className={styles["page-content-area"]}>
           <div className={styles.content}>
             {/* Sleek toast list */}

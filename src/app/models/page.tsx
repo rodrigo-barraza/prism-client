@@ -10,7 +10,7 @@ export default function UserModelsPage() {
     <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent />
+        <LayoutHeaderComponent title="Models" />
         <div className={styles["page-content-area"]}>
           <ModelsPageComponent mode="user" />
         </div>

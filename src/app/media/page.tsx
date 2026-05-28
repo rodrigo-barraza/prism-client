@@ -10,7 +10,7 @@ export default function UserMediaPage() {
     <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent />
+        <LayoutHeaderComponent title="Media" />
         <div className={styles["page-content-area"]}>
           <MediaPageComponent mode="user" />
         </div>

@@ -10,7 +10,7 @@ export default function UserTextPage() {
     <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent />
+        <LayoutHeaderComponent title="Text" />
         <div className={styles["page-content-area"]}>
           <TextPageComponent mode="user" />
         </div>

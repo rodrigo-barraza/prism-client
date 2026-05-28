@@ -10,7 +10,7 @@ export default function VisionPage() {
     <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent />
+        <LayoutHeaderComponent title="Vision" />
         <div className={styles["page-content-area"]}>
           <VisionPageComponent />
         </div>
