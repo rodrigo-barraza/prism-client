@@ -1,59 +1,7 @@
 /* ── ModelPickerPopoverComponent ────────────────────────────────────── */
+/* Trigger rendering is delegated to SelectComponent from the library */
 
-/* ── Trigger pill ───────────────────────────────────────────────────── */
-
-.trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 14px 0 10px;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    border-color 0.2s,
-    background 0.2s,
-    box-shadow 0.2s,
-    transform 0.15s;
-  text-transform: none;
-  letter-spacing: 0;
-  user-select: none;
-  max-width: 100%;
-}
-
-.trigger:hover {
-  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
-  background: var(--background-elevated);
-  box-shadow: 0 0 12px
-    color-mix(in srgb, var(--accent-primary) 15%, transparent);
-}
-
-.triggerReadOnly {
-  cursor: default;
-
-  &:hover {
-    border-color: var(--calculated-border-color);
-    background: var(--background-surface);
-    box-shadow: none;
-  }
-}
-
-.triggerOpen {
-  border-color: var(--accent-primary);
-  background: color-mix(
-    in srgb,
-    var(--accent-primary) 8%,
-    var(--background-surface)
-  );
-  box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--accent-primary) 20%, transparent);
-}
+/* ── Trigger overrides ─────────────────────────────────────────────── */
 
 .triggerActive {
   border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
@@ -64,113 +12,12 @@
   );
 }
 
-/* ── Loading state ──────────────────────────────────────────────────── */
-
-.triggerLoading {
-  position: relative;
-  overflow: hidden;
-  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
-  animation: triggerPulse 2s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.triggerSpinner {
-  animation: spin 1s linear infinite;
-  color: var(--accent-primary);
-  flex-shrink: 0;
-}
-
-.triggerProgressBar {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--accent-primary) 12%, transparent),
-    color-mix(in srgb, var(--accent-primary) 20%, transparent)
-  );
-  transform-origin: left center;
-  transition: transform 0.3s ease-out;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-@keyframes triggerPulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--accent-primary) 10%, transparent);
-  }
-  50% {
-    box-shadow:
-      0 0 0 2px color-mix(in srgb, var(--accent-primary) 30%, transparent),
-      0 0 12px color-mix(in srgb, var(--accent-primary) 15%, transparent);
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.triggerContent {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  overflow: hidden;
-  min-width: 0;
-}
-
-.triggerLabel {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-primary);
-}
-
-/* Wrapper: stacks trigger button + modalities row vertically */
-.triggerWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-  max-width: 100%;
-  min-width: 0;
-  overflow: hidden;
-  transition: opacity 0.25s ease;
-}
-
-/* Faded state when model switching is locked to current session */
-.triggerDisabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.triggerCapabilities {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
 .tooltipCapabilities {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   padding: 4px 2px;
-}
-
-.chevron {
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  margin-left: auto;
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.chevronOpen {
-  transform: rotate(180deg);
 }
 
 /* ── Popover panel (portal-rendered to body) ──────────────────────── */

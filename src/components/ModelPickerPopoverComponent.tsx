@@ -9,7 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Search, X, Loader2 } from "lucide-react";
+import { Search, X } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import PrismService from "../services/PrismService";
 import ModelsTableComponent from "./ModelsTableComponent";
@@ -22,7 +22,7 @@ import { LOCAL_PROVIDERS } from "../constants";
 import styles from "./ModelPickerPopoverComponent.module.css";
 import {
   CloseButtonComponent,
-  TooltipComponent,
+  SelectComponent,
 } from "@rodrigo-barraza/components-library";
 
 // -- Shared model-search store ------------------------------------------
@@ -547,13 +547,11 @@ export default function ModelPickerPopoverComponent({
     return Object.keys(modalityToggles).length > 0 ? modalityToggles : null;
   }, [currentModel, multiSelect]);
 
-  // Trigger icon
+  // Trigger icon (not needed during loading — SelectComponent handles spinner)
   const triggerIconElement = (() => {
     if (triggerIconProp) return triggerIconProp;
     if (multiSelect) return null;
-    if (loadingProgress != null) {
-      return <Loader2 size={14} className={styles.triggerSpinner} />;
-    }
+    if (loadingProgress != null) return null;
     return settings?.provider ? (
       <ProviderLogo provider={settings.provider} size={16} />
     ) : null;
@@ -570,79 +568,45 @@ export default function ModelPickerPopoverComponent({
     return undefined;
   })();
 
-  let buttonElement = (
-    <button
-      ref={triggerRef}
-      className={`${styles.trigger} ${open ? styles.triggerOpen : ""} ${disabled ? styles.triggerReadOnly : ""} ${loadingProgress != null ? styles.triggerLoading : ""} ${multiSelect && (selectedKeys?.size ?? 0) > 0 ? styles.triggerActive : ""}`}
-      onMouseEnter={
-        disabled
-          ? undefined
-          : (e: React.MouseEvent) =>
-              SoundService.playHoverButton({ event: e.nativeEvent })
-      }
-      onClick={
-        disabled
-          ? undefined
-          : (e: React.MouseEvent) => {
-              SoundService.playClickButton({ event: e.nativeEvent });
-              togglePopover();
-            }
-      }
-      data-model-picker-trigger
-      title={
-        disabled ? displayLabel : multiSelect ? "Select models" : "Switch model"
-      }
-      style={disabled ? { cursor: "default" } : undefined}
-    >
-      <span className={styles.triggerContent}>
-        {triggerIconElement}
-        <span className={styles.triggerLabel}>
-          {loadingProgress != null
-            ? `Loading… ${Math.round((loadingProgress ?? 0) * 100)}%`
-            : displayLabel}
-        </span>
-      </span>
-      {!disabled && loadingProgress == null && (
-        <ChevronDown
-          size={14}
-          className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
-        />
-      )}
-      {/* Progress bar overlay */}
-      {loadingProgress != null && (
-        <span
-          className={styles.triggerProgressBar}
-          style={{ transform: `scaleX(${loadingProgress ?? 0})` }}
-        />
-      )}
-    </button>
-  );
+  // Build trigger class overrides for multi-select active state
+  const triggerClassName = [
+    multiSelect && (selectedKeys?.size ?? 0) > 0 ? styles.triggerActive : "",
+  ]
+    .filter(Boolean)
+    .join(" ") || undefined;
 
-  if (!disabled && triggerCapabilities && loadingProgress == null) {
-    buttonElement = (
-      <TooltipComponent
-        label={
-          <div className={styles.tooltipCapabilities}>
-            <ModalityIconComponent modalities={triggerCapabilities} size={10} />
-            <ModelToolsRow tools={triggerCapabilities} variant="condensed" />
-          </div>
-        }
-        position="bottom"
-        enterDelay={150}
-      >
-        {buttonElement}
-      </TooltipComponent>
-    );
-  }
+  // Build rich tooltip content showing modality + tool capabilities
+  const tooltipContent =
+    !disabled && triggerCapabilities && loadingProgress == null ? (
+      <div className={styles.tooltipCapabilities}>
+        <ModalityIconComponent modalities={triggerCapabilities} size={10} />
+        <ModelToolsRow tools={triggerCapabilities} variant="condensed" />
+      </div>
+    ) : null;
 
   const triggerContent = (
     <>
-      {/* -- Trigger pill --------------------------- */}
-      <div
-        className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}
-      >
-        {buttonElement}
-      </div>
+      {/* -- Trigger pill (SelectComponent in controlled mode) ---- */}
+      <SelectComponent
+        isOpen={open}
+        onToggle={() => {
+          SoundService.playClickButton({});
+          togglePopover();
+        }}
+        icon={triggerIconElement}
+        placeholder={displayLabel}
+        disabled={disabled}
+        triggerRef={triggerRef}
+        triggerClassName={triggerClassName}
+        triggerTooltipContent={tooltipContent}
+        loadingProgress={loadingProgress}
+        onMouseEnter={
+          disabled
+            ? undefined
+            : (event: React.MouseEvent) =>
+                SoundService.playHoverButton({ event: event.nativeEvent })
+        }
+      />
 
       {/* -- Popover portal ------------------------------------------- */}
       {open &&
@@ -719,13 +683,14 @@ export default function ModelPickerPopoverComponent({
 
   if (disabled) {
     return (
-      <TooltipComponent
-        label="Start a new session to switch models"
-        position="bottom"
-        enterDelay={200}
-      >
-        {triggerContent}
-      </TooltipComponent>
+      <SelectComponent
+        isOpen={false}
+        onToggle={() => {}}
+        icon={triggerIconElement}
+        placeholder={displayLabel}
+        disabled
+        triggerTooltip="Start a new session to switch models"
+      />
     );
   }
 

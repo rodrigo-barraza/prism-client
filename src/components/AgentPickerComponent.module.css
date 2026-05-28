@@ -1,58 +1,41 @@
-/* Wrapper: stacks trigger button + tool count badge vertically */
-.triggerWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-  max-width: 100%;
-  min-width: 0;
-  transition: opacity 0.25s ease;
-}
+/* ── AgentPickerComponent — Popover + Agent Items ─────────────────── */
+/* Trigger rendering is delegated to SelectComponent from the library */
 
-/* Faded state when agent switching is locked to current session */
-.triggerDisabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
+/* ── Add-mode trigger overrides ────────────── */
 
-.trigger {
-  display: flex;
-  align-items: center;
+.triggerAdd {
   gap: 8px;
-  height: 36px;
-  padding: 0 12px;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-primary);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  position: relative;
-  user-select: none;
-
-  &:hover {
-    border-color: var(--text-tertiary);
-    background: var(--background-surface);
-  }
+  padding: 0 14px 0 10px;
 }
 
-.triggerLabel {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
+.triggerAddOpen {
+  border-color: var(--accent-primary);
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 8%,
+    var(--background-surface)
+  );
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
-.triggerChevron {
-  color: var(--text-tertiary);
+.triggerAddActive {
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 6%,
+    var(--background-surface)
+  );
+}
+
+.triggerAddIcon {
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  color: var(--accent-primary);
+  opacity: 0.8;
+}
 
-  &[data-is-open="true"] {
-    transform: rotate(180deg);
-  }
+.triggerAddActive .triggerAddIcon {
+  opacity: 1;
 }
 
 /* ── Popover ───────────────────────────────── */
@@ -179,51 +162,6 @@
 .activeCheck {
   color: var(--color-indigo);
   flex-shrink: 0;
-}
-
-/* ── Add-mode trigger variant ────────────── */
-
-.triggerAdd {
-  gap: 8px;
-  padding: 0 14px 0 10px;
-}
-
-.triggerAddOpen {
-  border-color: var(--accent-primary);
-  background: color-mix(
-    in srgb,
-    var(--accent-primary) 8%,
-    var(--background-surface)
-  );
-  box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--accent-primary) 20%, transparent);
-}
-
-.triggerAddActive {
-  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
-  background: color-mix(
-    in srgb,
-    var(--accent-primary) 6%,
-    var(--background-surface)
-  );
-}
-
-.triggerAddContent {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  overflow: hidden;
-  min-width: 0;
-}
-
-.triggerAddIcon {
-  flex-shrink: 0;
-  color: var(--accent-primary);
-  opacity: 0.8;
-}
-
-.triggerAddActive .triggerAddIcon {
-  opacity: 1;
 }
 
 /* ── Add button (per-row) ────────────────── */

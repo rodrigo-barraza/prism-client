@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   Bot,
-  ChevronDown,
   Wrench,
   Check,
   Plus,
@@ -16,7 +15,7 @@ import {
   Infinity,
   Palette,
 } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
+import { SelectComponent } from "@rodrigo-barraza/components-library";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
 import BadgeComponent from "./BadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
@@ -206,179 +205,152 @@ export default function AgentPickerComponent({
         ? "1 Agent"
         : `${addCount} Agents`;
 
+  const handleToggle = useCallback(() => {
+    if (!disabled) setIsPopoverOpen((previous) => !previous);
+  }, [disabled]);
+
+  // Build trigger icon: in add-mode use Bot icon, otherwise the agent badge
+  const triggerIcon = addMode ? (
+    <Bot size={14} className={styles.triggerAddIcon} />
+  ) : (
+    <BadgeComponent
+      type="agent"
+      agent={activeAgent}
+      animation={!isPopoverOpen}
+    />
+  );
+
+  // Build trigger label
+  const triggerLabel = addMode
+    ? addLabel
+    : activeAgent?.name || activeAgentId;
+
+  // Build tooltip content for default mode (not add-mode, not disabled, not agentless)
+  const triggerTooltipContent =
+    !addMode && !disabled && activeAgent?.id !== "NONE" ? (
+      <div className={styles.tooltipCapabilities}>
+        <ToolBadgeComponent
+          name="Tool Calling"
+          count={activeAgent?.toolCount}
+          variant="condensed"
+          tooltip={`${activeAgent?.toolCount || 0} Tools available`}
+        />
+      </div>
+    ) : null;
+
+  // Resolve trigger class based on mode
+  const triggerClassName = addMode
+    ? `${styles.triggerAdd} ${isPopoverOpen ? styles.triggerAddOpen : ""} ${addCount > 0 ? styles.triggerAddActive : ""}`
+    : undefined;
+
   const triggerContent = (
     <div style={{ position: "relative" }}>
-      <div
-        className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}
+      <SelectComponent
+        isOpen={isPopoverOpen}
+        onToggle={handleToggle}
+        icon={triggerIcon}
+        placeholder={triggerLabel}
+        disabled={disabled}
+        triggerRef={triggerRef}
+        triggerClassName={triggerClassName}
+        triggerTooltipContent={triggerTooltipContent}
       >
-        {addMode ? (
-          /* -- Add-mode trigger pill -- */
-          <button
-            ref={triggerRef}
-            className={`${styles.trigger} ${styles.triggerAdd} ${isPopoverOpen ? styles.triggerAddOpen : ""} ${addCount > 0 ? styles.triggerAddActive : ""}`}
-            onClick={() => !disabled && setIsPopoverOpen((v) => !v)}
-            title="Add agent to benchmark"
-            disabled={disabled}
-            type="button"
-          >
-            <span className={styles.triggerAddContent}>
-              <Bot size={14} className={styles.triggerAddIcon} />
-              <span className={styles.triggerLabel}>{addLabel}</span>
-            </span>
-            <ChevronDown
-              size={14}
-              className={styles.triggerChevron}
-              data-is-open={isPopoverOpen}
+        {isPopoverOpen && (
+          <>
+            <div
+              className={styles.backdrop}
+              onClick={() => setIsPopoverOpen(false)}
             />
-          </button>
-        ) : (
-          /* -- Default trigger (active agent) -- */
-          (() => {
-            let buttonElement = (
-              <button
-                ref={triggerRef}
-                className={styles.trigger}
-                onClick={() => !disabled && setIsPopoverOpen((v) => !v)}
-                title={`Active agent: ${activeAgent?.name || activeAgentId}`}
-                disabled={disabled}
-                type="button"
-              >
-                <BadgeComponent
-                  type="agent"
-                  agent={activeAgent}
-                  animation={!isPopoverOpen}
-                />
-                <span className={styles.triggerLabel}>
-                  {activeAgent?.name || activeAgentId}
-                </span>
-                <ChevronDown
-                  size={13}
-                  className={styles.triggerChevron}
-                  data-is-open={isPopoverOpen}
-                />
-              </button>
-            );
+            <div className={styles.popover} role="listbox">
+              {sortedAgents.map((agent: any, agentIndex: number) => {
+                const isActive = !addMode && agent.id === activeAgentId;
+                const isHighlighted = agentIndex === highlightedIndex;
+                const shouldAnimate = agent.id === spinningAgentId;
 
-            if (!disabled && activeAgent?.id !== "NONE") {
-              buttonElement = (
-                <TooltipComponent
-                  label={
-                    <div className={styles.tooltipCapabilities}>
-                      <ToolBadgeComponent
-                        name="Tool Calling"
-                        count={activeAgent?.toolCount}
-                        variant="condensed"
-                        tooltip={`${activeAgent?.toolCount || 0} Tools available`}
-                      />
-                    </div>
-                  }
-                  position="bottom"
-                  enterDelay={150}
-                >
-                  {buttonElement}
-                </TooltipComponent>
-              );
-            }
-
-            return buttonElement;
-          })()
-        )}
-      </div>
-
-      {isPopoverOpen && (
-        <>
-          <div
-            className={styles.backdrop}
-            onClick={() => setIsPopoverOpen(false)}
-          />
-          <div className={styles.popover} role="listbox">
-            {sortedAgents.map((agent: any, agentIndex: number) => {
-              const isActive = !addMode && agent.id === activeAgentId;
-              const isHighlighted = agentIndex === highlightedIndex;
-              const shouldAnimate = agent.id === spinningAgentId;
-
-              return (
-                <button
-                  key={agent.id}
-                  className={styles.agentItem}
-                  data-is-active-state={isActive}
-                  data-is-highlighted-state={isHighlighted}
-                  role="option"
-                  aria-selected={isActive}
-                  onMouseEnter={(mouseEvent) => {
-                    setHighlightedIndex(agentIndex);
-                    SoundService.playHover({ event: mouseEvent.nativeEvent });
-                  }}
-                  onMouseLeave={() => {
-                    setHighlightedIndex(-1);
-                  }}
-                  onClick={(mouseEvent) => {
-                    SoundService.playClickButton({
-                      event: mouseEvent.nativeEvent,
-                    });
-                    if (addMode) {
-                      handleAdd(agent);
-                    } else {
-                      handleSelect(agent.id);
+                return (
+                  <button
+                    key={agent.id}
+                    className={styles.agentItem}
+                    data-is-active-state={isActive}
+                    data-is-highlighted-state={isHighlighted}
+                    role="option"
+                    aria-selected={isActive}
+                    onMouseEnter={(mouseEvent) => {
+                      setHighlightedIndex(agentIndex);
+                      SoundService.playHover({ event: mouseEvent.nativeEvent });
+                    }}
+                    onMouseLeave={() => {
+                      setHighlightedIndex(-1);
+                    }}
+                    onClick={(mouseEvent) => {
+                      SoundService.playClickButton({
+                        event: mouseEvent.nativeEvent,
+                      });
+                      if (addMode) {
+                        handleAdd(agent);
+                      } else {
+                        handleSelect(agent.id);
+                      }
+                    }}
+                    type="button"
+                    style={
+                      agent.color
+                        ? ({
+                            "--agent-accent": agent.color,
+                          } as React.CSSProperties)
+                        : undefined
                     }
-                  }}
-                  type="button"
-                  style={
-                    agent.color
-                      ? ({
-                          "--agent-accent": agent.color,
-                        } as React.CSSProperties)
-                      : undefined
-                  }
-                >
-                  <BadgeComponent
-                    type="agent"
-                    agent={agent}
-                    animation={shouldAnimate}
-                  />
-                  <div className={styles.agentInfo}>
-                    <div className={styles.agentName}>{agent.name}</div>
-                    <div className={styles.agentMeta}>
-                      {agent.id !== "NONE" && (
-                        <span className={styles.toolBadge}>
-                          <Wrench size={9} />
-                          {agent.toolCount === -1
-                            ? "All tools"
-                            : `${agent.toolCount} tools`}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {addMode ? (
-                    <span className={styles.addButton}>
-                      <Plus size={12} />
-                      Add
-                    </span>
-                  ) : isActive ? (
-                    <Check
-                      size={14}
-                      className={styles.activeCheck}
-                      style={agent.color ? { color: agent.color } : undefined}
+                  >
+                    <BadgeComponent
+                      type="agent"
+                      agent={agent}
+                      animation={shouldAnimate}
                     />
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
+                    <div className={styles.agentInfo}>
+                      <div className={styles.agentName}>{agent.name}</div>
+                      <div className={styles.agentMeta}>
+                        {agent.id !== "NONE" && (
+                          <span className={styles.toolBadge}>
+                            <Wrench size={9} />
+                            {agent.toolCount === -1
+                              ? "All tools"
+                              : `${agent.toolCount} tools`}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {addMode ? (
+                      <span className={styles.addButton}>
+                        <Plus size={12} />
+                        Add
+                      </span>
+                    ) : isActive ? (
+                      <Check
+                        size={14}
+                        className={styles.activeCheck}
+                        style={agent.color ? { color: agent.color } : undefined}
+                      />
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </SelectComponent>
     </div>
   );
 
   if (disabled) {
     return (
-      <TooltipComponent
-        label="Start a new session to switch agents"
-        position="bottom"
-        enterDelay={200}
-      >
-        {triggerContent}
-      </TooltipComponent>
+      <SelectComponent
+        isOpen={false}
+        onToggle={() => {}}
+        icon={triggerIcon}
+        placeholder={triggerLabel}
+        disabled
+        triggerTooltip="Start a new session to switch agents"
+      />
     );
   }
 
