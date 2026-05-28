@@ -9,11 +9,11 @@ import styles from "./page.module.css";
 
 const LS_ACTIVE_AGENT = "prism:activeAgent";
 
-/** Synthetic "No Agent" entry — direct model chat with all tools. */
+/** Synthetic "Agentless" entry — direct model chat, no agentic loop. */
 const NONE_AGENT = {
   id: "NONE",
-  name: "No Agent",
-  description: "Direct model conversation with all tools available.",
+  name: "Agentless",
+  description: "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
   toolCount: -1, // sentinel — rendered as "All tools" in picker
   custom: false,
@@ -84,7 +84,7 @@ function AgentsPageInner() {
   const initialSessionId = searchParams.get("session") || null;
   const initialTabKey = searchParams.get("tab") || null;
 
-  // Fetch agent personas on mount — prepend "No Agent" synthetic entry
+  // Fetch agent personas on mount — prepend "Agentless" synthetic entry
   useEffect(() => {
     PrismService.getAgentPersonas()
       .then((list: AgentPersona[]) => setAgents([NONE_AGENT, ...list]))

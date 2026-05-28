@@ -67,12 +67,12 @@
   max-height: min(460px, calc(100vh - 120px));
   overflow-y: auto;
   background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
+  border: none;
   border-radius: var(--border-radius);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.25),
     0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 6px;
+  padding: 4px 0;
   animation: agentPickerIn 0.15s ease-out;
 }
 
@@ -100,31 +100,42 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border: none;
   background: transparent;
-  border-radius: calc(var(--border-radius-sm) - 2px);
+  border-radius: 0;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
   color: var(--text-primary);
   text-align: left;
 
-  &:hover {
-    background: var(--background-surface);
+  /* Hover state */
+  &[data-is-highlighted-state="true"] {
+    background: color-mix(
+      in srgb,
+      var(--agent-accent, var(--color-indigo)) 14%,
+      var(--background-surface)
+    );
   }
 
+  /* Active/selected state */
   &[data-is-active-state="true"] {
     background: color-mix(
       in srgb,
-      var(--agent-accent, var(--color-indigo)) 12%,
+      var(--agent-accent, var(--color-indigo)) 10%,
       var(--background-surface)
     );
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--agent-accent, var(--color-indigo)) 25%,
-        transparent
-      );
+  }
+
+  /* Combined: highlighted + active */
+  &[data-is-active-state="true"][data-is-highlighted-state="true"] {
+    background: color-mix(
+      in srgb,
+      var(--agent-accent, var(--color-indigo)) 18%,
+      var(--background-surface)
+    );
   }
 }
 
@@ -225,7 +236,7 @@
   flex-shrink: 0;
 }
 
-.agentItem:hover .addButton {
+.agentItem[data-is-highlighted-state="true"] .addButton {
   opacity: 1;
   background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
   border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);

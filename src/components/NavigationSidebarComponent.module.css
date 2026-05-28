@@ -218,7 +218,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px;
+  padding: 8px;
+  margin: 0 4px;
   border-radius: var(--border-radius-sm);
   color: var(--sidebar-contrast-color-muted, rgba(255, 255, 255, 0.55));
   text-decoration: none;
@@ -232,7 +233,7 @@
   cursor: pointer;
   background: none;
   border: none;
-  width: 100%;
+  width: calc(100% - 8px);
   text-align: left;
   font-family: inherit;
 
@@ -244,7 +245,8 @@
 
 .navigationLink.isActiveState {
   background: transparent;
-  color: var(--accent-primary);
+  color: white;
+  padding: 0;
 
   &::before {
     content: "";
@@ -254,13 +256,13 @@
     transform: translateY(-50%);
     width: 3px;
     height: 18px;
-    background: var(--accent-primary);
+    background: white;
     border-radius: 2px 0 0 2px;
   }
 
   & .navigationIcon,
   & .navigationLabel {
-    color: hsl(0, 90%, 65%);
+    color: white;
     filter: hue-rotate(0deg);
     animation: rainbowHue 4s linear infinite;
     will-change: filter;
@@ -272,11 +274,15 @@
   align-items: center;
   gap: inherit;
   width: 100%;
-  margin: 0 4px;
-  padding: 6px 8px;
+  margin: 0;
+  padding: 8px;
   border-radius: var(--border-radius-sm);
-  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  background: transparent;
   transition: background var(--transition-fast);
+}
+
+.navigationLink.isActiveState .activeStateLayer {
+  background: color-mix(in srgb, white 15%, transparent);
 }
 
 .themeToggle {

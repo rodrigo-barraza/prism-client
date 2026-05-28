@@ -83,8 +83,8 @@ interface Toast {
 
 const NONE_AGENT = {
   id: "NONE",
-  name: "No Agent",
-  description: "Direct model conversations with no agentic loop.",
+  name: "Agentless",
+  description: "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
   toolCount: -1,
   custom: false,

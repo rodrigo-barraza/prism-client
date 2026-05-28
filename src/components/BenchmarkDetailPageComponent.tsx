@@ -678,7 +678,7 @@ export default function BenchmarkDetailPageComponent({
       .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
       .catch(() => {});
 
-    // Load agent personas (all built-in + custom, excluding "No Agent")
+    // Load agent personas (all built-in + custom, excluding "Agentless")
     PrismService.getAgentPersonas()
       .then((list) =>
         setAvailableAgents(list.filter((a) => a.id !== "NONE")),

@@ -14,6 +14,7 @@ import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import {
   SelectComponent,
   ToggleComponent as ToggleSwitch,
+  TextAreaComponent,
 } from "@rodrigo-barraza/components-library";
 import CycleButton from "./CycleButtonComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
@@ -113,6 +114,9 @@ export default function SettingsPanel({
   agentToggles,
 }: SettingsPanelProps) {
   const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
+  const [isSystemPromptOpen, setIsSystemPromptOpen] = useState(
+    () => !!settings.systemPrompt,
+  );
 
   const textModelsMap = config?.textToText?.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
@@ -675,26 +679,6 @@ export default function SettingsPanel({
           </div>
         )}
 
-        {!isSpecialModel && !readOnly && !hideSystemPrompt && (
-          <button
-            className={`${styles.systemPromptButton} ${settings.systemPrompt ? styles.systemPromptActive : ""}`}
-            onClick={() => onSystemPromptClick?.()}
-          >
-            <Edit3 size={16} />
-            System Prompt
-          </button>
-        )}
-
-        {!!(readOnly && !hideSystemPrompt && settings.systemPrompt) && (
-          <div className={styles.formGroup}>
-            <label>
-              <Edit3 size={12} /> System Prompt
-            </label>
-            <div className={styles.readOnlySystemPrompt}>
-              {settings.systemPrompt}
-            </div>
-          </div>
-        )}
 
         {/* -- Agent Toggles (Plan, Auto, Iterations) ---------------- */}
         {(agentToggles?.length ?? 0) > 0 && (
@@ -899,6 +883,44 @@ export default function SettingsPanel({
               </div>
             );
           })()}
+
+        {!isSpecialModel && !readOnly && !hideSystemPrompt && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+            <button
+              className={`${styles.systemPromptButton} ${settings.systemPrompt ? styles.systemPromptActive : ""}`}
+              onClick={() => {
+                setIsSystemPromptOpen((prev) => !prev);
+                onSystemPromptClick?.();
+              }}
+            >
+              <Edit3 size={16} />
+              System Prompt
+            </button>
+            {isSystemPromptOpen && (
+              <TextAreaComponent
+                className={styles.systemPromptTextArea}
+                value={settings.systemPrompt || ""}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  onChange({ systemPrompt: e.target.value });
+                }}
+                placeholder="Enter system prompt instructions here..."
+                minRows={4}
+                maxRows={12}
+              />
+            )}
+          </div>
+        )}
+
+        {!!(readOnly && !hideSystemPrompt && settings.systemPrompt) && (
+          <div className={styles.formGroup}>
+            <label>
+              <Edit3 size={12} /> System Prompt
+            </label>
+            <div className={styles.readOnlySystemPrompt}>
+              {settings.systemPrompt}
+            </div>
+          </div>
+        )}
       </div>
 
       {!readOnly && showSystemPromptModal && (

@@ -96,11 +96,11 @@ const ALL_AGENT = {
   color: "",
 };
 
-/** Synthetic "No Agent" entry — direct model chat. */
+/** Synthetic "Agentless" entry — direct model chat. */
 const NONE_AGENT = {
   id: "NONE",
-  name: "No Agent",
-  description: "Direct model conversations with no agentic loop.",
+  name: "Agentless",
+  description: "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
   toolCount: -1,
   custom: false,
@@ -762,7 +762,7 @@ export default function AdminChatViewerComponent({
         { key: "coordinator", icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>, tooltip: "Coordinator" },
       );
     } else {
-      // No Agent / conversation tabs
+      // Agentless / conversation tabs
       tabs.push(
         { key: "params", icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>, tooltip: "Parameters" },
       );

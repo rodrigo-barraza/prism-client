@@ -281,10 +281,10 @@ interface EmptyStateConfig {
   placeholder: string;
 }
 
-/** No-agent empty state — raw chat via /chat endpoint, no agentic loop. */
+/** Agentless empty state — raw chat via /chat endpoint, no agentic loop. */
 const NONE_EMPTY_STATE: EmptyStateConfig = {
-  title: "Direct Chat",
-  subtitle: "Raw model interaction — no agentic loop, no persona.",
+  title: "Agentless Chat",
+  subtitle: "You're chatting directly with the AI model — no automated tools or workflows are running behind the scenes. Think of it as a simple, open conversation where you ask questions and get answers.",
   placeholder: "Send a message...",
 };
 
@@ -446,7 +446,7 @@ export default function AgentComponent({
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [config, setConfig] = useState<PrismConfig | null>(null);
-  const [title, setTitle] = useState(isNoAgent ? "Direct Chat" : "Agent");
+  const [title, setTitle] = useState(isNoAgent ? "Agentless Chat" : "Agent");
   const [leftTab, setLeftTab] = useState(initialTabKey || "settings"); // "settings" | "tools"
   const [customTools, setCustomTools] = useState<CustomTool[]>([]);
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
@@ -998,7 +998,7 @@ export default function AgentComponent({
         setAgentSessionId(full.id || generateUUID());
         setTraceId(full.traceId || null);
         setActiveId(full.id || null);
-        setTitle(full.title || (isNoAgent ? "Direct Chat" : "Agent"));
+        setTitle(full.title || (isNoAgent ? "Agentless Chat" : "Agent"));
         setToolActivity([]);
         setWorkerToolActivity({});
 
@@ -3227,7 +3227,7 @@ export default function AgentComponent({
     setAgentSessionId(generateUUID());
     setTraceId(null);
     setActiveId(null);
-    setTitle(isNoAgent ? "Direct Chat" : "Agent");
+    setTitle(isNoAgent ? "Agentless Chat" : "Agent");
     setBackendSessionStats(null);
     setUnavailableWorkspace(null);
     tokenHwmRef.current = { input: 0, output: 0, total: 0 };
