@@ -568,9 +568,15 @@ export default function AgentComponent({
     }
   }, [leftTab]);
 
+  const BOTTOM_PANEL_TABS = new Set(["tools", "params", "skills", "rules", "memories", "tasks", "mcp", "workers", "requests", "coordinator"]);
+
   useEffect(() => {
-    if (initialTabKey && initialTabKey !== leftTab) {
-      setLeftTab(initialTabKey);
+    if (initialTabKey) {
+      if (BOTTOM_PANEL_TABS.has(initialTabKey)) {
+        if (initialTabKey !== leftTabBottom) setLeftTabBottom(initialTabKey);
+      } else {
+        if (initialTabKey !== leftTab) setLeftTab(initialTabKey);
+      }
     }
   }, [initialTabKey]);
 
@@ -591,17 +597,19 @@ export default function AgentComponent({
   const tabRevertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const switchTabTemporarily = useCallback(
     (targetTab: string, delayMs = 5000) => {
-      // Already viewing this tab — keep them there, no revert needed
-      const previousTab = leftTabRef.current;
+      const isBottomTab = BOTTOM_PANEL_TABS.has(targetTab);
+      const currentRef = isBottomTab ? leftTabBottomRef : leftTabRef;
+      const setTabFn = isBottomTab ? setLeftTabBottom : setLeftTab;
+      const previousTab = currentRef.current;
       if (previousTab === targetTab) return;
       // Cancel any pending revert from a previous ephemeral switch
       if (tabRevertTimerRef.current) clearTimeout(tabRevertTimerRef.current);
-      setLeftTab(targetTab);
+      setTabFn(targetTab);
       tabRevertTimerRef.current = setTimeout(() => {
         tabRevertTimerRef.current = null;
         // Only revert if the user hasn't manually navigated away
-        if (leftTabRef.current === targetTab) {
-          setLeftTab(previousTab);
+        if (currentRef.current === targetTab) {
+          setTabFn(previousTab);
         }
       }, delayMs);
     },
@@ -2277,7 +2285,7 @@ export default function AgentComponent({
               data.status !== "calling" &&
               toolData.name === "upsert_memory"
             ) {
-              setLeftTab("memories");
+              setLeftTabBottom("memories");
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
@@ -2409,7 +2417,7 @@ export default function AgentComponent({
               toolData.status !== "calling" &&
               toolData.name === "upsert_memory"
             ) {
-              setLeftTab("memories");
+              setLeftTabBottom("memories");
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
@@ -4197,15 +4205,6 @@ export default function AgentComponent({
             icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
             tooltip: "Info",
           },
-          ...(isNoAgent
-            ? [
-                {
-                  key: "params",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
-                  tooltip: "Parameters",
-                },
-              ]
-            : []),
         ]}
         activeTab={leftTab}
         onChange={(tab: string) => {
@@ -4582,7 +4581,126 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "tools" && (
+    </div>
+  );
+
+  // -- Bottom panel group (tools, extensions, data) ---------------
+  const leftPanelBottom = (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        flex: 1,
+        overflow: "hidden",
+      }}
+    >
+      <TabBarComponent
+        tabs={[
+          {
+            key: "tools",
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
+            ...badgeProps(allToolSchemas.length, "tools"),
+            tooltip: "Tools",
+            tooltipDisabled: !settings.functionCallingEnabled,
+          },
+          ...(isNoAgent
+            ? [
+                {
+                  key: "params",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
+                  tooltip: "Parameters",
+                },
+              ]
+            : []),
+          ...(!isNoAgent
+            ? [
+                {
+                  key: "skills",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>,
+                  ...badgeProps(
+                    skills.filter((s) => s.enabled).length,
+                    "skills",
+                  ),
+                  tooltip: "Skills",
+                },
+                {
+                  key: "rules",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>📏</span>,
+                  ...badgeProps(
+                    rules.filter((rule) => rule.enabled).length,
+                    "rules",
+                  ),
+                  tooltip: "Rules",
+                },
+                {
+                  key: "memories",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
+                  ...badgeProps(totalMemoriesCount, "memories"),
+                  tooltip: "Memories",
+                },
+                {
+                  key: "tasks",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>,
+                  ...badgeProps(tasksCount, "tasks"),
+                  tooltip: "Tasks",
+                },
+                {
+                  key: "mcp",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>,
+                  ...badgeProps(
+                    mcpServers.filter((s) => s.connected).length,
+                    "mcp",
+                  ),
+                  tooltip: "MCP Servers",
+                },
+                {
+                  key: "workers",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
+                  ...badgeProps(workersCount, "workers"),
+                  badgeRainbow: Object.values(workerToolActivity).some(
+                    (w: WorkerActivityEntry) =>
+                      w.currentTool ||
+                      w.phase === "generating" ||
+                      w.phase === "thinking",
+                  ),
+                  tooltip: "Workers",
+                },
+              ]
+            : []),
+          {
+            key: "requests",
+            icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
+            ...badgeProps(
+              backendSessionStats?.requestCount || 0,
+              "requests",
+            ),
+            tooltip: "Requests",
+          },
+          ...(!isNoAgent
+            ? [
+                {
+                  key: "coordinator",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>,
+                  tooltip: "Coordinator",
+                },
+              ]
+            : []),
+        ]}
+        activeTab={leftTabBottom}
+        onChange={(tab: string) => {
+          setLeftTabBottom(tab);
+          // Clear "new data" flag — user is now viewing this tab
+          setNewDataTabs((previousPixelSize) => {
+            if (!previousPixelSize.has(tab)) return previousPixelSize;
+            const next = new Set(previousPixelSize);
+            next.delete(tab);
+            return next;
+          });
+        }}
+      />
+
+      {leftTabBottom === "tools" && (
         <>
           <SidebarTabHeaderComponent
             icon={Wrench}
@@ -4604,12 +4722,9 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "params" && (
+      {leftTabBottom === "params" && (
         <>
-          <SidebarTabHeaderComponent
-            icon={SlidersHorizontal}
-            title="Parameters"
-          />
+          <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
           <ParametersPanelComponent
             settings={settings}
             onChange={(updates: Partial<PrismSettings>) =>
@@ -4620,14 +4735,9 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "skills" && (
+      {leftTabBottom === "skills" && (
         <>
-          <SidebarTabHeaderComponent
-            icon={BookOpen}
-            title="Skills"
-            count={skills.length}
-            actions={skillsHeaderActions}
-          />
+          <SidebarTabHeaderComponent icon={BookOpen} title="Skills" count={skills.length} actions={skillsHeaderActions} />
           <SkillsPanel
             skills={skills}
             onSkillsChange={loadSkills}
@@ -4637,14 +4747,9 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "rules" && (
+      {leftTabBottom === "rules" && (
         <>
-          <SidebarTabHeaderComponent
-            icon={ScrollText}
-            title="Rules"
-            count={rules.length}
-            actions={rulesHeaderActions}
-          />
+          <SidebarTabHeaderComponent icon={ScrollText} title="Rules" count={rules.length} actions={rulesHeaderActions} />
           <RulesPanel
             rules={rules}
             onRulesChange={loadRules}
@@ -4654,14 +4759,9 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "memories" && (
+      {leftTabBottom === "memories" && (
         <>
-          <SidebarTabHeaderComponent
-            icon={Brain}
-            title="Memories"
-            count={totalMemoriesCount}
-            actions={memoriesHeaderActions}
-          />
+          <SidebarTabHeaderComponent icon={Brain} title="Memories" count={totalMemoriesCount} actions={memoriesHeaderActions} />
           <MemoriesPanel
             project={agentProject}
             agent={agentId}
@@ -4673,14 +4773,9 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "tasks" && (
+      {leftTabBottom === "tasks" && (
         <>
-          <SidebarTabHeaderComponent
-            icon={ListChecks}
-            title="Tasks"
-            count={tasksCount}
-            actions={tasksHeaderActions}
-          />
+          <SidebarTabHeaderComponent icon={ListChecks} title="Tasks" count={tasksCount} actions={tasksHeaderActions} />
           <TasksPanel
             project={agentProject}
             refreshKey={tasksRefreshKey}
@@ -4691,14 +4786,9 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "mcp" && (
+      {leftTabBottom === "mcp" && (
         <>
-          <SidebarTabHeaderComponent
-            icon={Plug}
-            title="MCP Servers"
-            count={`${mcpServers.filter((server) => server.connected).length} / ${mcpServers.length}`}
-            actions={mcpHeaderActions}
-          />
+          <SidebarTabHeaderComponent icon={Plug} title="MCP Servers" count={`${mcpServers.filter((server) => server.connected).length} / ${mcpServers.length}`} actions={mcpHeaderActions} />
           <MCPServersPanel
             servers={mcpServers}
             onServersChange={loadMCPServers}
@@ -4708,14 +4798,9 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "workers" && (
+      {leftTabBottom === "workers" && (
         <>
-          <SidebarTabHeaderComponent
-            icon={Bot}
-            title="Workers"
-            count={workersCount}
-            actions={workersHeaderActions}
-          />
+          <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} actions={workersHeaderActions} />
           <WorkersPanel
             agentSessionId={agentSessionId}
             refreshKey={tasksRefreshKey}
@@ -4726,13 +4811,9 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "requests" && (
+      {leftTabBottom === "requests" && (
         <>
-          <SidebarTabHeaderComponent
-            icon={BarChart3}
-            title="Requests"
-            count={backendSessionStats?.requestCount || 0}
-          />
+          <SidebarTabHeaderComponent icon={BarChart3} title="Requests" count={backendSessionStats?.requestCount || 0} />
           <SessionRequestsListComponent
             agentSessionId={agentSessionId}
             refreshKey={requestsRefreshKey}
@@ -4740,7 +4821,7 @@ export default function AgentComponent({
         </>
       )}
 
-      {leftTab === "coordinator" && (
+      {leftTabBottom === "coordinator" && (
         <>
           <SidebarTabHeaderComponent icon={GitBranch} title="Coordinator" />
           <CoordinatorPanel project={agentProject} />
@@ -5357,6 +5438,7 @@ export default function AgentComponent({
           />
         }
         leftPanel={leftPanel}
+        leftPanelBottom={leftPanelBottom}
         leftTitle={undefined}
         fileViewerPanel={
           !isNoAgent &&
