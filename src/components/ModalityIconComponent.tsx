@@ -119,8 +119,12 @@ export default function ModalityIconComponent({
 }: ModalityIconProps) {
   if (!modalities) return null;
 
-  const activeInputs = INPUT_MODALITIES.filter((modality) => modalities[modality.key]);
-  const activeOutputs = OUTPUT_MODALITIES.filter((modality) => modalities[modality.key]);
+  const activeInputs = INPUT_MODALITIES.filter(
+    (modality) => modalities[modality.key],
+  );
+  const activeOutputs = OUTPUT_MODALITIES.filter(
+    (modality) => modalities[modality.key],
+  );
   const hasInputs = activeInputs.length > 0;
   const hasOutputs = activeOutputs.length > 0;
 
@@ -131,7 +135,11 @@ export default function ModalityIconComponent({
   const renderIcon = (definition: ModalityDef) => {
     const Icon = definition.icon;
     return (
-      <span key={definition.key} className={styles.modalityIcon} style={{ color: definition.color }}>
+      <span
+        key={definition.key}
+        className={styles.modalityIcon}
+        style={{ color: definition.color }}
+      >
         <Icon size={size} />
       </span>
     );

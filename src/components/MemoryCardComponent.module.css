@@ -10,7 +10,9 @@
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: 4px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     border-color: color-mix(
@@ -160,7 +162,8 @@
   background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
   border-radius: 4px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
-  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
 }
 
 /* ── Delete Button ─────────────────────────────────────────── */

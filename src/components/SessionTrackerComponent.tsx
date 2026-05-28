@@ -39,7 +39,9 @@ export default function SessionTrackerComponent() {
 
     // Track navigation and external link clicks
     const handleDocumentClick = (event: MouseEvent) => {
-      const target = (event.target as HTMLElement)?.closest("a") as HTMLAnchorElement | null;
+      const target = (event.target as HTMLElement)?.closest(
+        "a",
+      ) as HTMLAnchorElement | null;
       if (!target?.href) return;
 
       const isInternal =

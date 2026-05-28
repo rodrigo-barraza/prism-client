@@ -28,7 +28,10 @@ export interface ModelInfoPanelProps {
  */
 import type { ModelOption, VoiceOption, ArenaScores } from "../types/types";
 
-export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps) {
+export default function ModelInfoPanel({
+  config,
+  settings,
+}: ModelInfoPanelProps) {
   const textModelsMap = config?.textToText?.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
   const ttsModelsMap = config?.textToSpeech?.models || {};
@@ -41,7 +44,7 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
     ...Object.keys(audioToTextModelsMap),
     ...Object.keys(ttsModelsMap),
   ]);
-  
+
   const modelsMap: Record<string, ModelOption[]> = {};
   for (const p of allProviderKeys) {
     const textModels = textModelsMap[p] || [];
@@ -56,12 +59,14 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
       _isTranscription: true,
     }));
     // Note: ttsModelsMap has VoiceOption[] or ModelOption[], we map it to ModelOption compatible shape
-    const ttsModels = (ttsModelsMap[p] || []).map((m: VoiceOption | ModelOption) => ({
-      ...m,
-      label: `${m.name} (TTS)`,
-      name: 'id' in m ? m.id : m.name,
-      _isTTS: true,
-    })) as unknown as ModelOption[];
+    const ttsModels = (ttsModelsMap[p] || []).map(
+      (m: VoiceOption | ModelOption) => ({
+        ...m,
+        label: `${m.name} (TTS)`,
+        name: "id" in m ? m.id : m.name,
+        _isTTS: true,
+      }),
+    ) as unknown as ModelOption[];
 
     const seen = new Set<string>();
     const merged: ModelOption[] = [];
@@ -98,7 +103,10 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
     <div className={styles.container}>
       {/* Model Type Badge */}
       {selectedModelDef.modelType && (
-        <BadgeComponent type="model-type" modelType={selectedModelDef.modelType} />
+        <BadgeComponent
+          type="model-type"
+          modelType={selectedModelDef.modelType}
+        />
       )}
 
       {/* Modalities */}
@@ -132,7 +140,10 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
               <div key={m.type} className={styles.modalityRow}>
                 <span
                   className={styles.modalityIcon}
-                  style={{ color: MODALITY_COLORS[m.type as keyof typeof MODALITY_COLORS] }}
+                  style={{
+                    color:
+                      MODALITY_COLORS[m.type as keyof typeof MODALITY_COLORS],
+                  }}
                 >
                   {iconMap[m.type]}
                 </span>
@@ -177,30 +188,40 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
 
       {/* Pricing */}
       {(() => {
-        const PRICING_LABELS: Record<string, { label: string; unit: string }> = {
-          inputPerMillion: { label: "Input", unit: "/ 1M tokens" },
-          cachedInputPerMillion: { label: "Cached Input", unit: "/ 1M tokens" },
-          outputPerMillion: { label: "Output", unit: "/ 1M tokens" },
-          inputOver272kPerMillion: {
-            label: "Input >272K",
-            unit: "/ 1M tokens",
-          },
-          outputOver272kPerMillion: {
-            label: "Output >272K",
-            unit: "/ 1M tokens",
-          },
-          audioInputPerMillion: { label: "Audio Input", unit: "/ 1M tokens" },
-          audioOutputPerMillion: { label: "Audio Output", unit: "/ 1M tokens" },
-          imageInputPerMillion: { label: "Image Input", unit: "/ 1M tokens" },
-          cachedImageInputPerMillion: {
-            label: "Cached Img Input",
-            unit: "/ 1M tokens",
-          },
-          imageOutputPerMillion: { label: "Image Output", unit: "/ 1M tokens" },
-          perCharacter: { label: "Per Character", unit: "" },
-          perMinute: { label: "Per Minute", unit: "" },
-          webSearchPer1kCalls: { label: "Web Search", unit: "/ 1K calls" },
-        };
+        const PRICING_LABELS: Record<string, { label: string; unit: string }> =
+          {
+            inputPerMillion: { label: "Input", unit: "/ 1M tokens" },
+            cachedInputPerMillion: {
+              label: "Cached Input",
+              unit: "/ 1M tokens",
+            },
+            outputPerMillion: { label: "Output", unit: "/ 1M tokens" },
+            inputOver272kPerMillion: {
+              label: "Input >272K",
+              unit: "/ 1M tokens",
+            },
+            outputOver272kPerMillion: {
+              label: "Output >272K",
+              unit: "/ 1M tokens",
+            },
+            audioInputPerMillion: { label: "Audio Input", unit: "/ 1M tokens" },
+            audioOutputPerMillion: {
+              label: "Audio Output",
+              unit: "/ 1M tokens",
+            },
+            imageInputPerMillion: { label: "Image Input", unit: "/ 1M tokens" },
+            cachedImageInputPerMillion: {
+              label: "Cached Img Input",
+              unit: "/ 1M tokens",
+            },
+            imageOutputPerMillion: {
+              label: "Image Output",
+              unit: "/ 1M tokens",
+            },
+            perCharacter: { label: "Per Character", unit: "" },
+            perMinute: { label: "Per Minute", unit: "" },
+            webSearchPer1kCalls: { label: "Web Search", unit: "/ 1K calls" },
+          };
         if (!selectedModelDef.pricing) return null;
         const entries = Object.entries(selectedModelDef.pricing)
           .filter(([key]) => PRICING_LABELS[key])
@@ -241,7 +262,10 @@ export default function ModelInfoPanel({ config, settings }: ModelInfoPanelProps
           imageEdit: "Image Edit",
           search: "Search",
         };
-        const entries = Object.entries(arena).filter(([, v]) => v != null) as [keyof ArenaScores, number][];
+        const entries = Object.entries(arena).filter(([, v]) => v != null) as [
+          keyof ArenaScores,
+          number,
+        ][];
         if (entries.length === 0) return null;
         return (
           <div className={styles.section}>

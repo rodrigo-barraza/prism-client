@@ -11,9 +11,7 @@ import {
   FileCode,
 } from "lucide-react";
 import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
-import {
-  ButtonComponent,
-} from "@rodrigo-barraza/components-library";
+import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
 import { renderToolName } from "../utils/utilities";
@@ -49,7 +47,8 @@ const CARD_CLASS: Record<string, string> = {
  * Extract a short agent number from an agentId like "agent-1" → "1"
  */
 function getAgentNumber(agentId: string | undefined) {
-  const match = typeof agentId === "string" ? agentId.match(/agent-(\w+)/) : null;
+  const match =
+    typeof agentId === "string" ? agentId.match(/agent-(\w+)/) : null;
   return match ? match[1].toUpperCase() : agentId;
 }
 
@@ -119,7 +118,9 @@ export default function WorkersPanel({
       if (pollRef.current) clearInterval(pollRef.current);
     }
 
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, [workers, loadWorkers]);
 
   // -- Push header action buttons to parent SidebarTabHeader ---
@@ -169,7 +170,6 @@ export default function WorkersPanel({
 
   return (
     <div className={styles.container}>
-
       {/* -- Empty ------------------------------------------- */}
       {workers.length === 0 && (
         <div className={styles.emptyState}>
@@ -187,10 +187,8 @@ export default function WorkersPanel({
 
       {/* -- Worker list --------------------------------------- */}
       {workers.map((worker) => {
-        const statusLabel =
-          STATUS_LABEL[worker.status] || worker.status;
-        const statusClass =
-          STATUS_CLASS[worker.status] || "statusPending";
+        const statusLabel = STATUS_LABEL[worker.status] || worker.status;
+        const statusClass = STATUS_CLASS[worker.status] || "statusPending";
         const cardClass = CARD_CLASS[worker.status] || "";
         const isLive = worker.status === "running";
         const isComplete = worker.status === "complete";

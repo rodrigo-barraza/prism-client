@@ -55,15 +55,12 @@ export default function ConversationsTableComponent({
 
   const totalCost = useMemo(
     () =>
-      conversations.reduce((sum, c: any) => sum + (c.totalCost || 0), 0) ||
-      1,
+      conversations.reduce((sum, c: any) => sum + (c.totalCost || 0), 0) || 1,
     [conversations],
   );
 
   const totalDuration = useMemo(
-    () =>
-      conversations.reduce((sum, c: any) => sum + getDurationMs(c), 0) ||
-      1,
+    () => conversations.reduce((sum, c: any) => sum + getDurationMs(c), 0) || 1,
     [conversations],
   );
 

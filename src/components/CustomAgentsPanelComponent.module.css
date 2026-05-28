@@ -26,7 +26,11 @@
 }
 
 .agentCard:hover {
-  background: color-mix(in srgb, var(--accent-primary) 3%, var(--background-surface));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 3%,
+    var(--background-surface)
+  );
 }
 
 .agentInfo {
@@ -384,7 +388,11 @@
   color: var(--agent-color, var(--accent-primary));
   border-color: var(--agent-color, var(--accent-primary));
   box-shadow: 0 0 8px
-    color-mix(in srgb, var(--agent-color, var(--accent-primary)) 20%, transparent);
+    color-mix(
+      in srgb,
+      var(--agent-color, var(--accent-primary)) 20%,
+      transparent
+    );
 }
 
 /* ── Color Picker Grid ────────────────────────────────────────── */

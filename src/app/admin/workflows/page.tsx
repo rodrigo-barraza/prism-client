@@ -42,7 +42,9 @@ function AdminWorkflowsPageInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState(initialId);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(
+    null,
+  );
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const { toasts, addToast, removeToast } = useToast();
@@ -122,9 +124,7 @@ function AdminWorkflowsPageInner() {
 
   const edgeCount = useMemo(() => {
     const edges =
-      selectedWorkflow?.edges ||
-      selectedWorkflow?.connections ||
-      [];
+      selectedWorkflow?.edges || selectedWorkflow?.connections || [];
     return edges.length;
   }, [selectedWorkflow]);
 
@@ -136,11 +136,14 @@ function AdminWorkflowsPageInner() {
     setLocalNodes(selectedWorkflow?.nodes || []);
   }, [selectedWorkflow]);
 
-  const handleUpdateNodePosition = useCallback((nodeId: string, position: { x: number; y: number }) => {
-    setLocalNodes((prev) =>
-      prev.map((n) => (n.id === nodeId ? { ...n, position } : n)),
-    );
-  }, []);
+  const handleUpdateNodePosition = useCallback(
+    (nodeId: string, position: { x: number; y: number }) => {
+      setLocalNodes((prev) =>
+        prev.map((n) => (n.id === nodeId ? { ...n, position } : n)),
+      );
+    },
+    [],
+  );
 
   // Download workflow as JSON file
   const handleDownloadWorkflow = useCallback(async (id: string) => {
@@ -232,9 +235,7 @@ function AdminWorkflowsPageInner() {
             admin
             nodes={localNodes}
             connections={
-              selectedWorkflow?.edges ||
-              selectedWorkflow?.connections ||
-              []
+              selectedWorkflow?.edges || selectedWorkflow?.connections || []
             }
             selectedNodeId={selectedNodeId}
             onSelectNode={setSelectedNodeId}

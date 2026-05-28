@@ -22,11 +22,25 @@ const CONTENT_MAX_CHARS = 10000;
  * the LLM domain-specific context, coding conventions, or project
  * rules without consuming tool call slots.
  */
-export default function SkillsPanel({ skills, onSkillsChange, project, readOnly, onActionsChange }: { skills: Skill[]; onSkillsChange: () => void; project?: string; readOnly?: boolean; onActionsChange?: (actions: ReactNode) => void }) {
+export default function SkillsPanel({
+  skills,
+  onSkillsChange,
+  project,
+  readOnly,
+  onActionsChange,
+}: {
+  skills: Skill[];
+  onSkillsChange: () => void;
+  project?: string;
+  readOnly?: boolean;
+  onActionsChange?: (actions: ReactNode) => void;
+}) {
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  );
 
   // -- CRUD -----------------------------------------------------
 
@@ -102,12 +116,15 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly,
   );
 
   const handleToggleAll = useCallback(async () => {
-    const allEnabled = skills.length > 0 && skills.every((s: Skill) => s.enabled);
+    const allEnabled =
+      skills.length > 0 && skills.every((s: Skill) => s.enabled);
     const newEnabled = !allEnabled;
     try {
       await Promise.all(
         skills.map((s: Skill) =>
-          PrismService.updateSkill(s.id || s._id?.toString() || "", { enabled: newEnabled }),
+          PrismService.updateSkill(s.id || s._id?.toString() || "", {
+            enabled: newEnabled,
+          }),
         ),
       );
       onSkillsChange();
@@ -127,11 +144,7 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly,
             size="mini"
           />
         )}
-        <ButtonComponent
-          variant="disabled"
-          icon={Plus}
-          onClick={handleCreate}
-        >
+        <ButtonComponent variant="disabled" icon={Plus} onClick={handleCreate}>
           New
         </ButtonComponent>
       </>,
@@ -166,13 +179,21 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly,
               type="text"
               className={styles.input}
               value={editingSkill.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingSkill((s: Skill | null) => s ? ({
-                  ...s,
-                  name: e.target.value
-                    .replace(/[^a-zA-Z0-9_-]/g, "-")
-                    .toLowerCase(),
-                }) : null)
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) =>
+                setEditingSkill((s: Skill | null) =>
+                  s
+                    ? {
+                        ...s,
+                        name: e.target.value
+                          .replace(/[^a-zA-Z0-9_-]/g, "-")
+                          .toLowerCase(),
+                      }
+                    : null,
+                )
               }
               placeholder="javascript-conventions"
             />
@@ -187,11 +208,19 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly,
               type="text"
               className={styles.input}
               value={editingSkill.description || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingSkill((s: Skill | null) => s ? ({
-                  ...s,
-                  description: e.target.value,
-                }) : null)
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) =>
+                setEditingSkill((s: Skill | null) =>
+                  s
+                    ? {
+                        ...s,
+                        description: e.target.value,
+                      }
+                    : null,
+                )
               }
               placeholder="Coding style rules and project conventions"
             />
@@ -205,10 +234,16 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly,
             <textarea
               className={`${styles.textarea} ${styles.contentTextarea}`}
               value={editingSkill.content || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) => {
                 const value = e.target.value;
                 if (value.length <= CONTENT_MAX_CHARS) {
-                  setEditingSkill((s: Skill | null) => s ? ({ ...s, content: value }) : null);
+                  setEditingSkill((s: Skill | null) =>
+                    s ? { ...s, content: value } : null,
+                  );
                 }
               }}
               placeholder={`## Coding Guidelines\n\n- Always use const over let\n- Prefer async/await over .then()\n- Use JSDoc comments for public functions\n- ...`}
@@ -248,7 +283,6 @@ export default function SkillsPanel({ skills, onSkillsChange, project, readOnly,
 
   return (
     <div className={styles.container}>
-
       {skills.length === 0 && (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>

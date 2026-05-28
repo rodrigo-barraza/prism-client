@@ -6,7 +6,11 @@
   width: 100%;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--color-info) 30%, transparent);
-  background: color-mix(in srgb, var(--color-info) 5%, var(--background-surface));
+  background: color-mix(
+    in srgb,
+    var(--color-info) 5%,
+    var(--background-surface)
+  );
   padding: 14px 16px;
   animation: slideIn 0.25s ease-out;
 

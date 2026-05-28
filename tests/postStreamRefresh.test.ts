@@ -12,12 +12,15 @@ interface AgentSession {
 }
 
 // Pure helper function to mimic prepareDisplayMessages without CSS module imports
-function prepareDisplayMessages(rawMessages: Message[] | undefined | null): Message[] {
+function prepareDisplayMessages(
+  rawMessages: Message[] | undefined | null,
+): Message[] {
   if (!rawMessages || rawMessages.length === 0) return [];
   return rawMessages.filter((message) => {
     if (message.role === "tool") return false;
     if (message.role === "system") return false;
-    const isEmptyAssistant = message.role === "assistant" && !message.content?.trim();
+    const isEmptyAssistant =
+      message.role === "assistant" && !message.content?.trim();
     return !isEmptyAssistant;
   });
 }

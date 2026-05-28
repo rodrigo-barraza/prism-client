@@ -1,0 +1,505 @@
+/* ── Scheduled Task Calendar ───────────────────────────────── */
+
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--background-surface);
+  overflow: hidden;
+}
+
+/* ── Calendar Header / Navigation ─────────────────────────── */
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--background-elevated);
+  border-block-end: 1px solid var(--calculated-border-color);
+  user-select: none;
+}
+
+.calendar-navigation-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.calendar-navigation-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+
+  &:hover {
+    background: var(--background-surface);
+    border-color: var(--calculated-border-color);
+    color: var(--text-primary);
+  }
+
+  &:active {
+    scale: 0.95;
+  }
+}
+
+.calendar-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.calendar-month-label {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.calendar-year-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.calendar-today-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--calculated-border-color);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+
+  &:hover {
+    background: var(--calculated-accent-primary-subtle);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+}
+
+/* ── Weekday Header Row ───────────────────────────────────── */
+
+.calendar-weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-block-end: 1px solid var(--calculated-border-subtle);
+}
+
+.calendar-weekday-cell {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* ── Calendar Grid (Day Cells) ────────────────────────────── */
+
+.calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-day-cell {
+  position: relative;
+  min-height: 100px;
+  padding: 6px;
+  border-inline-end: 1px solid var(--calculated-border-subtle);
+  border-block-end: 1px solid var(--calculated-border-subtle);
+  cursor: default;
+  transition: background var(--transition-fast);
+
+  &:nth-child(7n) {
+    border-inline-end: none;
+  }
+
+  &:hover {
+    background: color-mix(in oklch, var(--accent-primary) 3%, transparent);
+  }
+
+  &.is-outside-month {
+    opacity: 0.35;
+  }
+
+  &.is-today-cell {
+    background: color-mix(in oklch, var(--accent-primary) 6%, transparent);
+  }
+}
+
+/* ── Day Number ───────────────────────────────────────────── */
+
+.calendar-day-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  margin-block-end: 4px;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+
+  .is-today-cell & {
+    background: var(--accent-primary);
+    color: var(--calculated-text-inverse);
+    font-weight: 700;
+  }
+
+  .is-outside-month & {
+    color: var(--text-muted);
+  }
+}
+
+/* ── Task Events inside Day Cell ──────────────────────────── */
+
+.calendar-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.calendar-event-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    opacity var(--transition-fast),
+    translate var(--transition-fast);
+  animation: calendarChipFadeIn 0.2s ease-out both;
+
+  &:hover {
+    opacity: 0.85;
+    translate: 1px 0;
+  }
+
+  &.is-disabled-task {
+    opacity: 0.4;
+  }
+}
+
+.calendar-event-chip-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.calendar-event-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Unified Color Variants ──────────────────────────────── */
+/* Applied to event chips, chip dots, popover dots, and legend dots */
+
+.calendar-event-chip.is-color-hourly {
+  background: color-mix(in oklch, var(--color-cyan) 18%, transparent);
+  color: var(--color-cyan);
+}
+
+.calendar-event-chip.is-color-daily {
+  background: color-mix(in oklch, var(--accent-primary) 18%, transparent);
+  color: var(--accent-primary);
+}
+
+.calendar-event-chip.is-color-weekly {
+  background: color-mix(in oklch, var(--color-success) 18%, transparent);
+  color: var(--color-success);
+}
+
+.calendar-event-chip.is-color-cron {
+  background: color-mix(in oklch, var(--color-warning) 18%, transparent);
+  color: var(--color-warning);
+}
+
+.calendar-event-chip.is-color-once {
+  background: color-mix(in oklch, var(--color-rose) 18%, transparent);
+  color: var(--color-rose);
+}
+
+.calendar-event-chip.is-color-trigger {
+  background: color-mix(in oklch, var(--color-purple) 18%, transparent);
+  color: var(--color-purple);
+}
+
+.is-color-hourly.calendar-event-chip-dot,
+.is-color-hourly.calendar-popover-event-dot,
+.is-color-hourly.calendar-legend-dot {
+  background: var(--color-cyan);
+}
+
+.is-color-daily.calendar-event-chip-dot,
+.is-color-daily.calendar-popover-event-dot,
+.is-color-daily.calendar-legend-dot {
+  background: var(--accent-primary);
+}
+
+.is-color-weekly.calendar-event-chip-dot,
+.is-color-weekly.calendar-popover-event-dot,
+.is-color-weekly.calendar-legend-dot {
+  background: var(--color-success);
+}
+
+.is-color-cron.calendar-event-chip-dot,
+.is-color-cron.calendar-popover-event-dot,
+.is-color-cron.calendar-legend-dot {
+  background: var(--color-warning);
+}
+
+.is-color-once.calendar-event-chip-dot,
+.is-color-once.calendar-popover-event-dot,
+.is-color-once.calendar-legend-dot {
+  background: var(--color-rose);
+}
+
+.is-color-trigger.calendar-event-chip-dot,
+.is-color-trigger.calendar-popover-event-dot,
+.is-color-trigger.calendar-legend-dot {
+  background: var(--color-purple);
+}
+
+/* ── "N more" overflow badge ──────────────────────────────── */
+
+.calendar-overflow-badge {
+  display: inline-flex;
+  padding: 1px 5px;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: 3px;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+
+  &:hover {
+    background: var(--background-elevated);
+    color: var(--text-secondary);
+  }
+}
+
+/* ── Day Popover (when clicking "N more") ─────────────────── */
+
+.calendar-day-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+}
+
+.calendar-day-popover {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 1000;
+  min-width: 220px;
+  max-width: 300px;
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 10px;
+  box-shadow: var(--calculated-shadow-lg);
+  backdrop-filter: blur(16px);
+  animation: calendarPopoverEnter 0.18s ease-out both;
+}
+
+.calendar-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 8px;
+  padding-block-end: 6px;
+  border-block-end: 1px solid var(--calculated-border-subtle);
+}
+
+.calendar-popover-date-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.calendar-popover-close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--border-radius-sm);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+
+  &:hover {
+    background: var(--background-elevated);
+    color: var(--text-primary);
+  }
+}
+
+.calendar-popover-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.calendar-popover-event-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: default;
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--background-elevated);
+  }
+}
+
+.calendar-popover-event-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.calendar-popover-event-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-popover-event-time {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  color: var(--text-muted);
+}
+
+/* ── Legend Bar ────────────────────────────────────────────── */
+
+.calendar-legend-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+  border-block-start: 1px solid var(--calculated-border-subtle);
+  background: var(--background-elevated);
+}
+
+.calendar-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.calendar-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ── Animations ───────────────────────────────────────────── */
+
+@keyframes calendarChipFadeIn {
+  from {
+    opacity: 0;
+    translate: -4px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes calendarPopoverEnter {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (width <= 900px) {
+  .calendar-day-cell {
+    min-height: 72px;
+    padding: 4px;
+  }
+
+  .calendar-event-chip {
+    font-size: 0.5625rem;
+    padding: 1px 4px;
+  }
+
+  .calendar-legend-bar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+@media (width <= 640px) {
+  .calendar-day-cell {
+    min-height: 56px;
+  }
+
+  .calendar-event-chip-label {
+    display: none;
+  }
+
+  .calendar-event-chip {
+    padding: 2px;
+    justify-content: center;
+  }
+
+  .calendar-event-chip-dot {
+    width: 6px;
+    height: 6px;
+  }
+}

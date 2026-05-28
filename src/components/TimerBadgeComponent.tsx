@@ -40,7 +40,10 @@ export default function TimerBadgeComponent({
   const calculateRemaining = useCallback(() => {
     const targetTimestamp = new Date(firesAt).getTime();
     const currentTimestamp = Date.now();
-    const differenceSeconds = Math.max(0, Math.ceil((targetTimestamp - currentTimestamp) / 1000));
+    const differenceSeconds = Math.max(
+      0,
+      Math.ceil((targetTimestamp - currentTimestamp) / 1000),
+    );
     setRemainingSeconds(differenceSeconds);
 
     if (differenceSeconds <= 0 && status === "active") {
@@ -59,8 +62,10 @@ export default function TimerBadgeComponent({
 
   // Determine badge styling based on state
   const isTimerCancelled = status === "cancelled";
-  const isTimerFired = status === "fired" || isFiredLocal || status === "expired";
-  const isTimerActive = status === "active" && !isTimerFired && !isTimerCancelled;
+  const isTimerFired =
+    status === "fired" || isFiredLocal || status === "expired";
+  const isTimerActive =
+    status === "active" && !isTimerFired && !isTimerCancelled;
 
   let stateLabel = "";
   let badgeClass = styles.timerBadgeStateActive;
@@ -85,10 +90,11 @@ export default function TimerBadgeComponent({
   }, [onCancel, timerId]);
 
   return (
-    <div className={`${styles.timerBadgeRoot} ${badgeClass}`} aria-live="polite">
-      <div className={styles.timerBadgeAvatarSection}>
-        {statusIcon}
-      </div>
+    <div
+      className={`${styles.timerBadgeRoot} ${badgeClass}`}
+      aria-live="polite"
+    >
+      <div className={styles.timerBadgeAvatarSection}>{statusIcon}</div>
       <div className={styles.timerBadgeContentSection}>
         <div className={styles.timerBadgeHeaderSection}>
           <div className={styles.timerBadgeRoleLabel}>
@@ -109,9 +115,7 @@ export default function TimerBadgeComponent({
             </button>
           )}
         </div>
-        <div className={styles.timerBadgePromptText}>
-          {prompt}
-        </div>
+        <div className={styles.timerBadgePromptText}>{prompt}</div>
       </div>
     </div>
   );

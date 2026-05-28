@@ -4,7 +4,11 @@
 // and RainbowCanvasComponent.
 // ─────────────────────────────────────────────────────────────
 
-import { lerpRgb, paletteAt, type RgbTriplet } from "@rodrigo-barraza/utilities-library";
+import {
+  lerpRgb,
+  paletteAt,
+  type RgbTriplet,
+} from "@rodrigo-barraza/utilities-library";
 
 export type { RgbTriplet };
 export { lerpRgb, paletteAt };
@@ -18,4 +22,3 @@ export const RAINBOW: RgbTriplet[] = [
   [100, 0, 255],
   [255, 0, 150],
 ];
-

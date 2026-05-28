@@ -50,7 +50,8 @@ export default function RainbowCanvasComponent({
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < columnCount; x++) {
-        const huePosition = (x / columnCount + y / rows) * 0.5 + animationState.offset / 360;
+        const huePosition =
+          (x / columnCount + y / rows) * 0.5 + animationState.offset / 360;
         const dither = ((x * 7 + y * 13) % 5) / 40;
         const [r, g, b] = paletteAt(colors, huePosition + dither);
         context.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
@@ -85,11 +86,13 @@ export default function RainbowCanvasComponent({
 
         if (turboRef.current) {
           animationState.turboTime += dt;
-          animationState.turboVelocity = TURBO_ACCEL * animationState.turboTime * animationState.turboTime;
+          animationState.turboVelocity =
+            TURBO_ACCEL * animationState.turboTime * animationState.turboTime;
         } else if (animationState.turboVelocity > 0.5) {
           animationState.turboTime = 0;
           const smoothing = 1 - Math.pow(1 - TURBO_RELEASE, dt * 60);
-          animationState.turboVelocity += (0 - animationState.turboVelocity) * smoothing;
+          animationState.turboVelocity +=
+            (0 - animationState.turboVelocity) * smoothing;
         } else if (animateRef.current) {
           // Idle animation — constant slow speed, no turbo deceleration
           animationState.turboVelocity = 0;

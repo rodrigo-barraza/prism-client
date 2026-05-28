@@ -64,7 +64,8 @@ export const getRequestsColumns = ({
     sortable: true,
     sortValue: (r: IrisRequestEntry) => r.totalTime || 0,
     align: "right" as const,
-    render: (r: IrisRequestEntry) => valueOrDash(r.totalTime, (v: number) => formatLatency(v)),
+    render: (r: IrisRequestEntry) =>
+      valueOrDash(r.totalTime, (v: number) => formatLatency(v)),
   },
   {
     key: "durationShare",

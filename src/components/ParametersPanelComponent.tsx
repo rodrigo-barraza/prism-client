@@ -42,18 +42,24 @@ export default function ParametersPanelComponent({
   const modelsMap: Record<string, ExtendedModelOption[]> = {};
   for (const p of allProviderKeys) {
     const textModels = (textModelsMap[p] || []) as ExtendedModelOption[];
-    const imgModels = ((imageModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
-      ...m,
-      _isImageGen: true,
-    }));
-    const sttModels = ((audioToTextModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
+    const imgModels = ((imageModelsMap[p] || []) as ExtendedModelOption[]).map(
+      (m) => ({
+        ...m,
+        _isImageGen: true,
+      }),
+    );
+    const sttModels = (
+      (audioToTextModelsMap[p] || []) as ExtendedModelOption[]
+    ).map((m) => ({
       ...m,
       _isTranscription: true,
     }));
-    const ttsModels = ((ttsModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
-      ...m,
-      _isTTS: true,
-    }));
+    const ttsModels = ((ttsModelsMap[p] || []) as ExtendedModelOption[]).map(
+      (m) => ({
+        ...m,
+        _isTTS: true,
+      }),
+    );
 
     const seen = new Set<string>();
     const merged: ExtendedModelOption[] = [];
@@ -103,8 +109,8 @@ export default function ParametersPanelComponent({
     onChange?.({ repeatPenalty: value });
   };
   const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    onChange?.({ seed: val === "" ? undefined : val });
+    const inputValue = e.target.value;
+    onChange?.({ seed: inputValue === "" ? undefined : inputValue });
   };
   const handleStopSeqChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     onChange?.({ stopSequences: e.target.value });
@@ -272,20 +278,20 @@ export default function ParametersPanelComponent({
             )}
 
             {selectedModelDef?.thinkingLevels && (
-                <div className={styles.formGroup}>
-                  <label>Thinking Level</label>
-                  <SelectComponent
-                    value={settings.thinkingLevel || "high"}
-                    options={selectedModelDef.thinkingLevels.map(
-                      (level: string) => ({
-                        value: level,
-                        label: level.charAt(0).toUpperCase() + level.slice(1),
-                      }),
-                    )}
-                    onChange={handleThinkingLevelChange}
-                  />
-                </div>
-              )}
+              <div className={styles.formGroup}>
+                <label>Thinking Level</label>
+                <SelectComponent
+                  value={settings.thinkingLevel || "high"}
+                  options={selectedModelDef.thinkingLevels.map(
+                    (level: string) => ({
+                      value: level,
+                      label: level.charAt(0).toUpperCase() + level.slice(1),
+                    }),
+                  )}
+                  onChange={handleThinkingLevelChange}
+                />
+              </div>
+            )}
 
             {["anthropic", "google"].includes(settings.provider || "") && (
               <div className={styles.formGroup}>
@@ -311,21 +317,22 @@ export default function ParametersPanelComponent({
           <div className={styles.sectionSeparator} />
 
           {/* Verbosity (Google-specific override) */}
-          {(settings.provider || "") === "google" && selectedModelDef?.verbosity && (
-            <div className={styles.formGroup}>
-              <label>Verbosity</label>
-              <SelectComponent
-                value={settings.verbosity || ""}
-                options={[
-                  { value: "", label: "Default" },
-                  { value: "low", label: "Low" },
-                  { value: "medium", label: "Medium" },
-                  { value: "high", label: "High" },
-                ]}
-                onChange={handleVerbosityChange}
-              />
-            </div>
-          )}
+          {(settings.provider || "") === "google" &&
+            selectedModelDef?.verbosity && (
+              <div className={styles.formGroup}>
+                <label>Verbosity</label>
+                <SelectComponent
+                  value={settings.verbosity || ""}
+                  options={[
+                    { value: "", label: "Default" },
+                    { value: "low", label: "Low" },
+                    { value: "medium", label: "Medium" },
+                    { value: "high", label: "High" },
+                  ]}
+                  onChange={handleVerbosityChange}
+                />
+              </div>
+            )}
 
           {!isReasoning && !readOnly && (
             <>
@@ -351,9 +358,13 @@ export default function ParametersPanelComponent({
                 />
               </div>
 
-              {["anthropic", "google", "llama-cpp", "lm-studio", "vllm"].includes(
-                settings.provider || "",
-              ) && (
+              {[
+                "anthropic",
+                "google",
+                "llama-cpp",
+                "lm-studio",
+                "vllm",
+              ].includes(settings.provider || "") && (
                 <div className={styles.formGroup}>
                   <label>Top K ({settings.topK ?? 40})</label>
                   <SliderComponent
@@ -366,7 +377,9 @@ export default function ParametersPanelComponent({
                 </div>
               )}
 
-              {["llama-cpp", "lm-studio", "vllm"].includes(settings.provider || "") && (
+              {["llama-cpp", "lm-studio", "vllm"].includes(
+                settings.provider || "",
+              ) && (
                 <div className={styles.formGroup}>
                   <label>Min P ({settings.minP ?? 0})</label>
                   <SliderComponent
@@ -379,7 +392,9 @@ export default function ParametersPanelComponent({
                 </div>
               )}
 
-              {["llama-cpp", "lm-studio", "vllm"].includes(settings.provider || "") && (
+              {["llama-cpp", "lm-studio", "vllm"].includes(
+                settings.provider || "",
+              ) && (
                 <div className={styles.formGroup}>
                   <label>Repeat Penalty ({settings.repeatPenalty ?? 1})</label>
                   <SliderComponent
@@ -412,7 +427,9 @@ export default function ParametersPanelComponent({
               ) && (
                 <>
                   <div className={styles.formGroup}>
-                    <label>Frequency Penalty ({settings.frequencyPenalty ?? 0})</label>
+                    <label>
+                      Frequency Penalty ({settings.frequencyPenalty ?? 0})
+                    </label>
                     <SliderComponent
                       min={-2}
                       max={2}
@@ -423,7 +440,9 @@ export default function ParametersPanelComponent({
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label>Presence Penalty ({settings.presencePenalty ?? 0})</label>
+                    <label>
+                      Presence Penalty ({settings.presencePenalty ?? 0})
+                    </label>
                     <SliderComponent
                       min={-2}
                       max={2}

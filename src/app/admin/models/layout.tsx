@@ -4,6 +4,8 @@ export const metadata = {
     "Configure, enable, and manage AI models available through the Prism AI Gateway.",
 };
 
-export default function AdminModelsLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function AdminModelsLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

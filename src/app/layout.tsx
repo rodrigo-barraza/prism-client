@@ -46,7 +46,9 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -74,7 +76,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           suppressHydrationWarning
         />
       </head>
-      <body className={`${inter.variable} ${notoColorEmoji.variable} ${notoEmoji.variable}`}>
+      <body
+        className={`${inter.variable} ${notoColorEmoji.variable} ${notoEmoji.variable}`}
+      >
         <SessionProvider>
           <ThemeProvider storageKey="prism:theme" defaultTheme="light">
             <CustomThemeBootComponent storageKey="prism:custom-themes" />

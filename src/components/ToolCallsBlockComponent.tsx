@@ -29,9 +29,12 @@ export default function ToolCallsBlockComponent({
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   if (!toolCalls || toolCalls.length === 0) return null;
 
-  const hasActiveCalls = toolCalls.some((toolCall) => toolCall.status === "calling");
+  const hasActiveCalls = toolCalls.some(
+    (toolCall) => toolCall.status === "calling",
+  );
   const doneCount = toolCalls.filter(
-    (toolCall: ToolCallEvent) => toolCall.status === "done" || toolCall.status === "error",
+    (toolCall: ToolCallEvent) =>
+      toolCall.status === "done" || toolCall.status === "error",
   ).length;
 
   // Build header text with active tense awareness
@@ -117,7 +120,15 @@ export default function ToolCallsBlockComponent({
                           })()
                         : toolCall.result
                       : null;
-                    const members = (parsed as { members?: Array<{ agent_id?: string; toolUses?: number }> })?.members || [];
+                    const members =
+                      (
+                        parsed as {
+                          members?: Array<{
+                            agent_id?: string;
+                            toolUses?: number;
+                          }>;
+                        }
+                      )?.members || [];
                     // Aggregate tool activity from all team members
                     const allToolNames: Record<string, number> = {};
                     let activeTool: string | null = null;
@@ -139,7 +150,9 @@ export default function ToolCallsBlockComponent({
                     }
                     // Fallback: match by description during calling state (before result arrives)
                     // createTeam prefixes descriptions as "[teamName] description"
-                    const tcArgs = toolCall.args as { members?: Array<{ description?: string }> };
+                    const tcArgs = toolCall.args as {
+                      members?: Array<{ description?: string }>;
+                    };
                     if (
                       Object.keys(allToolNames).length === 0 &&
                       workerToolActivity &&
@@ -159,8 +172,7 @@ export default function ToolCallsBlockComponent({
                             allToolNames[name] =
                               (allToolNames[name] || 0) + count;
                           }
-                          if (match.currentTool)
-                            activeTool = match.currentTool;
+                          if (match.currentTool) activeTool = match.currentTool;
                         }
                       }
                     }

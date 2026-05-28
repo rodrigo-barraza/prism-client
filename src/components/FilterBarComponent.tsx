@@ -9,7 +9,10 @@ export interface FilterBarProps {
   className?: string;
 }
 
-export function FilterBarComponent({ children, className = "" }: FilterBarProps) {
+export function FilterBarComponent({
+  children,
+  className = "",
+}: FilterBarProps) {
   return <div className={`${styles.filterBar} ${className}`}>{children}</div>;
 }
 
@@ -40,7 +43,11 @@ export interface FilterPillsProps {
   onChange: (key: string) => void;
 }
 
-export function FilterPillsComponent({ options, value, onChange }: FilterPillsProps) {
+export function FilterPillsComponent({
+  options,
+  value,
+  onChange,
+}: FilterPillsProps) {
   return (
     <div className={styles.pills}>
       {options.map((f) => {
@@ -86,7 +93,11 @@ export function SearchInputComponent({
         type="text"
         placeholder={placeholder}
         value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(e.target.value)}
+        onChange={(
+          e: React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          >,
+        ) => onChange(e.target.value)}
         className={styles.searchInput}
       />
     </form>
@@ -105,7 +116,11 @@ export interface ViewModeToggleProps {
   modes: ViewModeOption[];
 }
 
-export function ViewModeToggleComponent({ mode, onChange, modes }: ViewModeToggleProps) {
+export function ViewModeToggleComponent({
+  mode,
+  onChange,
+  modes,
+}: ViewModeToggleProps) {
   return (
     <div className={styles.viewToggle}>
       {modes.map((m) => {
@@ -205,7 +220,11 @@ export function FilterInputComponent({
       className={`${styles.filterInput} ${className}`}
       placeholder={placeholder}
       value={value}
-      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(e.target.value)}
+      onChange={(
+        e: React.ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >,
+      ) => onChange(e.target.value)}
     />
   );
 }
@@ -232,7 +251,11 @@ export function FilterSelectComponent({
     <select
       className={`${styles.filterSelect} ${className}`}
       value={value}
-      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(e.target.value)}
+      onChange={(
+        e: React.ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >,
+      ) => onChange(e.target.value)}
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>
@@ -248,7 +271,10 @@ export interface FilterClearButtonProps {
   children?: React.ReactNode;
 }
 
-export function FilterClearButton({ onClick, children = "Clear" }: FilterClearButtonProps) {
+export function FilterClearButton({
+  onClick,
+  children = "Clear",
+}: FilterClearButtonProps) {
   return (
     <button type="button" className={styles.clearButton} onClick={onClick}>
       {children}

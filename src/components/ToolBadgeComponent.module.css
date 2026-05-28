@@ -27,7 +27,11 @@
 
 .badge:hover {
   border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
-  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-elevated));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 6%,
+    var(--background-elevated)
+  );
 }
 
 .badge svg {
@@ -47,7 +51,11 @@
 /* ── Active state (currently executing) ── */
 .badgeActive {
   border-color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-elevated));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 8%,
+    var(--background-elevated)
+  );
   box-shadow: 0 0 6px -1px
     color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }

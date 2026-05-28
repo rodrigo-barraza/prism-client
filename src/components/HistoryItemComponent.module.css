@@ -111,7 +111,6 @@
 }
 
 @keyframes historyItemPulse {
-
   0%,
   100% {
     opacity: 1;
@@ -288,13 +287,25 @@
 }
 
 /* Fallback for other custom agents */
-.agentBadge:not([data-agent-identifier="CODING"]):not([data-agent-identifier="OMNI"]):not([data-agent-identifier="LUPOS"]):not([data-agent-identifier="STICKERS"]):not([data-agent-identifier="OOG"]):not([data-agent-identifier="LIGHTS"]):not([data-agent-identifier="IMAGE"]) {
+.agentBadge:not([data-agent-identifier="CODING"]):not(
+    [data-agent-identifier="OMNI"]
+  ):not([data-agent-identifier="LUPOS"]):not(
+    [data-agent-identifier="STICKERS"]
+  ):not([data-agent-identifier="OOG"]):not(
+    [data-agent-identifier="LIGHTS"]
+  ):not([data-agent-identifier="IMAGE"]) {
   background: rgba(139, 92, 246, 0.06);
   border-color: rgba(139, 92, 246, 0.18);
   color: #a78bfa;
 }
 
-.agentBadge:not([data-agent-identifier="CODING"]):not([data-agent-identifier="OMNI"]):not([data-agent-identifier="LUPOS"]):not([data-agent-identifier="STICKERS"]):not([data-agent-identifier="OOG"]):not([data-agent-identifier="LIGHTS"]):not([data-agent-identifier="IMAGE"]):hover {
+.agentBadge:not([data-agent-identifier="CODING"]):not(
+    [data-agent-identifier="OMNI"]
+  ):not([data-agent-identifier="LUPOS"]):not(
+    [data-agent-identifier="STICKERS"]
+  ):not([data-agent-identifier="OOG"]):not(
+    [data-agent-identifier="LIGHTS"]
+  ):not([data-agent-identifier="IMAGE"]):hover {
   background: rgba(139, 92, 246, 0.1);
   border-color: rgba(139, 92, 246, 0.25);
   box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);

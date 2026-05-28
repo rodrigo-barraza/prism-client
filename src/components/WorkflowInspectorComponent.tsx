@@ -29,7 +29,13 @@ import { copyToClipboard } from "../utils/utilities";
 
 import styles from "./WorkflowInspectorComponent.module.css";
 import { LS_WORKFLOW_INSPECTOR_WIDTH } from "../constants";
-import { ModelOption, WorkflowEdge, WorkflowNode, WorkflowNodeStatus, Message } from "../types/types";
+import {
+  ModelOption,
+  WorkflowEdge,
+  WorkflowNode,
+  WorkflowNodeStatus,
+  Message,
+} from "../types/types";
 
 const MIN_WIDTH = 320;
 const MAX_WIDTH = 800;
@@ -40,7 +46,12 @@ function getStoredWidth(): number {
     const storedWidth = localStorage.getItem(LS_WORKFLOW_INSPECTOR_WIDTH);
     if (storedWidth) {
       const parsedWidth = parseInt(storedWidth, 10);
-      if (!isNaN(parsedWidth) && parsedWidth >= MIN_WIDTH && parsedWidth <= MAX_WIDTH) return parsedWidth;
+      if (
+        !isNaN(parsedWidth) &&
+        parsedWidth >= MIN_WIDTH &&
+        parsedWidth <= MAX_WIDTH
+      )
+        return parsedWidth;
     }
   } catch {
     /* ignore */
@@ -65,7 +76,11 @@ interface WorkflowInspectorProps {
   nodeStatuses?: Record<string, string>;
   onUpdateNodeConfig?: (nodeId: string, key: string, value: any) => void;
   onUpdateNodeContent?: (nodeId: string, content: string) => void;
-  onUpdateFileInput?: (nodeId: string, fileData: string | ArrayBuffer | null, mimeType: string | null) => void;
+  onUpdateFileInput?: (
+    nodeId: string,
+    fileData: string | ArrayBuffer | null,
+    mimeType: string | null,
+  ) => void;
   onChangeModel?: (nodeId: string, model: ModelOption) => void;
   onSelectNode?: (nodeId: string) => void;
   onClose: () => void;
@@ -76,7 +91,16 @@ const getModalityIcon = (modality: string | null | undefined) => {
   if (!modality) return null;
   const icons = MODALITY_ICONS as Record<
     string,
-    { icon: React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>; label: string; color: string } | undefined
+    | {
+        icon: React.ComponentType<{
+          size?: number;
+          className?: string;
+          style?: React.CSSProperties;
+        }>;
+        label: string;
+        color: string;
+      }
+    | undefined
   >;
   return icons[modality];
 };
@@ -187,7 +211,9 @@ export default function WorkflowInspector({
       }
       if (
         requiredOutputs.length > 0 &&
-        !requiredOutputs.every((mod: string | undefined) => mOutputs.includes(mod || ""))
+        !requiredOutputs.every((mod: string | undefined) =>
+          mOutputs.includes(mod || ""),
+        )
       )
         return false;
       return true;
@@ -202,7 +228,8 @@ export default function WorkflowInspector({
       const name = m.display_name || m.label || m.name || "";
       const provider = m.provider || "";
       return (
-        name.toLowerCase().includes(normalizedSearch) || provider.toLowerCase().includes(normalizedSearch)
+        name.toLowerCase().includes(normalizedSearch) ||
+        provider.toLowerCase().includes(normalizedSearch)
       );
     });
   }, [compatibleModels, modelSearch]);
@@ -226,11 +253,14 @@ export default function WorkflowInspector({
         pdf: "PDF",
         conversation: "Chat History",
       };
-      const key = typeof matchedNode.modality === "string" ? matchedNode.modality : "";
+      const key =
+        typeof matchedNode.modality === "string" ? matchedNode.modality : "";
       return matchedNode.customName || labels[key] || "Media";
     }
-    if (matchedNode.nodeType === "viewer") return matchedNode.customName || "Output";
-    if (matchedNode.nodeType === "tools") return matchedNode.customName || "Tools";
+    if (matchedNode.nodeType === "viewer")
+      return matchedNode.customName || "Output";
+    if (matchedNode.nodeType === "tools")
+      return matchedNode.customName || "Tools";
     return (matchedNode.displayName as string) || matchedNode.modelName || id;
   };
 
@@ -248,15 +278,19 @@ export default function WorkflowInspector({
     : isTools
       ? "Tool Calling"
       : isInput
-        ? (typeof node.modality === "string" ? NODE_TYPE_LABELS[node.modality] : "") || "Media Node"
+        ? (typeof node.modality === "string"
+            ? NODE_TYPE_LABELS[node.modality]
+            : "") || "Media Node"
         : "Output Node";
 
-  const receivedOutputs = node.receivedOutputs as {
-    image?: string;
-    text?: string;
-    audio?: string;
-    embedding?: number[];
-  } | undefined;
+  const receivedOutputs = node.receivedOutputs as
+    | {
+        image?: string;
+        text?: string;
+        audio?: string;
+        embedding?: number[];
+      }
+    | undefined;
 
   return (
     <div
@@ -309,14 +343,18 @@ export default function WorkflowInspector({
                   ? node.customName || "Tools"
                   : isInput
                     ? node.customName ||
-                      ({
-                        text: "Text",
-                        image: "Image",
-                        audio: "Audio",
-                        video: "Video",
-                        pdf: "PDF",
-                        conversation: "Chat History",
-                      } as Record<string, string>)[typeof node.modality === "string" ? node.modality : ""] ||
+                      (
+                        {
+                          text: "Text",
+                          image: "Image",
+                          audio: "Audio",
+                          video: "Video",
+                          pdf: "PDF",
+                          conversation: "Chat History",
+                        } as Record<string, string>
+                      )[
+                        typeof node.modality === "string" ? node.modality : ""
+                      ] ||
                       "Media"
                     : node.customName || "Output"}
             </span>
@@ -372,7 +410,9 @@ export default function WorkflowInspector({
                       className={styles.modelDropdownSearchInput}
                       placeholder="Search models…"
                       value={modelSearch}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModelSearch(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setModelSearch(e.target.value)
+                      }
                       autoFocus
                     />
                     {modelSearch && (
@@ -405,7 +445,10 @@ export default function WorkflowInspector({
                               setModelSearch("");
                             }}
                           >
-                            <ProviderLogo provider={m.provider || ""} size={13} />
+                            <ProviderLogo
+                              provider={m.provider || ""}
+                              size={13}
+                            />
                             <span className={styles.modelDropdownItemName}>
                               {m.display_name || m.label || m.name}
                             </span>
@@ -492,8 +535,7 @@ export default function WorkflowInspector({
                     className={styles.connectionDot}
                     style={{
                       background:
-                        getModalityIcon(c.targetModality)?.color ||
-                        "#888",
+                        getModalityIcon(c.targetModality)?.color || "#888",
                     }}
                   />
                   <span className={styles.connectionFrom}>
@@ -537,8 +579,7 @@ export default function WorkflowInspector({
                     className={styles.connectionDot}
                     style={{
                       background:
-                        getModalityIcon(c.sourceModality)?.color ||
-                        "#888",
+                        getModalityIcon(c.sourceModality)?.color || "#888",
                     }}
                   />
                 </div>
@@ -614,9 +655,10 @@ export default function WorkflowInspector({
                 </div>
               ) : (
                 <AssetInputOptions
-                  onFile={(dataUrl: string | ArrayBuffer | null, mimeType: string | null) =>
-                    onUpdateFileInput?.(node.id, dataUrl, mimeType)
-                  }
+                  onFile={(
+                    dataUrl: string | ArrayBuffer | null,
+                    mimeType: string | null,
+                  ) => onUpdateFileInput?.(node.id, dataUrl, mimeType)}
                 />
               )}
             </section>
@@ -632,7 +674,9 @@ export default function WorkflowInspector({
             for (const conn of incoming) {
               const dotIdx = conn.targetModality?.indexOf(".") ?? -1;
               if (dotIdx === -1) continue;
-              const msgIdx = parseInt(conn.targetModality!.substring(0, dotIdx));
+              const msgIdx = parseInt(
+                conn.targetModality!.substring(0, dotIdx),
+              );
               const modality = conn.targetModality!.substring(dotIdx + 1);
               if (msgIdx < 0 || msgIdx >= resolved.length) continue;
               const sourceNode = (nodes || []).find(
@@ -651,19 +695,33 @@ export default function WorkflowInspector({
                 ];
               } else if (modality === "audio") {
                 const existing = message.audio;
-                const audioArr = Array.isArray(existing) ? existing : existing ? [existing] : [];
+                const audioArr = Array.isArray(existing)
+                  ? existing
+                  : existing
+                    ? [existing]
+                    : [];
                 message.audio = [...audioArr, "[audio attached]"];
               } else if (modality === "video") {
                 const existing = message.video;
-                const videoArr = Array.isArray(existing) ? existing : existing ? [existing] : [];
+                const videoArr = Array.isArray(existing)
+                  ? existing
+                  : existing
+                    ? [existing]
+                    : [];
                 message.video = [...videoArr, "[video attached]"];
               } else if (modality === "pdf") {
                 const existing = message.pdf;
-                const pdfArr = Array.isArray(existing) ? existing : existing ? [existing] : [];
+                const pdfArr = Array.isArray(existing)
+                  ? existing
+                  : existing
+                    ? [existing]
+                    : [];
                 message.pdf = [...pdfArr, "[pdf attached]"];
               }
             }
-            const resolveRef = (ref: string | ArrayBuffer | null | undefined): string | null => {
+            const resolveRef = (
+              ref: string | ArrayBuffer | null | undefined,
+            ): string | null => {
               if (typeof ref === "string" && ref.startsWith("minio://"))
                 return PrismService.getFileUrl(ref);
               if (typeof ref === "string" && ref.startsWith("data:")) {
@@ -681,13 +739,23 @@ export default function WorkflowInspector({
                     ? { images: images.map(resolveRef) }
                     : {}),
                   ...(audio && (Array.isArray(audio) ? audio.length > 0 : true)
-                    ? { audio: (Array.isArray(audio) ? audio : [audio]).map(resolveRef) }
+                    ? {
+                        audio: (Array.isArray(audio) ? audio : [audio]).map(
+                          resolveRef,
+                        ),
+                      }
                     : {}),
                   ...(video && (Array.isArray(video) ? video.length > 0 : true)
-                    ? { video: (Array.isArray(video) ? video : [video]).map(resolveRef) }
+                    ? {
+                        video: (Array.isArray(video) ? video : [video]).map(
+                          resolveRef,
+                        ),
+                      }
                     : {}),
                   ...(pdf && (Array.isArray(pdf) ? pdf.length > 0 : true)
-                    ? { pdf: (Array.isArray(pdf) ? pdf : [pdf]).map(resolveRef) }
+                    ? {
+                        pdf: (Array.isArray(pdf) ? pdf : [pdf]).map(resolveRef),
+                      }
                     : {}),
                 }),
               ),
@@ -737,8 +805,21 @@ export default function WorkflowInspector({
         {/* Tool node — built-in + custom tool toggles */}
         {isTools &&
           (() => {
-            const builtIn = (node.builtInTools || []) as Array<{ name: string; parameters?: { properties?: Record<string, any>; length?: number } }>;
-            const custom = (node.customTools || []) as Array<{ name?: string; _id?: string; parameters?: { properties?: Record<string, any>; length?: number } }>;
+            const builtIn = (node.builtInTools || []) as Array<{
+              name: string;
+              parameters?: {
+                properties?: Record<string, any>;
+                length?: number;
+              };
+            }>;
+            const custom = (node.customTools || []) as Array<{
+              name?: string;
+              _id?: string;
+              parameters?: {
+                properties?: Record<string, any>;
+                length?: number;
+              };
+            }>;
             const disabled = new Set(node.disabledTools || []);
             const enabledCount =
               builtIn.filter((t) => !disabled.has(t.name)).length +
@@ -752,7 +833,17 @@ export default function WorkflowInspector({
               onUpdateNodeConfig?.(node.id, "disabledTools", [...next]);
             };
 
-            const renderTool = (t: { name?: string; _id?: string; parameters?: { properties?: Record<string, any>; length?: number } }, key: string) => {
+            const renderTool = (
+              t: {
+                name?: string;
+                _id?: string;
+                parameters?: {
+                  properties?: Record<string, any>;
+                  length?: number;
+                };
+              },
+              key: string,
+            ) => {
               const name = t.name || key;
               const isDisabled = disabled.has(name);
               const paramCount = t.parameters?.properties
@@ -808,11 +899,8 @@ export default function WorkflowInspector({
                       )}
                       <span>
                         Built-in (
-                        {
-                          builtIn.filter((t) => !disabled.has(t.name))
-                            .length
-                        }
-                        /{builtIn.length})
+                        {builtIn.filter((t) => !disabled.has(t.name)).length}/
+                        {builtIn.length})
                       </span>
                     </button>
                     {toolBuiltInOpen && (
@@ -846,7 +934,9 @@ export default function WorkflowInspector({
                     </button>
                     {toolCustomOpen && (
                       <div className={styles.toolList}>
-                        {custom.map((t) => renderTool(t, t.name || t._id || ""))}
+                        {custom.map((t) =>
+                          renderTool(t, t.name || t._id || ""),
+                        )}
                       </div>
                     )}
                   </section>
@@ -989,8 +1079,7 @@ export default function WorkflowInspector({
               {receivedOutputs.embedding && (
                 <div className={styles.resultBlock}>
                   <span className={styles.resultType}>
-                    Embedding Content [{receivedOutputs.embedding.length}{" "}
-                    dims]
+                    Embedding Content [{receivedOutputs.embedding.length} dims]
                   </span>
                   <div
                     className={styles.resultText}
@@ -1012,9 +1101,7 @@ export default function WorkflowInspector({
                     className={styles.clearButton}
                     style={{ marginTop: "4px" }}
                     onClick={() =>
-                      copyToClipboard(
-                        JSON.stringify(receivedOutputs.embedding),
-                      )
+                      copyToClipboard(JSON.stringify(receivedOutputs.embedding))
                     }
                   >
                     Copy All

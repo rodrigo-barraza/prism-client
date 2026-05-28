@@ -130,7 +130,8 @@
 }
 
 .menuGroup + .menuGroup {
-  border-top: 1px solid var(--calculated-border-subtle, var(--calculated-border-color));
+  border-top: 1px solid
+    var(--calculated-border-subtle, var(--calculated-border-color));
 }
 
 .menuGroupLabel {
@@ -160,17 +161,26 @@
 }
 
 .menuItem:hover {
-  background: var(--calculated-accent-primary-subtle, var(--background-elevated));
+  background: var(
+    --calculated-accent-primary-subtle,
+    var(--background-elevated)
+  );
   color: var(--text-primary);
 }
 
 .menuItemActive {
   color: var(--text-primary);
-  background: var(--calculated-accent-primary-subtle, var(--calculated-accent-primary-glow));
+  background: var(
+    --calculated-accent-primary-subtle,
+    var(--calculated-accent-primary-glow)
+  );
 }
 
 .menuItemActive:hover {
-  background: var(--calculated-accent-primary-subtle, var(--calculated-accent-primary-glow));
+  background: var(
+    --calculated-accent-primary-subtle,
+    var(--calculated-accent-primary-glow)
+  );
 }
 
 .menuCheck {

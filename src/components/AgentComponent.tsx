@@ -28,9 +28,12 @@ import {
   Plus,
   Bot,
   BarChart3,
+  ScrollText,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import IrisService, { IrisCollectionChangeEvent } from "../services/IrisService";
+import IrisService, {
+  IrisCollectionChangeEvent,
+} from "../services/IrisService";
 import ToolsApiService from "../services/ToolsApiService";
 import {
   Message,
@@ -38,6 +41,7 @@ import {
   AgentSession,
   CustomTool,
   Skill,
+  Rule,
   MCPServer,
   ToolCallEvent,
   CustomAgent,
@@ -55,10 +59,13 @@ import {
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import HistoryPanel from "./HistoryPanelComponent";
-import SettingsPanel, { SessionStats as DisplaySessionStats } from "./SettingsPanelComponent";
+import SettingsPanel, {
+  SessionStats as DisplaySessionStats,
+} from "./SettingsPanelComponent";
 import ModelInfoPanel from "./ModelInfoPanelComponent";
 import CustomToolsPanel from "./CustomToolsPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
+import RulesPanel from "./RulesPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
@@ -284,7 +291,8 @@ interface EmptyStateConfig {
 /** Agentless empty state — raw chat via /chat endpoint, no agentic loop. */
 const NONE_EMPTY_STATE: EmptyStateConfig = {
   title: "Agentless Chat",
-  subtitle: "You're chatting directly with the AI model — no automated tools or workflows are running behind the scenes. Think of it as a simple, open conversation where you ask questions and get answers.",
+  subtitle:
+    "You're chatting directly with the AI model — no automated tools or workflows are running behind the scenes. Think of it as a simple, open conversation where you ask questions and get answers.",
   placeholder: "Send a message...",
 };
 
@@ -311,7 +319,14 @@ interface WorkerActivityEntry {
   toolCount?: number;
   toolNames?: Record<string, number>;
   toolCalls?: ToolCallEvent[];
-  [key: string]: string | number | boolean | null | undefined | Record<string, number> | ToolCallEvent[];
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | Record<string, number>
+    | ToolCallEvent[];
 }
 
 /** Approval request from an agentic tool call. */
@@ -331,7 +346,12 @@ interface SessionSnapshot {
   workerToolActivity: Record<string, WorkerActivityEntry>;
   streamingOutputs: Map<string, string>;
   pendingApprovals: PendingApproval[];
-  pendingUserQuestion: { question?: string; questions?: unknown[]; choices?: string[]; context?: string } | null;
+  pendingUserQuestion: {
+    question?: string;
+    questions?: unknown[];
+    choices?: string[];
+    context?: string;
+  } | null;
   planProposal: { plan: string; steps?: string[]; status?: string } | null;
   agenticProgress: { iteration: number; maxIterations: number } | null;
   settings: Record<string, unknown>;
@@ -379,7 +399,9 @@ interface ClientMessage extends Message {
 
 export interface AgentComponentProps {
   agentId?: string;
-  agents?: Array<AgentPersona | (Partial<AgentPersona> & { id: string; name: string })>;
+  agents?: Array<
+    AgentPersona | (Partial<AgentPersona> & { id: string; name: string })
+  >;
   initialFcEnabled?: boolean;
   initialThinkingEnabled?: boolean;
   initialModel?: string | null;
@@ -432,15 +454,21 @@ export default function AgentComponent({
 
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState<ClientMessage[]>([]);
-  const [queuedNextTurn, setQueuedNextTurn] = useState<QueuedNextTurn | null>(null);
+  const [queuedNextTurn, setQueuedNextTurn] = useState<QueuedNextTurn | null>(
+    null,
+  );
   const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [toolActivity, setToolActivity] = useState<ToolCallEvent[]>([]);
-  const [streamingOutputs, setStreamingOutputs] = useState<Map<string, string>>(new Map());
+  const [streamingOutputs, setStreamingOutputs] = useState<Map<string, string>>(
+    new Map(),
+  );
   const [agentSessionId, setAgentSessionId] = useState(() => generateUUID());
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
-  const [sessions, setSessions] = useState<Array<AgentSession | Conversation>>([]);
+  const [sessions, setSessions] = useState<Array<AgentSession | Conversation>>(
+    [],
+  );
   const sessionsCursorRef = useRef<string | null>(null);
   const [sessionsHasMore, setSessionsHasMore] = useState(false);
   const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -452,21 +480,34 @@ export default function AgentComponent({
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [_injectedSkills, setInjectedSkills] = useState<Skill[]>([]);
+  const [rules, setRules] = useState<Rule[]>([]);
+  const [activeRuleNames, setActiveRuleNames] = useState<Set<string>>(
+    new Set(),
+  );
+  const [slashCommandOpen, setSlashCommandOpen] = useState(false);
+  const [slashCommandQuery, setSlashCommandQuery] = useState("");
   const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
   const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
   // When a loaded session references a workspace that isn't currently connected,
   // store the path so the UI can show "workspace not available" instead of looping errors.
-  const [unavailableWorkspace, setUnavailableWorkspace] = useState<string | null>(null);
+  const [unavailableWorkspace, setUnavailableWorkspace] = useState<
+    string | null
+  >(null);
 
   // -- Notifications & Toasts ------------------------------------
   const { toasts, addToast, removeToast } = useToast();
-  const pendingDeletionsRef = useRef<Map<string, {
-    timeoutId: NodeJS.Timeout;
-    session: any;
-    wasActive: boolean;
-  }>>(new Map());
+  const pendingDeletionsRef = useRef<
+    Map<
+      string,
+      {
+        timeoutId: NodeJS.Timeout;
+        session: any;
+        wasActive: boolean;
+      }
+    >
+  >(new Map());
 
   // Clean up deletion timeouts on unmount
   useEffect(() => {
@@ -479,7 +520,9 @@ export default function AgentComponent({
 
   // -- File viewer pane state (VS Code-style read-only viewer) --
   const [viewerOpenFiles, setViewerOpenFiles] = useState<ViewerOpenFile[]>([]);
-  const [viewerActiveFileId, setViewerActiveFileId] = useState<string | null>(null);
+  const [viewerActiveFileId, setViewerActiveFileId] = useState<string | null>(
+    null,
+  );
   const [viewerRefreshKey, setViewerRefreshKey] = useState(0);
   const viewerOpenFilesRef = useRef<ViewerOpenFile[]>(viewerOpenFiles);
   viewerOpenFilesRef.current = viewerOpenFiles;
@@ -489,19 +532,31 @@ export default function AgentComponent({
     return stored ? Math.max(300, Math.min(Number(stored), 1200)) : 500;
   });
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
-  const [memoriesHeaderActions, setMemoriesHeaderActions] = useState<ReactNode>(null);
+  const [memoriesHeaderActions, setMemoriesHeaderActions] =
+    useState<ReactNode>(null);
   const [workersCount, setWorkersCount] = useState(0);
-  const [workersHeaderActions, setWorkersHeaderActions] = useState<ReactNode>(null);
+  const [workersHeaderActions, setWorkersHeaderActions] =
+    useState<ReactNode>(null);
   const [mcpHeaderActions, setMcpHeaderActions] = useState<ReactNode>(null);
-  const [skillsHeaderActions, setSkillsHeaderActions] = useState<ReactNode>(null);
+  const [skillsHeaderActions, setSkillsHeaderActions] =
+    useState<ReactNode>(null);
+  const [rulesHeaderActions, setRulesHeaderActions] = useState<ReactNode>(null);
   const [tasksHeaderActions, setTasksHeaderActions] = useState<ReactNode>(null);
-  const [workspaceTreeStats, setWorkspaceTreeStats] = useState<{ totalEntries: number; truncated: boolean } | null>(null);
-  const [workerToolActivity, setWorkerToolActivity] = useState<Record<string, WorkerActivityEntry>>({});
+  const [workspaceTreeStats, setWorkspaceTreeStats] = useState<{
+    totalEntries: number;
+    truncated: boolean;
+  } | null>(null);
+  const [workerToolActivity, setWorkerToolActivity] = useState<
+    Record<string, WorkerActivityEntry>
+  >({});
 
   // Track which tabs have received new data the user hasn't viewed yet
   const [newDataTabs, setNewDataTabs] = useState(new Set());
   const leftTabRef = useRef<string>(leftTab);
   leftTabRef.current = leftTab;
+  const [leftTabBottom, setLeftTabBottom] = useState("tools");
+  const leftTabBottomRef = useRef<string>(leftTabBottom);
+  leftTabBottomRef.current = leftTabBottom;
 
   useEffect(() => {
     if (leftTab) {
@@ -521,7 +576,8 @@ export default function AgentComponent({
 
   /** Mark a tab as having new unseen data (only if user isn't already viewing it). */
   const markTabNew = useCallback((tabKey: string) => {
-    if (leftTabRef.current === tabKey) return;
+    if (leftTabRef.current === tabKey || leftTabBottomRef.current === tabKey)
+      return;
     setNewDataTabs((previousPixelSize) => {
       if (previousPixelSize.has(tabKey)) return previousPixelSize;
       const next = new Set(previousPixelSize);
@@ -533,21 +589,24 @@ export default function AgentComponent({
   // Ephemeral tab switch — temporarily show a tab then revert after a delay.
   // Cancels any pending revert to avoid stacking timeouts.
   const tabRevertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const switchTabTemporarily = useCallback((targetTab: string, delayMs = 5000) => {
-    // Already viewing this tab — keep them there, no revert needed
-    const previousTab = leftTabRef.current;
-    if (previousTab === targetTab) return;
-    // Cancel any pending revert from a previous ephemeral switch
-    if (tabRevertTimerRef.current) clearTimeout(tabRevertTimerRef.current);
-    setLeftTab(targetTab);
-    tabRevertTimerRef.current = setTimeout(() => {
-      tabRevertTimerRef.current = null;
-      // Only revert if the user hasn't manually navigated away
-      if (leftTabRef.current === targetTab) {
-        setLeftTab(previousTab);
-      }
-    }, delayMs);
-  }, []);
+  const switchTabTemporarily = useCallback(
+    (targetTab: string, delayMs = 5000) => {
+      // Already viewing this tab — keep them there, no revert needed
+      const previousTab = leftTabRef.current;
+      if (previousTab === targetTab) return;
+      // Cancel any pending revert from a previous ephemeral switch
+      if (tabRevertTimerRef.current) clearTimeout(tabRevertTimerRef.current);
+      setLeftTab(targetTab);
+      tabRevertTimerRef.current = setTimeout(() => {
+        tabRevertTimerRef.current = null;
+        // Only revert if the user hasn't manually navigated away
+        if (leftTabRef.current === targetTab) {
+          setLeftTab(previousTab);
+        }
+      }, delayMs);
+    },
+    [],
+  );
 
   // Count concurrent API calls: main generation + active worker agents
   const activeApiCount = useMemo(() => {
@@ -574,13 +633,15 @@ export default function AgentComponent({
 
   // -- Model memory (persist last-used model per agent) ----------
   const { saveModel, restoreModel } = useModelMemory(modelMemoryKey);
-  const [settings, setSettings] = useState<PrismSettings & {
-    maxTokens: number;
-    functionCallingEnabled: boolean;
-    thinkingEnabled: boolean;
-    codeExecutionEnabled?: boolean;
-    urlContextEnabled?: boolean;
-  }>({
+  const [settings, setSettings] = useState<
+    PrismSettings & {
+      maxTokens: number;
+      functionCallingEnabled: boolean;
+      thinkingEnabled: boolean;
+      codeExecutionEnabled?: boolean;
+      urlContextEnabled?: boolean;
+    }
+  >({
     ...SETTINGS_DEFAULTS,
     maxTokens: 64000,
     // Agents always need FC for tool orchestration; Direct Chat defaults off
@@ -622,23 +683,47 @@ export default function AgentComponent({
     if (workerIter != null) setMaxWorkerIterations(workerIter);
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
-  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
-  const [pendingUserQuestion, setPendingUserQuestion] = useState<{ question?: string; questions?: unknown[]; choices?: string[]; context?: string } | null>(null);
-  const [planProposal, setPlanProposal] = useState<{plan: string; steps?: string[]; status?: string} | null>(null); // { plan, steps, status }
-  const [agenticProgress, setAgenticProgress] = useState<{iteration: number; maxIterations: number} | null>(null); // { iteration, maxIterations }
-  const [_contextTruncated, setContextTruncated] = useState<{strategy: string; estimatedTokens?: number} | null>(null); // { strategy, estimatedTokens }
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>(
+    [],
+  );
+  const [pendingUserQuestion, setPendingUserQuestion] = useState<{
+    question?: string;
+    questions?: unknown[];
+    choices?: string[];
+    context?: string;
+  } | null>(null);
+  const [planProposal, setPlanProposal] = useState<{
+    plan: string;
+    steps?: string[];
+    status?: string;
+  } | null>(null); // { plan, steps, status }
+  const [agenticProgress, setAgenticProgress] = useState<{
+    iteration: number;
+    maxIterations: number;
+  } | null>(null); // { iteration, maxIterations }
+  const [_contextTruncated, setContextTruncated] = useState<{
+    strategy: string;
+    estimatedTokens?: number;
+  } | null>(null); // { strategy, estimatedTokens }
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
-  const [backendSessionStats, setBackendSessionStats] = useState<SessionStats | null>(null);
+  const [backendSessionStats, setBackendSessionStats] =
+    useState<SessionStats | null>(null);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
   const [showRaw, setShowRaw] = useState(false);
 
   // Frontend-side high-water marks for token display.
   // Ensures the token badges never show a lower number than previously
   // displayed, regardless of which computation path produced the values.
-  const tokenHwmRef = useRef<{input: number; output: number; total: number}>({ input: 0, output: 0, total: 0 });
+  const tokenHwmRef = useRef<{ input: number; output: number; total: number }>({
+    input: 0,
+    output: 0,
+    total: 0,
+  });
 
   // -- Pixelation transition state ----------------------------
-  const [pixelTransition, setPixelTransition] = useState<'out' | 'in' | null>(null); // 'out' | 'in' | null
+  const [pixelTransition, setPixelTransition] = useState<"out" | "in" | null>(
+    null,
+  ); // 'out' | 'in' | null
 
   // -- Adaptive pixel transition timing -----------------------
   // Track session load durations via EMA to predict the "out" duration.
@@ -733,7 +818,8 @@ export default function AgentComponent({
     // could arrive, leaving activity entries stuck in active phases.
     setWorkerToolActivity((previousPixelSize) => {
       const hasActive = Object.values(previousPixelSize).some(
-        (w: WorkerActivityEntry) => w.phase && w.phase !== "complete" && w.phase !== "failed",
+        (w: WorkerActivityEntry) =>
+          w.phase && w.phase !== "complete" && w.phase !== "failed",
       );
       if (!hasActive) return previousPixelSize;
       const next: Record<string, WorkerActivityEntry> = {};
@@ -802,8 +888,11 @@ export default function AgentComponent({
   // -- Model capability detection ------------------------------
   const supportsImageInput = useMemo(() => {
     if (!filteredConfig) return false;
-    const models = filteredConfig.textToText?.models?.[settings.provider ?? ""] || [];
-    const modelDef = models.find((m: ModelOption) => m.name === settings.model) as (ModelOption & { inputTypes?: string[] }) | undefined;
+    const models =
+      filteredConfig.textToText?.models?.[settings.provider ?? ""] || [];
+    const modelDef = models.find(
+      (m: ModelOption) => m.name === settings.model,
+    ) as (ModelOption & { inputTypes?: string[] }) | undefined;
     return modelDef?.inputTypes?.includes("image") ?? false;
   }, [filteredConfig, settings.provider, settings.model]);
 
@@ -851,7 +940,9 @@ export default function AgentComponent({
   // Load favorite models
   useEffect(() => {
     PrismService.getFavorites("model")
-      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
+      .then((favs: Array<{ key: string }>) =>
+        setFavoriteKeys(favs.map((f) => f.key)),
+      )
       .catch(() => {});
   }, []);
 
@@ -880,7 +971,10 @@ export default function AgentComponent({
     };
 
     const fcFallback = (config: PrismConfig) => {
-      const { provider, model, temperature } = resolveDefaultModel(config, !isNoAgent);
+      const { provider, model, temperature } = resolveDefaultModel(
+        config,
+        !isNoAgent,
+      );
       if (provider && model) {
         setSettings((s) => ({
           ...s,
@@ -924,8 +1018,7 @@ export default function AgentComponent({
 
     // Check if the model is an always-on thinking model (e.g. Gemini 3.5 Flash)
     const canDisable =
-      !modelDef.thinkingLevels ||
-      modelDef.thinkingLevels.includes("minimal");
+      !modelDef.thinkingLevels || modelDef.thinkingLevels.includes("minimal");
     const alwaysOn =
       !canDisable && settings.provider === "google" && modelDef.thinking;
 
@@ -943,7 +1036,9 @@ export default function AgentComponent({
       setSessionsLoading(true);
       const result = isNoAgent
         ? await PrismService.getConversations()
-        : await PrismService.getAgentSessions(agentProject!, { agent: agentId });
+        : await PrismService.getAgentSessions(agentProject!, {
+            agent: agentId,
+          });
       setSessions(result.items);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
@@ -958,11 +1053,17 @@ export default function AgentComponent({
     if (!sessionsCursorRef.current || sessionsLoading) return;
     try {
       setSessionsLoading(true);
-      const fetchOptions = { cursor: sessionsCursorRef.current, agent: agentId };
+      const fetchOptions = {
+        cursor: sessionsCursorRef.current,
+        agent: agentId,
+      };
       const result = isNoAgent
         ? await PrismService.getConversations(fetchOptions)
         : await PrismService.getAgentSessions(agentProject!, fetchOptions);
-      setSessions((previousPixelSize) => [...previousPixelSize, ...result.items]);
+      setSessions((previousPixelSize) => [
+        ...previousPixelSize,
+        ...result.items,
+      ]);
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
     } catch (error: unknown) {
@@ -991,7 +1092,9 @@ export default function AgentComponent({
         if (!full) return;
 
         const displayMessages = prepareDisplayMessages(full.messages || []);
-        console.debug(`[URL session load] id=${initialSessionId}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`);
+        console.debug(
+          `[URL session load] id=${initialSessionId}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`,
+        );
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
         setMessages(displayMessages);
@@ -1006,7 +1109,10 @@ export default function AgentComponent({
           .reverse()
           .find((m) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
-          const gs = (lastAssistant.generationSettings || {}) as Record<string, string | number | boolean | undefined>;
+          const gs = (lastAssistant.generationSettings || {}) as Record<
+            string,
+            string | number | boolean | undefined
+          >;
           setSettings((previousPixelSize) => ({
             ...previousPixelSize,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
@@ -1014,12 +1120,18 @@ export default function AgentComponent({
             ...(gs.temperature !== undefined && {
               temperature: Number(gs.temperature),
             }),
-            ...(gs.maxTokens !== undefined && { maxTokens: Number(gs.maxTokens) }),
+            ...(gs.maxTokens !== undefined && {
+              maxTokens: Number(gs.maxTokens),
+            }),
             ...(gs.thinkingEnabled !== undefined && {
               thinkingEnabled: Boolean(gs.thinkingEnabled),
             }),
-            ...(gs.reasoningEffort && { reasoningEffort: String(gs.reasoningEffort) }),
-            ...(gs.thinkingBudget && { thinkingBudget: String(gs.thinkingBudget) }),
+            ...(gs.reasoningEffort && {
+              reasoningEffort: String(gs.reasoningEffort),
+            }),
+            ...(gs.thinkingBudget && {
+              thinkingBudget: String(gs.thinkingBudget),
+            }),
             ...(full.systemPrompt != null && {
               systemPrompt: full.systemPrompt,
             }),
@@ -1061,6 +1173,20 @@ export default function AgentComponent({
     loadSkills();
   }, [loadSkills]);
 
+  // Load rules (per-agent slash commands)
+  const loadRules = useCallback(async () => {
+    try {
+      const agentRules = await PrismService.getRules(agentId);
+      setRules(agentRules);
+    } catch (error: unknown) {
+      console.error("Failed to load rules:", error);
+    }
+  }, [agentId]);
+
+  useEffect(() => {
+    loadRules();
+  }, [loadRules]);
+
   // Load MCP servers
   const loadMCPServers = useCallback(async () => {
     try {
@@ -1076,7 +1202,8 @@ export default function AgentComponent({
   }, [loadMCPServers]);
 
   // Fetch built-in tools for the active agent (filtered server-side by persona)
-  // NONE = no agent filter → all tools exposed
+  // NONE = no agent filter → all tools exposed, but workspace/file tools are
+  // stripped client-side since agentless mode has no backend workspace awareness.
   useEffect(() => {
     async function loadAgenticTools() {
       // Trigger Prism to re-fetch from tools-api (picks up newly added tools)
@@ -1086,9 +1213,26 @@ export default function AgentComponent({
         // Non-fatal — Prism may still have a stale cache
       }
 
-      const tools = await PrismService.getBuiltInToolSchemas(
+      let tools = await PrismService.getBuiltInToolSchemas(
         isNoAgent ? undefined : agentId,
       );
+
+      // Agentless mode: strip workspace/file domains — the model has no
+      // SystemPromptAssembler context and cannot actually read/write files.
+      if (isNoAgent) {
+        const agentOnlyDomains = new Set([
+          "Agentic: File Operations",
+          "Agentic: Git",
+          "Agentic: Git Isolation",
+          "Agentic: Command Execution",
+          "Agentic: Code Intelligence",
+          "Agentic: Search & Discovery",
+        ]);
+        tools = tools.filter(
+          (tool) => !agentOnlyDomains.has(tool.domain || ""),
+        );
+      }
+
       setBuiltInTools(tools);
     }
     loadAgenticTools().catch(console.error);
@@ -1131,9 +1275,7 @@ export default function AgentComponent({
 
   useEffect(() => {
     ToolsApiService.getAllAgenticTasks({ agentSessionId })
-      .then((r) =>
-        setTasksCount(r.summary?.total || (r.tasks || []).length),
-      )
+      .then((r) => setTasksCount(r.summary?.total || (r.tasks || []).length))
       .catch(() => {});
   }, [agentSessionId, tasksRefreshKey]);
 
@@ -1179,19 +1321,27 @@ export default function AgentComponent({
     setSessions((previousPixelSize) => {
       const index = previousPixelSize.findIndex((s) => s.id === activeId);
       if (index === -1) return previousPixelSize;
-      const existing = previousPixelSize[index] as unknown as Record<string, unknown>;
+      const existing = previousPixelSize[index] as unknown as Record<
+        string,
+        unknown
+      >;
       // Only patch if something actually changed to avoid churn
-      const resolvedCost = (backendSessionStats?.totalCost ?? totalCost) as number;
+      const resolvedCost = (backendSessionStats?.totalCost ??
+        totalCost) as number;
       const resolvedModalities: Record<string, number> =
-        (backendSessionStats?.modalities ?? modalities) as Record<string, number>;
-      const resolvedToolCounts =
-        backendSessionStats?.toolCounts ?? undefined;
+        (backendSessionStats?.modalities ?? modalities) as Record<
+          string,
+          number
+        >;
+      const resolvedToolCounts = backendSessionStats?.toolCounts ?? undefined;
       const resolvedProviders =
         uniqueProviders.length > 0 ? uniqueProviders : existing.providers;
       const resolvedModels =
         uniqueModels.length > 0 ? uniqueModels : existing._liveModelNames;
       // Shallow equality check — skip update if nothing visually changed
-      const prevMod = existing._liveModalities as Record<string, number> | undefined;
+      const prevMod = existing._liveModalities as
+        | Record<string, number>
+        | undefined;
       const modSame =
         prevMod &&
         Object.keys(resolvedModalities).every(
@@ -1207,7 +1357,10 @@ export default function AgentComponent({
       ) {
         return previousPixelSize;
       }
-      const updated = [...previousPixelSize] as unknown as Record<string, unknown>[];
+      const updated = [...previousPixelSize] as unknown as Record<
+        string,
+        unknown
+      >[];
       updated[index] = {
         ...existing,
         title,
@@ -1287,7 +1440,8 @@ export default function AgentComponent({
   }, [builtInTools]);
 
   const enabledConfigurableCount = useMemo(() => {
-    return configurableTools.filter((tool) => !disabledBuiltIns.has(tool.name)).length;
+    return configurableTools.filter((tool) => !disabledBuiltIns.has(tool.name))
+      .length;
   }, [configurableTools, disabledBuiltIns]);
 
   const coreToolsCount = useMemo(() => {
@@ -1296,15 +1450,13 @@ export default function AgentComponent({
 
   // Derive whether the active agent has File Operations capability
   const hasFileOps = useMemo(
-    () =>
-      builtInTools.some((t) => t.domain === "Agentic: File Operations"),
+    () => builtInTools.some((t) => t.domain === "Agentic: File Operations"),
     [builtInTools],
   );
 
   // -- Memoize filtered messages for MessageList to prevent ref churn --
   const filteredMessages = useMemo(
-    () =>
-      messages.filter((m) => m.role === "user" || m.role === "assistant"),
+    () => messages.filter((m) => m.role === "user" || m.role === "assistant"),
     [messages],
   );
 
@@ -1315,7 +1467,7 @@ export default function AgentComponent({
         (m.content?.startsWith("[System Context]") ||
           m.rawContent?.startsWith("[System Context]") ||
           m.content?.startsWith("[System Context - Local Time:") ||
-          m.rawContent?.startsWith("[System Context - Local Time:"))
+          m.rawContent?.startsWith("[System Context - Local Time:")),
     );
   }, [messages]);
 
@@ -1327,23 +1479,42 @@ export default function AgentComponent({
 
   /** Create a styled mention badge span (wraps the pure fn). */
   const createMentionBadge = useCallback(
-    (path: string, name: string, type: string | undefined, badgeOpts?: Parameters<typeof _createMentionBadge>[3]) => {
+    (
+      path: string,
+      name: string,
+      type: string | undefined,
+      badgeOpts?: Parameters<typeof _createMentionBadge>[3],
+    ) => {
       return _createMentionBadge(path, name, type, badgeOpts);
     },
     [],
   );
 
   // -- Stable input change handler -----------------------------
-  const handleInputChange = useCallback((_e: React.FormEvent<HTMLDivElement>) => {
-    const element = textareaRef.current;
-    if (!element) return;
-    const value = serializeEditable(element);
-    inputValueRef.current = value;
-    const nowHasInput = value.trim().length > 0;
-    setHasInput((previousPixelSize) => (previousPixelSize !== nowHasInput ? nowHasInput : previousPixelSize));
-    // -- Mention autocomplete detection --
-    detectMentionQueryRef.current?.(element);
-  }, []);
+  const handleInputChange = useCallback(
+    (_e: React.FormEvent<HTMLDivElement>) => {
+      const element = textareaRef.current;
+      if (!element) return;
+      const value = serializeEditable(element);
+      inputValueRef.current = value;
+      const nowHasInput = value.trim().length > 0;
+      setHasInput((previousPixelSize) =>
+        previousPixelSize !== nowHasInput ? nowHasInput : previousPixelSize,
+      );
+      // -- Mention autocomplete detection --
+      detectMentionQueryRef.current?.(element);
+      // -- Slash command detection --
+      const trimmedValue = value.trim();
+      if (trimmedValue.startsWith("/") && !trimmedValue.includes(" ")) {
+        setSlashCommandOpen(true);
+        setSlashCommandQuery(trimmedValue.slice(1).toLowerCase());
+      } else {
+        setSlashCommandOpen(false);
+        setSlashCommandQuery("");
+      }
+    },
+    [],
+  );
 
   // Helper to programmatically set the editable value (quick prompts, queue cancel)
   const setTextareaValue = useCallback((text: string) => {
@@ -1355,23 +1526,26 @@ export default function AgentComponent({
   }, []);
 
   /** Strip HTML on paste — contentEditable should only accept plain text. */
-  const handleEditablePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData("text/plain");
-    const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) return;
-    const range = selection.getRangeAt(0);
-    range.deleteContents();
-    const textNode = document.createTextNode(text);
-    range.insertNode(textNode);
-    placeCaretAfter(textNode);
-    // Sync
-    const element = textareaRef.current;
-    if (element) {
-      inputValueRef.current = serializeEditable(element);
-      setHasInput(inputValueRef.current.trim().length > 0);
-    }
-  }, []);
+  const handleEditablePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      const text = e.clipboardData.getData("text/plain");
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount) return;
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      const textNode = document.createTextNode(text);
+      range.insertNode(textNode);
+      placeCaretAfter(textNode);
+      // Sync
+      const element = textareaRef.current;
+      if (element) {
+        inputValueRef.current = serializeEditable(element);
+        setHasInput(inputValueRef.current.trim().length > 0);
+      }
+    },
+    [],
+  );
 
   // -- File mention handler (@ in workspace tree) ---------------
   // Inserts a styled badge at the current cursor position.
@@ -1389,7 +1563,9 @@ export default function AgentComponent({
       const space = document.createTextNode(" ");
       const selection = window.getSelection();
       const range =
-        selection && selection.rangeCount && element.contains(selection.anchorNode)
+        selection &&
+        selection.rangeCount &&
+        element.contains(selection.anchorNode)
           ? selection.getRangeAt(0)
           : null;
       if (range) {
@@ -1398,7 +1574,11 @@ export default function AgentComponent({
           const characterCount = container.textContent
             ? container.textContent[range.startOffset - 1]
             : "";
-          if (characterCount && characterCount !== " " && characterCount !== "\n") {
+          if (
+            characterCount &&
+            characterCount !== " " &&
+            characterCount !== "\n"
+          ) {
             range.insertNode(document.createTextNode(" "));
             range.collapse(false);
           }
@@ -1433,7 +1613,9 @@ export default function AgentComponent({
       const space = document.createTextNode(" ");
       const selection = window.getSelection();
       const range =
-        selection && selection.rangeCount && element.contains(selection.anchorNode)
+        selection &&
+        selection.rangeCount &&
+        element.contains(selection.anchorNode)
           ? selection.getRangeAt(0)
           : null;
       if (range) {
@@ -1442,7 +1624,11 @@ export default function AgentComponent({
           const characterCount = container.textContent
             ? container.textContent[range.startOffset - 1]
             : "";
-          if (characterCount && characterCount !== " " && characterCount !== "\n") {
+          if (
+            characterCount &&
+            characterCount !== " " &&
+            characterCount !== "\n"
+          ) {
             range.insertNode(document.createTextNode(" "));
             range.collapse(false);
           }
@@ -1484,7 +1670,11 @@ export default function AgentComponent({
       if (data?.tree) {
         const flat = flattenTree(data.tree);
         mentionCacheRef.current = flat;
-        setKnownPaths(flat.map((e) => e.path).filter((p): p is string => typeof p === "string"));
+        setKnownPaths(
+          flat
+            .map((e) => e.path)
+            .filter((p): p is string => typeof p === "string"),
+        );
       }
     } catch {
       /* autocomplete unavailable */
@@ -1509,7 +1699,11 @@ export default function AgentComponent({
   const detectMentionQuery = useCallback(
     (element: HTMLDivElement) => {
       const selection = window.getSelection();
-      if (!selection || !selection.rangeCount || !element.contains(selection.anchorNode)) {
+      if (
+        !selection ||
+        !selection.rangeCount ||
+        !element.contains(selection.anchorNode)
+      ) {
         setMentionOpen(false);
         return;
       }
@@ -1522,7 +1716,10 @@ export default function AgentComponent({
         setMentionOpen(false);
         return;
       }
-      const result = detectMentionToken(anchor.textContent, selection.anchorOffset);
+      const result = detectMentionToken(
+        anchor.textContent,
+        selection.anchorOffset,
+      );
       if (result) {
         mentionAnchorRef.current = {
           node: anchor,
@@ -1538,7 +1735,9 @@ export default function AgentComponent({
     },
     [ensureMentionCache],
   );
-  const detectMentionQueryRef = useRef<((el: HTMLDivElement) => void) | null>(detectMentionQuery);
+  const detectMentionQueryRef = useRef<((el: HTMLDivElement) => void) | null>(
+    detectMentionQuery,
+  );
   detectMentionQueryRef.current = detectMentionQuery;
 
   const mentionResults = useMemo(() => {
@@ -1554,7 +1753,11 @@ export default function AgentComponent({
       const { node, offset } = mentionAnchorRef.current;
       const selection = window.getSelection();
       if (!selection || !selection.rangeCount) return;
-      const badge = createMentionBadge(entry.path || '', entry.name, entry.type);
+      const badge = createMentionBadge(
+        entry.path || "",
+        entry.name,
+        entry.type,
+      );
       const space = applyMentionToTextNode(
         node,
         offset,
@@ -1571,19 +1774,25 @@ export default function AgentComponent({
   );
 
   // -- Image handlers ------------------------------------------
-  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    for (const file of files) {
-      const reader = new FileReader();
-      reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
-        if (readerEvent.target?.result) {
-          setPendingImages((previousPixelSize) => [...previousPixelSize, readerEvent.target?.result as string]);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-    e.target.value = "";
-  }, []);
+  const handleImageSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      for (const file of files) {
+        const reader = new FileReader();
+        reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
+          if (readerEvent.target?.result) {
+            setPendingImages((previousPixelSize) => [
+              ...previousPixelSize,
+              readerEvent.target?.result as string,
+            ]);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+      e.target.value = "";
+    },
+    [],
+  );
 
   const removeImage = useCallback((index: number) => {
     setPendingImages((previousPixelSize) =>
@@ -1630,7 +1839,10 @@ export default function AgentComponent({
         const reader = new FileReader();
         reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
           if (readerEvent.target?.result) {
-            setPendingImages((previousPixelSize) => [...previousPixelSize, readerEvent.target?.result as string]);
+            setPendingImages((previousPixelSize) => [
+              ...previousPixelSize,
+              readerEvent.target?.result as string,
+            ]);
           }
         };
         reader.readAsDataURL(file);
@@ -1655,7 +1867,10 @@ export default function AgentComponent({
         const reader = new FileReader();
         reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
           if (readerEvent.target?.result) {
-            setPendingImages((previousPixelSize) => [...previousPixelSize, readerEvent.target?.result as string]);
+            setPendingImages((previousPixelSize) => [
+              ...previousPixelSize,
+              readerEvent.target?.result as string,
+            ]);
           }
         };
         reader.readAsDataURL(file);
@@ -1681,7 +1896,12 @@ export default function AgentComponent({
               model: settings.model ?? "",
               messages: [
                 ...(settings.systemPrompt
-                  ? [{ role: "system" as const, content: settings.systemPrompt }]
+                  ? [
+                      {
+                        role: "system" as const,
+                        content: settings.systemPrompt,
+                      },
+                    ]
                   : []),
                 ...currentMessages,
               ],
@@ -1706,12 +1926,8 @@ export default function AgentComponent({
               }),
               // Provider-native capabilities
               ...(settings.webSearchEnabled ? { webSearch: true } : {}),
-              ...(settings.codeExecutionEnabled
-                ? { codeExecution: true }
-                : {}),
-              ...(settings.urlContextEnabled
-                ? { urlContext: true }
-                : {}),
+              ...(settings.codeExecutionEnabled ? { codeExecution: true } : {}),
+              ...(settings.urlContextEnabled ? { urlContext: true } : {}),
               // Persistence — use agentSessionId as conversationId for /chat
               conversationId: agentSessionId,
               // Also pass agentSessionId so request logs are queryable by session
@@ -1802,14 +2018,21 @@ export default function AgentComponent({
           ? PrismService.streamText
           : PrismService.streamAgentText;
         abortRef.current = streamFn(payload, {
-          onChunk: (content: string, _sourceModel?: string, outputCharacters?: number) => {
+          onChunk: (
+            content: string,
+            _sourceModel?: string,
+            outputCharacters?: number,
+          ) => {
             streamedText += content;
             // Backend sends authoritative running token count on each chunk
             burstTokens++;
             // Skip UI updates if user switched sessions
             if (isStale()) return;
             const now = performance.now();
-            if (!firstChunkTime) console.debug(`[onChunk] first chunk received, ${content.length}ch, stale=${isStale()}`);
+            if (!firstChunkTime)
+              console.debug(
+                `[onChunk] first chunk received, ${content.length}ch, stale=${isStale()}`,
+              );
             if (!firstChunkTime) firstChunkTime = now;
             // Accumulate generation-only elapsed: skip gaps from processing/tool phases
             if (prevChunkTime !== null) {
@@ -1973,17 +2196,24 @@ export default function AgentComponent({
             if (isStale()) return;
             const toolData = data.tool;
             if (!toolData) return;
-            const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
-            console.debug(`[ToolExec] ${data.status} ${toolData.name} id=${resolvedId}`);
+            const resolvedId =
+              toolData.id || `tc-${Date.now()}-${Math.random()}`;
+            console.debug(
+              `[ToolExec] ${data.status} ${toolData.name} id=${resolvedId}`,
+            );
 
             setToolActivity((previousPixelSize: ToolCallEvent[]) => {
-              const next = applyToolExecutionToActivity(previousPixelSize, resolvedId, {
-                id: toolData.id,
-                name: toolData.name,
-                args: toolData.args,
-                status: data.status as string,
-                result: toolData.result,
-              });
+              const next = applyToolExecutionToActivity(
+                previousPixelSize,
+                resolvedId,
+                {
+                  id: toolData.id,
+                  name: toolData.name,
+                  args: toolData.args,
+                  status: data.status as string,
+                  result: toolData.result,
+                },
+              );
               return next ?? previousPixelSize;
             });
 
@@ -2028,18 +2258,25 @@ export default function AgentComponent({
                 },
                 execSnapshot,
               ) as ClientMessage[];
-              console.debug(`[ToolExec setMessages] ${data.status} ${toolData.name}: previousPixelSize=${msgPrev.length} → next=${next.length}`);
+              console.debug(
+                `[ToolExec setMessages] ${data.status} ${toolData.name}: previousPixelSize=${msgPrev.length} → next=${next.length}`,
+              );
               return next;
             });
 
             // Auto-refresh tasks panel when any task tool completes
-            if (data.status !== "calling" && (toolData.name || "").startsWith("task_")) {
+            if (
+              data.status !== "calling" &&
+              (toolData.name || "").startsWith("task_")
+            ) {
               setTasksRefreshKey((k) => k + 1);
             }
 
-
             // Auto-refresh memories panel when upsert_memory completes
-            if (data.status !== "calling" && toolData.name === "upsert_memory") {
+            if (
+              data.status !== "calling" &&
+              toolData.name === "upsert_memory"
+            ) {
               setLeftTab("memories");
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
@@ -2050,15 +2287,24 @@ export default function AgentComponent({
             }
 
             // Auto-refresh workspace tree when filesystem-mutating tools complete
-            if (data.status !== "calling" && WORKSPACE_FS_TOOLS.has(toolData.name || "")) {
+            if (
+              data.status !== "calling" &&
+              WORKSPACE_FS_TOOLS.has(toolData.name || "")
+            ) {
               setWorkspaceTreeRefreshKey((k) => k + 1);
 
               // Live-update file viewer: refresh open tabs whose path was touched
-              const mutatedPath = (toolData.args?.path as string) || (toolData.args?.source as string) || null;
+              const mutatedPath =
+                (toolData.args?.path as string) ||
+                (toolData.args?.source as string) ||
+                null;
               const openFiles = viewerOpenFilesRef.current;
               if (mutatedPath && openFiles.length > 0) {
                 // delete_file and move_file both remove the source path
-                if (toolData.name === "delete_file" || toolData.name === "move_file") {
+                if (
+                  toolData.name === "delete_file" ||
+                  toolData.name === "move_file"
+                ) {
                   const deleted = openFiles.find(
                     (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
@@ -2090,17 +2336,24 @@ export default function AgentComponent({
           onToolCall: (toolCall: ToolCallEvent) => {
             if (isStale()) return;
             const toolData = toolCall;
-            const resolvedId = toolData.id || `tc-${Date.now()}-${Math.random()}`;
-            console.debug(`[ToolCall MCP] ${toolData.status} ${toolData.name} id=${resolvedId}`);
+            const resolvedId =
+              toolData.id || `tc-${Date.now()}-${Math.random()}`;
+            console.debug(
+              `[ToolCall MCP] ${toolData.status} ${toolData.name} id=${resolvedId}`,
+            );
 
             setToolActivity((previousPixelSize) => {
-              const next = applyToolExecutionToActivity(previousPixelSize, resolvedId, {
-                id: toolData.id,
-                name: toolData.name,
-                args: toolData.args,
-                status: toolData.status as string,
-                result: toolData.result,
-              });
+              const next = applyToolExecutionToActivity(
+                previousPixelSize,
+                resolvedId,
+                {
+                  id: toolData.id,
+                  name: toolData.name,
+                  args: toolData.args,
+                  status: toolData.status as string,
+                  result: toolData.result,
+                },
+              );
               return next ?? previousPixelSize;
             });
 
@@ -2137,17 +2390,25 @@ export default function AgentComponent({
                 toolData,
                 callSnapshot,
               ) as ClientMessage[];
-              console.debug(`[ToolCall MCP setMessages] ${toolData.status} ${toolData.name}: previousPixelSize=${msgPrev.length} → next=${next.length}`);
+              console.debug(
+                `[ToolCall MCP setMessages] ${toolData.status} ${toolData.name}: previousPixelSize=${msgPrev.length} → next=${next.length}`,
+              );
               return next;
             });
 
             // Auto-refresh tasks panel when any task tool completes (MCP path)
-            if (toolData.status !== "calling" && toolData.name?.startsWith("task_")) {
+            if (
+              toolData.status !== "calling" &&
+              toolData.name?.startsWith("task_")
+            ) {
               setTasksRefreshKey((k) => k + 1);
             }
 
             // Auto-refresh memories panel when upsert_memory completes (MCP path)
-            if (toolData.status !== "calling" && toolData.name === "upsert_memory") {
+            if (
+              toolData.status !== "calling" &&
+              toolData.name === "upsert_memory"
+            ) {
               setLeftTab("memories");
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
@@ -2158,15 +2419,22 @@ export default function AgentComponent({
             }
 
             // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
-            if (toolData.status !== "calling" && WORKSPACE_FS_TOOLS.has(toolData.name)) {
+            if (
+              toolData.status !== "calling" &&
+              WORKSPACE_FS_TOOLS.has(toolData.name)
+            ) {
               setWorkspaceTreeRefreshKey((k) => k + 1);
 
               // Live-update file viewer (MCP path)
-              const mutatedPath = toolData.args?.path || toolData.args?.source || null;
+              const mutatedPath =
+                toolData.args?.path || toolData.args?.source || null;
               const openFiles = viewerOpenFilesRef.current;
               if (mutatedPath && openFiles.length > 0) {
                 // delete_file and move_file both remove the source path
-                if (toolData.name === "delete_file" || toolData.name === "move_file") {
+                if (
+                  toolData.name === "delete_file" ||
+                  toolData.name === "move_file"
+                ) {
                   const deleted = openFiles.find(
                     (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
@@ -2342,7 +2610,10 @@ export default function AgentComponent({
               setMessages((previousMessages) => {
                 const updatedMessages = [...previousMessages];
                 const lastMessage = updatedMessages[updatedMessages.length - 1];
-                if (lastMessage?.role === "assistant" && lastMessage.statusPhase === "processing") {
+                if (
+                  lastMessage?.role === "assistant" &&
+                  lastMessage.statusPhase === "processing"
+                ) {
                   updatedMessages[updatedMessages.length - 1] = {
                     ...lastMessage,
                     status: undefined,
@@ -2507,7 +2778,11 @@ export default function AgentComponent({
                 };
               } else if (data.status === "done" || data.status === "error") {
                 updatedCalls = updatedCalls.map((toolCall) => {
-                  if (toolCall.id === toolData.id || (toolCall.name === toolData.name && toolCall.status === "calling")) {
+                  if (
+                    toolCall.id === toolData.id ||
+                    (toolCall.name === toolData.name &&
+                      toolCall.status === "calling")
+                  ) {
                     return {
                       ...toolCall,
                       status: data.status === "done" ? "done" : "error",
@@ -2588,7 +2863,8 @@ export default function AgentComponent({
                   phaseProgress:
                     data.progress != null
                       ? data.progress
-                      : (previousPixelSize[workerId]?.phaseProgress ?? undefined),
+                      : (previousPixelSize[workerId]?.phaseProgress ??
+                        undefined),
                 },
               }));
             } else if (data.message === "generation_started") {
@@ -2698,7 +2974,8 @@ export default function AgentComponent({
                   phase: "complete",
                   currentTool: null,
                   durationMs: data.durationMs,
-                  toolCount: data.toolCount ?? previousPixelSize[workerId]?.toolCount,
+                  toolCount:
+                    data.toolCount ?? previousPixelSize[workerId]?.toolCount,
                 },
               }));
               // Accumulate worker usage into the streaming assistant message
@@ -2720,8 +2997,10 @@ export default function AgentComponent({
                       ...last,
                       _workerTokens: {
                         input: (wt.input || 0) + (data.usage?.inputTokens || 0),
-                        output: (wt.output || 0) + (data.usage?.outputTokens || 0),
-                        requests: (wt.requests || 0) + (data.usage?.requests || 1),
+                        output:
+                          (wt.output || 0) + (data.usage?.outputTokens || 0),
+                        requests:
+                          (wt.requests || 0) + (data.usage?.requests || 1),
                       },
                       _workerGenerationProgress:
                         Object.keys(wp).length > 0 ? wp : undefined,
@@ -2769,11 +3048,16 @@ export default function AgentComponent({
                   ...last,
                   _backgroundUsage: {
                     inputTokens:
-                      (backgroundUsage.inputTokens || 0) + (data.usage?.inputTokens || 0),
+                      (backgroundUsage.inputTokens || 0) +
+                      (data.usage?.inputTokens || 0),
                     outputTokens:
-                      (backgroundUsage.outputTokens || 0) + (data.usage?.outputTokens || 0),
-                    requests: (backgroundUsage.requests || 0) + (data.usage?.requests || 1),
-                    cost: (backgroundUsage.cost || 0) + (data.estimatedCost || 0),
+                      (backgroundUsage.outputTokens || 0) +
+                      (data.usage?.outputTokens || 0),
+                    requests:
+                      (backgroundUsage.requests || 0) +
+                      (data.usage?.requests || 1),
+                    cost:
+                      (backgroundUsage.cost || 0) + (data.estimatedCost || 0),
                   },
                 };
               } else if (!last.usage) {
@@ -2794,7 +3078,9 @@ export default function AgentComponent({
               setMessages((previousPixelSize) => {
                 const updated = [...previousPixelSize];
                 const last = updated[updated.length - 1];
-                console.debug(`[onDone setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}`);
+                console.debug(
+                  `[onDone setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}`,
+                );
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
                     ...last,
@@ -2882,6 +3168,8 @@ export default function AgentComponent({
       fetchSessionStats,
       markTabNew,
       switchTabTemporarily,
+      activeRuleNames,
+      rules,
     ],
   );
 
@@ -2896,7 +3184,13 @@ export default function AgentComponent({
   titleRef.current = title;
 
   const handleSend = useCallback(
-    async (e?: React.FormEvent<HTMLFormElement> | null, fetchOptions: { isQueueing?: boolean; overridePayload?: { text: string; images: string[] } | null } = {}) => {
+    async (
+      e?: React.FormEvent<HTMLFormElement> | null,
+      fetchOptions: {
+        isQueueing?: boolean;
+        overridePayload?: { text: string; images: string[] } | null;
+      } = {},
+    ) => {
       if (e && typeof e.preventDefault === "function") e.preventDefault();
 
       const { isQueueing = false, overridePayload = null } = fetchOptions;
@@ -2934,8 +3228,12 @@ export default function AgentComponent({
       isUserNearBottomRef.current = true;
       // Track this session as generating (for history indicator even after switching away)
       const genId = agentSessionIdRef.current;
-      console.debug(`[handleSend] starting generation, sessionId=${genId}, currentMessages=${messagesRef.current.length}`);
-      setGeneratingSessionIds((previousPixelSize) => new Set(previousPixelSize).add(genId));
+      console.debug(
+        `[handleSend] starting generation, sessionId=${genId}, currentMessages=${messagesRef.current.length}`,
+      );
+      setGeneratingSessionIds((previousPixelSize) =>
+        new Set(previousPixelSize).add(genId),
+      );
       setToolActivity([]);
       setWorkerToolActivity({});
       setStreamingOutputs(new Map());
@@ -2974,9 +3272,25 @@ export default function AgentComponent({
       }
 
       setCurrentTurnStart(Date.now());
+      // Prepend active rules to user message (Claude Code pattern)
+      let finalMessageContent = text;
+      if (activeRuleNames.size > 0) {
+        const enabledRules = rules.filter(
+          (rule) => rule.enabled && activeRuleNames.has(rule.name),
+        );
+        if (enabledRules.length > 0) {
+          const rulesBlock = enabledRules
+            .map((rule) => `## /${rule.name}\n${rule.content}`)
+            .join("\n\n");
+          finalMessageContent = `[Active Rules]\n${rulesBlock}\n\n[User Message]\n${text}`;
+        }
+      }
+
       const userMessage = {
         role: "user" as const,
-        content: text,
+        content: finalMessageContent,
+        // Preserve the raw text without rules for display purposes
+        rawContent: text,
         timestamp: new Date().toISOString(),
         ...(currentImages.length > 0 ? { images: currentImages } : {}),
       };
@@ -2995,10 +3309,14 @@ export default function AgentComponent({
       ]);
 
       try {
-        console.debug(`[handleSend] starting runOrchestrationLoop, updatedMessages=${updatedMessages.length}`);
+        console.debug(
+          `[handleSend] starting runOrchestrationLoop, updatedMessages=${updatedMessages.length}`,
+        );
         await runOrchestrationLoop(updatedMessages, resolvedTitle);
         // Messages are already updated by the streaming callbacks — just reload history
-        console.debug(`[handleSend] runOrchestrationLoop resolved, proceeding to post-stream refresh`);
+        console.debug(
+          `[handleSend] runOrchestrationLoop resolved, proceeding to post-stream refresh`,
+        );
         loadSessions();
 
         // Refresh conversation messages from database to sync the user's message
@@ -3012,7 +3330,10 @@ export default function AgentComponent({
           try {
             const full = isNoAgent
               ? await PrismService.getConversation(agentSessionId)
-              : await PrismService.getAgentSession(agentSessionId, agentProject!);
+              : await PrismService.getAgentSession(
+                  agentSessionId,
+                  agentProject!,
+                );
             console.debug(
               `[PostStream refresh] attempt=${attempt} full?.messages?.length=${full?.messages?.length},`,
               `sessionMatch=${agentSessionIdRef.current === genId}`,
@@ -3022,7 +3343,9 @@ export default function AgentComponent({
               const currentCount = messagesRef.current.length;
               console.debug(
                 `[PostStream setMessages] attempt=${attempt} raw=${full.messages.length} → display=${displayMessages.length}, currentStreaming=${currentCount}`,
-                displayMessages.length === 0 ? '⚠️ EMPTY — this clears the chat!' : '',
+                displayMessages.length === 0
+                  ? "⚠️ EMPTY — this clears the chat!"
+                  : "",
               );
               // Guard 1: don't replace streaming messages with stale/incomplete DB data
               if (displayMessages.length < currentCount) {
@@ -3034,7 +3357,7 @@ export default function AgentComponent({
                   return attemptPostStreamRefresh(attempt + 1);
                 } else {
                   console.warn(
-                    `[PostStream] ⚠️ Database is still missing the current turn's messages after ${attempt} attempts. Skipping overwrite to prevent disappearing messages.`
+                    `[PostStream] ⚠️ Database is still missing the current turn's messages after ${attempt} attempts. Skipping overwrite to prevent disappearing messages.`,
                   );
                   return;
                 }
@@ -3049,9 +3372,16 @@ export default function AgentComponent({
               if (lastStreamingUserMessage?.content) {
                 const databaseUserContents = displayMessages
                   .filter((message: ClientMessage) => message.role === "user")
-                  .map((message: ClientMessage) => message.content?.toString().trim());
-                const streamingUserContent = lastStreamingUserMessage.content.toString().trim();
-                if (streamingUserContent && !databaseUserContents.includes(streamingUserContent)) {
+                  .map((message: ClientMessage) =>
+                    message.content?.toString().trim(),
+                  );
+                const streamingUserContent = lastStreamingUserMessage.content
+                  .toString()
+                  .trim();
+                if (
+                  streamingUserContent &&
+                  !databaseUserContents.includes(streamingUserContent)
+                ) {
                   if (attempt < 3) {
                     console.debug(
                       `[PostStream] ⚠️ Last user message "${streamingUserContent.slice(0, 50)}…" not found in DB data, retrying in 2s (attempt ${attempt})`,
@@ -3069,7 +3399,10 @@ export default function AgentComponent({
               setMessages(displayMessages);
             }
           } catch (error) {
-            console.error("Failed to refresh session messages after done:", error);
+            console.error(
+              "Failed to refresh session messages after done:",
+              error,
+            );
           }
         };
         await attemptPostStreamRefresh();
@@ -3084,7 +3417,9 @@ export default function AgentComponent({
           },
         ]);
       } finally {
-        console.debug(`[handleSend finally] genId=${genId}, currentSessionId=${agentSessionIdRef.current}, match=${agentSessionIdRef.current === genId}`);
+        console.debug(
+          `[handleSend finally] genId=${genId}, currentSessionId=${agentSessionIdRef.current}, match=${agentSessionIdRef.current === genId}`,
+        );
         // Remove this session from the generating set
         setGeneratingSessionIds((previousPixelSize) => {
           const next = new Set(previousPixelSize);
@@ -3102,7 +3437,9 @@ export default function AgentComponent({
           setCurrentTurnStart(null);
           setMessages((previousPixelSize) => {
             const last = previousPixelSize[previousPixelSize.length - 1];
-            console.debug(`[handleSend finally setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}, last.completedAt=${last?.completedAt}`);
+            console.debug(
+              `[handleSend finally setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}, last.completedAt=${last?.completedAt}`,
+            );
             if (last?.role === "assistant" && !last.completedAt) {
               const updated = [...previousPixelSize];
               updated[updated.length - 1] = {
@@ -3114,7 +3451,9 @@ export default function AgentComponent({
             return previousPixelSize;
           });
         } else {
-          console.debug(`[handleSend finally] session switched away, skipping UI updates`);
+          console.debug(
+            `[handleSend finally] session switched away, skipping UI updates`,
+          );
           // Session was switched away — just clear the abort ref
           abortRef.current = null;
         }
@@ -3141,7 +3480,9 @@ export default function AgentComponent({
           setMentionIndex((i) => {
             const next = Math.min(i + 1, mentionResults.length - 1);
             // Scroll selected item into view
-            (mentionListRef.current as HTMLElement)?.children[next]?.scrollIntoView({
+            (mentionListRef.current as HTMLElement)?.children[
+              next
+            ]?.scrollIntoView({
               block: "nearest",
             });
             return next;
@@ -3152,7 +3493,9 @@ export default function AgentComponent({
           e.preventDefault();
           setMentionIndex((i) => {
             const next = Math.max(i - 1, 0);
-            (mentionListRef.current as HTMLElement)?.children[next]?.scrollIntoView({
+            (mentionListRef.current as HTMLElement)?.children[
+              next
+            ]?.scrollIntoView({
               block: "nearest",
             });
             return next;
@@ -3289,7 +3632,9 @@ export default function AgentComponent({
   /* ── Chat header "New Session" glitch effect ────────────────── */
   const chatNewBtnRef = useRef<HTMLButtonElement | null>(null);
   const chatRainbowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const chatGlitchInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const chatGlitchInterval = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
   const [chatGlitchLabel, setChatGlitchLabel] = useState<string | null>(null);
 
   const handleNewChatGlitch = useCallback(() => {
@@ -3308,7 +3653,8 @@ export default function AgentComponent({
       if (chatRainbowTimer.current) clearTimeout(chatRainbowTimer.current);
       chatRainbowTimer.current = setTimeout(() => {
         element.classList.remove(chatStyles.chatHeaderNewBtnRainbow);
-        if (chatGlitchInterval.current) clearInterval(chatGlitchInterval.current);
+        if (chatGlitchInterval.current)
+          clearInterval(chatGlitchInterval.current);
         chatGlitchInterval.current = null;
         setChatGlitchLabel(null);
       }, 1000);
@@ -3318,16 +3664,20 @@ export default function AgentComponent({
 
   /** Apply fetched/snapshot session data to component state immediately. */
   const applySessionData = useCallback(
-    (full: (AgentSession | Conversation) & { workspaceRoot?: string; _fromSnapshot?: boolean; _snapshot?: SessionSnapshot }) => {
+    (
+      full: (AgentSession | Conversation) & {
+        workspaceRoot?: string;
+        _fromSnapshot?: boolean;
+        _snapshot?: SessionSnapshot;
+      },
+    ) => {
       if (!full) return;
 
       // ── Restore workspace selection from the session document ──
       // Agent sessions record which workspace they were started with;
       // switch to it so the workspace tree and tool routing match.
       if (full.workspaceRoot) {
-        const match = workspaces.find(
-          (w) => w.path === full.workspaceRoot,
-        );
+        const match = workspaces.find((w) => w.path === full.workspaceRoot);
         if (match) {
           if (match.path !== currentWorkspace?.path) {
             setCurrentWorkspace(match);
@@ -3363,17 +3713,22 @@ export default function AgentComponent({
         setPendingUserQuestion(snap.pendingUserQuestion || null);
         setPlanProposal(snap.planProposal || null);
         setAgenticProgress(snap.agenticProgress || null);
-        setSettings((previousPixelSize) => ({ ...previousPixelSize, ...(snap.settings as Partial<typeof previousPixelSize>) }));
+        setSettings((previousPixelSize) => ({
+          ...previousPixelSize,
+          ...(snap.settings as Partial<typeof previousPixelSize>),
+        }));
         setBackendSessionStats(snap.backendSessionStats || null);
         // Re-attach: mark as generating so the UI shows the active state
         setIsGenerating(true);
         // Remove the snapshot — the SSE callbacks will resume updating React state
         // now that agentSessionIdRef matches again (isStale() → false)
-        backgroundSessionsRef.current.delete(full.id || '');
+        backgroundSessionsRef.current.delete(full.id || "");
       } else {
         // Normal backend-loaded session
         const displayMessages = prepareDisplayMessages(full.messages || []);
-        console.debug(`[Session switch] id=${full.id}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`);
+        console.debug(
+          `[Session switch] id=${full.id}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`,
+        );
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
         setMessages(displayMessages);
@@ -3395,7 +3750,10 @@ export default function AgentComponent({
               const planText = lastAssistantMessage.content;
               const planSteps = planText
                 .split("\n")
-                .filter((line) => line.trim().startsWith("-") || /^\d+\./.test(line.trim()));
+                .filter(
+                  (line) =>
+                    line.trim().startsWith("-") || /^\d+\./.test(line.trim()),
+                );
               setPlanProposal({
                 plan: planText,
                 steps: planSteps,
@@ -3410,7 +3768,7 @@ export default function AgentComponent({
                 toolArgs: toolCall.args || {},
                 tier: toolCall._approval?.tier,
                 status: "pending",
-              }))
+              })),
             );
           } else if (pendingApprovalData.tools) {
             setPendingApprovals(
@@ -3419,7 +3777,7 @@ export default function AgentComponent({
                 toolName: toolName,
                 toolArgs: {},
                 status: "pending",
-              }))
+              })),
             );
           }
         } else {
@@ -3456,7 +3814,9 @@ export default function AgentComponent({
           // Session-level settings (from patchConversation) represent the
           // user's latest explicit model choice and take priority over the
           // last assistant message which may reflect a previous model.
-          const sessionSettings = full.settings as Partial<PrismSettings> | undefined;
+          const sessionSettings = full.settings as
+            | Partial<PrismSettings>
+            | undefined;
           setSettings((previousPixelSize) => ({
             ...previousPixelSize,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
@@ -3469,16 +3829,22 @@ export default function AgentComponent({
               thinkingEnabled: gs.thinkingEnabled,
             }),
             ...(gs.reasoningEffort && { reasoningEffort: gs.reasoningEffort }),
-            ...(gs.thinkingBudget !== undefined && { thinkingBudget: String(gs.thinkingBudget) }),
+            ...(gs.thinkingBudget !== undefined && {
+              thinkingBudget: String(gs.thinkingBudget),
+            }),
             // Conversations store systemPrompt at root — restore for Direct Chat
             ...(full.systemPrompt != null && {
               systemPrompt: full.systemPrompt,
             }),
             // Session-level settings override last-assistant-message values —
             // the user may have changed the model without sending a message yet
-            ...(sessionSettings?.provider && { provider: sessionSettings.provider }),
+            ...(sessionSettings?.provider && {
+              provider: sessionSettings.provider,
+            }),
             ...(sessionSettings?.model && { model: sessionSettings.model }),
-            ...(sessionSettings?.temperature !== undefined && { temperature: sessionSettings.temperature }),
+            ...(sessionSettings?.temperature !== undefined && {
+              temperature: sessionSettings.temperature,
+            }),
           }));
           // Model/agent URL params are stripped when conversation:change fires —
           // the loaded session's data is the source of truth.
@@ -3550,10 +3916,10 @@ export default function AgentComponent({
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         const is404 =
-          errorMessage.includes("404") ||
-          errorMessage.includes("not found");
+          errorMessage.includes("404") || errorMessage.includes("not found");
         if (is404) {
           console.warn(
             `Session ${conversation.id} not yet persisted (still generating?) — skipping switch`,
@@ -3614,16 +3980,20 @@ export default function AgentComponent({
           applySessionData(full);
         }
       } catch (error) {
-        console.error("Failed to refresh active session via change stream:", error);
+        console.error(
+          "Failed to refresh active session via change stream:",
+          error,
+        );
       }
     },
-    [isNoAgent, agentProject, applySessionData]
+    [isNoAgent, agentProject, applySessionData],
   );
 
   useEffect(() => {
     const onCollectionChange = (event: IrisCollectionChangeEvent) => {
       if (
-        (event.collection === "agent_conversations" || event.collection === "model_conversations") &&
+        (event.collection === "agent_conversations" ||
+          event.collection === "model_conversations") &&
         event.id &&
         event.id === agentSessionIdRef.current
       ) {
@@ -3649,7 +4019,8 @@ export default function AgentComponent({
 
         // Restore the session to sessions state
         setSessions((previousPixelSize) => {
-          if (previousPixelSize.some((s) => s.id === convId)) return previousPixelSize;
+          if (previousPixelSize.some((s) => s.id === convId))
+            return previousPixelSize;
           const updated = [...previousPixelSize, pending.session];
           // Sort by updatedAt or createdAt descending
           return updated.sort((a, b) => {
@@ -3679,7 +4050,9 @@ export default function AgentComponent({
         const wasActive = activeId === convId;
 
         // Optimistically remove from state
-        setSessions((previousPixelSize) => previousPixelSize.filter((c) => c.id !== convId));
+        setSessions((previousPixelSize) =>
+          previousPixelSize.filter((c) => c.id !== convId),
+        );
         if (wasActive) {
           handleNewChat();
         }
@@ -3708,7 +4081,14 @@ export default function AgentComponent({
         // Add toast notification
         const toastId = addToast(
           (
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                width: "100%",
+              }}
+            >
               <span>Conversation deleted</span>
               <button
                 onClick={(e) => {
@@ -3742,13 +4122,21 @@ export default function AgentComponent({
             </div>
           ) as any,
           "info",
-          10000
+          10000,
         );
       } catch (error: unknown) {
         console.error("Failed to delete session:", error);
       }
     },
-    [activeId, handleNewChat, agentProject, isNoAgent, sessions, addToast, handleUndoDelete],
+    [
+      activeId,
+      handleNewChat,
+      agentProject,
+      isNoAgent,
+      sessions,
+      addToast,
+      handleUndoDelete,
+    ],
   );
 
   // -- Open file in the FileViewerPanel (shared by workspace tree & mention badges) --
@@ -3759,21 +4147,24 @@ export default function AgentComponent({
         setViewerActiveFileId(existingTab.id);
       } else {
         const id = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        setViewerOpenFiles((previousPixelSize) => [...previousPixelSize, { id, path: absPath }]);
+        setViewerOpenFiles((previousPixelSize) => [
+          ...previousPixelSize,
+          { id, path: absPath },
+        ]);
         setViewerActiveFileId(id);
       }
     },
     [viewerOpenFiles],
   );
 
-  // -- Left sidebar: tab bar + content --------------------------
-  // Badge helper — 0 = greyed-out, >0 = lit, "new" if tab has unseen data
+  // -- Badge helper — 0 = greyed-out, >0 = lit, "new" if tab has unseen data
   const badgeProps = (count: number, tabKey: string) => ({
     badge: count,
     badgeDisabled: count === 0,
     badgeState: newDataTabs.has(tabKey) ? "new" : "default",
   });
 
+  // -- Top panel group (settings, workspace, info, params) ------
   const leftPanel = (
     <div
       style={{
@@ -3791,7 +4182,8 @@ export default function AgentComponent({
             icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
             tooltip: "Settings",
           },
-          ...((currentWorkspace && hasFileOps) || unavailableWorkspace
+          ...(!isNoAgent &&
+          ((currentWorkspace && hasFileOps) || unavailableWorkspace)
             ? [
                 {
                   key: "workspace",
@@ -3805,83 +4197,12 @@ export default function AgentComponent({
             icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
             tooltip: "Info",
           },
-          {
-            key: "tools",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
-            ...badgeProps(allToolSchemas.length, "tools"),
-            tooltip: "Tools",
-            tooltipDisabled: !settings.functionCallingEnabled,
-          },
           ...(isNoAgent
             ? [
                 {
                   key: "params",
                   icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
                   tooltip: "Parameters",
-                },
-              ]
-            : []),
-          ...(!isNoAgent
-            ? [
-                {
-                  key: "skills",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>,
-                  ...badgeProps(
-                    skills.filter((s) => s.enabled).length,
-                    "skills",
-                  ),
-                  tooltip: "Skills",
-                },
-                {
-                  key: "memories",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
-                  ...badgeProps(totalMemoriesCount, "memories"),
-                  tooltip: "Memories",
-                },
-                {
-                  key: "tasks",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>,
-                  ...badgeProps(tasksCount, "tasks"),
-                  tooltip: "Tasks",
-                },
-                {
-                  key: "mcp",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>,
-                  ...badgeProps(
-                    mcpServers.filter((s) => s.connected).length,
-                    "mcp",
-                  ),
-                  tooltip: "MCP Servers",
-                },
-                {
-                  key: "workers",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
-                  ...badgeProps(workersCount, "workers"),
-                  badgeRainbow: Object.values(workerToolActivity).some(
-                    (w: WorkerActivityEntry) =>
-                      w.currentTool ||
-                      w.phase === "generating" ||
-                      w.phase === "thinking",
-                  ),
-                  tooltip: "Workers",
-                },
-              ]
-            : []),
-          {
-            key: "requests",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
-            ...badgeProps(
-              backendSessionStats?.requestCount || 0,
-              "requests",
-            ),
-            tooltip: "Requests",
-          },
-          ...(!isNoAgent
-            ? [
-                {
-                  key: "coordinator",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>,
-                  tooltip: "Coordinator",
                 },
               ]
             : []),
@@ -3906,467 +4227,523 @@ export default function AgentComponent({
 
       {leftTab === "settings" && (
         <>
-        <SidebarTabHeaderComponent icon={Settings} title="Settings" />
-        <SettingsPanel
-          config={filteredConfig}
-          settings={settings}
-          onChange={
-            isNoAgent
-              ? (updates: Partial<PrismSettings>) =>
-                  setSettings((s) => ({ ...s, ...updates }))
-              : (updates: Partial<PrismSettings>) =>
-                  setSettings((s) => ({
-                    ...s,
-                    ...updates,
-                    functionCallingEnabled: true,
-                  }))
-          }
-          _hasAssistantImages={false}
-          lockedTools={isNoAgent ? new Set() : AGENT_LOCKED_TOOLS}
-          hideSystemPrompt={!isNoAgent}
-          sessionType={isNoAgent ? "chat" : "agent"}
-          canSpawnWorkers={
-            !isNoAgent && (activeAgentData?.canSpawnWorkers || false)
-          }
-          agentToggles={
-            isNoAgent
-              ? []
-              : [
-                  {
-                    key: "plan",
-                    icon: <ClipboardList size={12} />,
-                    label: "Plan Mode",
-                    checked: planFirst,
-                    onChange: () => setPlanFirst((v) => !v),
-                  },
-                  {
-                    key: "auto",
-                    icon: <Zap size={12} />,
-                    label: "Auto Approve Tool Use",
-                    checked: autoApprove,
-                    onChange: () => setAutoApprove((v) => !v),
-                  },
-                  {
-                    key: "iterations",
-                    type: "cycle",
-                    icon: <Repeat size={12} />,
-                    label: "Max Tool Iterations",
-                    value: maxIterations,
-                    isActive: true,
-                    title: "Click to cycle: 10 → 25 → 50 → 100 → ∞",
-                    onChange: () => {
-                      const steps = [10, 25, 50, 100, Infinity];
-                      const index = steps.indexOf(maxIterations);
-                      const next = steps[(index + 1) % steps.length];
-                      setMaxIterations(next);
-                      localStorage.setItem("agent:maxIterations", String(next));
+          <SidebarTabHeaderComponent icon={Settings} title="Settings" />
+          <SettingsPanel
+            config={filteredConfig}
+            settings={settings}
+            onChange={
+              isNoAgent
+                ? (updates: Partial<PrismSettings>) =>
+                    setSettings((s) => ({ ...s, ...updates }))
+                : (updates: Partial<PrismSettings>) =>
+                    setSettings((s) => ({
+                      ...s,
+                      ...updates,
+                      functionCallingEnabled: true,
+                    }))
+            }
+            _hasAssistantImages={false}
+            lockedTools={isNoAgent ? new Set() : AGENT_LOCKED_TOOLS}
+            hideSystemPrompt={!isNoAgent}
+            sessionType={isNoAgent ? "chat" : "agent"}
+            canSpawnWorkers={
+              !isNoAgent && (activeAgentData?.canSpawnWorkers || false)
+            }
+            agentToggles={
+              isNoAgent
+                ? []
+                : [
+                    {
+                      key: "plan",
+                      icon: <ClipboardList size={12} />,
+                      label: "Plan Mode",
+                      checked: planFirst,
+                      onChange: () => setPlanFirst((v) => !v),
                     },
-                  },
-                  {
-                    key: "workerIterations",
-                    type: "cycle",
-                    icon: <Repeat size={12} />,
-                    label: "Max Worker Tool Iterations",
-                    value: maxWorkerIterations,
-                    isActive: true,
-                    title: "Click to cycle: 10 → 25 → 50 → 100 → ∞",
-                    onChange: () => {
-                      const steps = [10, 25, 50, 100, Infinity];
-                      const index = steps.indexOf(maxWorkerIterations);
-                      const next = steps[(index + 1) % steps.length];
-                      setMaxWorkerIterations(next);
-                      localStorage.setItem(
-                        "agent:maxWorkerIterations",
-                        String(next),
-                      );
+                    {
+                      key: "auto",
+                      icon: <Zap size={12} />,
+                      label: "Auto Approve Tool Use",
+                      checked: autoApprove,
+                      onChange: () => setAutoApprove((v) => !v),
                     },
-                  },
-                ]
-          }
-          sessionStats={
-            (messages.length > 0
-              ? backendSessionStats
-                ? (() => {
-                    const mapSubStats = (sub: SessionStats | undefined) => {
-                      if (!sub) return undefined;
-                      return {
-                        messageCount: sub.requestCount || 0,
-                        deletedCount: 0,
-                        requestCount: sub.requestCount || 0,
-                        uniqueModels: sub.models || [],
-                        uniqueProviders: sub.providers || [],
-                        totalTokens: {
-                          input: sub.totalInputTokens || 0,
-                          output: sub.totalOutputTokens || 0,
-                          total: sub.totalTokens || 0,
-                          cacheRead: sub.totalCacheReadInputTokens || 0,
-                          cacheWrite: sub.totalCacheCreationInputTokens || 0,
-                          reasoning: sub.totalReasoningOutputTokens || 0,
-                        },
-                        totalCost: sub.totalCost || 0,
-                        originalTotalCost: 0,
-                        usedTools: toolCountsToUsedTools(sub.toolCounts),
-                        modalities: {},
-                        completedElapsedTime: sub.totalElapsedTime || 0,
-                        avgTokensPerSec: sub.avgTokensPerSec || undefined,
-                        avgTimeToGeneration: sub.avgTimeToGeneration || undefined,
+                    {
+                      key: "iterations",
+                      type: "cycle",
+                      icon: <Repeat size={12} />,
+                      label: "Max Tool Iterations",
+                      value: maxIterations,
+                      isActive: true,
+                      title: "Click to cycle: 10 → 25 → 50 → 100 → ∞",
+                      onChange: () => {
+                        const steps = [10, 25, 50, 100, Infinity];
+                        const index = steps.indexOf(maxIterations);
+                        const next = steps[(index + 1) % steps.length];
+                        setMaxIterations(next);
+                        localStorage.setItem(
+                          "agent:maxIterations",
+                          String(next),
+                        );
+                      },
+                    },
+                    {
+                      key: "workerIterations",
+                      type: "cycle",
+                      icon: <Repeat size={12} />,
+                      label: "Max Worker Tool Iterations",
+                      value: maxWorkerIterations,
+                      isActive: true,
+                      title: "Click to cycle: 10 → 25 → 50 → 100 → ∞",
+                      onChange: () => {
+                        const steps = [10, 25, 50, 100, Infinity];
+                        const index = steps.indexOf(maxWorkerIterations);
+                        const next = steps[(index + 1) % steps.length];
+                        setMaxWorkerIterations(next);
+                        localStorage.setItem(
+                          "agent:maxWorkerIterations",
+                          String(next),
+                        );
+                      },
+                    },
+                  ]
+            }
+            sessionStats={
+              (messages.length > 0
+                ? backendSessionStats
+                  ? (() => {
+                      const mapSubStats = (sub: SessionStats | undefined) => {
+                        if (!sub) return undefined;
+                        return {
+                          messageCount: sub.requestCount || 0,
+                          deletedCount: 0,
+                          requestCount: sub.requestCount || 0,
+                          uniqueModels: sub.models || [],
+                          uniqueProviders: sub.providers || [],
+                          totalTokens: {
+                            input: sub.totalInputTokens || 0,
+                            output: sub.totalOutputTokens || 0,
+                            total: sub.totalTokens || 0,
+                            cacheRead: sub.totalCacheReadInputTokens || 0,
+                            cacheWrite: sub.totalCacheCreationInputTokens || 0,
+                            reasoning: sub.totalReasoningOutputTokens || 0,
+                          },
+                          totalCost: sub.totalCost || 0,
+                          originalTotalCost: 0,
+                          usedTools: toolCountsToUsedTools(sub.toolCounts),
+                          modalities: {},
+                          completedElapsedTime: sub.totalElapsedTime || 0,
+                          avgTokensPerSec: sub.avgTokensPerSec || undefined,
+                          avgTimeToGeneration:
+                            sub.avgTimeToGeneration || undefined,
+                        };
                       };
-                    };
-                    // -- Token counts come exclusively from the backend --
-                    // _liveGenProgress (from generation_progress SSE) carries
-                    // authoritative, monotonic token counts from SessionGenerationTracker.
-                    // _backgroundUsage accumulates tokens from fire-and-forget LLM calls
-                    // (memory extraction, consolidation) as they complete.
-                    // When done, use backendSessionStats which includes everything.
-                    const lastMessage = messages[messages.length - 1];
-                    const liveGP =
-                      lastMessage?.role === "assistant"
-                        ? lastMessage._liveGenProgress
-                        : null;
-                    const bgUsage =
-                      lastMessage?.role === "assistant"
-                        ? lastMessage._backgroundUsage
-                        : null;
-                    const bgInput = bgUsage?.inputTokens || 0;
-                    const bgOutput = bgUsage?.outputTokens || 0;
-                    const liveOutput = (liveGP?.outputTokens || 0) + bgOutput;
-                    const liveInput = (liveGP?.inputTokens || 0) + bgInput;
-                    const liveTotal = liveInput + liveOutput;
+                      // -- Token counts come exclusively from the backend --
+                      // _liveGenProgress (from generation_progress SSE) carries
+                      // authoritative, monotonic token counts from SessionGenerationTracker.
+                      // _backgroundUsage accumulates tokens from fire-and-forget LLM calls
+                      // (memory extraction, consolidation) as they complete.
+                      // When done, use backendSessionStats which includes everything.
+                      const lastMessage = messages[messages.length - 1];
+                      const liveGP =
+                        lastMessage?.role === "assistant"
+                          ? lastMessage._liveGenProgress
+                          : null;
+                      const bgUsage =
+                        lastMessage?.role === "assistant"
+                          ? lastMessage._backgroundUsage
+                          : null;
+                      const bgInput = bgUsage?.inputTokens || 0;
+                      const bgOutput = bgUsage?.outputTokens || 0;
+                      const liveOutput = (liveGP?.outputTokens || 0) + bgOutput;
+                      const liveInput = (liveGP?.inputTokens || 0) + bgInput;
+                      const liveTotal = liveInput + liveOutput;
 
-                    // Use the larger of backend stats or live progress to prevent
-                    // dips during the gap between stream end and backend refresh.
-                    const tokenOutput = Math.max(
-                      backendSessionStats.totalOutputTokens || 0,
-                      liveOutput,
-                    );
-                    const tokenInput = Math.max(
-                      backendSessionStats.totalInputTokens || 0,
-                      liveInput,
-                    );
-                    const tokenTotal = Math.max(
-                      backendSessionStats.totalTokens || 0,
-                      liveTotal,
-                    );
+                      // Use the larger of backend stats or live progress to prevent
+                      // dips during the gap between stream end and backend refresh.
+                      const tokenOutput = Math.max(
+                        backendSessionStats.totalOutputTokens || 0,
+                        liveOutput,
+                      );
+                      const tokenInput = Math.max(
+                        backendSessionStats.totalInputTokens || 0,
+                        liveInput,
+                      );
+                      const tokenTotal = Math.max(
+                        backendSessionStats.totalTokens || 0,
+                        liveTotal,
+                      );
 
-                    return {
-                      // -- Backend is source of truth (all requests incl. background) --
-                      messageCount: messages.length,
-                      deletedCount: 0,
-                      requestCount:
-                        (backendSessionStats.requestCount || 0) +
-                        (bgUsage?.requests || 0),
-                      uniqueModels: backendSessionStats.models,
-                      uniqueProviders,
-                      totalTokens: (() => {
-                        const hwm = tokenHwmRef.current;
-                        const threadMessage = {
-                          input: Math.max(hwm.input, tokenInput),
-                          output: Math.max(hwm.output, tokenOutput),
-                          total: Math.max(hwm.total, tokenTotal),
-                          cacheRead:
-                            backendSessionStats
-                              .totalCacheReadInputTokens || 0,
-                          cacheWrite:
-                            backendSessionStats
-                              .totalCacheCreationInputTokens || 0,
-                          reasoning:
-                            backendSessionStats
-                              .totalReasoningOutputTokens || 0,
-                        };
-                        tokenHwmRef.current = {
-                          input: threadMessage.input,
-                          output: threadMessage.output,
-                          total: threadMessage.total,
-                        };
-                        return threadMessage;
-                      })(),
-                      totalCost:
-                        (backendSessionStats.totalCost || 0) +
-                        (bgUsage?.cost || 0),
-                      originalTotalCost: 0,
-                      // Merge backend toolCounts, client capabilities, and live
-                      // worker tool counts into a single usedTools array
-                      usedTools: mergeUsedToolsWithWorkers(
-                        usedTools,
-                        backendSessionStats.toolCounts,
-                        workerToolActivity,
-                      ),
-                      modalities: (() => {
-                        const raw = backendSessionStats.modalities || modalities || {};
-                        const mapped: Record<string, boolean> = {};
-                        for (const [key, value] of Object.entries(raw)) {
-                          mapped[key] = !!value;
-                        }
-                        return mapped;
-                      })(),
-                      completedElapsedTime:
-                        backendSessionStats.totalElapsedTime ||
+                      return {
+                        // -- Backend is source of truth (all requests incl. background) --
+                        messageCount: messages.length,
+                        deletedCount: 0,
+                        requestCount:
+                          (backendSessionStats.requestCount || 0) +
+                          (bgUsage?.requests || 0),
+                        uniqueModels: backendSessionStats.models,
+                        uniqueProviders,
+                        totalTokens: (() => {
+                          const hwm = tokenHwmRef.current;
+                          const threadMessage = {
+                            input: Math.max(hwm.input, tokenInput),
+                            output: Math.max(hwm.output, tokenOutput),
+                            total: Math.max(hwm.total, tokenTotal),
+                            cacheRead:
+                              backendSessionStats.totalCacheReadInputTokens ||
+                              0,
+                            cacheWrite:
+                              backendSessionStats.totalCacheCreationInputTokens ||
+                              0,
+                            reasoning:
+                              backendSessionStats.totalReasoningOutputTokens ||
+                              0,
+                          };
+                          tokenHwmRef.current = {
+                            input: threadMessage.input,
+                            output: threadMessage.output,
+                            total: threadMessage.total,
+                          };
+                          return threadMessage;
+                        })(),
+                        totalCost:
+                          (backendSessionStats.totalCost || 0) +
+                          (bgUsage?.cost || 0),
+                        originalTotalCost: 0,
+                        // Merge backend toolCounts, client capabilities, and live
+                        // worker tool counts into a single usedTools array
+                        usedTools: mergeUsedToolsWithWorkers(
+                          usedTools,
+                          backendSessionStats.toolCounts,
+                          workerToolActivity,
+                        ),
+                        modalities: (() => {
+                          const raw =
+                            backendSessionStats.modalities || modalities || {};
+                          const mapped: Record<string, boolean> = {};
+                          for (const [key, value] of Object.entries(raw)) {
+                            mapped[key] = !!value;
+                          }
+                          return mapped;
+                        })(),
+                        completedElapsedTime:
+                          backendSessionStats.totalElapsedTime ||
+                          completedElapsedTime,
+                        currentTurnStart,
+                        liveStreamingTokens,
+                        liveStreamingStartTime,
+                        liveStreamingLastChunkTime,
+                        liveStreamingBurstTokens,
+                        liveStreamingBurstElapsed,
+                        workerGenerationProgress,
+                        lastTimeToGeneration,
+                        liveProcessingStartTime,
+                        liveProcessingPhase,
+                        liveTtftSamples,
+                        liveGenProgress,
+                        avgTokensPerSec:
+                          backendSessionStats.avgTokensPerSec || null,
+                        avgTimeToGeneration:
+                          backendSessionStats.avgTimeToGeneration || null,
+                        orchestrator: mapSubStats(
+                          backendSessionStats.orchestrator,
+                        ),
+                        workers: mapSubStats(backendSessionStats.workers),
+                      } as DisplaySessionStats;
+                    })()
+                  : (() => {
+                      // -- Client-side fallback (live generation, no backend data yet) --
+                      // When _liveGenProgress exists, use backend-authoritative token
+                      // counts instead of the client-side computeSessionStats math.
+                      // Include _backgroundUsage from fire-and-forget LLM calls.
+                      const lastMessage = messages[messages.length - 1];
+                      const gp =
+                        lastMessage?.role === "assistant"
+                          ? lastMessage._liveGenProgress
+                          : null;
+                      const bgUsage =
+                        lastMessage?.role === "assistant"
+                          ? lastMessage._backgroundUsage
+                          : null;
+                      const bgIn = bgUsage?.inputTokens || 0;
+                      const bgOut = bgUsage?.outputTokens || 0;
+                      const fallbackTokens = gp
+                        ? {
+                            input: (gp.inputTokens || 0) + bgIn,
+                            output: (gp.outputTokens || 0) + bgOut,
+                            total:
+                              (gp.inputTokens || 0) +
+                              (gp.outputTokens || 0) +
+                              bgIn +
+                              bgOut,
+                          }
+                        : {
+                            input: (totalTokens.input || 0) + bgIn,
+                            output: (totalTokens.output || 0) + bgOut,
+                            total: (totalTokens.total || 0) + bgIn + bgOut,
+                          };
+                      return {
+                        messageCount: messages.length,
+                        deletedCount: 0,
+                        requestCount: requestCount + (bgUsage?.requests || 0),
+                        uniqueModels,
+                        uniqueProviders,
+                        totalTokens: (() => {
+                          const hwm = tokenHwmRef.current;
+                          const threadMessage = {
+                            input: Math.max(
+                              hwm.input,
+                              fallbackTokens.input || 0,
+                            ),
+                            output: Math.max(
+                              hwm.output,
+                              fallbackTokens.output || 0,
+                            ),
+                            total: Math.max(
+                              hwm.total,
+                              fallbackTokens.total || 0,
+                            ),
+                          };
+                          tokenHwmRef.current = {
+                            input: threadMessage.input,
+                            output: threadMessage.output,
+                            total: threadMessage.total,
+                          };
+                          return threadMessage;
+                        })(),
+                        totalCost:
+                          (totalCost as number) +
+                          ((bgUsage?.cost || 0) as number),
+                        originalTotalCost: 0,
+                        // Merge client-side usedTools with live worker tool counts
+                        usedTools: mergeUsedToolsWithWorkers(
+                          usedTools,
+                          null,
+                          workerToolActivity,
+                        ),
+                        modalities: (() => {
+                          const original = modalities || {};
+                          const mapped: Record<string, boolean> = {};
+                          for (const [key, value] of Object.entries(original)) {
+                            mapped[key] = !!value;
+                          }
+                          return mapped;
+                        })(),
                         completedElapsedTime,
-                      currentTurnStart,
-                      liveStreamingTokens,
-                      liveStreamingStartTime,
-                      liveStreamingLastChunkTime,
-                      liveStreamingBurstTokens,
-                      liveStreamingBurstElapsed,
-                      workerGenerationProgress,
-                      lastTimeToGeneration,
-                      liveProcessingStartTime,
-                      liveProcessingPhase,
-                      liveTtftSamples,
-                      liveGenProgress,
-                      avgTokensPerSec:
-                        backendSessionStats.avgTokensPerSec || null,
-                      avgTimeToGeneration:
-                        backendSessionStats.avgTimeToGeneration ||
-                        null,
-                      orchestrator: mapSubStats(
-                        backendSessionStats.orchestrator,
-                      ),
-                      workers: mapSubStats(
-                        backendSessionStats.workers,
-                      ),
-                    } as DisplaySessionStats;
-                  })()
-                : (() => {
-                    // -- Client-side fallback (live generation, no backend data yet) --
-                    // When _liveGenProgress exists, use backend-authoritative token
-                    // counts instead of the client-side computeSessionStats math.
-                    // Include _backgroundUsage from fire-and-forget LLM calls.
-                    const lastMessage = messages[messages.length - 1];
-                    const gp =
-                      lastMessage?.role === "assistant"
-                        ? lastMessage._liveGenProgress
-                        : null;
-                    const bgUsage =
-                      lastMessage?.role === "assistant"
-                        ? lastMessage._backgroundUsage
-                        : null;
-                    const bgIn = bgUsage?.inputTokens || 0;
-                    const bgOut = bgUsage?.outputTokens || 0;
-                    const fallbackTokens = gp
-                      ? {
-                          input: (gp.inputTokens || 0) + bgIn,
-                          output: (gp.outputTokens || 0) + bgOut,
-                          total:
-                            (gp.inputTokens || 0) +
-                            (gp.outputTokens || 0) +
-                            bgIn +
-                            bgOut,
-                        }
-                      : {
-                          input: (totalTokens.input || 0) + bgIn,
-                          output: (totalTokens.output || 0) + bgOut,
-                          total: (totalTokens.total || 0) + bgIn + bgOut,
-                        };
-                    return {
-                      messageCount: messages.length,
-                      deletedCount: 0,
-                      requestCount: requestCount + (bgUsage?.requests || 0),
-                      uniqueModels,
-                      uniqueProviders,
-                      totalTokens: (() => {
-                        const hwm = tokenHwmRef.current;
-                        const threadMessage = {
-                          input: Math.max(hwm.input, fallbackTokens.input || 0),
-                          output: Math.max(
-                            hwm.output,
-                            fallbackTokens.output || 0,
-                          ),
-                          total: Math.max(hwm.total, fallbackTokens.total || 0),
-                        };
-                        tokenHwmRef.current = {
-                          input: threadMessage.input,
-                          output: threadMessage.output,
-                          total: threadMessage.total,
-                        };
-                        return threadMessage;
-                      })(),
-                      totalCost: (totalCost as number) + ((bgUsage?.cost || 0) as number),
-                      originalTotalCost: 0,
-                      // Merge client-side usedTools with live worker tool counts
-                      usedTools: mergeUsedToolsWithWorkers(
-                        usedTools,
-                        null,
-                        workerToolActivity,
-                      ),
-                      modalities: (() => {
-                        const original = modalities || {};
-                        const mapped: Record<string, boolean> = {};
-                        for (const [key, value] of Object.entries(original)) {
-                          mapped[key] = !!value;
-                        }
-                        return mapped;
-                      })(),
-                      completedElapsedTime,
-                      currentTurnStart,
-                      liveStreamingTokens,
-                      liveStreamingStartTime,
-                      liveStreamingLastChunkTime,
-                      liveStreamingBurstTokens,
-                      liveStreamingBurstElapsed,
-                      workerGenerationProgress,
-                      lastTimeToGeneration,
-                      liveProcessingStartTime,
-                      liveProcessingPhase,
-                      liveTtftSamples,
-                      liveGenProgress,
-                    } as DisplaySessionStats;
-                  })()
-              : null) as DisplaySessionStats | null
-          }
-        />
+                        currentTurnStart,
+                        liveStreamingTokens,
+                        liveStreamingStartTime,
+                        liveStreamingLastChunkTime,
+                        liveStreamingBurstTokens,
+                        liveStreamingBurstElapsed,
+                        workerGenerationProgress,
+                        lastTimeToGeneration,
+                        liveProcessingStartTime,
+                        liveProcessingPhase,
+                        liveTtftSamples,
+                        liveGenProgress,
+                      } as DisplaySessionStats;
+                    })()
+                : null) as DisplaySessionStats | null
+            }
+          />
         </>
       )}
 
       {leftTab === "workspace" && (
         <>
-        <SidebarTabHeaderComponent
-          icon={FolderOpen}
-          title="Workspace"
-          count={workspaceTreeStats?.totalEntries}
-          countSuffix={workspaceTreeStats?.truncated ? "+" : ""}
-        />
-        <WorkspaceTreePanelComponent
-          workspaceTreeRefreshKey={workspaceTreeRefreshKey}
-          onMentionFile={handleMentionFile}
-          locked={messages.length > 0}
-          unavailableWorkspace={unavailableWorkspace}
-          hideHeader
-          onTreeStats={setWorkspaceTreeStats}
-          onOpenFile={(relativePath: string) => {
-            // Build absolute path from workspace root + relative path
-            const absPath = currentWorkspace?.path
-              ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
-              : relativePath;
-            handleOpenFileInViewer(absPath);
-          }}
-        />
+          <SidebarTabHeaderComponent
+            icon={FolderOpen}
+            title="Workspace"
+            count={workspaceTreeStats?.totalEntries}
+            countSuffix={workspaceTreeStats?.truncated ? "+" : ""}
+          />
+          <WorkspaceTreePanelComponent
+            workspaceTreeRefreshKey={workspaceTreeRefreshKey}
+            onMentionFile={handleMentionFile}
+            locked={messages.length > 0}
+            unavailableWorkspace={unavailableWorkspace}
+            hideHeader
+            onTreeStats={setWorkspaceTreeStats}
+            onOpenFile={(relativePath: string) => {
+              // Build absolute path from workspace root + relative path
+              const absPath = currentWorkspace?.path
+                ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
+                : relativePath;
+              handleOpenFileInViewer(absPath);
+            }}
+          />
         </>
       )}
 
       {leftTab === "info" && (
         <>
-        <SidebarTabHeaderComponent icon={Info} title="Model Info" />
-        <ModelInfoPanel
-          config={filteredConfig}
-          settings={settings}
-        />
+          <SidebarTabHeaderComponent icon={Info} title="Model Info" />
+          <ModelInfoPanel config={filteredConfig} settings={settings} />
         </>
       )}
 
       {leftTab === "tools" && (
         <>
-        <SidebarTabHeaderComponent
-          icon={Wrench}
-          title="Tools"
-          count={`${enabledConfigurableCount + coreToolsCount} / ${configurableTools.length + coreToolsCount}`}
-          hasOnlyCoreToolsActive={enabledConfigurableCount === 0}
-        />
-        <CustomToolsPanel
-          tools={customTools}
-          onToolsChange={loadCustomTools}
-          project={agentProject}
-          builtInTools={builtInTools}
-          disabledBuiltIns={disabledBuiltIns}
-          onToggleBuiltIn={handleToggleBuiltIn}
-          onToggleAllBuiltIn={handleToggleAllBuiltIn}
-          lockedOffTools={lockedOffTools}
-          agent={!isNoAgent}
-        />
+          <SidebarTabHeaderComponent
+            icon={Wrench}
+            title="Tools"
+            count={`${enabledConfigurableCount + coreToolsCount} / ${configurableTools.length + coreToolsCount}`}
+            hasOnlyCoreToolsActive={enabledConfigurableCount === 0}
+          />
+          <CustomToolsPanel
+            tools={customTools}
+            onToolsChange={loadCustomTools}
+            project={agentProject}
+            builtInTools={builtInTools}
+            disabledBuiltIns={disabledBuiltIns}
+            onToggleBuiltIn={handleToggleBuiltIn}
+            onToggleAllBuiltIn={handleToggleAllBuiltIn}
+            lockedOffTools={lockedOffTools}
+            agent={!isNoAgent}
+          />
         </>
       )}
 
       {leftTab === "params" && (
         <>
-        <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
-        <ParametersPanelComponent
-          settings={settings}
-          onChange={(updates: Partial<PrismSettings>) =>
-            setSettings((s) => ({ ...s, ...updates }))
-          }
-          config={filteredConfig}
-        />
+          <SidebarTabHeaderComponent
+            icon={SlidersHorizontal}
+            title="Parameters"
+          />
+          <ParametersPanelComponent
+            settings={settings}
+            onChange={(updates: Partial<PrismSettings>) =>
+              setSettings((s) => ({ ...s, ...updates }))
+            }
+            config={filteredConfig}
+          />
         </>
       )}
 
       {leftTab === "skills" && (
         <>
-        <SidebarTabHeaderComponent icon={BookOpen} title="Skills" count={skills.length} actions={skillsHeaderActions} />
-        <SkillsPanel
-          skills={skills}
-          onSkillsChange={loadSkills}
-          project={agentProject}
-          onActionsChange={setSkillsHeaderActions}
-        />
+          <SidebarTabHeaderComponent
+            icon={BookOpen}
+            title="Skills"
+            count={skills.length}
+            actions={skillsHeaderActions}
+          />
+          <SkillsPanel
+            skills={skills}
+            onSkillsChange={loadSkills}
+            project={agentProject}
+            onActionsChange={setSkillsHeaderActions}
+          />
+        </>
+      )}
+
+      {leftTab === "rules" && (
+        <>
+          <SidebarTabHeaderComponent
+            icon={ScrollText}
+            title="Rules"
+            count={rules.length}
+            actions={rulesHeaderActions}
+          />
+          <RulesPanel
+            rules={rules}
+            onRulesChange={loadRules}
+            agent={agentId}
+            onActionsChange={setRulesHeaderActions}
+          />
         </>
       )}
 
       {leftTab === "memories" && (
         <>
-        <SidebarTabHeaderComponent icon={Brain} title="Memories" count={totalMemoriesCount} actions={memoriesHeaderActions} />
-        <MemoriesPanel
-          project={agentProject}
-          agent={agentId}
-          refreshKey={memoriesRefreshKey}
-          onCountChange={setTotalMemoriesCount}
-          onActionsChange={setMemoriesHeaderActions}
-          memoryConfigured={memoryConfigured}
-        />
+          <SidebarTabHeaderComponent
+            icon={Brain}
+            title="Memories"
+            count={totalMemoriesCount}
+            actions={memoriesHeaderActions}
+          />
+          <MemoriesPanel
+            project={agentProject}
+            agent={agentId}
+            refreshKey={memoriesRefreshKey}
+            onCountChange={setTotalMemoriesCount}
+            onActionsChange={setMemoriesHeaderActions}
+            memoryConfigured={memoryConfigured}
+          />
         </>
       )}
 
       {leftTab === "tasks" && (
         <>
-        <SidebarTabHeaderComponent icon={ListChecks} title="Tasks" count={tasksCount} actions={tasksHeaderActions} />
-        <TasksPanel
-          project={agentProject}
-          refreshKey={tasksRefreshKey}
-          agentSessionId={agentSessionId}
-          onCountChange={setTasksCount}
-          onActionsChange={setTasksHeaderActions}
-        />
+          <SidebarTabHeaderComponent
+            icon={ListChecks}
+            title="Tasks"
+            count={tasksCount}
+            actions={tasksHeaderActions}
+          />
+          <TasksPanel
+            project={agentProject}
+            refreshKey={tasksRefreshKey}
+            agentSessionId={agentSessionId}
+            onCountChange={setTasksCount}
+            onActionsChange={setTasksHeaderActions}
+          />
         </>
       )}
 
       {leftTab === "mcp" && (
         <>
-        <SidebarTabHeaderComponent icon={Plug} title="MCP Servers" count={`${mcpServers.filter((server) => server.connected).length} / ${mcpServers.length}`} actions={mcpHeaderActions} />
-        <MCPServersPanel
-          servers={mcpServers}
-          onServersChange={loadMCPServers}
-          project={agentProject}
-          onActionsChange={setMcpHeaderActions}
-        />
+          <SidebarTabHeaderComponent
+            icon={Plug}
+            title="MCP Servers"
+            count={`${mcpServers.filter((server) => server.connected).length} / ${mcpServers.length}`}
+            actions={mcpHeaderActions}
+          />
+          <MCPServersPanel
+            servers={mcpServers}
+            onServersChange={loadMCPServers}
+            project={agentProject}
+            onActionsChange={setMcpHeaderActions}
+          />
         </>
       )}
 
       {leftTab === "workers" && (
         <>
-        <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} actions={workersHeaderActions} />
-        <WorkersPanel
-          agentSessionId={agentSessionId}
-          refreshKey={tasksRefreshKey}
-          onCountChange={setWorkersCount}
-          onActionsChange={setWorkersHeaderActions}
-          workerToolActivity={workerToolActivity}
-        />
+          <SidebarTabHeaderComponent
+            icon={Bot}
+            title="Workers"
+            count={workersCount}
+            actions={workersHeaderActions}
+          />
+          <WorkersPanel
+            agentSessionId={agentSessionId}
+            refreshKey={tasksRefreshKey}
+            onCountChange={setWorkersCount}
+            onActionsChange={setWorkersHeaderActions}
+            workerToolActivity={workerToolActivity}
+          />
         </>
       )}
 
       {leftTab === "requests" && (
         <>
-        <SidebarTabHeaderComponent icon={BarChart3} title="Requests" count={backendSessionStats?.requestCount || 0} />
-        <SessionRequestsListComponent
-          agentSessionId={agentSessionId}
-          refreshKey={requestsRefreshKey}
-        />
+          <SidebarTabHeaderComponent
+            icon={BarChart3}
+            title="Requests"
+            count={backendSessionStats?.requestCount || 0}
+          />
+          <SessionRequestsListComponent
+            agentSessionId={agentSessionId}
+            refreshKey={requestsRefreshKey}
+          />
         </>
       )}
 
       {leftTab === "coordinator" && (
         <>
-        <SidebarTabHeaderComponent icon={GitBranch} title="Coordinator" />
-        <CoordinatorPanel project={agentProject} />
+          <SidebarTabHeaderComponent icon={GitBranch} title="Coordinator" />
+          <CoordinatorPanel project={agentProject} />
         </>
       )}
     </div>
@@ -4434,7 +4811,9 @@ export default function AgentComponent({
         ref={messagesListRef}
         style={
           agentBackgroundImage
-            ? ({ "--agent-background-image": `url(${agentBackgroundImage})` } as React.CSSProperties)
+            ? ({
+                "--agent-background-image": `url(${agentBackgroundImage})`,
+              } as React.CSSProperties)
             : undefined
         }
       >
@@ -4469,17 +4848,13 @@ export default function AgentComponent({
           }}
           planProposal={planProposal}
           onPlanApprove={() => {
-            setPlanProposal((p) =>
-              p ? { ...p, status: "approved" } : null,
-            );
+            setPlanProposal((p) => (p ? { ...p, status: "approved" } : null));
             PrismService.sendApprovalResponse(agentSessionId, true).catch(
               console.error,
             );
           }}
           onPlanReject={() => {
-            setPlanProposal((p) =>
-              p ? { ...p, status: "rejected" } : null,
-            );
+            setPlanProposal((p) => (p ? { ...p, status: "rejected" } : null));
             PrismService.sendApprovalResponse(agentSessionId, false).catch(
               console.error,
             );
@@ -4536,7 +4911,12 @@ export default function AgentComponent({
             question={pendingUserQuestion.question}
             choices={pendingUserQuestion.choices}
             context={pendingUserQuestion.context}
-            onAnswer={(answers: Array<{ answer: string | string[]; annotations?: string }>) => {
+            onAnswer={(
+              answers: Array<{
+                answer: string | string[];
+                annotations?: string;
+              }>,
+            ) => {
               setPendingUserQuestion(null);
               PrismService.sendUserQuestionAnswer(
                 agentSessionId,
@@ -4562,7 +4942,10 @@ export default function AgentComponent({
           if (lastMessage.content && lastMessage.content.trim().length > 0) {
             derivedPhase = "generating";
             derivedLabel = "Generating...";
-          } else if (lastMessage.thinking && lastMessage.thinking.trim().length > 0) {
+          } else if (
+            lastMessage.thinking &&
+            lastMessage.thinking.trim().length > 0
+          ) {
             derivedPhase = "thinking";
             derivedLabel = "Thinking...";
           }
@@ -4576,9 +4959,7 @@ export default function AgentComponent({
           ? derivedLabel || lastMessage?.status || "Starting..."
           : undefined;
 
-        const hasActiveTools = toolActivity.some(
-          (t) => t.status === "calling",
-        );
+        const hasActiveTools = toolActivity.some((t) => t.status === "calling");
         // Detect awaiting-approval state (plan proposal or tool approval pending)
         const isAwaitingApproval =
           planProposal?.status === "pending" ||
@@ -4694,7 +5075,6 @@ export default function AgentComponent({
       <div
         className={`${chatStyles.inputWrapper} ${!settings.provider || !settings.model ? chatStyles.inputWrapperDisabled : ""}`}
       >
-
         <form
           onSubmit={handleSend}
           className={`${chatStyles.inputBox} ${isDragging ? chatStyles.inputBoxDragActive : ""} ${isGenerating ? chatStyles.inputBoxGenerating : ""}`}
@@ -4731,8 +5111,8 @@ export default function AgentComponent({
               )}
               {queuedNextTurn.images?.length > 0 && (
                 <div className={chatStyles.queuedImagesCount}>
-                  <Paperclip size={12} />{" "}
-                  {queuedNextTurn.images.length} image(s)
+                  <Paperclip size={12} /> {queuedNextTurn.images.length}{" "}
+                  image(s)
                 </div>
               )}
             </div>
@@ -4762,6 +5142,50 @@ export default function AgentComponent({
                     <X size={14} />
                   </button>
                 </div>
+              ))}
+            </div>
+          )}
+          {/* ── Active Rule Badges ── */}
+          {activeRuleNames.size > 0 && (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "4px",
+                padding: "6px 10px 2px",
+              }}
+            >
+              {Array.from(activeRuleNames).map((ruleName) => (
+                <span
+                  key={ruleName}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    padding: "2px 8px",
+                    fontSize: "0.7rem",
+                    fontFamily: "var(--font-mono, monospace)",
+                    fontWeight: 500,
+                    color: "var(--color-amber)",
+                    background:
+                      "color-mix(in srgb, var(--color-amber) 10%, transparent)",
+                    border:
+                      "1px solid color-mix(in srgb, var(--color-amber) 25%, transparent)",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() =>
+                    setActiveRuleNames((previous) => {
+                      const next = new Set(previous);
+                      next.delete(ruleName);
+                      return next;
+                    })
+                  }
+                  title={`Click to deactivate /${ruleName}`}
+                >
+                  /{ruleName}
+                  <X size={10} />
+                </span>
               ))}
             </div>
           )}
@@ -4796,6 +5220,66 @@ export default function AgentComponent({
               data-placeholder={placeholderText}
               suppressContentEditableWarning
             />
+            {/* ── Slash Command Picker ── */}
+            {slashCommandOpen &&
+              rules.length > 0 &&
+              (() => {
+                const filteredRules = rules.filter(
+                  (rule) =>
+                    rule.enabled &&
+                    rule.name.toLowerCase().includes(slashCommandQuery),
+                );
+                if (filteredRules.length === 0) return null;
+                return (
+                  <div
+                    className={chatStyles.mentionDropdown}
+                    style={{
+                      borderColor:
+                        "color-mix(in srgb, var(--color-amber) 30%, var(--calculated-border-color))",
+                    }}
+                  >
+                    <div className={chatStyles.mentionList}>
+                      {filteredRules.map((rule) => (
+                        <button
+                          key={rule.id || rule._id?.toString()}
+                          type="button"
+                          className={chatStyles.mentionItem}
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            setActiveRuleNames((previous) =>
+                              new Set(previous).add(rule.name),
+                            );
+                            setSlashCommandOpen(false);
+                            setSlashCommandQuery("");
+                            setTextareaValue("");
+                          }}
+                        >
+                          <span
+                            style={{
+                              color: "var(--color-amber)",
+                              fontFamily: "var(--font-mono, monospace)",
+                              fontWeight: 600,
+                            }}
+                          >
+                            /{rule.name}
+                          </span>
+                          {rule.description && (
+                            <span
+                              style={{
+                                color: "var(--text-muted)",
+                                fontSize: "0.7rem",
+                                marginInlineStart: "8px",
+                              }}
+                            >
+                              {rule.description}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             {/* ── Mention Autocomplete Dropdown ── */}
             {mentionOpen && mentionResults.length > 0 && (
               <div className={chatStyles.mentionDropdown}>
@@ -4844,14 +5328,16 @@ export default function AgentComponent({
             />
           </div>
         </form>
-
       </div>
       {lightboxSrc && (
         <ImagePreviewComponent
           src={lightboxSrc}
           onClose={() => setLightboxSrc(null)}
           onUseAnnotated={(dataUrl: string) => {
-            setPendingImages((previousPixelSize) => [...previousPixelSize, dataUrl]);
+            setPendingImages((previousPixelSize) => [
+              ...previousPixelSize,
+              dataUrl,
+            ]);
             setLightboxSrc(null);
           }}
         />
@@ -4863,156 +5349,171 @@ export default function AgentComponent({
   return (
     <>
       <ThreePanelLayout
-      navSidebar={
-        <NavigationSidebarComponent
-          mode="user"
-          isGenerating={isGenerating}
-          activeApiCount={activeApiCount}
-        />
-      }
-      leftPanel={leftPanel}
-      leftTitle={undefined}
-      fileViewerPanel={
-        currentWorkspace &&
-        hasFileOps && (
-          <FileViewerPanelComponent
-            openFiles={viewerOpenFiles}
-            activeFileId={viewerActiveFileId}
-            onSelectFile={setViewerActiveFileId}
-            onCloseFile={(id: string) => {
-              setViewerOpenFiles((previousPixelSize) => {
-                const next = previousPixelSize.filter((f) => f.id !== id);
-                // If the closed tab was active, switch to the nearest tab
-                if (id === viewerActiveFileId) {
-                  const closedTabIndex = previousPixelSize.findIndex((f: ViewerOpenFile) => f.id === id);
-                  const newActive = next[Math.min(closedTabIndex, next.length - 1)];
-                  setViewerActiveFileId(newActive?.id || null);
-                }
-                return next;
-              });
-            }}
-            onFileNotFound={(id: string) => {
-              // Auto-close tabs for files that no longer exist
-              setViewerOpenFiles((previousPixelSize) => {
-                const next = previousPixelSize.filter((f) => f.id !== id);
-                setViewerActiveFileId((activeId: string | null) => {
-                  if (activeId !== id) return activeId;
-                  const closedTabIndex = previousPixelSize.findIndex((f: ViewerOpenFile) => f.id === id);
-                  const newActive = next[Math.min(closedTabIndex, next.length - 1)];
-                  return newActive?.id || null;
-                });
-                return next;
-              });
-            }}
-            isOpen={viewerOpenFiles.length > 0}
-            width={viewerWidth}
-            onWidthChange={(w: number) => {
-              setViewerWidth(w);
-              localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(w));
-            }}
-            refreshKey={viewerRefreshKey}
-            onMentionLines={handleMentionLines}
+        navSidebar={
+          <NavigationSidebarComponent
+            mode="user"
+            isGenerating={isGenerating}
+            activeApiCount={activeApiCount}
           />
-        )
-      }
-      rightPanel={
-        <HistoryPanel
-          sessions={sessions}
-          activeId={activeId}
-          onSelect={handleSelectSession}
-          onNew={handleNewChat}
-          onDelete={handleDeleteSession}
-          disableNew={messages.length === 0 && !activeId}
-          newLabel="New Session"
-          emptyText="No recent sessions"
-          searchText="Search sessions..."
-          countLabel="sessions"
-          generatingSessionIds={generatingSessionIds as Set<string>}
-          hasMore={sessionsHasMore}
-          loadingMore={sessionsLoading}
-          onLoadMore={loadMoreSessions}
-        />
-      }
-      rightTitle={`${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`}
-      sessionType="agent"
-      headerCenter={
-        <div className={layoutHeaderStyles['header-center-group']}>
-          {agents.length > 1 && (
-            <AgentPickerComponent
-              agents={agents}
-              activeAgentId={agentId}
-              onSelect={(id: string) => {
-                // Agent switching is handled by the parent page via URL/state
-                // Emit a custom event or call a callback
+        }
+        leftPanel={leftPanel}
+        leftTitle={undefined}
+        fileViewerPanel={
+          !isNoAgent &&
+          currentWorkspace &&
+          hasFileOps && (
+            <FileViewerPanelComponent
+              openFiles={viewerOpenFiles}
+              activeFileId={viewerActiveFileId}
+              onSelectFile={setViewerActiveFileId}
+              onCloseFile={(id: string) => {
+                setViewerOpenFiles((previousPixelSize) => {
+                  const next = previousPixelSize.filter((f) => f.id !== id);
+                  // If the closed tab was active, switch to the nearest tab
+                  if (id === viewerActiveFileId) {
+                    const closedTabIndex = previousPixelSize.findIndex(
+                      (f: ViewerOpenFile) => f.id === id,
+                    );
+                    const newActive =
+                      next[Math.min(closedTabIndex, next.length - 1)];
+                    setViewerActiveFileId(newActive?.id || null);
+                  }
+                  return next;
+                });
+              }}
+              onFileNotFound={(id: string) => {
+                // Auto-close tabs for files that no longer exist
+                setViewerOpenFiles((previousPixelSize) => {
+                  const next = previousPixelSize.filter((f) => f.id !== id);
+                  setViewerActiveFileId((activeId: string | null) => {
+                    if (activeId !== id) return activeId;
+                    const closedTabIndex = previousPixelSize.findIndex(
+                      (f: ViewerOpenFile) => f.id === id,
+                    );
+                    const newActive =
+                      next[Math.min(closedTabIndex, next.length - 1)];
+                    return newActive?.id || null;
+                  });
+                  return next;
+                });
+              }}
+              isOpen={viewerOpenFiles.length > 0}
+              width={viewerWidth}
+              onWidthChange={(w: number) => {
+                setViewerWidth(w);
+                localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(w));
+              }}
+              refreshKey={viewerRefreshKey}
+              onMentionLines={handleMentionLines}
+            />
+          )
+        }
+        rightPanel={
+          <HistoryPanel
+            sessions={sessions}
+            activeId={activeId}
+            onSelect={handleSelectSession}
+            onNew={handleNewChat}
+            onDelete={handleDeleteSession}
+            disableNew={messages.length === 0 && !activeId}
+            newLabel="New Session"
+            emptyText="No recent sessions"
+            searchText="Search sessions..."
+            countLabel="sessions"
+            generatingSessionIds={generatingSessionIds as Set<string>}
+            hasMore={sessionsHasMore}
+            loadingMore={sessionsLoading}
+            onLoadMore={loadMoreSessions}
+          />
+        }
+        rightTitle={`${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`}
+        sessionType="agent"
+        headerCenter={
+          <div className={layoutHeaderStyles["header-center-group"]}>
+            {agents.length > 1 && (
+              <AgentPickerComponent
+                agents={agents}
+                activeAgentId={agentId}
+                onSelect={(id: string) => {
+                  // Agent switching is handled by the parent page via URL/state
+                  // Emit a custom event or call a callback
+                  window.dispatchEvent(
+                    new CustomEvent("agent:switch", {
+                      detail: { agentId: id },
+                    }),
+                  );
+                }}
+                disabled={isGenerating}
+              />
+            )}
+            <ModelPickerPopoverComponent
+              config={filteredConfig}
+              settings={{ provider: settings.provider, model: settings.model }}
+              disabled={isGenerating}
+              onSelectModel={(provider: string, modelName: string) => {
+                const modelDef = (
+                  filteredConfig?.textToText?.models?.[provider] || []
+                ).find((m: ModelOption) => m.name === modelName);
+                const temp = modelDef?.defaultTemperature ?? 1.0;
+                setSettings((s) => ({
+                  ...s,
+                  provider,
+                  model: modelName,
+                  temperature: temp,
+                }));
+                if (activeId) {
+                  PrismService.patchConversation(
+                    activeId,
+                    {
+                      settings: {
+                        ...settings,
+                        provider,
+                        model: modelName,
+                        temperature: temp,
+                      },
+                    },
+                    agentProject || undefined,
+                  ).catch((err) => {
+                    console.error(
+                      "Failed to patch conversation settings:",
+                      err,
+                    );
+                  });
+                }
+                saveModel(provider, modelName);
                 window.dispatchEvent(
-                  new CustomEvent("agent:switch", { detail: { agentId: id } }),
+                  new CustomEvent("model:change", {
+                    detail: { provider, model: modelName },
+                  }),
                 );
               }}
-              disabled={isGenerating}
+              favorites={favoriteKeys}
+              onToggleFavorite={async (key: string) => {
+                if (favoriteKeys.includes(key)) {
+                  setFavoriteKeys((previousPixelSize) =>
+                    previousPixelSize.filter((k) => k !== key),
+                  );
+                  PrismService.removeFavorite("model", key).catch(() => {});
+                } else {
+                  setFavoriteKeys((previousPixelSize) => [
+                    ...previousPixelSize,
+                    key,
+                  ]);
+                  const [provider, ...rest] = key.split(":");
+                  PrismService.addFavorite("model", key, {
+                    provider,
+                    name: rest.join(":"),
+                  }).catch(() => {});
+                }
+              }}
             />
-          )}
-          <ModelPickerPopoverComponent
-            config={filteredConfig}
-            settings={{ provider: settings.provider, model: settings.model }}
-            disabled={isGenerating}
-            onSelectModel={(provider: string, modelName: string) => {
-              const modelDef = (
-                filteredConfig?.textToText?.models?.[provider] || []
-              ).find((m: ModelOption) => m.name === modelName);
-              const temp = modelDef?.defaultTemperature ?? 1.0;
-              setSettings((s) => ({
-                ...s,
-                provider,
-                model: modelName,
-                temperature: temp,
-              }));
-              if (activeId) {
-                PrismService.patchConversation(
-                  activeId,
-                  {
-                    settings: {
-                      ...settings,
-                      provider,
-                      model: modelName,
-                      temperature: temp,
-                    },
-                  },
-                  agentProject || undefined,
-                ).catch((err) => {
-                  console.error("Failed to patch conversation settings:", err);
-                });
-              }
-              saveModel(provider, modelName);
-              window.dispatchEvent(
-                new CustomEvent("model:change", {
-                  detail: { provider, model: modelName },
-                }),
-              );
-            }}
-            favorites={favoriteKeys}
-            onToggleFavorite={async (key: string) => {
-              if (favoriteKeys.includes(key)) {
-                setFavoriteKeys((previousPixelSize) =>
-                  previousPixelSize.filter((k) => k !== key),
-                );
-                PrismService.removeFavorite("model", key).catch(() => {});
-              } else {
-                setFavoriteKeys((previousPixelSize) => [...previousPixelSize, key]);
-                const [provider, ...rest] = key.split(":");
-                PrismService.addFavorite("model", key, {
-                  provider,
-                  name: rest.join(":"),
-                }).catch(() => {});
-              }
-            }}
-          />
-        </div>
-      }
-      headerMeta={null}
-      headerControls={null}
-    >
-      {chatContent}
-    </ThreePanelLayout>
+          </div>
+        }
+        headerMeta={null}
+        headerControls={null}
+      >
+        {chatContent}
+      </ThreePanelLayout>
       <ToastComponent toasts={toasts} onRemove={removeToast} />
     </>
   );

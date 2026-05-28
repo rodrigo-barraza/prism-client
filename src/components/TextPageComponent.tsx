@@ -93,7 +93,9 @@ export default function TextPageComponent({
 
   useEffect(() => {
     PrismService.getFavorites("text")
-      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
+      .then((favs: Array<{ key: string }>) =>
+        setFavoriteKeys(favs.map((f) => f.key)),
+      )
       .catch(() => {});
   }, []);
 

@@ -30,7 +30,10 @@ interface TtftAction {
  * For the client-side fallback (LM Studio native path), it live-counts
  * during the "processing" phase and latches on phase transition.
  */
-function ttftReducer(prev: TtftState, { phase, startTime, perfNow, active, samples }: TtftAction): TtftState {
+function ttftReducer(
+  prev: TtftState,
+  { phase, startTime, perfNow, active, samples }: TtftAction,
+): TtftState {
   // Turn ended → clear
   if (!active) {
     if (prev.value === null && !prev.live && prev.seenCount === 0) return prev;

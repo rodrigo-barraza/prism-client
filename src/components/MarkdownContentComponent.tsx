@@ -82,7 +82,12 @@ interface AutoResizeEmbedProps {
   className?: string;
 }
 
-function AutoResizeEmbed({ src, title, fallbackHeight, className }: AutoResizeEmbedProps) {
+function AutoResizeEmbed({
+  src,
+  title,
+  fallbackHeight,
+  className,
+}: AutoResizeEmbedProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [height, setHeight] = useState(fallbackHeight);
 
@@ -175,7 +180,11 @@ export interface MarkdownContentProps {
   children?: React.ReactNode;
 }
 
-export default function MarkdownContent({ content, className, children }: MarkdownContentProps) {
+export default function MarkdownContent({
+  content,
+  className,
+  children,
+}: MarkdownContentProps) {
   if (!content) return null;
   return (
     <div className={`${styles.text} ${className || ""}`}>

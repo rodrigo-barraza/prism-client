@@ -1,7 +1,10 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from "react";
+import type {
+  MouseEvent as ReactMouseEvent,
+  TouchEvent as ReactTouchEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   X,
@@ -47,7 +50,9 @@ interface ShapeStroke {
 
 type Stroke = PenStroke | ShapeStroke;
 
-type CanvasPointerEvent = ReactMouseEvent<HTMLCanvasElement> | ReactTouchEvent<HTMLCanvasElement>;
+type CanvasPointerEvent =
+  | ReactMouseEvent<HTMLCanvasElement>
+  | ReactTouchEvent<HTMLCanvasElement>;
 
 // ── Constants ─────────────────────────────────────────────────
 
@@ -90,7 +95,11 @@ const CANVAS_H = 600;
  *   onSave(url)  – called with PNG data URL on save
  *   onClose()    – close without saving
  */
-export default function DrawingCanvas({ src, onSave, onClose }: DrawingCanvasProps) {
+export default function DrawingCanvas({
+  src,
+  onSave,
+  onClose,
+}: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);

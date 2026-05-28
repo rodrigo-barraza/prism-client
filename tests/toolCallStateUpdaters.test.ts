@@ -10,7 +10,9 @@ import type { ToolCallEvent } from "../src/types/types";
 
 // ─── Helpers ────────────────────────────────────────────────────
 
-function makeSnapshot(overrides: Partial<SegmentSnapshot> = {}): SegmentSnapshot {
+function makeSnapshot(
+  overrides: Partial<SegmentSnapshot> = {},
+): SegmentSnapshot {
   return {
     contentSegments: [],
     textFragments: [],
@@ -19,7 +21,9 @@ function makeSnapshot(overrides: Partial<SegmentSnapshot> = {}): SegmentSnapshot
   };
 }
 
-function makeAssistantMsg(overrides: Partial<ToolMessageSlice> = {}): ToolMessageSlice {
+function makeAssistantMsg(
+  overrides: Partial<ToolMessageSlice> = {},
+): ToolMessageSlice {
   return {
     role: "assistant",
     content: "",
@@ -45,7 +49,12 @@ describe("applyToolExecutionToMessages", () => {
       const result = applyToolExecutionToMessages(
         messages,
         "tc-1",
-        { id: "tc-1", name: "web_search", args: { q: "test" }, status: "calling" },
+        {
+          id: "tc-1",
+          name: "web_search",
+          args: { q: "test" },
+          status: "calling",
+        },
         makeSnapshot(),
       );
 
@@ -68,7 +77,12 @@ describe("applyToolExecutionToMessages", () => {
       const result = applyToolExecutionToMessages(
         messages,
         "tc-1",
-        { id: "tc-1", name: "read_file", args: { path: "/a" }, status: "calling" },
+        {
+          id: "tc-1",
+          name: "read_file",
+          args: { path: "/a" },
+          status: "calling",
+        },
         makeSnapshot({ textFragments: ["partial text"] }),
       );
 
@@ -120,7 +134,12 @@ describe("applyToolExecutionToMessages", () => {
       const result = applyToolExecutionToMessages(
         messages,
         "tc-2",
-        { id: "tc-2", name: "read_file", args: { path: "/b" }, status: "calling" },
+        {
+          id: "tc-2",
+          name: "read_file",
+          args: { path: "/b" },
+          status: "calling",
+        },
         makeSnapshot(),
       );
 
@@ -266,16 +285,15 @@ describe("applyToolExecutionToMessages", () => {
       );
 
       expect(result[1].toolCalls![0].status).toBe("error");
-      expect(result[1].toolCalls![0].result).toEqual({ error: "permission denied" });
+      expect(result[1].toolCalls![0].result).toEqual({
+        error: "permission denied",
+      });
     });
   });
 
   describe("immutability", () => {
     it("does not mutate the input messages array", () => {
-      const messages: ToolMessageSlice[] = [
-        makeUserMsg(),
-        makeAssistantMsg(),
-      ];
+      const messages: ToolMessageSlice[] = [makeUserMsg(), makeAssistantMsg()];
       const original = [...messages];
 
       applyToolExecutionToMessages(
@@ -311,7 +329,12 @@ describe("applyToolExecutionToMessages", () => {
       const step1 = applyToolExecutionToMessages(
         [makeUserMsg(), makeAssistantMsg({ content: "thinking..." })],
         "tc-1",
-        { id: "tc-1", name: "web_search", args: { q: "test" }, status: "calling" },
+        {
+          id: "tc-1",
+          name: "web_search",
+          args: { q: "test" },
+          status: "calling",
+        },
         snapshot,
       );
 
@@ -344,29 +367,65 @@ describe("applyToolExecutionToMessages", () => {
       let msgs: ToolMessageSlice[] = [makeUserMsg(), makeAssistantMsg()];
 
       // Tool A starts
-      msgs = applyToolExecutionToMessages(msgs, "tc-a", {
-        id: "tc-a", name: "tool_a", args: {}, status: "calling",
-      }, snapshot);
+      msgs = applyToolExecutionToMessages(
+        msgs,
+        "tc-a",
+        {
+          id: "tc-a",
+          name: "tool_a",
+          args: {},
+          status: "calling",
+        },
+        snapshot,
+      );
       expect(msgs[1].toolCalls).toHaveLength(1);
 
       // Tool B starts
-      msgs = applyToolExecutionToMessages(msgs, "tc-b", {
-        id: "tc-b", name: "tool_b", args: {}, status: "calling",
-      }, snapshot);
+      msgs = applyToolExecutionToMessages(
+        msgs,
+        "tc-b",
+        {
+          id: "tc-b",
+          name: "tool_b",
+          args: {},
+          status: "calling",
+        },
+        snapshot,
+      );
       expect(msgs[1].toolCalls).toHaveLength(2);
-      expect(msgs[1].toolCalls!.every((tc) => tc.status === "calling")).toBe(true);
+      expect(msgs[1].toolCalls!.every((tc) => tc.status === "calling")).toBe(
+        true,
+      );
 
       // Tool A completes
-      msgs = applyToolExecutionToMessages(msgs, "tc-a", {
-        id: "tc-a", name: "tool_a", args: {}, status: "done", result: "a-result",
-      }, snapshot);
+      msgs = applyToolExecutionToMessages(
+        msgs,
+        "tc-a",
+        {
+          id: "tc-a",
+          name: "tool_a",
+          args: {},
+          status: "done",
+          result: "a-result",
+        },
+        snapshot,
+      );
       expect(msgs[1].toolCalls![0].status).toBe("done");
       expect(msgs[1].toolCalls![1].status).toBe("calling");
 
       // Tool B completes
-      msgs = applyToolExecutionToMessages(msgs, "tc-b", {
-        id: "tc-b", name: "tool_b", args: {}, status: "done", result: "b-result",
-      }, snapshot);
+      msgs = applyToolExecutionToMessages(
+        msgs,
+        "tc-b",
+        {
+          id: "tc-b",
+          name: "tool_b",
+          args: {},
+          status: "done",
+          result: "b-result",
+        },
+        snapshot,
+      );
       expect(msgs[1].toolCalls!.every((tc) => tc.status === "done")).toBe(true);
     });
   });
@@ -376,11 +435,12 @@ describe("applyToolExecutionToMessages", () => {
 
 describe("applyToolExecutionToActivity", () => {
   it("adds a new tool when calling", () => {
-    const result = applyToolExecutionToActivity(
-      [],
-      "tc-1",
-      { id: "tc-1", name: "web_search", args: { q: "test" }, status: "calling" },
-    );
+    const result = applyToolExecutionToActivity([], "tc-1", {
+      id: "tc-1",
+      name: "web_search",
+      args: { q: "test" },
+      status: "calling",
+    });
 
     expect(result).not.toBeNull();
     expect(result).toHaveLength(1);
@@ -392,37 +452,44 @@ describe("applyToolExecutionToActivity", () => {
   });
 
   it("returns null for duplicate calling events", () => {
-    const existing: ToolCallEvent[] = [{
+    const existing: ToolCallEvent[] = [
+      {
+        id: "tc-1",
+        name: "web_search",
+        args: {},
+        status: "calling",
+        timestamp: 1000,
+      },
+    ];
+
+    const result = applyToolExecutionToActivity(existing, "tc-1", {
       id: "tc-1",
       name: "web_search",
       args: {},
       status: "calling",
-      timestamp: 1000,
-    }];
-
-    const result = applyToolExecutionToActivity(
-      existing,
-      "tc-1",
-      { id: "tc-1", name: "web_search", args: {}, status: "calling" },
-    );
+    });
 
     expect(result).toBeNull();
   });
 
   it("updates status to done for matching tool", () => {
-    const existing: ToolCallEvent[] = [{
+    const existing: ToolCallEvent[] = [
+      {
+        id: "tc-1",
+        name: "web_search",
+        args: {},
+        status: "calling",
+        timestamp: 1000,
+      },
+    ];
+
+    const result = applyToolExecutionToActivity(existing, "tc-1", {
       id: "tc-1",
       name: "web_search",
       args: {},
-      status: "calling",
-      timestamp: 1000,
-    }];
-
-    const result = applyToolExecutionToActivity(
-      existing,
-      "tc-1",
-      { id: "tc-1", name: "web_search", args: {}, status: "done", result: { ok: true } },
-    );
+      status: "done",
+      result: { ok: true },
+    });
 
     expect(result).not.toBeNull();
     expect(result![0].status).toBe("done");
@@ -432,14 +499,22 @@ describe("applyToolExecutionToActivity", () => {
   it("preserves unrelated tools when updating one", () => {
     const existing: ToolCallEvent[] = [
       { id: "tc-1", name: "tool_a", args: {}, status: "done", timestamp: 1000 },
-      { id: "tc-2", name: "tool_b", args: {}, status: "calling", timestamp: 2000 },
+      {
+        id: "tc-2",
+        name: "tool_b",
+        args: {},
+        status: "calling",
+        timestamp: 2000,
+      },
     ];
 
-    const result = applyToolExecutionToActivity(
-      existing,
-      "tc-2",
-      { id: "tc-2", name: "tool_b", args: {}, status: "done", result: "ok" },
-    );
+    const result = applyToolExecutionToActivity(existing, "tc-2", {
+      id: "tc-2",
+      name: "tool_b",
+      args: {},
+      status: "done",
+      result: "ok",
+    });
 
     expect(result![0]).toBe(existing[0]); // Same reference — untouched
     expect(result![1].status).toBe("done");
@@ -458,7 +533,12 @@ describe("applyToolCallToMessages", () => {
       status: "calling",
     };
 
-    const result = applyToolCallToMessages(messages, "mcp-1", toolData, makeSnapshot());
+    const result = applyToolCallToMessages(
+      messages,
+      "mcp-1",
+      toolData,
+      makeSnapshot(),
+    );
 
     expect(result[1].toolCalls).toHaveLength(1);
     expect(result[1].toolCalls![0]).toMatchObject({
@@ -488,7 +568,12 @@ describe("applyToolCallToMessages", () => {
       result: { output: "success" },
     };
 
-    const result = applyToolCallToMessages(messages, "mcp-1", toolData, makeSnapshot());
+    const result = applyToolCallToMessages(
+      messages,
+      "mcp-1",
+      toolData,
+      makeSnapshot(),
+    );
 
     expect(result[1].toolCalls).toHaveLength(1);
     expect(result[1].toolCalls![0].status).toBe("done");
@@ -504,7 +589,12 @@ describe("applyToolCallToMessages", () => {
       status: "calling",
     };
 
-    const result = applyToolCallToMessages(messages, "mcp-1", toolData, makeSnapshot());
+    const result = applyToolCallToMessages(
+      messages,
+      "mcp-1",
+      toolData,
+      makeSnapshot(),
+    );
 
     expect(result).toHaveLength(2);
     expect(result[1].role).toBe("assistant");
@@ -527,32 +617,43 @@ describe("regression: large tool results", () => {
     ];
 
     // Tool starts calling
-    msgs = applyToolExecutionToMessages(msgs, "tc-ascii", {
-      id: "tc-ascii",
-      name: "convert_image_to_ascii",
-      args: { input: "https://example.com/photo.jpg", width: 100 },
-      status: "calling",
-    }, snapshot);
+    msgs = applyToolExecutionToMessages(
+      msgs,
+      "tc-ascii",
+      {
+        id: "tc-ascii",
+        name: "convert_image_to_ascii",
+        args: { input: "https://example.com/photo.jpg", width: 100 },
+        status: "calling",
+      },
+      snapshot,
+    );
 
     expect(msgs).toHaveLength(2);
     expect(msgs[0].content).toBe("Convert this image to ASCII");
     expect(msgs[1].toolCalls).toHaveLength(1);
 
     // Tool completes with large result
-    msgs = applyToolExecutionToMessages(msgs, "tc-ascii", {
-      id: "tc-ascii",
-      name: "convert_image_to_ascii",
-      args: { input: "https://example.com/photo.jpg", width: 100 },
-      status: "done",
-      result: {
-        success: true,
-        ascii: largeAsciiResult,
-        ansi: "\x1b[38;2;0;0;0m" + "X".repeat(50_000),
-        width: 100,
-        height: 55,
-        asciiEmbedUrl: "http://localhost:5590/compute/image/ascii/embed?id=abc",
+    msgs = applyToolExecutionToMessages(
+      msgs,
+      "tc-ascii",
+      {
+        id: "tc-ascii",
+        name: "convert_image_to_ascii",
+        args: { input: "https://example.com/photo.jpg", width: 100 },
+        status: "done",
+        result: {
+          success: true,
+          ascii: largeAsciiResult,
+          ansi: "\x1b[38;2;0;0;0m" + "X".repeat(50_000),
+          width: 100,
+          height: 55,
+          asciiEmbedUrl:
+            "http://localhost:5590/compute/image/ascii/embed?id=abc",
+        },
       },
-    }, snapshot);
+      snapshot,
+    );
 
     // Critical: all messages must still be present
     expect(msgs).toHaveLength(2);
@@ -562,11 +663,16 @@ describe("regression: large tool results", () => {
     expect(msgs[1].content).toBe("I'll convert that image for you.");
     expect(msgs[1].toolCalls).toHaveLength(1);
     expect(msgs[1].toolCalls![0].status).toBe("done");
-    expect((msgs[1].toolCalls![0].result as Record<string, unknown>).success).toBe(true);
+    expect(
+      (msgs[1].toolCalls![0].result as Record<string, unknown>).success,
+    ).toBe(true);
   });
 
   it("snapshot values are preserved on the message after tool completion", () => {
-    const segments = [{ type: "text" as const, fragmentIndex: 0 }, { type: "tools" as const, toolIds: ["tc-1"] }];
+    const segments = [
+      { type: "text" as const, fragmentIndex: 0 },
+      { type: "tools" as const, toolIds: ["tc-1"] },
+    ];
     const snapshot = makeSnapshot({
       contentSegments: segments,
       textFragments: ["Here is the result:"],
@@ -576,7 +682,13 @@ describe("regression: large tool results", () => {
     const msgs = applyToolExecutionToMessages(
       [makeUserMsg(), makeAssistantMsg({ content: "Processing..." })],
       "tc-1",
-      { id: "tc-1", name: "convert_image_to_ascii", args: {}, status: "done", result: { ok: true } },
+      {
+        id: "tc-1",
+        name: "convert_image_to_ascii",
+        args: {},
+        status: "done",
+        result: { ok: true },
+      },
       snapshot,
     );
 

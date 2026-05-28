@@ -7,7 +7,9 @@ import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import BenchmarkPreviewSidebarComponent from "./BenchmarkPreviewSidebarComponent";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
-import BenchmarkFormComponent, { BenchmarkFormState } from "./BenchmarkFormComponent";
+import BenchmarkFormComponent, {
+  BenchmarkFormState,
+} from "./BenchmarkFormComponent";
 import styles from "./BenchmarkPageComponent.module.css";
 
 const MATCH_MODES = [

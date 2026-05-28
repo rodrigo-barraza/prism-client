@@ -7,8 +7,6 @@
   composes: container from "./PanelShared.module.css";
 }
 
-
-
 /* ── Worker Card ──────────────────────────────────────────── */
 /* Mirrors .item + .isActiveState from HistoryItemComponent           */
 

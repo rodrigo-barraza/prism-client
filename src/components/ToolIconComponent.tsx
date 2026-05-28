@@ -51,7 +51,8 @@ export default function ToolIconComponent({
   const resolved = new Map();
   for (const raw of toolDisplayNames) {
     if ((TOOL_ICON_MAP as Record<string, any>)[raw]) {
-      if (!resolved.has(raw)) resolved.set(raw, (TOOL_ICON_MAP as Record<string, any>)[raw]);
+      if (!resolved.has(raw))
+        resolved.set(raw, (TOOL_ICON_MAP as Record<string, any>)[raw]);
     } else {
       const fallbackIcon = TOOL_ICON_MAP["Tool Calling"] || Wrench;
       if (!resolved.has("Tool Calling")) {
@@ -62,24 +63,32 @@ export default function ToolIconComponent({
 
   return (
     <span className={`${styles.toolPills} ${className || ""}`}>
-      {[...resolved.entries()].map(([label, Icon]: [string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>]) => {
-        // Build rich tooltip for "Tool Calling" showing actual tool names
-        const tooltipLabel =
-          label === "Tool Calling" && fcRawDisplay.length > 0
-            ? `Tool Calling: ${fcRawDisplay.join(", ")}`
-            : label;
+      {[...resolved.entries()].map(
+        ([label, Icon]: [
+          string,
+          React.ComponentType<{ size?: number; style?: React.CSSProperties }>,
+        ]) => {
+          // Build rich tooltip for "Tool Calling" showing actual tool names
+          const tooltipLabel =
+            label === "Tool Calling" && fcRawDisplay.length > 0
+              ? `Tool Calling: ${fcRawDisplay.join(", ")}`
+              : label;
 
-        return (
-          <TooltipComponent key={label} label={tooltipLabel} position="top">
-            <span className={styles.toolPill}>
-              <Icon
-                size={size}
-                style={{ color: (TOOL_COLORS as Record<string, any>)[label] || "#f97316" }}
-              />
-            </span>
-          </TooltipComponent>
-        );
-      })}
+          return (
+            <TooltipComponent key={label} label={tooltipLabel} position="top">
+              <span className={styles.toolPill}>
+                <Icon
+                  size={size}
+                  style={{
+                    color:
+                      (TOOL_COLORS as Record<string, any>)[label] || "#f97316",
+                  }}
+                />
+              </span>
+            </TooltipComponent>
+          );
+        },
+      )}
     </span>
   );
 }

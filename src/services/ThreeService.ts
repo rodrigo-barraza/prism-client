@@ -341,7 +341,9 @@ const ThreeService = {
    * Get the scene, camera, and renderer for an instance.
    * Useful for imperative setup (adding meshes, lights, etc.).
    */
-  getInstance(id: string): Pick<ThreeInstance, "scene" | "camera" | "renderer" | "timer"> | null {
+  getInstance(
+    id: string,
+  ): Pick<ThreeInstance, "scene" | "camera" | "renderer" | "timer"> | null {
     const inst = instances.get(id);
     if (!inst) return null;
     return {

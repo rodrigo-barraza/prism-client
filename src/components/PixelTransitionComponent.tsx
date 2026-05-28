@@ -105,7 +105,9 @@ export default function PixelTransitionComponent({
     } else if (currentProps.phase === "in") {
       // Ease-in: depixelation starts slow then accelerates to sharp
       const progress = easeIn(rawProgress);
-      blockSize = Math.round(currentProps.maxBlockSize - (currentProps.maxBlockSize - 1) * progress);
+      blockSize = Math.round(
+        currentProps.maxBlockSize - (currentProps.maxBlockSize - 1) * progress,
+      );
     } else {
       return;
     }

@@ -71,7 +71,10 @@ function humanizeModelPath(raw: string) {
   // Capitalize each word, preserving existing uppercase and numbers
   name = name.replace(/\b([a-z])/g, (_: string, c: string) => c.toUpperCase());
   // Uppercase common size suffixes: "32b" → "32B", "0.6b" → "0.6B"
-  name = name.replace(/(\d+(?:\.\d+)?)\s*b\b/gi, (_: string, n: string) => `${n}B`);
+  name = name.replace(
+    /(\d+(?:\.\d+)?)\s*b\b/gi,
+    (_: string, n: string) => `${n}B`,
+  );
   return name.trim();
 }
 
@@ -130,7 +133,9 @@ export default function BenchmarkDashboardComponent({
   useEffect(() => {
     loadData();
     PrismService.getFavorites("model")
-      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
+      .then((favs: Array<{ key: string }>) =>
+        setFavoriteKeys(favs.map((f) => f.key)),
+      )
       .catch(() => {});
   }, [loadData]);
 

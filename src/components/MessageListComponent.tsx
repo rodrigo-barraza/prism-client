@@ -87,7 +87,10 @@ function parseTaskNotification(content: string | undefined | null) {
 /**
  * Splits a raw message content string into a system context prefix (if any) and the clean user message.
  */
-function splitRawContent(raw: string | undefined | null): { prefix: string; rest: string } {
+function splitRawContent(raw: string | undefined | null): {
+  prefix: string;
+  rest: string;
+} {
   if (!raw) return { prefix: "", rest: "" };
   if (raw.startsWith("[System Context]")) {
     const splitIdx = raw.indexOf("\n\n[User Message]\n");
@@ -187,7 +190,11 @@ interface ThinkingBlockProps {
   children?: React.ReactNode;
 }
 
-function ThinkingBlock({ thinking, isStreaming, children }: ThinkingBlockProps) {
+function ThinkingBlock({
+  thinking,
+  isStreaming,
+  children,
+}: ThinkingBlockProps) {
   // User can manually toggle after streaming has finished
   const [manualOpen, setManualOpen] = useState(false);
   // User can temporarily close during streaming
@@ -243,8 +250,6 @@ function ThinkingBlock({ thinking, isStreaming, children }: ThinkingBlockProps) 
   );
 }
 
-
-
 /**
  * Prepare messages for display — filters out tool/system messages
  * and merges tool results into the preceding assistant's toolCalls.
@@ -252,19 +257,30 @@ function ThinkingBlock({ thinking, isStreaming, children }: ThinkingBlockProps) 
  * so they render in-place as ghostly apparitions.
  * Use this in both /chat and /admin/chat for consistency.
  */
-export function prepareDisplayMessages(rawMessages: Message[] | undefined | null): Message[] {
+export function prepareDisplayMessages(
+  rawMessages: Message[] | undefined | null,
+): Message[] {
   if (!rawMessages || rawMessages.length === 0) return [];
 
   // Normalize any snake_case tool_calls to camelCase toolCalls
   const normalizedMessages = rawMessages.map((message) => {
     if ((message as any).tool_calls && !message.toolCalls) {
-      const normalizedCalls = (message as any).tool_calls.map((toolCall: any) => ({
-        id: toolCall.id,
-        name: toolCall.name || toolCall.function?.name,
-        args: typeof toolCall.args === "string" ? JSON.parse(toolCall.args) : (toolCall.args || (typeof toolCall.function?.arguments === "string" ? JSON.parse(toolCall.function.arguments) : toolCall.function?.arguments) || {}),
-        result: toolCall.result,
-        status: toolCall.status,
-      }));
+      const normalizedCalls = (message as any).tool_calls.map(
+        (toolCall: any) => ({
+          id: toolCall.id,
+          name: toolCall.name || toolCall.function?.name,
+          args:
+            typeof toolCall.args === "string"
+              ? JSON.parse(toolCall.args)
+              : toolCall.args ||
+                (typeof toolCall.function?.arguments === "string"
+                  ? JSON.parse(toolCall.function.arguments)
+                  : toolCall.function?.arguments) ||
+                {},
+          result: toolCall.result,
+          status: toolCall.status,
+        }),
+      );
       return { ...message, toolCalls: normalizedCalls };
     }
     return message;
@@ -272,7 +288,12 @@ export function prepareDisplayMessages(rawMessages: Message[] | undefined | null
 
   console.debug(
     `[prepareDisplayMessages] input: ${normalizedMessages.length} messages`,
-    normalizedMessages.map((message, index) => `  [${index}] role=${message.role} content=${(message.content || '').length}ch toolCalls=${message.toolCalls?.length || 0} images=${message.images?.length || 0} audio=${!!message.audio} error=${!!message.error}`).join('\n'),
+    normalizedMessages
+      .map(
+        (message, index) =>
+          `  [${index}] role=${message.role} content=${(message.content || "").length}ch toolCalls=${message.toolCalls?.length || 0} images=${message.images?.length || 0} audio=${!!message.audio} error=${!!message.error}`,
+      )
+      .join("\n"),
   );
 
   // First pass: collect tool results keyed by tool_call_id
@@ -287,41 +308,45 @@ export function prepareDisplayMessages(rawMessages: Message[] | undefined | null
 
   // Second pass: filter and enrich
   const filtered = normalizedMessages
-    .filter(
-      (message, index) => {
-        // Filter out tool role messages (they're merged into toolCalls)
-        if (message.role === "tool") return false;
-        // Filter out system messages
-        if (message.role === "system") return false;
-        // Filter out empty assistant messages with no useful content
-        const isEmptyAssistant =
-          message.role === "assistant" &&
-          !message.content?.trim() &&
-          !message.toolCalls?.length &&
-          !message.images?.length &&
-          !message.audio &&
-          !message.error;
-        if (isEmptyAssistant) {
-          console.debug(
-            `[prepareDisplayMessages] ⚠️ FILTERING OUT empty assistant msg [${index}]:`,
-            `content="${(message.content || '').slice(0, 50)}" toolCalls=${message.toolCalls?.length || 0}`,
-            `images=${message.images?.length || 0} audio=${!!message.audio} error=${!!message.error}`,
-          );
-        }
-        return !isEmptyAssistant;
-      },
-    )
+    .filter((message, index) => {
+      // Filter out tool role messages (they're merged into toolCalls)
+      if (message.role === "tool") return false;
+      // Filter out system messages
+      if (message.role === "system") return false;
+      // Filter out empty assistant messages with no useful content
+      const isEmptyAssistant =
+        message.role === "assistant" &&
+        !message.content?.trim() &&
+        !message.toolCalls?.length &&
+        !message.images?.length &&
+        !message.audio &&
+        !message.error;
+      if (isEmptyAssistant) {
+        console.debug(
+          `[prepareDisplayMessages] ⚠️ FILTERING OUT empty assistant msg [${index}]:`,
+          `content="${(message.content || "").slice(0, 50)}" toolCalls=${message.toolCalls?.length || 0}`,
+          `images=${message.images?.length || 0} audio=${!!message.audio} error=${!!message.error}`,
+        );
+      }
+      return !isEmptyAssistant;
+    })
     .map((message) => {
       // Merge tool results into toolCalls
-      if (message.toolCalls && message.toolCalls.length > 0 && Object.keys(toolResults).length > 0) {
-        const enrichedCalls = message.toolCalls.map((toolCall: ToolCallEvent) => ({
-          ...toolCall,
-          result:
-            toolCall.result ||
-            toolResults[toolCall.id] ||
-            toolResults[(toolCall as any).tool_call_id || ""] ||
-            null,
-        }));
+      if (
+        message.toolCalls &&
+        message.toolCalls.length > 0 &&
+        Object.keys(toolResults).length > 0
+      ) {
+        const enrichedCalls = message.toolCalls.map(
+          (toolCall: ToolCallEvent) => ({
+            ...toolCall,
+            result:
+              toolCall.result ||
+              toolResults[toolCall.id] ||
+              toolResults[(toolCall as any).tool_call_id || ""] ||
+              null,
+          }),
+        );
         return { ...message, toolCalls: enrichedCalls };
       }
       return message;
@@ -330,8 +355,8 @@ export function prepareDisplayMessages(rawMessages: Message[] | undefined | null
   console.debug(
     `[prepareDisplayMessages] output: ${filtered.length} messages (filtered ${normalizedMessages.length - filtered.length})`,
     filtered.length === 0 && normalizedMessages.length > 0
-      ? '⚠️ ALL MESSAGES FILTERED — this will empty the chat!'
-      : '',
+      ? "⚠️ ALL MESSAGES FILTERED — this will empty the chat!"
+      : "",
   );
 
   return filtered;
@@ -391,7 +416,11 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
             Open ↗
           </a>
         </div>
-        <iframe src={sourceUrl} className={styles.pdfFrame} title="PDF preview" />
+        <iframe
+          src={sourceUrl}
+          className={styles.pdfFrame}
+          title="PDF preview"
+        />
       </div>
     );
   }
@@ -449,8 +478,7 @@ function EditableMessage({
     if (editing && textareaRef.current) {
       const element = textareaRef.current;
       element.style.height = "auto";
-      element.style.height =
-        Math.min(element.scrollHeight, 600) + "px";
+      element.style.height = Math.min(element.scrollHeight, 600) + "px";
     }
   }, [editing]);
 
@@ -641,8 +669,13 @@ export default function MessageList({
 }: MessageListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [localLightboxSrc, setLocalLightboxSrc] = useState<string | null>(null);
-  const knownPathsSet = useMemo(() => knownPaths ? new Set(knownPaths) : null, [knownPaths]);
-  const [expandedDeletedSet, setExpandedDeletedSet] = useState<Set<number>>(new Set());
+  const knownPathsSet = useMemo(
+    () => (knownPaths ? new Set(knownPaths) : null),
+    [knownPaths],
+  );
+  const [expandedDeletedSet, setExpandedDeletedSet] = useState<Set<number>>(
+    new Set(),
+  );
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
   const containerReference = useRef<HTMLDivElement | null>(null);
@@ -660,10 +693,13 @@ export default function MessageList({
         backgroundColorValue = computedStyle.backgroundColor;
 
         const redGreenBlueMatch = backgroundColorValue.match(
-          /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/
+          /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/,
         );
         if (redGreenBlueMatch) {
-          const alphaValue = redGreenBlueMatch[4] !== undefined ? parseFloat(redGreenBlueMatch[4]) : 1;
+          const alphaValue =
+            redGreenBlueMatch[4] !== undefined
+              ? parseFloat(redGreenBlueMatch[4])
+              : 1;
           if (alphaValue > 0) {
             break;
           }
@@ -672,7 +708,7 @@ export default function MessageList({
       }
 
       const redGreenBlueMatch = backgroundColorValue.match(
-        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/
+        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/,
       );
       if (!redGreenBlueMatch) return;
 
@@ -696,17 +732,19 @@ export default function MessageList({
 
       messagesListElement.style.setProperty(
         "--raw-prefix-contrast-color",
-        isLightBackground ? "rgba(0, 0, 0, 0.87)" : "rgba(255, 255, 255, 0.92)"
+        isLightBackground ? "rgba(0, 0, 0, 0.87)" : "rgba(255, 255, 255, 0.92)",
       );
       messagesListElement.style.setProperty(
         "--raw-prefix-contrast-opacity",
-        isLightBackground ? "0.55" : "0.6"
+        isLightBackground ? "0.55" : "0.6",
       );
     };
 
     computeAndApplyContrastColor();
 
-    const listMutationObserver = new MutationObserver(computeAndApplyContrastColor);
+    const listMutationObserver = new MutationObserver(
+      computeAndApplyContrastColor,
+    );
     listMutationObserver.observe(messagesListElement, {
       attributes: true,
       attributeFilter: ["style", "class"],
@@ -717,10 +755,13 @@ export default function MessageList({
       const computedStyle = getComputedStyle(closestAncestorElement);
       const ancestorBackgroundColorValue = computedStyle.backgroundColor;
       const redGreenBlueMatch = ancestorBackgroundColorValue.match(
-        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/
+        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/,
       );
       if (redGreenBlueMatch) {
-        const alphaValue = redGreenBlueMatch[4] !== undefined ? parseFloat(redGreenBlueMatch[4]) : 1;
+        const alphaValue =
+          redGreenBlueMatch[4] !== undefined
+            ? parseFloat(redGreenBlueMatch[4])
+            : 1;
         if (alphaValue > 0) {
           break;
         }
@@ -730,14 +771,18 @@ export default function MessageList({
 
     let ancestorMutationObserver: MutationObserver | null = null;
     if (closestAncestorElement) {
-      ancestorMutationObserver = new MutationObserver(computeAndApplyContrastColor);
+      ancestorMutationObserver = new MutationObserver(
+        computeAndApplyContrastColor,
+      );
       ancestorMutationObserver.observe(closestAncestorElement, {
         attributes: true,
         attributeFilter: ["style", "class"],
       });
     }
 
-    const documentMutationObserver = new MutationObserver(computeAndApplyContrastColor);
+    const documentMutationObserver = new MutationObserver(
+      computeAndApplyContrastColor,
+    );
     documentMutationObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -784,8 +829,12 @@ export default function MessageList({
     let cleanVal = content || "";
     let rawVal = rawContent || content || "";
 
-    const contentIsDirty = cleanVal.startsWith("[System Context]") || cleanVal.startsWith("[System Context - Local Time:");
-    const rawIsDirty = rawVal.startsWith("[System Context]") || rawVal.startsWith("[System Context - Local Time:");
+    const contentIsDirty =
+      cleanVal.startsWith("[System Context]") ||
+      cleanVal.startsWith("[System Context - Local Time:");
+    const rawIsDirty =
+      rawVal.startsWith("[System Context]") ||
+      rawVal.startsWith("[System Context - Local Time:");
 
     if (contentIsDirty && !rawIsDirty) {
       cleanVal = rawVal;
@@ -812,7 +861,7 @@ export default function MessageList({
         (m.content?.startsWith("[System Context]") ||
           m.rawContent?.startsWith("[System Context]") ||
           m.content?.startsWith("[System Context - Local Time:") ||
-          m.rawContent?.startsWith("[System Context - Local Time:"))
+          m.rawContent?.startsWith("[System Context - Local Time:")),
     );
   }, [messages]);
 
@@ -1025,7 +1074,8 @@ export default function MessageList({
       meta[i] = {
         isContinuation: prevIsAssistant && !swapBefore[i],
         isLastInGroup:
-          !nextIsAssistant || (i < displayMessages.length - 1 && swapBefore[i + 1]),
+          !nextIsAssistant ||
+          (i < displayMessages.length - 1 && swapBefore[i + 1]),
       };
     }
     return meta;
@@ -1033,12 +1083,12 @@ export default function MessageList({
 
   return (
     <div ref={containerReference} className={styles.messagesList}>
-
       {/* -- Sticky pinned user message -- */}
       <div
         className={styles.stickyUserMsg}
         onMouseEnter={(e: React.MouseEvent) =>
-          stickyUserMsg && SoundService.playHoverButton({ event: e.nativeEvent })
+          stickyUserMsg &&
+          SoundService.playHoverButton({ event: e.nativeEvent })
         }
         onClick={(e: React.MouseEvent) => {
           if (stickyUserMsg) {
@@ -1208,7 +1258,8 @@ export default function MessageList({
                             <BadgeComponent
                               type="dateTime"
                               date={
-                                displayMessages[groupIndices[groupCount - 1]].timestamp
+                                displayMessages[groupIndices[groupCount - 1]]
+                                  .timestamp
                               }
                             />
                           </>
@@ -1350,13 +1401,19 @@ export default function MessageList({
                                     <div className={styles.imagePreviewRow}>
                                       {gMsg.images.map(
                                         (rawUrl: string, j: number) => {
-                                          const resolvedUrl = PrismService.getFileUrl(rawUrl);
+                                          const resolvedUrl =
+                                            PrismService.getFileUrl(rawUrl);
                                           const cat = getMimeCategory(rawUrl);
                                           let clickHandler;
                                           if (cat === "image")
-                                            clickHandler = () => handleImageClick(resolvedUrl);
-                                          else if (cat === "pdf" || cat === "text")
-                                            clickHandler = () => onDocClick?.(resolvedUrl);
+                                            clickHandler = () =>
+                                              handleImageClick(resolvedUrl);
+                                          else if (
+                                            cat === "pdf" ||
+                                            cat === "text"
+                                          )
+                                            clickHandler = () =>
+                                              onDocClick?.(resolvedUrl);
                                           return (
                                             <MediaPreview
                                               key={j}
@@ -1364,7 +1421,7 @@ export default function MessageList({
                                               onClick={clickHandler}
                                             />
                                           );
-                                        }
+                                        },
                                       )}
                                     </div>
                                   )}
@@ -1441,9 +1498,14 @@ export default function MessageList({
                       <span className={styles.scheduleFiredLine} />
                       <div className={styles.scheduleFiredDetails}>
                         {message.timestamp && (
-                          <BadgeComponent type="dateTime" date={message.timestamp} />
+                          <BadgeComponent
+                            type="dateTime"
+                            date={message.timestamp}
+                          />
                         )}
-                        <span className={styles.scheduleFiredPrompt}>{prompt}</span>
+                        <span className={styles.scheduleFiredPrompt}>
+                          {prompt}
+                        </span>
                       </div>
                     </div>
                   );
@@ -1591,7 +1653,7 @@ export default function MessageList({
                                 />
                               );
                             }
-                            if(
+                            if (
                               seg.type === "tools" &&
                               message.toolCalls &&
                               message.toolCalls.length > 0
@@ -1622,8 +1684,7 @@ export default function MessageList({
                                 ]?.trim();
                               const isLastTextSeg = !!opts.isLastText;
                               const showCursor =
-                                !opts.insideThinking &&
-                                !opts.suppressCursor;
+                                !opts.insideThinking && !opts.suppressCursor;
                               if (fragmentText) {
                                 return (
                                   <MarkdownContent
@@ -1724,7 +1785,8 @@ export default function MessageList({
                                 origIdx: index,
                               }))
                               .filter(
-                                ({ seg }: { seg: ContentSegment }) => seg.type !== "thinking",
+                                ({ seg }: { seg: ContentSegment }) =>
+                                  seg.type !== "thinking",
                               );
                             // ThinkingBlock is streaming when thinking is the current
                             // activity (last segment is thinking)
@@ -1760,7 +1822,13 @@ export default function MessageList({
                                 )}
                                 {/* Tools and text segments render outside in original order */}
                                 {visibleSegs.map(
-                                  ({ seg, origIdx }: { seg: ContentSegment; origIdx: number }, vi: number) => {
+                                  (
+                                    {
+                                      seg,
+                                      origIdx,
+                                    }: { seg: ContentSegment; origIdx: number },
+                                    vi: number,
+                                  ) => {
                                     const isLastText =
                                       vi === lastVisibleTextIdx;
                                     return (
@@ -1846,18 +1914,24 @@ export default function MessageList({
                             />
                           ) : message.role === "user" && showRaw ? (
                             (() => {
-                              const { prefix, rest } = splitRawContent(message.content);
+                              const { prefix, rest } = splitRawContent(
+                                message.content,
+                              );
                               if (prefix) {
                                 return (
                                   <div className={styles.text}>
-                                    <div className={styles.rawPrefix}>{prefix}</div>
+                                    <div className={styles.rawPrefix}>
+                                      {prefix}
+                                    </div>
                                     <MarkdownContent
                                       content={rest}
                                       className={
                                         isStreaming ? styles.streamingText : ""
                                       }
                                     >
-                                      <StreamingCursorComponent active={isStreaming} />
+                                      <StreamingCursorComponent
+                                        active={isStreaming}
+                                      />
                                     </MarkdownContent>
                                   </div>
                                 );
@@ -1869,7 +1943,9 @@ export default function MessageList({
                                     isStreaming ? styles.streamingText : ""
                                   }
                                 >
-                                  <StreamingCursorComponent active={isStreaming} />
+                                  <StreamingCursorComponent
+                                    active={isStreaming}
+                                  />
                                 </MarkdownContent>
                               );
                             })()
@@ -1896,7 +1972,8 @@ export default function MessageList({
                             const cat = getMimeCategory(rawUrl);
                             let clickHandler;
                             if (cat === "image")
-                              clickHandler = () => handleImageClick(resolvedUrl);
+                              clickHandler = () =>
+                                handleImageClick(resolvedUrl);
                             else if (cat === "pdf" || cat === "text")
                               clickHandler = () => onDocClick?.(resolvedUrl);
                             return (
@@ -2056,7 +2133,8 @@ export default function MessageList({
                                   inLabel = `in (${parts.join(" · ")})`;
                                 }
                                 const reasoning =
-                                  (message.usage as any).reasoningOutputTokens || 0;
+                                  (message.usage as any)
+                                    .reasoningOutputTokens || 0;
                                 let outLabel = "out";
                                 if (reasoning > 0) {
                                   outLabel = `out (${reasoning.toLocaleString()} reasoning)`;

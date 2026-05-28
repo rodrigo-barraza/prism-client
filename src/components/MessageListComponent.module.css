@@ -274,9 +274,6 @@
   }
 }
 
-
-
-
 /* ── Images / media ── */
 .imagePreviewRow {
   display: flex;
@@ -719,7 +716,11 @@
     transparent
   );
   border: 1px solid
-    color-mix(in srgb, var(--color-danger, var(--color-danger)) 25%, transparent);
+    color-mix(
+      in srgb,
+      var(--color-danger, var(--color-danger)) 25%,
+      transparent
+    );
   border-radius: 4px;
   line-height: 1;
   flex-shrink: 0;
@@ -727,7 +728,8 @@
 
 /* ── Grouped deleted items (shown when expanded) ── */
 .deletedGroupItem {
-  border-top: 1px solid color-mix(in srgb, var(--calculated-border-color) 40%, transparent);
+  border-top: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 40%, transparent);
   padding: 4px 0;
 
   &:last-child {
@@ -808,11 +810,19 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-surface));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 8%,
+    var(--background-surface)
+  );
   backdrop-filter: blur(12px) saturate(1.2);
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   border: 1px solid
-    color-mix(in srgb, var(--accent-primary) 25%, var(--calculated-border-color));
+    color-mix(
+      in srgb,
+      var(--accent-primary) 25%,
+      var(--calculated-border-color)
+    );
   border-top: none;
   border-left: 3px solid var(--accent-primary);
   border-radius: 0 0 6px 0;
@@ -821,7 +831,8 @@
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.15),
     0 1px 3px rgba(0, 0, 0, 0.1),
-    inset 0 0 12px -6px color-mix(in srgb, var(--accent-primary) 15%, transparent);
+    inset 0 0 12px -6px
+      color-mix(in srgb, var(--accent-primary) 15%, transparent);
 
   &:hover {
     background: var(--accent-primary);
@@ -929,6 +940,3 @@
   word-break: break-word;
   margin-block-end: 4px;
 }
-
-
-

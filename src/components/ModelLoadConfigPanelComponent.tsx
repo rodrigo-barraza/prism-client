@@ -122,7 +122,9 @@ export default function ModelLoadConfigPanel({
       }
     }, 100);
 
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [
     service,
     modelKey,
@@ -406,7 +408,9 @@ export default function ModelLoadConfigPanel({
         <input
           type="checkbox"
           className={styles.rememberCheckbox}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRememberSettings(e.target.checked)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setRememberSettings(e.target.checked)
+          }
         />
         <span className={styles.rememberLabel}>
           Remember settings for <strong>{modelKey}</strong>

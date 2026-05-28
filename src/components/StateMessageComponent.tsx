@@ -6,7 +6,9 @@ interface LoadingMessageProps {
   message?: string | null;
 }
 
-export function LoadingMessage({ message = "Loading..." }: LoadingMessageProps) {
+export function LoadingMessage({
+  message = "Loading...",
+}: LoadingMessageProps) {
   return (
     <div className={styles.container}>
       <LoadingIndicatorComponent size="small" color="inherit" />
@@ -19,7 +21,9 @@ interface EmptyMessageProps {
   message?: string | null;
 }
 
-export function EmptyMessage({ message = "No records found." }: EmptyMessageProps) {
+export function EmptyMessage({
+  message = "No records found.",
+}: EmptyMessageProps) {
   return (
     <div className={styles.container}>
       <span>{message}</span>

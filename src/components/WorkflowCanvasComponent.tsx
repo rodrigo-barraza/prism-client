@@ -1,6 +1,9 @@
 "use client";
 
-import { WorkflowNode as IWorkflowNode, WorkflowConnection } from "../types/types";
+import {
+  WorkflowNode as IWorkflowNode,
+  WorkflowConnection,
+} from "../types/types";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { X, Eye, EyeOff, PanelLeftClose, PanelLeft } from "lucide-react";
 import WorkflowNode from "./WorkflowNodeComponent";
@@ -45,11 +48,20 @@ export default function WorkflowCanvas({
   connections: WorkflowConnection[];
   onUpdateNodePosition: (nodeId: string, pos: { x: number; y: number }) => void;
   onDeleteNode: (nodeId: string) => void;
-  onAddConnection: (conn: { sourceNodeId: string; sourceModality: string; targetNodeId: string; targetModality: string }) => void;
+  onAddConnection: (conn: {
+    sourceNodeId: string;
+    sourceModality: string;
+    targetNodeId: string;
+    targetModality: string;
+  }) => void;
   onDeleteConnection: (connId: string) => void;
   onUpdateNodeContent?: (nodeId: string, content: string) => void;
   onUpdateNodeConfig?: (nodeId: string, key: string, value: unknown) => void;
-  onUpdateFileInput?: (nodeId: string, content: string | ArrayBuffer | null, mimeType: string | null) => void;
+  onUpdateFileInput?: (
+    nodeId: string,
+    content: string | ArrayBuffer | null,
+    mimeType: string | null,
+  ) => void;
   onDuplicateNode?: (node: IWorkflowNode) => void;
   nodeStatuses?: Record<string, string>;
   nodeResults?: Record<string, unknown>;
@@ -64,9 +76,20 @@ export default function WorkflowCanvas({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const clipboardRef = useRef<IWorkflowNode | null>(null);
-  const [dragging, setDragging] = useState<{nodeId: string, offsetX: number, offsetY: number} | null>(null);
-  const [connecting, setConnecting] = useState<{sourceNodeId: string, sourceModality: string, sourceIndex: number} | null>(null);
-  const [connectingMouse, setConnectingMouse] = useState<{x: number, y: number} | null>(null);
+  const [dragging, setDragging] = useState<{
+    nodeId: string;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const [connecting, setConnecting] = useState<{
+    sourceNodeId: string;
+    sourceModality: string;
+    sourceIndex: number;
+  } | null>(null);
+  const [connectingMouse, setConnectingMouse] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [expandedInputs, setExpandedInputs] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set<string>();
     try {
@@ -97,8 +120,14 @@ export default function WorkflowCanvas({
     return saved ? saved.zoom : 1;
   });
   const [isPanning, setIsPanning] = useState(false);
-  const panStart = useRef<{ x: number, y: number, panX: number, panY: number }>({ x: 0, y: 0, panX: 0, panY: 0 });
-  const [hoveredPort, setHoveredPort] = useState<{ nodeId: string; type: "input" | "output"; modality: string } | null>(null);
+  const panStart = useRef<{ x: number; y: number; panX: number; panY: number }>(
+    { x: 0, y: 0, panX: 0, panY: 0 },
+  );
+  const [hoveredPort, setHoveredPort] = useState<{
+    nodeId: string;
+    type: "input" | "output";
+    modality: string;
+  } | null>(null);
   const prevWorkflowIdRef = useRef<string | undefined>(activeWorkflowId);
 
   // Save current view whenever pan/zoom changes
@@ -159,7 +188,11 @@ export default function WorkflowCanvas({
   );
 
   // -- Touch support --
-  const touchRef = useRef<{ type: string | null, lastDist: number, nodeId: string | null }>({ type: null, lastDist: 0, nodeId: null });
+  const touchRef = useRef<{
+    type: string | null;
+    lastDist: number;
+    nodeId: string | null;
+  }>({ type: null, lastDist: 0, nodeId: null });
 
   const getTouchDist = (touches: TouchList) => {
     const dx = touches[0].clientX - touches[1].clientX;
@@ -199,7 +232,8 @@ export default function WorkflowCanvas({
       if (e.button !== 0) return;
       const element = e.target as HTMLElement;
       const isContainerOrSvg =
-        element === containerRef.current || element === (svgRef.current as unknown as HTMLElement);
+        element === containerRef.current ||
+        element === (svgRef.current as unknown as HTMLElement);
       const isGridBg =
         element.classList?.contains?.(styles.starfield) ||
         element.tagName === "CANVAS";
@@ -209,8 +243,7 @@ export default function WorkflowCanvas({
       if (
         isContainerOrSvg ||
         isGridBg ||
-        (!isInsideInteractive &&
-          containerRef.current?.contains(element))
+        (!isInsideInteractive && containerRef.current?.contains(element))
       ) {
         setIsPanning(true);
         panStart.current = {
@@ -290,7 +323,8 @@ export default function WorkflowCanvas({
 
     collisionTickRef.current = () => {
       const currentNodes = nodesRef.current;
-      const dragId = (draggingRef.current as {nodeId?: string})?.nodeId || null;
+      const dragId =
+        (draggingRef.current as { nodeId?: string })?.nodeId || null;
       const updates: Record<string, any> = {};
 
       for (let a = 0; a < currentNodes.length; a++) {
@@ -319,18 +353,18 @@ export default function WorkflowCanvas({
               const direction = bCx >= aCx ? 1 : -1;
               if (aIsDragged) {
                 if (!updates[nB.id])
-                  updates[nB.id] = { ...(nB.position || {x:0, y:0}) };
+                  updates[nB.id] = { ...(nB.position || { x: 0, y: 0 }) };
                 updates[nB.id].x += direction * push;
               } else if (bIsDragged) {
                 if (!updates[nA.id])
-                  updates[nA.id] = { ...(nA.position || {x:0, y:0}) };
+                  updates[nA.id] = { ...(nA.position || { x: 0, y: 0 }) };
                 updates[nA.id].x -= direction * push;
               } else {
                 const half = push / 2;
                 if (!updates[nA.id])
-                  updates[nA.id] = { ...(nA.position || {x:0, y:0}) };
+                  updates[nA.id] = { ...(nA.position || { x: 0, y: 0 }) };
                 if (!updates[nB.id])
-                  updates[nB.id] = { ...(nB.position || {x:0, y:0}) };
+                  updates[nB.id] = { ...(nB.position || { x: 0, y: 0 }) };
                 updates[nA.id].x -= direction * half;
                 updates[nB.id].x += direction * half;
               }
@@ -339,18 +373,18 @@ export default function WorkflowCanvas({
               const direction = bCy >= aCy ? 1 : -1;
               if (aIsDragged) {
                 if (!updates[nB.id])
-                  updates[nB.id] = { ...(nB.position || {x:0, y:0}) };
+                  updates[nB.id] = { ...(nB.position || { x: 0, y: 0 }) };
                 updates[nB.id].y += direction * push;
               } else if (bIsDragged) {
                 if (!updates[nA.id])
-                  updates[nA.id] = { ...(nA.position || {x:0, y:0}) };
+                  updates[nA.id] = { ...(nA.position || { x: 0, y: 0 }) };
                 updates[nA.id].y -= direction * push;
               } else {
                 const half = push / 2;
                 if (!updates[nA.id])
-                  updates[nA.id] = { ...(nA.position || {x:0, y:0}) };
+                  updates[nA.id] = { ...(nA.position || { x: 0, y: 0 }) };
                 if (!updates[nB.id])
-                  updates[nB.id] = { ...(nB.position || {x:0, y:0}) };
+                  updates[nB.id] = { ...(nB.position || { x: 0, y: 0 }) };
                 updates[nA.id].y -= direction * half;
                 updates[nB.id].y += direction * half;
               }
@@ -367,15 +401,21 @@ export default function WorkflowCanvas({
       // Keep running while dragging, or until nodes fully settle
       if (draggingRef.current) {
         settleCountRef.current = 10; // buffer frames after drag ends
-        rafRef.current = requestAnimationFrame(collisionTickRef.current as FrameRequestCallback);
+        rafRef.current = requestAnimationFrame(
+          collisionTickRef.current as FrameRequestCallback,
+        );
       } else if (hasUpdates) {
         // Still have overlaps — keep going, reset buffer
         settleCountRef.current = 10;
-        rafRef.current = requestAnimationFrame(collisionTickRef.current as FrameRequestCallback);
+        rafRef.current = requestAnimationFrame(
+          collisionTickRef.current as FrameRequestCallback,
+        );
       } else if (settleCountRef.current > 0) {
         // No overlaps this frame, but run a few more to catch settling
         settleCountRef.current--;
-        rafRef.current = requestAnimationFrame(collisionTickRef.current as FrameRequestCallback);
+        rafRef.current = requestAnimationFrame(
+          collisionTickRef.current as FrameRequestCallback,
+        );
       } else {
         rafRef.current = null;
       }
@@ -390,7 +430,9 @@ export default function WorkflowCanvas({
   const startCollisionLoop = useCallback((frames = 30) => {
     if (!rafRef.current && collisionTickRef.current) {
       settleCountRef.current = frames;
-      rafRef.current = requestAnimationFrame(collisionTickRef.current as FrameRequestCallback);
+      rafRef.current = requestAnimationFrame(
+        collisionTickRef.current as FrameRequestCallback,
+      );
     }
   }, []);
 
@@ -582,7 +624,11 @@ export default function WorkflowCanvas({
     const handleKeyDown = (e: KeyboardEvent) => {
       // Skip when typing in inputs or textareas
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable)
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        (e.target as HTMLElement)?.isContentEditable
+      )
         return;
 
       if ((e.ctrlKey || e.metaKey) && e.key === "c") {
@@ -632,13 +678,15 @@ export default function WorkflowCanvas({
       if (!connecting) return;
 
       if (
-        getBaseModality(connecting.sourceModality) !==
-        getBaseModality(modality)
+        getBaseModality(connecting.sourceModality) !== getBaseModality(modality)
       )
         return;
       if (connecting.sourceNodeId === nodeId) return;
 
-      const existingConn = connections.find((c: WorkflowConnection) => c.targetNodeId === nodeId && c.targetModality === modality);
+      const existingConn = connections.find(
+        (c: WorkflowConnection) =>
+          c.targetNodeId === nodeId && c.targetModality === modality,
+      );
       if (existingConn) return;
 
       onAddConnection({
@@ -722,7 +770,8 @@ export default function WorkflowCanvas({
 
   const allExpanded =
     nodes.length > 0 &&
-    nodes.filter((n: IWorkflowNode) => isNodeExpanded(n)).length > nodes.length / 2;
+    nodes.filter((n: IWorkflowNode) => isNodeExpanded(n)).length >
+      nodes.length / 2;
 
   // Compute the vertical offset for a node's ports (used by edge routing)
   const getExpandedOffset = useCallback(
@@ -741,8 +790,12 @@ export default function WorkflowCanvas({
 
   // Render edges
   const renderConnection = (conn: WorkflowConnection) => {
-    const sourceNode = nodes.find((n: IWorkflowNode) => n.id === conn.sourceNodeId);
-    const targetNode = nodes.find((n: IWorkflowNode) => n.id === conn.targetNodeId);
+    const sourceNode = nodes.find(
+      (n: IWorkflowNode) => n.id === conn.sourceNodeId,
+    );
+    const targetNode = nodes.find(
+      (n: IWorkflowNode) => n.id === conn.targetNodeId,
+    );
     if (!sourceNode || !targetNode) return null;
 
     const sourceIndex = (sourceNode.outputTypes || []).indexOf(
@@ -768,7 +821,8 @@ export default function WorkflowCanvas({
       targetIndex,
       targetOffset,
     );
-    const color = (MODALITY_COLORS as Record<string, any>)[conn.sourceModality] || "#888";
+    const color =
+      (MODALITY_COLORS as Record<string, any>)[conn.sourceModality] || "#888";
 
     const sourceStatus = nodeStatuses[conn.sourceNodeId];
     const isRunning = sourceStatus === "running";
@@ -837,9 +891,7 @@ export default function WorkflowCanvas({
   // Render the "in-progress" edge line
   const renderConnectingLine = () => {
     if (!connecting || !connectingMouse) return null;
-    const sourceNode = nodes.find(
-      (n: any) => n.id === connecting.sourceNodeId,
-    );
+    const sourceNode = nodes.find((n: any) => n.id === connecting.sourceNodeId);
     if (!sourceNode) return null;
 
     const sourceIndex = (sourceNode.outputTypes || []).indexOf(
@@ -855,7 +907,8 @@ export default function WorkflowCanvas({
       srcOffset,
     );
     const color =
-      (MODALITY_COLORS as Record<string, any>)[connecting.sourceModality] || "#888";
+      (MODALITY_COLORS as Record<string, any>)[connecting.sourceModality] ||
+      "#888";
 
     return (
       <path

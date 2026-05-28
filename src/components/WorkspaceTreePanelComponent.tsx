@@ -12,7 +12,11 @@ import {
 import FileTypeIconComponent from "./FileTypeIconComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
-import type { WorkspaceTreeResponse, WorkspaceTreeNode, WorkspaceItem } from "../services/WorkspaceService";
+import type {
+  WorkspaceTreeResponse,
+  WorkspaceTreeNode,
+  WorkspaceItem,
+} from "../services/WorkspaceService";
 import { SearchInputComponent } from "@rodrigo-barraza/components-library";
 import styles from "./WorkspaceTreePanelComponent.module.css";
 
@@ -36,7 +40,9 @@ interface WorkspaceTreePanelProps {
   locked?: boolean;
   unavailableWorkspace?: string | null;
   hideHeader?: boolean;
-  onTreeStats?: (stats: { totalEntries: number; truncated: boolean } | null) => void;
+  onTreeStats?: (
+    stats: { totalEntries: number; truncated: boolean } | null,
+  ) => void;
 }
 
 // ─── Recursive Directory Tree Node ──────────────────────────
@@ -188,17 +194,20 @@ export default function WorkspaceTreePanelComponent({
 
   // ── Auto-expand root-level directories on initial load ──
   const autoExpandedRef = useRef<boolean>(false);
-  const autoExpandRoots = useCallback((tree: WorkspaceTreeNode[] | undefined) => {
-    if (autoExpandedRef.current || !tree?.length) return;
-    autoExpandedRef.current = true;
-    const set = expandedPathsRef.current;
-    for (const node of tree) {
-      if (node.type === "directory") {
-        set.add(node.name);
+  const autoExpandRoots = useCallback(
+    (tree: WorkspaceTreeNode[] | undefined) => {
+      if (autoExpandedRef.current || !tree?.length) return;
+      autoExpandedRef.current = true;
+      const set = expandedPathsRef.current;
+      for (const node of tree) {
+        if (node.type === "directory") {
+          set.add(node.name);
+        }
       }
-    }
-    setExpandedTick((t) => t + 1);
-  }, []);
+      setExpandedTick((t) => t + 1);
+    },
+    [],
+  );
 
   // ── Initial fetch (shows loading indicator) ──
   const fetchTree = useCallback(async () => {
@@ -242,7 +251,9 @@ export default function WorkspaceTreePanelComponent({
   }, [currentWorkspace?.path]);
 
   // Live-refresh: debounced silent re-fetch when workspaceTreeRefreshKey changes
-  const treeRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const treeRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   useEffect(() => {
     if (workspaceTreeRefreshKey === 0) return;
     if (treeRefreshTimerRef.current) clearTimeout(treeRefreshTimerRef.current);
@@ -260,7 +271,10 @@ export default function WorkspaceTreePanelComponent({
   useEffect(() => {
     if (!onTreeStats) return;
     if (treeData?.totalEntries !== undefined) {
-      onTreeStats({ totalEntries: treeData.totalEntries, truncated: !!treeData.truncated });
+      onTreeStats({
+        totalEntries: treeData.totalEntries,
+        truncated: !!treeData.truncated,
+      });
     } else {
       onTreeStats(null);
     }
@@ -311,16 +325,21 @@ export default function WorkspaceTreePanelComponent({
     const lowerQuery = searchQuery.trim().toLowerCase();
     const autoPaths = new Set<string>();
 
-    const process = (items: WorkspaceTreeNode[], currentParent: string): WorkspaceTreeNode[] => {
+    const process = (
+      items: WorkspaceTreeNode[],
+      currentParent: string,
+    ): WorkspaceTreeNode[] => {
       const result: WorkspaceTreeNode[] = [];
       for (const node of items) {
-        const nodePath = currentParent ? `${currentParent}/${node.name}` : node.name;
+        const nodePath = currentParent
+          ? `${currentParent}/${node.name}`
+          : node.name;
         const nameMatches = node.name.toLowerCase().includes(lowerQuery);
-        
+
         if (node.type === "directory" && node.children) {
           const filteredChildren = process(node.children, nodePath);
           const hasMatchingChildren = filteredChildren.length > 0;
-          
+
           if (nameMatches || hasMatchingChildren) {
             autoPaths.add(nodePath);
             result.push({
@@ -351,9 +370,7 @@ export default function WorkspaceTreePanelComponent({
         <div className={styles.headerWrapper} ref={switcherRef}>
           <div
             className={`${styles.header} ${hasMultiple ? styles.headerClickable : ""}`}
-            onClick={
-              hasMultiple ? () => setSwitcherOpen((v) => !v) : undefined
-            }
+            onClick={hasMultiple ? () => setSwitcherOpen((v) => !v) : undefined}
             role={hasMultiple ? "button" : undefined}
             tabIndex={hasMultiple ? 0 : undefined}
             title={
@@ -371,12 +388,13 @@ export default function WorkspaceTreePanelComponent({
                 className={`${styles.headerChevron} ${switcherOpen ? styles.headerChevronOpen : ""}`}
               />
             )}
-            {treeData?.totalEntries !== undefined && treeData.totalEntries > 0 && (
-              <span className={styles.headerCount}>
-                {treeData.totalEntries}
-                {treeData.truncated ? "+" : ""}
-              </span>
-            )}
+            {treeData?.totalEntries !== undefined &&
+              treeData.totalEntries > 0 && (
+                <span className={styles.headerCount}>
+                  {treeData.totalEntries}
+                  {treeData.truncated ? "+" : ""}
+                </span>
+              )}
           </div>
 
           {/* ── Workspace switcher dropdown ── */}
@@ -423,29 +441,29 @@ export default function WorkspaceTreePanelComponent({
         )}
 
         {treeLoading && <div className={styles.treeLoading}>Loading…</div>}
-        {!treeLoading &&
-          treeData?.tree &&
-          filteredTree.length > 0 && (
-            <div className={styles.treeRoot}>
-              {filteredTree.map((node: WorkspaceTreeNode) => (
-                <TreeNode
-                  key={node.name}
-                  node={node}
-                  expandedPaths={expandedPaths}
-                  expandedTick={expandedTick}
-                  onToggleExpand={onToggleExpand}
-                  onMentionFile={onMentionFile}
-                  onOpenFile={onOpenFile}
-                />
-              ))}
-            </div>
-          )}
+        {!treeLoading && treeData?.tree && filteredTree.length > 0 && (
+          <div className={styles.treeRoot}>
+            {filteredTree.map((node: WorkspaceTreeNode) => (
+              <TreeNode
+                key={node.name}
+                node={node}
+                expandedPaths={expandedPaths}
+                expandedTick={expandedTick}
+                onToggleExpand={onToggleExpand}
+                onMentionFile={onMentionFile}
+                onOpenFile={onOpenFile}
+              />
+            ))}
+          </div>
+        )}
         {!treeLoading &&
           treeData?.tree &&
           treeData.tree.length > 0 &&
           filteredTree.length === 0 && (
             <div className={styles["search-no-results-state"]}>
-              <span className={styles["search-no-results-title"]}>No matching files</span>
+              <span className={styles["search-no-results-title"]}>
+                No matching files
+              </span>
               <span className={styles["search-no-results-subtitle"]}>
                 Try adjusting your filter query.
               </span>

@@ -7,7 +7,9 @@ import ProviderLogo, {
   resolveProviderLabel,
 } from "./ProviderLogosComponent";
 import { MODALITY_FILTERS, TOOL_FILTERS } from "./SidebarFilterComponent";
-import FilterDropdownComponent, { type FilterGroup } from "./FilterDropdownComponent";
+import FilterDropdownComponent, {
+  type FilterGroup,
+} from "./FilterDropdownComponent";
 import {
   SearchInputComponent,
   LoadingIndicatorComponent,
@@ -118,7 +120,9 @@ export default function HistoryList({
   onDateChange: controlledOnDateChange,
 }: HistoryListProps) {
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
-  const [activeModalities, setActiveModalities] = useState<Set<string>>(new Set());
+  const [activeModalities, setActiveModalities] = useState<Set<string>>(
+    new Set(),
+  );
   const [activeTools, setActiveTools] = useState<Set<string>>(new Set());
   const [activeProviders, setActiveProviders] = useState<Set<string>>(
     () => new Set(initialProviders || []),
@@ -126,8 +130,12 @@ export default function HistoryList({
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [localDateRange, setLocalDateRange] = useState({ from: "", to: "" });
 
-  const dateRange = controlledDateRange !== undefined ? controlledDateRange : localDateRange;
-  const setDateRange = controlledOnDateChange !== undefined ? controlledOnDateChange : setLocalDateRange;
+  const dateRange =
+    controlledDateRange !== undefined ? controlledDateRange : localDateRange;
+  const setDateRange =
+    controlledOnDateChange !== undefined
+      ? controlledOnDateChange
+      : setLocalDateRange;
 
   // Discover modalities across all items
   const allModalities = useMemo(() => {
@@ -156,7 +164,7 @@ export default function HistoryList({
   // Discover providers
   const allProviders = useMemo(() => {
     const set = new Set<string>();
-    for (const item of (items || [])) {
+    for (const item of items || []) {
       for (const p of item.providers || []) set.add(p);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
@@ -250,88 +258,90 @@ export default function HistoryList({
 
       <FilterDropdownComponent
         fullWidth
-        groups={[
-          ...(onToggleFavorite
-            ? [
-                {
-                  label: "Favorites",
-                  items: [
-                    {
-                      key: "favorites",
-                      icon: Star,
-                      title: "Favorites Only",
-                      color: "#eab308",
+        groups={
+          [
+            ...(onToggleFavorite
+              ? [
+                  {
+                    label: "Favorites",
+                    items: [
+                      {
+                        key: "favorites",
+                        icon: Star,
+                        title: "Favorites Only",
+                        color: "#eab308",
+                      },
+                    ],
+                    activeKeys: showFavoritesOnly ? "favorites" : null,
+                    isSingleSelect: true,
+                    onToggle: () => setShowFavoritesOnly((v) => !v),
+                  },
+                ]
+              : []),
+            ...(showModalityFilters && allModalities.length >= 2
+              ? [
+                  {
+                    label: "Modality",
+                    items: allModalities.map((m: FilterItem) => ({
+                      key: m.key,
+                      icon: m.icon,
+                      title: m.title,
+                      color: m.color,
+                    })),
+                    activeKeys: activeModalities,
+                    onToggle: (key: string) => {
+                      setActiveModalities((prev) => {
+                        const next = new Set(prev);
+                        next.has(key) ? next.delete(key) : next.add(key);
+                        return next;
+                      });
                     },
-                  ],
-                  activeKeys: showFavoritesOnly ? "favorites" : null,
-                  isSingleSelect: true,
-                  onToggle: () => setShowFavoritesOnly((v) => !v),
-                },
-              ]
-            : []),
-          ...(showModalityFilters && allModalities.length >= 2
-            ? [
-                {
-                  label: "Modality",
-                  items: allModalities.map((m: FilterItem) => ({
-                    key: m.key,
-                    icon: m.icon,
-                    title: m.title,
-                    color: m.color,
-                  })),
-                  activeKeys: activeModalities,
-                  onToggle: (key: string) => {
-                    setActiveModalities((prev) => {
-                      const next = new Set(prev);
-                      next.has(key) ? next.delete(key) : next.add(key);
-                      return next;
-                    });
                   },
-                },
-              ]
-            : []),
-          ...(showModalityFilters && allTools.length >= 1
-            ? [
-                {
-                  label: "Tools",
-                  items: allTools.map((t: FilterItem) => ({
-                    key: t.key,
-                    icon: t.icon,
-                    title: t.title,
-                    color: t.color,
-                  })),
-                  activeKeys: activeTools,
-                  onToggle: (key: string) => {
-                    setActiveTools((prev) => {
-                      const next = new Set(prev);
-                      next.has(key) ? next.delete(key) : next.add(key);
-                      return next;
-                    });
+                ]
+              : []),
+            ...(showModalityFilters && allTools.length >= 1
+              ? [
+                  {
+                    label: "Tools",
+                    items: allTools.map((t: FilterItem) => ({
+                      key: t.key,
+                      icon: t.icon,
+                      title: t.title,
+                      color: t.color,
+                    })),
+                    activeKeys: activeTools,
+                    onToggle: (key: string) => {
+                      setActiveTools((prev) => {
+                        const next = new Set(prev);
+                        next.has(key) ? next.delete(key) : next.add(key);
+                        return next;
+                      });
+                    },
                   },
-                },
-              ]
-            : []),
-          ...(showProviderFilters && allProviders.length >= 2
-            ? [
-                {
-                  label: "Providers",
-                  items: allProviders.map((p: string) => ({
-                    key: p,
-                    icon: () => <ProviderLogo provider={p} size={13} />,
-                    title: resolveProviderLabel(p),
-                  })),
-                  activeKeys: activeProviders,
-                  onToggle: (key: string) => {
-                    setActiveProviders((prev) => {
-                      const next = new Set(prev);
-                      next.has(key) ? next.delete(key) : next.add(key);
-                      return next;
-                    });
+                ]
+              : []),
+            ...(showProviderFilters && allProviders.length >= 2
+              ? [
+                  {
+                    label: "Providers",
+                    items: allProviders.map((p: string) => ({
+                      key: p,
+                      icon: () => <ProviderLogo provider={p} size={13} />,
+                      title: resolveProviderLabel(p),
+                    })),
+                    activeKeys: activeProviders,
+                    onToggle: (key: string) => {
+                      setActiveProviders((prev) => {
+                        const next = new Set(prev);
+                        next.has(key) ? next.delete(key) : next.add(key);
+                        return next;
+                      });
+                    },
                   },
-                },
-              ]
-            : []),
-        ] as FilterGroup[]}
+                ]
+              : []),
+          ] as FilterGroup[]
+        }
         dateRange={dateRange}
         onDateChange={setDateRange}
         dateStorageKey={LS_DATE_RANGE}
@@ -365,7 +375,9 @@ export default function HistoryList({
             onToggleFavorite={onToggleFavorite}
             dataPanelClose
             onOpenInNewTab={
-              onOpenInNewTab ? (openItem: HistoryListItem) => onOpenInNewTab(openItem) : undefined
+              onOpenInNewTab
+                ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
+                : undefined
             }
             isGenerating={generatingSessionIds?.has?.(item.id)}
           />

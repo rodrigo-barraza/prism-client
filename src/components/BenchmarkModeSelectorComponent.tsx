@@ -35,16 +35,20 @@ export const BENCHMARK_MODES = [
 /**
  * BenchmarkModeSelector — Segmented control for picking the benchmark mode.
  */
-export default function BenchmarkModeSelector({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+export default function BenchmarkModeSelector({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [pillStyle, setPillStyle] = useState<React.CSSProperties>({});
 
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;
     const index = BENCHMARK_MODES.findIndex((m) => m.value === value);
-    const buttons = containerRef.current!.querySelectorAll(
-      `.${styles.option}`,
-    );
+    const buttons = containerRef.current!.querySelectorAll(`.${styles.option}`);
     if (!buttons[index]) return;
 
     const containerRect = containerRef.current!.getBoundingClientRect();

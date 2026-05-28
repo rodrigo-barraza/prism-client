@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   Coins,
   Hash,
@@ -15,17 +21,21 @@ import {
   User as UserIcon,
   FileText,
   Folder,
-  Volume2
+  Volume2,
 } from "lucide-react";
 import {
   TooltipComponent,
-  BadgeComponent as SharedBadgeComponent
+  BadgeComponent as SharedBadgeComponent,
 } from "@rodrigo-barraza/components-library";
 
 import { renderAgentIcon } from "./AgentPickerComponent";
 import ThreeCanvasComponent from "./ThreeCanvasComponent";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
-import { formatCost, formatElapsedTime, renderToolName } from "../utils/utilities";
+import {
+  formatCost,
+  formatElapsedTime,
+  renderToolName,
+} from "../utils/utilities";
 import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 
 // Scoped Stylesheets from individual components
@@ -54,7 +64,16 @@ export { mentionStyles as mentionBadgeStyles };
 export type BadgeProps =
   | {
       type?: undefined;
-      variant?: "default" | "success" | "warning" | "error" | "info" | "accent" | "endpoint" | "provider" | string;
+      variant?:
+        | "default"
+        | "success"
+        | "warning"
+        | "error"
+        | "info"
+        | "accent"
+        | "endpoint"
+        | "provider"
+        | string;
       mini?: boolean;
       className?: string;
       children?: React.ReactNode;
@@ -225,7 +244,7 @@ const KNOWN_MODELS: Record<string, string> = {
   "gemini-2.5-flash-preview-tts": "Gemini 2.5 Flash TTS",
   "gemini-2.5-pro-preview-tts": "Gemini 2.5 Pro TTS",
   "espeak-ng": "eSpeak NG",
-  "eleven_turbo_v2": "Eleven Turbo v2",
+  eleven_turbo_v2: "Eleven Turbo v2",
   "inworld-tts-1.5-max": "Inworld TTS 1.5 Max",
   "inworld-tts-1.5-mini": "Inworld TTS 1.5 Mini",
   "gemini-3-pro-image-preview": "Gemini 3 Pro Image",
@@ -263,12 +282,18 @@ export function cleanModelName(raw: string): string {
   }
 
   cleaned = (cleaned.includes("/") ? cleaned.split("/").pop() : cleaned) || "";
-  cleaned = (cleaned.includes("\\") ? cleaned.split("\\").pop() : cleaned) || "";
+  cleaned =
+    (cleaned.includes("\\") ? cleaned.split("\\").pop() : cleaned) || "";
   cleaned = cleaned.replace(/\.(gguf|bin|ckpt|pt)$/i, "");
   cleaned = cleaned.replace(/@[\w.]+$/, "");
   cleaned = cleaned.replace(/[-_]/g, " ");
-  cleaned = cleaned.replace(/\b([a-z])/g, (_: string, c: string) => c.toUpperCase());
-  cleaned = cleaned.replace(/(\d+(?:\.\d+)?)\s*b\b/gi, (_: string, n: string) => `${n}B`);
+  cleaned = cleaned.replace(/\b([a-z])/g, (_: string, c: string) =>
+    c.toUpperCase(),
+  );
+  cleaned = cleaned.replace(
+    /(\d+(?:\.\d+)?)\s*b\b/gi,
+    (_: string, n: string) => `${n}B`,
+  );
 
   const acronyms: Record<string, string> = {
     Gpt: "GPT",
@@ -284,7 +309,10 @@ export function cleanModelName(raw: string): string {
     It: "IT",
     Deepseek: "DeepSeek",
   };
-  cleaned = cleaned.replace(/\b([a-zA-Z]+)\b/g, (word) => acronyms[word] || word);
+  cleaned = cleaned.replace(
+    /\b([a-zA-Z]+)\b/g,
+    (word) => acronyms[word] || word,
+  );
 
   return cleaned.trim();
 }
@@ -310,7 +338,10 @@ const FALLBACK_GRADIENT = ["#8b5cf6", "#06b6d4"];
 
 function resolveGradient(agent: any): string[] {
   if (agent?.color) return [agent.color, agent.color];
-  return (AGENT_GRADIENTS as Record<string, string[]>)[agent?.id] || FALLBACK_GRADIENT;
+  return (
+    (AGENT_GRADIENTS as Record<string, string[]>)[agent?.id] ||
+    FALLBACK_GRADIENT
+  );
 }
 
 const TEX_SIZE = 256;
@@ -336,7 +367,12 @@ function CoinStatic({ agent, size }: any) {
         context.beginPath();
         context.roundRect(0, 0, TEX_SIZE, TEX_SIZE, r);
         context.closePath();
-        const canvasGradient = context.createLinearGradient(0, 0, TEX_SIZE, TEX_SIZE);
+        const canvasGradient = context.createLinearGradient(
+          0,
+          0,
+          TEX_SIZE,
+          TEX_SIZE,
+        );
         canvasGradient.addColorStop(0, gradient[0]);
         canvasGradient.addColorStop(1, gradient[1]);
         context.fillStyle = canvasGradient;
@@ -372,11 +408,14 @@ function CoinStatic({ agent, size }: any) {
       const context = (canvasRef.current as HTMLCanvasElement).getContext("2d");
       if (!context) return;
 
-      const imageElement = (iconRef.current as HTMLElement).querySelector("img");
+      const imageElement = (iconRef.current as HTMLElement).querySelector(
+        "img",
+      );
       if (imageElement) {
         const drawImg = () => {
           context.drawImage(imageElement, off, off, iconSz, iconSz);
-          if (texRef.current) (texRef.current as {needsUpdate: boolean}).needsUpdate = true;
+          if (texRef.current)
+            (texRef.current as { needsUpdate: boolean }).needsUpdate = true;
         };
         if (imageElement.complete && imageElement.naturalWidth > 0) {
           drawImg();
@@ -399,7 +438,8 @@ function CoinStatic({ agent, size }: any) {
         URL.revokeObjectURL(url);
         if (!canvasRef.current) return;
         context.drawImage(image, off, off, iconSz, iconSz);
-        if (texRef.current) (texRef.current as {needsUpdate: boolean}).needsUpdate = true;
+        if (texRef.current)
+          (texRef.current as { needsUpdate: boolean }).needsUpdate = true;
       };
       image.onerror = () => {
         URL.revokeObjectURL(url);
@@ -412,7 +452,9 @@ function CoinStatic({ agent, size }: any) {
 
   const handleTick = useCallback(({ elapsed }: any) => {
     if (!meshRef.current) return;
-    (meshRef.current as {rotation: {x: number; y: number; z: number}}).rotation.y = elapsed * 1.2;
+    (
+      meshRef.current as { rotation: { x: number; y: number; z: number } }
+    ).rotation.y = elapsed * 1.2;
   }, []);
 
   return (
@@ -492,7 +534,13 @@ export default function BadgeComponent(props: BadgeProps) {
   switch (props.type) {
     // --- 1. Cost ---
     case "cost": {
-      const { cost = 0, showIcon = true, className = "", mini = false, formatFn = formatCost } = props;
+      const {
+        cost = 0,
+        showIcon = true,
+        className = "",
+        mini = false,
+        formatFn = formatCost,
+      } = props;
       return (
         <SharedBadgeComponent
           type="metric"
@@ -511,7 +559,13 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 2. Tokens ---
     case "tokens": {
-      const { value, label = "tokens", showIcon = true, className = "", mini = false } = props;
+      const {
+        value,
+        label = "tokens",
+        showIcon = true,
+        className = "",
+        mini = false,
+      } = props;
       return (
         <SharedBadgeComponent
           type="metric"
@@ -548,9 +602,13 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 4. Throughput ---
     case "throughput": {
-      const { liveTokPerSec, avgTokPerSec, isActivelyGenerating, turnActive } = props;
+      const { liveTokPerSec, avgTokPerSec, isActivelyGenerating, turnActive } =
+        props;
       if (liveTokPerSec !== null && liveTokPerSec !== undefined) {
-        const variant = isActivelyGenerating || turnActive ? throughputStyles.live : throughputStyles.stale;
+        const variant =
+          isActivelyGenerating || turnActive
+            ? throughputStyles.live
+            : throughputStyles.stale;
         return (
           <span className={`${throughputStyles.badge} ${variant}`}>
             <GaugeIcon size={10} className={throughputStyles.icon} />
@@ -560,7 +618,9 @@ export default function BadgeComponent(props: BadgeProps) {
       }
       if (avgTokPerSec != null) {
         return (
-          <span className={`${throughputStyles.badge} ${throughputStyles.average}`}>
+          <span
+            className={`${throughputStyles.badge} ${throughputStyles.average}`}
+          >
             <GaugeIcon size={10} className={throughputStyles.icon} />
             {avgTokPerSec.toFixed(1)} tok/s
           </span>
@@ -587,7 +647,10 @@ export default function BadgeComponent(props: BadgeProps) {
 
       let displaySeconds: number;
       if (isLive && startTime) {
-        const start = typeof startTime === "number" ? startTime : new Date(startTime).getTime();
+        const start =
+          typeof startTime === "number"
+            ? startTime
+            : new Date(startTime).getTime();
         displaySeconds = Math.max(0, (nowMs - start) / 1000);
       } else {
         displaySeconds = seconds || 0;
@@ -600,7 +663,9 @@ export default function BadgeComponent(props: BadgeProps) {
 
       return (
         <TooltipComponent label={tooltipLabel} position="top">
-          <span className={`${stopwatchStyles.badge} ${showPulse ? stopwatchStyles.live : ""} ${className}`}>
+          <span
+            className={`${stopwatchStyles.badge} ${showPulse ? stopwatchStyles.live : ""} ${className}`}
+          >
             <Timer size={11} />
             {formatElapsedTime(displaySeconds)}
           </span>
@@ -610,7 +675,13 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 6. Messages ---
     case "messages": {
-      const { count, deletedCount = 0, showIcon = true, className = "", mini = false } = props;
+      const {
+        count,
+        deletedCount = 0,
+        showIcon = true,
+        className = "",
+        mini = false,
+      } = props;
       const suffix = count !== 1 ? "messages" : "message";
       const tooltipLabel =
         deletedCount > 0
@@ -641,7 +712,9 @@ export default function BadgeComponent(props: BadgeProps) {
 
       return (
         <TooltipComponent label={tooltipLabel} position="top">
-          <span className={`${wordStyles.badge} ${mini ? wordStyles.mini : ""} ${className}`}>
+          <span
+            className={`${wordStyles.badge} ${mini ? wordStyles.mini : ""} ${className}`}
+          >
             <LetterText size={mini ? 8 : 10} />
             {count.toLocaleString()} {suffix}
           </span>
@@ -660,7 +733,11 @@ export default function BadgeComponent(props: BadgeProps) {
         <TooltipComponent label={tooltipLabel} position="top">
           <div
             className={toolStyles.badge}
-            style={color ? ({ "--tool-badge-accent": color } as React.CSSProperties) : undefined}
+            style={
+              color
+                ? ({ "--tool-badge-accent": color } as React.CSSProperties)
+                : undefined
+            }
           >
             <FunctionSquare size={9} className={toolStyles.icon} />
             <span className={toolStyles.label}>
@@ -673,14 +750,22 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 9. Model ---
     case "model": {
-      const { models = [], provider, providers, className = "", mini = false, noHover = false } = props;
+      const {
+        models = [],
+        provider,
+        providers,
+        className = "",
+        mini = false,
+        noHover = false,
+      } = props;
       if (!models || models.length === 0) {
         return <span style={{ color: "var(--text-muted)" }}>—</span>;
       }
 
       const iconSize = mini ? 8 : 10;
       const cls = `${modelStyles.badge} ${mini ? modelStyles.mini : ""} ${noHover ? modelStyles.noHover : ""} ${className}`;
-      const resolvedProvider = provider || (providers?.length === 1 ? providers[0] : null);
+      const resolvedProvider =
+        provider || (providers?.length === 1 ? providers[0] : null);
       const providerIcon = resolvedProvider ? (
         <ProviderLogo provider={resolvedProvider} size={iconSize} />
       ) : null;
@@ -688,7 +773,8 @@ export default function BadgeComponent(props: BadgeProps) {
       if (models.length === 1) {
         const rawName = models[0];
         const cleanName = cleanModelName(rawName);
-        const hasCleanName = cleanName && cleanName.toLowerCase() !== rawName.toLowerCase();
+        const hasCleanName =
+          cleanName && cleanName.toLowerCase() !== rawName.toLowerCase();
 
         return (
           <TooltipComponent label={rawName} position="top">
@@ -696,10 +782,14 @@ export default function BadgeComponent(props: BadgeProps) {
               {providerIcon || <Cpu size={iconSize} />}
               {hasCleanName ? (
                 <>
-                  <span className={`${modelStyles.modelName} ${modelStyles.modelNameClean}`}>
+                  <span
+                    className={`${modelStyles.modelName} ${modelStyles.modelNameClean}`}
+                  >
                     {cleanName}
                   </span>
-                  <span className={`${modelStyles.modelName} ${modelStyles.modelNameRaw}`}>
+                  <span
+                    className={`${modelStyles.modelName} ${modelStyles.modelNameRaw}`}
+                  >
                     {rawName}
                   </span>
                 </>
@@ -737,7 +827,9 @@ export default function BadgeComponent(props: BadgeProps) {
           <TooltipComponent label={displayLabel(providers[0])} position="top">
             <span className={cls}>
               <ProviderLogo provider={providers[0]} size={iconSize} />
-              <span className={providersStyles.providerName}>{displayLabel(providers[0])}</span>
+              <span className={providersStyles.providerName}>
+                {displayLabel(providers[0])}
+              </span>
             </span>
           </TooltipComponent>
         );
@@ -808,13 +900,26 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 14. Agent ---
     case "agent": {
-      const { agent, agents, size = 22, iconSize = 13, animation = false, className = "" } = props;
+      const {
+        agent,
+        agents,
+        size = 22,
+        iconSize = 13,
+        animation = false,
+        className = "",
+      } = props;
 
       if (Array.isArray(agents) && agents.length > 0) {
         return (
-          <div className={agentStyles.agentsList || ""} style={{ display: "flex", gap: "4px" }}>
+          <div
+            className={agentStyles.agentsList || ""}
+            style={{ display: "flex", gap: "4px" }}
+          >
             {agents.map((singleAgent: any, index: number) => {
-              const normalizedAgent = typeof singleAgent === "string" ? { id: singleAgent } : singleAgent;
+              const normalizedAgent =
+                typeof singleAgent === "string"
+                  ? { id: singleAgent }
+                  : singleAgent;
               return (
                 <BadgeComponent
                   key={index}
@@ -849,8 +954,16 @@ export default function BadgeComponent(props: BadgeProps) {
         : undefined;
 
       return (
-        <span className={`${agentStyles.badge} ${className}`} data-agent-identifier={agentId} style={outerStyle}>
-          <span className={agentStyles.badgeInner} data-agent-identifier={agentId} style={gradientStyle}>
+        <span
+          className={`${agentStyles.badge} ${className}`}
+          data-agent-identifier={agentId}
+          style={outerStyle}
+        >
+          <span
+            className={agentStyles.badgeInner}
+            data-agent-identifier={agentId}
+            style={gradientStyle}
+          >
             {renderAgentIcon(agent, iconSize)}
           </span>
         </span>
@@ -859,17 +972,31 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 15. Mention ---
     case "mention": {
-      const { path, name, mentionType, lineStart, lineEnd, stale, knownPaths, onFileOpen } = props;
+      const {
+        path,
+        name,
+        mentionType,
+        lineStart,
+        lineEnd,
+        stale,
+        knownPaths,
+        onFileOpen,
+      } = props;
       const baseName = name || path.split("/").pop() || path;
 
       let displayName = baseName;
       if (lineStart != null) {
-        displayName += lineEnd != null && lineEnd !== lineStart ? `#L${lineStart}-${lineEnd}` : `#L${lineStart}`;
+        displayName +=
+          lineEnd != null && lineEnd !== lineStart
+            ? `#L${lineStart}-${lineEnd}`
+            : `#L${lineStart}`;
       }
 
-      const resolvedType = mentionType || (baseName.includes(".") ? "file" : "directory");
+      const resolvedType =
+        mentionType || (baseName.includes(".") ? "file" : "directory");
       const isStale = stale ?? (knownPaths ? !knownPaths.has(path) : false);
-      const isClickable = resolvedType === "file" && !isStale && typeof onFileOpen === "function";
+      const isClickable =
+        resolvedType === "file" && !isStale && typeof onFileOpen === "function";
 
       const className = [
         mentionStyles.mentionBadge,
@@ -888,7 +1015,10 @@ export default function BadgeComponent(props: BadgeProps) {
 
       let tooltipPath = path;
       if (lineStart != null) {
-        tooltipPath += lineEnd != null && lineEnd !== lineStart ? `#L${lineStart}-${lineEnd}` : `#L${lineStart}`;
+        tooltipPath +=
+          lineEnd != null && lineEnd !== lineStart
+            ? `#L${lineStart}-${lineEnd}`
+            : `#L${lineStart}`;
       }
 
       // Premium vector Lucide icons instead of text emojis
@@ -926,8 +1056,12 @@ export default function BadgeComponent(props: BadgeProps) {
           }}
         >
           <Icon size={10} />
-          {!isCompact && <span className={toolStyles.label}>{displayName}</span>}
-          {count != null && count > 1 && <span className={toolStyles.count}>×{count}</span>}
+          {!isCompact && (
+            <span className={toolStyles.label}>{displayName}</span>
+          )}
+          {count != null && count > 1 && (
+            <span className={toolStyles.count}>×{count}</span>
+          )}
         </span>
       );
 
@@ -944,7 +1078,13 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 17. Date Time ---
     case "dateTime": {
-      const { date, showIcon = true, relative = true, highlightNew = false, className = "" } = props;
+      const {
+        date,
+        showIcon = true,
+        relative = true,
+        highlightNew = false,
+        className = "",
+      } = props;
       return (
         <SharedBadgeComponent
           type="dateTime"
@@ -975,7 +1115,11 @@ export interface ToolBadgeRowProps {
 /**
  * ToolBadgeRow — Renders a row of tool items from a { toolName: count } map.
  */
-export function ToolBadgeRow({ tools, activeTool, variant }: ToolBadgeRowProps) {
+export function ToolBadgeRow({
+  tools,
+  activeTool,
+  variant,
+}: ToolBadgeRowProps) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
@@ -1016,7 +1160,11 @@ const TOOL_DEFS = [
 /**
  * ModelToolsRow — renders a row of capability badges for a model.
  */
-export function ModelToolsRow({ tools, variant, className }: ModelToolsRowProps) {
+export function ModelToolsRow({
+  tools,
+  variant,
+  className,
+}: ModelToolsRowProps) {
   if (!tools) return null;
 
   const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);
@@ -1043,7 +1191,15 @@ export function ModelToolsRow({ tools, variant, className }: ModelToolsRowProps)
 }
 
 // Vector-based Gauge icon
-function GaugeIcon({ size, className, style }: { size?: number; className?: string; style?: React.CSSProperties }) {
+function GaugeIcon({
+  size,
+  className,
+  style,
+}: {
+  size?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -4,6 +4,8 @@ export const metadata = {
     "Generate, browse, and manage AI-generated images, audio, and other media assets across providers.",
 };
 
-export default function MediaLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function MediaLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

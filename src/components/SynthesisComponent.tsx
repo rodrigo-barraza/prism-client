@@ -167,7 +167,9 @@ export default function SynthesisComponent() {
   const [targetTurns, setTargetTurns] = useState<number | "">(DEFAULT_TURNS);
   const [category, setCategory] = useState("Chat");
   const [seedMessages, setSeedMessages] = useState<Message[]>([]);
-  const [generatedMessages, setGeneratedMessages] = useState<(Message & { _streaming?: boolean })[]>([]);
+  const [generatedMessages, setGeneratedMessages] = useState<
+    (Message & { _streaming?: boolean })[]
+  >([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
   const [seedsExpanded, setSeedsExpanded] = useState(true);
@@ -179,7 +181,9 @@ export default function SynthesisComponent() {
   const [conversationId, setConversationId] = useState<string | null>(null);
 
   // -- History state ---------------------------------------------
-  const [synthesisConversations, setSynthesisConversations] = useState<SynthesisRun[]>([]);
+  const [synthesisConversations, setSynthesisConversations] = useState<
+    SynthesisRun[]
+  >([]);
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
@@ -220,7 +224,9 @@ export default function SynthesisComponent() {
 
     // Load favorites
     PrismService.getFavorites("model")
-      .then((favs: {key: string}[]) => setFavoriteKeys(favs.map((f: {key: string}) => f.key)))
+      .then((favs: { key: string }[]) =>
+        setFavoriteKeys(favs.map((f: { key: string }) => f.key)),
+      )
       .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -262,9 +268,12 @@ export default function SynthesisComponent() {
     [saveModel],
   );
 
-  const handleSelectUserSimModel = useCallback((provider: string, model: string) => {
-    setUserSimSettings((s) => ({ ...s, provider, model }));
-  }, []);
+  const handleSelectUserSimModel = useCallback(
+    (provider: string, model: string) => {
+      setUserSimSettings((s) => ({ ...s, provider, model }));
+    },
+    [],
+  );
 
   // -- Compute final messages array (SFT format) -----------------
   const sftOutput = useMemo(() => {
@@ -300,7 +309,7 @@ export default function SynthesisComponent() {
   }, [generatedMessages, generationProgress]);
 
   // -- Seed message management -----------------------------------
-  const addSeedMessage = useCallback((role: Message['role'] = "user") => {
+  const addSeedMessage = useCallback((role: Message["role"] = "user") => {
     setSeedMessages((prev) => [...prev, { role, content: "" }]);
   }, []);
 
@@ -321,15 +330,18 @@ export default function SynthesisComponent() {
     );
   }, []);
 
-  const loadSeedTemplate = useCallback((seed: { system: string; messages: Message[]; category: string }) => {
-    setSystemPrompt(seed.system);
+  const loadSeedTemplate = useCallback(
+    (seed: { system: string; messages: Message[]; category: string }) => {
+      setSystemPrompt(seed.system);
 
-    setSeedMessages(seed.messages.map((m: Message) => ({ ...m })));
-    setCategory(seed.category);
-    setGeneratedMessages([]);
-    setTemplateExpanded(false);
-    setSeedsExpanded(true);
-  }, []);
+      setSeedMessages(seed.messages.map((m: Message) => ({ ...m })));
+      setCategory(seed.category);
+      setGeneratedMessages([]);
+      setTemplateExpanded(false);
+      setSeedsExpanded(true);
+    },
+    [],
+  );
 
   // -- Generation logic (real back-and-forth /chat calls) ---------
   const handleGenerate = useCallback(async () => {
@@ -467,7 +479,8 @@ export default function SynthesisComponent() {
           let simulatorHistory: Message[];
           if (conversation.length > 0) {
             const swapped = conversation.map((m: Message) => ({
-              role: m.role === "user" ? ("assistant" as const) : ("user" as const),
+              role:
+                m.role === "user" ? ("assistant" as const) : ("user" as const),
               content: m.content,
             }));
             // If the swapped history starts with "assistant", prepend a
@@ -521,7 +534,10 @@ export default function SynthesisComponent() {
           if (abortedRef.current) break;
 
           // Append the generated user message to the conversation in Prism
-          const userMessage = { role: "user" as const, content: userContent as string };
+          const userMessage = {
+            role: "user" as const,
+            content: userContent as string,
+          };
           conversation.push(userMessage);
           try {
             // Pass meta on the first call to create the conversation record
@@ -608,7 +624,9 @@ export default function SynthesisComponent() {
             userPersona,
             category,
             targetTurns: Number(targetTurns),
-            seedMessages: seedMessages.filter((m: Message) => m.content && m.content.trim()),
+            seedMessages: seedMessages.filter(
+              (m: Message) => m.content && m.content.trim(),
+            ),
             settings: {
               provider: settings.provider,
               model: settings.model,
@@ -624,9 +642,14 @@ export default function SynthesisComponent() {
         loadSynthesisHistory();
       }
     } catch (error: unknown) {
-      if ((!(error instanceof Error) || error.name !== "AbortError") && !abortedRef.current) {
+      if (
+        (!(error instanceof Error) || error.name !== "AbortError") &&
+        !abortedRef.current
+      ) {
         setGeneratedMessages((prev) => [
-          ...prev.filter((m: any) => !(m as Message & { _streaming?: boolean })._streaming),
+          ...prev.filter(
+            (m: any) => !(m as Message & { _streaming?: boolean })._streaming,
+          ),
           {
             role: "assistant",
             content: `⚠️ Generation error: ${error instanceof Error ? error.message : String(error)}`,
@@ -659,7 +682,11 @@ export default function SynthesisComponent() {
     abortRef.current = null;
     setIsGenerating(false);
     // Clean up any in-flight streaming messages
-    setGeneratedMessages((prev) => prev.filter((m: any) => !(m as Message & { _streaming?: boolean })._streaming));
+    setGeneratedMessages((prev) =>
+      prev.filter(
+        (m: any) => !(m as Message & { _streaming?: boolean })._streaming,
+      ),
+    );
   }, []);
 
   const handleReset = useCallback(() => {
@@ -704,9 +731,7 @@ export default function SynthesisComponent() {
       if (run.conversationId) {
         try {
           const full = await PrismService.getConversation(run.conversationId);
-          const msgs = (full.messages || []).filter(
-            (m) => m.role !== "system",
-          );
+          const msgs = (full.messages || []).filter((m) => m.role !== "system");
           setGeneratedMessages(msgs);
           if (msgs.length > 0) setLeftTab("output");
         } catch {
@@ -755,11 +780,16 @@ export default function SynthesisComponent() {
   }, [sftJsonString]);
 
   // -- Edit generated message ------------------------------------
-  const updateGeneratedMessage = useCallback((index: number, content: string) => {
-    setGeneratedMessages((prev) =>
-      prev.map((m: Message, i: number) => (i === index ? { ...m, content } : m)),
-    );
-  }, []);
+  const updateGeneratedMessage = useCallback(
+    (index: number, content: string) => {
+      setGeneratedMessages((prev) =>
+        prev.map((m: Message, i: number) =>
+          i === index ? { ...m, content } : m,
+        ),
+      );
+    },
+    [],
+  );
 
   const removeGeneratedMessage = useCallback((index: number) => {
     setGeneratedMessages((prev) =>
@@ -989,7 +1019,15 @@ export default function SynthesisComponent() {
                 <button
                   key={seed.label}
                   className={styles.templateCard}
-                  onClick={() => loadSeedTemplate(seed as unknown as { system: string; messages: Message[]; category: string })}
+                  onClick={() =>
+                    loadSeedTemplate(
+                      seed as unknown as {
+                        system: string;
+                        messages: Message[];
+                        category: string;
+                      },
+                    )
+                  }
                 >
                   <span className={styles.templateLabel}>{seed.label}</span>
                   <span className={styles.templateCategory}>
@@ -1047,9 +1085,13 @@ export default function SynthesisComponent() {
                   <TextAreaComponent
                     className={styles.seedTextarea}
                     value={message.content}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                      updateSeedMessage(i, "content", e.target.value)
-                    }
+                    onChange={(
+                      e: React.ChangeEvent<
+                        | HTMLInputElement
+                        | HTMLTextAreaElement
+                        | HTMLSelectElement
+                      >,
+                    ) => updateSeedMessage(i, "content", e.target.value)}
                     placeholder={`${message.role === "user" ? "User" : "Assistant"} message...`}
                     minRows={2}
                     maxRows={6}
@@ -1111,7 +1153,12 @@ export default function SynthesisComponent() {
               <MessageList
                 messages={[
                   ...(systemPrompt.trim()
-                    ? [{ role: "system" as const, content: systemPrompt.trim() }]
+                    ? [
+                        {
+                          role: "system" as const,
+                          content: systemPrompt.trim(),
+                        },
+                      ]
                     : []),
                   ...generatedMessages,
                 ]}
@@ -1156,14 +1203,26 @@ export default function SynthesisComponent() {
  * When conversationId is provided, the messages are persisted to that conversation.
  */
 function streamTurn(
-  settings: { provider: string; model: string; temperature?: number; maxTokens?: number; thinkingEnabled?: boolean; reasoningEffort?: string; thinkingLevel?: string; thinkingBudget?: string | number },
+  settings: {
+    provider: string;
+    model: string;
+    temperature?: number;
+    maxTokens?: number;
+    thinkingEnabled?: boolean;
+    reasoningEffort?: string;
+    thinkingLevel?: string;
+    thinkingBudget?: string | number;
+  },
   turnSystemPrompt: string,
   history: Message[],
   onPartial: (partial: string) => void,
   abortRef: React.MutableRefObject<(() => void) | null>,
   conversationId?: string | null,
   conversationMeta?: Record<string, unknown>,
-  { skipConversation = false, onThinking }: { skipConversation?: boolean; onThinking?: (chunk: string) => void } = {},
+  {
+    skipConversation = false,
+    onThinking,
+  }: { skipConversation?: boolean; onThinking?: (chunk: string) => void } = {},
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     let collected = "";
@@ -1171,7 +1230,10 @@ function streamTurn(
     const payload = {
       provider: settings.provider,
       model: settings.model,
-      messages: [{ role: "system" as const, content: turnSystemPrompt }, ...history],
+      messages: [
+        { role: "system" as const, content: turnSystemPrompt },
+        ...history,
+      ],
       temperature: settings.temperature,
       maxTokens: settings.maxTokens,
     };
@@ -1182,11 +1244,14 @@ function streamTurn(
     if (thinkingOn) {
       (payload as Record<string, unknown>).thinkingEnabled = true;
       if (settings.reasoningEffort)
-        (payload as Record<string, unknown>).reasoningEffort = settings.reasoningEffort;
+        (payload as Record<string, unknown>).reasoningEffort =
+          settings.reasoningEffort;
       if (settings.thinkingLevel)
-        (payload as Record<string, unknown>).thinkingLevel = settings.thinkingLevel;
+        (payload as Record<string, unknown>).thinkingLevel =
+          settings.thinkingLevel;
       if (settings.thinkingBudget)
-        (payload as Record<string, unknown>).thinkingBudget = settings.thinkingBudget;
+        (payload as Record<string, unknown>).thinkingBudget =
+          settings.thinkingBudget;
     } else {
       (payload as Record<string, unknown>).thinkingEnabled = false;
     }
@@ -1197,7 +1262,8 @@ function streamTurn(
     } else if (conversationId) {
       (payload as Record<string, unknown>).conversationId = conversationId;
       if (conversationMeta)
-        (payload as Record<string, unknown>).conversationMeta = conversationMeta;
+        (payload as Record<string, unknown>).conversationMeta =
+          conversationMeta;
     }
 
     const cancel = PrismService.streamText(payload, {

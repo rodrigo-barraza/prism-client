@@ -28,7 +28,13 @@ import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
 import useTokenRate from "../hooks/useTokenRate";
 import useTtft from "../hooks/useTtft";
-import type { PrismConfig, PrismSettings, ModelOption, Workflow, VoiceOption } from "../types/types";
+import type {
+  PrismConfig,
+  PrismSettings,
+  ModelOption,
+  Workflow,
+  VoiceOption,
+} from "../types/types";
 
 export interface SessionStats {
   messageCount: number;
@@ -133,21 +139,27 @@ export default function SettingsPanel({
   const modelsMap: Record<string, ExtendedModelOption[]> = {};
   for (const p of allProviderKeys) {
     const textModels = (textModelsMap[p] || []) as ExtendedModelOption[];
-    const imgModels = ((imageModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
-      ...m,
-      label: `${m.label} (Image)`,
-      _isImageGen: true,
-    }));
-    const sttModels = ((audioToTextModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
+    const imgModels = ((imageModelsMap[p] || []) as ExtendedModelOption[]).map(
+      (m) => ({
+        ...m,
+        label: `${m.label} (Image)`,
+        _isImageGen: true,
+      }),
+    );
+    const sttModels = (
+      (audioToTextModelsMap[p] || []) as ExtendedModelOption[]
+    ).map((m) => ({
       ...m,
       label: `${m.label} (Transcribe)`,
       _isTranscription: true,
     }));
-    const ttsModels = ((ttsModelsMap[p] || []) as ExtendedModelOption[]).map((m) => ({
-      ...m,
-      label: `${m.label} (TTS)`,
-      _isTTS: true,
-    }));
+    const ttsModels = ((ttsModelsMap[p] || []) as ExtendedModelOption[]).map(
+      (m) => ({
+        ...m,
+        label: `${m.label} (TTS)`,
+        _isTTS: true,
+      }),
+    );
     // Merge text models first, then image, then transcription, then TTS — deduplicated by name
     const seen = new Set<string>();
     const merged: ExtendedModelOption[] = [];
@@ -160,8 +172,9 @@ export default function SettingsPanel({
     modelsMap[p] = merged;
   }
 
-  const _handleSystemPromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    onChange({ systemPrompt: e.target.value });
+  const _handleSystemPromptChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => onChange({ systemPrompt: e.target.value });
 
   const currentProviderModels = modelsMap[settings.provider || ""] || [];
   const selectedModelDef = currentProviderModels.find(
@@ -208,7 +221,8 @@ export default function SettingsPanel({
       : activeStats?.completedElapsedTime || 0;
 
   const renderStatsBadges = (stats: SessionStats, showFull: boolean) => {
-    const ttftVal = stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
+    const ttftVal =
+      stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
     return (
       <div className={styles.statsBadges}>
         <BadgeComponent
@@ -241,27 +255,30 @@ export default function SettingsPanel({
               value={stats.totalTokens.total}
               label="tokens total"
             />
-            {stats.totalTokens.cacheRead !== undefined && stats.totalTokens.cacheRead > 0 && (
-              <BadgeComponent
-                type="tokens"
-                value={stats.totalTokens.cacheRead}
-                label="cached read"
-              />
-            )}
-            {stats.totalTokens.cacheWrite !== undefined && stats.totalTokens.cacheWrite > 0 && (
-              <BadgeComponent
-                type="tokens"
-                value={stats.totalTokens.cacheWrite}
-                label="cached write"
-              />
-            )}
-            {stats.totalTokens.reasoning !== undefined && stats.totalTokens.reasoning > 0 && (
-              <BadgeComponent
-                type="tokens"
-                value={stats.totalTokens.reasoning}
-                label="reasoning"
-              />
-            )}
+            {stats.totalTokens.cacheRead !== undefined &&
+              stats.totalTokens.cacheRead > 0 && (
+                <BadgeComponent
+                  type="tokens"
+                  value={stats.totalTokens.cacheRead}
+                  label="cached read"
+                />
+              )}
+            {stats.totalTokens.cacheWrite !== undefined &&
+              stats.totalTokens.cacheWrite > 0 && (
+                <BadgeComponent
+                  type="tokens"
+                  value={stats.totalTokens.cacheWrite}
+                  label="cached write"
+                />
+              )}
+            {stats.totalTokens.reasoning !== undefined &&
+              stats.totalTokens.reasoning > 0 && (
+                <BadgeComponent
+                  type="tokens"
+                  value={stats.totalTokens.reasoning}
+                  label="reasoning"
+                />
+              )}
           </>
         )}
         <BadgeComponent
@@ -299,86 +316,88 @@ export default function SettingsPanel({
             live={!!stats.currentTurnStart}
           />
         )}
-        {!showFull && stats.completedElapsedTime !== undefined && stats.completedElapsedTime > 0 && (
-          <BadgeComponent
-            type="stopwatch"
-            seconds={stats.completedElapsedTime}
-            live={false}
-          />
+        {!showFull &&
+          stats.completedElapsedTime !== undefined &&
+          stats.completedElapsedTime > 0 && (
+            <BadgeComponent
+              type="stopwatch"
+              seconds={stats.completedElapsedTime}
+              live={false}
+            />
+          )}
+        {(() => {
+          // When viewing "all" stats and there are workers, aggregate tools from orchestrator and workers
+          const displayTools: Array<{ name: string; count: number }> = (() => {
+            if (
+              statsTab !== "all" ||
+              !sessionStats?.workers ||
+              !sessionStats?.orchestrator
+            ) {
+              return stats.usedTools || [];
+            }
+
+            // Merge tools from orchestrator and workers
+            const toolMap = new Map<string, number>();
+
+            // Add orchestrator tools
+            if (sessionStats.orchestrator?.usedTools) {
+              for (const tool of sessionStats.orchestrator.usedTools) {
+                toolMap.set(
+                  tool.name,
+                  (toolMap.get(tool.name) || 0) + (tool.count || 1),
+                );
+              }
+            }
+
+            // Add worker tools
+            if (sessionStats.workers?.usedTools) {
+              for (const tool of sessionStats.workers.usedTools) {
+                toolMap.set(
+                  tool.name,
+                  (toolMap.get(tool.name) || 0) + (tool.count || 1),
+                );
+              }
+            }
+
+            // Convert back to array and sort by count
+            return Array.from(toolMap.entries())
+              .map(([name, count]: [string, number]) => ({ name, count }))
+              .sort((a, b) => b.count - a.count);
+          })();
+
+          if (!displayTools?.length) return null;
+
+          const capabilities = displayTools.filter((t) =>
+            CAPABILITY_TOOL_NAMES.has(t.name),
+          );
+          const toolCalls = displayTools.filter(
+            (t) => !CAPABILITY_TOOL_NAMES.has(t.name),
+          );
+          return (
+            <>
+              {capabilities.map((tool) => (
+                <ToolBadgeComponent
+                  key={tool.name}
+                  name={tool.name}
+                  count={tool.count}
+                />
+              ))}
+              {toolCalls.map((tool) => (
+                <ToolCallBadgeComponent
+                  key={tool.name}
+                  name={tool.name}
+                  count={tool.count}
+                />
+              ))}
+            </>
+          );
+        })()}
+        {stats.modalities && Object.values(stats.modalities).some(Boolean) && (
+          <ModalityIconComponent modalities={stats.modalities} />
         )}
-      {(() => {
-        // When viewing "all" stats and there are workers, aggregate tools from orchestrator and workers
-        const displayTools: Array<{ name: string; count: number }> = (() => {
-          if (
-            statsTab !== "all" ||
-            !sessionStats?.workers ||
-            !sessionStats?.orchestrator
-          ) {
-            return stats.usedTools || [];
-          }
-
-          // Merge tools from orchestrator and workers
-          const toolMap = new Map<string, number>();
-
-          // Add orchestrator tools
-          if (sessionStats.orchestrator?.usedTools) {
-            for (const tool of sessionStats.orchestrator.usedTools) {
-              toolMap.set(
-                tool.name,
-                (toolMap.get(tool.name) || 0) + (tool.count || 1),
-              );
-            }
-          }
-
-          // Add worker tools
-          if (sessionStats.workers?.usedTools) {
-            for (const tool of sessionStats.workers.usedTools) {
-              toolMap.set(
-                tool.name,
-                (toolMap.get(tool.name) || 0) + (tool.count || 1),
-              );
-            }
-          }
-
-          // Convert back to array and sort by count
-          return Array.from(toolMap.entries())
-            .map(([name, count]: [string, number]) => ({ name, count }))
-            .sort((a, b) => b.count - a.count);
-        })();
-
-        if (!displayTools?.length) return null;
-
-        const capabilities = displayTools.filter((t) =>
-          CAPABILITY_TOOL_NAMES.has(t.name),
-        );
-        const toolCalls = displayTools.filter((t) =>
-          !CAPABILITY_TOOL_NAMES.has(t.name),
-        );
-        return (
-          <>
-            {capabilities.map((tool) => (
-              <ToolBadgeComponent
-                key={tool.name}
-                name={tool.name}
-                count={tool.count}
-              />
-            ))}
-            {toolCalls.map((tool) => (
-              <ToolCallBadgeComponent
-                key={tool.name}
-                name={tool.name}
-                count={tool.count}
-              />
-            ))}
-          </>
-        );
-      })()}
-      {stats.modalities && Object.values(stats.modalities).some(Boolean) && (
-        <ModalityIconComponent modalities={stats.modalities} />
-      )}
-    </div>
-  );
-};
+      </div>
+    );
+  };
 
   return (
     <>
@@ -477,11 +496,15 @@ export default function SettingsPanel({
         )}
 
         {isTTS &&
-          (((): React.ReactNode => {
+          ((): React.ReactNode => {
             const providerVoices =
-              (settings.provider && config?.textToSpeech?.voices?.[settings.provider]) || [];
+              (settings.provider &&
+                config?.textToSpeech?.voices?.[settings.provider]) ||
+              [];
             const defaultVoice =
-              (settings.provider && config?.textToSpeech?.defaultVoices?.[settings.provider]) || "";
+              (settings.provider &&
+                config?.textToSpeech?.defaultVoices?.[settings.provider]) ||
+              "";
             const currentVoice = settings.voice || defaultVoice;
             if (readOnly) {
               return currentVoice ? (
@@ -493,16 +516,18 @@ export default function SettingsPanel({
                 </div>
               ) : null;
             }
-            const voiceOptions = providerVoices.map((v: string | VoiceOption) => {
-              const id = typeof v === "string" ? v : (v.id || v.name || "");
-              const label = typeof v === "string" ? v : (v.name || v.id || "");
-              const gender = typeof v === "string" ? undefined : v.gender;
-              return {
-                value: id,
-                label: `${label}${gender ? ` (${gender})` : ""}`,
-                icon: <Mic size={18} />,
-              };
-            });
+            const voiceOptions = providerVoices.map(
+              (v: string | VoiceOption) => {
+                const id = typeof v === "string" ? v : v.id || v.name || "";
+                const label = typeof v === "string" ? v : v.name || v.id || "";
+                const gender = typeof v === "string" ? undefined : v.gender;
+                return {
+                  value: id,
+                  label: `${label}${gender ? ` (${gender})` : ""}`,
+                  icon: <Mic size={18} />,
+                };
+              },
+            );
             return voiceOptions.length > 0 ? (
               <div className={styles.formGroup}>
                 <label>Voice</label>
@@ -517,13 +542,13 @@ export default function SettingsPanel({
                 />
               </div>
             ) : null;
-          }))()}
+          })()}
 
         {/* Models (non-live) that support thinking levels: Thinking Level dropdown — always visible */}
         {!selectedModelDef?.liveAPI &&
           selectedModelDef?.thinkingLevels &&
           !readOnly &&
-          (((): React.ReactNode => {
+          ((): React.ReactNode => {
             const canDisable =
               selectedModelDef.thinkingLevels!.includes("minimal");
             const options = [
@@ -553,13 +578,14 @@ export default function SettingsPanel({
                 />
               </div>
             );
-          }))()}
+          })()}
 
         {/* Live API model: Voice + Thinking Level dropdowns */}
         {selectedModelDef?.liveAPI &&
           !readOnly &&
-          (((): React.ReactNode => {
-            const googleVoices: VoiceOption[] = config?.textToSpeech?.voices?.google || [];
+          ((): React.ReactNode => {
+            const googleVoices: VoiceOption[] =
+              config?.textToSpeech?.voices?.google || [];
             const currentLiveVoice = settings.liveVoice || "Puck";
             const voiceOptions = googleVoices.map((v) => ({
               value: v.name,
@@ -580,12 +606,12 @@ export default function SettingsPanel({
                 />
               </div>
             ) : null;
-          }))()}
+          })()}
 
         {selectedModelDef?.liveAPI &&
           !readOnly &&
           selectedModelDef?.thinkingLevels &&
-          (((): React.ReactNode => {
+          ((): React.ReactNode => {
             const canDisable =
               selectedModelDef.thinkingLevels!.includes("minimal");
             const options = [
@@ -614,7 +640,7 @@ export default function SettingsPanel({
                 />
               </div>
             );
-          }))()}
+          })()}
 
         {!!(readOnly && selectedModelDef?.liveAPI && settings.liveVoice) && (
           <div className={styles.formGroup}>
@@ -626,11 +652,14 @@ export default function SettingsPanel({
         )}
 
         {/* LiveAPI models in readOnly mode */}
-        {!!(readOnly &&
+        {!!(
+          readOnly &&
           selectedModelDef?.liveAPI &&
-          selectedModelDef?.thinkingLevels) &&
+          selectedModelDef?.thinkingLevels
+        ) &&
           (() => {
-            const canDisable = selectedModelDef.thinkingLevels!.includes("minimal");
+            const canDisable =
+              selectedModelDef.thinkingLevels!.includes("minimal");
             const currentValue =
               settings.liveThinkingLevel ||
               (canDisable ? "none" : selectedModelDef.thinkingLevels![0]);
@@ -641,18 +670,22 @@ export default function SettingsPanel({
                   <Brain size={14} />{" "}
                   {currentValue === "none"
                     ? "No Thinking"
-                    : currentValue.charAt(0).toUpperCase() + currentValue.slice(1)}
+                    : currentValue.charAt(0).toUpperCase() +
+                      currentValue.slice(1)}
                 </div>
               </div>
             );
           })()}
 
         {/* Non-live models in readOnly mode */}
-        {!!(readOnly &&
+        {!!(
+          readOnly &&
           !selectedModelDef?.liveAPI &&
-          selectedModelDef?.thinkingLevels) &&
+          selectedModelDef?.thinkingLevels
+        ) &&
           (() => {
-            const canDisable = selectedModelDef.thinkingLevels!.includes("minimal");
+            const canDisable =
+              selectedModelDef.thinkingLevels!.includes("minimal");
             const currentValue =
               settings.thinkingEnabled === false && canDisable
                 ? "none"
@@ -664,13 +697,19 @@ export default function SettingsPanel({
                   <Brain size={14} />{" "}
                   {currentValue === "none"
                     ? "No Thinking"
-                    : currentValue.charAt(0).toUpperCase() + currentValue.slice(1)}
+                    : currentValue.charAt(0).toUpperCase() +
+                      currentValue.slice(1)}
                 </div>
               </div>
             );
           })()}
 
-        {!!(readOnly && !isTTS && !selectedModelDef?.liveAPI && settings.voice) && (
+        {!!(
+          readOnly &&
+          !isTTS &&
+          !selectedModelDef?.liveAPI &&
+          settings.voice
+        ) && (
           <div className={styles.formGroup}>
             <label>Voice</label>
             <div className={styles.readOnlyValue}>
@@ -678,7 +717,6 @@ export default function SettingsPanel({
             </div>
           </div>
         )}
-
 
         {/* -- Agent Toggles (Plan, Auto, Iterations) ---------------- */}
         {(agentToggles?.length ?? 0) > 0 && (
@@ -721,7 +759,11 @@ export default function SettingsPanel({
                 : {},
             };
             const providerToolLabels =
-              (settings.provider && (TOOL_LABELS as Record<string, Record<string, string>>)[settings.provider]) || {};
+              (settings.provider &&
+                (TOOL_LABELS as Record<string, Record<string, string>>)[
+                  settings.provider
+                ]) ||
+              {};
             const getToolLabel = (tool: string) =>
               (providerToolLabels as Record<string, string>)[tool] || tool;
 
@@ -783,7 +825,9 @@ export default function SettingsPanel({
                   return {
                     checked: settings.codeExecutionEnabled || false,
                     onChange: (value: boolean) => {
-                      const updates: Partial<PrismSettings> = { codeExecutionEnabled: value };
+                      const updates: Partial<PrismSettings> = {
+                        codeExecutionEnabled: value,
+                      };
                       if (value) {
                         updates.webSearchEnabled = false;
                         updates.urlContextEnabled = false;
@@ -885,7 +929,14 @@ export default function SettingsPanel({
           })()}
 
         {!isSpecialModel && !readOnly && !hideSystemPrompt && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              width: "100%",
+            }}
+          >
             <button
               className={`${styles.systemPromptButton} ${settings.systemPrompt ? styles.systemPromptActive : ""}`}
               onClick={() => {

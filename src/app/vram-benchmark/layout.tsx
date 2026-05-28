@@ -4,6 +4,8 @@ export const metadata = {
     "GPU memory profiling for locally-served models — measured vs. estimated VRAM consumption.",
 };
 
-export default function VramBenchmarkLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function VramBenchmarkLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

@@ -30,7 +30,8 @@
 .trigger:hover {
   border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
   background: var(--background-elevated);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  box-shadow: 0 0 12px
+    color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
 .triggerReadOnly {
@@ -45,13 +46,22 @@
 
 .triggerOpen {
   border-color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-surface));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 8%,
+    var(--background-surface)
+  );
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
 .triggerActive {
   border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
-  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-surface));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 6%,
+    var(--background-surface)
+  );
 }
 
 /* ── Loading state ──────────────────────────────────────────────────── */

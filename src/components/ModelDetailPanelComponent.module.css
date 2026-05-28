@@ -450,12 +450,20 @@
 
   &:hover {
     border-color: var(--text-tertiary);
-    background: color-mix(in srgb, var(--background-elevated) 80%, var(--background-surface));
+    background: color-mix(
+      in srgb,
+      var(--background-elevated) 80%,
+      var(--background-surface)
+    );
   }
 }
 
 .statsCardCost {
-  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-elevated));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 6%,
+    var(--background-elevated)
+  );
   border-color: color-mix(
     in srgb,
     var(--accent-primary) 20%,

@@ -58,7 +58,6 @@ const nextConfig: NextConfig = {
   // config.ts applies environment-aware overrides for browser contexts
   // (e.g. public domain for prism-service, proxy path for tools-service).
   env: {
-
     // ── Sessions ──────────────────────────────────────────────
     SESSIONS_SERVICE_URL: secrets.SESSIONS_SERVICE_URL,
     SESSIONS_SERVICE_PUBLIC_URL: secrets.SESSIONS_SERVICE_PUBLIC_URL,

@@ -128,7 +128,11 @@ export interface ToolBadgeRowProps {
  * ToolBadgeRow — renders a row of tool badges from a { toolName: count } map.
  * Used in MessageList for worker tool activity.
  */
-export function ToolBadgeRow({ tools, activeTool, variant }: ToolBadgeRowProps) {
+export function ToolBadgeRow({
+  tools,
+  activeTool,
+  variant,
+}: ToolBadgeRowProps) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
@@ -183,7 +187,11 @@ export interface ModelToolsRowProps {
  *   variant   — "default" | "compact" | "condensed"
  *   className — extra root class name
  */
-export function ModelToolsRow({ tools, variant, className }: ModelToolsRowProps) {
+export function ModelToolsRow({
+  tools,
+  variant,
+  className,
+}: ModelToolsRowProps) {
   if (!tools) return null;
 
   const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);

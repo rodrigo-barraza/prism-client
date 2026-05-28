@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import IrisService, { type RateLimitData, type ModelRateLimitData } from "../../../services/IrisService";
+import IrisService, {
+  type RateLimitData,
+  type ModelRateLimitData,
+} from "../../../services/IrisService";
 import PrismService from "../../../services/PrismService";
 import {
   SelectComponent,
@@ -56,7 +59,9 @@ export default function ProvidersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
-  const [rateLimits, setRateLimits] = useState<Record<string, RateLimitData>>({});
+  const [rateLimits, setRateLimits] = useState<Record<string, RateLimitData>>(
+    {},
+  );
 
   useEffect(() => {
     // Immediately enter loading state and clear stale data when filters change
@@ -268,7 +273,9 @@ export default function ProvidersPage() {
                   <TableComponent
                     columns={modelColumns}
                     data={p.models}
-                    getRowKey={(m: ModelStat, index: number) => `${m.model}-${index}`}
+                    getRowKey={(m: ModelStat, index: number) =>
+                      `${m.model}-${index}`
+                    }
                   />
                 </div>
               )}
@@ -296,14 +303,16 @@ function RateLimitPanel({ data }: { data: RateLimitData }) {
         {note && <span className={styles.rateLimitMeta}>{note}</span>}
       </div>
       <div className={styles.rateLimitModels}>
-        {Object.entries(models).map(([modelName, modelData]: [string, ModelRateLimitData]) => (
-          <ModelRateLimitCard
-            key={modelName}
-            modelName={modelName}
-            modelData={modelData}
-            dynamic={dynamic}
-          />
-        ))}
+        {Object.entries(models).map(
+          ([modelName, modelData]: [string, ModelRateLimitData]) => (
+            <ModelRateLimitCard
+              key={modelName}
+              modelName={modelName}
+              modelData={modelData}
+              dynamic={dynamic}
+            />
+          ),
+        )}
       </div>
     </div>
   );
@@ -396,7 +405,17 @@ function ModelRateLimitCard({
 /**
  * Compact progress bar with label, remaining/limit, and optional reset timer.
  */
-function LimitBar({ label, remaining, limit, reset }: { label: string; remaining: number; limit: number; reset?: string }) {
+function LimitBar({
+  label,
+  remaining,
+  limit,
+  reset,
+}: {
+  label: string;
+  remaining: number;
+  limit: number;
+  reset?: string;
+}) {
   if (limit == null || limit === 0) return null;
 
   const rem = remaining ?? 0;
@@ -426,7 +445,13 @@ function LimitBar({ label, remaining, limit, reset }: { label: string; remaining
   );
 }
 
-function RateLimitMetric({ label, value }: { label: string; value: number | undefined }) {
+function RateLimitMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: number | undefined;
+}) {
   return (
     <span className={styles.rateLimitMetric}>
       <span className={styles.rateLimitMetricValue}>

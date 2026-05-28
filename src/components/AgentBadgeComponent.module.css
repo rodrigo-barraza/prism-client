@@ -75,9 +75,11 @@
 }
 
 /* Custom agents — fallback gradient for any agent not in the hardcoded list */
-.badgeInner:not([data-agent-identifier="CODING"]):not([data-agent-identifier="OMNI"]):not(
-    [data-agent-identifier="LUPOS"]
-  ):not([data-agent-identifier="STICKERS"]):not([data-agent-identifier="DIGEST"]):not(
+.badgeInner:not([data-agent-identifier="CODING"]):not(
+    [data-agent-identifier="OMNI"]
+  ):not([data-agent-identifier="LUPOS"]):not(
+    [data-agent-identifier="STICKERS"]
+  ):not([data-agent-identifier="DIGEST"]):not(
     [data-agent-identifier="OOG"]
   ):not([data-agent-identifier="LIGHTS"]):not([data-agent-identifier="IMAGE"]) {
   background: linear-gradient(

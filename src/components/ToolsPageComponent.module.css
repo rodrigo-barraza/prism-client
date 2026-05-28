@@ -394,7 +394,11 @@
     transparent
   );
   border: 1px solid
-    color-mix(in srgb, var(--agent-color, var(--accent-primary)) 25%, transparent);
+    color-mix(
+      in srgb,
+      var(--agent-color, var(--accent-primary)) 25%,
+      transparent
+    );
   padding: 2px 7px;
   border-radius: var(--border-radius-sm);
   white-space: nowrap;

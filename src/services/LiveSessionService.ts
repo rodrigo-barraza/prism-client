@@ -19,15 +19,34 @@ export interface LiveSessionCallbacks {
   onAudio?: (data: string, mimeType: string) => void;
   onText?: (text: string) => void;
   onThinking?: (content: string) => void;
-  onToolCall?: (functionCalls: Array<{ name: string; args?: Record<string, unknown>; id?: string }>) => void;
-  onToolExecution?: (event: { type: string; name?: string; status?: string; result?: unknown }) => void;
-  onToolOutput?: (event: { type: string; name?: string; output?: unknown }) => void;
+  onToolCall?: (
+    functionCalls: Array<{
+      name: string;
+      args?: Record<string, unknown>;
+      id?: string;
+    }>,
+  ) => void;
+  onToolExecution?: (event: {
+    type: string;
+    name?: string;
+    status?: string;
+    result?: unknown;
+  }) => void;
+  onToolOutput?: (event: {
+    type: string;
+    name?: string;
+    output?: unknown;
+  }) => void;
   onInputTranscription?: (text: string) => void;
   onOutputTranscription?: (text: string) => void;
   onUserAudioReady?: (userAudioRef: string) => void;
   onTurnComplete?: (data: { type: string; totalTokens?: number }) => void;
   onInterrupted?: (data: { type: string }) => void;
-  onUsage?: (usage: { inputTokens?: number; outputTokens?: number; totalTokens?: number }) => void;
+  onUsage?: (usage: {
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+  }) => void;
   onError?: (message: string) => void;
   onClose?: () => void;
 }
@@ -124,8 +143,7 @@ export default class LiveSessionService {
     switch (data.type) {
       case "setupComplete":
         this.connected = true;
-        if (this.callbacks.onSetupComplete)
-          this.callbacks.onSetupComplete();
+        if (this.callbacks.onSetupComplete) this.callbacks.onSetupComplete();
         break;
 
       case "audio":
@@ -137,8 +155,7 @@ export default class LiveSessionService {
         break;
 
       case "text":
-        if (this.callbacks.onText)
-          this.callbacks.onText(data.text as string);
+        if (this.callbacks.onText) this.callbacks.onText(data.text as string);
         break;
 
       case "thinking":
@@ -148,7 +165,13 @@ export default class LiveSessionService {
 
       case "toolCall":
         if (this.callbacks.onToolCall)
-          this.callbacks.onToolCall(data.functionCalls as Array<{ name: string; args?: Record<string, unknown>; id?: string }>);
+          this.callbacks.onToolCall(
+            data.functionCalls as Array<{
+              name: string;
+              args?: Record<string, unknown>;
+              id?: string;
+            }>,
+          );
         break;
 
       case "tool_execution":
@@ -182,19 +205,23 @@ export default class LiveSessionService {
         break;
 
       case "turnComplete":
-        if (this.callbacks.onTurnComplete)
-          this.callbacks.onTurnComplete(data);
+        if (this.callbacks.onTurnComplete) this.callbacks.onTurnComplete(data);
         break;
 
       case "interrupted":
         this.stopAudioPlayback();
-        if (this.callbacks.onInterrupted)
-          this.callbacks.onInterrupted(data);
+        if (this.callbacks.onInterrupted) this.callbacks.onInterrupted(data);
         break;
 
       case "usage":
         if (this.callbacks.onUsage)
-          this.callbacks.onUsage(data.usage as { inputTokens?: number; outputTokens?: number; totalTokens?: number });
+          this.callbacks.onUsage(
+            data.usage as {
+              inputTokens?: number;
+              outputTokens?: number;
+              totalTokens?: number;
+            },
+          );
         break;
 
       case "error":
@@ -247,9 +274,7 @@ export default class LiveSessionService {
 
   sendToolResponse(responses: LiveToolResponse[]) {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(
-        JSON.stringify({ type: "toolResponse", responses }),
-      );
+      this.ws.send(JSON.stringify({ type: "toolResponse", responses }));
     }
   }
 
@@ -265,13 +290,12 @@ export default class LiveSessionService {
       // polyphase resampler, eliminating manual downsampling.
       if (!this.audioContext) {
         this.audioContext = new (
-          window.AudioContext || (window as unknown as WebkitAudioWindow).webkitAudioContext!
+          window.AudioContext ||
+          (window as unknown as WebkitAudioWindow).webkitAudioContext!
         )({
           sampleRate: 16000,
         });
-        await this.audioContext.audioWorklet.addModule(
-          "/pcm-processor.js",
-        );
+        await this.audioContext.audioWorklet.addModule("/pcm-processor.js");
       }
 
       if (this.audioContext.state === "suspended") {
@@ -296,7 +320,9 @@ export default class LiveSessionService {
         "pcm-processor",
       );
 
-      this.audioWorkletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
+      this.audioWorkletNode.port.onmessage = (
+        event: MessageEvent<Float32Array>,
+      ) => {
         if (!this.isRecording) return;
 
         // Already at 16kHz from the AudioContext — convert Float32 → Int16 PCM
@@ -354,7 +380,8 @@ export default class LiveSessionService {
     if (!this._playbackInitPromise) {
       this._playbackInitPromise = (async () => {
         this.playbackContext = new (
-          window.AudioContext || (window as unknown as WebkitAudioWindow).webkitAudioContext!
+          window.AudioContext ||
+          (window as unknown as WebkitAudioWindow).webkitAudioContext!
         )({
           sampleRate: 24000,
         });
@@ -365,9 +392,7 @@ export default class LiveSessionService {
           this.playbackContext,
           "playback-processor",
         );
-        this.playbackWorkletNode.connect(
-          this.playbackContext.destination,
-        );
+        this.playbackWorkletNode.connect(this.playbackContext.destination);
       })();
     }
     return this._playbackInitPromise;

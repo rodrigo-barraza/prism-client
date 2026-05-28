@@ -94,7 +94,11 @@ export default function WorkflowSidebar({
             className={styles.nameInput}
             placeholder="Untitled Workflow"
             value={workflowName || ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onWorkflowNameChange?.(e.target.value)}
+            onChange={(
+              e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => onWorkflowNameChange?.(e.target.value)}
           />
         </div>
       )}

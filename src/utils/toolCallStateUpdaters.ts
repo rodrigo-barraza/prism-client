@@ -51,7 +51,7 @@ export function applyToolExecutionToMessages(
   const last = array[array.length - 1];
 
   const currentToolCalls: ToolCallEvent[] =
-    last?.role === "assistant" ? (last.toolCalls || []) : [];
+    last?.role === "assistant" ? last.toolCalls || [] : [];
 
   let updatedToolCalls: ToolCallEvent[];
 
@@ -176,7 +176,7 @@ export function applyToolCallToMessages(
   const last = array[array.length - 1];
 
   const currentToolCalls: ToolCallEvent[] =
-    last?.role === "assistant" ? (last.toolCalls || []) : [];
+    last?.role === "assistant" ? last.toolCalls || [] : [];
 
   let updatedToolCalls: ToolCallEvent[];
 
@@ -199,9 +199,7 @@ export function applyToolCallToMessages(
     updatedToolCalls = currentToolCalls.map((tc) => {
       if (
         (toolData.id && tc.id === toolData.id) ||
-        (!toolData.id &&
-          tc.name === toolData.name &&
-          tc.status === "calling")
+        (!toolData.id && tc.name === toolData.name && tc.status === "calling")
       ) {
         return {
           ...tc,

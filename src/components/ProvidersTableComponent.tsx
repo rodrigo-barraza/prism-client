@@ -36,12 +36,10 @@ export default function ProvidersTableComponent({
   maxHeight = 420,
 }: ProvidersTableProps) {
   const totalRequests =
-    (totalRequestsProp ??
-      providers.reduce((s, p) => s + p.totalRequests, 0)) ||
+    (totalRequestsProp ?? providers.reduce((s, p) => s + p.totalRequests, 0)) ||
     1;
   const totalCost =
-    (totalCostProp ??
-      providers.reduce((s, p) => s + (p.totalCost || 0), 0)) ||
+    (totalCostProp ?? providers.reduce((s, p) => s + (p.totalCost || 0), 0)) ||
     1;
 
   const allColumns = [

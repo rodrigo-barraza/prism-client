@@ -51,7 +51,11 @@ let generationEndBuffer: AudioBuffer | null = null;
  */
 function ensureContext(): AudioContext {
   if (!context) {
-    context = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    context = new (
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext
+    )();
   }
   if (context.state === "suspended") {
     context.resume();
@@ -246,7 +250,8 @@ function getGenerationStartBuffer(): AudioBuffer {
     const time = i / sampleRate;
     const progress = i / length;
 
-    const frequency = frequencyStart + (frequencyEnd - frequencyStart) * progress;
+    const frequency =
+      frequencyStart + (frequencyEnd - frequencyStart) * progress;
     phase += (2 * Math.PI * frequency) / sampleRate;
 
     const sine = Math.sin(phase);
@@ -285,7 +290,8 @@ function getGenerationEndBuffer(): AudioBuffer {
     const time = i / sampleRate;
     const progress = i / length;
 
-    const frequency = frequencyStart + (frequencyEnd - frequencyStart) * progress;
+    const frequency =
+      frequencyStart + (frequencyEnd - frequencyStart) * progress;
     phase += (2 * Math.PI * frequency) / sampleRate;
 
     const sine = Math.sin(phase);
@@ -312,7 +318,11 @@ function getGenerationEndBuffer(): AudioBuffer {
  * signal on both channels. Each GainNode then scales independently
  * according to the caller's 0–100 value.
  */
-function connectStereo(source: AudioBufferSourceNode, left: number, right: number): void {
+function connectStereo(
+  source: AudioBufferSourceNode,
+  left: number,
+  right: number,
+): void {
   const audio = ensureContext();
 
   // Up-mix mono to stereo so the splitter has two channels
@@ -351,10 +361,12 @@ function connectStereo(source: AudioBufferSourceNode, left: number, right: numbe
  */
 function spatialFromEvent(event: Event | undefined): SpatialResult {
   const element = (event as UIEvent | undefined)?.target as HTMLElement | null;
-  const el = element ?? ((event as UIEvent | undefined)?.currentTarget as HTMLElement | null);
-  if (!el?.getBoundingClientRect) return { left: 50, right: 50 };
+  const targetElement =
+    element ??
+    ((event as UIEvent | undefined)?.currentTarget as HTMLElement | null);
+  if (!targetElement?.getBoundingClientRect) return { left: 50, right: 50 };
 
-  const rect = el.getBoundingClientRect();
+  const rect = targetElement.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
   const ratio = Math.max(0, Math.min(1, centerX / window.innerWidth));
 
@@ -477,7 +489,10 @@ const SoundService = {
   interactive(
     onClick?: (e: React.MouseEvent) => void,
     onMouseEnter?: (e: React.MouseEvent) => void,
-  ): { onClick: (e: React.MouseEvent) => void; onMouseEnter: (e: React.MouseEvent) => void } {
+  ): {
+    onClick: (e: React.MouseEvent) => void;
+    onMouseEnter: (e: React.MouseEvent) => void;
+  } {
     return {
       onMouseEnter: (e: React.MouseEvent) => {
         SoundService.playHover({ event: e.nativeEvent });

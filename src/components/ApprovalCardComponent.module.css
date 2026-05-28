@@ -4,7 +4,11 @@
   width: 100%;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--color-warning) 25%, transparent);
-  background: color-mix(in srgb, var(--color-warning) 4%, var(--background-surface));
+  background: color-mix(
+    in srgb,
+    var(--color-warning) 4%,
+    var(--background-surface)
+  );
   padding: 12px 14px;
   animation: slideIn 0.2s ease-out;
 

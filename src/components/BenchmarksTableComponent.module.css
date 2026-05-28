@@ -21,7 +21,8 @@
     color-mix(in srgb, var(--color-success) 18%, transparent) 70%,
     color-mix(in srgb, var(--color-success) 8%, transparent) 100%
   );
-  border-right: 2px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+  border-right: 2px solid
+    color-mix(in srgb, var(--color-success) 30%, transparent);
   transform-origin: left;
   transition: transform 0.12s linear;
   pointer-events: none;

@@ -16,7 +16,11 @@ describe("resolveDefaultModel utility", () => {
           ],
           google: [
             { name: "gemini-3-pro-preview", tools: ["Tool Calling"] },
-            { name: "gemini-3.5-flash", tools: ["Tool Calling"], defaultTemperature: 1.0 },
+            {
+              name: "gemini-3.5-flash",
+              tools: ["Tool Calling"],
+              defaultTemperature: 1.0,
+            },
           ],
         },
       },
@@ -37,7 +41,11 @@ describe("resolveDefaultModel utility", () => {
           ],
           anthropic: [
             { name: "claude-sonnet-4-5-20250929", tools: ["Tool Calling"] },
-            { name: "claude-haiku-4-5-20251001", tools: ["Tool Calling"], defaultTemperature: 1.0 },
+            {
+              name: "claude-haiku-4-5-20251001",
+              tools: ["Tool Calling"],
+              defaultTemperature: 1.0,
+            },
           ],
         },
       },
@@ -54,7 +62,11 @@ describe("resolveDefaultModel utility", () => {
         models: {
           openai: [
             { name: "gpt-5.4", tools: ["Tool Calling"] },
-            { name: "gpt-5.4-mini", tools: ["Tool Calling"], defaultTemperature: 1.0 },
+            {
+              name: "gpt-5.4-mini",
+              tools: ["Tool Calling"],
+              defaultTemperature: 1.0,
+            },
           ],
         },
       },
@@ -71,7 +83,11 @@ describe("resolveDefaultModel utility", () => {
         models: {
           google: [
             { name: "gemini-3.5-flash", tools: [] }, // No tool calling
-            { name: "gemini-3-pro-preview", tools: ["Tool Calling"], defaultTemperature: 0.7 },
+            {
+              name: "gemini-3-pro-preview",
+              tools: ["Tool Calling"],
+              defaultTemperature: 0.7,
+            },
           ],
         },
       },
@@ -87,9 +103,7 @@ describe("resolveDefaultModel utility", () => {
     const config = {
       textToText: {
         models: {
-          openai: [
-            { name: "gpt-5.2", tools: [] },
-          ],
+          openai: [{ name: "gpt-5.2", tools: [] }],
         },
       },
     };

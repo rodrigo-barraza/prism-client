@@ -60,6 +60,7 @@ export const LS_ADMIN_PROJECT_FILTER = "admin:projectFilter";
 export const LS_DATE_RANGE = "prism-date-range";
 export const LS_WORKSPACE_ROOT = "prism:workspace";
 export const LS_FILE_VIEWER_WIDTH = "prism:fileViewerWidth";
+export const LS_LEFT_SIDEBAR_SPLIT_RATIO = "prism:leftSidebarSplitRatio";
 
 // -- Settings defaults (shared by Agent, admin) ------
 export const SETTINGS_DEFAULTS = {

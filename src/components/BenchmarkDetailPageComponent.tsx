@@ -29,14 +29,24 @@ import AgentPickerComponent from "./AgentPickerComponent";
 import BenchmarksTableComponent from "./BenchmarksTableComponent";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
-
-
 import StorageService from "../services/StorageService";
 import { SK_MODEL_MEMORY_BENCHMARKS } from "../constants";
 import { formatCost, generateUUID } from "../utils/utilities";
 import styles from "./BenchmarkPageComponent.module.css";
 import type { ReactNode } from "react";
-import type { Benchmark, BenchmarkRun, BenchmarkRunResult, AgentPersona, PrismConfig, ModelOption, ToolCallEvent, SSECallbacks, SSEData, Message, AgentBenchmarkAssertion } from "../types/types";
+import type {
+  Benchmark,
+  BenchmarkRun,
+  BenchmarkRunResult,
+  AgentPersona,
+  PrismConfig,
+  ModelOption,
+  ToolCallEvent,
+  SSECallbacks,
+  SSEData,
+  Message,
+  AgentBenchmarkAssertion,
+} from "../types/types";
 
 export interface ModelInstance {
   instanceId: string;
@@ -61,7 +71,13 @@ export interface ModelOptionWithProvider extends ModelOption {
 interface LiveModelData {
   text: string;
   thinking: string;
-  toolCalls: Array<{ id?: string; name?: string; args?: unknown; status?: string; result?: unknown }>;
+  toolCalls: Array<{
+    id?: string;
+    name?: string;
+    args?: unknown;
+    status?: string;
+    result?: unknown;
+  }>;
 }
 
 /** SSE tool call event shape — alias for ToolCallEvent from types.ts */
@@ -103,13 +119,19 @@ const MATCH_MODES = [
 /**
  * Flatten config into a flat array for deriving selectedModels and modelConfigMap.
  */
-function flattenAllModels(config: PrismConfig | null): ModelOptionWithProvider[] {
+function flattenAllModels(
+  config: PrismConfig | null,
+): ModelOptionWithProvider[] {
   if (!config) return [];
   const seen = new Map<string, ModelOptionWithProvider>();
   const sections = ["textToText", "textToImage", "audioToText", "textToSpeech"];
   for (const key of sections) {
-    const modelsMap = (config[key as keyof PrismConfig] as Record<string, unknown>)?.models || {};
-    for (const [provider, models] of Object.entries(modelsMap as Record<string, ModelOption[]>)) {
+    const modelsMap =
+      (config[key as keyof PrismConfig] as Record<string, unknown>)?.models ||
+      {};
+    for (const [provider, models] of Object.entries(
+      modelsMap as Record<string, ModelOption[]>,
+    )) {
       for (const m of models) {
         const id = `${provider}:${m.name}`;
         if (!seen.has(id)) seen.set(id, { ...m, provider });
@@ -124,12 +146,23 @@ function flattenAllModels(config: PrismConfig | null): ModelOptionWithProvider[]
  * If the event carries a `_sourceModel` tag (provider + model), use that directly.
  * Otherwise fall back to the last active key in the live data map.
  */
-function resolveModelKeyForContent(liveDataMap: Map<string, LiveModelData>, sourceModel: string | { provider?: string; model?: string } | null | undefined) {
+function resolveModelKeyForContent(
+  liveDataMap: Map<string, LiveModelData>,
+  sourceModel:
+    | string
+    | { provider?: string; model?: string }
+    | null
+    | undefined,
+) {
   // Prefer explicit source tag (set by backend for concurrent benchmark runs)
-  if (typeof sourceModel === 'object' && sourceModel?.provider && sourceModel?.model) {
+  if (
+    typeof sourceModel === "object" &&
+    sourceModel?.provider &&
+    sourceModel?.model
+  ) {
     const key = `${sourceModel.provider}:${sourceModel.model}`;
     if (liveDataMap.has(key)) return key;
-  } else if (typeof sourceModel === 'string' && sourceModel.includes(':')) {
+  } else if (typeof sourceModel === "string" && sourceModel.includes(":")) {
     // String format: "provider:model"
     if (liveDataMap.has(sourceModel)) return sourceModel;
   }
@@ -163,7 +196,9 @@ export default function BenchmarkDetailPageComponent({
   navSidebar,
   rightSidebar,
 }: BenchmarkDetailPageComponentProps) {
-  const benchmarkId = Array.isArray(benchmarkIdProp) ? benchmarkIdProp[0] : (benchmarkIdProp || "");
+  const benchmarkId = Array.isArray(benchmarkIdProp)
+    ? benchmarkIdProp[0]
+    : benchmarkIdProp || "";
   const router = useRouter();
   // -- State --------------------------------------------------
   const [benchmark, setBenchmark] = useState<Benchmark | null>(null);
@@ -195,39 +230,50 @@ export default function BenchmarkDetailPageComponent({
   // Model selection — instance-based: each entry has a unique instanceId
   // so the same model can be selected multiple times with different settings.
   const [prismConfig, setPrismConfig] = useState<PrismConfig | null>(null);
-  const [selectedInstances, setSelectedInstances] = useState<ModelInstance[]>(() => {
-    const saved = StorageService.get<BenchmarkStorage>(SK_MODEL_MEMORY_BENCHMARKS);
-    // Migration: if saved data uses the old Set-based selectedKeys format,
-    // convert each key into an instance object.
-    if (saved?.selectedKeys && Array.isArray(saved.selectedKeys)) {
-      return saved.selectedKeys.map((key: string) => {
-        const [provider, ...rest] = key.split(":");
-        return { instanceId: generateUUID(), provider, name: rest.join(":") };
-      });
-    }
-    // New format: array of instance objects
-    if (saved?.instances && Array.isArray(saved.instances)) {
-      return saved.instances;
-    }
-    return [];
-  });
+  const [selectedInstances, setSelectedInstances] = useState<ModelInstance[]>(
+    () => {
+      const saved = StorageService.get<BenchmarkStorage>(
+        SK_MODEL_MEMORY_BENCHMARKS,
+      );
+      // Migration: if saved data uses the old Set-based selectedKeys format,
+      // convert each key into an instance object.
+      if (saved?.selectedKeys && Array.isArray(saved.selectedKeys)) {
+        return saved.selectedKeys.map((key: string) => {
+          const [provider, ...rest] = key.split(":");
+          return { instanceId: generateUUID(), provider, name: rest.join(":") };
+        });
+      }
+      // New format: array of instance objects
+      if (saved?.instances && Array.isArray(saved.instances)) {
+        return saved.instances;
+      }
+      return [];
+    },
+  );
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   // Available agent personas (fetched dynamically)
   const [availableAgents, setAvailableAgents] = useState<AgentPersona[]>([]);
 
   // Selected result (for chat preview)
-  const [selectedResult, setSelectedResult] = useState<BenchmarkRunResult | null>(null);
+  const [selectedResult, setSelectedResult] =
+    useState<BenchmarkRunResult | null>(null);
 
   // Per-model thinking toggle: Map<instanceId, boolean>
-  const [thinkingMap, setThinkingMap] = useState<Record<string, boolean>>(() => {
-    const saved = StorageService.get<BenchmarkStorage>(SK_MODEL_MEMORY_BENCHMARKS);
-    return saved?.thinkingMap && typeof saved.thinkingMap === "object"
-      ? saved.thinkingMap
-      : {};
-  });
+  const [thinkingMap, setThinkingMap] = useState<Record<string, boolean>>(
+    () => {
+      const saved = StorageService.get<BenchmarkStorage>(
+        SK_MODEL_MEMORY_BENCHMARKS,
+      );
+      return saved?.thinkingMap && typeof saved.thinkingMap === "object"
+        ? saved.thinkingMap
+        : {};
+    },
+  );
   const [toolsMap, setToolsMap] = useState<Record<string, boolean>>(() => {
-    const saved = StorageService.get<BenchmarkStorage>(SK_MODEL_MEMORY_BENCHMARKS);
+    const saved = StorageService.get<BenchmarkStorage>(
+      SK_MODEL_MEMORY_BENCHMARKS,
+    );
     return saved?.toolsMap && typeof saved.toolsMap === "object"
       ? saved.toolsMap
       : {};
@@ -235,7 +281,9 @@ export default function BenchmarkDetailPageComponent({
 
   // Agent instances — same instance-based pattern as models
   const [agentInstances, setAgentInstances] = useState<AgentInstance[]>(() => {
-    const saved = StorageService.get<BenchmarkStorage>(SK_MODEL_MEMORY_BENCHMARKS);
+    const saved = StorageService.get<BenchmarkStorage>(
+      SK_MODEL_MEMORY_BENCHMARKS,
+    );
     if (saved?.agents && Array.isArray(saved.agents)) {
       return saved.agents;
     }
@@ -254,39 +302,46 @@ export default function BenchmarkDetailPageComponent({
   );
 
   // Smart row click: running rows switch the live preview, completed rows set selectedResult
-  const handleStreamingRowClick = useCallback((row: BenchmarkRunResult & { _running?: boolean; _pending?: boolean }) => {
-    if (row._running) {
-      // Switch live preview to this model
-      const key = `${row.provider}:${row.model}`;
-      setViewedModelKey(key);
-      setSelectedResult(null);
-      // Immediately flush this model's accumulated data so the preview updates instantly
-      const benchmarkData = liveDataRef.current.get(key);
-      if (benchmarkData) {
-        setLiveSnapshot({
-          text: benchmarkData.text,
-          thinking: benchmarkData.thinking,
-          toolCalls: [...benchmarkData.toolCalls],
-        });
+  const handleStreamingRowClick = useCallback(
+    (row: BenchmarkRunResult & { _running?: boolean; _pending?: boolean }) => {
+      if (row._running) {
+        // Switch live preview to this model
+        const key = `${row.provider}:${row.model}`;
+        setViewedModelKey(key);
+        setSelectedResult(null);
+        // Immediately flush this model's accumulated data so the preview updates instantly
+        const benchmarkData = liveDataRef.current.get(key);
+        if (benchmarkData) {
+          setLiveSnapshot({
+            text: benchmarkData.text,
+            thinking: benchmarkData.thinking,
+            toolCalls: [...benchmarkData.toolCalls],
+          });
+        }
+      } else if (row._pending) {
+        // Ignore clicks on queued rows
+        return;
+      } else {
+        // Completed result — show in chat preview
+        setSelectedResult(row);
       }
-    } else if (row._pending) {
-      // Ignore clicks on queued rows
-      return;
-    } else {
-      // Completed result — show in chat preview
-      setSelectedResult(row);
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Streaming progress — supports concurrent model execution across provider buckets
-  const [streamingResults, setStreamingResults] = useState<BenchmarkRunResult[]>([]);
+  const [streamingResults, setStreamingResults] = useState<
+    BenchmarkRunResult[]
+  >([]);
   const [streamingTotal, setStreamingTotal] = useState(0);
   // Map<modelKey, { model, progress, phase }> for all concurrently-running models
   const [activeModels, setActiveModels] = useState(new Map());
   const [pendingTargets, setPendingTargets] = useState<BenchmarkTarget[]>([]);
   const abortRef = useRef<(() => void) | null>(null);
   // Per-model progress intervals: Map<modelKey, intervalId>
-  const progressIntervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
+  const progressIntervalsRef = useRef<
+    Map<string, ReturnType<typeof setInterval>>
+  >(new Map());
 
   // The model key the user is currently viewing in live preview (sticky — doesn't auto-switch)
   const [viewedModelKey, setViewedModelKey] = useState<string | null>(null);
@@ -390,7 +445,11 @@ export default function BenchmarkDetailPageComponent({
 
       // -- Model lifecycle — supports concurrent models across providers --
       onModelStart: (data: SSEData) => {
-        const { provider, model, isLocal } = data as unknown as { provider: string; model: string; isLocal?: boolean };
+        const { provider, model, isLocal } = data as unknown as {
+          provider: string;
+          model: string;
+          isLocal?: boolean;
+        };
         const modelKey = `${provider}:${model}`;
 
         // Initialize live data refs for this model
@@ -428,7 +487,11 @@ export default function BenchmarkDetailPageComponent({
         const initialPhase = isLocal ? "Loading model" : "Connecting";
         setActiveModels((prev) => {
           const next = new Map(prev);
-          next.set(modelKey, { model: data as any, progress: 0, phase: initialPhase });
+          next.set(modelKey, {
+            model: data as any,
+            progress: 0,
+            phase: initialPhase,
+          });
           return next;
         });
 
@@ -536,7 +599,12 @@ export default function BenchmarkDetailPageComponent({
         if (toolCall.status === "calling") {
           benchmarkData.toolCalls = [
             ...benchmarkData.toolCalls,
-            { id: toolCall.id, name: toolCall.name, args: toolCall.args, status: "calling" },
+            {
+              id: toolCall.id,
+              name: toolCall.name,
+              args: toolCall.args,
+              status: "calling",
+            },
           ];
         } else {
           benchmarkData.toolCalls = benchmarkData.toolCalls.map((t) =>
@@ -559,7 +627,13 @@ export default function BenchmarkDetailPageComponent({
         if (!key) return;
         const benchmarkData = liveDataRef.current.get(key);
         if (!benchmarkData) return;
-        const tool = (data as Record<string, unknown>).tool as { id?: string; name?: string; args?: unknown; result?: unknown } || {};
+        const tool =
+          ((data as Record<string, unknown>).tool as {
+            id?: string;
+            name?: string;
+            args?: unknown;
+            result?: unknown;
+          }) || {};
         if ((data as Record<string, unknown>).status === "calling") {
           benchmarkData.toolCalls = [
             ...benchmarkData.toolCalls,
@@ -675,14 +749,14 @@ export default function BenchmarkDetailPageComponent({
 
     // Load favorites
     PrismService.getFavorites("model")
-      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
+      .then((favs: Array<{ key: string }>) =>
+        setFavoriteKeys(favs.map((f) => f.key)),
+      )
       .catch(() => {});
 
     // Load agent personas (all built-in + custom, excluding "Agentless")
     PrismService.getAgentPersonas()
-      .then((list) =>
-        setAvailableAgents(list.filter((a) => a.id !== "NONE")),
-      )
+      .then((list) => setAvailableAgents(list.filter((a) => a.id !== "NONE")))
       .catch(() => {});
   }, []);
 
@@ -712,15 +786,22 @@ export default function BenchmarkDetailPageComponent({
   const selectedModels = useMemo(() => {
     const configMap = new Map();
     for (const m of allModels) configMap.set(`${m.provider}:${m.name}`, m);
-    return selectedInstances.map((inst: { instanceId: string; provider: string; name: string }) => {
-      const config = configMap.get(`${inst.provider}:${inst.name}`) || {};
-      return { ...config, ...inst };
-    });
+    return selectedInstances.map(
+      (inst: { instanceId: string; provider: string; name: string }) => {
+        const config = configMap.get(`${inst.provider}:${inst.name}`) || {};
+        return { ...config, ...inst };
+      },
+    );
   }, [allModels, selectedInstances]);
 
   // Derive a selectedKeys Set for the model picker checkmarks
   const selectedModelKeys = useMemo(
-    () => new Set<string>(selectedInstances.map((i: { provider: string; name: string }) => `${i.provider}:${i.name}`)),
+    () =>
+      new Set<string>(
+        selectedInstances.map(
+          (i: { provider: string; name: string }) => `${i.provider}:${i.name}`,
+        ),
+      ),
     [selectedInstances],
   );
 
@@ -736,15 +817,14 @@ export default function BenchmarkDetailPageComponent({
   // -- Clone --------------------------------------------------
   const openClone = useCallback(() => {
     if (!benchmark) return;
-    const assertions =
-      benchmark.assertions?.length
-        ? benchmark.assertions
-        : [
-            {
-              expectedValue: benchmark.expectedValue || "",
-              matchMode: benchmark.matchMode || "contains",
-            },
-          ];
+    const assertions = benchmark.assertions?.length
+      ? benchmark.assertions
+      : [
+          {
+            expectedValue: benchmark.expectedValue || "",
+            matchMode: benchmark.matchMode || "contains",
+          },
+        ];
     setForm({
       name: `${benchmark.name} (copy)`,
       prompt: benchmark.prompt || "",
@@ -753,8 +833,7 @@ export default function BenchmarkDetailPageComponent({
       assertions,
       assertionOperator: benchmark.assertionOperator || "AND",
       agentAssertions: benchmark.agentAssertions || [],
-      agentAssertionOperator:
-        benchmark.agentAssertionOperator || "AND",
+      agentAssertionOperator: benchmark.agentAssertionOperator || "AND",
     });
     setShowModal(true);
   }, [benchmark]);
@@ -1337,12 +1416,10 @@ export default function BenchmarkDetailPageComponent({
                       : [
                           {
                             expectedValue: benchmark.expectedValue || "",
-                            matchMode:
-                              benchmark.matchMode || "contains",
+                            matchMode: benchmark.matchMode || "contains",
                           },
                         ];
-                  const operator =
-                    benchmark.assertionOperator || "AND";
+                  const operator = benchmark.assertionOperator || "AND";
                   return assertions.map((a, i) => (
                     <span key={i} style={{ display: "contents" }}>
                       {i > 0 && (
@@ -1371,8 +1448,7 @@ export default function BenchmarkDetailPageComponent({
                         (benchmark.assertions?.length ?? 0) > 0)) && (
                       <BadgeComponent
                         variant={
-                          (benchmark.agentAssertionOperator ||
-                            "AND") === "OR"
+                          (benchmark.agentAssertionOperator || "AND") === "OR"
                             ? "warning"
                             : "info"
                         }
@@ -1399,18 +1475,15 @@ export default function BenchmarkDetailPageComponent({
             (() => {
               const totalExpected = streamingTotal || selectedModels.length;
               const completed = streamingResults.length;
-              const passed = streamingResults.filter(
-                (r) => r.passed,
-              ).length;
+              const passed = streamingResults.filter((r) => r.passed).length;
               const failed = streamingResults.filter(
                 (r) => !r.passed && !r.error,
               ).length;
-              const errored = streamingResults.filter(
-                (r) => r.error,
-              ).length;
+              const errored = streamingResults.filter((r) => r.error).length;
               const runningCount = activeModelCount;
               const totalCost = streamingResults.reduce(
-                (s: number, r: BenchmarkRunResult) => s + (r.estimatedCost || 0),
+                (s: number, r: BenchmarkRunResult) =>
+                  s + (r.estimatedCost || 0),
                 0,
               );
               const passRate = completed > 0 ? (passed / completed) * 100 : 0;
@@ -1530,11 +1603,16 @@ export default function BenchmarkDetailPageComponent({
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {(() => {
-                    const totalDuration = (
-                      latestRun.models || []
-                    ).reduce((sum: number, r: BenchmarkRunResult) => sum + (r.latencyMs || 0), 0);
+                    const totalDuration = (latestRun.models || []).reduce(
+                      (sum: number, r: BenchmarkRunResult) =>
+                        sum + (r.latencyMs || 0),
+                      0,
+                    );
                     return totalDuration > 0 ? (
-                      <BadgeComponent type="stopwatch" seconds={totalDuration} />
+                      <BadgeComponent
+                        type="stopwatch"
+                        seconds={totalDuration}
+                      />
                     ) : null;
                   })()}
                   <BadgeComponent
@@ -1583,15 +1661,14 @@ export default function BenchmarkDetailPageComponent({
                     label: `${Math.round(((latestRun.summary?.passed ?? 0) / (latestRun.summary?.total || 1)) * 100)}%`,
                   },
                   ...((latestRun.summary?.totalCost ?? 0) > 0 ||
-                  latestRun.models?.some(
-                    (r) => (r.estimatedCost ?? 0) > 0,
-                  )
+                  latestRun.models?.some((r) => (r.estimatedCost ?? 0) > 0)
                     ? [
                         {
                           value: formatCost(
                             latestRun.summary?.totalCost ??
                               (latestRun.models || []).reduce(
-                                (s: number, r: BenchmarkRunResult) => s + (r.estimatedCost || 0),
+                                (s: number, r: BenchmarkRunResult) =>
+                                  s + (r.estimatedCost || 0),
                                 0,
                               ),
                           ),
@@ -1619,41 +1696,40 @@ export default function BenchmarkDetailPageComponent({
           {selectedResult || viewedActiveModel ? (
             <ChatPreviewComponent
               systemPrompt={benchmark.systemPrompt}
-              messages={[
-                { role: "user", content: benchmark.prompt || "" },
-                ...(selectedResult?.response
-                  ? [
-                      {
-                        role: "assistant" as const,
-                        content: selectedResult.response,
-                        thinking: selectedResult.thinking || undefined,
-                        toolCalls:
-                          selectedResult.toolCalls || undefined,
-                        model:
-                          selectedResult.label ||
-                          selectedResult.model,
-                        provider: selectedResult.provider,
-                      },
-                    ]
-                  : []),
-                ...(!selectedResult && viewedActiveModel
-                  ? [
-                      {
-                        role: "assistant" as const,
-                        content: liveSnapshot.text || "",
-                        thinking: liveSnapshot.thinking || undefined,
-                        toolCalls:
-                          liveSnapshot.toolCalls?.length > 0
-                            ? liveSnapshot.toolCalls
-                            : undefined,
-                        model:
-                          viewedActiveModel.label || viewedActiveModel.model,
-                        provider: viewedActiveModel.provider,
-                        _liveStreaming: true,
-                      },
-                    ]
-                  : []),
-              ] as Message[]}
+              messages={
+                [
+                  { role: "user", content: benchmark.prompt || "" },
+                  ...(selectedResult?.response
+                    ? [
+                        {
+                          role: "assistant" as const,
+                          content: selectedResult.response,
+                          thinking: selectedResult.thinking || undefined,
+                          toolCalls: selectedResult.toolCalls || undefined,
+                          model: selectedResult.label || selectedResult.model,
+                          provider: selectedResult.provider,
+                        },
+                      ]
+                    : []),
+                  ...(!selectedResult && viewedActiveModel
+                    ? [
+                        {
+                          role: "assistant" as const,
+                          content: liveSnapshot.text || "",
+                          thinking: liveSnapshot.thinking || undefined,
+                          toolCalls:
+                            liveSnapshot.toolCalls?.length > 0
+                              ? liveSnapshot.toolCalls
+                              : undefined,
+                          model:
+                            viewedActiveModel.label || viewedActiveModel.model,
+                          provider: viewedActiveModel.provider,
+                          _liveStreaming: true,
+                        },
+                      ]
+                    : []),
+                ] as Message[]
+              }
             />
           ) : null}
         </div>
@@ -1682,7 +1758,8 @@ export default function BenchmarkDetailPageComponent({
                   const benchmarkMode = form.benchmarkMode || "model";
                   if (benchmarkMode === "model")
                     return !form.assertions?.some((a) => a.expectedValue);
-                  if (benchmarkMode === "agent") return !form.agentAssertions?.length;
+                  if (benchmarkMode === "agent")
+                    return !form.agentAssertions?.length;
                   return (
                     !form.assertions?.some((a) => a.expectedValue) &&
                     !form.agentAssertions?.length

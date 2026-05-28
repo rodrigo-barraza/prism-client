@@ -19,17 +19,34 @@ export default function RequestsTableComponent({
   onRowMouseEnter,
   onRowMouseLeave,
   getRowClassName,
-}: { requests?: any[]; emptyText?: string; compact?: boolean; mini?: boolean; title?: React.ReactNode; maxHeight?: number | string | null; sortKey?: string; sortDir?: string; onSort?: (key: string, dir: string) => void; onRowClick?: (row: any) => void; onRowMouseEnter?: (row: any, e: any) => void; onRowMouseLeave?: () => void; getRowClassName?: (row: any) => string; }) {
+}: {
+  requests?: any[];
+  emptyText?: string;
+  compact?: boolean;
+  mini?: boolean;
+  title?: React.ReactNode;
+  maxHeight?: number | string | null;
+  sortKey?: string;
+  sortDir?: string;
+  onSort?: (key: string, dir: string) => void;
+  onRowClick?: (row: any) => void;
+  onRowMouseEnter?: (row: any, e: any) => void;
+  onRowMouseLeave?: () => void;
+  getRowClassName?: (row: any) => string;
+}) {
   const totalCost = useMemo(
     () =>
-      requests.reduce((sum: number, r: any) => sum + (r.estimatedCost || 0), 0) ||
-      1,
+      requests.reduce(
+        (sum: number, r: any) => sum + (r.estimatedCost || 0),
+        0,
+      ) || 1,
     [requests],
   );
 
   const totalDuration = useMemo(
     () =>
-      requests.reduce((sum: number, r: any) => sum + (r.totalTime || 0), 0) || 1,
+      requests.reduce((sum: number, r: any) => sum + (r.totalTime || 0), 0) ||
+      1,
     [requests],
   );
 

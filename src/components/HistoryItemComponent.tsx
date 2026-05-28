@@ -8,9 +8,7 @@ import { ModelToolsRow } from "./ToolBadgeComponent";
 import styles from "./HistoryItemComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
 import SoundService from "@/services/SoundService";
-import {
-  IconButtonComponent,
-} from "@rodrigo-barraza/components-library";
+import { IconButtonComponent } from "@rodrigo-barraza/components-library";
 import type { LucideIcon } from "lucide-react";
 
 interface HistoryItemTag {
@@ -121,13 +119,15 @@ export default function HistoryItemComponent({
   const hasInputOutputModalities =
     modalities &&
     Object.keys(modalities).some(
-      (key) => (INPUT_KEYS.includes(key) || OUTPUT_KEYS.includes(key)) && modalities[key]
+      (key) =>
+        (INPUT_KEYS.includes(key) || OUTPUT_KEYS.includes(key)) &&
+        modalities[key],
     );
 
   const hasActiveTools =
     modalities &&
     Object.keys(modalities).some(
-      (key) => TOOL_KEYS.includes(key) && modalities[key]
+      (key) => TOOL_KEYS.includes(key) && modalities[key],
     );
 
   const AGENT_DISPLAY_NAMES: Record<string, string> = {
@@ -216,7 +216,10 @@ export default function HistoryItemComponent({
                     : item.agent;
 
                 return (
-                  <span className={styles.agentBadge} data-agent-identifier={agentId}>
+                  <span
+                    className={styles.agentBadge}
+                    data-agent-identifier={agentId}
+                  >
                     <BadgeComponent
                       type="agent"
                       agent={resolvedAgent}
@@ -260,14 +263,19 @@ export default function HistoryItemComponent({
         )}
 
         {/* Row 5: very bottom row - modalities (left) & cost badge (right) */}
-        {(hasInputOutputModalities || (item.totalCost !== undefined && item.totalCost > 0)) && (
+        {(hasInputOutputModalities ||
+          (item.totalCost !== undefined && item.totalCost > 0)) && (
           <div className={styles.bottomRow}>
             <div className={styles.bottomLeft}>
               {hasInputOutputModalities && (
                 <ModalityIconComponent modalities={modalities} />
               )}
             </div>
-            <BadgeComponent type="cost" cost={item.totalCost ?? 0} showIcon={false} />
+            <BadgeComponent
+              type="cost"
+              cost={item.totalCost ?? 0}
+              showIcon={false}
+            />
           </div>
         )}
 

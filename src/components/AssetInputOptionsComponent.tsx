@@ -7,7 +7,10 @@ import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import styles from "./AssetInputOptionsComponent.module.css";
 
 interface AssetInputOptionsProps {
-  onFile?: (dataUrl: string | ArrayBuffer | null, mimeType: string | null) => void;
+  onFile?: (
+    dataUrl: string | ArrayBuffer | null,
+    mimeType: string | null,
+  ) => void;
   compact?: boolean;
 }
 
@@ -19,7 +22,10 @@ interface AssetInputOptionsProps {
  *   onFile(dataUrl, mimeType) – called when a file/asset is ready
  *   compact – smaller icon buttons for node view (default false = sidebar view)
  */
-export default function AssetInputOptions({ onFile, compact = false }: AssetInputOptionsProps) {
+export default function AssetInputOptions({
+  onFile,
+  compact = false,
+}: AssetInputOptionsProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showDrawing, setShowDrawing] = useState(false);
   const [showAudioRec, setShowAudioRec] = useState(false);

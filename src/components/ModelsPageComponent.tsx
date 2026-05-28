@@ -188,8 +188,7 @@ export default function ModelsPageComponent({
               params_string: apiModel.params_string,
               architecture: apiModel.architecture,
               archParams: apiModel.archParams,
-              display_name:
-                apiModel.display_name || result.display_name,
+              display_name: apiModel.display_name || result.display_name,
             };
           }
         }
@@ -256,7 +255,9 @@ export default function ModelsPageComponent({
   useEffect(() => {
     fetchModels();
     PrismService.getFavorites("model")
-      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
+      .then((favs: Array<{ key: string }>) =>
+        setFavoriteKeys(favs.map((f) => f.key)),
+      )
       .catch(() => {});
     const interval = setInterval(fetchModels, POLL_MODERATE);
     return () => clearInterval(interval);

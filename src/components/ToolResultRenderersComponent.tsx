@@ -37,7 +37,10 @@ import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 
 import MarkdownContent from "./MarkdownContentComponent";
 const LazyMessageList = lazy(() => import("./MessageListComponent"));
-import { prepareDisplayMessages, type WorkerToolActivityItem } from "./MessageListComponent";
+import {
+  prepareDisplayMessages,
+  type WorkerToolActivityItem,
+} from "./MessageListComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent";
 import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
@@ -59,7 +62,7 @@ export interface WorkerActivity {
   tokPerSec?: number | null;
   toolNames?: string[] | Record<string, number> | Record<string, string>;
   description?: string;
-  toolCalls?: import('../types/types').ToolCallEvent[];
+  toolCalls?: import("../types/types").ToolCallEvent[];
 }
 
 export interface ToolArgs {
@@ -207,7 +210,10 @@ export interface RendererProps {
   args?: ToolArgs;
   streamingOutput?: string;
   language?: string;
-  workerToolActivity?: Record<string, WorkerActivity | WorkerToolActivityItem> | null;
+  workerToolActivity?: Record<
+    string,
+    WorkerActivity | WorkerToolActivityItem
+  > | null;
 }
 
 export interface ToolResultViewProps {
@@ -219,7 +225,10 @@ export interface ToolResultViewProps {
     status?: string;
   };
   streamingOutput?: string;
-  workerToolActivity?: Record<string, WorkerActivity | WorkerToolActivityItem> | null;
+  workerToolActivity?: Record<
+    string,
+    WorkerActivity | WorkerToolActivityItem
+  > | null;
 }
 
 // --- Helpers ----------------------------------------------------------
@@ -500,7 +509,11 @@ function OutputResultToggle({ result }: { result: unknown }) {
  * Record<string, number> → pass through.
  */
 function normalizeToolCounts(
-  toolNames: string[] | Record<string, number> | Record<string, string> | undefined,
+  toolNames:
+    | string[]
+    | Record<string, number>
+    | Record<string, string>
+    | undefined,
 ): Record<string, number> | undefined {
   if (!toolNames) return undefined;
   if (Array.isArray(toolNames)) {
@@ -530,7 +543,8 @@ function FileReadRenderer({ result, args }: RendererProps) {
 
   const filePath = parsed.path || args?.path || "";
   const content = parsed.content || "";
-  const _lang = (EXT_LANG as Record<string, string>)[extensionOf(filePath)] || "";
+  const _lang =
+    (EXT_LANG as Record<string, string>)[extensionOf(filePath)] || "";
 
   return (
     <div className={styles.rendererBlock}>
@@ -688,10 +702,12 @@ function DirectoryListRenderer({ result, args }: RendererProps) {
   if (!parsed) return <RawResultToggle result={result} />;
 
   const rawEntries = parsed.entries || parsed.items || parsed.files || [];
-  type DirEntry = string | { name?: string; path?: string; type?: string; isDirectory?: boolean };
-  const entries: DirEntry[] = (Array.isArray(rawEntries)
-    ? rawEntries
-    : Object.values(rawEntries)) as DirEntry[];
+  type DirEntry =
+    | string
+    | { name?: string; path?: string; type?: string; isDirectory?: boolean };
+  const entries: DirEntry[] = (
+    Array.isArray(rawEntries) ? rawEntries : Object.values(rawEntries)
+  ) as DirEntry[];
   const dirPath = parsed.path || args?.path || "";
 
   return (
@@ -765,7 +781,13 @@ function WebSearchRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
-  type SearchResult = { title?: string; url?: string; link?: string; snippet?: string; name?: string };
+  type SearchResult = {
+    title?: string;
+    url?: string;
+    link?: string;
+    snippet?: string;
+    name?: string;
+  };
   const results = (parsed.results || parsed.items || []) as SearchResult[];
   const query = args?.query || "";
 
@@ -876,12 +898,19 @@ const PROMPT_PREFIXES = { bash: "$ ", python: ">>> ", javascript: "> " };
 const CONTINUATION_PREFIXES = { python: "... ", javascript: ".. " };
 const DEFAULT_CWD = { bash: "/tmp", python: "python3", javascript: "node" };
 
-function formatInputPrompt(input: string | null, language: string | undefined, cwd: string | null) {
+function formatInputPrompt(
+  input: string | null,
+  language: string | undefined,
+  cwd: string | null,
+) {
   if (!input) return "";
-  const prompt = (PROMPT_PREFIXES as Record<string, string>)[language || ""] || "$ ";
-  const contPrompt = (CONTINUATION_PREFIXES as Record<string, string>)[language || ""] || "  ";
+  const prompt =
+    (PROMPT_PREFIXES as Record<string, string>)[language || ""] || "$ ";
+  const contPrompt =
+    (CONTINUATION_PREFIXES as Record<string, string>)[language || ""] || "  ";
   const lines = input.split("\n");
-  const resolvedCwd = cwd || (DEFAULT_CWD as Record<string, string>)[language || ""] || "";
+  const resolvedCwd =
+    cwd || (DEFAULT_CWD as Record<string, string>)[language || ""] || "";
   const pathPrefix = resolvedCwd ? `${resolvedCwd} ` : "";
   return lines
     .map(
@@ -989,14 +1018,22 @@ function parseAnsi(text: string): string | React.ReactNode | React.ReactNode[] {
       else if (colorCode === 24) underline = false;
       else if (colorCode === 39) color = null;
       else if (colorCode === 49) bgColor = null;
-      else if (colorCode >= 30 && colorCode <= 37) color = ANSI_COLORS[colorCode - 30];
-      else if (colorCode >= 40 && colorCode <= 47) bgColor = ANSI_COLORS[colorCode - 40];
-      else if (colorCode >= 90 && colorCode <= 97) color = ANSI_BRIGHT_COLORS[colorCode - 90];
-      else if (colorCode >= 100 && colorCode <= 107) bgColor = ANSI_BRIGHT_COLORS[colorCode - 100];
+      else if (colorCode >= 30 && colorCode <= 37)
+        color = ANSI_COLORS[colorCode - 30];
+      else if (colorCode >= 40 && colorCode <= 47)
+        bgColor = ANSI_COLORS[colorCode - 40];
+      else if (colorCode >= 90 && colorCode <= 97)
+        color = ANSI_BRIGHT_COLORS[colorCode - 90];
+      else if (colorCode >= 100 && colorCode <= 107)
+        bgColor = ANSI_BRIGHT_COLORS[colorCode - 100];
       else if (colorCode === 38 && codes[i + 1] === 5 && codes[i + 2] != null) {
         color = ansi256ToHex(codes[i + 2]);
         i += 2;
-      } else if (colorCode === 48 && codes[i + 1] === 5 && codes[i + 2] != null) {
+      } else if (
+        colorCode === 48 &&
+        codes[i + 1] === 5 &&
+        codes[i + 2] != null
+      ) {
         bgColor = ansi256ToHex(codes[i + 2]);
         i += 2;
       }
@@ -1048,7 +1085,12 @@ const TERM_CONTENT_LEVEL_CLASS = {
   debug: styles.termContentDebug,
 };
 
-function TerminalRenderer({ result, args, streamingOutput, language }: RendererProps) {
+function TerminalRenderer({
+  result,
+  args,
+  streamingOutput,
+  language,
+}: RendererProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
   const input = args?.command || args?.code || null;
@@ -1216,7 +1258,9 @@ function GitStatusRenderer({ result }: RendererProps) {
           {files.slice(0, 30).map((f, i) => {
             const name = typeof f === "string" ? f : f.path || f.file || "";
             const status =
-              typeof f === "object" && f !== null ? f.status || f.state || "" : "";
+              typeof f === "object" && f !== null
+                ? f.status || f.state || ""
+                : "";
             return (
               <div key={i} className={styles.dirEntry}>
                 {status && <span className={styles.gitStatus}>{status}</span>}
@@ -1273,7 +1317,13 @@ function GitDiffRenderer({ result }: RendererProps) {
 function GitLogRenderer({ result }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
-  type CommitEntry = { hash?: string; sha?: string; message?: string; subject?: string; author?: string };
+  type CommitEntry = {
+    hash?: string;
+    sha?: string;
+    message?: string;
+    subject?: string;
+    author?: string;
+  };
   const commits = (parsed.commits || parsed.log || []) as CommitEntry[];
 
   return (
@@ -1362,7 +1412,8 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
   if (!parsed) return <RawResultToggle result={result} />;
 
   const action = parsed.action || args?.action || "";
-  const label = (BROWSER_ACTION_LABELS as Record<string, string>)[action] || action;
+  const label =
+    (BROWSER_ACTION_LABELS as Record<string, string>)[action] || action;
   const hasError = !!parsed.error;
 
   // Resolve screenshot ref (minio:// or base64 fallback)
@@ -1423,13 +1474,15 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
 
       {action === "get_elements" && parsed.elements && (
         <div className={styles.dirList}>
-          {parsed.elements.slice(0, 30).map((element: { selector: string; text?: string }, i: number) => (
-            <div key={i} className={styles.dirEntry}>
-              <code className={styles.inlineCode}>{element.selector}</code>
+          {parsed.elements
+            .slice(0, 30)
+            .map((element: { selector: string; text?: string }, i: number) => (
+              <div key={i} className={styles.dirEntry}>
+                <code className={styles.inlineCode}>{element.selector}</code>
 
-              {element.text && <span>{element.text}</span>}
-            </div>
-          ))}
+                {element.text && <span>{element.text}</span>}
+              </div>
+            ))}
         </div>
       )}
     </div>
@@ -1475,10 +1528,7 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
       {!hasError && embedUrl && (
-        <TurtleDrawEmbed
-          src={embedUrl}
-          title="Turtle Drawing"
-        />
+        <TurtleDrawEmbed src={embedUrl} title="Turtle Drawing" />
       )}
     </div>
   );
@@ -1513,12 +1563,8 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
           </pre>
         </div>
       ) : (
-        !hasError && embedUrl && (
-          <TurtleDrawEmbed
-            src={embedUrl}
-            title="ASCII Art"
-          />
-        )
+        !hasError &&
+        embedUrl && <TurtleDrawEmbed src={embedUrl} title="ASCII Art" />
       )}
     </div>
   );
@@ -1545,15 +1591,23 @@ function EmojiCombinationRenderer({ result }: RendererProps) {
       <div className={styles.rendererHeader}>
         <span style={{ fontSize: 13 }}>🍳</span>
         <span className={styles.rendererTitle}>Emoji Mashup</span>
-        {isLatest && <StatusBadge success={true} label="Latest GBoard Design" />}
+        {isLatest && (
+          <StatusBadge success={true} label="Latest GBoard Design" />
+        )}
       </div>
       <div className={styles.emojiCombineContainer}>
         <div className={styles.emojiLeftRightGrid}>
-          <div className={styles.emojiBubble} title={`Codepoint: ${leftEmojiCodepoint}`}>
+          <div
+            className={styles.emojiBubble}
+            title={`Codepoint: ${leftEmojiCodepoint}`}
+          >
             <span className={styles.bubbleEmojiChar}>{leftEmoji}</span>
           </div>
           <span className={styles.combinePlus}>+</span>
-          <div className={styles.emojiBubble} title={`Codepoint: ${rightEmojiCodepoint}`}>
+          <div
+            className={styles.emojiBubble}
+            title={`Codepoint: ${rightEmojiCodepoint}`}
+          >
             <span className={styles.bubbleEmojiChar}>{rightEmoji}</span>
           </div>
           <span className={styles.combineEquals}>=</span>
@@ -1593,7 +1647,6 @@ function EmojiCombinationRenderer({ result }: RendererProps) {
 function EmojiCombinationsRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result) as any;
   if (!parsed || !parsed.success) return <RawResultToggle result={result} />;
-
 
   const baseEmoji = parsed.emoji || args?.emoji || "";
   const count = parsed.count || 0;
@@ -1635,7 +1688,6 @@ function EmojiCombinationsRenderer({ result, args }: RendererProps) {
     </div>
   );
 }
-
 
 // -- 14. Coordinator Tools ---------------------------------------------------
 
@@ -1711,8 +1763,14 @@ function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
   );
 }
 
-function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps) {
-  const [expandedMembers, setExpandedMembers] = useState<Set<number>>(new Set());
+function TeamCreateRenderer({
+  result,
+  args,
+  workerToolActivity,
+}: RendererProps) {
+  const [expandedMembers, setExpandedMembers] = useState<Set<number>>(
+    new Set(),
+  );
   const parsed = tryParse(result);
 
   const rawArgMembers = args?.members;
@@ -1724,7 +1782,8 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
   const hasActiveWorkers = useMemo(() => {
     if (!workerToolActivity) return false;
     return Object.values(workerToolActivity).some(
-      (activity) => activity.phase === "generating" || activity.phase === "thinking",
+      (activity) =>
+        activity.phase === "generating" || activity.phase === "thinking",
     );
   }, [workerToolActivity]);
 
@@ -1747,7 +1806,10 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
     return Object.keys(workerToolActivity);
   }, [workerToolActivity]);
 
-  const getActivity = (member: { agent_id?: string; description?: string; [key: string]: unknown }, memberIndex: number) => {
+  const getActivity = (
+    member: { agent_id?: string; description?: string; [key: string]: unknown },
+    memberIndex: number,
+  ) => {
     if (!workerToolActivity) return null;
     if (member.agent_id) return workerToolActivity[member.agent_id] || null;
     if (memberIndex != null && orderedWorkerIds[memberIndex]) {
@@ -1757,7 +1819,9 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
       return (
         Object.values(workerToolActivity).find(
           (activity) =>
-            activity.description && member.description && activity.description.includes(member.description),
+            activity.description &&
+            member.description &&
+            activity.description.includes(member.description),
         ) || null
       );
     }
@@ -1844,11 +1908,11 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
 
         const toolNames = activity?.toolNames || member.toolNames;
         const toolUsesCount = !isTerminal
-          ? activity?.toolCount ?? 0
-          : member.toolUses ?? 0;
+          ? (activity?.toolCount ?? 0)
+          : (member.toolUses ?? 0);
         const iterationsCount = !isTerminal
-          ? activity?.iteration ?? 0
-          : member.iterations ?? 0;
+          ? (activity?.iteration ?? 0)
+          : (member.iterations ?? 0);
 
         return (
           <div
@@ -1867,7 +1931,11 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
               )}
               <StatusBadge
                 success={!isTerminal ? true : isCompleted}
-                label={!isTerminal ? (activity?.phase || member.status || "running") : (member.status || "unknown")}
+                label={
+                  !isTerminal
+                    ? activity?.phase || member.status || "running"
+                    : member.status || "unknown"
+                }
               />
             </div>
 
@@ -1915,7 +1983,8 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
                 )}
                 {iterationsCount > 0 && (
                   <span className={styles.workerResultMeta}>
-                    {iterationsCount} iteration{iterationsCount !== 1 ? "s" : ""}
+                    {iterationsCount} iteration
+                    {iterationsCount !== 1 ? "s" : ""}
                   </span>
                 )}
                 {memberExpanded ? (
@@ -1929,11 +1998,15 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
                   {isTerminal && (member.messages?.length ?? 0) > 0 ? (
                     <Suspense fallback={null}>
                       <LazyMessageList
-                        messages={prepareDisplayMessages(member.messages as import('../types/types').Message[])}
+                        messages={prepareDisplayMessages(
+                          member.messages as import("../types/types").Message[],
+                        )}
                         readOnly
                       />
                     </Suspense>
-                  ) : !isTerminal && activity?.toolCalls && activity.toolCalls.length > 0 ? (
+                  ) : !isTerminal &&
+                    activity?.toolCalls &&
+                    activity.toolCalls.length > 0 ? (
                     <div style={{ padding: "4px 0" }}>
                       <ToolCallsBlockComponent
                         toolCalls={activity.toolCalls}
@@ -1943,7 +2016,14 @@ function TeamCreateRenderer({ result, args, workerToolActivity }: RendererProps)
                   ) : member.result ? (
                     <MarkdownContent content={String(member.result)} />
                   ) : (
-                    <div style={{ fontStyle: "italic", opacity: 0.5, fontSize: "0.85rem", padding: "4px 8px" }}>
+                    <div
+                      style={{
+                        fontStyle: "italic",
+                        opacity: 0.5,
+                        fontSize: "0.85rem",
+                        padding: "4px 8px",
+                      }}
+                    >
                       No messages or tool calls yet.
                     </div>
                   )}
@@ -1962,7 +2042,8 @@ function SendMessageRenderer({ result, args }: RendererProps) {
   if (!parsed) return <RawResultToggle result={result} />;
 
   const agentId = args?.to || parsed.agent_id || "";
-  const status = (typeof parsed.status === "string" ? parsed.status : null) || "unknown";
+  const status =
+    (typeof parsed.status === "string" ? parsed.status : null) || "unknown";
   const hasError = !!parsed.error;
 
   return (
@@ -2066,7 +2147,6 @@ const TOOL_RESULT_REGISTRY = {
   // Audio Generation
   generate_audio: { Renderer: AudioGeneratorRenderer },
 
-
   // Coordinator
   team_create: { Renderer: TeamCreateRenderer },
   send_message: { Renderer: SendMessageRenderer },
@@ -2076,9 +2156,17 @@ const TOOL_RESULT_REGISTRY = {
 /**
  * Resolve the appropriate result renderer for a tool call.
  */
-export function resolveToolResultRenderer(toolName: string): { Renderer: React.ComponentType<RendererProps>; language?: string } {
+export function resolveToolResultRenderer(toolName: string): {
+  Renderer: React.ComponentType<RendererProps>;
+  language?: string;
+} {
   return (
-    (TOOL_RESULT_REGISTRY as Record<string, { Renderer: React.ComponentType<RendererProps>; language?: string }>)[toolName] || { Renderer: GenericRenderer }
+    (
+      TOOL_RESULT_REGISTRY as Record<
+        string,
+        { Renderer: React.ComponentType<RendererProps>; language?: string }
+      >
+    )[toolName] || { Renderer: GenericRenderer }
   );
 }
 

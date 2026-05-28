@@ -30,7 +30,12 @@ export {
   formatDateTime,
 } from "@rodrigo-barraza/utilities-library";
 
-import type { Message, TokenUsage, PrismConfig, ModelOption } from "../types/types";
+import type {
+  Message,
+  TokenUsage,
+  PrismConfig,
+  ModelOption,
+} from "../types/types";
 
 // -- Prism-specific utilities ---------------------------------
 
@@ -74,7 +79,9 @@ export function buildLmStudioLoadBody(
  * Providers like Anthropic and Google split prompt tokens into
  * new + cache_read + cache_write. This aggregates all three.
  */
-export function getTotalInputTokens(usage: TokenUsage | null | undefined): number {
+export function getTotalInputTokens(
+  usage: TokenUsage | null | undefined,
+): number {
   if (!usage) return 0;
   return (
     (usage.inputTokens || 0) +
@@ -87,7 +94,9 @@ export function getTotalInputTokens(usage: TokenUsage | null | undefined): numbe
  * Build ISO date range params from a { from, to } object.
  * Returns an object with optional `from` and `to` keys.
  */
-export function buildDateRangeParams(dateRange: { from?: string; to?: string } | null | undefined): Record<string, string> {
+export function buildDateRangeParams(
+  dateRange: { from?: string; to?: string } | null | undefined,
+): Record<string, string> {
   const params: Record<string, string> = {};
   if (dateRange?.from) {
     // ISO datetime (sub-day presets) passes through; day-only gets midnight
@@ -148,7 +157,10 @@ export function getUniqueProviders(messages: Message[]): string[] {
  * Sum estimatedCost across all messages.
  */
 export function getSessionCost(messages: Message[]): number {
-  return messages.reduce((sum, message) => sum + (message.estimatedCost || 0), 0);
+  return messages.reduce(
+    (sum, message) => sum + (message.estimatedCost || 0),
+    0,
+  );
 }
 
 /**
@@ -239,7 +251,11 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
     }
     // In-flight streaming messages: use tracker's real token count
     // (fed exclusively by provider-reported usage, never per-chunk estimates)
-    else if (!message.usage && message._liveGenProgress && (message._liveGenProgress.outputTokens ?? 0) > 0) {
+    else if (
+      !message.usage &&
+      message._liveGenProgress &&
+      (message._liveGenProgress.outputTokens ?? 0) > 0
+    ) {
       output += message._liveGenProgress.outputTokens ?? 0;
       liveStreamingTokens = message._liveGenProgress.outputTokens ?? 0;
       liveStreamingStartTime = message._streamingStartTime || null;
@@ -284,7 +300,9 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
       // in real-time during worker generation (before completion).
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
       // so the count doesn't reset when workers transition between phases.
-      for (const wp of Object.values(message._workerGenerationProgress) as WorkerProgress[]) {
+      for (const wp of Object.values(
+        message._workerGenerationProgress,
+      ) as WorkerProgress[]) {
         const count = wp.totalOutputTokens || wp.outputTokens || 0;
         if (count > 0) {
           output += count;
@@ -329,15 +347,19 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
  * Count tool invocations across all messages.
  * Returns [{ name, count }] sorted by count.
  */
-export function getUsedTools(messages: Message[]): Array<{ name: string; count: number }> {
+export function getUsedTools(
+  messages: Message[],
+): Array<{ name: string; count: number }> {
   const counts = new Map<string, number>();
   for (const message of messages) {
     if (message.role !== "assistant") continue;
-    if (message.thinking) counts.set("Thinking", (counts.get("Thinking") || 0) + 1);
+    if (message.thinking)
+      counts.set("Thinking", (counts.get("Thinking") || 0) + 1);
     if (message.toolCalls && message.toolCalls.length > 0) {
       counts.set("Tool Calling", (counts.get("Tool Calling") || 0) + 1);
       for (const toolCall of message.toolCalls) {
-        if (toolCall.name) counts.set(toolCall.name, (counts.get(toolCall.name) || 0) + 1);
+        if (toolCall.name)
+          counts.set(toolCall.name, (counts.get(toolCall.name) || 0) + 1);
       }
     }
   }
@@ -366,7 +388,9 @@ export const CAPABILITY_TOOL_NAMES = new Set([
  * Convert a backend toolCounts map ({ name: count }) into the
  * usedTools array format ([{ name, count }]) sorted by count desc.
  */
-export function toolCountsToUsedTools(toolCounts: Record<string, number> | null | undefined): Array<{ name: string; count: number }> {
+export function toolCountsToUsedTools(
+  toolCounts: Record<string, number> | null | undefined,
+): Array<{ name: string; count: number }> {
   if (!toolCounts || Object.keys(toolCounts).length === 0) return [];
   return Object.entries(toolCounts)
     .map(([name, count]) => ({ name, count }))
@@ -392,7 +416,10 @@ export function toolCountsToUsedTools(toolCounts: Record<string, number> | null 
 export function mergeUsedToolsWithWorkers(
   clientTools: Array<{ name: string; count: number }>,
   backendToolCounts: Record<string, number> | null | undefined,
-  workerToolActivity: Record<string, { toolNames?: Record<string, number> }> | null | undefined,
+  workerToolActivity:
+    | Record<string, { toolNames?: Record<string, number> }>
+    | null
+    | undefined,
 ): Array<{ name: string; count: number }> {
   // Separate capabilities from function-level tool calls
   const capabilities = clientTools.filter((clientTool) =>
@@ -584,12 +611,15 @@ export function getSessionElapsedTime(messages: Message[]): number {
  * 4. Fall back to the first available model that matches criteria.
  */
 export function resolveDefaultModel(
-  config: {
-    textToText?: {
-      models?: Record<string, ModelOption[]>;
-    };
-  } | null | undefined,
-  fcOnly = false
+  config:
+    | {
+        textToText?: {
+          models?: Record<string, ModelOption[]>;
+        };
+      }
+    | null
+    | undefined,
+  fcOnly = false,
 ): { provider: string; model: string; temperature: number } {
   const textModels = config?.textToText?.models || {};
 
@@ -603,7 +633,9 @@ export function resolveDefaultModel(
   if (textModels["google"]?.length > 0) {
     const googleModels = textModels["google"];
     // Look specifically for gemini-3.5-flash
-    const target = googleModels.find((m: ModelOption) => m.name === "gemini-3.5-flash" && isEligible(m));
+    const target = googleModels.find(
+      (m: ModelOption) => m.name === "gemini-3.5-flash" && isEligible(m),
+    );
     if (target) {
       return {
         provider: "google",
@@ -626,7 +658,10 @@ export function resolveDefaultModel(
   if (textModels["anthropic"]?.length > 0) {
     const anthropicModels = textModels["anthropic"];
     // Look for a model containing "haiku"
-    const target = anthropicModels.find((m: ModelOption) => m.name.toLowerCase().includes("haiku") && isEligible(m));
+    const target = anthropicModels.find(
+      (m: ModelOption) =>
+        m.name.toLowerCase().includes("haiku") && isEligible(m),
+    );
     if (target) {
       return {
         provider: "anthropic",
@@ -649,9 +684,16 @@ export function resolveDefaultModel(
   if (textModels["openai"]?.length > 0) {
     const openaiModels = textModels["openai"];
     // Try gpt-5.4-mini, gpt-5-mini, or any model containing "mini" or "nano"
-    const miniTarget = ["gpt-5.4-mini", "gpt-5-mini", "gpt-5.4-nano", "gpt-5-nano"];
+    const miniTarget = [
+      "gpt-5.4-mini",
+      "gpt-5-mini",
+      "gpt-5.4-nano",
+      "gpt-5-nano",
+    ];
     for (const name of miniTarget) {
-      const target = openaiModels.find((m: ModelOption) => m.name === name && isEligible(m));
+      const target = openaiModels.find(
+        (m: ModelOption) => m.name === name && isEligible(m),
+      );
       if (target) {
         return {
           provider: "openai",
@@ -662,7 +704,10 @@ export function resolveDefaultModel(
     }
     // Fallback search for any model containing "mini" or "nano"
     const anyMini = openaiModels.find(
-      (m: ModelOption) => (m.name.toLowerCase().includes("mini") || m.name.toLowerCase().includes("nano")) && isEligible(m)
+      (m: ModelOption) =>
+        (m.name.toLowerCase().includes("mini") ||
+          m.name.toLowerCase().includes("nano")) &&
+        isEligible(m),
     );
     if (anyMini) {
       return {
@@ -697,4 +742,3 @@ export function resolveDefaultModel(
 
   return { provider: "", model: "", temperature: 1.0 };
 }
-

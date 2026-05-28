@@ -27,6 +27,7 @@ import {
   Copy,
   CheckCheck,
   Palette,
+  Volume2,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
@@ -66,7 +67,6 @@ interface LocalAgent {
   connectedAt?: string;
   pendingRpcs?: number;
 }
-
 
 /**
  * SettingsPageComponent — server-side settings management.
@@ -145,31 +145,42 @@ export default function SettingsPageComponent() {
 
     // Fetch full workspace config (workspaces + agents)
     WorkspaceService.listFull()
-      .then(({ workspaces, agents }: { workspaces: LocalWorkspace[]; agents: LocalAgent[] }) => {
-        setWsWorkspaces(workspaces || []);
-        setWsAgents(agents || []);
-      })
+      .then(
+        ({
+          workspaces,
+          agents,
+        }: {
+          workspaces: LocalWorkspace[];
+          agents: LocalAgent[];
+        }) => {
+          setWsWorkspaces(workspaces || []);
+          setWsAgents(agents || []);
+        },
+      )
       .catch(console.error);
   }, []);
 
   // -- Persist changes ------------------------------------------------
-  const persistSettings = useCallback(async (updatedSettings: Partial<PrismSettings>) => {
-    setSaving(true);
-    try {
-      const result = await PrismService.updateSettings(updatedSettings);
-      setSettings(result);
-      setSaved(true);
-      clearTimeout(savedTimerRef.current!);
-      savedTimerRef.current = setTimeout(
-        () => setSaved(false),
-        FEEDBACK_STANDARD_MS,
-      );
-    } catch (error: unknown) {
-      console.error("Failed to save settings:", error);
-    } finally {
-      setSaving(false);
-    }
-  }, []);
+  const persistSettings = useCallback(
+    async (updatedSettings: Partial<PrismSettings>) => {
+      setSaving(true);
+      try {
+        const result = await PrismService.updateSettings(updatedSettings);
+        setSettings(result);
+        setSaved(true);
+        clearTimeout(savedTimerRef.current!);
+        savedTimerRef.current = setTimeout(
+          () => setSaved(false),
+          FEEDBACK_STANDARD_MS,
+        );
+      } catch (error: unknown) {
+        console.error("Failed to save settings:", error);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [],
+  );
 
   // -- Memory model change handlers -----------------------------------
   const handleExtractionModelSelect = useCallback(
@@ -343,6 +354,99 @@ export default function SettingsPageComponent() {
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
+  const handleImageModelSelect = useCallback(
+    (provider: string, model: string) => {
+      const updated = {
+        creative: {
+          ...settings?.creative,
+          imageProvider: provider || "",
+          imageModel: model || "",
+        },
+      };
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  const handleVisionModelSelect = useCallback(
+    (provider: string, model: string) => {
+      const updated = {
+        creative: {
+          ...settings?.creative,
+          visionProvider: provider || "",
+          visionModel: model || "",
+        },
+      };
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  const handleResetCreative = useCallback(async () => {
+    if (!defaults?.creative) return;
+    const updated = {
+      creative: {
+        ...settings?.creative,
+        imageProvider: defaults.creative.imageProvider || "google",
+        imageModel:
+          defaults.creative.imageModel || "gemini-3-pro-image-preview",
+        visionProvider: defaults.creative.visionProvider || "google",
+        visionModel: defaults.creative.visionModel || "gemini-3.5-flash",
+      },
+    };
+    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    await persistSettings(updated);
+  }, [settings, defaults, persistSettings]);
+
+  const handleTextToSpeechModelSelect = useCallback(
+    (provider: string, model: string) => {
+      const updated = {
+        creative: {
+          ...settings?.creative,
+          textToSpeechProvider: provider || "",
+          textToSpeechModel: model || "",
+        },
+      };
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  const handleSpeechToTextModelSelect = useCallback(
+    (provider: string, model: string) => {
+      const updated = {
+        creative: {
+          ...settings?.creative,
+          speechToTextProvider: provider || "",
+          speechToTextModel: model || "",
+        },
+      };
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  const handleResetAudio = useCallback(async () => {
+    if (!defaults?.creative) return;
+    const updated = {
+      creative: {
+        ...settings?.creative,
+        textToSpeechProvider:
+          defaults.creative.textToSpeechProvider || "elevenlabs",
+        textToSpeechModel: defaults.creative.textToSpeechModel || "",
+        speechToTextProvider:
+          defaults.creative.speechToTextProvider || "openai",
+        speechToTextModel: defaults.creative.speechToTextModel || "",
+      },
+    };
+    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    await persistSettings(updated);
+  }, [settings, defaults, persistSettings]);
+
   // -- Custom agents refresh ------------------------------------------
   const loadCustomAgents = useCallback(async () => {
     try {
@@ -377,8 +481,9 @@ export default function SettingsPageComponent() {
     );
   }
 
-  const memorySettings = (settings?.memory || {}) || {};
-  const agentDefaults = (settings?.agents || {}) || {};
+  const memorySettings = settings?.memory || {} || {};
+  const agentDefaults = settings?.agents || {} || {};
+  const creativeSettings = settings?.creative || {} || {};
   const hasAgents = wsAgents.length > 0;
   const hasAnyWorkspaces = wsWorkspaces.length > 0;
 
@@ -480,12 +585,14 @@ export default function SettingsPageComponent() {
                   {/* Roots served by this agent */}
                   {agent.roots && agent.roots.length > 0 && (
                     <div className={styles.agentRoots}>
-                      {agent.roots.map((root: { path: string; isAgentServed?: boolean }) => (
-                        <div key={root.path} className={styles.agentRootItem}>
-                          <FolderOpen size={13} className={styles.dimIcon} />
-                          {root.path}
-                        </div>
-                      ))}
+                      {agent.roots.map(
+                        (root: { path: string; isAgentServed?: boolean }) => (
+                          <div key={root.path} className={styles.agentRootItem}>
+                            <FolderOpen size={13} className={styles.dimIcon} />
+                            {root.path}
+                          </div>
+                        ),
+                      )}
                     </div>
                   )}
                 </div>
@@ -588,15 +695,25 @@ export default function SettingsPageComponent() {
               className={`${styles.addWorkspaceInput} ${wsValidation ? ((wsValidation as { valid: boolean; error?: string }).valid ? styles.valid : styles.invalid) : ""}`}
               placeholder="Add workspace path (e.g. /home/user/projects or C:\Users\...)"
               value={wsAddPath}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => handleWsPathChange(e.target.value)}
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) => handleWsPathChange(e.target.value)}
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === "Enter" && (wsValidation as { valid: boolean; error?: string })?.valid)
+                if (
+                  e.key === "Enter" &&
+                  (wsValidation as { valid: boolean; error?: string })?.valid
+                )
                   handleAddWorkspace();
               }}
             />
             <button
               className={styles.addButton}
-              disabled={!(wsValidation as { valid: boolean; error?: string })?.valid || wsAdding}
+              disabled={
+                !(wsValidation as { valid: boolean; error?: string })?.valid ||
+                wsAdding
+              }
               onClick={handleAddWorkspace}
             >
               <Plus size={14} />
@@ -615,7 +732,8 @@ export default function SettingsPageComponent() {
                 </>
               ) : (
                 <>
-                  <XCircle size={12} /> {(wsValidation as { valid: boolean; error?: string }).error}
+                  <XCircle size={12} />{" "}
+                  {(wsValidation as { valid: boolean; error?: string }).error}
                 </>
               )}
             </div>
@@ -1256,6 +1374,144 @@ export default function SettingsPageComponent() {
         </CardComponent.Footer>
       </CardComponent>
 
+      {/* -- Creative Tools Section ------------------------------------ */}
+      <CardComponent className={styles.section}>
+        <CardComponent.Header
+          icon={Palette}
+          title="Creative Tools"
+          subtitle="Models used for image generation and image description"
+        />
+
+        <CardComponent.Body>
+          {/* Image Generation Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Image Generation Model</span>
+              <span className={styles.rowDescription}>
+                Model used by the generate_image tool to create native
+                illustrations
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: creativeSettings.imageProvider || "",
+                  model: creativeSettings.imageModel || "",
+                }}
+                onSelectModel={handleImageModelSelect}
+                modelTypeFilter="image"
+                allowDeselect
+              />
+            </div>
+          </div>
+
+          {/* Image Description (Vision) Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Vision Model</span>
+              <span className={styles.rowDescription}>
+                Model used by the describe_image tool to analyze user-attached
+                or reference images
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: creativeSettings.visionProvider || "",
+                  model: creativeSettings.visionModel || "",
+                }}
+                onSelectModel={handleVisionModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetCreative}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Audio Tools Section -------------------------------------- */}
+      <CardComponent className={styles.section}>
+        <CardComponent.Header
+          icon={Volume2}
+          title="Audio Tools"
+          subtitle="Models used for speech synthesis (text-to-speech) and transcription (speech-to-text)"
+        />
+
+        <CardComponent.Body>
+          {/* Text-to-Speech Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Speech Synthesis Model</span>
+              <span className={styles.rowDescription}>
+                Model used by the text_to_speech tool to generate audio files
+                from written text
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: creativeSettings.textToSpeechProvider || "",
+                  model: creativeSettings.textToSpeechModel || "",
+                }}
+                onSelectModel={handleTextToSpeechModelSelect}
+                modelTypeFilter="tts"
+                allowDeselect
+              />
+            </div>
+          </div>
+
+          {/* Speech-to-Text (Transcription) Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Transcription Model</span>
+              <span className={styles.rowDescription}>
+                Model used by the speech_to_text tool to transcribe spoken audio
+                recordings into text
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: creativeSettings.speechToTextProvider || "",
+                  model: creativeSettings.speechToTextModel || "",
+                }}
+                onSelectModel={handleSpeechToTextModelSelect}
+                modelTypeFilter="transcribe"
+                allowDeselect
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetAudio}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
       {/* -- Security & Sandboxing Section ---------------------------- */}
       <CardComponent className={styles.section}>
         <CardComponent.Header
@@ -1267,15 +1523,23 @@ export default function SettingsPageComponent() {
         <CardComponent.Body>
           <div className={styles.settingsRow}>
             <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Allow `.env` & Sensitive Files Access</span>
+              <span className={styles.rowTitle}>
+                Allow `.env` & Sensitive Files Access
+              </span>
               <span className={styles.rowDescription}>
-                Allow the agent to view, search, or edit `.env` environment configurations, `.pem` certificates, `.key` private keys, and SSH credentials inside the workspace. When disabled, these files are strictly isolated from the agent's file tools to prevent credential leakage.
+                Allow the agent to view, search, or edit `.env` environment
+                configurations, `.pem` certificates, `.key` private keys, and
+                SSH credentials inside the workspace. When disabled, these files
+                are strictly isolated from the agent's file tools to prevent
+                credential leakage.
               </span>
             </div>
             <div className={styles.rowControl}>
               <ToggleComponent
                 checked={settings?.security?.allowEnvFiles ?? false}
-                onChange={(checked: boolean) => handleSecurityToggle("allowEnvFiles", checked)}
+                onChange={(checked: boolean) =>
+                  handleSecurityToggle("allowEnvFiles", checked)
+                }
                 size="mini"
               />
             </div>

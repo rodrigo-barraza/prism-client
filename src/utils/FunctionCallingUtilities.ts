@@ -30,9 +30,7 @@ export function buildToolSchemas(
   disabledBuiltIns: Set<string>,
   customTools: CustomTool[],
 ): ToolSchema[] {
-  const builtIn = builtInTools.filter(
-    (t) => !disabledBuiltIns.has(t.name),
-  );
+  const builtIn = builtInTools.filter((t) => !disabledBuiltIns.has(t.name));
   const custom: ToolSchema[] = customTools
     .filter((t) => t.enabled)
     .map((t) => ({

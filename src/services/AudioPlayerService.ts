@@ -25,7 +25,8 @@ export default class AudioPlayerService {
     if (!this.audioContext) {
       this.audioContext = new (
         window.AudioContext ||
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+        (window as unknown as { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext
       )({
         sampleRate: DEFAULT_SAMPLE_RATE,
       });
@@ -100,10 +101,7 @@ export default class AudioPlayerService {
     if (this.pcmChunks.length === 0) return null;
 
     // Concatenate all PCM bytes
-    const totalLength = this.pcmChunks.reduce(
-      (sum, c) => sum + c.length,
-      0,
-    );
+    const totalLength = this.pcmChunks.reduce((sum, c) => sum + c.length, 0);
     const pcmData = new Uint8Array(totalLength);
     let offset = 0;
     for (const chunk of this.pcmChunks) {
@@ -114,8 +112,7 @@ export default class AudioPlayerService {
     // Build WAV header (44 bytes) + PCM data
     const numChannels = 1;
     const bitsPerSample = 16;
-    const byteRate =
-      this.sampleRate * numChannels * (bitsPerSample / 8);
+    const byteRate = this.sampleRate * numChannels * (bitsPerSample / 8);
     const blockAlign = numChannels * (bitsPerSample / 8);
     const dataSize = pcmData.length;
     const headerSize = 44;

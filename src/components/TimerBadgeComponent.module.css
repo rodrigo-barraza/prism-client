@@ -18,10 +18,12 @@
   padding-inline: 16px;
   padding-block: 12px;
   border-radius: var(--timer-badge-border-radius);
-  animation: timerBadgeFadeIn var(--timer-badge-animation-duration) cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transition: transform var(--timer-badge-transition-speed) ease, 
-              box-shadow var(--timer-badge-transition-speed) ease,
-              border-color var(--timer-badge-transition-speed) ease;
+  animation: timerBadgeFadeIn var(--timer-badge-animation-duration)
+    cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition:
+    transform var(--timer-badge-transition-speed) ease,
+    box-shadow var(--timer-badge-transition-speed) ease,
+    border-color var(--timer-badge-transition-speed) ease;
   background: oklch(0.18 0.02 240 / 0.4);
   border-inline-start: 4px solid var(--accent-primary, oklch(0.6 0.18 240));
   box-shadow: 0 4px 16px oklch(0 0 0 / 0.15);
@@ -179,7 +181,8 @@
 }
 
 .timerBadgeLivePulseIcon {
-  animation: timerBadgeLivePulseAnimation var(--timer-badge-live-pulse-duration) cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: timerBadgeLivePulseAnimation var(--timer-badge-live-pulse-duration)
+    cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes timerBadgeFadeIn {
@@ -203,7 +206,8 @@
 }
 
 @keyframes timerBadgeLivePulseAnimation {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }

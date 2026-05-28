@@ -57,9 +57,7 @@ const TOKEN_GROUPS: { title: string; fields: TokenField[] }[] = [
   },
   {
     title: "Borders",
-    fields: [
-      { key: "borderColor", label: "Border Color" },
-    ],
+    fields: [{ key: "borderColor", label: "Border Color" }],
   },
   {
     title: "Semantic",
@@ -101,7 +99,9 @@ export default function CustomThemeEditorComponent({
   const [editing, setEditing] = useState<CustomTheme | null>(null);
   const [editName, setEditName] = useState("");
   const [editTokens, setEditTokens] = useState<CustomThemeTokens | null>(null);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["Accent", "Surfaces"]));
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
+    new Set(["Accent", "Surfaces"]),
+  );
   const [isNew, setIsNew] = useState(false);
 
   // "New theme" flow state
@@ -188,7 +188,9 @@ export default function CustomThemeEditorComponent({
       if (styleEl) styleEl.remove();
     } else if (editing) {
       // Re-inject the original saved version
-      const original = CustomThemeService.getAll().find((t) => t.id === editing.id);
+      const original = CustomThemeService.getAll().find(
+        (t) => t.id === editing.id,
+      );
       if (original) CustomThemeService.injectThemeStyle(original);
     }
     setEditing(null);
@@ -196,34 +198,46 @@ export default function CustomThemeEditorComponent({
     setIsNew(false);
   }, [editing, isNew]);
 
-  const handleDelete = useCallback((id: string) => {
-    // Check if this theme is currently active
-    const themeAttr = getCustomThemeAttr(id);
-    if (activeTheme === themeAttr) {
-      setTheme("dark"); // Fallback
-    }
-    const updated = CustomThemeService.remove(id);
-    setThemes(updated);
-    onThemesChange?.();
-    setConfirmDeleteId(null);
-  }, [activeTheme, setTheme, onThemesChange]);
-
-  const handleDuplicate = useCallback((id: string) => {
-    const result = CustomThemeService.duplicate(id);
-    if (result) {
-      setThemes(result.themes);
+  const handleDelete = useCallback(
+    (id: string) => {
+      // Check if this theme is currently active
+      const themeAttr = getCustomThemeAttr(id);
+      if (activeTheme === themeAttr) {
+        setTheme("dark"); // Fallback
+      }
+      const updated = CustomThemeService.remove(id);
+      setThemes(updated);
       onThemesChange?.();
-    }
-  }, [onThemesChange]);
+      setConfirmDeleteId(null);
+    },
+    [activeTheme, setTheme, onThemesChange],
+  );
 
-  const handleApplyTheme = useCallback((theme: CustomTheme) => {
-    const attr = getCustomThemeAttr(theme.id);
-    setTheme(attr);
-  }, [setTheme]);
+  const handleDuplicate = useCallback(
+    (id: string) => {
+      const result = CustomThemeService.duplicate(id);
+      if (result) {
+        setThemes(result.themes);
+        onThemesChange?.();
+      }
+    },
+    [onThemesChange],
+  );
 
-  const handleTokenChange = useCallback((key: keyof CustomThemeTokens, value: string) => {
-    setEditTokens((prev) => prev ? { ...prev, [key]: value } : prev);
-  }, []);
+  const handleApplyTheme = useCallback(
+    (theme: CustomTheme) => {
+      const attr = getCustomThemeAttr(theme.id);
+      setTheme(attr);
+    },
+    [setTheme],
+  );
+
+  const handleTokenChange = useCallback(
+    (key: keyof CustomThemeTokens, value: string) => {
+      setEditTokens((prev) => (prev ? { ...prev, [key]: value } : prev));
+    },
+    [],
+  );
 
   const toggleGroup = useCallback((title: string) => {
     setExpandedGroups((prev) => {
@@ -354,7 +368,9 @@ export default function CustomThemeEditorComponent({
                       <span
                         className={styles.cloneMenuSwatch}
                         style={{
-                          background: CustomThemeService.BUILT_IN_PRESETS[base.id]?.primary || "#888",
+                          background:
+                            CustomThemeService.BUILT_IN_PRESETS[base.id]
+                              ?.primary || "#888",
                         }}
                       />
                       {base.label}
@@ -367,10 +383,14 @@ export default function CustomThemeEditorComponent({
 
           {themes.length === 0 && (
             <div className={styles.emptyState}>
-              <Palette size={24} style={{ color: "var(--text-muted)", margin: "0 auto" }} />
+              <Palette
+                size={24}
+                style={{ color: "var(--text-muted)", margin: "0 auto" }}
+              />
               <span className={styles.emptyTitle}>No custom themes yet</span>
               <span className={styles.emptyDescription}>
-                Create a custom theme by cloning from a built-in base and tweaking the colors to your liking.
+                Create a custom theme by cloning from a built-in base and
+                tweaking the colors to your liking.
               </span>
             </div>
           )}
@@ -421,35 +441,49 @@ export default function CustomThemeEditorComponent({
           {/* Live preview strip */}
           <div
             className={styles.livePreview}
-            style={{
-              "--preview-background": editTokens.backgroundBase,
-              "--preview-background-secondary": editTokens.backgroundSurface,
-              "--preview-background-tertiary": editTokens.backgroundElevated,
-              "--preview-accent": editTokens.primary,
-              "--preview-accent2": editTokens.secondary,
-              "--preview-text": editTokens.textPrimary,
-              "--preview-text2": editTokens.textSecondary,
-              "--preview-text3": editTokens.textMuted,
-              "--preview-border": editTokens.borderColor,
-              "--preview-danger": editTokens.danger,
-              "--preview-success": editTokens.success,
-              "--preview-warning": editTokens.warning,
-              "--preview-info": editTokens.info,
-            } as React.CSSProperties}
+            style={
+              {
+                "--preview-background": editTokens.backgroundBase,
+                "--preview-background-secondary": editTokens.backgroundSurface,
+                "--preview-background-tertiary": editTokens.backgroundElevated,
+                "--preview-accent": editTokens.primary,
+                "--preview-accent2": editTokens.secondary,
+                "--preview-text": editTokens.textPrimary,
+                "--preview-text2": editTokens.textSecondary,
+                "--preview-text3": editTokens.textMuted,
+                "--preview-border": editTokens.borderColor,
+                "--preview-danger": editTokens.danger,
+                "--preview-success": editTokens.success,
+                "--preview-warning": editTokens.warning,
+                "--preview-info": editTokens.info,
+              } as React.CSSProperties
+            }
           >
             <span className={styles.previewLabel}>Preview</span>
             <div className={styles.previewContent}>
               <div className={styles.previewSidebar}>
-                <div className={styles.previewNavItem} data-is-active-state="true">
-                  <span className={styles.previewDot} data-color-variant="accent" />
+                <div
+                  className={styles.previewNavItem}
+                  data-is-active-state="true"
+                >
+                  <span
+                    className={styles.previewDot}
+                    data-color-variant="accent"
+                  />
                   <span>Active</span>
                 </div>
                 <div className={styles.previewNavItem}>
-                  <span className={styles.previewDot} data-color-variant="accent2" />
+                  <span
+                    className={styles.previewDot}
+                    data-color-variant="accent2"
+                  />
                   <span>Nav Item</span>
                 </div>
                 <div className={styles.previewNavItem}>
-                  <span className={styles.previewDot} data-color-variant="muted" />
+                  <span
+                    className={styles.previewDot}
+                    data-color-variant="muted"
+                  />
                   <span>Another</span>
                 </div>
               </div>
@@ -460,22 +494,40 @@ export default function CustomThemeEditorComponent({
                     Secondary text content with tertiary meta
                   </span>
                   <div className={styles.previewBadges}>
-                    <span className={styles.previewBadge} data-color-variant="accent">
+                    <span
+                      className={styles.previewBadge}
+                      data-color-variant="accent"
+                    >
                       Accent
                     </span>
-                    <span className={styles.previewBadge} data-color-variant="accent2">
+                    <span
+                      className={styles.previewBadge}
+                      data-color-variant="accent2"
+                    >
                       Secondary
                     </span>
-                    <span className={styles.previewBadge} data-color-variant="success">
+                    <span
+                      className={styles.previewBadge}
+                      data-color-variant="success"
+                    >
                       Success
                     </span>
-                    <span className={styles.previewBadge} data-color-variant="danger">
+                    <span
+                      className={styles.previewBadge}
+                      data-color-variant="danger"
+                    >
                       Error
                     </span>
-                    <span className={styles.previewBadge} data-color-variant="warning">
+                    <span
+                      className={styles.previewBadge}
+                      data-color-variant="warning"
+                    >
                       Warning
                     </span>
-                    <span className={styles.previewBadge} data-color-variant="info">
+                    <span
+                      className={styles.previewBadge}
+                      data-color-variant="info"
+                    >
                       Info
                     </span>
                   </div>
@@ -500,7 +552,9 @@ export default function CustomThemeEditorComponent({
                       size={13}
                       className={styles.tokenGroupChevron}
                     />
-                    <span className={styles.tokenGroupTitle}>{group.title}</span>
+                    <span className={styles.tokenGroupTitle}>
+                      {group.title}
+                    </span>
                     <div className={styles.tokenGroupSwatches}>
                       {group.fields.map((field) => (
                         <span

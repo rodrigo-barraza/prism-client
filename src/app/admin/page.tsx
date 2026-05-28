@@ -1,6 +1,15 @@
 "use client";
 
-import type { PrismConfig, ModelOption, ModelsMap, IrisDashboardStats, IrisProjectStat, IrisModelStat, IrisTimelineEntry, Conversation } from "@/types/types";
+import type {
+  PrismConfig,
+  ModelOption,
+  ModelsMap,
+  IrisDashboardStats,
+  IrisProjectStat,
+  IrisModelStat,
+  IrisTimelineEntry,
+  Conversation,
+} from "@/types/types";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
@@ -18,7 +27,6 @@ import {
   MessageSquare,
   Timer,
   Wrench,
-
   FolderKanban,
 } from "lucide-react";
 import {
@@ -84,12 +92,16 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<IrisDashboardStats | null>(null);
   const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
   const [modelStats, setModelStats] = useState<IrisModelStat[]>([]);
-  const [configModels, setConfigModels] = useState<Record<string, string[]>>({});
+  const [configModels, setConfigModels] = useState<Record<string, string[]>>(
+    {},
+  );
 
   const [timeline, setTimeline] = useState<IrisTimelineEntry[]>([]);
   const [recentRequests, setRecentRequests] = useState<IrisRequestEntry[]>([]);
   const [recentTraces, setRecentTraces] = useState<IrisRequestEntry[]>([]);
-  const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
+  const [recentConversations, setRecentConversations] = useState<
+    Conversation[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -169,7 +181,10 @@ export default function DashboardPage() {
         if (prismConfig.localProviders?.length > 0) {
           PrismService.getLocalConfig()
             .then(({ models: localModels }: { models: ModelsMap }) => {
-              const merged = PrismService.mergeLocalModels(prismConfig, localModels);
+              const merged = PrismService.mergeLocalModels(
+                prismConfig,
+                localModels,
+              );
               if (merged !== prismConfig) setConfigModels(buildLookup(merged));
             })
             .catch(() => {});
@@ -425,7 +440,11 @@ export default function DashboardPage() {
           href="/admin/chat"
           icon={MessageSquare}
           count={
-            loading ? "—" : formatNumber((stats?.conversationCount || 0) + (stats?.agentCount || 0))
+            loading
+              ? "—"
+              : formatNumber(
+                  (stats?.conversationCount || 0) + (stats?.agentCount || 0),
+                )
           }
           label="Chat"
         />
@@ -474,9 +493,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           label="Total Duration"
-          value={
-            loading ? "..." : formatElapsedTime(stats?.totalDuration || 0)
-          }
+          value={loading ? "..." : formatElapsedTime(stats?.totalDuration || 0)}
           subtitle="Cumulative request time"
           icon={Timer}
           variant="info"

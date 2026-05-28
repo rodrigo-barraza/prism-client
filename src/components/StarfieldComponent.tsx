@@ -403,7 +403,12 @@ const CONSTELLATIONS = [
 
 // -- Star generation --
 
-function generateFieldStars(count: number, w: number, h: number, rng: SeededRng): FieldStar[] {
+function generateFieldStars(
+  count: number,
+  w: number,
+  h: number,
+  rng: SeededRng,
+): FieldStar[] {
   const stars: FieldStar[] = [];
   const padX = w * 0.35;
   const padY = h * 0.35;
@@ -489,7 +494,11 @@ function generateFieldStars(count: number, w: number, h: number, rng: SeededRng)
 
 // -- Nebula & galactic core pre-render --
 
-function renderNebulaLayer(w: number, h: number, rng: SeededRng): HTMLCanvasElement {
+function renderNebulaLayer(
+  w: number,
+  h: number,
+  rng: SeededRng,
+): HTMLCanvasElement {
   const offscreen = document.createElement("canvas");
   offscreen.width = w;
   offscreen.height = h;
@@ -698,7 +707,13 @@ export default function StarfieldComponent({
 
       // -- Draw nebula / galactic core layer (pre-rendered) --
       if (nebulaCanvasRef.current) {
-        context.drawImage(nebulaCanvasRef.current, 0, 0, scaledWidth, scaledHeight);
+        context.drawImage(
+          nebulaCanvasRef.current,
+          0,
+          0,
+          scaledWidth,
+          scaledHeight,
+        );
       }
 
       // -- Draw field stars with atmospheric scintillation --
@@ -708,7 +723,11 @@ export default function StarfieldComponent({
           1 -
           star.twinkleAmount +
           star.twinkleAmount *
-            (0.5 + 0.5 * Math.sin(elapsedSeconds * star.twinkleSpeed + star.twinklePhase));
+            (0.5 +
+              0.5 *
+                Math.sin(
+                  elapsedSeconds * star.twinkleSpeed + star.twinklePhase,
+                ));
         // Fast atmospheric scintillation — rapid micro-flicker
         // Brighter/larger stars scintillate more (realistic)
         const scintAmount = star.radius > 0.6 ? 0.12 : 0.05;
@@ -716,8 +735,12 @@ export default function StarfieldComponent({
           1 -
           scintAmount +
           scintAmount *
-            (0.5 + 0.5 * Math.sin(elapsedSeconds * 11.3 + star.x * 0.7 + star.y * 1.3)) *
-            (0.5 + 0.5 * Math.cos(elapsedSeconds * 7.7 + star.y * 0.9 + star.x * 0.4));
+            (0.5 +
+              0.5 *
+                Math.sin(elapsedSeconds * 11.3 + star.x * 0.7 + star.y * 1.3)) *
+            (0.5 +
+              0.5 *
+                Math.cos(elapsedSeconds * 7.7 + star.y * 0.9 + star.x * 0.4));
         const alpha = star.brightness * twinkle * scintillation;
 
         context.globalAlpha = alpha;
@@ -740,7 +763,8 @@ export default function StarfieldComponent({
       // -- Draw constellation lines --
       if (constellations) {
         for (const c of constellations) {
-          const pulse = 0.05 + 0.025 * Math.sin(elapsedSeconds * 0.6 + c.stars[0].x * 0.01);
+          const pulse =
+            0.05 + 0.025 * Math.sin(elapsedSeconds * 0.6 + c.stars[0].x * 0.01);
           context.globalAlpha = 1;
           context.strokeStyle = `rgba(140, 165, 220, ${pulse})`;
           context.lineWidth = 0.4;
@@ -760,15 +784,26 @@ export default function StarfieldComponent({
               star.twinkleAmount +
               star.twinkleAmount *
                 (0.5 +
-                  0.5 * Math.sin(elapsedSeconds * star.twinkleSpeed + star.twinklePhase));
+                  0.5 *
+                    Math.sin(
+                      elapsedSeconds * star.twinkleSpeed + star.twinklePhase,
+                    ));
             // Atmospheric scintillation for constellation stars too
             const scint = 0.1;
             const scintillation =
               1 -
               scint +
               scint *
-                (0.5 + 0.5 * Math.sin(elapsedSeconds * 9.1 + star.x * 0.5 + star.y * 1.1)) *
-                (0.5 + 0.5 * Math.cos(elapsedSeconds * 6.3 + star.y * 0.7 + star.x * 0.3));
+                (0.5 +
+                  0.5 *
+                    Math.sin(
+                      elapsedSeconds * 9.1 + star.x * 0.5 + star.y * 1.1,
+                    )) *
+                (0.5 +
+                  0.5 *
+                    Math.cos(
+                      elapsedSeconds * 6.3 + star.y * 0.7 + star.x * 0.3,
+                    ));
             const alpha = star.brightness * twinkle * scintillation;
 
             context.globalAlpha = alpha;

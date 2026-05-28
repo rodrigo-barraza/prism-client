@@ -29,7 +29,10 @@ interface WorkflowOutputs {
   audio?: string;
   embedding?: number[];
   conversation?: unknown[];
-  tools?: { schemas: ToolSchemaEntry[]; customMap: Map<string, WorkflowCustomTool> };
+  tools?: {
+    schemas: ToolSchemaEntry[];
+    customMap: Map<string, WorkflowCustomTool>;
+  };
   [key: string]: unknown;
 }
 
@@ -47,7 +50,13 @@ interface ToolSchemaEntry {
 interface WorkflowCustomTool {
   name: string;
   description?: string;
-  parameters?: Array<{ name: string; type?: string; description?: string; required?: boolean; enum?: string[] }>;
+  parameters?: Array<{
+    name: string;
+    type?: string;
+    description?: string;
+    required?: boolean;
+    enum?: string[];
+  }>;
   implementation?: string;
   _id?: string;
 }
@@ -73,7 +82,11 @@ interface WorkflowModelNode {
   messages?: WorkflowMessage[];
   staticInputs?: Record<string, unknown>;
   disabledTools?: string[];
-  builtInTools?: Array<{ name: string; description?: string; parameters?: Record<string, unknown> }>;
+  builtInTools?: Array<{
+    name: string;
+    description?: string;
+    parameters?: Record<string, unknown>;
+  }>;
   customTools?: WorkflowCustomTool[];
 }
 
@@ -101,7 +114,10 @@ interface WorkflowCallbacks {
  * properly sends system prompts as system messages, so we prefer it
  * over the dedicated imageToText captioning endpoint.
  */
-function resolveEndpoint(node: WorkflowModelNode, inputData: WorkflowInputDatum[]) {
+function resolveEndpoint(
+  node: WorkflowModelNode,
+  inputData: WorkflowInputDatum[],
+) {
   const hasAudioInput = inputData.some((d) => d.type === "audio");
   const outputsImage = (node.outputTypes || []).includes("image");
   const outputsAudio = (node.outputTypes || []).includes("audio");
@@ -151,7 +167,15 @@ async function resolveToDataUrl(ref: unknown): Promise<string | null> {
 async function executeModelNode(
   node: WorkflowModelNode,
   inputData: WorkflowInputDatum[],
-  { onNodeContentUpdate, toolSchemas, customToolMap }: { onNodeContentUpdate?: WorkflowCallbacks['onNodeContentUpdate']; toolSchemas?: ToolSchemaEntry[] | null; customToolMap?: Map<string, WorkflowCustomTool> | null } = {},
+  {
+    onNodeContentUpdate,
+    toolSchemas,
+    customToolMap,
+  }: {
+    onNodeContentUpdate?: WorkflowCallbacks["onNodeContentUpdate"];
+    toolSchemas?: ToolSchemaEntry[] | null;
+    customToolMap?: Map<string, WorkflowCustomTool> | null;
+  } = {},
 ) {
   const endpoint = resolveEndpoint(node, inputData);
   const outputs: WorkflowOutputs = {};
@@ -192,7 +216,12 @@ async function executeModelNode(
       pdfParts.length > 0;
 
     // Helper: merge piped media fields into a message (all are arrays)
-    interface MediaFields { images?: string[]; audio?: string[]; video?: string[]; pdf?: string[] }
+    interface MediaFields {
+      images?: string[];
+      audio?: string[];
+      video?: string[];
+      pdf?: string[];
+    }
     const buildMediaFields = (existing: MediaFields = {}): MediaFields => {
       const fields: MediaFields = {};
       const imgs = [...(existing.images || []), ...imageParts] as string[];
@@ -304,7 +333,7 @@ async function executeModelNode(
       conversationId,
       conversationMeta,
       ...(toolSchemas != null && {
-        enabledTools: toolSchemas.map((t) => t.function?.name || ''),
+        enabledTools: toolSchemas.map((t) => t.function?.name || ""),
       }),
     } as unknown as import("../types/types").ChatPayload;
 
@@ -351,7 +380,8 @@ async function executeModelNode(
     outputs.text = currentResult.text || currentResult.content || "";
     // Some models return inline images
     if (currentResult.images && currentResult.images.length > 0) {
-      outputs.image = (await resolveToDataUrl(currentResult.images[0])) || undefined;
+      outputs.image =
+        (await resolveToDataUrl(currentResult.images[0])) || undefined;
     }
   } else if (endpoint === "textToImage") {
     const pipedPrompt =
@@ -452,7 +482,8 @@ async function executeModelNode(
       outputs.text = result.text;
     }
   } else if (endpoint === "audioToText") {
-    const audio = (inputData.find((d) => d.type === "audio")?.data as string) || "";
+    const audio =
+      (inputData.find((d) => d.type === "audio")?.data as string) || "";
     const result = await PrismService.transcribeAudio({
       provider: node.provider as string,
       model: node.modelName as string,
@@ -468,7 +499,8 @@ async function executeModelNode(
 
     outputs.text = result.text || "";
   } else if (endpoint === "textToSpeech") {
-    const text = (inputData.find((d) => d.type === "text")?.data as string) || "";
+    const text =
+      (inputData.find((d) => d.type === "text")?.data as string) || "";
     const result = await PrismService.generateSpeech({
       provider: node.provider as string,
       model: node.modelName as string,
@@ -513,7 +545,10 @@ async function executeModelNode(
 /**
  * Topological sort of nodes based on edge graph.
  */
-function topologicalSort(nodes: WorkflowModelNode[], edges: WorkflowEdge[]): string[] {
+function topologicalSort(
+  nodes: WorkflowModelNode[],
+  edges: WorkflowEdge[],
+): string[] {
   const inDegree: Record<string, number> = {};
   const adjacency: Record<string, string[]> = {};
   for (const node of nodes) {
@@ -521,16 +556,12 @@ function topologicalSort(nodes: WorkflowModelNode[], edges: WorkflowEdge[]): str
     adjacency[node.id] = [];
   }
   for (const conn of edges) {
-    inDegree[conn.targetNodeId] =
-      (inDegree[conn.targetNodeId] || 0) + 1;
-    adjacency[conn.sourceNodeId] =
-      adjacency[conn.sourceNodeId] || [];
+    inDegree[conn.targetNodeId] = (inDegree[conn.targetNodeId] || 0) + 1;
+    adjacency[conn.sourceNodeId] = adjacency[conn.sourceNodeId] || [];
     adjacency[conn.sourceNodeId].push(conn.targetNodeId);
   }
 
-  const queue = nodes
-    .filter((n) => inDegree[n.id] === 0)
-    .map((n) => n.id);
+  const queue = nodes.filter((n) => inDegree[n.id] === 0).map((n) => n.id);
   const sorted: string[] = [];
 
   while (queue.length > 0) {
@@ -592,9 +623,7 @@ export async function executeWorkflow(
     if (!node) continue;
 
     // Check if any upstream source has errored — if so, skip this node
-    const incomingForCheck = edges.filter(
-      (c) => c.targetNodeId === nodeId,
-    );
+    const incomingForCheck = edges.filter((c) => c.targetNodeId === nodeId);
     const hasErroredUpstream = incomingForCheck.some((c) =>
       erroredNodeIds.has(c.sourceNodeId),
     );
@@ -615,9 +644,7 @@ export async function executeWorkflow(
 
           // Collect piped data from upstream edges using compound port IDs
           // Port format: "{msgIndex}.{modality}" e.g. "0.text", "1.image"
-          const incomingConns = edges.filter(
-            (c) => c.targetNodeId === nodeId,
-          );
+          const incomingConns = edges.filter((c) => c.targetNodeId === nodeId);
 
           for (const conn of incomingConns) {
             const sourceOut = nodeOutputs[conn.sourceNodeId];
@@ -637,15 +664,27 @@ export async function executeWorkflow(
             if (modality === "text") {
               message.content = message.content
                 ? `${message.content}\n\n${data}`
-                : data as string;
+                : (data as string);
             } else if (modality === "image") {
-              message.images = [...((message.images as string[]) || []), data as string];
+              message.images = [
+                ...((message.images as string[]) || []),
+                data as string,
+              ];
             } else if (modality === "audio") {
-              message.audio = [...((message.audio as string[]) || []), data as string];
+              message.audio = [
+                ...((message.audio as string[]) || []),
+                data as string,
+              ];
             } else if (modality === "video") {
-              message.video = [...((message.video as string[]) || []), data as string];
+              message.video = [
+                ...((message.video as string[]) || []),
+                data as string,
+              ];
             } else if (modality === "pdf") {
-              message.pdf = [...((message.pdf as string[]) || []), data as string];
+              message.pdf = [
+                ...((message.pdf as string[]) || []),
+                data as string,
+              ];
             }
           }
 
@@ -664,8 +703,7 @@ export async function executeWorkflow(
             const data = nodeOutputs[nodeId]?.[conn.sourceModality];
             if (data) {
               viewerPartials[conn.targetNodeId] ??= {};
-              viewerPartials[conn.targetNodeId][conn.targetModality] =
-                data;
+              viewerPartials[conn.targetNodeId][conn.targetModality] = data;
               onViewerPartial?.(conn.targetNodeId, {
                 ...viewerPartials[conn.targetNodeId],
               });
@@ -682,7 +720,7 @@ export async function executeWorkflow(
           (t) => !disabled.has(t.name),
         );
         const custom = (node.customTools || []).filter(
-          (t) => !disabled.has(t.name || t._id || ''),
+          (t) => !disabled.has(t.name || t._id || ""),
         );
 
         // Build OpenAI-format tool schemas
@@ -735,9 +773,7 @@ export async function executeWorkflow(
 
       if (node.nodeType === "viewer") {
         // Viewer nodes collect connected input data and display it
-        const incomingConns = edges.filter(
-          (c) => c.targetNodeId === nodeId,
-        );
+        const incomingConns = edges.filter((c) => c.targetNodeId === nodeId);
         const collectedOutputs: Record<string, unknown> = {};
 
         for (const conn of incomingConns) {
@@ -782,7 +818,10 @@ export async function executeWorkflow(
         toolSchemas = [];
         customToolMap = new Map();
         for (const ti of toolInputs) {
-          const tiData = ti.data as { schemas?: ToolSchemaEntry[]; customMap?: Map<string, WorkflowCustomTool> };
+          const tiData = ti.data as {
+            schemas?: ToolSchemaEntry[];
+            customMap?: Map<string, WorkflowCustomTool>;
+          };
           if (tiData?.schemas) toolSchemas.push(...tiData.schemas);
           if (tiData?.customMap) {
             for (const [k, v] of tiData.customMap) customToolMap.set(k, v);
@@ -819,8 +858,7 @@ export async function executeWorkflow(
           const data = outputs[conn.sourceModality];
           if (data) {
             viewerPartials[conn.targetNodeId] ??= {};
-            viewerPartials[conn.targetNodeId][conn.targetModality] =
-              data;
+            viewerPartials[conn.targetNodeId][conn.targetModality] = data;
             onViewerPartial?.(conn.targetNodeId, {
               ...viewerPartials[conn.targetNodeId],
             });

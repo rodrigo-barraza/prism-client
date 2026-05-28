@@ -50,7 +50,12 @@ const MAX_GLOW_OPACITY = 0.9; // Maximum glow drop-shadow opacity
  * Render a single pre-decoded ImageBitmap frame onto the canvas.
  * GPU-composited — no pixel data manipulation at draw time.
  */
-function renderFrame(canvas: HTMLCanvasElement | null, frames: DecodedFrame[], bitmaps: ImageBitmap[], index: number) {
+function renderFrame(
+  canvas: HTMLCanvasElement | null,
+  frames: DecodedFrame[],
+  bitmaps: ImageBitmap[],
+  index: number,
+) {
   if (!canvas || !bitmaps?.length) return;
 
   const context = canvas.getContext("2d");
@@ -169,17 +174,22 @@ export default function SpinningCatComponent({
 
       const currentState = stateRef.current;
       if (!currentState.lastTimestamp) currentState.lastTimestamp = now;
-      const dt = now - currentState.lastTimestamp;
+      const deltaTime = now - currentState.lastTimestamp;
       currentState.lastTimestamp = now;
 
       if (animateRef.current) {
-        currentState.accelTime += dt / 1000;
+        currentState.accelTime += deltaTime / 1000;
         currentState.speedMultiplier =
-          BASE_SPEED + ACCEL_COEFFICIENT * currentState.accelTime * currentState.accelTime;
-      } else if (currentState.speedMultiplier > BASE_SPEED + SETTLED_THRESHOLD) {
+          BASE_SPEED +
+          ACCEL_COEFFICIENT * currentState.accelTime * currentState.accelTime;
+      } else if (
+        currentState.speedMultiplier >
+        BASE_SPEED + SETTLED_THRESHOLD
+      ) {
         currentState.accelTime = 0;
-        const smoothing = 1 - Math.pow(1 - DECEL_SMOOTHING, dt / 16.67);
-        currentState.speedMultiplier += (BASE_SPEED - currentState.speedMultiplier) * smoothing;
+        const smoothing = 1 - Math.pow(1 - DECEL_SMOOTHING, deltaTime / 16.67);
+        currentState.speedMultiplier +=
+          (BASE_SPEED - currentState.speedMultiplier) * smoothing;
       } else if (currentState.windingDown) {
         currentState.speedMultiplier = BASE_SPEED;
         currentState.accelTime = 0;
@@ -202,7 +212,7 @@ export default function SpinningCatComponent({
       const baseDelay = frame.delay || 100;
       const effectiveDelay = baseDelay / currentState.speedMultiplier;
 
-      currentState.elapsed += dt;
+      currentState.elapsed += deltaTime;
 
       if (currentState.elapsed >= effectiveDelay) {
         currentState.elapsed = 0;
@@ -216,7 +226,12 @@ export default function SpinningCatComponent({
           }
         }
 
-        renderFrame(canvasRef.current, frames, bitmaps, currentState.frameIndex);
+        renderFrame(
+          canvasRef.current,
+          frames,
+          bitmaps,
+          currentState.frameIndex,
+        );
       }
 
       // -- Compute visual FX intensity (0 → 1) --
@@ -226,7 +241,8 @@ export default function SpinningCatComponent({
         currentState.speedMultiplier > BASE_SPEED + SETTLED_THRESHOLD
       ) {
         const intensity = Math.min(
-          (currentState.speedMultiplier - BASE_SPEED) / (MAX_SPEED_FOR_FX - BASE_SPEED),
+          (currentState.speedMultiplier - BASE_SPEED) /
+            (MAX_SPEED_FOR_FX - BASE_SPEED),
           1,
         );
         const scale = 1 + intensity * (MAX_SCALE - 1);

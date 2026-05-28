@@ -298,7 +298,10 @@ export default function RunHistorySidebarComponent({
                       {run.aborted && (
                         <AlertTriangle
                           size={11}
-                          style={{ color: "var(--color-warning)", flexShrink: 0 }}
+                          style={{
+                            color: "var(--color-warning)",
+                            flexShrink: 0,
+                          }}
                         />
                       )}
                     </div>

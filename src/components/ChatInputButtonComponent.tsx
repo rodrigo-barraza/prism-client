@@ -132,7 +132,10 @@ export default function ChatInputButton({
   } else if (icon === "upload" && uploadTypes) {
     IconElement = <RotatingUploadIcon types={uploadTypes} size={18} />;
   } else if (typeof icon === "string") {
-    const Comp = typeof icon === "string" && icon in ICON_MAP ? ICON_MAP[icon as IconName] : null;
+    const Comp =
+      typeof icon === "string" && icon in ICON_MAP
+        ? ICON_MAP[icon as IconName]
+        : null;
     if (Comp) IconElement = <Comp size={18} />;
   } else {
     IconElement = icon;
@@ -146,7 +149,9 @@ export default function ChatInputButton({
         SoundService.playClickButton({ event: e.nativeEvent });
         onClick?.(e);
       }}
-      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e.nativeEvent })}
+      onMouseEnter={(e: React.MouseEvent) =>
+        SoundService.playHoverButton({ event: e.nativeEvent })
+      }
       disabled={disabled}
       aria-label={label}
       {...props}

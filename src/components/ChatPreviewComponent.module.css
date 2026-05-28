@@ -79,7 +79,8 @@
 
 /* System block gets a subtle left accent */
 .promptBlockSystem {
-  border-left: 2px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
+  border-left: 2px solid
+    color-mix(in srgb, var(--color-warning) 40%, transparent);
 }
 
 /* User block gets accent left border */

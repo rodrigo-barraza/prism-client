@@ -13,7 +13,8 @@ const LS_ACTIVE_AGENT = "prism:activeAgent";
 const NONE_AGENT = {
   id: "NONE",
   name: "Agentless",
-  description: "A straightforward conversation with the AI — no automated workflows, just you and the model.",
+  description:
+    "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
   toolCount: -1, // sentinel — rendered as "All tools" in picker
   custom: false,
@@ -34,7 +35,10 @@ export default function AgentsPage() {
  * apply a set of updates, and return the URL string.
  * Keys with null/undefined values are removed.
  */
-function buildUrl(currentParams: URLSearchParams, updates: Record<string, string | null>) {
+function buildUrl(
+  currentParams: URLSearchParams,
+  updates: Record<string, string | null>,
+) {
   const params = new URLSearchParams(currentParams.toString());
   for (const [key, value] of Object.entries(updates)) {
     if (value == null || value === "") {
@@ -50,7 +54,9 @@ function buildUrl(currentParams: URLSearchParams, updates: Record<string, string
 function AgentsPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [agents, setAgents] = useState<Array<AgentPersona | typeof NONE_AGENT>>([]);
+  const [agents, setAgents] = useState<Array<AgentPersona | typeof NONE_AGENT>>(
+    [],
+  );
   // Always initialize to "CODING" for SSR/client parity — hydrate from
   // localStorage after mount to avoid hydration mismatch.
   const [localAgentId, setLocalAgentId] = useState("CODING");
@@ -190,7 +196,10 @@ function AgentsPageInner() {
     window.addEventListener("agent:switch", handleAgentSwitch);
     window.addEventListener("model:change", handleModelChange);
     window.addEventListener("conversation:change", handleConversationChange);
-    window.addEventListener("sidebarTab:change", handleSidebarTabChangeNotification);
+    window.addEventListener(
+      "sidebarTab:change",
+      handleSidebarTabChangeNotification,
+    );
     return () => {
       window.removeEventListener("agent:switch", handleAgentSwitch);
       window.removeEventListener("model:change", handleModelChange);
@@ -203,7 +212,12 @@ function AgentsPageInner() {
         handleSidebarTabChangeNotification,
       );
     };
-  }, [handleAgentSwitch, handleModelChange, handleConversationChange, handleSidebarTabChangeNotification]);
+  }, [
+    handleAgentSwitch,
+    handleModelChange,
+    handleConversationChange,
+    handleSidebarTabChangeNotification,
+  ]);
 
   // Persist to localStorage on change
   useEffect(() => {

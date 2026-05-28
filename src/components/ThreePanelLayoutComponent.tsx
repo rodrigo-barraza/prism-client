@@ -9,7 +9,11 @@ import {
 } from "lucide-react";
 import { LayoutHeaderComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ThreePanelLayoutComponent.module.css";
-import { LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
+import {
+  LS_PANEL_LEFT,
+  LS_PANEL_RIGHT,
+  LS_LEFT_SIDEBAR_SPLIT_RATIO,
+} from "../constants";
 
 /**
  * Reusable 3-panel layout with a full-width header spanning all panels.
@@ -28,6 +32,7 @@ import { LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
 export interface ThreePanelLayoutProps {
   navSidebar?: React.ReactNode;
   leftPanel: React.ReactNode;
+  leftPanelBottom?: React.ReactNode;
   leftTitle?: string;
   rightPanel?: React.ReactNode;
   rightTitle?: string;
@@ -39,9 +44,14 @@ export interface ThreePanelLayoutProps {
   children: React.ReactNode;
 }
 
+const DEFAULT_SPLIT_RATIO = 0.5;
+const MINIMUM_PANEL_RATIO = 0.2;
+const MAXIMUM_PANEL_RATIO = 0.8;
+
 export default function ThreePanelLayout({
   navSidebar = null,
   leftPanel,
+  leftPanelBottom = null,
   leftTitle = "Settings",
   rightPanel,
   rightTitle,
@@ -59,6 +69,24 @@ export default function ThreePanelLayout({
   const [showRight, setShowRight] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  // -- Left sidebar split panel drag-resize state --
+  const [splitRatio, setSplitRatio] = useState(() => {
+    if (typeof window === "undefined") return DEFAULT_SPLIT_RATIO;
+    const stored = localStorage.getItem(LS_LEFT_SIDEBAR_SPLIT_RATIO);
+    if (stored) {
+      const parsed = parseFloat(stored);
+      if (
+        !isNaN(parsed) &&
+        parsed >= MINIMUM_PANEL_RATIO &&
+        parsed <= MAXIMUM_PANEL_RATIO
+      )
+        return parsed;
+    }
+    return DEFAULT_SPLIT_RATIO;
+  });
+  const isDraggingSplitRef = useRef(false);
+  const splitContainerRef = useRef<HTMLElement>(null);
   const [isNarrow, setIsNarrow] = useState(false);
 
   useEffect(() => {
@@ -101,7 +129,8 @@ export default function ThreePanelLayout({
       isNarrowMountRef.current = false;
       return;
     }
-    const { showLeft: currentLeft, showRight: currentRight } = sidebarStateRef.current;
+    const { showLeft: currentLeft, showRight: currentRight } =
+      sidebarStateRef.current;
     if (isNarrow) {
       // Entering narrow: if both are open, close the right
       if (currentLeft && currentRight) {
@@ -177,13 +206,51 @@ export default function ThreePanelLayout({
       document.removeEventListener("panel:dismiss-sidebars", handler);
   }, [dismissSidebars]);
 
+  // -- Left sidebar split panel drag handler --
+  const handleSplitDragStart = useCallback((dragEvent: React.MouseEvent) => {
+    dragEvent.preventDefault();
+    isDraggingSplitRef.current = true;
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingSplitRef.current || !splitContainerRef.current) return;
+      const containerRect = splitContainerRef.current.getBoundingClientRect();
+      const relativePosition =
+        (moveEvent.clientY - containerRect.top) / containerRect.height;
+      const clampedRatio = Math.min(
+        MAXIMUM_PANEL_RATIO,
+        Math.max(MINIMUM_PANEL_RATIO, relativePosition),
+      );
+      setSplitRatio(clampedRatio);
+    };
+
+    const handleMouseUp = () => {
+      isDraggingSplitRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      // Persist final ratio
+      setSplitRatio((currentRatio) => {
+        localStorage.setItem(LS_LEFT_SIDEBAR_SPLIT_RATIO, String(currentRatio));
+        return currentRatio;
+      });
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  }, []);
+
   // Suppress the CSS transition on first paint so panels don't animate from open→closed
   const transitionStyle = hydrated ? undefined : { transition: "none" };
 
+  const hasSplitPanels = leftPanelBottom != null;
+
   return (
-    <div className={styles['three-panel-layout-container']}>
+    <div className={styles["three-panel-layout-container"]}>
       {navSidebar}
-      <div className={styles['layout-page-column']}>
+      <div className={styles["layout-page-column"]}>
         {/* Full-width header */}
         <LayoutHeaderComponent
           isMobile={isMobile}
@@ -211,14 +278,41 @@ export default function ThreePanelLayout({
         />
 
         {/* Body: sidebars + main content */}
-        <div className={styles['layout-body-row']}>
+        <div className={styles["layout-body-row"]}>
           {/* Left Sidebar */}
           <aside
-            className={`${styles['left-sidebar-panel']} ${!showLeft ? styles['is-sidebar-hidden'] : ""}`}
+            className={`${styles["left-sidebar-panel"]} ${!showLeft ? styles["is-sidebar-hidden"] : ""} ${hasSplitPanels ? styles["has-split-panels"] : ""}`}
             style={transitionStyle}
             onClick={handleSidebarClick(toggleLeft)}
+            ref={splitContainerRef}
           >
-            {leftPanel}
+            {hasSplitPanels ? (
+              <>
+                <div
+                  className={styles["split-panel-top-group"]}
+                  style={{ flex: `0 0 ${splitRatio * 100}%` }}
+                >
+                  {leftPanel}
+                </div>
+                <div
+                  className={styles["split-panel-resize-handle"]}
+                  onMouseDown={handleSplitDragStart}
+                  role="separator"
+                  aria-orientation="horizontal"
+                  aria-label="Resize sidebar panels"
+                >
+                  <div className={styles["split-panel-resize-grip"]} />
+                </div>
+                <div
+                  className={styles["split-panel-bottom-group"]}
+                  style={{ flex: `0 0 ${(1 - splitRatio) * 100}%` }}
+                >
+                  {leftPanelBottom}
+                </div>
+              </>
+            ) : (
+              leftPanel
+            )}
           </aside>
 
           {/* File Viewer Pane (VS Code-style, between sidebar and chat) */}
@@ -226,7 +320,7 @@ export default function ThreePanelLayout({
 
           {/* Main Center */}
           <section
-            className={`${styles['main-content-section']} ${isMobile && (showLeft || showRight) ? styles['is-scrim-active'] : ""}`}
+            className={`${styles["main-content-section"]} ${isMobile && (showLeft || showRight) ? styles["is-scrim-active"] : ""}`}
             data-chat-area-region
             onClick={handleMainClick}
           >
@@ -236,7 +330,7 @@ export default function ThreePanelLayout({
           {/* Right Sidebar */}
           {rightPanel && (
             <aside
-              className={`${styles['right-sidebar-panel']} ${!showRight ? styles['is-sidebar-hidden'] : ""}`}
+              className={`${styles["right-sidebar-panel"]} ${!showRight ? styles["is-sidebar-hidden"] : ""}`}
               style={transitionStyle}
               onClick={handleSidebarClick(toggleRight)}
             >

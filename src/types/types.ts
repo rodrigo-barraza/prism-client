@@ -469,7 +469,11 @@ export interface TransformedSSEData {
   iteration?: number;
   maxIterations?: number;
   agentSessionId?: string;
-  toolCalls?: Array<{ id: string; name: string; args: Record<string, unknown> }>;
+  toolCalls?: Array<{
+    id: string;
+    name: string;
+    args: Record<string, unknown>;
+  }>;
   plan?: string;
   steps?: string[];
   autoApproved?: boolean;
@@ -563,8 +567,16 @@ export interface TransformedRequestItem {
 }
 
 export interface SSECallbacks {
-  onChunk?: (content: string, sourceModel?: string, outputCharacters?: number) => void;
-  onThinking?: (content: string, sourceModel?: string, outputCharacters?: number) => void;
+  onChunk?: (
+    content: string,
+    sourceModel?: string,
+    outputCharacters?: number,
+  ) => void;
+  onThinking?: (
+    content: string,
+    sourceModel?: string,
+    outputCharacters?: number,
+  ) => void;
   onImage?: (data: string, mimeType: string, minioRef?: string) => void;
   onAudio?: (data: string, mimeType: string) => void;
   onExecutableCode?: (code: string, language: string) => void;
@@ -727,6 +739,21 @@ export interface Skill {
   updatedAt?: string;
 }
 
+// ─── Rules (Per-Agent Slash Commands) ───────────────────────
+
+export interface Rule {
+  _id?: ObjectId;
+  id?: string;
+  name: string;
+  description?: string;
+  content?: string;
+  agent: string;
+  project?: string;
+  enabled?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // ─── Agent Memories ─────────────────────────────────────────
 
 export interface AgentMemory {
@@ -836,6 +863,19 @@ export interface PrismSettings {
   agents?: AgentDefaultsConfig;
   /** Security and sandboxing preferences */
   security?: SecurityConfig;
+  /** Creative tools configuration (image generation & vision) */
+  creative?: CreativeConfig;
+}
+
+export interface CreativeConfig {
+  imageProvider?: string;
+  imageModel?: string;
+  visionProvider?: string;
+  visionModel?: string;
+  textToSpeechProvider?: string;
+  textToSpeechModel?: string;
+  speechToTextProvider?: string;
+  speechToTextModel?: string;
 }
 
 // ─── MCP Servers ────────────────────────────────────────────
@@ -963,7 +1003,13 @@ export interface BenchmarkRunResult {
   display_name?: string;
   passed?: boolean;
   thinking?: string;
-  toolCalls?: Array<{ id?: string; name?: string; args?: unknown; result?: unknown; status?: string }>;
+  toolCalls?: Array<{
+    id?: string;
+    name?: string;
+    args?: unknown;
+    result?: unknown;
+    status?: string;
+  }>;
   thinkingEnabled?: boolean;
   toolsEnabled?: boolean;
   agent?: string;
@@ -989,7 +1035,6 @@ export interface BenchmarkRun {
   aborted?: boolean;
   summary?: BenchmarkRunSummary;
 }
-
 
 export interface BenchmarkListResponse {
   benchmarks: Benchmark[];
@@ -1104,7 +1149,9 @@ export interface WorkflowNode {
   outputTypes?: string[];
   supportedModalities?: string[];
   builtInTools?: Array<string | { name: string; [key: string]: unknown }>;
-  customTools?: Array<string | { name?: string; _id?: string; [key: string]: unknown }>;
+  customTools?: Array<
+    string | { name?: string; _id?: string; [key: string]: unknown }
+  >;
   disabledTools?: string[];
   receivedOutputs?: Record<string, unknown>;
   nodeType?: string;
@@ -1138,7 +1185,12 @@ export interface WorkflowEdge {
   targetModality?: string;
 }
 
-export type WorkflowNodeStatus = "pending" | "running" | "completed" | "failed" | "skipped";
+export type WorkflowNodeStatus =
+  | "pending"
+  | "running"
+  | "completed"
+  | "failed"
+  | "skipped";
 
 export interface Workflow {
   _id?: ObjectId;
@@ -1458,5 +1510,3 @@ export interface IrisProviderStat {
   workflowCount?: number;
   sessionCount?: number;
 }
-
-

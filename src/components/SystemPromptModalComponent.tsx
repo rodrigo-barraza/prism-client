@@ -41,7 +41,9 @@ export default function SystemPromptModal({
   onApply,
   onClose,
 }: SystemPromptModalProps) {
-  const [instructions, setInstructions] = useState<SystemInstructionItem[]>(() => loadInstructions());
+  const [instructions, setInstructions] = useState<SystemInstructionItem[]>(
+    () => loadInstructions(),
+  );
   const [selectedId, setSelectedId] = useState<string | null>(() => {
     const list = loadInstructions();
     const match = list.find((i) => i.body === activePrompt);
@@ -77,7 +79,11 @@ export default function SystemPromptModal({
     if (value === "__new__") {
       // Create new
       const newId = Date.now().toString();
-      const newInstruction: SystemInstructionItem = { id: newId, title: "", body: "" };
+      const newInstruction: SystemInstructionItem = {
+        id: newId,
+        title: "",
+        body: "",
+      };
       setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
@@ -106,7 +112,11 @@ export default function SystemPromptModal({
     } else {
       // Auto-create instruction
       const newId = Date.now().toString();
-      const newInstruction: SystemInstructionItem = { id: newId, title: value, body };
+      const newInstruction: SystemInstructionItem = {
+        id: newId,
+        title: value,
+        body,
+      };
       setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);
@@ -124,7 +134,11 @@ export default function SystemPromptModal({
     } else {
       // Auto-create instruction
       const newId = Date.now().toString();
-      const newInstruction: SystemInstructionItem = { id: newId, title, body: value };
+      const newInstruction: SystemInstructionItem = {
+        id: newId,
+        title,
+        body: value,
+      };
       setInstructions((prev) => {
         const updated = [...prev, newInstruction];
         saveInstructions(updated);

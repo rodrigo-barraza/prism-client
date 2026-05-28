@@ -146,7 +146,11 @@ function QuestionBlock({
                 : "Type your answer…"
             }
             value={freeText}
-            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setFreeText(e.target.value)}
+            onChange={(
+              e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => setFreeText(e.target.value)}
             onKeyDown={handleKeyDown}
           />
           {/* Annotation toggle */}
@@ -178,7 +182,11 @@ function QuestionBlock({
             className={styles.annotationsInput}
             placeholder="Add notes or context for this answer…"
             value={annotations}
-            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setAnnotations(e.target.value)}
+            onChange={(
+              e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => setAnnotations(e.target.value)}
             rows={2}
           />
         </div>

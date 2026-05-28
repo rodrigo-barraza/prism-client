@@ -396,7 +396,8 @@
   font-weight: 600;
   color: var(--text-muted);
   background: color-mix(in srgb, var(--text-muted) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   border-radius: 4px;
   padding: 0 5px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
@@ -471,7 +472,8 @@
   background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
   border-radius: 6px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
-  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
 }
 
 .taskMetadata {
@@ -487,7 +489,8 @@
   overflow: hidden;
   font-size: 0.5625rem;
   font-weight: 600;
-  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
 }
 
 .metaKey {

@@ -34,7 +34,9 @@ import {
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
 import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
-import FilterDropdownComponent, { type FilterGroup } from "./FilterDropdownComponent";
+import FilterDropdownComponent, {
+  type FilterGroup,
+} from "./FilterDropdownComponent";
 import MemoryCardComponent from "./MemoryCardComponent";
 import styles from "./MemoriesPanelComponent.module.css";
 
@@ -47,9 +49,24 @@ const TYPE_FILTER_COLORS: Record<MemoryType, string> = {
 
 const MEMORY_TYPE_FILTER_ITEMS = [
   { key: "user", icon: User, title: "User", color: TYPE_FILTER_COLORS.user },
-  { key: "feedback", icon: MessageSquare, title: "Feedback", color: TYPE_FILTER_COLORS.feedback },
-  { key: "project", icon: FolderKanban, title: "Project", color: TYPE_FILTER_COLORS.project },
-  { key: "reference", icon: ExternalLink, title: "Reference", color: TYPE_FILTER_COLORS.reference },
+  {
+    key: "feedback",
+    icon: MessageSquare,
+    title: "Feedback",
+    color: TYPE_FILTER_COLORS.feedback,
+  },
+  {
+    key: "project",
+    icon: FolderKanban,
+    title: "Project",
+    color: TYPE_FILTER_COLORS.project,
+  },
+  {
+    key: "reference",
+    icon: ExternalLink,
+    title: "Reference",
+    color: TYPE_FILTER_COLORS.reference,
+  },
 ];
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -99,7 +116,9 @@ export default function MemoriesPanel({
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  );
   const [newMemoryIds, setNewMemoryIds] = useState(new Set<string>());
   const [consolidating, setConsolidating] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -126,61 +145,67 @@ export default function MemoriesPanel({
 
   const PAGE_SIZE = 20;
 
-  const loadMemories = useCallback(async (isAppend = false) => {
-    if (isAppend) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-      setError(null);
-    }
-    try {
-      const currentSkip = isAppend ? memoriesRef.current.length : 0;
-      const typeParam = selectedType === "all" ? undefined : selectedType;
-      const result = await PrismService.getAgentMemories(
-        project,
-        PAGE_SIZE,
-        agent,
-        currentSkip,
-        typeParam
-      );
-      const fetched = result.memories || [];
+  const loadMemories = useCallback(
+    async (isAppend = false) => {
+      if (isAppend) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const currentSkip = isAppend ? memoriesRef.current.length : 0;
+        const typeParam = selectedType === "all" ? undefined : selectedType;
+        const result = await PrismService.getAgentMemories(
+          project,
+          PAGE_SIZE,
+          agent,
+          currentSkip,
+          typeParam,
+        );
+        const fetched = result.memories || [];
 
-      // Detect newly arrived memories
-      const freshIds = new Set<string>();
-      for (const m of fetched) {
-        const id = m.id || m._id;
-        if (knownIdsRef.current.size > 0 && !knownIdsRef.current.has(id)) {
-          freshIds.add(id);
+        // Detect newly arrived memories
+        const freshIds = new Set<string>();
+        for (const m of fetched) {
+          const id = m.id || m._id;
+          if (knownIdsRef.current.size > 0 && !knownIdsRef.current.has(id)) {
+            freshIds.add(id);
+          }
+          knownIdsRef.current.add(id);
         }
-        knownIdsRef.current.add(id);
-      }
 
-      if (freshIds.size > 0 && !isAppend) {
-        setNewMemoryIds(freshIds);
-        // Auto-clear highlight after 6s
-        setTimeout(() => setNewMemoryIds(new Set<string>()), HIGHLIGHT_DURATION_MS);
-      }
-
-      setMemories((prev) => {
-        if (isAppend) {
-          const prevIds = new Set(prev.map((m) => m.id || m._id));
-          const newItems = fetched.filter((m) => !prevIds.has(m.id || m._id));
-          return [...prev, ...newItems];
+        if (freshIds.size > 0 && !isAppend) {
+          setNewMemoryIds(freshIds);
+          // Auto-clear highlight after 6s
+          setTimeout(
+            () => setNewMemoryIds(new Set<string>()),
+            HIGHLIGHT_DURATION_MS,
+          );
         }
-        return fetched;
-      });
-      setTotal(result.total || 0);
-      setHasMore(fetched.length === PAGE_SIZE);
-    } catch (error: unknown) {
-      console.error("Failed to load memories:", error);
-      if (!isAppend) {
-        setError(getErrorMessage(error));
+
+        setMemories((prev) => {
+          if (isAppend) {
+            const prevIds = new Set(prev.map((m) => m.id || m._id));
+            const newItems = fetched.filter((m) => !prevIds.has(m.id || m._id));
+            return [...prev, ...newItems];
+          }
+          return fetched;
+        });
+        setTotal(result.total || 0);
+        setHasMore(fetched.length === PAGE_SIZE);
+      } catch (error: unknown) {
+        console.error("Failed to load memories:", error);
+        if (!isAppend) {
+          setError(getErrorMessage(error));
+        }
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [project, agent, selectedType]);
+    },
+    [project, agent, selectedType],
+  );
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
@@ -223,7 +248,7 @@ export default function MemoriesPanel({
       {
         root: null,
         rootMargin: "100px",
-      }
+      },
     );
 
     const currentSentinel = sentinelRef.current;
@@ -262,9 +287,7 @@ export default function MemoriesPanel({
     try {
       await PrismService.deleteAgentMemory(memoryId);
       // Optimistic removal from local state
-      setMemories((prev) =>
-        prev.filter((m) => (m.id || m._id) !== memoryId),
-      );
+      setMemories((prev) => prev.filter((m) => (m.id || m._id) !== memoryId));
       setTotal((prev) => Math.max(0, prev - 1));
       setConfirmingDeleteId(null);
     } catch (error: unknown) {
@@ -276,7 +299,10 @@ export default function MemoriesPanel({
     setConsolidating(true);
     setToast(null);
     try {
-      const result = await PrismService.consolidateMemories(project!, agent) as ConsolidateResult;
+      const result = (await PrismService.consolidateMemories(
+        project!,
+        agent,
+      )) as ConsolidateResult;
       if (result.skipped) {
         const message =
           result.reason === "daily_limit_reached"
@@ -317,7 +343,9 @@ export default function MemoriesPanel({
       result = result.filter((m) => {
         const title = (m.title || "").toLowerCase();
         const content = (m.content || "").toLowerCase();
-        return title.includes(normalizedSearch) || content.includes(normalizedSearch);
+        return (
+          title.includes(normalizedSearch) || content.includes(normalizedSearch)
+        );
       });
     }
 
@@ -390,7 +418,18 @@ export default function MemoriesPanel({
         />
       </>,
     );
-  }, [onActionsChange, handleConsolidate, consolidating, total, historyOpen, loading, loadMemories, error, memories.length, memoryConfigured]);
+  }, [
+    onActionsChange,
+    handleConsolidate,
+    consolidating,
+    total,
+    historyOpen,
+    loading,
+    loadMemories,
+    error,
+    memories.length,
+    memoryConfigured,
+  ]);
 
   // Clear actions on unmount
   useEffect(() => {
@@ -463,12 +502,9 @@ export default function MemoriesPanel({
     );
   }
 
-
-
   // -- List ----------------------------------------------------
   return (
     <div className={styles.container}>
-
       {toast && (
         <div
           className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}
@@ -487,15 +523,17 @@ export default function MemoriesPanel({
         />
         <FilterDropdownComponent
           fullWidth
-          groups={[
-            {
-              label: "Type",
-              items: MEMORY_TYPE_FILTER_ITEMS,
-              activeKeys: selectedType === "all" ? null : selectedType,
-              isSingleSelect: true,
-              onToggle: (key: string | null) => setSelectedType(key ?? "all"),
-            },
-          ] as FilterGroup[]}
+          groups={
+            [
+              {
+                label: "Type",
+                items: MEMORY_TYPE_FILTER_ITEMS,
+                activeKeys: selectedType === "all" ? null : selectedType,
+                isSingleSelect: true,
+                onToggle: (key: string | null) => setSelectedType(key ?? "all"),
+              },
+            ] as FilterGroup[]
+          }
           dateRange={{ from: dateFrom, to: dateTo }}
           onDateChange={({ from, to }: { from: string; to: string }) => {
             setDateFrom(from);
@@ -569,9 +607,7 @@ export default function MemoriesPanel({
             memory={memory}
             isNew={newMemoryIds.has(memoryId)}
             isConfirmingDelete={confirmingDeleteId === memoryId}
-            onDeleteRequest={(id) =>
-              setConfirmingDeleteId(id || null)
-            }
+            onDeleteRequest={(id) => setConfirmingDeleteId(id || null)}
             onDeleteConfirm={handleDelete}
             onDeleteCancel={() => setConfirmingDeleteId(null)}
           />

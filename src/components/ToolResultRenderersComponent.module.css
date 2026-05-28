@@ -600,7 +600,9 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   animation: turtleFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: transform, opacity;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .turtleEmbedWrapper:hover {
@@ -645,7 +647,8 @@
 .asciiArtPre {
   margin: 0;
   padding: 12px;
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  font-family:
+    "SF Mono", "Fira Code", "Cascadia Code", "Courier New", monospace;
   font-size: 5px;
   font-weight: 700;
   line-height: 1;
@@ -654,7 +657,6 @@
   white-space: pre;
   user-select: all;
 }
-
 
 /* ── Terminal error ───────────────────────────────────────── */
 
@@ -740,7 +742,8 @@
   padding: 4px 6px;
   border-radius: 4px;
   background: var(--background-elevated);
-  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   max-height: 180px;
   overflow-y: auto;
 }
@@ -822,7 +825,8 @@
   padding: 4px 6px;
   border-radius: 4px;
   background: var(--background-elevated);
-  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
   max-height: 180px;
   overflow-y: auto;
 }
@@ -992,7 +996,9 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s;
   cursor: help;
 }
 
@@ -1033,7 +1039,11 @@
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent-primary) 25%, transparent) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-primary) 25%, transparent) 0%,
+    transparent 70%
+  );
   filter: blur(10px);
   z-index: 1;
   animation: glowPulse 4s ease-in-out infinite;
@@ -1041,7 +1051,8 @@
 }
 
 @keyframes glowPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.6;
   }
@@ -1120,7 +1131,10 @@
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s,
+    box-shadow 0.2s;
   position: relative;
   overflow: hidden;
 }
@@ -1128,7 +1142,8 @@
 .comboOptionCard:hover {
   transform: translateY(-3px);
   border-color: var(--accent-primary);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-primary) 12%, rgba(0,0,0,0.1));
+  box-shadow: 0 8px 20px
+    color-mix(in srgb, var(--accent-primary) 12%, rgba(0, 0, 0, 0.1));
 }
 
 .optionCardHeader {

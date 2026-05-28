@@ -76,12 +76,18 @@ export default function ToolRequestsPage() {
 
   const loadToolCalls = useCallback(async () => {
     try {
-      const params: Record<string, string | number | boolean> = { limit: LIMIT, skip: (page - 1) * LIMIT };
+      const params: Record<string, string | number | boolean> = {
+        limit: LIMIT,
+        skip: (page - 1) * LIMIT,
+      };
       Object.entries(filters).forEach(([k, v]) => {
         if (v) params[k] = v;
       });
       // Date range
-      const dateParams = buildDateRangeParams(dateRange) as Record<string, string>;
+      const dateParams = buildDateRangeParams(dateRange) as Record<
+        string,
+        string
+      >;
       if (dateParams.since) params.since = dateParams.since;
       if (dateParams.until) params.until = dateParams.until;
 
@@ -127,8 +133,10 @@ export default function ToolRequestsPage() {
   // -- Column definitions -----------------------------------------
   const totalDuration = useMemo(
     () =>
-      toolCalls.reduce((sum: number, tc: ToolCallRecord) => sum + (tc.elapsedMs || 0), 0) ||
-      1,
+      toolCalls.reduce(
+        (sum: number, tc: ToolCallRecord) => sum + (tc.elapsedMs || 0),
+        0,
+      ) || 1,
     [toolCalls],
   );
 
@@ -210,11 +218,13 @@ export default function ToolRequestsPage() {
           },
           {
             label: "Request Size",
-            value: (tc.inBytes || 0) > 0 ? formatFileSize(tc.inBytes || 0) : "—",
+            value:
+              (tc.inBytes || 0) > 0 ? formatFileSize(tc.inBytes || 0) : "—",
           },
           {
             label: "Response Size",
-            value: (tc.outBytes || 0) > 0 ? formatFileSize(tc.outBytes || 0) : "—",
+            value:
+              (tc.outBytes || 0) > 0 ? formatFileSize(tc.outBytes || 0) : "—",
           },
         ],
       },
@@ -291,7 +301,9 @@ export default function ToolRequestsPage() {
           <FilterInputComponent
             placeholder="Filter by agent..."
             value={filters.callerAgent}
-            onChange={(value: string) => handleFilterChange("callerAgent", value)}
+            onChange={(value: string) =>
+              handleFilterChange("callerAgent", value)
+            }
           />
         </FilterGroupComponent>
         <FilterGroupComponent label="Status">
@@ -350,16 +362,15 @@ export default function ToolRequestsPage() {
       >
         {selectedCall && (
           <>
-            {selectedCall.args &&
-              Object.keys(selectedCall.args).length > 0 && (
-                <div className={styles.detailSection}>
-                  <JsonViewerComponent
-                    data={selectedCall.args}
-                    label="Arguments"
-                    maxHeight="300px"
-                  />
-                </div>
-              )}
+            {selectedCall.args && Object.keys(selectedCall.args).length > 0 && (
+              <div className={styles.detailSection}>
+                <JsonViewerComponent
+                  data={selectedCall.args}
+                  label="Arguments"
+                  maxHeight="300px"
+                />
+              </div>
+            )}
             {selectedCall.result &&
               Object.keys(selectedCall.result).length > 0 && (
                 <div className={styles.detailSection}>

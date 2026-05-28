@@ -189,8 +189,18 @@ const LOGOS = {
       {/* Llama head */}
       <path d="M6 8 C6 6.5, 7 5.5, 8 6 C9 5, 11 4.5, 12 4.5 C13 4.5, 15 5, 16 6 C17 5.5, 18 6.5, 18 8 C18 9, 18.5 10, 18.5 11 C18.5 13, 17 15, 15.5 16 C14.5 16.7, 13 17.5, 12 17.5 C11 17.5, 9.5 16.7, 8.5 16 C7 15, 5.5 13, 5.5 11 C5.5 10, 6 9, 6 8Z" />
       {/* Eyes */}
-      <circle cx="9.5" cy="10" r="1.2" fill="var(--background-primary, #1a1a2e)" />
-      <circle cx="14.5" cy="10" r="1.2" fill="var(--background-primary, #1a1a2e)" />
+      <circle
+        cx="9.5"
+        cy="10"
+        r="1.2"
+        fill="var(--background-primary, #1a1a2e)"
+      />
+      <circle
+        cx="14.5"
+        cy="10"
+        r="1.2"
+        fill="var(--background-primary, #1a1a2e)"
+      />
       {/* Nose / snout */}
       <ellipse
         cx="12"
@@ -200,8 +210,18 @@ const LOGOS = {
         fill="var(--background-primary, #1a1a2e)"
       />
       <ellipse cx="12" cy="13.5" rx="1.8" ry="1.3" fill="currentColor" />
-      <circle cx="11.2" cy="13.2" r="0.5" fill="var(--background-primary, #1a1a2e)" />
-      <circle cx="12.8" cy="13.2" r="0.5" fill="var(--background-primary, #1a1a2e)" />
+      <circle
+        cx="11.2"
+        cy="13.2"
+        r="0.5"
+        fill="var(--background-primary, #1a1a2e)"
+      />
+      <circle
+        cx="12.8"
+        cy="13.2"
+        r="0.5"
+        fill="var(--background-primary, #1a1a2e)"
+      />
     </svg>
   ),
   "llama-cpp": (size: number) => (
@@ -216,8 +236,18 @@ const LOGOS = {
       <path d="M8 2 C7 2, 6 3, 6 5 L6 8 C6.5 7.5, 7.5 7.5, 8 8 L8 2Z" />
       <path d="M16 2 C17 2, 18 3, 18 5 L18 8 C17.5 7.5, 16.5 7.5, 16 8 L16 2Z" />
       <path d="M6 8 C6 6.5, 7 5.5, 8 6 C9 5, 11 4.5, 12 4.5 C13 4.5, 15 5, 16 6 C17 5.5, 18 6.5, 18 8 C18 9, 18.5 10, 18.5 11 C18.5 13, 17 15, 15.5 16 C14.5 16.7, 13 17.5, 12 17.5 C11 17.5, 9.5 16.7, 8.5 16 C7 15, 5.5 13, 5.5 11 C5.5 10, 6 9, 6 8Z" />
-      <circle cx="9.5" cy="10" r="1.2" fill="var(--background-primary, #1a1a2e)" />
-      <circle cx="14.5" cy="10" r="1.2" fill="var(--background-primary, #1a1a2e)" />
+      <circle
+        cx="9.5"
+        cy="10"
+        r="1.2"
+        fill="var(--background-primary, #1a1a2e)"
+      />
+      <circle
+        cx="14.5"
+        cy="10"
+        r="1.2"
+        fill="var(--background-primary, #1a1a2e)"
+      />
       <ellipse
         cx="12"
         cy="13.5"
@@ -226,8 +256,18 @@ const LOGOS = {
         fill="var(--background-primary, #1a1a2e)"
       />
       <ellipse cx="12" cy="13.5" rx="1.8" ry="1.3" fill="currentColor" />
-      <circle cx="11.2" cy="13.2" r="0.5" fill="var(--background-primary, #1a1a2e)" />
-      <circle cx="12.8" cy="13.2" r="0.5" fill="var(--background-primary, #1a1a2e)" />
+      <circle
+        cx="11.2"
+        cy="13.2"
+        r="0.5"
+        fill="var(--background-primary, #1a1a2e)"
+      />
+      <circle
+        cx="12.8"
+        cy="13.2"
+        r="0.5"
+        fill="var(--background-primary, #1a1a2e)"
+      />
       {/* C++ badge */}
       <rect
         x="15"
@@ -264,10 +304,14 @@ export default function ProviderLogo({
 }: ProviderLogoProps) {
   if (!provider) return null;
   // Resolve multi-instance IDs (e.g. "lm-studio-2") to base type logo
-  const key = (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[provider]
+  const key = (
+    LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>
+  )[provider]
     ? provider
     : _resolveBaseTypeFromLogos(provider);
-  const render = (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[key];
+  const render = (
+    LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>
+  )[key];
   if (!render) return null;
   return (
     <span
@@ -286,7 +330,13 @@ export default function ProviderLogo({
 function _resolveBaseTypeFromLogos(id: string) {
   if (!id) return "";
   const match = id.match(/^(.+)-(\d+)$/);
-  if (match && (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[match[1]]) return match[1];
+  if (
+    match &&
+    (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[
+      match[1]
+    ]
+  )
+    return match[1];
   return id;
 }
 
@@ -309,13 +359,18 @@ export const PROVIDER_LABELS = {
 // Populated from the /config response's `localProviders` array.
 // Maps instance IDs (e.g. "lm-studio-2") → { nickname, instanceNumber }
 
-const _localMeta = new Map<string, { nickname?: string; instanceNumber: number }>();
+const _localMeta = new Map<
+  string,
+  { nickname?: string; instanceNumber: number }
+>();
 
 /**
  * Register local provider metadata from the Prism config response.
  * Call once after fetching `/config` to enable nickname + numbering.
  */
-export function setLocalProviderMeta(providers: Array<{id: string; nickname?: string; instanceNumber: number}>) {
+export function setLocalProviderMeta(
+  providers: Array<{ id: string; nickname?: string; instanceNumber: number }>,
+) {
   _localMeta.clear();
   if (!providers) return;
   for (const p of providers) {
@@ -343,7 +398,11 @@ function _resolveBaseType(id?: string) {
   }
   // Fallback: strip trailing "-N" suffix
   const match = id.match(/^(.+)-(\d+)$/);
-  if (match && (PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]) return match[1];
+  if (
+    match &&
+    (PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]
+  )
+    return match[1];
   return id;
 }
 
@@ -367,7 +426,8 @@ export function resolveProviderLabel(id?: string) {
   }
 
   const baseType = _resolveBaseType(id);
-  const baseName = (PROVIDER_LABELS as Record<string, string | undefined>)[baseType] || id;
+  const baseName =
+    (PROVIDER_LABELS as Record<string, string | undefined>)[baseType] || id;
   const meta = _localMeta.get(id);
 
   if (meta?.nickname) return `${baseName} (${meta.nickname})`;
@@ -375,7 +435,10 @@ export function resolveProviderLabel(id?: string) {
 
   // Fallback: parse the suffix number
   const match = id.match(/^(.+)-(\d+)$/);
-  if (match && (PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]) {
+  if (
+    match &&
+    (PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]
+  ) {
     return `${(PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]} #${match[2]}`;
   }
 
@@ -389,6 +452,11 @@ export function resolveProviderLabel(id?: string) {
  */
 export function resolveProviderLogoKey(id?: string) {
   if (!id) return "";
-  if ((LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[id]) return id;
+  if (
+    (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[
+      id
+    ]
+  )
+    return id;
   return _resolveBaseType(id);
 }

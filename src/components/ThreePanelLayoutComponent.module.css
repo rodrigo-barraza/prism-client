@@ -20,8 +20,6 @@
 /* ── Full-width header ─────────────────────────────── */
 /* Styles moved to LayoutHeaderComponent in @rodrigo-barraza/components-library */
 
-
-
 /* ── Body (sidebars + main) ────────────────────────── */
 
 .layout-body-row {
@@ -53,6 +51,57 @@
   opacity: 1;
 }
 
+/* ── Split Panel Groups (Photoshop-style stacked panels) ──── */
+
+.has-split-panels {
+  overflow: hidden;
+}
+
+.split-panel-top-group,
+.split-panel-bottom-group {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.split-panel-resize-handle {
+  flex: 0 0 auto;
+  block-size: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: row-resize;
+  position: relative;
+  z-index: 10;
+  background: var(--calculated-border-color);
+  transition: background 0.2s ease;
+}
+
+.split-panel-resize-handle:hover {
+  background: var(--accent-primary, oklch(0.637 0.237 275));
+}
+
+.split-panel-resize-handle:active {
+  background: var(--accent-primary, oklch(0.637 0.237 275));
+}
+
+.split-panel-resize-grip {
+  inline-size: 32px;
+  block-size: 2px;
+  border-radius: 1px;
+  background: oklch(1 0 0 / 0.25);
+  transition: background 0.2s ease;
+}
+
+.split-panel-resize-handle:hover .split-panel-resize-grip {
+  background: oklch(1 0 0 / 0.5);
+}
+
+.split-panel-resize-handle:active .split-panel-resize-grip {
+  background: oklch(1 0 0 / 0.7);
+}
+
 .right-sidebar-panel {
   inline-size: 320px;
   min-inline-size: 320px;
@@ -81,7 +130,6 @@
   border-inline-end-width: 0 !important;
   pointer-events: none;
 }
-
 
 /* ── Main Center ───────────────────────────────────── */
 
@@ -113,7 +161,6 @@
 }
 
 @media (max-width: 767px) {
-
   .left-sidebar-panel,
   .right-sidebar-panel {
     position: absolute;

@@ -117,7 +117,11 @@
 
 .builtInCard {
   border-left: 2px solid
-    color-mix(in srgb, var(--accent-primary) 50%, var(--calculated-border-color));
+    color-mix(
+      in srgb,
+      var(--accent-primary) 50%,
+      var(--calculated-border-color)
+    );
 }
 
 .offlineCard {
@@ -191,7 +195,8 @@
   padding: 6px 8px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--background-surface) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
 }
 
 .dataSourceRow {
@@ -682,7 +687,11 @@
       var(--accent-primary) 40%,
       var(--calculated-border-color)
     );
-    background: color-mix(in srgb, var(--accent-primary) 5%, var(--background-surface));
+    background: color-mix(
+      in srgb,
+      var(--accent-primary) 5%,
+      var(--background-surface)
+    );
   }
 }
 
@@ -974,4 +983,3 @@
   color: var(--text-primary);
   letter-spacing: 0.02em;
 }
-

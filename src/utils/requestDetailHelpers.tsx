@@ -26,7 +26,9 @@ export interface TransformedMediaAsset {
  * (minio://, data:image/…, https://…jpg, etc.) with their origin
  * ("user" for request, "ai" for response).
  */
-export function extractMediaAssets(object: TransformedRequestItem | null | undefined): TransformedMediaAsset[] {
+export function extractMediaAssets(
+  object: TransformedRequestItem | null | undefined,
+): TransformedMediaAsset[] {
   const seen = new Set<string>();
   const assets: TransformedMediaAsset[] = [];
   const search = (node: any, origin: string) => {
@@ -43,7 +45,11 @@ export function extractMediaAssets(object: TransformedRequestItem | null | undef
         seen.add(node);
         assets.push({ url: node, origin });
       } else if (node.startsWith("http://") || node.startsWith("https://")) {
-        const fileExtension = node.split("?")[0].split(".").pop()?.toLowerCase();
+        const fileExtension = node
+          .split("?")[0]
+          .split(".")
+          .pop()
+          ?.toLowerCase();
         if (
           [
             "png",
@@ -89,7 +95,8 @@ export function getMediaTypeFromRef(ref: string) {
     return "image";
   }
   const fileExtension = ref.split("?")[0].split(".").pop()?.toLowerCase();
-  if (["mp3", "wav", "ogg", "webm"].includes(fileExtension as string)) return "audio";
+  if (["mp3", "wav", "ogg", "webm"].includes(fileExtension as string))
+    return "audio";
   if (["mp4", "avi", "mov"].includes(fileExtension as string)) return "video";
   if (fileExtension === "pdf") return "pdf";
   return "image";
@@ -104,7 +111,9 @@ export function getMediaTypeFromRef(ref: string) {
  * Both /admin/requests and /admin/traces pass the exact same
  * section definitions — this function is the single source of truth.
  */
-export function buildRequestDetailSections(req: TransformedRequestItem | null | undefined) {
+export function buildRequestDetailSections(
+  req: TransformedRequestItem | null | undefined,
+) {
   if (!req) return [];
   return [
     {
@@ -152,7 +161,9 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
               {
                 label: "Agent",
                 value: (
-                  <BadgeComponent variant="accent">{req.agent as React.ReactNode}</BadgeComponent>
+                  <BadgeComponent variant="accent">
+                    {req.agent as React.ReactNode}
+                  </BadgeComponent>
                 ),
               },
             ]
@@ -168,7 +179,11 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
         {
           label: "Model",
           value: req.model ? (
-            <BadgeComponent type="model" models={[req.model]} provider={req.provider} />
+            <BadgeComponent
+              type="model"
+              models={[req.model]}
+              provider={req.provider}
+            />
           ) : (
             "-"
           ),
@@ -237,7 +252,11 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Input Tokens",
           value:
             (req.inputTokens ?? 0) > 0 ? (
-              <BadgeComponent type="tokens" value={req.inputTokens ?? 0} label="in" />
+              <BadgeComponent
+                type="tokens"
+                value={req.inputTokens ?? 0}
+                label="in"
+              />
             ) : (
               formatNumber(req.inputTokens ?? 0)
             ),
@@ -246,7 +265,11 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Output Tokens",
           value:
             (req.outputTokens ?? 0) > 0 ? (
-              <BadgeComponent type="tokens" value={req.outputTokens ?? 0} label="out" />
+              <BadgeComponent
+                type="tokens"
+                value={req.outputTokens ?? 0}
+                label="out"
+              />
             ) : (
               formatNumber(req.outputTokens ?? 0)
             ),
@@ -329,7 +352,10 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Time to Generation",
           value:
             (req.timeToGeneration ?? 0) > 0 ? (
-              <BadgeComponent type="stopwatch" seconds={req.timeToGeneration ?? 0} />
+              <BadgeComponent
+                type="stopwatch"
+                seconds={req.timeToGeneration ?? 0}
+              />
             ) : (
               formatLatency(req.timeToGeneration ?? 0)
             ),
@@ -338,7 +364,10 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
           label: "Generation Time",
           value:
             (req.generationTime ?? 0) > 0 ? (
-              <BadgeComponent type="stopwatch" seconds={req.generationTime ?? 0} />
+              <BadgeComponent
+                type="stopwatch"
+                seconds={req.generationTime ?? 0}
+              />
             ) : (
               formatLatency(req.generationTime ?? 0)
             ),
@@ -389,19 +418,26 @@ export function buildRequestDetailSections(req: TransformedRequestItem | null | 
  * Returns { messages, systemPrompt } or null if there's nothing
  * to display.
  */
-export function reconstructChatMessages(selectedRequest: TransformedRequestItem | null | undefined) {
+export function reconstructChatMessages(
+  selectedRequest: TransformedRequestItem | null | undefined,
+) {
   if (!selectedRequest) return null;
-  const reqPayload = selectedRequest.requestPayload as { messages?: Message[] } | undefined;
-  const resPayload = selectedRequest.responsePayload as {
-    text?: string;
-    content?: string;
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    choices?: Array<{ message?: { content?: string; tool_calls?: any[] } }>;
-    toolCalls?: any[];
-    images?: string[];
-    thinking?: string;
-  } | string | undefined;
-  
+  const reqPayload = selectedRequest.requestPayload as
+    | { messages?: Message[] }
+    | undefined;
+  const resPayload = selectedRequest.responsePayload as
+    | {
+        text?: string;
+        content?: string;
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+        choices?: Array<{ message?: { content?: string; tool_calls?: any[] } }>;
+        toolCalls?: any[];
+        images?: string[];
+        thinking?: string;
+      }
+    | string
+    | undefined;
+
   if (!reqPayload?.messages?.length) return null;
 
   // Start with the prompt messages from the request
@@ -440,28 +476,42 @@ export function reconstructChatMessages(selectedRequest: TransformedRequestItem 
         ? resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls
         : undefined;
     if (Array.isArray(toolCalls) && toolCalls.length) {
-      assistantMsg.toolCalls = toolCalls.map((tc: {
-        id: string;
-        name?: string;
-        args?: Record<string, unknown>;
-        function?: { name: string; arguments: string | Record<string, unknown> };
-      }) => ({
-        id: tc.id,
-        name: tc.function?.name || tc.name || "",
-        args:
-          typeof tc.function?.arguments === "string"
-            ? JSON.parse(tc.function.arguments)
-            : tc.function?.arguments || tc.args || {},
-      }));
+      assistantMsg.toolCalls = toolCalls.map(
+        (tc: {
+          id: string;
+          name?: string;
+          args?: Record<string, unknown>;
+          function?: {
+            name: string;
+            arguments: string | Record<string, unknown>;
+          };
+        }) => ({
+          id: tc.id,
+          name: tc.function?.name || tc.name || "",
+          args:
+            typeof tc.function?.arguments === "string"
+              ? JSON.parse(tc.function.arguments)
+              : tc.function?.arguments || tc.args || {},
+        }),
+      );
     }
 
     // Extract generated images
-    if (typeof resPayload === "object" && resPayload && Array.isArray(resPayload.images) && resPayload.images.length) {
+    if (
+      typeof resPayload === "object" &&
+      resPayload &&
+      Array.isArray(resPayload.images) &&
+      resPayload.images.length
+    ) {
       assistantMsg.images = resPayload.images;
     }
 
     // Extract thinking content
-    if (typeof resPayload === "object" && resPayload && typeof resPayload.thinking === "string") {
+    if (
+      typeof resPayload === "object" &&
+      resPayload &&
+      typeof resPayload.thinking === "string"
+    ) {
       assistantMsg.thinking = resPayload.thinking;
     }
 

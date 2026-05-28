@@ -1,5 +1,9 @@
 import { useState, useEffect, useReducer, useMemo } from "react";
-import type { SessionTokenStats, WorkerProgress, GenProgress } from "../utils/utilities";
+import type {
+  SessionTokenStats,
+  WorkerProgress,
+  GenProgress,
+} from "../utils/utilities";
 
 /**
  * Staleness threshold: if the most recent backend-emitted
@@ -57,7 +61,10 @@ interface ExtendedSessionStats extends Partial<SessionTokenStats> {
  * burst's final rate so the badge doesn't flicker to zero during
  * tool calls. Clears when the turn fully ends.
  */
-function tokPerSecReducer(prev: TokPerSecState, { computed, active }: TokPerSecAction): TokPerSecState {
+function tokPerSecReducer(
+  prev: TokPerSecState,
+  { computed, active }: TokPerSecAction,
+): TokPerSecState {
   // Turn ended → clear everything
   if (!active) {
     return { current: null, lastComputed: null };
@@ -74,7 +81,10 @@ function tokPerSecReducer(prev: TokPerSecState, { computed, active }: TokPerSecA
   return prev;
 }
 
-const TOK_PER_SEC_INITIAL: TokPerSecState = { current: null, lastComputed: null };
+const TOK_PER_SEC_INITIAL: TokPerSecState = {
+  current: null,
+  lastComputed: null,
+};
 
 /**
  * Sum per-worker tok/s from workerGenerationProgress.
@@ -86,7 +96,9 @@ const TOK_PER_SEC_INITIAL: TokPerSecState = { current: null, lastComputed: null 
  * The aggregate shown in the SettingsPanel should be the **additive sum**
  * of all concurrent workers (e.g. 3 × 40 = 120 tok/s), not the average.
  */
-function sumWorkerThroughput(workerGenerationProgress: Record<string, WorkerProgress> | null): { sum: number; count: number } {
+function sumWorkerThroughput(
+  workerGenerationProgress: Record<string, WorkerProgress> | null,
+): { sum: number; count: number } {
   let sum = 0;
   let count = 0;
   if (!workerGenerationProgress) return { sum: 0, count: 0 };
@@ -120,7 +132,9 @@ function sumWorkerThroughput(workerGenerationProgress: Record<string, WorkerProg
  *      generation_progress events. Computes rates from SSE chunk
  *      inter-arrival timing.
  */
-export default function useTokenRate(sessionStats: ExtendedSessionStats | null): TokenRateResult {
+export default function useTokenRate(
+  sessionStats: ExtendedSessionStats | null,
+): TokenRateResult {
   // -- Live ticker -----------------------------------------------
   // Stores current wall-clock and performance timestamps so render
   // stays pure (no Date.now() calls in the render body).
@@ -152,9 +166,9 @@ export default function useTokenRate(sessionStats: ExtendedSessionStats | null):
   // -- Elapsed time ----------------------------------------------
   const completedTime = sessionStats?.completedElapsedTime || 0;
   const turnStartVal = sessionStats?.currentTurnStart
-    ? (typeof sessionStats.currentTurnStart === "number"
-        ? sessionStats.currentTurnStart
-        : new Date(sessionStats.currentTurnStart).getTime())
+    ? typeof sessionStats.currentTurnStart === "number"
+      ? sessionStats.currentTurnStart
+      : new Date(sessionStats.currentTurnStart).getTime()
     : null;
   const liveExtra = turnStartVal
     ? Math.max(0, (nowMs - turnStartVal) / 1000)

@@ -42,7 +42,7 @@ export default function SearchFilterComponent({
 
   const handleSelect = useCallback(
     (value: string) => {
-onChange(value);
+      onChange(value);
       setQuery("");
       setOpen(false);
     },

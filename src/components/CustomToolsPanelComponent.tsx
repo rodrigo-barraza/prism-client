@@ -1,8 +1,8 @@
 "use client";
 
 import { CustomTool, ToolSchema, CustomToolParameter } from "../types/types";
-interface CustomToolFormState extends Omit<CustomTool, 'parameters'> {
-  parameters?: (Omit<CustomToolParameter, 'enum'> & { enum?: string })[];
+interface CustomToolFormState extends Omit<CustomTool, "parameters"> {
+  parameters?: (Omit<CustomToolParameter, "enum"> & { enum?: string })[];
 }
 import { useState, useCallback, useRef } from "react";
 import {
@@ -88,24 +88,26 @@ export default function CustomToolsPanel({
   readOnly = false,
   lockedOffTools = new Set(),
   agent = true,
-}: { 
-  tools?: CustomTool[], 
-  onToolsChange: () => void, 
-  project?: string, 
-  builtInTools?: ToolSchema[], 
-  disabledBuiltIns?: Set<string>,
-  onToggleBuiltIn?: (name: string) => void,
-  onToggleAllBuiltIn?: (enableAll: boolean) => void,
-  readOnly?: boolean,
-  lockedOffTools?: Set<string>,
-  agent?: boolean,
+}: {
+  tools?: CustomTool[];
+  onToolsChange: () => void;
+  project?: string;
+  builtInTools?: ToolSchema[];
+  disabledBuiltIns?: Set<string>;
+  onToggleBuiltIn?: (name: string) => void;
+  onToggleAllBuiltIn?: (enableAll: boolean) => void;
+  readOnly?: boolean;
+  lockedOffTools?: Set<string>;
+  agent?: boolean;
 }) {
   const [editingTool, setEditingTool] = useState<any | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [activeSubtab, setActiveSubtab] = useState<"tools" | "custom">("tools");
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  );
   const [inputMode, setInputMode] = useState("manual"); // "manual" | "json"
   const [jsonText, setJsonText] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -126,10 +128,16 @@ export default function CustomToolsPanel({
   const handleEdit = useCallback((tool: CustomTool | CustomToolFormState) => {
     setEditingTool({
       ...tool,
-      parameters: (tool.parameters || []).map((p: CustomToolParameter | (Omit<CustomToolParameter, 'enum'> & { enum?: string })) => ({
-        ...p,
-        enum: Array.isArray(p.enum) ? p.enum.join(", ") : p.enum || "",
-      })),
+      parameters: (tool.parameters || []).map(
+        (
+          p:
+            | CustomToolParameter
+            | (Omit<CustomToolParameter, "enum"> & { enum?: string }),
+        ) => ({
+          ...p,
+          enum: Array.isArray(p.enum) ? p.enum.join(", ") : p.enum || "",
+        }),
+      ),
     });
     setIsNew(false);
     setInputMode("manual");
@@ -155,7 +163,7 @@ export default function CustomToolsPanel({
         ...editingTool,
         ...(project ? { project } : {}),
         parameters: (editingTool.parameters || [])
-          .map((p: Omit<CustomToolParameter, 'enum'> & { enum?: string }) => ({
+          .map((p: Omit<CustomToolParameter, "enum"> & { enum?: string }) => ({
             name: p.name,
             type: p.type,
             description: p.description,
@@ -211,9 +219,12 @@ export default function CustomToolsPanel({
   const handleToggle = useCallback(
     async (tool: CustomTool | CustomToolFormState) => {
       try {
-        await PrismService.updateCustomTool((tool.id || tool._id || "").toString(), {
-          enabled: !tool.enabled,
-        });
+        await PrismService.updateCustomTool(
+          (tool.id || tool._id || "").toString(),
+          {
+            enabled: !tool.enabled,
+          },
+        );
         onToolsChange();
       } catch (error: unknown | Error) {
         console.error("Failed to toggle tool:", error);
@@ -225,26 +236,52 @@ export default function CustomToolsPanel({
   // -- Parameter management -------------------------------------
 
   const addParameter = useCallback(() => {
-    setEditingTool((t: CustomToolFormState | null) => t ? ({
-      ...t,
-      parameters: [...(t?.parameters || []), { ...EMPTY_PARAM }] as (Omit<CustomToolParameter, "enum"> & { enum?: string })[],
-    }) : null);
+    setEditingTool((t: CustomToolFormState | null) =>
+      t
+        ? {
+            ...t,
+            parameters: [...(t?.parameters || []), { ...EMPTY_PARAM }] as (Omit<
+              CustomToolParameter,
+              "enum"
+            > & { enum?: string })[],
+          }
+        : null,
+    );
   }, []);
 
-  const updateParameter = useCallback((index: number, field: string, value: string | boolean) => {
-    setEditingTool((t: CustomToolFormState | null) => t ? ({
-      ...t,
-      parameters: (t?.parameters || []).map((p: Omit<CustomToolParameter, 'enum'> & { enum?: string }, i: number) =>
-        i === index ? { ...p, [field]: value } : p,
-      ),
-    }) : null);
-  }, []);
+  const updateParameter = useCallback(
+    (index: number, field: string, value: string | boolean) => {
+      setEditingTool((t: CustomToolFormState | null) =>
+        t
+          ? {
+              ...t,
+              parameters: (t?.parameters || []).map(
+                (
+                  p: Omit<CustomToolParameter, "enum"> & { enum?: string },
+                  i: number,
+                ) => (i === index ? { ...p, [field]: value } : p),
+              ),
+            }
+          : null,
+      );
+    },
+    [],
+  );
 
   const removeParameter = useCallback((index: number) => {
-    setEditingTool((t: CustomToolFormState | null) => t ? ({
-      ...t,
-      parameters: (t?.parameters || []).filter((_: Omit<CustomToolParameter, 'enum'> & { enum?: string }, i: number) => i !== index),
-    }) : null);
+    setEditingTool((t: CustomToolFormState | null) =>
+      t
+        ? {
+            ...t,
+            parameters: (t?.parameters || []).filter(
+              (
+                _: Omit<CustomToolParameter, "enum"> & { enum?: string },
+                i: number,
+              ) => i !== index,
+            ),
+          }
+        : null,
+    );
   }, []);
 
   // -- JSON import ----------------------------------------------
@@ -321,14 +358,18 @@ export default function CustomToolsPanel({
       }
     }
 
-    setEditingTool((t: CustomToolFormState | null) => t ? ({
-      ...t,
-      ...(name
-        ? { name: name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase() }
-        : {}),
-      ...(description ? { description } : {}),
-      parameters: params,
-    }) : null);
+    setEditingTool((t: CustomToolFormState | null) =>
+      t
+        ? {
+            ...t,
+            ...(name
+              ? { name: name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase() }
+              : {}),
+            ...(description ? { description } : {}),
+            parameters: params,
+          }
+        : null,
+    );
 
     const parts = [];
     if (name) parts.push(name);
@@ -397,13 +438,21 @@ export default function CustomToolsPanel({
               type="text"
               className={styles.input}
               value={editingTool.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingTool((t: CustomToolFormState | null) => t ? ({
-                  ...t,
-                  name: e.target.value
-                    .replace(/[^a-zA-Z0-9_]/g, "_")
-                    .toLowerCase(),
-                }) : null)
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) =>
+                setEditingTool((t: CustomToolFormState | null) =>
+                  t
+                    ? {
+                        ...t,
+                        name: e.target.value
+                          .replace(/[^a-zA-Z0-9_]/g, "_")
+                          .toLowerCase(),
+                      }
+                    : null,
+                )
               }
               placeholder="get_stock_price"
             />
@@ -417,11 +466,19 @@ export default function CustomToolsPanel({
             <TextAreaComponent
               className={styles.textarea}
               value={editingTool.description}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingTool((t: CustomToolFormState | null) => t ? ({
-                  ...t,
-                  description: e.target.value,
-                }) : null)
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) =>
+                setEditingTool((t: CustomToolFormState | null) =>
+                  t
+                    ? {
+                        ...t,
+                        description: e.target.value,
+                      }
+                    : null,
+                )
               }
               placeholder="Get current stock price for a given ticker symbol..."
               minRows={3}
@@ -437,8 +494,14 @@ export default function CustomToolsPanel({
             <TextAreaComponent
               className={`${styles.textarea} ${styles.codeTextarea}`}
               value={editingTool.code}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingTool((t: CustomToolFormState | null) => t ? ({ ...t, code: e.target.value }) : null)
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) =>
+                setEditingTool((t: CustomToolFormState | null) =>
+                  t ? { ...t, code: e.target.value } : null,
+                )
               }
               placeholder={`// Tool arguments are available via the \`args\` object\nconst { message } = args;\nconsole.log(message);\n// The last expression becomes the return value\n({ logged: message, timestamp: new Date().toISOString() })`}
               minRows={6}
@@ -471,7 +534,10 @@ export default function CustomToolsPanel({
                 </button>
               </div>
               {inputMode === "manual" && (
-                <button className={styles.addParamButton} onClick={addParameter}>
+                <button
+                  className={styles.addParamButton}
+                  onClick={addParameter}
+                >
                   <Plus size={12} /> Add
                 </button>
               )}
@@ -505,9 +571,13 @@ export default function CustomToolsPanel({
                             type="text"
                             className={styles.inputSmall}
                             value={param.name}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                              updateParameter(i, "name", e.target.value)
-                            }
+                            onChange={(
+                              e: React.ChangeEvent<
+                                | HTMLInputElement
+                                | HTMLTextAreaElement
+                                | HTMLSelectElement
+                              >,
+                            ) => updateParameter(i, "name", e.target.value)}
                             placeholder="symbol"
                           />
                         </div>
@@ -519,9 +589,13 @@ export default function CustomToolsPanel({
                           <select
                             className={styles.selectSmall}
                             value={param.type}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                              updateParameter(i, "type", e.target.value)
-                            }
+                            onChange={(
+                              e: React.ChangeEvent<
+                                | HTMLInputElement
+                                | HTMLTextAreaElement
+                                | HTMLSelectElement
+                              >,
+                            ) => updateParameter(i, "type", e.target.value)}
                           >
                             {PARAM_TYPES.map((t) => (
                               <option key={t.value} value={t.value}>
@@ -548,7 +622,13 @@ export default function CustomToolsPanel({
                           type="text"
                           className={styles.inputSmall}
                           value={param.description}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+                          onChange={(
+                            e: React.ChangeEvent<
+                              | HTMLInputElement
+                              | HTMLTextAreaElement
+                              | HTMLSelectElement
+                            >,
+                          ) =>
                             updateParameter(i, "description", e.target.value)
                           }
                           placeholder="Stock ticker symbol (e.g. AAPL)"
@@ -566,9 +646,13 @@ export default function CustomToolsPanel({
                           type="text"
                           className={styles.inputSmall}
                           value={param.enum}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                            updateParameter(i, "enum", e.target.value)
-                          }
+                          onChange={(
+                            e: React.ChangeEvent<
+                              | HTMLInputElement
+                              | HTMLTextAreaElement
+                              | HTMLSelectElement
+                            >,
+                          ) => updateParameter(i, "enum", e.target.value)}
                           placeholder="1d, 5d, 1m, 3m, 1y"
                         />
                       </div>
@@ -588,7 +672,11 @@ export default function CustomToolsPanel({
                 <TextAreaComponent
                   className={`${styles.textarea} ${styles.jsonTextarea}`}
                   value={jsonText}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+                  onChange={(
+                    e: React.ChangeEvent<
+                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                    >,
+                  ) => {
                     setJsonText(e.target.value);
                     setJsonError(null);
                     setJsonSuccess(null);
@@ -624,13 +712,19 @@ export default function CustomToolsPanel({
                   </button>
                 </div>
                 {jsonError && (
-                  <div className={styles.jsonFeedback} data-content-type="error">
+                  <div
+                    className={styles.jsonFeedback}
+                    data-content-type="error"
+                  >
                     <AlertCircle size={12} />
                     {jsonError}
                   </div>
                 )}
                 {jsonSuccess && (
-                  <div className={styles.jsonFeedback} data-content-type="success">
+                  <div
+                    className={styles.jsonFeedback}
+                    data-content-type="success"
+                  >
                     <CheckCircle size={12} />
                     {jsonSuccess}
                   </div>
@@ -642,9 +736,7 @@ export default function CustomToolsPanel({
           <button
             className={styles.saveButton}
             onClick={handleSave}
-            disabled={
-              !editingTool.name || !editingTool.code || saving
-            }
+            disabled={!editingTool.name || !editingTool.code || saving}
           >
             <Save size={14} />
             {saving ? "Saving..." : isNew ? "Create Tool" : "Save Changes"}
@@ -696,12 +788,12 @@ export default function CustomToolsPanel({
 
   return (
     <div className={styles.container}>
-      <div className={styles['subtab-toggle-container']}>
+      <div className={styles["subtab-toggle-container"]}>
         <ButtonComponent
           variant={activeSubtab === "tools" ? "tonal" : "text"}
           size="small"
           onClick={() => setActiveSubtab("tools")}
-          className={styles['subtab-toggle-button']}
+          className={styles["subtab-toggle-button"]}
         >
           Tools
         </ButtonComponent>
@@ -709,7 +801,7 @@ export default function CustomToolsPanel({
           variant={activeSubtab === "custom" ? "tonal" : "text"}
           size="small"
           onClick={() => setActiveSubtab("custom")}
-          className={styles['subtab-toggle-button']}
+          className={styles["subtab-toggle-button"]}
         >
           Custom Tools
         </ButtonComponent>
@@ -726,8 +818,8 @@ export default function CustomToolsPanel({
 
       {activeSubtab === "custom" && (
         <>
-          <div className={styles['subtab-actions-header']}>
-            <span className={styles['subtab-title-text']}>
+          <div className={styles["subtab-actions-header"]}>
+            <span className={styles["subtab-title-text"]}>
               Custom Tools ({enabledCustomCount}/{tools.length})
             </span>
             <div className={styles.sectionActions}>
@@ -738,7 +830,11 @@ export default function CustomToolsPanel({
                   size="mini"
                 />
               )}
-              <ButtonComponent variant="primary" icon={Plus} onClick={handleCreate}>
+              <ButtonComponent
+                variant="primary"
+                icon={Plus}
+                onClick={handleCreate}
+              >
                 New Tool
               </ButtonComponent>
             </div>
@@ -773,7 +869,10 @@ export default function CustomToolsPanel({
                   <div className={styles.toolCardInfo}>
                     <span className={styles.toolCardName}>{tool.name}</span>
                     <span className={styles.toolCardMeta}>
-                      <span className={styles.methodBadge} data-http-method="JS">
+                      <span
+                        className={styles.methodBadge}
+                        data-http-method="JS"
+                      >
                         JS
                       </span>
                       {tool.parameters && tool.parameters.length > 0 && (

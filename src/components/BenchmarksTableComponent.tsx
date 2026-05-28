@@ -171,7 +171,9 @@ export default function BenchmarksTableComponent({
   // Build a custom style variable for progress width on running rows
   const getRowStyle = useCallback((row: any) => {
     if (!row._running) return {};
-    return { "--progress": `${(row._progress || 0) * 100}%` } as React.CSSProperties;
+    return {
+      "--progress": `${(row._progress || 0) * 100}%`,
+    } as React.CSSProperties;
   }, []);
 
   return (

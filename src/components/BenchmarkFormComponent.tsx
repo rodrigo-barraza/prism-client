@@ -59,11 +59,15 @@ export default function BenchmarkFormComponent({
   onChange,
   matchModes,
 }: BenchmarkFormComponentProps) {
-  const update = (field: keyof BenchmarkFormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    onChange((f) => ({ ...f, [field]: e.target.value }));
+  const update =
+    (field: keyof BenchmarkFormState) =>
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onChange((f) => ({ ...f, [field]: e.target.value }));
 
-  const updateTextArea = (field: keyof BenchmarkFormState) => (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    onChange((f) => ({ ...f, [field]: e.target.value }));
+  const updateTextArea =
+    (field: keyof BenchmarkFormState) =>
+    (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+      onChange((f) => ({ ...f, [field]: e.target.value }));
 
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const index = parseInt(e.target.value, 10);
@@ -85,7 +89,10 @@ export default function BenchmarkFormComponent({
   };
 
   const handleModeChange = (mode: string) => {
-    onChange((f) => ({ ...f, benchmarkMode: mode as "model" | "agent" | "combined" }));
+    onChange((f) => ({
+      ...f,
+      benchmarkMode: mode as "model" | "agent" | "combined",
+    }));
   };
 
   const mode = form.benchmarkMode || "model";
@@ -127,20 +134,22 @@ export default function BenchmarkFormComponent({
     });
   };
 
-  const updateAssertion = (index: number, field: "expectedValue" | "matchMode") => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    onChange((f) => {
-      const next = [
-        ...(f.assertions || [
-          {
-            expectedValue: f.expectedValue || "",
-            matchMode: f.matchMode || "contains",
-          },
-        ]),
-      ];
-      next[index] = { ...next[index], [field]: e.target.value };
-      return { ...f, assertions: next };
-    });
-  };
+  const updateAssertion =
+    (index: number, field: "expectedValue" | "matchMode") =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      onChange((f) => {
+        const next = [
+          ...(f.assertions || [
+            {
+              expectedValue: f.expectedValue || "",
+              matchMode: f.matchMode || "contains",
+            },
+          ]),
+        ];
+        next[index] = { ...next[index], [field]: e.target.value };
+        return { ...f, assertions: next };
+      });
+    };
 
   const toggleOperator = () => {
     onChange((f) => ({

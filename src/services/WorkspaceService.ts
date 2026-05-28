@@ -116,7 +116,10 @@ export default class WorkspaceService {
   /**
    * Fetch the directory tree for a workspace path.
    */
-  static async tree(path: string, maxDepth = 3): Promise<WorkspaceTreeResponse> {
+  static async tree(
+    path: string,
+    maxDepth = 3,
+  ): Promise<WorkspaceTreeResponse> {
     const params = new URLSearchParams({ path });
     if (maxDepth !== 3) params.set("maxDepth", String(maxDepth));
     const response = await fetch(`${API_BASE}/workspaces/tree?${params}`, {

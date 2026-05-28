@@ -237,7 +237,9 @@ export default function CustomAgentsPanel({
   const [editingAgent, setEditingAgent] = useState<EditableAgent | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  );
 
   const [error, setError] = useState<string | null>(null);
 
@@ -276,7 +278,10 @@ export default function CustomAgentsPanel({
       if (isNew) {
         await PrismService.createCustomAgent(editingAgent);
       } else {
-        await PrismService.updateCustomAgent(String(editingAgent._id || ""), editingAgent);
+        await PrismService.updateCustomAgent(
+          String(editingAgent._id || ""),
+          editingAgent,
+        );
       }
       setEditingAgent(null);
       setIsNew(false);
@@ -307,9 +312,12 @@ export default function CustomAgentsPanel({
 
   // -- Form field updaters --------------------------------------
 
-  const updateField = useCallback(<K extends keyof EditableAgent>(field: K, value: EditableAgent[K]) => {
-    setEditingAgent((a) => a ? { ...a, [field]: value } : a);
-  }, []);
+  const updateField = useCallback(
+    <K extends keyof EditableAgent>(field: K, value: EditableAgent[K]) => {
+      setEditingAgent((a) => (a ? { ...a, [field]: value } : a));
+    },
+    [],
+  );
 
   // -- Edit form ------------------------------------------------
 
@@ -332,7 +340,11 @@ export default function CustomAgentsPanel({
                 type="text"
                 className={styles.input}
                 value={editingAgent.name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("name", e.target.value)}
+                onChange={(
+                  e: React.ChangeEvent<
+                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                  >,
+                ) => updateField("name", e.target.value)}
                 placeholder="My Agent"
               />
               <span className={styles.hint}>
@@ -351,7 +363,11 @@ export default function CustomAgentsPanel({
                 type="text"
                 className={styles.input}
                 value={editingAgent.project}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("project", e.target.value)}
+                onChange={(
+                  e: React.ChangeEvent<
+                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                  >,
+                ) => updateField("project", e.target.value)}
                 placeholder="coding"
               />
               <span className={styles.hint}>Project scope for sessions</span>
@@ -365,7 +381,11 @@ export default function CustomAgentsPanel({
               type="text"
               className={styles.input}
               value={editingAgent.description}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("description", e.target.value)}
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) => updateField("description", e.target.value)}
               placeholder="Short description for the agent picker..."
             />
           </div>
@@ -418,10 +438,7 @@ export default function CustomAgentsPanel({
                   className={styles.colorSwatch}
                   data-is-selected={editingAgent.color === hex}
                   onClick={() =>
-                    updateField(
-                      "color",
-                      editingAgent.color === hex ? "" : hex,
-                    )
+                    updateField("color", editingAgent.color === hex ? "" : hex)
                   }
                   title={name}
                   style={{ "--swatch-color": hex } as React.CSSProperties}
@@ -436,9 +453,8 @@ export default function CustomAgentsPanel({
                     className={styles.colorPreviewDot}
                     style={{ background: editingAgent.color }}
                   />{" "}
-                  {COLOR_PALETTE.find(
-                    (c) => c.hex === editingAgent.color,
-                  )?.name || editingAgent.color}
+                  {COLOR_PALETTE.find((c) => c.hex === editingAgent.color)
+                    ?.name || editingAgent.color}
                 </>
               ) : (
                 "Click a color to brand your agent — used for icon backgrounds and UI accents"
@@ -459,9 +475,11 @@ export default function CustomAgentsPanel({
               type="text"
               className={styles.input}
               value={editingAgent.backgroundImage || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                updateField("backgroundImage", e.target.value)
-              }
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) => updateField("backgroundImage", e.target.value)}
               placeholder="https://example.com/background.jpg"
             />
             <span className={styles.hint}>
@@ -497,7 +515,11 @@ export default function CustomAgentsPanel({
             <textarea
               className={styles.textarea}
               value={editingAgent.identity}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("identity", e.target.value)}
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) => updateField("identity", e.target.value)}
               placeholder="You are a senior backend engineer specializing in..."
               rows={5}
             />
@@ -513,7 +535,11 @@ export default function CustomAgentsPanel({
             <textarea
               className={styles.textarea}
               value={editingAgent.guidelines}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("guidelines", e.target.value)}
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) => updateField("guidelines", e.target.value)}
               placeholder="## Guidelines&#10;- Always explain your reasoning...&#10;- Use bullet points for clarity..."
               rows={4}
             />
@@ -529,7 +555,11 @@ export default function CustomAgentsPanel({
             <textarea
               className={styles.textarea}
               value={editingAgent.toolPolicy}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => updateField("toolPolicy", e.target.value)}
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) => updateField("toolPolicy", e.target.value)}
               placeholder="# Tool Usage&#10;- Use read_file before editing...&#10;- Always run tests after changes..."
               rows={4}
             />
@@ -603,10 +633,7 @@ export default function CustomAgentsPanel({
           {/* Policy Editor */}
           <div className={styles.formGroup}>
             <label>
-              <Shield
-                size={12}
-                style={{ marginRight: 4, verticalAlign: -1 }}
-              />
+              <Shield size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
               Tool Policies
             </label>
             <span className={styles.hint}>
@@ -615,72 +642,86 @@ export default function CustomAgentsPanel({
               take highest priority.
             </span>
 
-            {(editingAgent.policies || []).map((policy: SerializedPolicy, idx: number) => (
-              <div key={idx} className={styles.policyRow}>
-                <select
-                  className={styles.policySelect}
-                  value={policy.decision}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    const updated = [...(editingAgent.policies || [])];
-                    updated[idx] = { ...updated[idx], decision: e.target.value as SerializedPolicy["decision"] };
-                    updateField("policies", updated);
-                  }}
-                >
-                  <option value="DENY">Deny</option>
-                  <option value="ASK_USER">Ask User</option>
-                  <option value="APPROVE">Allow</option>
-                </select>
+            {(editingAgent.policies || []).map(
+              (policy: SerializedPolicy, idx: number) => (
+                <div key={idx} className={styles.policyRow}>
+                  <select
+                    className={styles.policySelect}
+                    value={policy.decision}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      const updated = [...(editingAgent.policies || [])];
+                      updated[idx] = {
+                        ...updated[idx],
+                        decision: e.target
+                          .value as SerializedPolicy["decision"],
+                      };
+                      updateField("policies", updated);
+                    }}
+                  >
+                    <option value="DENY">Deny</option>
+                    <option value="ASK_USER">Ask User</option>
+                    <option value="APPROVE">Allow</option>
+                  </select>
 
-                <input
-                  type="text"
-                  className={styles.policyInput}
-                  value={policy.tool}
-                  placeholder="Tool name or *"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const updated = [...(editingAgent.policies || [])];
-                    updated[idx] = { ...updated[idx], tool: e.target.value };
-                    updateField("policies", updated);
-                  }}
-                />
+                  <input
+                    type="text"
+                    className={styles.policyInput}
+                    value={policy.tool}
+                    placeholder="Tool name or *"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const updated = [...(editingAgent.policies || [])];
+                      updated[idx] = { ...updated[idx], tool: e.target.value };
+                      updateField("policies", updated);
+                    }}
+                  />
 
-                <input
-                  type="text"
-                  className={styles.policyInput}
-                  value={policy.pattern || ""}
-                  placeholder="Regex pattern (optional)"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const updated = [...(editingAgent.policies || [])];
-                    updated[idx] = { ...updated[idx], pattern: e.target.value || undefined };
-                    updateField("policies", updated);
-                  }}
-                />
+                  <input
+                    type="text"
+                    className={styles.policyInput}
+                    value={policy.pattern || ""}
+                    placeholder="Regex pattern (optional)"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const updated = [...(editingAgent.policies || [])];
+                      updated[idx] = {
+                        ...updated[idx],
+                        pattern: e.target.value || undefined,
+                      };
+                      updateField("policies", updated);
+                    }}
+                  />
 
-                <input
-                  type="text"
-                  className={styles.policyInput}
-                  value={policy.field || ""}
-                  placeholder="Field (default: command)"
-                  style={{ maxWidth: 140 }}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const updated = [...(editingAgent.policies || [])];
-                    updated[idx] = { ...updated[idx], field: e.target.value || undefined };
-                    updateField("policies", updated);
-                  }}
-                />
+                  <input
+                    type="text"
+                    className={styles.policyInput}
+                    value={policy.field || ""}
+                    placeholder="Field (default: command)"
+                    style={{ maxWidth: 140 }}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const updated = [...(editingAgent.policies || [])];
+                      updated[idx] = {
+                        ...updated[idx],
+                        field: e.target.value || undefined,
+                      };
+                      updateField("policies", updated);
+                    }}
+                  />
 
-                <button
-                  type="button"
-                  className={styles.policyRemoveButton}
-                  onClick={() => {
-                    const updated = (editingAgent.policies || []).filter((_: SerializedPolicy, i: number) => i !== idx);
-                    updateField("policies", updated);
-                  }}
-                  title="Remove policy"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
+                  <button
+                    type="button"
+                    className={styles.policyRemoveButton}
+                    onClick={() => {
+                      const updated = (editingAgent.policies || []).filter(
+                        (_: SerializedPolicy, i: number) => i !== idx,
+                      );
+                      updateField("policies", updated);
+                    }}
+                    title="Remove policy"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ),
+            )}
 
             <button
               type="button"

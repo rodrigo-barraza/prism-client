@@ -33,7 +33,8 @@ const WorkspaceContext = createContext<WorkspaceContextType>({
  */
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([]);
-  const [currentWorkspace, _setCurrentWorkspace] = useState<WorkspaceItem | null>(null);
+  const [currentWorkspace, _setCurrentWorkspace] =
+    useState<WorkspaceItem | null>(null);
   const [mounted, setMounted] = useState(false);
 
   /** Set the active workspace and persist to localStorage. */

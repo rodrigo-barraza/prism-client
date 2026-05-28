@@ -348,7 +348,9 @@ export default function CycleButton({
         SoundService.playClickButton({ event: e.nativeEvent });
         onClick?.();
       }}
-      onMouseEnter={(e: React.MouseEvent) => SoundService.playHoverButton({ event: e.nativeEvent })}
+      onMouseEnter={(e: React.MouseEvent) =>
+        SoundService.playHoverButton({ event: e.nativeEvent })
+      }
       title={title}
     >
       {label}

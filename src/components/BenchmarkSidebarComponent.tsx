@@ -30,7 +30,11 @@ import styles from "./BenchmarkSidebarComponent.module.css";
  * Props:
  *   activeBenchmarkId — highlight the currently viewed benchmark
  */
-export default function BenchmarkSidebarComponent({ activeBenchmarkId }: { activeBenchmarkId?: string }) {
+export default function BenchmarkSidebarComponent({
+  activeBenchmarkId,
+}: {
+  activeBenchmarkId?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -204,7 +208,8 @@ export default function BenchmarkSidebarComponent({ activeBenchmarkId }: { activ
                       </span>
                       <span className={styles.statFailed}>
                         <XCircle size={10} />
-                        {(run.summary?.failed ?? 0) + (run.summary?.errored || 0)}
+                        {(run.summary?.failed ?? 0) +
+                          (run.summary?.errored || 0)}
                       </span>
                     </div>
                     <BenchmarkBarComponent

@@ -6,11 +6,16 @@ import type { ToolSchema } from "../types/types";
  * useToolToggles — manages the disabled built-in tools state and toggle handlers.
  * Optionally persists the toggle state to localStorage under a page-scoped key.
  */
-export default function useToolToggles(builtInTools: ToolSchema[], storageKey?: string) {
+export default function useToolToggles(
+  builtInTools: ToolSchema[],
+  storageKey?: string,
+) {
   // Load initial state from localStorage if a storage key is provided
   const [disabledBuiltIns, setDisabledBuiltIns] = useState<Set<string>>(() => {
     if (storageKey) {
-      const saved = StorageService.get<{ disabledBuiltIns?: string[] }>(storageKey);
+      const saved = StorageService.get<{ disabledBuiltIns?: string[] }>(
+        storageKey,
+      );
       if (saved?.disabledBuiltIns && Array.isArray(saved.disabledBuiltIns)) {
         return new Set(saved.disabledBuiltIns);
       }
@@ -27,7 +32,8 @@ export default function useToolToggles(builtInTools: ToolSchema[], storageKey?: 
       return;
     }
     if (!storageKey) return;
-    const current = StorageService.get<Record<string, unknown>>(storageKey) || {};
+    const current =
+      StorageService.get<Record<string, unknown>>(storageKey) || {};
     StorageService.set(storageKey, {
       ...current,
       disabledBuiltIns: [...disabledBuiltIns],

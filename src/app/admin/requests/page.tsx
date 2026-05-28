@@ -96,8 +96,12 @@ export default function RequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
-  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
-  const [associations, setAssociations] = useState<RequestAssociations | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(
+    null,
+  );
+  const [associations, setAssociations] = useState<RequestAssociations | null>(
+    null,
+  );
   const [loadingAssociations, setLoadingAssociations] = useState(false);
   const [filters, setFilters] = useState<RequestFilters>({
     provider: "",
@@ -107,7 +111,9 @@ export default function RequestsPage() {
     success: "",
   });
 
-  const [hoveredConversationId, setHoveredConversationId] = useState<string | null>(null);
+  const [hoveredConversationId, setHoveredConversationId] = useState<
+    string | null
+  >(null);
   const initialLoadDone = useRef<boolean>(false);
   const fetchGenRef = useRef<number>(0);
 
@@ -125,8 +131,7 @@ export default function RequestsPage() {
       if (!r.timestamp) continue;
       const age = now - new Date(r.timestamp).getTime();
       // Treat timestamps up to 10s in the future (clock skew) or < 5s old
-      if (age < 5000 && age > -10000)
-        ids.add(r.requestId || r._id);
+      if (age < 5000 && age > -10000) ids.add(r.requestId || r._id);
     }
     return ids;
   }, [requests, justNowTick]);
@@ -175,7 +180,12 @@ export default function RequestsPage() {
   const loadRequests = useCallback(async () => {
     const fetchGeneration = fetchGenRef.current;
     try {
-      const params: Record<string, string | number | boolean> = { page, limit: LIMIT, sort, order };
+      const params: Record<string, string | number | boolean> = {
+        page,
+        limit: LIMIT,
+        sort,
+        order,
+      };
       if (projectFilter) params.project = projectFilter;
       Object.entries(filters).forEach(([k, v]) => {
         if (v) params[k] = v;
@@ -513,7 +523,8 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <MessageSquare size={12} /> Conversations
                     </span>
-                    {associations?.conversations && associations.conversations.length > 0 ? (
+                    {associations?.conversations &&
+                    associations.conversations.length > 0 ? (
                       <div className={styles.associationList}>
                         {associations?.conversations?.map((c) => (
                           <HistoryItemComponent
@@ -526,7 +537,8 @@ export default function RequestsPage() {
                                     {
                                       label: c.project,
                                       style: {
-                                        background: "var(--accent-primary-subtle)",
+                                        background:
+                                          "var(--accent-primary-subtle)",
                                         color: "var(--accent-primary)",
                                       },
                                     },
@@ -542,9 +554,7 @@ export default function RequestsPage() {
                             }}
                             icon={MessageSquare}
                             admin
-                            onClick={() =>
-                              router.push(`/admin/chat/${c.id}`)
-                            }
+                            onClick={() => router.push(`/admin/chat/${c.id}`)}
                           />
                         ))}
                       </div>
@@ -556,7 +566,8 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <GitBranch size={12} /> Workflows
                     </span>
-                    {associations?.workflows && associations.workflows.length > 0 ? (
+                    {associations?.workflows &&
+                    associations.workflows.length > 0 ? (
                       <div className={styles.associationList}>
                         {associations?.workflows?.map((w) => (
                           <HistoryItemComponent
@@ -590,7 +601,8 @@ export default function RequestsPage() {
                     <span className={styles.associationGroupLabel}>
                       <FolderOpen size={12} /> Sessions
                     </span>
-                    {associations?.sessions && associations.sessions.length > 0 ? (
+                    {associations?.sessions &&
+                    associations.sessions.length > 0 ? (
                       <div className={styles.associationList}>
                         {associations?.sessions?.map((s) => (
                           <HistoryItemComponent
@@ -634,7 +646,9 @@ export default function RequestsPage() {
                         media={{
                           convId: selectedRequest?.conversationId || "",
                           url: String(asset.url || ""),
-                          mediaType: getMediaTypeFromRef(String(asset.url || "")),
+                          mediaType: getMediaTypeFromRef(
+                            String(asset.url || ""),
+                          ),
                           origin: String(asset.origin || ""),
                         }}
                         compact

@@ -36,9 +36,14 @@ import {
   Compass,
   FlaskConical,
   Lock,
+  Brain,
 } from "lucide-react";
 import { renderToolName } from "../utils/utilities";
-import { TooltipComponent, ButtonComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
+import {
+  TooltipComponent,
+  ButtonComponent,
+  SearchInputComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./ToolSelectionComponent.module.css";
 
 // -- Interfaces --------------------------------------------------
@@ -49,6 +54,7 @@ interface ToolSchema {
   domain?: string;
   labels?: string[];
   system?: boolean;
+  intelligenceTier?: "low" | "medium" | "high" | "frontier";
 }
 
 interface MasterCheckboxProps {
@@ -248,7 +254,12 @@ const LABEL_ORDER = [
 ];
 
 // -- Tri-state checkbox: global select-all -----------------------
-function MasterCheckbox({ enabledCount, totalCount, onToggle, label }: MasterCheckboxProps) {
+function MasterCheckbox({
+  enabledCount,
+  totalCount,
+  onToggle,
+  label,
+}: MasterCheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const allChecked = totalCount > 0 && enabledCount === totalCount;
   const partial = enabledCount > 0 && !allChecked;
@@ -272,7 +283,11 @@ function MasterCheckbox({ enabledCount, totalCount, onToggle, label }: MasterChe
 }
 
 // -- Tri-state checkbox: per-domain select-all -------------------
-function DomainCheckbox({ domainEnabled, totalCount, onToggle }: DomainCheckboxProps) {
+function DomainCheckbox({
+  domainEnabled,
+  totalCount,
+  onToggle,
+}: DomainCheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const allChecked = totalCount > 0 && domainEnabled === totalCount;
   const partial = domainEnabled > 0 && !allChecked;
@@ -287,7 +302,11 @@ function DomainCheckbox({ domainEnabled, totalCount, onToggle }: DomainCheckboxP
       type="checkbox"
       className={styles.domainCheckbox}
       checked={allChecked}
-      onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      onChange={(
+        e: React.ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >,
+      ) => {
         e.stopPropagation();
         onToggle();
       }}
@@ -344,6 +363,11 @@ export default function ToolSelectionComponent({
           const domain = entry.slice(7);
           for (const t of availableTools) {
             if (t.domain === domain) resolved.add(t.name);
+          }
+        } else if (entry.startsWith("tier:")) {
+          const tier = entry.slice(5);
+          for (const t of availableTools) {
+            if (t.intelligenceTier === tier) resolved.add(t.name);
           }
         } else {
           resolved.add(entry);
@@ -470,6 +494,40 @@ export default function ToolSelectionComponent({
     return sorted;
   }, [filteredTools]);
 
+  // -- Group by intelligence tier --------------------------------
+  const TIER_ORDER = ["frontier", "high", "medium", "low"];
+
+  const TIER_LABELS: Record<string, string> = {
+    frontier: "Frontier (State-of-the-Art Reasoning)",
+    high: "High Capability",
+    medium: "Medium Capability",
+    low: "Low/Lightweight",
+  };
+
+  const TIER_ICONS: Record<string, LucideIcon> = {
+    frontier: Brain,
+    high: Cpu,
+    medium: Bot,
+    low: Layers,
+  };
+
+  const groupedByTier = useMemo(() => {
+    const groups = new Map<string, ToolSchema[]>();
+    for (const tool of filteredTools) {
+      const tier = tool.intelligenceTier || "low";
+      if (!groups.has(tier)) groups.set(tier, []);
+      groups.get(tier)!.push(tool);
+    }
+    const sorted: [string, ToolSchema[]][] = [];
+    for (const tier of TIER_ORDER) {
+      if (groups.has(tier)) sorted.push([tier, groups.get(tier)!]);
+    }
+    for (const [tier, tools] of groups) {
+      if (!TIER_ORDER.includes(tier)) sorted.push([tier, tools]);
+    }
+    return sorted;
+  }, [filteredTools]);
+
   // -- Collapse toggling ----------------------------------------
   const toggleDomain = useCallback((domain: string) => {
     setCollapsedDomains((prev) => {
@@ -485,7 +543,12 @@ export default function ToolSelectionComponent({
     (groupKey: string, groupTools: ToolSchema[]) => {
       const currentTools = enabledTools || [];
       const isDomain = groupMode === "domain";
-      const prefix = isDomain ? `domain:${groupKey}` : `label:${groupKey}`;
+      const isLabel = groupMode === "label";
+      const prefix = isDomain
+        ? `domain:${groupKey}`
+        : isLabel
+          ? `label:${groupKey}`
+          : `tier:${groupKey}`;
 
       const resolved = resolveEnabledTools(currentTools);
       const groupNames = groupTools.map((t) => t.name);
@@ -506,14 +569,10 @@ export default function ToolSelectionComponent({
       const hasGroupRef = currentTools.includes(prefix);
       if (hasGroupRef || allEnabled) {
         onEnabledToolsChange(
-          currentTools.filter(
-            (t) => t !== prefix && !groupNames.includes(t),
-          ),
+          currentTools.filter((t) => t !== prefix && !groupNames.includes(t)),
         );
       } else {
-        const cleaned = currentTools.filter(
-            (t) => !groupNames.includes(t),
-        );
+        const cleaned = currentTools.filter((t) => !groupNames.includes(t));
         onEnabledToolsChange([...cleaned, prefix]);
       }
     },
@@ -551,6 +610,15 @@ export default function ToolSelectionComponent({
               onClick={() => setGroupMode("label")}
             >
               Label
+            </ButtonComponent>
+            <ButtonComponent
+              variant={groupMode === "tier" ? "tonal" : "secondary"}
+              size="small"
+              icon={Brain}
+              iconSize={11}
+              onClick={() => setGroupMode("tier")}
+            >
+              Tier
             </ButtonComponent>
           </div>
         </div>
@@ -611,14 +679,18 @@ export default function ToolSelectionComponent({
                     delay={400}
                   >
                     {agent ? (
-                      <label className={`${styles.toolRow} ${styles.coreToolRow}`}>
+                      <label
+                        className={`${styles.toolRow} ${styles.coreToolRow}`}
+                      >
                         <input
                           type="checkbox"
                           className={`${styles.toolCheckbox} ${styles.coreCheckbox}`}
                           checked={true}
                           disabled={true}
                         />
-                        <span className={`${styles.toolName} ${styles.coreToolName}`}>
+                        <span
+                          className={`${styles.toolName} ${styles.coreToolName}`}
+                        >
                           {renderToolName(tool.name)}
                         </span>
                         <Lock size={10} className={styles.lockIcon} />
@@ -643,76 +715,85 @@ export default function ToolSelectionComponent({
           </div>
         )}
 
-        {/* Group rendering — domain or label mode */}
-        {(groupMode === "domain" ? groupedTools : groupedByLabel).map(
-          ([groupKey, tools]) => {
-            const isDomain = groupMode === "domain";
-            const isMcp = isDomain && groupKey.startsWith("Model Context Protocol:");
-            const GroupIcon: LucideIcon = isMcp
-              ? Network
-              : isDomain
+        {/* Group rendering — domain, label, or tier mode */}
+        {(groupMode === "domain"
+          ? groupedTools
+          : groupMode === "label"
+            ? groupedByLabel
+            : groupedByTier
+        ).map(([groupKey, tools]) => {
+          const isDomain = groupMode === "domain";
+          const isLabel = groupMode === "label";
+          const isMcp =
+            isDomain && groupKey.startsWith("Model Context Protocol:");
+          const GroupIcon: LucideIcon = isMcp
+            ? Network
+            : isDomain
               ? DOMAIN_ICONS[groupKey] || Layers
-              : LABEL_ICONS[groupKey] || Tag;
-            const label = isMcp
-              ? groupKey.replace("Model Context Protocol: ", "MCP: ")
-              : isDomain
+              : isLabel
+                ? LABEL_ICONS[groupKey] || Tag
+                : TIER_ICONS[groupKey] || Brain;
+          const label = isMcp
+            ? groupKey.replace("Model Context Protocol: ", "MCP: ")
+            : isDomain
               ? DOMAIN_LABELS[groupKey] || groupKey
-              : LABEL_DISPLAY[groupKey] || groupKey;
-            const collapsed = collapsedDomains.has(groupKey);
-            const groupEnabled = tools.filter((t) =>
-              resolvedEnabledSet.has(t.name),
-            ).length;
+              : isLabel
+                ? LABEL_DISPLAY[groupKey] || groupKey
+                : TIER_LABELS[groupKey] || groupKey;
+          const collapsed = collapsedDomains.has(groupKey);
+          const groupEnabled = tools.filter((t) =>
+            resolvedEnabledSet.has(t.name),
+          ).length;
 
-            return (
-              <div key={groupKey} className={styles.domainGroup}>
-                <div
-                  className={styles.domainHeader}
-                  onClick={() => toggleDomain(groupKey)}
-                >
-                  {collapsed ? (
-                    <ChevronRight size={12} />
-                  ) : (
-                    <ChevronDown size={12} />
-                  )}
-                  <span className={styles.domainIcon}>
-                    <GroupIcon size={12} />
-                  </span>
-                  {label}
-                  <span className={styles.domainCount}>
-                    {groupEnabled}/{tools.length}
-                  </span>
-                  <DomainCheckbox
-                    domainEnabled={groupEnabled}
-                    totalCount={tools.length}
-                    onToggle={() => toggleGroupTools(groupKey, tools)}
-                  />
-                </div>
-
-                {!collapsed &&
-                  tools.map((tool) => (
-                    <TooltipComponent
-                      key={tool.name}
-                      label={tool.description}
-                      position="right"
-                      delay={400}
-                    >
-                      <label className={styles.toolRow}>
-                        <input
-                          type="checkbox"
-                          className={styles.toolCheckbox}
-                          checked={resolvedEnabledSet.has(tool.name)}
-                          onChange={() => toggleTool(tool.name)}
-                        />
-                        <span className={styles.toolName}>
-                          {renderToolName(tool.name)}
-                        </span>
-                      </label>
-                    </TooltipComponent>
-                  ))}
+          return (
+            <div key={groupKey} className={styles.domainGroup}>
+              <div
+                className={styles.domainHeader}
+                onClick={() => toggleDomain(groupKey)}
+              >
+                {collapsed ? (
+                  <ChevronRight size={12} />
+                ) : (
+                  <ChevronDown size={12} />
+                )}
+                <span className={styles.domainIcon}>
+                  <GroupIcon size={12} />
+                </span>
+                {label}
+                <span className={styles.domainCount}>
+                  {groupEnabled}/{tools.length}
+                </span>
+                <DomainCheckbox
+                  domainEnabled={groupEnabled}
+                  totalCount={tools.length}
+                  onToggle={() => toggleGroupTools(groupKey, tools)}
+                />
               </div>
-            );
-          },
-        )}
+
+              {!collapsed &&
+                tools.map((tool) => (
+                  <TooltipComponent
+                    key={tool.name}
+                    label={tool.description}
+                    position="right"
+                    delay={400}
+                  >
+                    <label className={styles.toolRow}>
+                      <input
+                        type="checkbox"
+                        className={styles.toolCheckbox}
+                        checked={resolvedEnabledSet.has(tool.name)}
+                        onChange={() => toggleTool(tool.name)}
+                      />
+                      <span className={styles.toolName}>
+                        {renderToolName(tool.name)}
+                      </span>
+                    </label>
+                  </TooltipComponent>
+                ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

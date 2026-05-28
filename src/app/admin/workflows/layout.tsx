@@ -4,6 +4,8 @@ export const metadata = {
     "Review, manage, and inspect saved AI workflows and their execution history from the admin dashboard.",
 };
 
-export default function AdminWorkflowsLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function AdminWorkflowsLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return children;
 }

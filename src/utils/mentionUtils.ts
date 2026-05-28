@@ -54,7 +54,10 @@ export interface WorkspaceEntry {
  * Flatten a workspace tree node array into a flat list of entries.
  * Each entry has { path, name, type }.
  */
-export function flattenTree(nodes: WorkspaceEntry[], prefix = ""): WorkspaceEntry[] {
+export function flattenTree(
+  nodes: WorkspaceEntry[],
+  prefix = "",
+): WorkspaceEntry[] {
   const out: WorkspaceEntry[] = [];
   for (const node of nodes) {
     const fullPath = prefix ? `${prefix}/${node.name}` : node.name;
@@ -96,14 +99,19 @@ export function detectMentionToken(text: string, cursorOffset: number) {
  * Filter a flat entries list by a query string.
  * Matches against both path and name (case-insensitive).
  */
-export function filterMentionResults(entries: WorkspaceEntry[] | null, query: string, limit = 20): WorkspaceEntry[] {
+export function filterMentionResults(
+  entries: WorkspaceEntry[] | null,
+  query: string,
+  limit = 20,
+): WorkspaceEntry[] {
   if (!entries || !entries.length) return [];
   if (!query) return entries.slice(0, limit);
   const lowerQuery = query.toLowerCase();
   return entries
     .filter(
       (entry) =>
-        (entry.path || "").toLowerCase().includes(lowerQuery) || (entry.name || "").toLowerCase().includes(lowerQuery),
+        (entry.path || "").toLowerCase().includes(lowerQuery) ||
+        (entry.name || "").toLowerCase().includes(lowerQuery),
     )
     .slice(0, limit);
 }
@@ -175,7 +183,12 @@ interface MentionBadgeOpts {
 /**
  * Create a mention badge DOM element for use in contentEditable.
  */
-export function createMentionBadge(path: string, name: string, type: string | undefined, opts: MentionBadgeOpts = {}) {
+export function createMentionBadge(
+  path: string,
+  name: string,
+  type: string | undefined,
+  opts: MentionBadgeOpts = {},
+) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
   const classes = [badgeStyles.mentionBadge];
@@ -186,10 +199,7 @@ export function createMentionBadge(path: string, name: string, type: string | un
   // Store line range in data attributes for serialization
   if (opts.lineStart != null) {
     badge.dataset.mentionLineStart = String(opts.lineStart);
-    if (
-      opts.lineEnd != null &&
-      opts.lineEnd !== opts.lineStart
-    ) {
+    if (opts.lineEnd != null && opts.lineEnd !== opts.lineStart) {
       badge.dataset.mentionLineEnd = String(opts.lineEnd);
     }
   }
@@ -197,8 +207,7 @@ export function createMentionBadge(path: string, name: string, type: string | un
   let displayName = name;
   if (opts.lineStart != null) {
     displayName +=
-      opts.lineEnd != null &&
-      opts.lineEnd !== opts.lineStart
+      opts.lineEnd != null && opts.lineEnd !== opts.lineStart
         ? `#L${opts.lineStart}-${opts.lineEnd}`
         : `#L${opts.lineStart}`;
   }
@@ -207,8 +216,7 @@ export function createMentionBadge(path: string, name: string, type: string | un
   let titleText = path;
   if (opts.lineStart != null) {
     titleText +=
-      opts.lineEnd != null &&
-      opts.lineEnd !== opts.lineStart
+      opts.lineEnd != null && opts.lineEnd !== opts.lineStart
         ? `#L${opts.lineStart}-${opts.lineEnd}`
         : `#L${opts.lineStart}`;
   }

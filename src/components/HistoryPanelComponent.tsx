@@ -66,7 +66,6 @@ export default function HistoryPanel({
   dateRange,
   onDateChange,
 }: HistoryPanelProps) {
-
   // Normalize sessions into HistoryList items
   const items = useMemo(() => {
     return sessions.map((conversation: Conversation) => {
@@ -124,7 +123,8 @@ export default function HistoryPanel({
 
         // If no models found in messages, fall back to conv.model or conv.settings.model
         if (modelNamesSet.size === 0) {
-          const fallbackModel = conversation.model || conversation.settings?.model;
+          const fallbackModel =
+            conversation.model || conversation.settings?.model;
           if (fallbackModel) modelNamesSet.add(fallbackModel);
         }
         modelNames = Array.from(modelNamesSet);
@@ -201,7 +201,11 @@ export default function HistoryPanel({
         initialProviders={initialProviders}
         initialSearch={initialSearch}
         countLabel={countLabel}
-        onOpenInNewTab={onOpenInNewTab ? (item: { id: string }) => onOpenInNewTab(item.id) : undefined}
+        onOpenInNewTab={
+          onOpenInNewTab
+            ? (item: { id: string }) => onOpenInNewTab(item.id)
+            : undefined
+        }
         generatingSessionIds={generatingSessionIds}
         hasMore={hasMore}
         loadingMore={loadingMore}

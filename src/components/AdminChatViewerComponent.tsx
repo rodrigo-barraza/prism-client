@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { buildDateRangeParams } from "../utils/utilities";
 import { getErrorMessage } from "../utils/errorMessage";
@@ -30,9 +24,7 @@ import {
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
-import MessageList, {
-  prepareDisplayMessages,
-} from "./MessageListComponent";
+import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
 import SettingsPanel from "./SettingsPanelComponent";
 import ModelInfoPanel from "./ModelInfoPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
@@ -100,7 +92,8 @@ const ALL_AGENT = {
 const NONE_AGENT = {
   id: "NONE",
   name: "Agentless",
-  description: "A straightforward conversation with the AI — no automated workflows, just you and the model.",
+  description:
+    "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
   toolCount: -1,
   custom: false,
@@ -137,7 +130,20 @@ export default function AdminChatViewerComponent({
   } = useAdminHeader();
 
   // -- Agent state --
-  const [agents, setAgents] = useState<Array<Partial<AgentPersona> & { id: string; name: string; description: string; project?: string; toolCount: number; custom: boolean; icon: string; color: string }>>([]);
+  const [agents, setAgents] = useState<
+    Array<
+      Partial<AgentPersona> & {
+        id: string;
+        name: string;
+        description: string;
+        project?: string;
+        toolCount: number;
+        custom: boolean;
+        icon: string;
+        color: string;
+      }
+    >
+  >([]);
   const activeAgentId = agentParam || "ALL";
   const isAllMode = activeAgentId === "ALL";
   const isNoAgent = activeAgentId === "NONE";
@@ -153,7 +159,9 @@ export default function AdminChatViewerComponent({
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
   const [selectedEntry, setSelectedEntry] = useState<UnifiedEntry | null>(null);
-  const [selectedSource, setSelectedSource] = useState<"conversation" | "agent_session" | null>(null);
+  const [selectedSource, setSelectedSource] = useState<
+    "conversation" | "agent_session" | null
+  >(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
   const [config, setConfig] = useState<PrismConfig | null>(null);
@@ -174,8 +182,11 @@ export default function AdminChatViewerComponent({
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
   const [tasksCount, setTasksCount] = useState(0);
-  const [backendSessionStats, setBackendSessionStats] = useState<SessionStats | null>(null);
-  const [sessionSystemPrompt, setSessionSystemPrompt] = useState<string | null>(null);
+  const [backendSessionStats, setBackendSessionStats] =
+    useState<SessionStats | null>(null);
+  const [sessionSystemPrompt, setSessionSystemPrompt] = useState<string | null>(
+    null,
+  );
 
   const knownIdsRef = useRef<Set<string> | null>(null);
   const lastFingerprintRef = useRef<string>("");
@@ -187,7 +198,9 @@ export default function AdminChatViewerComponent({
   // ── Fetch agent personas ─────────────────────────────────────
   useEffect(() => {
     PrismService.getAgentPersonas()
-      .then((list: AgentPersona[]) => setAgents([ALL_AGENT, NONE_AGENT, ...list]))
+      .then((list: AgentPersona[]) =>
+        setAgents([ALL_AGENT, NONE_AGENT, ...list]),
+      )
       .catch(console.error);
   }, []);
 
@@ -199,7 +212,9 @@ export default function AdminChatViewerComponent({
     }).catch(() => {});
 
     PrismService.getFavorites("model")
-      .then((favs: Favorite[]) => setFavoriteKeys(favs.map((f: Favorite) => f.key as string)))
+      .then((favs: Favorite[]) =>
+        setFavoriteKeys(favs.map((f: Favorite) => f.key as string)),
+      )
       .catch(() => {});
   }, []);
 
@@ -249,7 +264,9 @@ export default function AdminChatViewerComponent({
       .then((conv: unknown) => {
         const conversationEntry = conv as UnifiedEntry & { type?: string };
         setSelectedEntry(conversationEntry);
-        setSelectedSource(conversationEntry.type === "agent" ? "agent_session" : "conversation");
+        setSelectedSource(
+          conversationEntry.type === "agent" ? "agent_session" : "conversation",
+        );
       })
       .catch(() => {
         setSelectedEntry(null);
@@ -268,9 +285,11 @@ export default function AdminChatViewerComponent({
       .then((res) => {
         if (cancelled) return;
         const firstReq = res.data?.[0] as TransformedRequestItem | undefined;
-        const payload = firstReq?.requestPayload as { messages?: Message[] } | undefined;
+        const payload = firstReq?.requestPayload as
+          | { messages?: Message[] }
+          | undefined;
         const sysMsg = payload?.messages?.find(
-          (m: Message) => m.role === "system"
+          (m: Message) => m.role === "system",
         );
         if (sysMsg?.content) {
           setSessionSystemPrompt(sysMsg.content as string);
@@ -308,15 +327,23 @@ export default function AdminChatViewerComponent({
       }
 
       const data = await IrisService.getConversations(params);
-      const list = (data.data || []).map((c: Conversation & { type?: string }) => ({
-        ...c,
-        _source: c.type === "agent" ? ("agent_session" as const) : ("conversation" as const),
-      }));
+      const list = (data.data || []).map(
+        (c: Conversation & { type?: string }) => ({
+          ...c,
+          _source:
+            c.type === "agent"
+              ? ("agent_session" as const)
+              : ("conversation" as const),
+        }),
+      );
       const total = data.total || 0;
 
       // Fingerprint for dedup
       const fp = list
-        .map((c) => `${c.id}:${c.messages?.length || (c as Conversation).messageCount || 0}`)
+        .map(
+          (c) =>
+            `${c.id}:${c.messages?.length || (c as Conversation).messageCount || 0}`,
+        )
         .join("|");
 
       if (fp !== lastFingerprintRef.current) {
@@ -358,7 +385,16 @@ export default function AdminChatViewerComponent({
     } catch (error) {
       setError(getErrorMessage(error));
     }
-  }, [projectFilter, providerFilter, modelFilter, dateRange, activeSession, activeAgentId, isNoAgent, isAgentMode]);
+  }, [
+    projectFilter,
+    providerFilter,
+    modelFilter,
+    dateRange,
+    activeSession,
+    activeAgentId,
+    isNoAgent,
+    isAgentMode,
+  ]);
 
   // Load more (pagination)
   const loadMoreEntries = useCallback(async () => {
@@ -388,14 +424,21 @@ export default function AdminChatViewerComponent({
       }
 
       const data = await IrisService.getConversations(params);
-      const newItems = (data.data || []).map((c: Conversation & { type?: string }) => ({
-        ...c,
-        _source: c.type === "agent" ? ("agent_session" as const) : ("conversation" as const),
-      }));
+      const newItems = (data.data || []).map(
+        (c: Conversation & { type?: string }) => ({
+          ...c,
+          _source:
+            c.type === "agent"
+              ? ("agent_session" as const)
+              : ("conversation" as const),
+        }),
+      );
 
       entriesPageRef.current = nextPage;
       setEntries((prev) => [...prev, ...newItems]);
-      setEntriesHasMore(entries.length + newItems.length < entriesTotalRef.current);
+      setEntriesHasMore(
+        entries.length + newItems.length < entriesTotalRef.current,
+      );
     } catch (error) {
       console.error("Failed to load more entries:", error);
     } finally {
@@ -415,7 +458,7 @@ export default function AdminChatViewerComponent({
     activeAgentId,
   ]);
 
-    // Generating count
+  // Generating count
   useEffect(() => {
     IrisService.getConversationStats(projectFilter)
       .then((data) => setGeneratingCount(data.generatingCount || 0))
@@ -427,31 +470,38 @@ export default function AdminChatViewerComponent({
   const [fingerprint, setFingerprint] = useState("");
   const selectedIdRef = useRef<string | null>(selectedId);
   selectedIdRef.current = selectedId;
-  const selectedSourceRef = useRef<"conversation" | "agent_session" | null>(selectedSource);
+  const selectedSourceRef = useRef<"conversation" | "agent_session" | null>(
+    selectedSource,
+  );
   selectedSourceRef.current = selectedSource;
 
-  const refreshSelectedEntry = useCallback(async (id: string, source: "conversation" | "agent_session" | null) => {
-    if (!id) return;
-    try {
-      const full = source === "agent_session"
-        ? (await IrisService.getAgentSession(id)) as UnifiedEntry
-        : (await IrisService.getConversation(id)) as UnifiedEntry;
-      setSelectedEntry((prev) => {
-        const oldMsgs = prev?.messages || [];
-        const newMsgs = full?.messages || [];
-        if (oldMsgs.length !== newMsgs.length) return full;
-        const oldLast = oldMsgs[oldMsgs.length - 1];
-        const newLast = newMsgs[newMsgs.length - 1];
-        if (oldLast?.content?.length !== newLast?.content?.length) return full;
-        const prevGen = (prev as Conversation | null)?.isGenerating;
-        const fullGen = (full as Conversation | null)?.isGenerating;
-        if (prevGen !== fullGen) return full;
-        return prev;
-      });
-    } catch (error: unknown) {
-      console.error("Failed to refresh selected entry:", error);
-    }
-  }, []);
+  const refreshSelectedEntry = useCallback(
+    async (id: string, source: "conversation" | "agent_session" | null) => {
+      if (!id) return;
+      try {
+        const full =
+          source === "agent_session"
+            ? ((await IrisService.getAgentSession(id)) as UnifiedEntry)
+            : ((await IrisService.getConversation(id)) as UnifiedEntry);
+        setSelectedEntry((prev) => {
+          const oldMsgs = prev?.messages || [];
+          const newMsgs = full?.messages || [];
+          if (oldMsgs.length !== newMsgs.length) return full;
+          const oldLast = oldMsgs[oldMsgs.length - 1];
+          const newLast = newMsgs[newMsgs.length - 1];
+          if (oldLast?.content?.length !== newLast?.content?.length)
+            return full;
+          const prevGen = (prev as Conversation | null)?.isGenerating;
+          const fullGen = (full as Conversation | null)?.isGenerating;
+          if (prevGen !== fullGen) return full;
+          return prev;
+        });
+      } catch (error: unknown) {
+        console.error("Failed to refresh selected entry:", error);
+      }
+    },
+    [],
+  );
 
   // Change Stream-driven detail refresh
   useEffect(() => {
@@ -459,7 +509,8 @@ export default function AdminChatViewerComponent({
 
     const onEvent = (event: { collection?: string; id?: string }) => {
       if (
-        (event.collection === "model_conversations" || event.collection === "agent_conversations") &&
+        (event.collection === "model_conversations" ||
+          event.collection === "agent_conversations") &&
         selectedIdRef.current &&
         event.id === selectedIdRef.current
       ) {
@@ -477,7 +528,13 @@ export default function AdminChatViewerComponent({
     if (!selectedId || fingerprint === fingerprintRef.current) return;
     fingerprintRef.current = fingerprint;
     refreshSelectedEntry(selectedId, selectedSource);
-  }, [selectedId, fingerprint, changeStreamsActive, refreshSelectedEntry, selectedSource]);
+  }, [
+    selectedId,
+    fingerprint,
+    changeStreamsActive,
+    refreshSelectedEntry,
+    selectedSource,
+  ]);
 
   // Entry list — SSE-driven with polling fallback
   useEffect(() => {
@@ -500,7 +557,10 @@ export default function AdminChatViewerComponent({
         }
       },
       onChange: (event: { collection?: string }) => {
-        if (event.collection === "model_conversations" || event.collection === "agent_conversations") {
+        if (
+          event.collection === "model_conversations" ||
+          event.collection === "agent_conversations"
+        ) {
           loadEntries();
         }
       },
@@ -561,7 +621,10 @@ export default function AdminChatViewerComponent({
   const generatingDisplay = useMemo(() => generatingCount, [generatingCount]);
 
   // ── Select an entry ──────────────────────────────────────────
-  async function selectEntry(id: string, source: "conversation" | "agent_session" = "conversation") {
+  async function selectEntry(
+    id: string,
+    source: "conversation" | "agent_session" = "conversation",
+  ) {
     if (id === selectedId) return;
     setSelectedId(id);
     setSelectedSource(source);
@@ -574,7 +637,11 @@ export default function AdminChatViewerComponent({
     if (providerFilter) params.set("provider", providerFilter);
     if (modelFilter) params.set("model", modelFilter);
     const queryString = params.toString();
-    window.history.replaceState(null, "", `/admin/chat/${id}${queryString ? `?${queryString}` : ""}`);
+    window.history.replaceState(
+      null,
+      "",
+      `/admin/chat/${id}${queryString ? `?${queryString}` : ""}`,
+    );
 
     // Remove NEW badge
     setNewIds((prev) => {
@@ -586,9 +653,10 @@ export default function AdminChatViewerComponent({
 
     setLoadingDetail(true);
     try {
-      const detail = source === "agent_session"
-        ? await IrisService.getAgentSession(id)
-        : await IrisService.getConversation(id);
+      const detail =
+        source === "agent_session"
+          ? await IrisService.getAgentSession(id)
+          : await IrisService.getConversation(id);
       setSelectedEntry(detail as UnifiedEntry);
     } catch {
       setSelectedEntry(null);
@@ -607,7 +675,10 @@ export default function AdminChatViewerComponent({
         params.set("agent", agentId);
       }
       const queryString = params.toString();
-      router.replace(queryString ? `/admin/chat?${queryString}` : "/admin/chat", { scroll: false });
+      router.replace(
+        queryString ? `/admin/chat?${queryString}` : "/admin/chat",
+        { scroll: false },
+      );
 
       // Reset list state
       setSelectedId(null);
@@ -682,7 +753,7 @@ export default function AdminChatViewerComponent({
         (m.content?.startsWith("[System Context]") ||
           m.rawContent?.startsWith("[System Context]") ||
           m.content?.startsWith("[System Context - Local Time:") ||
-          m.rawContent?.startsWith("[System Context - Local Time:"))
+          m.rawContent?.startsWith("[System Context - Local Time:")),
     );
   }, [selectedEntry?.messages]);
 
@@ -745,35 +816,94 @@ export default function AdminChatViewerComponent({
       badge?: number;
       badgeDisabled?: boolean;
     }> = [
-      { key: "settings", icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>, tooltip: "Settings" },
-      { key: "info", icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>, tooltip: "Info" },
+      {
+        key: "settings",
+        icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
+        tooltip: "Settings",
+      },
+      {
+        key: "info",
+        icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
+        tooltip: "Info",
+      },
     ];
 
     if (isSelectedAgent) {
       // Agent mode tabs
       tabs.push(
-        { key: "tools", icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>, ...badgeProps(allToolCount), tooltip: "Tools" },
-        { key: "skills", icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>, ...badgeProps(skills.filter((s) => s.enabled).length), tooltip: "Skills" },
-        { key: "memories", icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>, ...badgeProps(totalMemoriesCount), tooltip: "Memories" },
-        { key: "tasks", icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>, ...badgeProps(tasksCount), tooltip: "Tasks" },
-        { key: "mcp", icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>, ...badgeProps(mcpServers.filter((s) => s.connected).length), tooltip: "MCP Servers" },
-        { key: "workers", icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>, ...badgeProps(workersCount), tooltip: "Workers" },
-        { key: "requests", icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>, ...badgeProps(backendSessionStats?.requestCount || 0), tooltip: "Requests" },
-        { key: "coordinator", icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>, tooltip: "Coordinator" },
+        {
+          key: "tools",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
+          ...badgeProps(allToolCount),
+          tooltip: "Tools",
+        },
+        {
+          key: "skills",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>,
+          ...badgeProps(skills.filter((s) => s.enabled).length),
+          tooltip: "Skills",
+        },
+        {
+          key: "memories",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
+          ...badgeProps(totalMemoriesCount),
+          tooltip: "Memories",
+        },
+        {
+          key: "tasks",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>,
+          ...badgeProps(tasksCount),
+          tooltip: "Tasks",
+        },
+        {
+          key: "mcp",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>,
+          ...badgeProps(mcpServers.filter((s) => s.connected).length),
+          tooltip: "MCP Servers",
+        },
+        {
+          key: "workers",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
+          ...badgeProps(workersCount),
+          tooltip: "Workers",
+        },
+        {
+          key: "requests",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
+          ...badgeProps(backendSessionStats?.requestCount || 0),
+          tooltip: "Requests",
+        },
+        {
+          key: "coordinator",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>,
+          tooltip: "Coordinator",
+        },
       );
     } else {
       // Agentless / conversation tabs
-      tabs.push(
-        { key: "params", icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>, tooltip: "Parameters" },
-      );
+      tabs.push({
+        key: "params",
+        icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
+        tooltip: "Parameters",
+      });
     }
 
     return tabs;
-  }, [isSelectedAgent, allToolCount, skills, totalMemoriesCount, tasksCount, mcpServers, workersCount, backendSessionStats]);
+  }, [
+    isSelectedAgent,
+    allToolCount,
+    skills,
+    totalMemoriesCount,
+    tasksCount,
+    mcpServers,
+    workersCount,
+    backendSessionStats,
+  ]);
 
   // ── Build session stats for SettingsPanel ────────────────────
   const sessionStatsForPanel = useMemo(() => {
-    if (!selectedEntry?.messages || selectedEntry.messages.length === 0) return null;
+    if (!selectedEntry?.messages || selectedEntry.messages.length === 0)
+      return null;
 
     const displayMessages = prepareDisplayMessages(selectedEntry.messages);
 
@@ -796,15 +926,16 @@ export default function AdminChatViewerComponent({
         originalTotalCost: 0,
         usedTools,
         modalities: backendSessionStats.modalities || modalities,
-        completedElapsedTime: backendSessionStats.totalElapsedTime || completedElapsedTime,
+        completedElapsedTime:
+          backendSessionStats.totalElapsedTime || completedElapsedTime,
       };
     }
 
     return {
       messageCount: displayMessages.length,
       deletedCount:
-        (((selectedEntry as Conversation).messageCount || selectedEntry.messages.length) -
-          selectedEntry.messages.length),
+        ((selectedEntry as Conversation).messageCount ||
+          selectedEntry.messages.length) - selectedEntry.messages.length,
       requestCount,
       uniqueModels,
       uniqueProviders,
@@ -948,8 +1079,20 @@ export default function AdminChatViewerComponent({
               newIds={newIds}
               initialProviders={providerFilter ? [providerFilter] : undefined}
               initialSearch={modelFilter || ""}
-              countLabel={isNoAgent ? "conversations" : isAgentMode ? "sessions" : "entries"}
-              searchText={isNoAgent ? "Search conversations..." : isAgentMode ? "Search sessions..." : "Search all..."}
+              countLabel={
+                isNoAgent
+                  ? "conversations"
+                  : isAgentMode
+                    ? "sessions"
+                    : "entries"
+              }
+              searchText={
+                isNoAgent
+                  ? "Search conversations..."
+                  : isAgentMode
+                    ? "Search sessions..."
+                    : "Search all..."
+              }
               hasMore={entriesHasMore}
               loadingMore={entriesLoading}
               onLoadMore={loadMoreEntries}
@@ -965,11 +1108,18 @@ export default function AdminChatViewerComponent({
                   type="project"
                   project={selectedEntry.project}
                 />
-                <BadgeComponent type="user" username={(selectedEntry as Conversation).username} />
+                <BadgeComponent
+                  type="user"
+                  username={(selectedEntry as Conversation).username}
+                />
                 {isSelectedAgent && (
                   <BadgeComponent
                     type="agent"
-                    agent={agents.find((a) => a.id === selectedEntry.agent) as AgentPersona | undefined}
+                    agent={
+                      agents.find((a) => a.id === selectedEntry.agent) as
+                        | AgentPersona
+                        | undefined
+                    }
                   />
                 )}
                 {(selectedEntry as Conversation).isGenerating && (
@@ -982,7 +1132,7 @@ export default function AdminChatViewerComponent({
             )
           }
           headerCenter={
-            <div className={layoutHeaderStyles['header-center-group']}>
+            <div className={layoutHeaderStyles["header-center-group"]}>
               <AgentPickerComponent
                 agents={agents}
                 activeAgentId={activeAgentId}
@@ -990,7 +1140,11 @@ export default function AdminChatViewerComponent({
               />
               <ModelPickerPopoverComponent
                 config={config}
-                settings={resolvedModelSettings as unknown as { [key: string]: string | number | boolean | undefined }}
+                settings={
+                  resolvedModelSettings as unknown as {
+                    [key: string]: string | number | boolean | undefined;
+                  }
+                }
                 disabled
                 favorites={favoriteKeys}
                 onSelectModel={() => {}}
@@ -1003,7 +1157,9 @@ export default function AdminChatViewerComponent({
             {/* -- Chat header bar -- */}
             <div className={chatStyles.chatHeader}>
               <div className={chatStyles.chatHeaderTitle}>
-                <span className={chatStyles.chatHeaderTitleText}>{convTitle}</span>
+                <span className={chatStyles.chatHeaderTitleText}>
+                  {convTitle}
+                </span>
               </div>
               <div className={chatStyles.chatHeaderActions}>
                 {hasSystemContextMessage && (
@@ -1039,10 +1195,14 @@ export default function AdminChatViewerComponent({
                   <div>Select a conversation to view</div>
                 </div>
               ) : loadingDetail ? (
-                <div className={styles.emptyViewer}>Loading conversation...</div>
+                <div className={styles.emptyViewer}>
+                  Loading conversation...
+                </div>
               ) : (
                 <MessageList
-                  messages={prepareDisplayMessages(selectedEntry?.messages || [])}
+                  messages={prepareDisplayMessages(
+                    selectedEntry?.messages || [],
+                  )}
                   readOnly
                   showRaw={showRaw}
                   systemPrompt={
@@ -1050,7 +1210,7 @@ export default function AdminChatViewerComponent({
                     sessionSystemPrompt ||
                     (selectedEntry as Conversation)?.settings?.systemPrompt ||
                     selectedEntry?.messages?.find(
-                      (m) => m.role === "system" && !m.deleted
+                      (m) => m.role === "system" && !m.deleted,
                     )?.content
                   }
                 />

@@ -4,7 +4,10 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { X, Undo2, Eraser, Send, Pen } from "lucide-react";
 import styles from "./ImagePreviewComponent.module.css";
 
-interface Point { x: number; y: number }
+interface Point {
+  x: number;
+  y: number;
+}
 
 interface Stroke {
   points: Point[];
@@ -74,7 +77,8 @@ export default function ImagePreviewComponent({
       syncCanvas();
     } else {
       (image as HTMLImageElement).addEventListener("load", syncCanvas);
-      return () => (image as HTMLImageElement).removeEventListener("load", syncCanvas);
+      return () =>
+        (image as HTMLImageElement).removeEventListener("load", syncCanvas);
     }
   }, [src, syncCanvas]);
 
@@ -83,21 +87,42 @@ export default function ImagePreviewComponent({
     return () => window.removeEventListener("resize", syncCanvas);
   }, [syncCanvas]);
 
+  const redrawAll = useCallback(
+    (
+      strokeList: Array<{
+        points: Array<{ x: number; y: number }>;
+        width: number;
+        color: string;
+        eraser?: boolean;
+      }>,
+    ) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const context = (canvas as HTMLCanvasElement).getContext("2d");
+      if (!context) return;
+      context.clearRect(
+        0,
+        0,
+        (canvas as HTMLCanvasElement).width,
+        (canvas as HTMLCanvasElement).height,
+      );
 
+      for (const stroke of strokeList) {
+        drawStroke(context, stroke);
+      }
+    },
+    [],
+  );
 
-  const redrawAll = useCallback((strokeList: Array<{ points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const context = (canvas as HTMLCanvasElement).getContext("2d");
-    if (!context) return;
-    context.clearRect(0, 0, (canvas as HTMLCanvasElement).width, (canvas as HTMLCanvasElement).height);
-
-    for (const stroke of strokeList) {
-      drawStroke(context, stroke);
-    }
-  }, []);
-
-  const drawStroke = (context: CanvasRenderingContext2D, stroke: { points: Array<{x: number; y: number}>; width: number; color: string; eraser?: boolean }) => {
+  const drawStroke = (
+    context: CanvasRenderingContext2D,
+    stroke: {
+      points: Array<{ x: number; y: number }>;
+      width: number;
+      color: string;
+      eraser?: boolean;
+    },
+  ) => {
     if (stroke.points.length < 2) return;
     context.save();
     context.lineCap = "round";
@@ -131,8 +156,8 @@ export default function ImagePreviewComponent({
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
     return { x: clientX - rect.left, y: clientY - rect.top };
   };
 
@@ -206,8 +231,12 @@ export default function ImagePreviewComponent({
     );
 
     // Scale annotations from display size to natural size
-    const scaleX = (image as HTMLImageElement).naturalWidth / (canvas as HTMLCanvasElement).width;
-    const scaleY = (image as HTMLImageElement).naturalHeight / (canvas as HTMLCanvasElement).height;
+    const scaleX =
+      (image as HTMLImageElement).naturalWidth /
+      (canvas as HTMLCanvasElement).width;
+    const scaleY =
+      (image as HTMLImageElement).naturalHeight /
+      (canvas as HTMLCanvasElement).height;
 
     for (const stroke of strokes) {
       context!.save();
@@ -225,10 +254,7 @@ export default function ImagePreviewComponent({
 
       context!.strokeStyle = stroke.color;
       context!.beginPath();
-      context!.moveTo(
-        stroke.points[0].x * scaleX,
-        stroke.points[0].y * scaleY,
-      );
+      context!.moveTo(stroke.points[0].x * scaleX, stroke.points[0].y * scaleY);
       for (let i = 1; i < stroke.points.length; i++) {
         context!.lineTo(
           stroke.points[i].x * scaleX,

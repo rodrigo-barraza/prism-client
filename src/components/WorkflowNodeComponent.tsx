@@ -54,9 +54,22 @@ export interface NodePortsProps {
   } | null;
   connections: WorkflowConnection[];
   nodeStatuses: Record<string, string>;
-  onInputPortClick: (e: React.MouseEvent, nodeId: string, portId: string) => void;
-  onOutputPortClick: (e: React.MouseEvent, nodeId: string, modality: string, index: number) => void;
-  onPortHover: (port: { nodeId: string; type: "input" | "output"; modality: string }) => void;
+  onInputPortClick: (
+    e: React.MouseEvent,
+    nodeId: string,
+    portId: string,
+  ) => void;
+  onOutputPortClick: (
+    e: React.MouseEvent,
+    nodeId: string,
+    modality: string,
+    index: number,
+  ) => void;
+  onPortHover: (port: {
+    nodeId: string;
+    type: "input" | "output";
+    modality: string;
+  }) => void;
   onPortLeave: () => void;
 }
 
@@ -93,7 +106,8 @@ function NodePorts({
         const baseMod = compound ? compound.modality : portId;
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
-        const color = (MODALITY_COLORS as Record<string, string>)[baseMod] || "#888";
+        const color =
+          (MODALITY_COLORS as Record<string, string>)[baseMod] || "#888";
         const isCompatible =
           connecting &&
           getBaseModality(connecting.sourceModality) === baseMod &&
@@ -102,7 +116,18 @@ function NodePorts({
           hoveredPort?.nodeId === node.id &&
           hoveredPort?.type === "input" &&
           hoveredPort?.modality === portId;
-        const Icon = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; label?: string }>)[baseMod]?.icon;
+        const Icon = (
+          MODALITY_ICONS as Record<
+            string,
+            {
+              icon: React.ComponentType<{
+                size?: number;
+                style?: React.CSSProperties;
+              }>;
+              label?: string;
+            }
+          >
+        )[baseMod]?.icon;
         const hasPrismSource = connections.some(
           (c) =>
             c.targetNodeId === node.id &&
@@ -125,7 +150,19 @@ function NodePorts({
               nodeStatuses[c.sourceNodeId] === "running",
           );
 
-        let label = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; label?: string }>)[baseMod]?.label || baseMod;
+        let label =
+          (
+            MODALITY_ICONS as Record<
+              string,
+              {
+                icon: React.ComponentType<{
+                  size?: number;
+                  style?: React.CSSProperties;
+                }>;
+                label?: string;
+              }
+            >
+          )[baseMod]?.label || baseMod;
         if (compound && isConversationNode) {
           const message = nodeMessages[compound.index];
           const roleLabel =
@@ -178,7 +215,9 @@ function NodePorts({
               data-node-id={node.id}
               data-port-type="input"
               data-port-modality={portId}
-              onClick={(e: React.MouseEvent) => onInputPortClick(e, node.id, portId)}
+              onClick={(e: React.MouseEvent) =>
+                onInputPortClick(e, node.id, portId)
+              }
               onMouseEnter={() =>
                 onPortHover({
                   nodeId: node.id,
@@ -219,8 +258,20 @@ function NodePorts({
       {outputTypes.map((modality: string, i: number) => {
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
-        const color = (MODALITY_COLORS as Record<string, string>)[modality] || "#888";
-        const Icon = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; label?: string }>)[modality]?.icon;
+        const color =
+          (MODALITY_COLORS as Record<string, string>)[modality] || "#888";
+        const Icon = (
+          MODALITY_ICONS as Record<
+            string,
+            {
+              icon: React.ComponentType<{
+                size?: number;
+                style?: React.CSSProperties;
+              }>;
+              label?: string;
+            }
+          >
+        )[modality]?.icon;
         const isActive =
           connecting?.sourceNodeId === node.id &&
           connecting?.sourceModality === modality;
@@ -244,7 +295,9 @@ function NodePorts({
               data-node-id={node.id}
               data-port-type="output"
               data-port-modality={modality}
-              onClick={(e: React.MouseEvent) => onOutputPortClick(e, node.id, modality, i)}
+              onClick={(e: React.MouseEvent) =>
+                onOutputPortClick(e, node.id, modality, i)
+              }
               onMouseEnter={() =>
                 onPortHover({ nodeId: node.id, type: "output", modality })
               }
@@ -278,7 +331,18 @@ function NodePorts({
               textAnchor="end"
               className={styles.portLabel}
             >
-              {(MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>; label?: string }>)[modality]?.label || modality}
+              {(
+                MODALITY_ICONS as Record<
+                  string,
+                  {
+                    icon: React.ComponentType<{
+                      size?: number;
+                      style?: React.CSSProperties;
+                    }>;
+                    label?: string;
+                  }
+                >
+              )[modality]?.label || modality}
             </text>
           </g>
         );
@@ -323,7 +387,14 @@ export interface NodeShellProps {
   configOffset?: number;
   isPrism?: boolean;
   statusGradient?: string | null;
-  portProps: Omit<NodePortsProps, "node" | "inputTypes" | "outputTypes" | "isNodeRunning" | "nodeStatusGradient">;
+  portProps: Omit<
+    NodePortsProps,
+    | "node"
+    | "inputTypes"
+    | "outputTypes"
+    | "isNodeRunning"
+    | "nodeStatusGradient"
+  >;
   children?: React.ReactNode;
 }
 
@@ -612,14 +683,31 @@ function ModelNode(props: ModelNodeProps) {
       )}
       {/* Modality icons from model's input types */}
       {modalityIcons.map((modality: string) => {
-        const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>; label?: string; color?: string }>)[modality];
+        const modalityEntry = (
+          MODALITY_ICONS as Record<
+            string,
+            {
+              icon: React.ComponentType<{
+                size?: number;
+                style?: React.CSSProperties;
+                title?: string;
+              }>;
+              label?: string;
+              color?: string;
+            }
+          >
+        )[modality];
         if (!modalityEntry) return null;
         const Icon = modalityEntry.icon;
         return (
           <Icon
             key={modality}
             size={11}
-            style={{ color: modalityEntry.color || "#888", opacity: 0.7, flexShrink: 0 }}
+            style={{
+              color: modalityEntry.color || "#888",
+              opacity: 0.7,
+              flexShrink: 0,
+            }}
             title={modalityEntry.label}
           />
         );
@@ -707,8 +795,8 @@ function ModelNode(props: ModelNodeProps) {
                       const reader = new FileReader();
                       reader.onload = () => {
                         const modality = file.type.startsWith("image")
-                           ? "image"
-                           : "audio";
+                          ? "image"
+                          : "audio";
                         onUpdateConfig?.(node.id, "staticInputs", {
                           ...node.staticInputs,
                           [modality]: reader.result,
@@ -742,7 +830,15 @@ function ModelNode(props: ModelNodeProps) {
 /**
  * Handle file drop/upload for file input nodes.
  */
-function handleFileInputChange(nodeId: string, file: File, onUpdateFileInput?: (nodeId: string, dataUrl: string | ArrayBuffer | null, mimeType: string) => void) {
+function handleFileInputChange(
+  nodeId: string,
+  file: File,
+  onUpdateFileInput?: (
+    nodeId: string,
+    dataUrl: string | ArrayBuffer | null,
+    mimeType: string,
+  ) => void,
+) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
@@ -760,7 +856,11 @@ export interface AssetNodeProps extends NodePortsProps {
   onTouchStart?: (e: React.TouchEvent, nodeId: string) => void;
   onDelete?: (nodeId: string) => void;
   onUpdateContent?: (nodeId: string, content: string) => void;
-  onUpdateFileInput?: (nodeId: string, dataUrl: string | ArrayBuffer | null, mimeType: string | null) => void;
+  onUpdateFileInput?: (
+    nodeId: string,
+    dataUrl: string | ArrayBuffer | null,
+    mimeType: string | null,
+  ) => void;
   onUpdateConfig?: (nodeId: string, key: string, value: unknown) => void;
   onToggleExpand: (nodeId: string) => void;
   onSelectNode?: (nodeId: string) => void;
@@ -803,22 +903,38 @@ function AssetNode(props: AssetNodeProps) {
   const width = getNodeWidth(node);
   const inputTypes = node.inputTypes || [];
   const outputTypes = node.outputTypes || [];
-  const accentColor = (isViewer
-    ? "#a78bfa"
-    : (MODALITY_COLORS as Record<string, string>)[node.modality || ""] || "#8b5cf6") as string;
+  const accentColor = (
+    isViewer
+      ? "#a78bfa"
+      : (MODALITY_COLORS as Record<string, string>)[node.modality || ""] ||
+        "#8b5cf6"
+  ) as string;
   const AssetIcon = isViewer
     ? Eye
     : node.modality
-      ? (ASSET_ICONS as Record<string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>>)[node.modality] ||
-        (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }> }>)[node.modality]?.icon ||
+      ? (
+          ASSET_ICONS as Record<
+            string,
+            React.ComponentType<{ size?: number; style?: React.CSSProperties }>
+          >
+        )[node.modality] ||
+        (
+          MODALITY_ICONS as Record<
+            string,
+            {
+              icon: React.ComponentType<{
+                size?: number;
+                style?: React.CSSProperties;
+              }>;
+            }
+          >
+        )[node.modality]?.icon ||
         Paperclip
       : Paperclip;
 
   const isConversation = node.modality === "conversation";
   const conversationModalities = isConversation
-    ? (node.supportedModalities || ["text"]).filter(
-        (t) => t !== "conversation",
-      )
+    ? (node.supportedModalities || ["text"]).filter((t) => t !== "conversation")
     : [];
   const modalityAreaWidth = conversationModalities.length * MODALITY_ICON_WIDTH;
 
@@ -882,7 +998,9 @@ function AssetNode(props: AssetNodeProps) {
           className={styles.nodeRenameInput}
           style={{ color: accentColor }}
           value={renameValue}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRenameValue(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setRenameValue(e.target.value)
+          }
           onBlur={handleFinishRename}
           onKeyDown={handleRenameKeyDown}
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
@@ -914,14 +1032,31 @@ function AssetNode(props: AssetNodeProps) {
       {isConversation &&
         conversationModalities.length > 0 &&
         conversationModalities.map((modality: string) => {
-          const modalityEntry = (MODALITY_ICONS as Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>; label?: string; color?: string }>)[modality];
+          const modalityEntry = (
+            MODALITY_ICONS as Record<
+              string,
+              {
+                icon: React.ComponentType<{
+                  size?: number;
+                  style?: React.CSSProperties;
+                  title?: string;
+                }>;
+                label?: string;
+                color?: string;
+              }
+            >
+          )[modality];
           if (!modalityEntry) return null;
           const Icon = modalityEntry.icon;
           return (
             <Icon
               key={modality}
               size={11}
-              style={{ color: modalityEntry.color || "#888", opacity: 0.7, flexShrink: 0 }}
+              style={{
+                color: modalityEntry.color || "#888",
+                opacity: 0.7,
+                flexShrink: 0,
+              }}
               title={modalityEntry.label}
             />
           );
@@ -951,7 +1086,12 @@ function AssetNode(props: AssetNodeProps) {
       status={status}
       isSelected={isSelected}
       accentColor={accentColor}
-      headerFillStyle={{ fill: accentColor, fillOpacity: 0.1 } as React.SVGAttributes<SVGRectElement>}
+      headerFillStyle={
+        {
+          fill: accentColor,
+          fillOpacity: 0.1,
+        } as React.SVGAttributes<SVGRectElement>
+      }
       headerContent={headerContent}
       headerActions={headerActions}
       headerActionsWidth={actionsWidth}
@@ -1012,7 +1152,12 @@ function AssetNode(props: AssetNodeProps) {
                               fontSize: "10px",
                             }}
                           >
-                            [{(node.receivedOutputs.embedding as number[]).length} dims] [
+                            [
+                            {
+                              (node.receivedOutputs.embedding as number[])
+                                .length
+                            }{" "}
+                            dims] [
                             {(node.receivedOutputs.embedding as number[])
                               .slice(0, 4)
                               .map((v: number) => v.toFixed(4))
@@ -1027,7 +1172,9 @@ function AssetNode(props: AssetNodeProps) {
                               node.receivedOutputs.video as string,
                             )}
                             className={styles.viewerImage}
-                            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+                            onMouseDown={(e: React.MouseEvent) =>
+                              e.stopPropagation()
+                            }
                           />
                         )}
                       </>
@@ -1073,28 +1220,40 @@ function AssetNode(props: AssetNodeProps) {
                       <div className={styles.fileInputPreview}>
                         {node.modality === "image" ? (
                           <img
-                            src={PrismService.getFileUrl(node.content as string)}
+                            src={PrismService.getFileUrl(
+                              node.content as string,
+                            )}
                             alt="Uploaded asset"
                             className={styles.assetPreviewImg}
                           />
                         ) : node.modality === "audio" ? (
                           <AudioPlayerRecorderComponent
-                            src={PrismService.getFileUrl(node.content as string)}
+                            src={PrismService.getFileUrl(
+                              node.content as string,
+                            )}
                             square
                           />
                         ) : node.modality === "video" ? (
                           <video
                             controls
-                            src={PrismService.getFileUrl(node.content as string)}
+                            src={PrismService.getFileUrl(
+                              node.content as string,
+                            )}
                             className={styles.assetVideoPlayer}
-                            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+                            onMouseDown={(e: React.MouseEvent) =>
+                              e.stopPropagation()
+                            }
                           />
                         ) : node.modality === "pdf" ? (
                           <iframe
-                            src={PrismService.getFileUrl(node.content as string)}
+                            src={PrismService.getFileUrl(
+                              node.content as string,
+                            )}
                             className={styles.assetPdfViewer}
                             title="PDF preview"
-                            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+                            onMouseDown={(e: React.MouseEvent) =>
+                              e.stopPropagation()
+                            }
                           />
                         ) : (
                           <div className={styles.assetFileLabel}>
@@ -1116,9 +1275,10 @@ function AssetNode(props: AssetNodeProps) {
                     ) : (
                       <AssetInputOptions
                         compact
-                        onFile={(dataUrl: string | ArrayBuffer | null, mimeType: string | null) =>
-                          onUpdateFileInput?.(node.id, dataUrl, mimeType)
-                        }
+                        onFile={(
+                          dataUrl: string | ArrayBuffer | null,
+                          mimeType: string | null,
+                        ) => onUpdateFileInput?.(node.id, dataUrl, mimeType)}
                       />
                     )}
                   </div>
@@ -1218,14 +1378,22 @@ function ToolNode(props: ToolNodeProps) {
   const width = getNodeWidth(node);
   const accentColor = MODALITY_COLORS.functionCalling;
 
-  const builtInTools = (node.builtInTools || []) as Array<{ name: string; [key: string]: unknown }>;
-  const customToolsList = (node.customTools || []) as Array<{ name?: string; _id?: string; [key: string]: unknown }>;
+  const builtInTools = (node.builtInTools || []) as Array<{
+    name: string;
+    [key: string]: unknown;
+  }>;
+  const customToolsList = (node.customTools || []) as Array<{
+    name?: string;
+    _id?: string;
+    [key: string]: unknown;
+  }>;
   const disabledTools = new Set(node.disabledTools || []);
   const enabledBuiltIn = builtInTools.filter(
     (t: { name: string }) => !disabledTools.has(t.name),
   ).length;
   const enabledCustom = customToolsList.filter(
-    (t: { name?: string; _id?: string }) => !disabledTools.has(t.name || t._id || ""),
+    (t: { name?: string; _id?: string }) =>
+      !disabledTools.has(t.name || t._id || ""),
   ).length;
   const totalEnabled = enabledBuiltIn + enabledCustom;
   const totalTools = builtInTools.length + customToolsList.length;
@@ -1248,7 +1416,10 @@ function ToolNode(props: ToolNodeProps) {
       .filter((t: { name: string }) => !disabledTools.has(t.name))
       .map((t: { name: string }) => t.name),
     ...customToolsList
-      .filter((t: { name?: string; _id?: string }) => !disabledTools.has(t.name || t._id || ""))
+      .filter(
+        (t: { name?: string; _id?: string }) =>
+          !disabledTools.has(t.name || t._id || ""),
+      )
       .map((t: { name?: string; _id?: string }) => t.name || ""),
   ];
   const displayedTools = allToolNames.slice(0, MAX_PILLS);
@@ -1324,7 +1495,12 @@ function ToolNode(props: ToolNodeProps) {
       status={status}
       isSelected={isSelected}
       accentColor={accentColor}
-      headerFillStyle={{ fill: accentColor, fillOpacity: 0.1 } as React.SVGAttributes<SVGRectElement>}
+      headerFillStyle={
+        {
+          fill: accentColor,
+          fillOpacity: 0.1,
+        } as React.SVGAttributes<SVGRectElement>
+      }
       headerContent={headerContent}
       headerActions={headerActions}
       headerActionsWidth={80}
@@ -1368,7 +1544,9 @@ function ToolNode(props: ToolNodeProps) {
 /**
  * WorkflowNode — dispatches to ModelNode, ToolNode, or AssetNode based on nodeType.
  */
-export default function WorkflowNode(props: ModelNodeProps & AssetNodeProps & ToolNodeProps) {
+export default function WorkflowNode(
+  props: ModelNodeProps & AssetNodeProps & ToolNodeProps,
+) {
   if (props.node.nodeType === "tools") {
     return <ToolNode {...props} />;
   }

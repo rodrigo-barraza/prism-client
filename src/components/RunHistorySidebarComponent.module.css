@@ -256,7 +256,11 @@
   padding: 10px 14px;
   margin: 0 8px 4px;
   border-radius: var(--border-radius-sm);
-  background: color-mix(in srgb, var(--accent-primary) 8%, var(--background-surface));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 8%,
+    var(--background-surface)
+  );
   border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
   font-size: var(--font-size-sm);
   font-weight: 500;

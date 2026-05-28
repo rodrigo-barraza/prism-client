@@ -1,7 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import PrismService from "../services/PrismService";
@@ -46,7 +52,13 @@ import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
 import { CustomThemeService } from "@rodrigo-barraza/components-library";
 
-function RainbowCanvas({ turbo = false, greyscale = false }: { turbo?: boolean; greyscale?: boolean; }) {
+function RainbowCanvas({
+  turbo = false,
+  greyscale = false,
+}: {
+  turbo?: boolean;
+  greyscale?: boolean;
+}) {
   return (
     <RainbowCanvasComponent
       turbo={turbo}
@@ -181,7 +193,10 @@ export default function NavigationSidebarComponent({
   const pathname = usePathname();
   const { data: userSession, status: authStatus } = useSession();
   const { theme, themes, setTheme } = useTheme();
-  const customThemeMeta = useMemo(() => CustomThemeService.getCustomThemeMetaMap(), []);
+  const customThemeMeta = useMemo(
+    () => CustomThemeService.getCustomThemeMetaMap(),
+    [],
+  );
   const [showNav, setShowNav] = useState(() => {
     if (globalShowNav !== null) {
       return globalShowNav;
@@ -222,7 +237,7 @@ export default function NavigationSidebarComponent({
   useEffect(() => {
     const stored = localStorage.getItem(LS_PANEL_NAV);
     const initialNav = stored !== null ? stored === "true" : false;
-    
+
     setShowNav((current) => {
       if (current !== initialNav) {
         return initialNav;
@@ -232,7 +247,10 @@ export default function NavigationSidebarComponent({
     globalShowNav = initialNav;
 
     if (!initialNav) {
-      document.documentElement.setAttribute("data-navigation-is-collapsed", "true");
+      document.documentElement.setAttribute(
+        "data-navigation-is-collapsed",
+        "true",
+      );
     } else {
       document.documentElement.removeAttribute("data-navigation-is-collapsed");
     }
@@ -256,9 +274,14 @@ export default function NavigationSidebarComponent({
       localStorage.setItem(LS_PANEL_NAV, String(next));
       globalShowNav = next;
       if (next) {
-        document.documentElement.removeAttribute("data-navigation-is-collapsed");
+        document.documentElement.removeAttribute(
+          "data-navigation-is-collapsed",
+        );
       } else {
-        document.documentElement.setAttribute("data-navigation-is-collapsed", "true");
+        document.documentElement.setAttribute(
+          "data-navigation-is-collapsed",
+          "true",
+        );
       }
       return next;
     });
@@ -267,22 +290,22 @@ export default function NavigationSidebarComponent({
   // -- Bouncing mini cats for concurrent API calls ----------------
   // Lifecycle: active → windingDown → idle → fading → removed
   interface MiniCat {
-  id: string;
-  size: number;
-  initVx: number;
-  initVy: number;
-  retired: boolean;
-}
+    id: string;
+    size: number;
+    initVx: number;
+    initVy: number;
+    retired: boolean;
+  }
 
-interface CatState {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  accelTime: number;
-  phase: string;
-  fadeStart: number | null;
-}
+  interface CatState {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    accelTime: number;
+    phase: string;
+    fadeStart: number | null;
+  }
 
   const sidebarReference = useRef<HTMLElement>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
@@ -546,7 +569,7 @@ interface CatState {
       const backgroundColorValue = computedStyle.backgroundColor;
 
       const redGreenBlueMatch = backgroundColorValue.match(
-        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/
+        /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/,
       );
       if (!redGreenBlueMatch) return;
 
@@ -570,19 +593,19 @@ interface CatState {
 
       sidebarElement.style.setProperty(
         "--sidebar-contrast-color",
-        isLightBackground ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.98)"
+        isLightBackground ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.98)",
       );
       sidebarElement.style.setProperty(
         "--sidebar-contrast-color-muted",
-        isLightBackground ? "rgba(0, 0, 0, 0.68)" : "rgba(255, 255, 255, 0.78)"
+        isLightBackground ? "rgba(0, 0, 0, 0.68)" : "rgba(255, 255, 255, 0.78)",
       );
       sidebarElement.style.setProperty(
         "--sidebar-contrast-border",
-        isLightBackground ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.15)"
+        isLightBackground ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.15)",
       );
       sidebarElement.style.setProperty(
         "--sidebar-contrast-hover-background",
-        isLightBackground ? "rgba(0, 0, 0, 0.08)" : "rgba(255, 255, 255, 0.08)"
+        isLightBackground ? "rgba(0, 0, 0, 0.08)" : "rgba(255, 255, 255, 0.08)",
       );
     };
 
@@ -648,66 +671,90 @@ interface CatState {
 
               {/* Navigation links */}
               <nav className={styles.mobilePopoverNav}>
-                {navSections.map((section: { label: string | null, items: any[] }, sectionIdx: number) => (
-                  <React.Fragment key={section.label || sectionIdx}>
-                    {/* Section divider */}
-                    {section.label && (
-                      <div className={styles.navigationDivider}>
-                        <span>{section.label}</span>
-                      </div>
-                    )}
-                    {section.items.map((item: typeof USER_NAV_SECTIONS[0]['items'][0] & { exact?: boolean, alsoMatches?: string[], showBadge?: string }) => {
-                      const Icon = item.icon;
-                      const isActive =
-                        (item.exact
-                          ? pathname === item.href
-                          : pathname.startsWith(item.href)) ||
-                        item.alsoMatches?.some((p: string) =>
-                          pathname.startsWith(p),
-                        );
+                {navSections.map(
+                  (
+                    section: { label: string | null; items: any[] },
+                    sectionIdx: number,
+                  ) => (
+                    <React.Fragment key={section.label || sectionIdx}>
+                      {/* Section divider */}
+                      {section.label && (
+                        <div className={styles.navigationDivider}>
+                          <span>{section.label}</span>
+                        </div>
+                      )}
+                      {section.items.map(
+                        (
+                          item: (typeof USER_NAV_SECTIONS)[0]["items"][0] & {
+                            exact?: boolean;
+                            alsoMatches?: string[];
+                            showBadge?: string;
+                          },
+                        ) => {
+                          const Icon = item.icon;
+                          const isActive =
+                            (item.exact
+                              ? pathname === item.href
+                              : pathname.startsWith(item.href)) ||
+                            item.alsoMatches?.some((p: string) =>
+                              pathname.startsWith(p),
+                            );
 
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
-                          onMouseEnter={(e: React.MouseEvent) =>
-                            SoundService.playHover({ event: e.nativeEvent })
-                          }
-                          onClick={(e: React.MouseEvent) => {
-                            SoundService.playClick({ event: e.nativeEvent });
-                            onNavClick?.(item.href);
-                            setMobileOpen(false);
-                            // Pre-close ThreePanelLayout sidebars so the next page mounts clean
-                            localStorage.setItem(LS_PANEL_LEFT, "false");
-                            localStorage.setItem(LS_PANEL_RIGHT, "false");
-                          }}
-                        >
-                          <span className={styles.activeStateLayer}>
-                            <Icon className={styles.navigationIcon} />
-                            <span className={styles.navigationLabel}>{item.label}</span>
-                            {item.href === "/settings" && !memoryConfigured && (
-                              <span
-                                className={styles.attentionDot}
-                                title="Memory models need to be configured"
-                              >
-                                <AlertCircle size={13} />
-                              </span>
-                            )}
-                            {item.showBadge &&
-                              (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
-                                <span
-                                  className={`${styles.badge} ${styles.live}`}
-                                >
-                                  {(badgeCounts as Record<string, number>)[item.showBadge]}
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
+                              onMouseEnter={(e: React.MouseEvent) =>
+                                SoundService.playHover({ event: e.nativeEvent })
+                              }
+                              onClick={(e: React.MouseEvent) => {
+                                SoundService.playClick({
+                                  event: e.nativeEvent,
+                                });
+                                onNavClick?.(item.href);
+                                setMobileOpen(false);
+                                // Pre-close ThreePanelLayout sidebars so the next page mounts clean
+                                localStorage.setItem(LS_PANEL_LEFT, "false");
+                                localStorage.setItem(LS_PANEL_RIGHT, "false");
+                              }}
+                            >
+                              <span className={styles.activeStateLayer}>
+                                <Icon className={styles.navigationIcon} />
+                                <span className={styles.navigationLabel}>
+                                  {item.label}
                                 </span>
-                              )}
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </React.Fragment>
-                ))}
+                                {item.href === "/settings" &&
+                                  !memoryConfigured && (
+                                    <span
+                                      className={styles.attentionDot}
+                                      title="Memory models need to be configured"
+                                    >
+                                      <AlertCircle size={13} />
+                                    </span>
+                                  )}
+                                {item.showBadge &&
+                                  (badgeCounts as Record<string, number>)[
+                                    item.showBadge
+                                  ] > 0 && (
+                                    <span
+                                      className={`${styles.badge} ${styles.live}`}
+                                    >
+                                      {
+                                        (badgeCounts as Record<string, number>)[
+                                          item.showBadge
+                                        ]
+                                      }
+                                    </span>
+                                  )}
+                              </span>
+                            </Link>
+                          );
+                        },
+                      )}
+                    </React.Fragment>
+                  ),
+                )}
               </nav>
 
               {/* Footer actions */}
@@ -742,7 +789,9 @@ interface CatState {
                     onClick={() => setMobileOpen(false)}
                   >
                     <ArrowLeft className={styles.navigationIcon} />
-                    <span className={styles.navigationLabel}>Back to Prism</span>
+                    <span className={styles.navigationLabel}>
+                      Back to Prism
+                    </span>
                   </Link>
                 ) : isLocal ? (
                   <Link
@@ -805,71 +854,96 @@ interface CatState {
 
         {/* Navigation */}
         <nav className={styles.navigationList}>
-          {navSections.map((section: { label: string | null, items: any[] }, sectionIdx: number) => (
-            <React.Fragment key={section.label || sectionIdx}>
-              {/* Section divider */}
-              {section.label && (
-                <div className={styles.navigationDivider}>
-                  <span>{section.label}</span>
-                </div>
-              )}
-              {section.items.map((item: typeof USER_NAV_SECTIONS[0]['items'][0] & { exact?: boolean, alsoMatches?: string[], showBadge?: string }) => {
-                const Icon = item.icon;
-                const isActive =
-                  (item.exact
-                    ? pathname === item.href
-                    : pathname.startsWith(item.href)) ||
-                  item.alsoMatches?.some((p: string) => pathname.startsWith(p));
+          {navSections.map(
+            (
+              section: { label: string | null; items: any[] },
+              sectionIdx: number,
+            ) => (
+              <React.Fragment key={section.label || sectionIdx}>
+                {/* Section divider */}
+                {section.label && (
+                  <div className={styles.navigationDivider}>
+                    <span>{section.label}</span>
+                  </div>
+                )}
+                {section.items.map(
+                  (
+                    item: (typeof USER_NAV_SECTIONS)[0]["items"][0] & {
+                      exact?: boolean;
+                      alsoMatches?: string[];
+                      showBadge?: string;
+                    },
+                  ) => {
+                    const Icon = item.icon;
+                    const isActive =
+                      (item.exact
+                        ? pathname === item.href
+                        : pathname.startsWith(item.href)) ||
+                      item.alsoMatches?.some((p: string) =>
+                        pathname.startsWith(p),
+                      );
 
-                const link = (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
-                    onMouseEnter={(e: React.MouseEvent) =>
-                      SoundService.playHover({ event: e.nativeEvent })
-                    }
-                    onClick={(e: React.MouseEvent) => {
-                      SoundService.playClick({ event: e.nativeEvent });
-                      onNavClick?.(item.href);
-                    }}
-                  >
-                    <span className={styles.activeStateLayer}>
-                      <Icon className={styles.navigationIcon} />
-                      <span className={styles.navigationLabel}>{item.label}</span>
-                      {item.href === "/settings" && !memoryConfigured && (
-                        <span
-                          className={styles.attentionDot}
-                          title="Memory models need to be configured"
-                        >
-                          <AlertCircle size={13} />
-                        </span>
-                      )}
-                      {item.showBadge &&
-                        (badgeCounts as Record<string, number>)[item.showBadge] > 0 && (
-                          <span className={`${styles.badge} ${styles.live}`}>
-                            {(badgeCounts as Record<string, number>)[item.showBadge]}
+                    const link = (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
+                        onMouseEnter={(e: React.MouseEvent) =>
+                          SoundService.playHover({ event: e.nativeEvent })
+                        }
+                        onClick={(e: React.MouseEvent) => {
+                          SoundService.playClick({ event: e.nativeEvent });
+                          onNavClick?.(item.href);
+                        }}
+                      >
+                        <span className={styles.activeStateLayer}>
+                          <Icon className={styles.navigationIcon} />
+                          <span className={styles.navigationLabel}>
+                            {item.label}
                           </span>
-                        )}
-                    </span>
-                  </Link>
-                );
+                          {item.href === "/settings" && !memoryConfigured && (
+                            <span
+                              className={styles.attentionDot}
+                              title="Memory models need to be configured"
+                            >
+                              <AlertCircle size={13} />
+                            </span>
+                          )}
+                          {item.showBadge &&
+                            (badgeCounts as Record<string, number>)[
+                              item.showBadge
+                            ] > 0 && (
+                              <span
+                                className={`${styles.badge} ${styles.live}`}
+                              >
+                                {
+                                  (badgeCounts as Record<string, number>)[
+                                    item.showBadge
+                                  ]
+                                }
+                              </span>
+                            )}
+                        </span>
+                      </Link>
+                    );
 
-                return (
-                  <TooltipComponent
-                    key={item.href}
-                    label={item.label}
-                    position="right"
-                    delay={200}
-                    disabled={showNav}
-                    className={styles.tooltipFill}
-                  >
-                    {link}
-                  </TooltipComponent>
-                );
-              })}
-            </React.Fragment>
-          ))}
+                    return (
+                      <TooltipComponent
+                        key={item.href}
+                        label={item.label}
+                        position="right"
+                        delay={200}
+                        disabled={showNav}
+                        className={styles.tooltipFill}
+                      >
+                        {link}
+                      </TooltipComponent>
+                    );
+                  },
+                )}
+              </React.Fragment>
+            ),
+          )}
         </nav>
 
         {/* Footer */}
@@ -885,7 +959,9 @@ interface CatState {
               <button
                 className={styles.navigationLink}
                 onClick={() => signOut()}
-                onMouseEnter={(e) => SoundService.playHover({ event: e.nativeEvent })}
+                onMouseEnter={(e) =>
+                  SoundService.playHover({ event: e.nativeEvent })
+                }
               >
                 <LogOut className={styles.navigationIcon} />
                 <span className={styles.navigationLabel}>Log Out</span>
@@ -902,7 +978,9 @@ interface CatState {
               <button
                 className={styles.navigationLink}
                 onClick={() => signIn("google")}
-                onMouseEnter={(e) => SoundService.playHover({ event: e.nativeEvent })}
+                onMouseEnter={(e) =>
+                  SoundService.playHover({ event: e.nativeEvent })
+                }
               >
                 <LogIn className={styles.navigationIcon} />
                 <span className={styles.navigationLabel}>Log In</span>
@@ -920,8 +998,12 @@ interface CatState {
               <Link
                 href="/"
                 className={styles.navigationLink}
-                onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e.nativeEvent })}
-                onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e.nativeEvent })}
+                onMouseEnter={(e: React.MouseEvent) =>
+                  SoundService.playHover({ event: e.nativeEvent })
+                }
+                onClick={(e: React.MouseEvent) =>
+                  SoundService.playClick({ event: e.nativeEvent })
+                }
               >
                 <ArrowLeft className={styles.navigationIcon} />
                 <span className={styles.navigationLabel}>Back to Prism</span>
@@ -938,8 +1020,12 @@ interface CatState {
               <Link
                 href="/admin"
                 className={styles.navigationLink}
-                onMouseEnter={(e: React.MouseEvent) => SoundService.playHover({ event: e.nativeEvent })}
-                onClick={(e: React.MouseEvent) => SoundService.playClick({ event: e.nativeEvent })}
+                onMouseEnter={(e: React.MouseEvent) =>
+                  SoundService.playHover({ event: e.nativeEvent })
+                }
+                onClick={(e: React.MouseEvent) =>
+                  SoundService.playClick({ event: e.nativeEvent })
+                }
               >
                 <Settings className={styles.navigationIcon} />
                 <span className={styles.navigationLabel}>Admin</span>

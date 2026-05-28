@@ -19,7 +19,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!AUTH_ENABLED) return true;
       if (ALLOWED_EMAILS.length === 0) return true;
       const userEmailAddress = user.email?.toLowerCase();
-      return userEmailAddress ? ALLOWED_EMAILS.includes(userEmailAddress) : false;
+      return userEmailAddress
+        ? ALLOWED_EMAILS.includes(userEmailAddress)
+        : false;
     },
 
     authorized() {

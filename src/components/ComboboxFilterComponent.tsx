@@ -34,12 +34,14 @@ export default function ComboboxFilter({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const filtered = query
-    ? options.filter((o: string) => o.toLowerCase().includes(query.toLowerCase()))
+    ? options.filter((o: string) =>
+        o.toLowerCase().includes(query.toLowerCase()),
+      )
     : options;
 
   const handleSelect = useCallback(
     (value: string) => {
-onChange(value);
+      onChange(value);
       setQuery("");
       setOpen(false);
     },

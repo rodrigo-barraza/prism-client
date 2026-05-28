@@ -37,11 +37,20 @@ const AdminHeaderContext = createContext<AdminHeaderContextType>({
   setSessionFilter: () => {},
 });
 
-export function AdminHeaderProvider({ children }: { children: React.ReactNode }) {
+export function AdminHeaderProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [controls, setControlsState] = useState<React.ReactNode>(null);
-  const [titleBadge, setTitleBadgeState] = useState<string | number | null>(null);
-  const [dateRange, setDateRangeState] = useState<DateRange>({ from: "", to: "" });
+  const [titleBadge, setTitleBadgeState] = useState<string | number | null>(
+    null,
+  );
+  const [dateRange, setDateRangeState] = useState<DateRange>({
+    from: "",
+    to: "",
+  });
   const [sessionFilter, setSessionFilterState] = useState<string | null>(null);
 
   // Hydrate dateRange from localStorage after mount to avoid SSR mismatch

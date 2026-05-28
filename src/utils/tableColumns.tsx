@@ -28,9 +28,7 @@ import ProportionBarComponent from "../components/ProportionBarComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 
 import ToolIconComponent from "../components/ToolIconComponent";
-import {
-  TooltipComponent,
-} from "@rodrigo-barraza/components-library";
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "../components/BadgeComponent";
 import ProviderLogo from "../components/ProviderLogosComponent";
 import { resolveProviderLabel } from "../components/ProviderLogosComponent";
@@ -63,14 +61,18 @@ export type TableRow = TransformedTableRow;
 export const emptyDash = () => <span className={styles.emptyDash}>—</span>;
 
 /** Render a value or a muted dash if falsy/zero */
-export const valueOrDash = <T,>(value: T | undefined | null, render: (v: T) => React.ReactNode) =>
-  value ? render(value) : emptyDash();
+export const valueOrDash = <T,>(
+  value: T | undefined | null,
+  render: (v: T) => React.ReactNode,
+) => (value ? render(value) : emptyDash());
 
 /** Merge modalities from an array of conversations into a single object */
 export function mergeModalities(conversations: TableRow[]) {
   const merged: Record<string, boolean> = {};
   for (const c of conversations) {
-    const modalities = c.modalities as Record<string, boolean | number> | undefined;
+    const modalities = c.modalities as
+      | Record<string, boolean | number>
+      | undefined;
     if (!modalities) continue;
     for (const [key, value] of Object.entries(modalities)) {
       if (value) merged[key] = true;
@@ -115,7 +117,10 @@ export const providerColumn = () => ({
   description:
     "The API provider hosting this model (e.g. OpenAI, Google, Anthropic)",
   render: (row: TableRow) => (
-    <BadgeComponent type="providers" providers={row.provider ? [row.provider as string] : []} />
+    <BadgeComponent
+      type="providers"
+      providers={row.provider ? [row.provider as string] : []}
+    />
   ),
 });
 
@@ -123,7 +128,12 @@ export const projectColumn = () => ({
   key: "project",
   label: "Project",
   description: "The project or application this request belongs to",
-  render: (row: TableRow) => <BadgeComponent type="project" project={row.project as string | undefined} />,
+  render: (row: TableRow) => (
+    <BadgeComponent
+      type="project"
+      project={row.project as string | undefined}
+    />
+  ),
 });
 
 export const userColumn = () => ({
@@ -131,12 +141,16 @@ export const userColumn = () => ({
   label: "User",
   description: "The user who initiated this request",
   sortable: false,
-  render: (row: TableRow) => <BadgeComponent type="user" username={row.username as string | undefined} />,
+  render: (row: TableRow) => (
+    <BadgeComponent type="user" username={row.username as string | undefined} />
+  ),
 });
 
 /* ·· Models / Providers (as badge lists) ·· */
 
-export const modelsListColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
+export const modelsListColumn = ({
+  mini = false,
+}: { mini?: boolean } = {}) => ({
   key: "models",
   label: "Models",
   description: "All distinct models used in this group",
@@ -155,19 +169,32 @@ export const modelCountColumn = () => ({
   key: "modelCount",
   label: "Models",
   description: "Number of distinct models used",
-  sortValue: (row: TableRow) => (row.models as string[] | undefined)?.length ?? (row.modelCount as number | undefined) ?? 0,
+  sortValue: (row: TableRow) =>
+    (row.models as string[] | undefined)?.length ??
+    (row.modelCount as number | undefined) ??
+    0,
   render: (row: TableRow) => (
-    <BadgeComponent type="model" models={(row.models as string[] | undefined) ?? []} providers={row.providers as string[] | undefined} />
+    <BadgeComponent
+      type="model"
+      models={(row.models as string[] | undefined) ?? []}
+      providers={row.providers as string[] | undefined}
+    />
   ),
 });
 
-export const providersListColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
+export const providersListColumn = ({
+  mini = false,
+}: { mini?: boolean } = {}) => ({
   key: "providers",
   label: "Providers",
   description: "All distinct providers used in this group",
   sortable: false,
   render: (row: TableRow) => (
-    <BadgeComponent type="providers" providers={row.providers as string[] | undefined} mini={mini} />
+    <BadgeComponent
+      type="providers"
+      providers={row.providers as string[] | undefined}
+      mini={mini}
+    />
   ),
 });
 
@@ -175,9 +202,13 @@ export const providerCountColumn = () => ({
   key: "providerCount",
   label: "Providers",
   description: "Number of distinct API providers used",
-  sortValue: (row: TableRow) => ((row.providers as string[] | undefined) ?? []).length,
+  sortValue: (row: TableRow) =>
+    ((row.providers as string[] | undefined) ?? []).length,
   render: (row: TableRow) => (
-    <BadgeComponent type="providers" providers={(row.providers as string[] | undefined) ?? []} />
+    <BadgeComponent
+      type="providers"
+      providers={(row.providers as string[] | undefined) ?? []}
+    />
   ),
 });
 
@@ -188,7 +219,8 @@ export const requestsColumn = () => ({
   label: "Requests",
   description: "Total number of API requests made",
   align: "right" as const,
-  render: (row: TableRow) => (row.totalRequests as number | undefined)?.toLocaleString() ?? "0",
+  render: (row: TableRow) =>
+    (row.totalRequests as number | undefined)?.toLocaleString() ?? "0",
 });
 
 export const requestCountColumn = () => ({
@@ -234,13 +266,13 @@ export const modalitiesColumn = ({
   sortValue: (row: TableRow) => {
     const mods = fromConversations
       ? mergeModalities((row.conversations as TableRow[] | undefined) ?? [])
-      : row.modalities as Record<string, boolean> | undefined;
+      : (row.modalities as Record<string, boolean> | undefined);
     return mods ? Object.values(mods).filter(Boolean).length : 0;
   },
   render: (row: TableRow) => {
     const mods = fromConversations
       ? mergeModalities((row.conversations as TableRow[] | undefined) ?? [])
-      : row.modalities as Record<string, boolean> | undefined;
+      : (row.modalities as Record<string, boolean> | undefined);
     if (!mods) return emptyDash();
     return <ModalityIconComponent modalities={mods} size={mini ? 9 : 12} />;
   },
@@ -248,7 +280,10 @@ export const modalitiesColumn = ({
 
 /* ·· Tools ·· */
 
-export const toolsColumn = ({ mini = false, configModels }: { mini?: boolean; configModels?: Record<string, string[]> } = {}) => ({
+export const toolsColumn = ({
+  mini = false,
+  configModels,
+}: { mini?: boolean; configModels?: Record<string, string[]> } = {}) => ({
   key: "toolDisplayNames",
   label: "Tools",
   description: "External tools and capabilities configured for this model",
@@ -257,7 +292,8 @@ export const toolsColumn = ({ mini = false, configModels }: { mini?: boolean; co
   render: (row: TableRow) => {
     // Support either direct toolDisplayNames array or config-based lookup
     if (configModels) {
-      const tools = configModels[`${row.provider as string}:${row.model as string}`];
+      const tools =
+        configModels[`${row.provider as string}:${row.model as string}`];
       if (!tools?.length) return emptyDash();
       return (
         <ToolIconComponent
@@ -284,7 +320,12 @@ export const tokenColumns = ({
   outputKey = "totalOutputTokens",
   tpsKey = "avgTokensPerSec",
   showDash = false,
-}: { inputKey?: string; outputKey?: string; tpsKey?: string; showDash?: boolean } = {}) => [
+}: {
+  inputKey?: string;
+  outputKey?: string;
+  tpsKey?: string;
+  showDash?: boolean;
+} = {}) => [
   {
     key: inputKey,
     label: "Tokens In",
@@ -312,9 +353,13 @@ export const tokenColumns = ({
     label: "Tokens",
     description: "Combined input + output token count",
     align: "right" as const,
-    sortValue: (row: TableRow) => ((row[inputKey] as number | undefined) ?? 0) + ((row[outputKey] as number | undefined) ?? 0),
+    sortValue: (row: TableRow) =>
+      ((row[inputKey] as number | undefined) ?? 0) +
+      ((row[outputKey] as number | undefined) ?? 0),
     render: (row: TableRow) => {
-      const total = ((row[inputKey] as number | undefined) ?? 0) + ((row[outputKey] as number | undefined) ?? 0);
+      const total =
+        ((row[inputKey] as number | undefined) ?? 0) +
+        ((row[outputKey] as number | undefined) ?? 0);
       if (showDash && total <= 0) return emptyDash();
       return total > 0 ? formatTokenCount(total) : "0";
     },
@@ -324,7 +369,8 @@ export const tokenColumns = ({
     label: "Tok/s",
     description: "Average output throughput in tokens per second",
     align: "right" as const,
-    render: (row: TableRow) => formatTokensPerSec(row[tpsKey] as number | undefined),
+    render: (row: TableRow) =>
+      formatTokensPerSec(row[tpsKey] as number | undefined),
   },
 ];
 
@@ -333,7 +379,10 @@ export const tokenColumns = ({
 /** Returns 2 columns: Cost, Cost % */
 export const costColumns = (
   totalCost: number,
-  { costKey = "totalCost", mini = false }: { costKey?: string; mini?: boolean } = {},
+  {
+    costKey = "totalCost",
+    mini = false,
+  }: { costKey?: string; mini?: boolean } = {},
 ) => [
   {
     key: costKey,
@@ -342,7 +391,11 @@ export const costColumns = (
     sortable: true,
     align: "right" as const,
     render: (row: TableRow) => (
-      <BadgeComponent type="cost" cost={(row[costKey] as number) || 0} mini={mini} />
+      <BadgeComponent
+        type="cost"
+        cost={(row[costKey] as number) || 0}
+        mini={mini}
+      />
     ),
   },
   {
@@ -382,7 +435,10 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
 /**
  * Returns 3 columns with CountLinkComponent: Sessions, Conversations, Workflows.
  */
-export const countLinkColumns = (entityKey: string, entityValue: (row: TableRow) => string) => [
+export const countLinkColumns = (
+  entityKey: string,
+  entityValue: (row: TableRow) => string,
+) => [
   {
     key: "traceCount",
     label: "Traces",
@@ -447,7 +503,9 @@ export const conversationCountColumn = () => ({
 
 /* ·· Duration columns ·· */
 
-export const durationColumn = ({ useDurationMs = false }: { useDurationMs?: boolean } = {}) => ({
+export const durationColumn = ({
+  useDurationMs = false,
+}: { useDurationMs?: boolean } = {}) => ({
   key: "duration",
   label: "Duration",
   description: "Elapsed wall-clock time from start to finish",
@@ -461,7 +519,10 @@ export const durationColumn = ({ useDurationMs = false }: { useDurationMs?: bool
           const startedAtTimestamp = row.startedAt as string | undefined;
           const finishedAtTimestamp = row.finishedAt as string | undefined;
           if (!startedAtTimestamp || !finishedAtTimestamp) return 0;
-          return new Date(finishedAtTimestamp).getTime() - new Date(startedAtTimestamp).getTime();
+          return (
+            new Date(finishedAtTimestamp).getTime() -
+            new Date(startedAtTimestamp).getTime()
+          );
         })();
     const duration = formatDuration(ms);
     if (!duration) return emptyDash();
@@ -501,7 +562,11 @@ export const createdAtColumn = (
   align: "right" as const,
   render: (row: TableRow) =>
     row[key] ? (
-      <BadgeComponent type="dateTime" date={row[key] as string} highlightNew={highlightNew} />
+      <BadgeComponent
+        type="dateTime"
+        date={row[key] as string}
+        highlightNew={highlightNew}
+      />
     ) : (
       emptyDash()
     ),
@@ -522,14 +587,18 @@ export const traceIdColumn = () => ({
       onClick={(e: React.MouseEvent) => e.stopPropagation()}
     >
       <FolderOpen size={12} className={styles.sessionIcon} />
-      <span className={styles.sessionIdText}>{(s.id as string).slice(0, 8)}</span>
+      <span className={styles.sessionIdText}>
+        {(s.id as string).slice(0, 8)}
+      </span>
     </a>
   ),
 });
 
 /* ·· Conversation title ·· */
 
-export const conversationTitleColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
+export const conversationTitleColumn = ({
+  mini = false,
+}: { mini?: boolean } = {}) => ({
   key: "title",
   label: "Conversation",
   description: "Auto-generated conversation title",
@@ -546,7 +615,9 @@ export const conversationTitleColumn = ({ mini = false }: { mini?: boolean } = {
 
 /* ·· Project / User as inline badges (for Conversations) ·· */
 
-export const projectBadgeColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
+export const projectBadgeColumn = ({
+  mini = false,
+}: { mini?: boolean } = {}) => ({
   key: "project",
   label: "Project",
   description: "The project this conversation belongs to",
@@ -583,7 +654,9 @@ export const endpointColumn = () => ({
   label: "Endpoint",
   description: "The API endpoint path called (e.g. /chat, /image, /audio)",
   render: (r: TableRow) => (
-    <BadgeComponent variant="endpoint">{(r.endpoint as string | undefined) || "-"}</BadgeComponent>
+    <BadgeComponent variant="endpoint">
+      {(r.endpoint as string | undefined) || "-"}
+    </BadgeComponent>
   ),
 });
 
@@ -593,7 +666,9 @@ export const operationColumn = () => ({
   description:
     "The semantic purpose of this LLM call (e.g. chat, agent:iteration, memory:extract)",
   render: (r: TableRow) => (
-    <BadgeComponent variant="info">{(r.operation as string | undefined) || "-"}</BadgeComponent>
+    <BadgeComponent variant="info">
+      {(r.operation as string | undefined) || "-"}
+    </BadgeComponent>
   ),
 });
 
@@ -607,7 +682,9 @@ export const agentColumn = () => ({
   sortable: false,
   render: (r: TableRow) => {
     // Normalize: sessions expose `agents` (array), requests expose `agent` (string)
-    const agents = (r.agents as string[] | undefined) ?? (r.agent ? [r.agent as string] : []);
+    const agents =
+      (r.agents as string[] | undefined) ??
+      (r.agent ? [r.agent as string] : []);
     return <BadgeComponent type="agent" agents={agents} />;
   },
 });
@@ -711,7 +788,9 @@ export const benchmarkToolsColumn = () => ({
     if (!r.toolsEnabled) return emptyDash();
     const rawToolCalls = r.toolCalls as Array<{ name?: string }> | undefined;
     const toolNames = rawToolCalls?.length
-      ? [...new Set(rawToolCalls.map((tc) => tc.name).filter(Boolean))] as string[]
+      ? ([
+          ...new Set(rawToolCalls.map((tc) => tc.name).filter(Boolean)),
+        ] as string[])
       : null;
     const badge = (
       <BadgeComponent variant="warning" mini>
@@ -746,13 +825,16 @@ export const benchmarkThinkingColumn = () => ({
  * Model file size column for benchmarks.
  * Shows the GGUF/weight file size for local models (e.g. "4.3 GB").
  */
-export const benchmarkSizeColumn = ({ modelConfigMap = {} }: { modelConfigMap?: Record<string, { size?: string }> } = {}) => ({
+export const benchmarkSizeColumn = ({
+  modelConfigMap = {},
+}: { modelConfigMap?: Record<string, { size?: string }> } = {}) => ({
   key: "size",
   label: "Size",
   description: "Model file/weight size on disk (local models only)",
   sortable: true,
   sortValue: (r: TableRow) => {
-    const config = modelConfigMap[`${r.provider as string}:${r.model as string}`];
+    const config =
+      modelConfigMap[`${r.provider as string}:${r.model as string}`];
     const sizeString = config?.size ?? "";
     const match = sizeString.match(/([\d.]+)\s*(GB|MB|KB)/i);
     if (!match) return 0;
@@ -764,7 +846,8 @@ export const benchmarkSizeColumn = ({ modelConfigMap = {} }: { modelConfigMap?: 
   },
   align: "right" as const,
   render: (r: TableRow) => {
-    const config = modelConfigMap[`${r.provider as string}:${r.model as string}`];
+    const config =
+      modelConfigMap[`${r.provider as string}:${r.model as string}`];
     if (!config?.size) return emptyDash();
     return (
       <span className={styles.benchmarkTpsCell}>
@@ -840,10 +923,17 @@ export const benchmarkResponseColumn = ({
   sortable: false,
   render: (r: TableRow) => {
     if (r.error) {
-      return <span className={styles.benchmarkErrorMessage}>{r.error as string}</span>;
+      return (
+        <span className={styles.benchmarkErrorMessage}>
+          {r.error as string}
+        </span>
+      );
     }
     return (
-      <span className={styles.benchmarkResponseCell} title={r.response as string | undefined}>
+      <span
+        className={styles.benchmarkResponseCell}
+        title={r.response as string | undefined}
+      >
         {expectedValue
           ? highlightExpected(
               r.response as string,
@@ -864,7 +954,9 @@ export const benchmarkLatencyColumn = () => ({
   align: "right" as const,
   render: (r: TableRow) =>
     r.latency ? (
-      <span className={styles.monoCell}>{formatLatency(r.latency as number)}</span>
+      <span className={styles.monoCell}>
+        {formatLatency(r.latency as number)}
+      </span>
     ) : (
       emptyDash()
     ),
@@ -888,7 +980,8 @@ export const benchmarkTokensInColumn = () => ({
   label: "Tokens In",
   description: "Input (prompt) tokens consumed by this model",
   sortable: true,
-  sortValue: (r: TableRow) => getTotalInputTokens(r.usage as TokenUsage | undefined) ?? 0,
+  sortValue: (r: TableRow) =>
+    getTotalInputTokens(r.usage as TokenUsage | undefined) ?? 0,
   align: "right" as const,
   render: (r: TableRow) => {
     const inputTokens = getTotalInputTokens(r.usage as TokenUsage | undefined);
@@ -905,10 +998,12 @@ export const benchmarkTokensOutColumn = () => ({
   label: "Tokens Out",
   description: "Output (completion) tokens generated by this model",
   sortable: true,
-  sortValue: (r: TableRow) => (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0,
+  sortValue: (r: TableRow) =>
+    (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0,
   align: "right" as const,
   render: (r: TableRow) => {
-    const outputTokens = (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
+    const outputTokens =
+      (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
     return outputTokens > 0 ? (
       <BadgeComponent type="tokens" value={outputTokens} label="out" mini />
     ) : (
@@ -987,7 +1082,9 @@ export const benchmarkMatchModeColumn = () => ({
   sortable: false,
   render: (r: TableRow) => (
     <BadgeComponent variant="info" mini>
-      {MATCH_MODE_LABELS[r.matchMode as string] ?? (r.matchMode as string | undefined) ?? "—"}
+      {MATCH_MODE_LABELS[r.matchMode as string] ??
+        (r.matchMode as string | undefined) ??
+        "—"}
     </BadgeComponent>
   ),
 });
@@ -1013,7 +1110,10 @@ export const dashboardProviderColumn = () => ({
   description: "The API provider hosting this model",
   sortable: true,
   render: (r: TableRow) => (
-    <BadgeComponent type="providers" providers={r.provider ? [r.provider as string] : []} />
+    <BadgeComponent
+      type="providers"
+      providers={r.provider ? [r.provider as string] : []}
+    />
   ),
 });
 
@@ -1023,7 +1123,9 @@ export const dashboardTestsColumn = () => ({
   description: "Total number of benchmark tests run for this model",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) => <span className={styles.monoCell}>{r.total as number}</span>,
+  render: (r: TableRow) => (
+    <span className={styles.monoCell}>{r.total as number}</span>
+  ),
 });
 
 export const dashboardPassedColumn = () => ({
@@ -1091,7 +1193,9 @@ export const dashboardAvgLatencyColumn = () => ({
   description: "Average response latency across all benchmark tests",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) => <BadgeComponent type="stopwatch" seconds={r.avgLatency as number} />,
+  render: (r: TableRow) => (
+    <BadgeComponent type="stopwatch" seconds={r.avgLatency as number} />
+  ),
 });
 
 export const dashboardCostColumn = () => ({
@@ -1101,7 +1205,7 @@ export const dashboardCostColumn = () => ({
   sortable: true,
   align: "right" as const,
   render: (r: TableRow) =>
-    (r.totalCost as number | undefined) ?? 0 > 0 ? (
+    ((r.totalCost as number | undefined) ?? 0 > 0) ? (
       <BadgeComponent type="cost" cost={r.totalCost as number} mini />
     ) : (
       emptyDash()

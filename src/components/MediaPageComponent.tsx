@@ -66,14 +66,22 @@ function resolveUrl(url: any) {
 }
 
 function MediaTypeIcon({ type, size = 32 }: { type: string; size?: number }) {
-  const color = (MODALITY_COLORS as Record<string, string>)[type] || (MODALITY_COLORS as Record<string, string>).image;
+  const color =
+    (MODALITY_COLORS as Record<string, string>)[type] ||
+    (MODALITY_COLORS as Record<string, string>).image;
   if (type === "audio") return <Music size={size} style={{ color }} />;
   if (type === "video") return <Film size={size} style={{ color }} />;
   if (type === "pdf") return <FileText size={size} style={{ color }} />;
   return <ImageIcon size={size} style={{ color }} />;
 }
 
-function OriginBadge({ origin, className }: { origin: string; className?: string }) {
+function OriginBadge({
+  origin,
+  className,
+}: {
+  origin: string;
+  className?: string;
+}) {
   return (
     <span
       className={`${className} ${origin === "ai" ? styles.originAi : styles.originUser}`}
@@ -199,7 +207,9 @@ export default function MediaPageComponent({
 
   useEffect(() => {
     PrismService.getFavorites("media")
-      .then((favs: Array<{key: string}>) => setFavoriteKeys(favs.map((f) => f.key)))
+      .then((favs: Array<{ key: string }>) =>
+        setFavoriteKeys(favs.map((f) => f.key)),
+      )
       .catch(() => {});
   }, []);
 
@@ -213,7 +223,8 @@ export default function MediaPageComponent({
     }
   };
 
-  const getMediaKey = (m: MediaItem, i: number) => `${m.convId}-${m.mediaType}-${i}`;
+  const getMediaKey = (m: MediaItem, i: number) =>
+    `${m.convId}-${m.mediaType}-${i}`;
 
   const displayMedia = showFavoritesOnly
     ? media.filter((m, i) => favoriteKeys.includes(getMediaKey(m, i)))

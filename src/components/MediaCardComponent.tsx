@@ -30,7 +30,8 @@ function resolveUrl(url: any) {
 }
 
 function MediaTypeIcon({ type, size = 32 }: { type: string; size?: number }) {
-  const color = (MODALITY_COLORS as Record<string, string>)[type] || MODALITY_COLORS.image;
+  const color =
+    (MODALITY_COLORS as Record<string, string>)[type] || MODALITY_COLORS.image;
   if (type === "audio") return <Music size={size} style={{ color }} />;
   if (type === "video") return <Film size={size} style={{ color }} />;
   if (type === "pdf") return <FileText size={size} style={{ color }} />;
@@ -165,7 +166,9 @@ export default function MediaCardComponent({
           </div>
         )}
 
-        {showOrigin && mediaItem.origin && <OriginBadge origin={mediaItem.origin} />}
+        {showOrigin && mediaItem.origin && (
+          <OriginBadge origin={mediaItem.origin} />
+        )}
       </div>
 
       {showInfo && (
@@ -189,7 +192,9 @@ export default function MediaCardComponent({
                 mini
               />
             )}
-            {mediaItem.timestamp && <BadgeComponent type="dateTime" date={mediaItem.timestamp} />}
+            {mediaItem.timestamp && (
+              <BadgeComponent type="dateTime" date={mediaItem.timestamp} />
+            )}
           </div>
         </div>
       )}

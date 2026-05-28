@@ -33,7 +33,18 @@ export default function TracesTableComponent({
   sortDir,
   onSort,
   onRequestRowClick,
-}: { traces?: Record<string, any>[]; emptyText?: string; compact?: boolean; mini?: boolean; title?: React.ReactNode; maxHeight?: number | string | null; sortKey?: string; sortDir?: string; onSort?: (key: string, dir: string) => void; onRequestRowClick?: (row: Record<string, any>) => void; }) {
+}: {
+  traces?: Record<string, any>[];
+  emptyText?: string;
+  compact?: boolean;
+  mini?: boolean;
+  title?: React.ReactNode;
+  maxHeight?: number | string | null;
+  sortKey?: string;
+  sortDir?: string;
+  onSort?: (key: string, dir: string) => void;
+  onRequestRowClick?: (row: Record<string, any>) => void;
+}) {
   const SESSION_COLUMNS = [
     traceIdColumn(),
     projectColumn(),

@@ -39,7 +39,9 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/admin/chat"),
   );
   const isOnSessionsRef = useRef<boolean>(pathname.startsWith("/admin/traces"));
-  const isOnRequestsRef = useRef<boolean>(pathname.startsWith("/admin/requests"));
+  const isOnRequestsRef = useRef<boolean>(
+    pathname.startsWith("/admin/requests"),
+  );
   const isOnMediaRef = useRef<boolean>(pathname.startsWith("/admin/media"));
   const isOnTextRef = useRef<boolean>(pathname.startsWith("/admin/text"));
 
@@ -100,7 +102,11 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       try {
         const data = await IrisService.getTraces({ page: 1, limit: 50 });
         const list = data.data || [];
-        const currentIds = new Set(list.map((s) => (s as { id?: string }).id || (s as { _id: string })._id));
+        const currentIds = new Set(
+          list.map(
+            (s) => (s as { id?: string }).id || (s as { _id: string })._id,
+          ),
+        );
 
         if (knownSessionsRef.current === null) {
           knownSessionsRef.current = currentIds;
@@ -221,7 +227,9 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         if (knownTextRef.current === null) {
           knownTextRef.current = total;
         } else if (!isOnTextRef.current && total > knownTextRef.current) {
-          setNewTextCount((prev) => prev + (total - (knownTextRef.current ?? 0)));
+          setNewTextCount(
+            (prev) => prev + (total - (knownTextRef.current ?? 0)),
+          );
           knownTextRef.current = total;
         } else {
           knownTextRef.current = total;
@@ -354,7 +362,9 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           </div>
           {controls && <div className={styles.headerControls}>{controls}</div>}
         </header>
-        <div className={`${styles.main} ${(pathname.startsWith("/admin/chat") || pathname.startsWith("/admin/workflows")) ? styles.noScroll : ""}`}>
+        <div
+          className={`${styles.main} ${pathname.startsWith("/admin/chat") || pathname.startsWith("/admin/workflows") ? styles.noScroll : ""}`}
+        >
           {children}
         </div>
       </div>
@@ -362,7 +372,11 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <AdminHeaderProvider>
       <AdminShellInner>{children}</AdminShellInner>

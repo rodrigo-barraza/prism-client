@@ -257,7 +257,8 @@ function getSlowestColumns() {
       key: "timestamp",
       label: "When",
       sortable: false,
-      render: (r: SlowestCall) => (r.timestamp ? formatDateTime(r.timestamp) : "—"),
+      render: (r: SlowestCall) =>
+        r.timestamp ? formatDateTime(r.timestamp) : "—",
     },
   ];
 }
@@ -282,8 +283,7 @@ export default function ToolCallsPage() {
       setError(null);
       const params: Record<string, string> = {};
       const dateParams = buildDateRangeParams(dateRange);
-      if (dateParams?.since)
-        params.since = dateParams.since;
+      if (dateParams?.since) params.since = dateParams.since;
       const data = await ToolsApiService.getToolCallStats(params);
       setStats(data as unknown as ToolCallStats);
     } catch (error: unknown) {
@@ -330,7 +330,11 @@ export default function ToolCallsPage() {
       const mult = toolOrder === "desc" ? -1 : 1;
       if (toolSort === "toolName")
         return mult * a.toolName.localeCompare(b.toolName);
-      return mult * ((a[toolSort as keyof ToolStat] as number || 0) - (b[toolSort as keyof ToolStat] as number || 0));
+      return (
+        mult *
+        (((a[toolSort as keyof ToolStat] as number) || 0) -
+          ((b[toolSort as keyof ToolStat] as number) || 0))
+      );
     });
     return array;
   }, [stats, toolSort, toolOrder]);
@@ -342,7 +346,11 @@ export default function ToolCallsPage() {
       const mult = domainOrder === "desc" ? -1 : 1;
       if (domainSort === "domain")
         return mult * (a.domain || "").localeCompare(b.domain || "");
-      return mult * ((a[domainSort as keyof DomainStat] as number || 0) - (b[domainSort as keyof DomainStat] as number || 0));
+      return (
+        mult *
+        (((a[domainSort as keyof DomainStat] as number) || 0) -
+          ((b[domainSort as keyof DomainStat] as number) || 0))
+      );
     });
     return array;
   }, [stats, domainSort, domainOrder]);
@@ -397,9 +405,7 @@ export default function ToolCallsPage() {
             <CheckCircle size={20} />
           </div>
           <div className={styles.statContent}>
-            <span className={styles.statValue}>
-              {stats?.successRate ?? 0}%
-            </span>
+            <span className={styles.statValue}>{stats?.successRate ?? 0}%</span>
             <span className={styles.statLabel}>Success Rate</span>
           </div>
         </div>

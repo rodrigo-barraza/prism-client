@@ -76,7 +76,9 @@ export default function TasksPanel({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  );
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const hasData = useRef<boolean>(false);
@@ -182,8 +184,7 @@ export default function TasksPanel({
         await ToolsApiService.deleteAgenticTask(task.project, task.taskId);
         setTasks((prev) =>
           prev.filter(
-            (t) =>
-              !(t.project === task.project && t.taskId === task.taskId),
+            (t) => !(t.project === task.project && t.taskId === task.taskId),
           ),
         );
         setConfirmingDeleteId(null);
@@ -273,7 +274,6 @@ export default function TasksPanel({
 
   return (
     <div className={styles.container}>
-
       {/* -- Search & Filters ------------------------------------- */}
       {((summary && summary.total > 0) || tasks.length > 0) && (
         <div className={styles["filter-controls-section"]}>
@@ -316,14 +316,22 @@ export default function TasksPanel({
             className={styles.newTaskInput}
             placeholder="Task subject…"
             value={newSubject}
-            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setNewSubject(e.target.value)}
+            onChange={(
+              e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => setNewSubject(e.target.value)}
             autoFocus
           />
           <textarea
             className={styles.newTaskTextarea}
             placeholder="Description…"
             value={newDescription}
-            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setNewDescription(e.target.value)}
+            onChange={(
+              e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => setNewDescription(e.target.value)}
             rows={2}
           />
           <div className={styles.newTaskActions}>

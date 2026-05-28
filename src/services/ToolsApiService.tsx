@@ -81,7 +81,9 @@ export default class ToolsApiService {
   /**
    * Query tool-call logs with optional filters.
    */
-  static async getToolCalls(params: Record<string, string | number | boolean> = {}): Promise<ToolCallListResponse> {
+  static async getToolCalls(
+    params: Record<string, string | number | boolean> = {},
+  ): Promise<ToolCallListResponse> {
     const entries = Object.entries(params).map(([k, v]) => [k, String(v)]);
     const query = new URLSearchParams(entries).toString();
     return ToolsApiService._fetch<ToolCallListResponse>(
@@ -92,7 +94,9 @@ export default class ToolsApiService {
   /**
    * Get aggregated tool-call statistics.
    */
-  static async getToolCallStats(params: Record<string, string | number | boolean> = {}): Promise<ToolCallStatsResponse> {
+  static async getToolCallStats(
+    params: Record<string, string | number | boolean> = {},
+  ): Promise<ToolCallStatsResponse> {
     const entries = Object.entries(params).map(([k, v]) => [k, String(v)]);
     const query = new URLSearchParams(entries).toString();
     return ToolsApiService._fetch<ToolCallStatsResponse>(
@@ -124,19 +128,26 @@ export default class ToolsApiService {
     project: string,
     { status, limit }: { status?: string; limit?: number } = {},
   ): Promise<AgenticTaskListResponse> {
-    return ToolsApiService._post<AgenticTaskListResponse>("/agentic/task/list", {
-      project,
-      status,
-      limit,
-    });
+    return ToolsApiService._post<AgenticTaskListResponse>(
+      "/agentic/task/list",
+      {
+        project,
+        status,
+        limit,
+      },
+    );
   }
 
   /**
    * List all tasks, optionally scoped to an agent session.
    */
-  static async getAllAgenticTasks(
-    { status, agentSessionId }: { status?: string; agentSessionId?: string } = {},
-  ): Promise<AgenticTaskListResponse> {
+  static async getAllAgenticTasks({
+    status,
+    agentSessionId,
+  }: {
+    status?: string;
+    agentSessionId?: string;
+  } = {}): Promise<AgenticTaskListResponse> {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
     if (agentSessionId) params.set("agentSessionId", agentSessionId);
@@ -151,9 +162,15 @@ export default class ToolsApiService {
    */
   static async createAgenticTask(
     project: string,
-    data: Omit<AgenticTask, "_id" | "taskId" | "project" | "createdAt" | "updatedAt">,
+    data: Omit<
+      AgenticTask,
+      "_id" | "taskId" | "project" | "createdAt" | "updatedAt"
+    >,
   ): Promise<{ task: AgenticTask; message: string }> {
-    return ToolsApiService._post<{ task: AgenticTask; message: string }>("/agentic/task/create", { project, ...data });
+    return ToolsApiService._post<{ task: AgenticTask; message: string }>(
+      "/agentic/task/create",
+      { project, ...data },
+    );
   }
 
   /**
@@ -164,11 +181,14 @@ export default class ToolsApiService {
     taskId: string,
     updates: Partial<AgenticTask>,
   ): Promise<{ task: AgenticTask; message: string }> {
-    return ToolsApiService._post<{ task: AgenticTask; message: string }>("/agentic/task/update", {
-      project,
-      taskId,
-      ...updates,
-    });
+    return ToolsApiService._post<{ task: AgenticTask; message: string }>(
+      "/agentic/task/update",
+      {
+        project,
+        taskId,
+        ...updates,
+      },
+    );
   }
 
   /**
@@ -178,7 +198,11 @@ export default class ToolsApiService {
     project: string,
     taskId: string,
   ): Promise<{ deleted: boolean; taskId: string; message: string }> {
-    return ToolsApiService._post<{ deleted: boolean; taskId: string; message: string }>("/agentic/task/delete", { project, taskId });
+    return ToolsApiService._post<{
+      deleted: boolean;
+      taskId: string;
+      message: string;
+    }>("/agentic/task/delete", { project, taskId });
   }
 
   // ---------------------------------------------------------------------------

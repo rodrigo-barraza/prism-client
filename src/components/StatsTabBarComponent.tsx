@@ -22,7 +22,10 @@ export interface StatsTabBarProps {
   onChange: (tab: string) => void;
 }
 
-export default function StatsTabBarComponent({ activeTab, onChange }: StatsTabBarProps) {
+export default function StatsTabBarComponent({
+  activeTab,
+  onChange,
+}: StatsTabBarProps) {
   return (
     <div className={styles.statsTabBar}>
       {TABS.map((tab) => (

@@ -20,10 +20,15 @@
     var(--accent-primary) 40%,
     var(--calculated-border-color)
   );
-  background: color-mix(in srgb, var(--accent-primary) 3%, var(--background-surface));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 3%,
+    var(--background-surface)
+  );
   position: relative;
   animation: fadeIn 0.3s ease-out;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  box-shadow: 0 0 0 1px
+    color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .live::before {

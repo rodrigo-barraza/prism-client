@@ -7,7 +7,6 @@ import {
 } from "../../../utils/tableColumns";
 import { formatLatencyMs, formatFileSize } from "../../../utils/utilities";
 
-
 export interface ToolCallRecord {
   _id?: string;
   toolName?: string;
@@ -32,11 +31,12 @@ export interface ToolCallRecord {
   result?: Record<string, unknown>;
 }
 
-
 /**
  * getToolRequestsColumns — column definitions for the tool-call telemetry table.
  */
-export const getToolRequestsColumns = ({ totalDuration = 1 }: { totalDuration?: number } = {}) => [
+export const getToolRequestsColumns = ({
+  totalDuration = 1,
+}: { totalDuration?: number } = {}) => [
   createdAtColumn("timestamp"),
   {
     key: "toolName",

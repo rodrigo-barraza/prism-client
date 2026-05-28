@@ -1,6 +1,12 @@
 "use client";
 
-import { Trash2, User, MessageSquare, FolderKanban, ExternalLink } from "lucide-react";
+import {
+  Trash2,
+  User,
+  MessageSquare,
+  FolderKanban,
+  ExternalLink,
+} from "lucide-react";
 import type { MemoryType, AgentMemory } from "../types/types";
 import BadgeComponent from "./BadgeComponent";
 import styles from "./MemoryCardComponent.module.css";
@@ -60,9 +66,7 @@ export default function MemoryCardComponent({
         <div className={styles["memory-info"]}>
           <div className={styles["memory-title"]}>
             {memory.title ||
-              (memory.content
-                ? memory.content.substring(0, 60)
-                : "Untitled")}
+              (memory.content ? memory.content.substring(0, 60) : "Untitled")}
           </div>
           <div className={styles["memory-meta"]}>
             <span
@@ -77,9 +81,7 @@ export default function MemoryCardComponent({
         </div>
         <button
           className={styles["delete-button"]}
-          onClick={() =>
-            onDeleteRequest(isConfirmingDelete ? "" : memoryId)
-          }
+          onClick={() => onDeleteRequest(isConfirmingDelete ? "" : memoryId)}
           title="Delete memory"
         >
           <Trash2 size={12} />

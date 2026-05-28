@@ -15,7 +15,9 @@ import { LucideIcon } from "lucide-react";
 
 export interface FilterItem {
   key: string;
-  icon?: LucideIcon | React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  icon?:
+    | LucideIcon
+    | React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
   title?: string;
   color?: string;
 }
@@ -169,9 +171,10 @@ export default function FilterDropdownComponent({
           <button
             type="button"
             className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
-            {...(SoundService.interactive(() =>
-              setIsOpen((v) => !v),
-            ) as Record<string, React.MouseEventHandler>)}
+            {...(SoundService.interactive(() => setIsOpen((v) => !v)) as Record<
+              string,
+              React.MouseEventHandler
+            >)}
             style={fullWidth ? { width: "100%" } : undefined}
           >
             <span className={styles.triggerContent}>
@@ -196,26 +199,31 @@ export default function FilterDropdownComponent({
               {showDateRange && (
                 <div className={styles.menuGroup}>
                   <div className={styles.menuGroupLabel}>Date Range</div>
-                  {DATE_PRESETS.map((preset: { label: string; getValue: () => { from: string; to: string } }) => {
-                    const isActive =
-                      getActiveDatePreset(dateFrom, dateTo) === preset.label;
-                    return (
-                      <button
-                        key={preset.label}
-                        type="button"
-                        className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
-                        {...(SoundService.interactive(() =>
-                          onDateChange(preset.getValue()),
-                        ) as Record<string, React.MouseEventHandler>)}
-                      >
-                        <Calendar size={13} style={{ color: "#6366f1" }} />
-                        <span>{preset.label}</span>
-                        {isActive && (
-                          <span className={styles.menuCheck}>✓</span>
-                        )}
-                      </button>
-                    );
-                  })}
+                  {DATE_PRESETS.map(
+                    (preset: {
+                      label: string;
+                      getValue: () => { from: string; to: string };
+                    }) => {
+                      const isActive =
+                        getActiveDatePreset(dateFrom, dateTo) === preset.label;
+                      return (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                          {...(SoundService.interactive(() =>
+                            onDateChange(preset.getValue()),
+                          ) as Record<string, React.MouseEventHandler>)}
+                        >
+                          <Calendar size={13} style={{ color: "#6366f1" }} />
+                          <span>{preset.label}</span>
+                          {isActive && (
+                            <span className={styles.menuCheck}>✓</span>
+                          )}
+                        </button>
+                      );
+                    },
+                  )}
                   <button
                     type="button"
                     className={`${styles.menuItem} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles.menuItemActive : ""}`}

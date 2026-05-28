@@ -41,11 +41,22 @@ export default function useModelMemory(storageKey: string) {
    * Safe to call multiple times (idempotent after first successful restore).
    */
   const restoreModel = useCallback(
-    <T>(config: PrismConfig, setSettings: Dispatch<SetStateAction<T>>, { fcOnly = false, fallback }: { fcOnly?: boolean; fallback?: (config: PrismConfig) => void } = {}) => {
+    <T>(
+      config: PrismConfig,
+      setSettings: Dispatch<SetStateAction<T>>,
+      {
+        fcOnly = false,
+        fallback,
+      }: { fcOnly?: boolean; fallback?: (config: PrismConfig) => void } = {},
+    ) => {
       if (!config) return;
       if (restoredRef.current) return;
 
-      const saved = StorageService.get<{ provider: string; model: string; isLocal: boolean }>(storageKey);
+      const saved = StorageService.get<{
+        provider: string;
+        model: string;
+        isLocal: boolean;
+      }>(storageKey);
       if (!saved?.provider || !saved?.model) {
         // No saved preference — let the caller apply its own default.
         if (fallback) fallback(config);
@@ -78,19 +89,25 @@ export default function useModelMemory(storageKey: string) {
       }
 
       // FC-only gate
-      if (fcOnly && !(modelDef.tools as string[] | undefined)?.includes("Tool Calling")) {
+      if (
+        fcOnly &&
+        !(modelDef.tools as string[] | undefined)?.includes("Tool Calling")
+      ) {
         if (fallback) fallback(config);
         restoredRef.current = true;
         return;
       }
 
       const temp = modelDef.defaultTemperature ?? 1.0;
-      setSettings((s) => ({
-        ...s,
-        provider: saved.provider,
-        model: saved.model,
-        temperature: temp,
-      }) as T);
+      setSettings(
+        (s) =>
+          ({
+            ...s,
+            provider: saved.provider,
+            model: saved.model,
+            temperature: temp,
+          }) as T,
+      );
       restoredRef.current = true;
     },
     [storageKey],

@@ -1,34 +1,34 @@
 /* ============================================================
-   Skills Panel — CRUD interface for project-scoped agent skills
-   Follows the same design language as CustomToolsPanel
+   Rules Panel — CRUD interface for per-agent rules (slash commands)
+   Follows the same design language as SkillsPanelComponent
    ============================================================ */
 
 .container {
   composes: container from "./PanelShared.module.css";
-  --panel-accent: var(--color-purple);
+  --panel-accent: var(--color-amber);
 }
 
 /* ── Empty State ────────────────────────────────────────────── */
 
-.emptyState {
+.empty-state {
   composes: emptyState from "./PanelShared.module.css";
 }
 
-.emptyIcon {
+.empty-icon {
   composes: emptyIcon from "./PanelShared.module.css";
 }
 
-.emptyTitle {
+.empty-title {
   composes: emptyTitle from "./PanelShared.module.css";
 }
 
-.emptySubtitle {
+.empty-subtitle {
   composes: emptySubtitle from "./PanelShared.module.css";
 }
 
-/* ── Skill Card ─────────────────────────────────────────────── */
+/* ── Rule Card ──────────────────────────────────────────────── */
 
-.skillCard {
+.rule-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -41,42 +41,41 @@
   &:hover {
     border-color: color-mix(
       in srgb,
-      var(--color-purple) 30%,
+      var(--color-amber) 30%,
       var(--calculated-border-color)
     );
-    box-shadow: 0 2px 8px
-      color-mix(in srgb, var(--color-purple) 8%, transparent);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-amber) 8%, transparent);
   }
 }
 
-.skillCardDisabled {
+.rule-card-disabled {
   opacity: 0.5;
 }
 
-.skillCardHeader {
+.rule-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.skillIcon {
+.rule-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--color-purple) 12%, transparent);
-  color: var(--color-purple);
+  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
+  color: var(--color-amber);
   flex-shrink: 0;
 }
 
-.skillInfo {
+.rule-info {
   flex: 1;
   min-width: 0;
 }
 
-.skillName {
+.rule-name {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -85,7 +84,18 @@
   text-overflow: ellipsis;
 }
 
-.skillDescription {
+.rule-slash-command {
+  font-size: var(--font-size-xs);
+  color: var(--color-amber);
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+  opacity: 0.85;
+}
+
+.rule-description {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   white-space: nowrap;
@@ -94,14 +104,14 @@
   margin-top: 1px;
 }
 
-.skillActions {
+.rule-actions {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
 }
 
-.skillActionButton {
+.rule-action-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,12 +130,12 @@
   }
 }
 
-.skillDeleteButton:hover {
+.rule-delete-button:hover {
   color: var(--color-rose) !important;
   background: color-mix(in srgb, var(--color-rose) 12%, transparent) !important;
 }
 
-.skillContentPreview {
+.rule-content-preview {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.5;
@@ -136,39 +146,43 @@
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   border: 1px solid
     color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+  max-height: 80px;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
 }
 
-.skillCharCount {
+.rule-character-count {
   font-size: 0.625rem;
   color: var(--text-muted);
   text-align: right;
 }
 
-.skillCharCountWarn {
+.rule-character-count-warning {
   color: var(--color-warning);
 }
 
 /* ── Confirm Delete ─────────────────────────────────────────── */
 
-.confirmRow {
+.confirm-row {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 0;
 }
 
-.confirmLabel {
+.confirm-label {
   flex: 1;
   font-size: var(--font-size-xs);
   color: var(--color-rose);
   font-weight: 500;
 }
 
-.confirmButton {
+.confirm-button {
   composes: confirmButton from "./PanelShared.module.css";
 }
 
-.confirmBtnYes {
+.confirm-button-yes {
   background: color-mix(in srgb, var(--color-rose) 15%, transparent);
   color: var(--color-rose);
   border-color: color-mix(in srgb, var(--color-rose) 30%, transparent);
@@ -178,7 +192,7 @@
   }
 }
 
-.confirmBtnNo {
+.confirm-button-no {
   background: transparent;
   color: var(--text-muted);
 
@@ -189,7 +203,7 @@
 
 /* ── Edit / Create Form ─────────────────────────────────────── */
 
-.formHeader {
+.form-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -206,7 +220,7 @@
   }
 }
 
-.cancelButton {
+.cancel-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,7 +246,7 @@
   overflow-y: auto;
 }
 
-.formGroup {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -257,9 +271,9 @@
   transition: border-color 0.15s ease;
 
   &:focus {
-    border-color: var(--color-purple);
+    border-color: var(--color-amber);
     box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--color-purple) 15%, transparent);
+      color-mix(in srgb, var(--color-amber) 15%, transparent);
   }
 
   &::placeholder {
@@ -281,9 +295,9 @@
   font-family: inherit;
 
   &:focus {
-    border-color: var(--color-purple);
+    border-color: var(--color-amber);
     box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--color-purple) 15%, transparent);
+      color-mix(in srgb, var(--color-amber) 15%, transparent);
   }
 
   &::placeholder {
@@ -291,7 +305,7 @@
   }
 }
 
-.contentTextarea {
+.content-textarea {
   min-height: 200px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   font-size: var(--font-size-sm);
@@ -306,24 +320,35 @@
   line-height: 1.4;
 }
 
-.charCounter {
+.slash-preview {
+  font-size: var(--font-size-xs);
+  color: var(--color-amber);
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  font-weight: 500;
+  padding: 4px 8px;
+  background: color-mix(in srgb, var(--color-amber) 8%, transparent);
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-amber) 20%, transparent);
+}
+
+.character-counter {
   font-size: 0.625rem;
   color: var(--text-muted);
   text-align: right;
   margin-top: -2px;
 }
 
-.charCounterWarn {
+.character-counter-warning {
   color: var(--color-warning);
 }
 
-.charCounterDanger {
+.character-counter-danger {
   color: var(--color-rose);
 }
 
 /* ── Form Actions ───────────────────────────────────────────── */
 
-.formActions {
+.form-actions {
   display: flex;
   gap: 8px;
   padding-top: 8px;
@@ -331,7 +356,7 @@
   flex-shrink: 0;
 }
 
-.saveButton {
+.save-button {
   flex: 1;
   display: inline-flex;
   align-items: center;
@@ -341,17 +366,17 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: white;
-  background: var(--color-purple);
+  background: var(--color-amber);
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-purple) 90%, white);
+    background: color-mix(in srgb, var(--color-amber) 90%, white);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px
-      color-mix(in srgb, var(--color-purple) 30%, transparent);
+      color-mix(in srgb, var(--color-amber) 30%, transparent);
   }
 
   &:disabled {
@@ -360,7 +385,7 @@
   }
 }
 
-.cancelFormButton {
+.cancel-form-button {
   padding: 8px 14px;
   font-size: var(--font-size-sm);
   font-weight: 500;

@@ -6,7 +6,12 @@ import { SelectComponent } from "@rodrigo-barraza/components-library";
 import ChartTabsComponent from "./ChartTabsComponent";
 import { formatNumber, formatCost, formatLatency } from "../utils/utilities";
 import styles from "./DistributionChartComponent.module.css";
-import type { IrisProjectStat, IrisModelStat, IrisProviderStat, IrisDashboardStats } from "../types/types";
+import type {
+  IrisProjectStat,
+  IrisModelStat,
+  IrisProviderStat,
+  IrisDashboardStats,
+} from "../types/types";
 
 const COLORS = [
   "#6366f1",
@@ -170,7 +175,9 @@ function buildEntries(
 /**
  * Builds status entries from overall stats (Success / Error).
  */
-function buildStatusEntries(stats: IrisDashboardStats | null): { name: string; value: number }[] {
+function buildStatusEntries(
+  stats: IrisDashboardStats | null,
+): { name: string; value: number }[] {
   const entries: { name: string; value: number }[] = [];
   if (stats?.successCount)
     entries.push({ name: "Success", value: stats.successCount });
@@ -363,7 +370,9 @@ export default function DistributionChartComponent({
                     activeShape={(props: any) => (
                       <ActiveSectorRenderer {...props} metric={activeMetric} />
                     )}
-                    onMouseEnter={(_: any, index: number) => setActiveIndex(index)}
+                    onMouseEnter={(_: any, index: number) =>
+                      setActiveIndex(index)
+                    }
                     onMouseLeave={() => setActiveIndex(null)}
                     animationDuration={200}
                     animationEasing="ease-in-out"
@@ -386,7 +395,8 @@ export default function DistributionChartComponent({
 
             <div className={styles.legend}>
               {entries.map(({ name, value }, i: number) => {
-                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                const percentage =
+                  total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                 const color = isStatus
                   ? STATUS_COLORS[name] || COLORS[0]
                   : COLORS[i % COLORS.length];

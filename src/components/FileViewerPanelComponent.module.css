@@ -387,7 +387,11 @@
   height: 22px;
   border: 1px solid color-mix(in srgb, var(--accent-primary) 40%, transparent);
   border-radius: 4px;
-  background: color-mix(in srgb, var(--accent-primary) 14%, var(--background-elevated));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 14%,
+    var(--background-elevated)
+  );
   color: var(--accent-primary);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -418,7 +422,8 @@
   background: var(--accent-primary);
   color: var(--color-white);
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 25%, transparent);
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--accent-primary) 25%, transparent);
   transform: translateY(-50%) scale(1.05);
 }
 

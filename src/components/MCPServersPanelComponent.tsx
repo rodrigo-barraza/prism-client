@@ -40,7 +40,9 @@ export default function MCPServersPanel({
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [connecting, setConnecting] = useState<string | null>(null); // server ID being connected
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   // -- CRUD -----------------------------------------------------
@@ -70,7 +72,7 @@ export default function MCPServersPanel({
           <button className={styles.addButton} onClick={handleCreate}>
             <Plus size={12} />
             Add
-          </button>
+          </button>,
         );
       }
     }
@@ -155,7 +157,9 @@ export default function MCPServersPanel({
         await PrismService.connectMCPServer(serverId);
         onServersChange();
       } catch (error: unknown) {
-        setError(`Connect failed: ${getErrorMessage(error) || "Unknown error"}`);
+        setError(
+          `Connect failed: ${getErrorMessage(error) || "Unknown error"}`,
+        );
       } finally {
         setConnecting(null);
       }
@@ -201,13 +205,21 @@ export default function MCPServersPanel({
               type="text"
               className={styles.input}
               value={editingServer.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingServer((s: MCPServer | null) => s ? ({
-                  ...s,
-                  name: e.target.value
-                    .replace(/[^a-zA-Z0-9_-]/g, "-")
-                    .toLowerCase(),
-                }) : null)
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) =>
+                setEditingServer((s: MCPServer | null) =>
+                  s
+                    ? {
+                        ...s,
+                        name: e.target.value
+                          .replace(/[^a-zA-Z0-9_-]/g, "-")
+                          .toLowerCase(),
+                      }
+                    : null,
+                )
               }
               placeholder="filesystem"
             />
@@ -222,11 +234,19 @@ export default function MCPServersPanel({
               type="text"
               className={styles.input}
               value={editingServer.displayName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                setEditingServer((s: MCPServer | null) => s ? ({
-                  ...s,
-                  displayName: e.target.value,
-                }) : null)
+              onChange={(
+                e: React.ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) =>
+                setEditingServer((s: MCPServer | null) =>
+                  s
+                    ? {
+                        ...s,
+                        displayName: e.target.value,
+                      }
+                    : null,
+                )
               }
               placeholder="Filesystem Access"
             />
@@ -238,7 +258,9 @@ export default function MCPServersPanel({
               <button
                 className={`${styles.transportTab} ${isStdio ? styles.transportTabActive : ""}`}
                 onClick={() =>
-                  setEditingServer((s: MCPServer | null) => s ? ({ ...s, transport: "stdio" }) : null)
+                  setEditingServer((s: MCPServer | null) =>
+                    s ? { ...s, transport: "stdio" } : null,
+                  )
                 }
               >
                 stdio
@@ -246,10 +268,14 @@ export default function MCPServersPanel({
               <button
                 className={`${styles.transportTab} ${!isStdio ? styles.transportTabActive : ""}`}
                 onClick={() =>
-                  setEditingServer((s: MCPServer | null) => s ? ({
-                    ...s,
-                    transport: "streamable-http",
-                  }) : null)
+                  setEditingServer((s: MCPServer | null) =>
+                    s
+                      ? {
+                          ...s,
+                          transport: "streamable-http",
+                        }
+                      : null,
+                  )
                 }
               >
                 HTTP
@@ -265,11 +291,19 @@ export default function MCPServersPanel({
                   type="text"
                   className={styles.input}
                   value={editingServer.command}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                    setEditingServer((s: MCPServer | null) => s ? ({
-                      ...s,
-                      command: e.target.value,
-                    }) : null)
+                  onChange={(
+                    e: React.ChangeEvent<
+                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                    >,
+                  ) =>
+                    setEditingServer((s: MCPServer | null) =>
+                      s
+                        ? {
+                            ...s,
+                            command: e.target.value,
+                          }
+                        : null,
+                    )
                   }
                   placeholder="npx"
                 />
@@ -284,11 +318,19 @@ export default function MCPServersPanel({
                       ? editingServer.args.join(", ")
                       : editingServer.args
                   }
-                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                    setEditingServer((s: MCPServer | null) => s ? ({
-                      ...s,
-                      args: e.target.value,
-                    }) : null)
+                  onChange={(
+                    e: React.ChangeEvent<
+                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                    >,
+                  ) =>
+                    setEditingServer((s: MCPServer | null) =>
+                      s
+                        ? {
+                            ...s,
+                            args: e.target.value,
+                          }
+                        : null,
+                    )
                   }
                   placeholder="-y, @modelcontextprotocol/server-filesystem, /home"
                 />
@@ -302,8 +344,14 @@ export default function MCPServersPanel({
                 type="text"
                 className={styles.input}
                 value={editingServer.url}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                  setEditingServer((s: MCPServer | null) => s ? ({ ...s, url: e.target.value }) : null)
+                onChange={(
+                  e: React.ChangeEvent<
+                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                  >,
+                ) =>
+                  setEditingServer((s: MCPServer | null) =>
+                    s ? { ...s, url: e.target.value } : null,
+                  )
                 }
                 placeholder="https://mcp-server.example.com/mcp"
               />
@@ -334,7 +382,6 @@ export default function MCPServersPanel({
 
   return (
     <div className={styles.container}>
-
       {error && <div className={styles.errorMsg}>{error}</div>}
 
       {servers.length === 0 && (
@@ -425,11 +472,13 @@ export default function MCPServersPanel({
             {/* Show discovered tools when connected */}
             {server.connected && (server.tools?.length ?? 0) > 0 && (
               <div className={styles.toolList}>
-                {server.tools?.map((tool: { name: string; description?: string }) => (
-                  <span key={tool.name} className={styles.toolTag}>
-                    {tool.name}
-                  </span>
-                ))}
+                {server.tools?.map(
+                  (tool: { name: string; description?: string }) => (
+                    <span key={tool.name} className={styles.toolTag}>
+                      {tool.name}
+                    </span>
+                  ),
+                )}
               </div>
             )}
 

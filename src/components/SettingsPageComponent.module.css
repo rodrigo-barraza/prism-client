@@ -586,12 +586,20 @@
     var(--accent-primary) 40%,
     var(--calculated-border-subtle)
   );
-  background: color-mix(in srgb, var(--accent-primary) 3%, var(--background-base));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 3%,
+    var(--background-base)
+  );
 }
 
 .harnessCard.harnessActive {
   border-color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-base));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 6%,
+    var(--background-base)
+  );
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--accent-primary) 15%, transparent),
     0 2px 8px color-mix(in srgb, var(--accent-primary) 8%, transparent);

@@ -47,7 +47,9 @@ const PDF_EXTENSIONS = new Set(["pdf"]);
 const SVG_EXTENSION = "svg";
 
 /** Determine the media type from a file extension. */
-function getMediaType(fileExtension: string | null | undefined): "image" | "audio" | "video" | "pdf" | null {
+function getMediaType(
+  fileExtension: string | null | undefined,
+): "image" | "audio" | "video" | "pdf" | null {
   if (!fileExtension) return null;
   if (IMAGE_EXTENSIONS.has(fileExtension)) return "image";
   if (AUDIO_EXTENSIONS.has(fileExtension)) return "audio";
@@ -206,12 +208,16 @@ function getFileExt(filepath: string | null | undefined): string | null {
 
 function getPrismLanguage(filepath: string | null | undefined): string {
   const fileExtension = getFileExt(filepath);
-  return fileExtension ? (EXT_TO_PRISM as Record<string, string>)[fileExtension] || "text" : "text";
+  return fileExtension
+    ? (EXT_TO_PRISM as Record<string, string>)[fileExtension] || "text"
+    : "text";
 }
 
 function getLanguageLabel(filepath: string | null | undefined): string | null {
   const fileExtension = getFileExt(filepath);
-  return fileExtension ? (EXT_TO_LABEL as Record<string, string>)[fileExtension] || null : null;
+  return fileExtension
+    ? (EXT_TO_LABEL as Record<string, string>)[fileExtension] || null
+    : null;
 }
 
 function getBasename(filepath: string | null | undefined): string {
@@ -228,11 +234,14 @@ function getPathSegments(filepath: string | null | undefined): string[] {
  * The API returns content in the format: "1: line content\n2: line content\n..."
  * We strip the "N: " prefix from each line to get clean source code.
  */
-function stripLineNumberPrefixes(content: string | null | undefined): string | null | undefined {
+function stripLineNumberPrefixes(
+  content: string | null | undefined,
+): string | null | undefined {
   if (!content) return content;
   const lines = content.split("\n");
   // Verify the first line matches the pattern — if not, return as-is
-  if (!/^\d+: /.test((lines[0] as string)) && !/^\d+:$/.test((lines[0] as string))) return content;
+  if (!/^\d+: /.test(lines[0] as string) && !/^\d+:$/.test(lines[0] as string))
+    return content;
   return lines.map((line: string) => line.replace(/^\d+: ?/, "")).join("\n");
 }
 
@@ -363,8 +372,12 @@ export default function FileViewerPanelComponent({
   refreshKey = 0,
   onMentionLines,
 }: FileViewerPanelProps) {
-  const [fileContents, setFileContents] = useState<Record<string, CachedFile>>({});
-  const [svgViewMode, setSvgViewMode] = useState<Record<string, "preview" | "source">>({});
+  const [fileContents, setFileContents] = useState<Record<string, CachedFile>>(
+    {},
+  );
+  const [svgViewMode, setSvgViewMode] = useState<
+    Record<string, "preview" | "source">
+  >({});
   const [wordWrap, setWordWrap] = useState(true);
   const codeScrollRef = useRef<HTMLDivElement | null>(null);
   const tabBarRef = useRef<HTMLDivElement | null>(null);
@@ -425,12 +438,14 @@ export default function FileViewerPanelComponent({
 
           // Binary file — render via data URI (base64) or raw URL
           if (result.isBinary) {
-            const fileExtension = result.extension?.replace(".", "") || getFileExt(path) || "";
+            const fileExtension =
+              result.extension?.replace(".", "") || getFileExt(path) || "";
             const mediaType = getMediaType(fileExtension);
             const rawUrl = ToolsApiService.getFileRawUrl(path);
             // Prefer inline base64 data URI when the backend provides it (works for remote workspaces)
             const dataUri =
-              result.contentBase64 && (EXT_TO_MIME as Record<string, string>)[fileExtension]
+              result.contentBase64 &&
+              (EXT_TO_MIME as Record<string, string>)[fileExtension]
                 ? `data:${(EXT_TO_MIME as Record<string, string>)[fileExtension]};base64,${result.contentBase64}`
                 : null;
             setFileContents((prev) => ({
@@ -452,10 +467,10 @@ export default function FileViewerPanelComponent({
           }
 
           const language = getPrismLanguage(path);
-          const languageLabel =
-            getLanguageLabel(path) || result.error || null;
+          const languageLabel = getLanguageLabel(path) || result.error || null;
           // Strip the "N: " line-number prefixes from the API response
-          const cleanContent = stripLineNumberPrefixes(result.content ?? "") || "";
+          const cleanContent =
+            stripLineNumberPrefixes(result.content ?? "") || "";
 
           // SVG files are text but also renderable — flag them for dual-view
           const fileExtension = getFileExt(path);
@@ -483,7 +498,8 @@ export default function FileViewerPanelComponent({
           }
         })
         .catch((error: { message?: string; toString?: () => string }) => {
-          const errorMessage = error.message || error.toString?.() || "Failed to read file";
+          const errorMessage =
+            error.message || error.toString?.() || "Failed to read file";
           const isNotFound =
             /not found|no such file|ENOENT|does not exist/i.test(errorMessage);
           if (isNotFound) {
@@ -672,7 +688,9 @@ export default function FileViewerPanelComponent({
       const mentionButton = target.closest(`.${styles.lineMentionButton}`);
       if (mentionButton) {
         e.stopPropagation();
-        const lineEl = mentionButton.closest("[data-line-number]") as HTMLElement | null;
+        const lineEl = mentionButton.closest(
+          "[data-line-number]",
+        ) as HTMLElement | null;
         if (lineEl && activeFile && onMentionLines) {
           const lineNum = parseInt(lineEl.dataset.lineNumber || "", 10);
           if (!isNaN(lineNum)) {
@@ -688,11 +706,11 @@ export default function FileViewerPanelComponent({
       }
 
       // Detect click on a line number span (react-syntax-highlighter uses this class)
-      const lineNumEl = target.closest(
-        ".react-syntax-highlighter-line-number",
-      );
+      const lineNumEl = target.closest(".react-syntax-highlighter-line-number");
       if (lineNumEl) {
-        const lineEl = lineNumEl.closest("[data-line-number]") as HTMLElement | null;
+        const lineEl = lineNumEl.closest(
+          "[data-line-number]",
+        ) as HTMLElement | null;
         if (!lineEl) return;
         const lineNum = parseInt(lineEl.dataset.lineNumber || "", 10);
         if (isNaN(lineNum)) return;
@@ -830,24 +848,22 @@ export default function FileViewerPanelComponent({
         {/* Breadcrumb path */}
         {activeFile && (
           <div className={styles.breadcrumb}>
-            {getPathSegments(activeFile.path).map(
-              (seg, i, array) => (
-                <span key={i}>
-                  {i > 0 && (
-                    <ChevronRight size={8} className={styles.breadcrumbSep} />
-                  )}
-                  <span
-                    style={
-                      i === array.length - 1
-                        ? { color: "var(--text-primary)", opacity: 1 }
-                        : undefined
-                    }
-                  >
-                    {seg}
-                  </span>
+            {getPathSegments(activeFile.path).map((seg, i, array) => (
+              <span key={i}>
+                {i > 0 && (
+                  <ChevronRight size={8} className={styles.breadcrumbSep} />
+                )}
+                <span
+                  style={
+                    i === array.length - 1
+                      ? { color: "var(--text-primary)", opacity: 1 }
+                      : undefined
+                  }
+                >
+                  {seg}
                 </span>
-              ),
-            )}
+              </span>
+            ))}
           </div>
         )}
 
@@ -932,9 +948,7 @@ export default function FileViewerPanelComponent({
         {cached?.content != null &&
           !cached?.isBinary &&
           activeFileId &&
-          !(
-            cached?.isSvg && svgViewMode[activeFileId] === "preview"
-          ) && (
+          !(cached?.isSvg && svgViewMode[activeFileId] === "preview") && (
             <div
               className={`${styles.codeScroll} ${!wordWrap ? styles.codeScrollNoWrap : ""}`}
               ref={codeScrollRef}

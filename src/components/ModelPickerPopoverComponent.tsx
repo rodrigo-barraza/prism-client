@@ -20,7 +20,10 @@ import { ModelToolsRow } from "./ToolBadgeComponent";
 import SoundService from "@/services/SoundService";
 import { LOCAL_PROVIDERS } from "../constants";
 import styles from "./ModelPickerPopoverComponent.module.css";
-import { CloseButtonComponent, TooltipComponent } from "@rodrigo-barraza/components-library";
+import {
+  CloseButtonComponent,
+  TooltipComponent,
+} from "@rodrigo-barraza/components-library";
 
 // -- Shared model-search store ------------------------------------------
 // Module-scoped so every ModelPickerPopoverComponent instance shares the
@@ -28,7 +31,7 @@ import { CloseButtonComponent, TooltipComponent } from "@rodrigo-barraza/compone
 let _sharedSearch = "";
 const _listeners = new Set<() => void>();
 function _notify() {
-  for (const fn of _listeners) fn();
+  for (const listener of _listeners) listener();
 }
 function subscribeSearch(callback: () => void) {
   _listeners.add(callback);
@@ -106,7 +109,6 @@ export interface ExtendedModelOption extends ModelOption {
   params?: string;
 }
 
-
 export interface ModelPickerPopoverProps {
   config: PrismConfig | null;
   settings?: {
@@ -114,7 +116,9 @@ export interface ModelPickerPopoverProps {
     model?: string;
     [key: string]: string | number | boolean | undefined;
   } | null;
-  onSelectModel?: ((provider: string, model: string) => void) | ((model: ExtendedModelOption) => void);
+  onSelectModel?:
+    | ((provider: string, model: string) => void)
+    | ((model: ExtendedModelOption) => void);
   onLmStudioSelect?: (model: ExtendedModelOption) => void;
   loadingProgress?: number | null;
   favorites?: string[];
@@ -166,7 +170,14 @@ export default function ModelPickerPopoverComponent({
   const baseModels = buildAllModels(config, modelTypeFilter);
 
   // -- Fetch usage stats and enrich models ------------------------------
-  const [usageMap, setUsageMap] = useState<Map<string, { totalRequests: number; totalInputTokens: number; totalOutputTokens: number; }> | null>(null);
+  const [usageMap, setUsageMap] = useState<Map<
+    string,
+    {
+      totalRequests: number;
+      totalInputTokens: number;
+      totalOutputTokens: number;
+    }
+  > | null>(null);
   const usageFetchedRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -174,19 +185,30 @@ export default function ModelPickerPopoverComponent({
     usageFetchedRef.current = true;
     PrismService.getModelStats()
       .then((stats) => {
-        const map = new Map<string, { totalRequests: number; totalInputTokens: number; totalOutputTokens: number; }>();
+        const map = new Map<
+          string,
+          {
+            totalRequests: number;
+            totalInputTokens: number;
+            totalOutputTokens: number;
+          }
+        >();
         for (const s of stats) {
           const key = `${s.provider}:${s.model}`;
           const existing = map.get(key);
           if (existing) {
             existing.totalRequests += s.totalRequests;
-            existing.totalInputTokens += (s as { totalInputTokens?: number }).totalInputTokens || 0;
-            existing.totalOutputTokens += (s as { totalOutputTokens?: number }).totalOutputTokens || 0;
+            existing.totalInputTokens +=
+              (s as { totalInputTokens?: number }).totalInputTokens || 0;
+            existing.totalOutputTokens +=
+              (s as { totalOutputTokens?: number }).totalOutputTokens || 0;
           } else {
             map.set(key, {
               totalRequests: s.totalRequests,
-              totalInputTokens: (s as { totalInputTokens?: number }).totalInputTokens || 0,
-              totalOutputTokens: (s as { totalOutputTokens?: number }).totalOutputTokens || 0,
+              totalInputTokens:
+                (s as { totalInputTokens?: number }).totalInputTokens || 0,
+              totalOutputTokens:
+                (s as { totalOutputTokens?: number }).totalOutputTokens || 0,
             });
           }
         }
@@ -336,7 +358,7 @@ export default function ModelPickerPopoverComponent({
     (rawModel: ExtendedModelOption) => {
       if (multiSelect) {
         // Multi-select: toggle selection, keep popover open
-        (onSelectModel as ((model: ExtendedModelOption) => void))?.(rawModel);
+        (onSelectModel as (model: ExtendedModelOption) => void)?.(rawModel);
         return;
       }
 
@@ -350,7 +372,7 @@ export default function ModelPickerPopoverComponent({
         provider === settings?.provider &&
         name === settings?.model
       ) {
-        (onSelectModel as ((provider: string, model: string) => void))?.("" , "");
+        (onSelectModel as (provider: string, model: string) => void)?.("", "");
         setOpen(false);
         setHighlightIndex(-1);
         document.dispatchEvent(new CustomEvent("panel:dismiss-sidebars"));
@@ -366,7 +388,10 @@ export default function ModelPickerPopoverComponent({
         return;
       }
 
-      (onSelectModel as ((provider: string, model: string) => void))?.(provider, name);
+      (onSelectModel as (provider: string, model: string) => void)?.(
+        provider,
+        name,
+      );
       setOpen(false);
       setHighlightIndex(-1);
       document.dispatchEvent(new CustomEvent("panel:dismiss-sidebars"));
@@ -552,7 +577,8 @@ export default function ModelPickerPopoverComponent({
       onMouseEnter={
         disabled
           ? undefined
-          : (e: React.MouseEvent) => SoundService.playHoverButton({ event: e.nativeEvent })
+          : (e: React.MouseEvent) =>
+              SoundService.playHoverButton({ event: e.nativeEvent })
       }
       onClick={
         disabled
@@ -564,11 +590,7 @@ export default function ModelPickerPopoverComponent({
       }
       data-model-picker-trigger
       title={
-        disabled
-          ? displayLabel
-          : multiSelect
-            ? "Select models"
-            : "Switch model"
+        disabled ? displayLabel : multiSelect ? "Select models" : "Switch model"
       }
       style={disabled ? { cursor: "default" } : undefined}
     >
@@ -616,7 +638,9 @@ export default function ModelPickerPopoverComponent({
   const triggerContent = (
     <>
       {/* -- Trigger pill --------------------------- */}
-      <div className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}>
+      <div
+        className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}
+      >
         {buttonElement}
       </div>
 
@@ -637,7 +661,11 @@ export default function ModelPickerPopoverComponent({
                 className={styles.searchInput}
                 placeholder="Type to filter models…"
                 value={search}
-                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+                onChange={(
+                  e: React.ChangeEvent<
+                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                  >,
+                ) => {
                   setSearch(e.target.value);
                   setHighlightIndex(-1);
                 }}
@@ -663,7 +691,11 @@ export default function ModelPickerPopoverComponent({
                 showProviderFilter
                 favorites={favorites}
                 onToggleFavorite={onToggleFavorite}
-                renderActions={renderActions as unknown as ((row: RowData) => React.ReactNode) | undefined}
+                renderActions={
+                  renderActions as unknown as
+                    | ((row: RowData) => React.ReactNode)
+                    | undefined
+                }
                 activeRowKey={activeRowKey}
                 highlightedRowKey={
                   highlightIndex >= 0 && filteredModels[highlightIndex]
@@ -672,7 +704,11 @@ export default function ModelPickerPopoverComponent({
                 }
                 highlightedRowRef={highlightedRowRef}
                 selectedKeys={multiSelect ? selectedKeys : undefined}
-                onToggleSelect={multiSelect ? (onSelectModel as unknown as (model: RawModel) => void) : undefined}
+                onToggleSelect={
+                  multiSelect
+                    ? (onSelectModel as unknown as (model: RawModel) => void)
+                    : undefined
+                }
               />
             </div>
           </div>,
@@ -698,7 +734,10 @@ export default function ModelPickerPopoverComponent({
 
 // -- Helpers ------------------------------------------------------------
 
-function buildAllModels(config: PrismConfig | null, modelTypeFilter?: string): ExtendedModelOption[] {
+function buildAllModels(
+  config: PrismConfig | null,
+  modelTypeFilter?: string,
+): ExtendedModelOption[] {
   if (!config) return [];
   const seen = new Map<string, ExtendedModelOption>();
 
@@ -719,7 +758,9 @@ function buildAllModels(config: PrismConfig | null, modelTypeFilter?: string): E
           seen.set(id, {
             ...m,
             provider,
-            label: (m.label || m.name) + (suffix && !(m.label || m.name).endsWith(suffix) ? suffix : ""),
+            label:
+              (m.label || m.name) +
+              (suffix && !(m.label || m.name).endsWith(suffix) ? suffix : ""),
             organization: inferOrganization(m.name, provider),
           });
         }
@@ -731,11 +772,25 @@ function buildAllModels(config: PrismConfig | null, modelTypeFilter?: string): E
 
   // Apply modelType filter if specified
   if (modelTypeFilter) {
-    result = result.filter(
-      (m) =>
+    result = result.filter((m) => {
+      const lowerFilter = modelTypeFilter.toLowerCase();
+      if (lowerFilter === "tts") {
+        return (
+          m.label.endsWith(" (TTS)") ||
+          (m.name || "").toLowerCase().includes("tts")
+        );
+      }
+      if (lowerFilter === "transcription" || lowerFilter === "transcribe") {
+        return (
+          m.label.endsWith(" (Transcribe)") ||
+          (m.name || "").toLowerCase().includes("transcribe")
+        );
+      }
+      return (
         m.modelType === modelTypeFilter ||
-        (m.name || "").toLowerCase().includes(modelTypeFilter),
-    );
+        (m.name || "").toLowerCase().includes(lowerFilter)
+      );
+    });
   }
 
   return result;

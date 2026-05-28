@@ -29,7 +29,9 @@ const WorkflowService = {
   /**
    * Save or update a workflow.
    */
-  async saveWorkflow(workflow: Workflow & { id?: string }): Promise<Workflow & { id: string }> {
+  async saveWorkflow(
+    workflow: Workflow & { id?: string },
+  ): Promise<Workflow & { id: string }> {
     if (workflow.id) {
       // Update existing
       const { id, ...data } = workflow;

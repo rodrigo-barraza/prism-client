@@ -62,11 +62,17 @@ function drawBars(
 }
 
 /* -- Decode audio src into peaks + true duration -- */
-async function decodePeaks(src: string, numPeaks = 200): Promise<{ peaks: number[]; duration: number | null }> {
+async function decodePeaks(
+  src: string,
+  numPeaks = 200,
+): Promise<{ peaks: number[]; duration: number | null }> {
   try {
     const response = await fetch(src);
     const buffer = await response.arrayBuffer();
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
     const audioCtx = new AudioContextClass();
     const decoded = await audioCtx.decodeAudioData(buffer);
     await audioCtx.close();
@@ -202,8 +208,7 @@ export default function AudioPlayerRecorderComponent({
       return;
     }
     const tick = () => {
-      if (audioRef.current)
-        setCurrentTime(audioRef.current.currentTime);
+      if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
       playAnimRef.current = requestAnimationFrame(tick);
     };
     tick();
@@ -308,7 +313,10 @@ export default function AudioPlayerRecorderComponent({
       recPeaksRef.current = [];
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
       const audioCtx = new AudioContextClass();
       const source = audioCtx.createMediaStreamSource(stream);
       const analyser = audioCtx.createAnalyser();
@@ -326,7 +334,9 @@ export default function AudioPlayerRecorderComponent({
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const reader = new FileReader();
         reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
-          onRecordingComplete?.(readerEvent.target?.result as string | ArrayBuffer | null);
+          onRecordingComplete?.(
+            readerEvent.target?.result as string | ArrayBuffer | null,
+          );
         };
         reader.readAsDataURL(blob);
         stream.getTracks().forEach((t) => t.stop());
@@ -434,7 +444,9 @@ export default function AudioPlayerRecorderComponent({
               const audioDuration = e.currentTarget.duration;
               if (Number.isFinite(audioDuration)) setDuration(audioDuration);
             }}
-            onTimeUpdate={(e: React.SyntheticEvent<HTMLAudioElement>) => setCurrentTime(e.currentTarget.currentTime || 0)}
+            onTimeUpdate={(e: React.SyntheticEvent<HTMLAudioElement>) =>
+              setCurrentTime(e.currentTarget.currentTime || 0)
+            }
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onEnded={() => setIsPlaying(false)}
@@ -490,7 +502,9 @@ export default function AudioPlayerRecorderComponent({
             const audioDuration = e.currentTarget.duration;
             if (Number.isFinite(audioDuration)) setDuration(audioDuration);
           }}
-          onTimeUpdate={(e: React.SyntheticEvent<HTMLAudioElement>) => setCurrentTime(e.currentTarget.currentTime || 0)}
+          onTimeUpdate={(e: React.SyntheticEvent<HTMLAudioElement>) =>
+            setCurrentTime(e.currentTarget.currentTime || 0)
+          }
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onEnded={() => setIsPlaying(false)}

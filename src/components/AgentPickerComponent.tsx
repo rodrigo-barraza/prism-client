@@ -133,7 +133,8 @@ export default function AgentPickerComponent({
         setHighlightedIndex((previousIndex) => {
           const maximumIndex = agents.length - 1;
           if (maximumIndex < 0) return -1;
-          const nextIndex = previousIndex < maximumIndex ? previousIndex + 1 : 0;
+          const nextIndex =
+            previousIndex < maximumIndex ? previousIndex + 1 : 0;
           SoundService.playHover({});
           return nextIndex;
         });
@@ -145,7 +146,8 @@ export default function AgentPickerComponent({
         setHighlightedIndex((previousIndex) => {
           const maximumIndex = agents.length - 1;
           if (maximumIndex < 0) return -1;
-          const nextIndex = previousIndex > 0 ? previousIndex - 1 : maximumIndex;
+          const nextIndex =
+            previousIndex > 0 ? previousIndex - 1 : maximumIndex;
           SoundService.playHover({});
           return nextIndex;
         });
@@ -168,7 +170,14 @@ export default function AgentPickerComponent({
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isPopoverOpen, highlightedIndex, agents, addMode, handleSelect, handleAdd]);
+  }, [
+    isPopoverOpen,
+    highlightedIndex,
+    agents,
+    addMode,
+    handleSelect,
+    handleAdd,
+  ]);
 
   if (agents.length === 0) return null;
 
@@ -190,7 +199,9 @@ export default function AgentPickerComponent({
 
   const triggerContent = (
     <div style={{ position: "relative" }}>
-      <div className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}>
+      <div
+        className={`${styles.triggerWrap} ${disabled ? styles.triggerDisabled : ""}`}
+      >
         {addMode ? (
           /* -- Add-mode trigger pill -- */
           <button
@@ -223,7 +234,11 @@ export default function AgentPickerComponent({
                 disabled={disabled}
                 type="button"
               >
-                <BadgeComponent type="agent" agent={activeAgent} animation={!isPopoverOpen} />
+                <BadgeComponent
+                  type="agent"
+                  agent={activeAgent}
+                  animation={!isPopoverOpen}
+                />
                 <span className={styles.triggerLabel}>
                   {activeAgent?.name || activeAgentId}
                 </span>
@@ -263,7 +278,10 @@ export default function AgentPickerComponent({
 
       {isPopoverOpen && (
         <>
-          <div className={styles.backdrop} onClick={() => setIsPopoverOpen(false)} />
+          <div
+            className={styles.backdrop}
+            onClick={() => setIsPopoverOpen(false)}
+          />
           <div className={styles.popover} role="listbox">
             {agents.map((agent: any, agentIndex: number) => {
               const isActive = !addMode && agent.id === activeAgentId;
@@ -286,7 +304,9 @@ export default function AgentPickerComponent({
                     setHighlightedIndex(-1);
                   }}
                   onClick={(mouseEvent) => {
-                    SoundService.playClickButton({ event: mouseEvent.nativeEvent });
+                    SoundService.playClickButton({
+                      event: mouseEvent.nativeEvent,
+                    });
                     if (addMode) {
                       handleAdd(agent);
                     } else {
@@ -296,11 +316,17 @@ export default function AgentPickerComponent({
                   type="button"
                   style={
                     agent.color
-                      ? ({ "--agent-accent": agent.color } as React.CSSProperties)
+                      ? ({
+                          "--agent-accent": agent.color,
+                        } as React.CSSProperties)
                       : undefined
                   }
                 >
-                  <BadgeComponent type="agent" agent={agent} animation={shouldAnimate} />
+                  <BadgeComponent
+                    type="agent"
+                    agent={agent}
+                    animation={shouldAnimate}
+                  />
                   <div className={styles.agentInfo}>
                     <div className={styles.agentName}>{agent.name}</div>
                     <div className={styles.agentMeta}>

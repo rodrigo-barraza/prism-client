@@ -69,7 +69,11 @@ interface CoordinatorWorker {
   };
 }
 
-export default function CoordinatorPanel({ project: _project }: { project?: string }) {
+export default function CoordinatorPanel({
+  project: _project,
+}: {
+  project?: string;
+}) {
   // -- State -------------------------------------------------
   const [phase, setPhase] = useState("input"); // input | planning | plan | executing | review | merged
   const [task, setTask] = useState("");
@@ -79,10 +83,13 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
   const [toast, setToast] = useState<CoordinatorToast | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const showToast = useCallback((type: CoordinatorToast["type"], text: string) => {
-    setToast({ type, text });
-    setTimeout(() => setToast(null), TOAST_DURATION_MS);
-  }, []);
+  const showToast = useCallback(
+    (type: CoordinatorToast["type"], text: string) => {
+      setToast({ type, text });
+      setTimeout(() => setToast(null), TOAST_DURATION_MS);
+    },
+    [],
+  );
 
   // -- Plan --------------------------------------------------
   const handlePlan = useCallback(async () => {
@@ -102,9 +109,9 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
     setLoading(true);
 
     try {
-      const result = await PrismService._request("/coordinator/plan", {
+      const result = (await PrismService._request("/coordinator/plan", {
         body: { task, files },
-      }) as CoordinatorPlan;
+      })) as CoordinatorPlan;
 
       if (result.error) {
         showToast("error", result.error);
@@ -130,9 +137,9 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
     setLoading(true);
 
     try {
-      const result = await PrismService._request("/coordinator/execute", {
+      const result = (await PrismService._request("/coordinator/execute", {
         body: { plan },
-      }) as { error?: string; workers?: CoordinatorWorker[] };
+      })) as { error?: string; workers?: CoordinatorWorker[] };
 
       if (result.error) {
         showToast("error", result.error);
@@ -156,12 +163,12 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
 
     setLoading(true);
     try {
-      const result = await PrismService._request(
+      const result = (await PrismService._request(
         `/coordinator/approve-merge/${plan.taskId}`,
         {
           method: "POST",
         },
-      ) as { error?: string };
+      )) as { error?: string };
 
       if (result.error) {
         showToast("error", result.error);
@@ -182,12 +189,9 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
     if (!plan?.taskId) return;
 
     try {
-      await PrismService._request(
-        `/coordinator/abort/${plan.taskId}`,
-        {
-          method: "POST",
-        },
-      );
+      await PrismService._request(`/coordinator/abort/${plan.taskId}`, {
+        method: "POST",
+      });
       showToast("success", "Task aborted, worktrees cleaned up");
     } catch {
       // best-effort
@@ -211,7 +215,6 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
 
   return (
     <div className={styles.container}>
-
       {toast && (
         <div
           className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}
@@ -227,7 +230,11 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
             className={styles.taskTextarea}
             placeholder="Describe the refactoring task…"
             value={task}
-            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setTask(e.target.value)}
+            onChange={(
+              e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => setTask(e.target.value)}
             minRows={3}
             maxRows={10}
           />
@@ -235,7 +242,11 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
             className={styles.filesInput}
             placeholder="Target file paths (one per line)"
             value={filesInput}
-            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setFilesInput(e.target.value)}
+            onChange={(
+              e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => setFilesInput(e.target.value)}
             minRows={3}
             maxRows={8}
             spellCheck={false}
@@ -290,8 +301,7 @@ export default function CoordinatorPanel({ project: _project }: { project?: stri
               onClick={handleExecute}
               disabled={loading}
             >
-              <Play size={12} /> Execute ({plan.subTasks?.length}{" "}
-              workers)
+              <Play size={12} /> Execute ({plan.subTasks?.length} workers)
             </button>
             <button className={styles.rejectButton} onClick={handleReset}>
               Cancel

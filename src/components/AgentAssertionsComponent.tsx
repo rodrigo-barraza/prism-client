@@ -217,9 +217,13 @@ export default function AgentAssertionsComponent({
                       <FormGroupComponent label="Condition">
                         <select
                           value={a.operator || typeDef.operators[0].value}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                            updateAssertion(i, "operator", e.target.value)
-                          }
+                          onChange={(
+                            e: React.ChangeEvent<
+                              | HTMLInputElement
+                              | HTMLTextAreaElement
+                              | HTMLSelectElement
+                            >,
+                          ) => updateAssertion(i, "operator", e.target.value)}
                         >
                           {typeDef.operators.map((op: any) => (
                             <option key={op.value} value={op.value}>
@@ -233,9 +237,13 @@ export default function AgentAssertionsComponent({
                           type="number"
                           min="0"
                           value={a.operand ?? ""}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-                            updateAssertion(i, "operand", e.target.value)
-                          }
+                          onChange={(
+                            e: React.ChangeEvent<
+                              | HTMLInputElement
+                              | HTMLTextAreaElement
+                              | HTMLSelectElement
+                            >,
+                          ) => updateAssertion(i, "operand", e.target.value)}
                           placeholder={typeDef.placeholder}
                         />
                       </FormGroupComponent>

@@ -39,7 +39,17 @@ import { useAdminHeader } from "./AdminHeaderContextComponent";
 import { formatNumber } from "../utils/utilities";
 import useSessionStats from "../hooks/useSessionStats";
 import { PROJECT_AGENT } from "../constants";
-import type { PrismConfig, Message, Conversation, CustomTool, ToolSchema, Skill, MCPServer, SessionStats, ModelOption } from "../types/types";
+import type {
+  PrismConfig,
+  Message,
+  Conversation,
+  CustomTool,
+  ToolSchema,
+  Skill,
+  MCPServer,
+  SessionStats,
+  ModelOption,
+} from "../types/types";
 import { getErrorMessage } from "../utils/errorMessage";
 import chatStyles from "./ChatAreaComponent.module.css";
 import styles from "./AdminAgentViewerComponent.module.css";
@@ -76,7 +86,8 @@ export default function AdminAgentViewerComponent() {
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
   const [tasksCount, setTasksCount] = useState(0);
-  const [backendSessionStats, setBackendSessionStats] = useState<SessionStats | null>(null);
+  const [backendSessionStats, setBackendSessionStats] =
+    useState<SessionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(true);
@@ -128,7 +139,10 @@ export default function AdminAgentViewerComponent() {
       setSessions((data.data as Conversation[]) || []);
       setTotal(data.total || 0);
     } catch (error: unknown) {
-      console.error("Failed to load admin agent sessions:", getErrorMessage(error));
+      console.error(
+        "Failed to load admin agent sessions:",
+        getErrorMessage(error),
+      );
     } finally {
       setLoading(false);
     }
@@ -180,9 +194,7 @@ export default function AdminAgentViewerComponent() {
     const filteredTextModels: Record<string, ModelOption[]> = {};
 
     for (const [provider, models] of Object.entries(textModelsMap)) {
-      const fcModels = models.filter((m) =>
-        m.tools?.includes("Tool Calling"),
-      );
+      const fcModels = models.filter((m) => m.tools?.includes("Tool Calling"));
       if (fcModels.length > 0) filteredTextModels[provider] = fcModels;
     }
 
@@ -242,13 +254,18 @@ export default function AdminAgentViewerComponent() {
           .reverse()
           .find((m) => m.role === "assistant" && m.provider);
         if (lastAssistant) {
-          const gs = (lastAssistant.generationSettings || {}) as Record<string, unknown>;
+          const gs = (lastAssistant.generationSettings || {}) as Record<
+            string,
+            unknown
+          >;
           setSettings((prev) => {
             const next = { ...prev };
             if (lastAssistant.provider) next.provider = lastAssistant.provider;
             if (lastAssistant.model) next.model = lastAssistant.model;
-            if (gs.temperature !== undefined) next.temperature = gs.temperature as number;
-            if (gs.maxTokens !== undefined) next.maxTokens = gs.maxTokens as number;
+            if (gs.temperature !== undefined)
+              next.temperature = gs.temperature as number;
+            if (gs.maxTokens !== undefined)
+              next.maxTokens = gs.maxTokens as number;
             return next;
           });
         }
@@ -265,7 +282,9 @@ export default function AdminAgentViewerComponent() {
 
         // Fetch workers count
         PrismService.getCoordinatorWorkers(cId)
-          .then((r: { workers?: unknown[] }) => setWorkersCount((r.workers || []).length))
+          .then((r: { workers?: unknown[] }) =>
+            setWorkersCount((r.workers || []).length),
+          )
           .catch(() => {});
       } catch (error: unknown) {
         console.error("Failed to load agent session:", getErrorMessage(error));
@@ -293,7 +312,11 @@ export default function AdminAgentViewerComponent() {
             icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
             tooltip: "Settings",
           },
-          { key: "info", icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>, tooltip: "Info" },
+          {
+            key: "info",
+            icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
+            tooltip: "Info",
+          },
           {
             key: "tools",
             icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
@@ -368,13 +391,14 @@ export default function AdminAgentViewerComponent() {
                         total: backendSessionStats.totalTokens || 0,
                       }
                     : totalTokens,
-                  totalCost:
-                    backendSessionStats?.totalCost ?? totalCost,
+                  totalCost: backendSessionStats?.totalCost ?? totalCost,
                   originalTotalCost: 0,
                   usedTools,
                   modalities: (backendSessionStats?.modalities
                     ? Object.fromEntries(
-                        Object.entries(backendSessionStats.modalities).map(([k, v]) => [k, Boolean(v)])
+                        Object.entries(backendSessionStats.modalities).map(
+                          ([k, v]) => [k, Boolean(v)],
+                        ),
                       )
                     : modalities) as Record<string, boolean>,
                   completedElapsedTime:
@@ -387,10 +411,7 @@ export default function AdminAgentViewerComponent() {
       )}
 
       {leftTab === "info" && (
-        <ModelInfoPanel
-          config={filteredConfig}
-          settings={settings}
-        />
+        <ModelInfoPanel config={filteredConfig} settings={settings} />
       )}
 
       {leftTab === "tools" && (

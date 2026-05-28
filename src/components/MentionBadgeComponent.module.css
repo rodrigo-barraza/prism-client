@@ -11,9 +11,17 @@
   gap: 3px;
   padding: 1px 7px 1px 5px;
   margin: 0 1px;
-  background: color-mix(in srgb, var(--accent-primary) 10%, var(--background-elevated));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 10%,
+    var(--background-elevated)
+  );
   border: 1px solid
-    color-mix(in srgb, var(--accent-primary) 25%, var(--calculated-border-color));
+    color-mix(
+      in srgb,
+      var(--accent-primary) 25%,
+      var(--calculated-border-color)
+    );
   border-radius: var(--radius-full, 999px);
   font-size: var(--font-size-sm);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
@@ -31,7 +39,11 @@
 }
 
 .mentionBadge:hover {
-  background: color-mix(in srgb, var(--accent-primary) 16%, var(--background-elevated));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 16%,
+    var(--background-elevated)
+  );
   border-color: color-mix(
     in srgb,
     var(--accent-primary) 40%,
@@ -82,9 +94,14 @@
 }
 
 .mentionBadgeClickable:hover {
-  background: color-mix(in srgb, var(--accent-primary) 22%, var(--background-elevated));
+  background: color-mix(
+    in srgb,
+    var(--accent-primary) 22%,
+    var(--background-elevated)
+  );
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  box-shadow: 0 0 0 1px
+    color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
 .mentionBadgeClickable:active {
@@ -98,14 +115,30 @@
   filter: grayscale(1);
   border-style: dashed;
   color: var(--text-muted);
-  background: color-mix(in srgb, var(--text-muted) 6%, var(--background-elevated));
-  border-color: color-mix(in srgb, var(--text-muted) 20%, var(--calculated-border-color));
+  background: color-mix(
+    in srgb,
+    var(--text-muted) 6%,
+    var(--background-elevated)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--text-muted) 20%,
+    var(--calculated-border-color)
+  );
 }
 
 .mentionBadgeStale:hover {
   opacity: 0.6;
-  background: color-mix(in srgb, var(--text-muted) 10%, var(--background-elevated));
-  border-color: color-mix(in srgb, var(--text-muted) 30%, var(--calculated-border-color));
+  background: color-mix(
+    in srgb,
+    var(--text-muted) 10%,
+    var(--background-elevated)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--text-muted) 30%,
+    var(--calculated-border-color)
+  );
 }
 
 /* Tooltip suffix for stale badges */

@@ -4,7 +4,11 @@
   gap: 14px;
   padding: 14px 18px;
   border-radius: var(--border-radius-sm);
-  background: color-mix(in srgb, var(--tool-color) 6%, var(--background-surface));
+  background: color-mix(
+    in srgb,
+    var(--tool-color) 6%,
+    var(--background-surface)
+  );
   border: 1px solid color-mix(in srgb, var(--tool-color) 18%, transparent);
   border-left: 3px solid var(--tool-color);
   transition:
@@ -17,7 +21,11 @@
   user-select: none;
 
   &:hover {
-    background: color-mix(in srgb, var(--tool-color) 10%, var(--background-surface));
+    background: color-mix(
+      in srgb,
+      var(--tool-color) 10%,
+      var(--background-surface)
+    );
     border-color: color-mix(in srgb, var(--tool-color) 30%, transparent);
     border-left-color: var(--tool-color);
     transform: translateY(-1px);
@@ -85,7 +93,11 @@
   &:hover {
     transform: none;
     box-shadow: none;
-    background: color-mix(in srgb, var(--tool-color) 6%, var(--background-surface));
+    background: color-mix(
+      in srgb,
+      var(--tool-color) 6%,
+      var(--background-surface)
+    );
     border-color: color-mix(in srgb, var(--tool-color) 18%, transparent);
   }
 }

@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { FolderOpen, MessageSquare, GitBranch } from "lucide-react";
 import { LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
 import { useRouter } from "next/navigation";
-import IrisService, { type IrisRequestEntry } from "../../../services/IrisService";
+import IrisService, {
+  type IrisRequestEntry,
+} from "../../../services/IrisService";
 import { type TransformedRequestItem } from "../../../types/types";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import {
@@ -79,8 +81,11 @@ export default function TracesPage() {
   const fetchGenRef = useRef<number>(0);
 
   // Request detail drawer state
-  const [selectedRequest, setSelectedRequest] = useState<IrisRequestEntry | null>(null);
-  const [associations, setAssociations] = useState<TraceAssociations | null>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<IrisRequestEntry | null>(null);
+  const [associations, setAssociations] = useState<TraceAssociations | null>(
+    null,
+  );
   const [loadingAssociations, setLoadingAssociations] = useState(false);
 
   const dateParams = useMemo(
@@ -165,7 +170,8 @@ export default function TracesPage() {
     }
     let cancelled = false;
     setLoadingAssociations(true);
-    const reqId: string = selectedRequest.requestId || selectedRequest._id || "";
+    const reqId: string =
+      selectedRequest.requestId || selectedRequest._id || "";
     IrisService.getRequestAssociations(reqId)
       .then((data) => {
         if (!cancelled) setAssociations(data as unknown as TraceAssociations);
@@ -261,7 +267,9 @@ export default function TracesPage() {
           setOrder(dir);
           setPage(1);
         }}
-        onRequestRowClick={(req: Record<string, unknown>) => handleRequestRowClick(req as unknown as IrisRequestEntry)}
+        onRequestRowClick={(req: Record<string, unknown>) =>
+          handleRequestRowClick(req as unknown as IrisRequestEntry)
+        }
       />
 
       {/* Pagination */}
@@ -278,7 +286,9 @@ export default function TracesPage() {
         open={!!selectedRequest}
         onClose={() => setSelectedRequest(null)}
         title="Request Detail"
-        sections={buildRequestDetailSections(selectedRequest as TransformedRequestItem)}
+        sections={buildRequestDetailSections(
+          selectedRequest as TransformedRequestItem,
+        )}
       >
         {selectedRequest && (
           <>
@@ -294,38 +304,39 @@ export default function TracesPage() {
                     </span>
                     {(associations?.conversations?.length ?? 0) > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.conversations?.map((c: TraceConversation) => (
-                          <HistoryItemComponent
-                            key={c.id}
-                            item={{
-                              id: c.id,
-                              title: c.title || "Untitled",
-                              tags: c.project
-                                ? [
-                                    {
-                                      label: c.project,
-                                      style: {
-                                        background: "var(--accent-primary-subtle)",
-                                        color: "var(--accent-primary)",
+                        {associations?.conversations?.map(
+                          (c: TraceConversation) => (
+                            <HistoryItemComponent
+                              key={c.id}
+                              item={{
+                                id: c.id,
+                                title: c.title || "Untitled",
+                                tags: c.project
+                                  ? [
+                                      {
+                                        label: c.project,
+                                        style: {
+                                          background:
+                                            "var(--accent-primary-subtle)",
+                                          color: "var(--accent-primary)",
+                                        },
                                       },
-                                    },
-                                  ]
-                                : [],
-                              updatedAt: c.updatedAt || c.createdAt,
-                              createdAt: c.createdAt,
-                              totalCost: c.totalCost || 0,
-                              modalities: c.modalities || {},
-                              modelName: c.model || null,
-                              username: c.username,
-                              agent: c.agent,
-                            }}
-                            icon={MessageSquare}
-                            admin
-                            onClick={() =>
-                              router.push(`/admin/chat/${c.id}`)
-                            }
-                          />
-                        ))}
+                                    ]
+                                  : [],
+                                updatedAt: c.updatedAt || c.createdAt,
+                                createdAt: c.createdAt,
+                                totalCost: c.totalCost || 0,
+                                modalities: c.modalities || {},
+                                modelName: c.model || null,
+                                username: c.username,
+                                agent: c.agent,
+                              }}
+                              icon={MessageSquare}
+                              admin
+                              onClick={() => router.push(`/admin/chat/${c.id}`)}
+                            />
+                          ),
+                        )}
                       </div>
                     ) : (
                       <span className={styles.associationEmpty}>—</span>
@@ -376,7 +387,10 @@ export default function TracesPage() {
                             key={s.id}
                             item={{
                               id: s.id,
-                              title: typeof s.id === "string" ? s.id.slice(0, 8) : String(s.id),
+                              title:
+                                typeof s.id === "string"
+                                  ? s.id.slice(0, 8)
+                                  : String(s.id),
                               tags: [
                                 {
                                   label: `${s.requestCount} request${s.requestCount !== 1 ? "s" : ""}`,
@@ -401,7 +415,9 @@ export default function TracesPage() {
               )}
             </div>
             {(() => {
-              const mediaAssets = extractMediaAssets(selectedRequest as TransformedRequestItem);
+              const mediaAssets = extractMediaAssets(
+                selectedRequest as TransformedRequestItem,
+              );
               if (!mediaAssets.length) return null;
               return (
                 <div className={styles.detailSection}>
@@ -410,11 +426,20 @@ export default function TracesPage() {
                     {mediaAssets.map((asset, index: number) => (
                       <MediaCardComponent
                         key={index}
-                        media={{
-                          url: String(asset.url || ""),
-                          mediaType: getMediaTypeFromRef(String(asset.url || "")),
-                          origin: String(asset.origin || ""),
-                        } as { url: string; mediaType: string; origin: string; convId: string }}
+                        media={
+                          {
+                            url: String(asset.url || ""),
+                            mediaType: getMediaTypeFromRef(
+                              String(asset.url || ""),
+                            ),
+                            origin: String(asset.origin || ""),
+                          } as {
+                            url: string;
+                            mediaType: string;
+                            origin: string;
+                            convId: string;
+                          }
+                        }
                         compact
                         showInfo={false}
                         showOrigin
@@ -425,7 +450,9 @@ export default function TracesPage() {
               );
             })()}
             {(() => {
-              const chat = reconstructChatMessages(selectedRequest as TransformedRequestItem);
+              const chat = reconstructChatMessages(
+                selectedRequest as TransformedRequestItem,
+              );
               if (!chat) return null;
               return (
                 <div className={styles.detailSection}>

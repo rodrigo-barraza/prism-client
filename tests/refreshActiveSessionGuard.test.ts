@@ -70,9 +70,7 @@ describe("refreshActiveSession guard — generation source distinction", () => {
   const GENERATING_SESSION: SessionDocument = {
     id: SESSION_ID,
     isGenerating: true,
-    messages: [
-      { role: "user", content: "⏰ Reminder fired: check build" },
-    ],
+    messages: [{ role: "user", content: "⏰ Reminder fired: check build" }],
   };
 
   it("should SKIP refresh when generation is client-driven (active SSE)", async () => {

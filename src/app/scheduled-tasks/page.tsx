@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 
 import {
+  ArrowUpDown,
   Clock,
   Plus,
   Search,
@@ -17,6 +18,7 @@ import {
   Copy,
   LayoutGrid,
   List,
+  CalendarDays,
 } from "lucide-react";
 import PrismService from "../../services/PrismService";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
@@ -30,11 +32,13 @@ import {
   ButtonComponent,
   TableComponent,
   BadgeComponent,
+  MultiSelectComponent,
 } from "@rodrigo-barraza/components-library";
 import { AgentPersona, PrismConfig } from "../../types/types";
 import AgentPickerComponent from "../../components/AgentPickerComponent";
 import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComponent";
 import { ViewModeToggleComponent } from "../../components/FilterBarComponent";
+import ScheduledTaskCalendarComponent from "../../components/ScheduledTaskCalendarComponent";
 import styles from "./page.module.css";
 
 interface Workspace {
@@ -84,7 +88,8 @@ interface Toast {
 const NONE_AGENT = {
   id: "NONE",
   name: "Agentless",
-  description: "A straightforward conversation with the AI — no automated workflows, just you and the model.",
+  description:
+    "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
   toolCount: -1,
   custom: false,
@@ -93,8 +98,6 @@ const NONE_AGENT = {
 };
 
 export default function ScheduledTasksPage() {
-
-
   // Data state
   const [tasks, setTasks] = useState<Task[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -103,7 +106,7 @@ export default function ScheduledTasksPage() {
   const [providers, setProviders] = useState<string[]>([]);
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
-  
+
   // UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -113,6 +116,7 @@ export default function ScheduledTasksPage() {
   const [triggeringId, setTriggeringId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [viewMode, setViewMode] = useState("card");
+  const [activeSortKeys, setActiveSortKeys] = useState<string[]>(["createdAt"]);
 
   // New task form state
   const [formName, setFormName] = useState("");
@@ -121,7 +125,9 @@ export default function ScheduledTasksPage() {
   const [formAgent, setFormAgent] = useState("CODING");
   const [formProvider, setFormProvider] = useState("");
   const [formModel, setFormModel] = useState("");
-  const [formScheduleType, setFormScheduleType] = useState<"hourly" | "daily" | "weekly" | "cron" | "trigger" | "once">("daily");
+  const [formScheduleType, setFormScheduleType] = useState<
+    "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once"
+  >("daily");
   const [formTimeHour, setFormTimeHour] = useState("09");
   const [formTimeMinute, setFormTimeMinute] = useState("00");
   const [formTimeAmpm, setFormTimeAmpm] = useState("AM");
@@ -134,13 +140,16 @@ export default function ScheduledTasksPage() {
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   // -- Show Toast Helper --
-  const showToast = useCallback((message: string, type: Toast["type"] = "success") => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
-  }, []);
+  const showToast = useCallback(
+    (message: string, type: Toast["type"] = "success") => {
+      const id = Math.random().toString(36).substring(2, 9);
+      setToasts((prev) => [...prev, { id, message, type }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4000);
+    },
+    [],
+  );
 
   // -- Fetch all data --
   const loadData = useCallback(async () => {
@@ -151,7 +160,10 @@ export default function ScheduledTasksPage() {
       setTasks(fetchedTasks as Task[]);
 
       // 2. Fetch workspaces
-      const fetchedWorkspaces = await PrismService._request<Workspace[]>("/workspaces", { method: "GET" });
+      const fetchedWorkspaces = await PrismService._request<Workspace[]>(
+        "/workspaces",
+        { method: "GET" },
+      );
       setWorkspaces(fetchedWorkspaces);
       if (fetchedWorkspaces.length > 0) {
         setFormProject(fetchedWorkspaces[0].name);
@@ -165,12 +177,14 @@ export default function ScheduledTasksPage() {
       const config = await PrismService.getConfig();
       setConfig(config);
       const textModelsMap = config.textToText?.models || {};
-      
+
       // Filter models: show all for direct, or only tool calling models
       const cleanModelsMap: Record<string, Model[]> = {};
       const activeProviders: string[] = [];
 
-      for (const [provider, modelOpts] of Object.entries(textModelsMap as Record<string, any[]>)) {
+      for (const [provider, modelOpts] of Object.entries(
+        textModelsMap as Record<string, any[]>,
+      )) {
         if (modelOpts.length > 0) {
           cleanModelsMap[provider] = modelOpts.map((m) => ({
             name: m.name,
@@ -198,7 +212,6 @@ export default function ScheduledTasksPage() {
       } catch (err) {
         console.error("Failed to load favorite models", err);
       }
-
     } catch (err: unknown) {
       console.error(err);
       showToast("Failed to load initial data", "error");
@@ -233,16 +246,24 @@ export default function ScheduledTasksPage() {
         } catch {}
       }
     },
-    [favoriteKeys]
+    [favoriteKeys],
   );
 
   // -- Handle task toggle enablement --
   const handleToggleTask = async (task: Task) => {
     const nextVal = !task.enabled;
     try {
-      const updated = await PrismService.updateScheduledTask(task.id, { enabled: nextVal });
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, enabled: updated.enabled } : t)));
-      showToast(`Task "${task.name}" is now ${nextVal ? "enabled" : "disabled"}`);
+      const updated = await PrismService.updateScheduledTask(task.id, {
+        enabled: nextVal,
+      });
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === task.id ? { ...t, enabled: updated.enabled } : t,
+        ),
+      );
+      showToast(
+        `Task "${task.name}" is now ${nextVal ? "enabled" : "disabled"}`,
+      );
     } catch (err) {
       console.error(err);
       showToast("Failed to toggle task state", "error");
@@ -254,8 +275,10 @@ export default function ScheduledTasksPage() {
     setActiveMenuId(null);
     setTriggeringId(task.id);
     try {
-      const res = await PrismService.triggerScheduledTask(task.id);
-      showToast(`Task successfully triggered. Session ID: ${res.agentSessionId.slice(0, 8)}…`);
+      const triggerResponse = await PrismService.triggerScheduledTask(task.id);
+      showToast(
+        `Task successfully triggered. Session ID: ${triggerResponse.agentSessionId.slice(0, 8)}…`,
+      );
     } catch (err: any) {
       console.error(err);
       showToast(err.message || "Failed to trigger task", "error");
@@ -289,7 +312,11 @@ export default function ScheduledTasksPage() {
 
     // Calculate time format
     let scheduleTime = "";
-    if (formScheduleType === "daily" || formScheduleType === "weekly" || formScheduleType === "once") {
+    if (
+      formScheduleType === "daily" ||
+      formScheduleType === "weekly" ||
+      formScheduleType === "once"
+    ) {
       let h = parseInt(formTimeHour, 10);
       if (formTimeAmpm === "PM" && h < 12) h += 12;
       if (formTimeAmpm === "AM" && h === 12) h = 0;
@@ -307,7 +334,8 @@ export default function ScheduledTasksPage() {
         scheduleTime: scheduleTime || undefined,
         scheduleDay: formScheduleType === "weekly" ? formWeeklyDay : undefined,
         scheduleDate: formScheduleType === "once" ? formOnceDate : undefined,
-        cronExpression: formScheduleType === "cron" ? formCron.trim() : undefined,
+        cronExpression:
+          formScheduleType === "cron" ? formCron.trim() : undefined,
       });
 
       setTasks((prev) => [created, ...prev]);
@@ -328,7 +356,7 @@ export default function ScheduledTasksPage() {
   // -- Format schedule text --
   const formatScheduleText = (task: Task) => {
     if (task.scheduleType === "hourly") return "Hourly";
-    
+
     const formatTime = (timeValue?: string) => {
       if (!timeValue) return "";
       const [h, m] = timeValue.split(":").map(Number);
@@ -343,7 +371,15 @@ export default function ScheduledTasksPage() {
     }
 
     if (task.scheduleType === "weekly") {
-      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
       const dayName = days[task.scheduleDay ?? 1] || "Monday";
       return `Weekly on ${dayName} around ${formatTime(task.scheduleTime)}`;
     }
@@ -366,596 +402,769 @@ export default function ScheduledTasksPage() {
   // -- Copy config to clipboard --
   const handleCopyConfig = (task: Task) => {
     setActiveMenuId(null);
-    const configString = JSON.stringify({
-      id: task.id,
-      name: task.name,
-      prompt: task.prompt,
-      agent: task.agent,
-      schedule: formatScheduleText(task),
-      provider: task.provider,
-      model: task.model,
-    }, null, 2);
+    const configString = JSON.stringify(
+      {
+        id: task.id,
+        name: task.name,
+        prompt: task.prompt,
+        agent: task.agent,
+        schedule: formatScheduleText(task),
+        provider: task.provider,
+        model: task.model,
+      },
+      null,
+      2,
+    );
 
-    navigator.clipboard.writeText(configString).then(() => {
-      showToast("Task configuration copied to clipboard");
-    }).catch(() => {
-      showToast("Failed to copy configuration", "error");
-    });
+    navigator.clipboard
+      .writeText(configString)
+      .then(() => {
+        showToast("Task configuration copied to clipboard");
+      })
+      .catch(() => {
+        showToast("Failed to copy configuration", "error");
+      });
   };
 
-  // -- Filtered tasks based on search query --
+  // -- Sort options for MultiSelectComponent --
+  const sortOptions = useMemo(
+    () => [
+      { value: "name", label: "Name" },
+      { value: "scheduleType", label: "Schedule Type" },
+      { value: "agent", label: "Agent" },
+      { value: "model", label: "Model" },
+      { value: "enabled", label: "Status" },
+      { value: "createdAt", label: "Created Date" },
+    ],
+    [],
+  );
+
+  // -- Filtered and sorted tasks --
   const filteredTasks = useMemo(() => {
-    return tasks.filter((t) => {
+    const filtered = tasks.filter((task) => {
       const normalizedSearch = searchQuery.toLowerCase();
       return (
-        t.name.toLowerCase().includes(normalizedSearch) ||
-        t.prompt.toLowerCase().includes(normalizedSearch) ||
-        t.model.toLowerCase().includes(normalizedSearch)
+        task.name.toLowerCase().includes(normalizedSearch) ||
+        task.prompt.toLowerCase().includes(normalizedSearch) ||
+        task.model.toLowerCase().includes(normalizedSearch)
       );
     });
-  }, [tasks, searchQuery]);
+
+    if (activeSortKeys.length === 0) return filtered;
+
+    return [...filtered].sort((taskA, taskB) => {
+      for (const sortKey of activeSortKeys) {
+        let comparison = 0;
+
+        switch (sortKey) {
+          case "name":
+            comparison = taskA.name.localeCompare(taskB.name);
+            break;
+          case "scheduleType":
+            comparison = taskA.scheduleType.localeCompare(taskB.scheduleType);
+            break;
+          case "agent": {
+            const agentNameA = taskA.agent || "";
+            const agentNameB = taskB.agent || "";
+            comparison = agentNameA.localeCompare(agentNameB);
+            break;
+          }
+          case "model":
+            comparison = taskA.model.localeCompare(taskB.model);
+            break;
+          case "enabled":
+            comparison = (taskB.enabled ? 1 : 0) - (taskA.enabled ? 1 : 0);
+            break;
+          case "createdAt":
+            comparison =
+              new Date(taskB.createdAt).getTime() -
+              new Date(taskA.createdAt).getTime();
+            break;
+        }
+
+        if (comparison !== 0) return comparison;
+      }
+      return 0;
+    });
+  }, [tasks, searchQuery, activeSortKeys]);
 
   return (
     <div className="page-wrapper">
       <NavigationSidebarComponent mode="user" />
-      
+
       <div className={styles["layout-page-column"]}>
         <LayoutHeaderComponent />
         <div className={styles["page-content-area"]}>
-        <div className={styles.content}>
-        {/* Sleek toast list */}
-        <div className={styles.toastContainer}>
-          {toasts.map((toast) => (
-            <div key={toast.id} className={`${styles.toast} ${styles[toast.type]}`}>
-              <Check size={14} className={styles.toastIcon} />
-              <span>{toast.message}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Header */}
-        <header className={styles.header}>
-          <div className={styles.headerTitleRow}>
-            <Clock className={styles.headerIcon} />
-            <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
-            <span className={styles.badge}>{filteredTasks.length} total</span>
-          </div>
-
-          <div className={styles.headerActions}>
-            <div className={styles.searchWrapper}>
-              <Search size={14} className={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Search tasks…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={styles.searchInput}
-              />
+          <div className={styles.content}>
+            {/* Sleek toast list */}
+            <div className={styles.toastContainer}>
+              {toasts.map((toast) => (
+                <div
+                  key={toast.id}
+                  className={`${styles.toast} ${styles[toast.type]}`}
+                >
+                  <Check size={14} className={styles.toastIcon} />
+                  <span>{toast.message}</span>
+                </div>
+              ))}
             </div>
 
-            <ViewModeToggleComponent
-              mode={viewMode}
-              onChange={setViewMode}
-              modes={[
-                { key: "card", icon: LayoutGrid, title: "Card view" },
-                { key: "table", icon: List, title: "Table view" },
-              ]}
-            />
+            {/* Header */}
+            <header className={styles.header}>
+              <div className={styles.headerTitleRow}>
+                <Clock className={styles.headerIcon} />
+                <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
+                <span className={styles.badge}>
+                  {filteredTasks.length} total
+                </span>
+              </div>
 
-            <button
-              onClick={() => setShowNewModal(true)}
-              className={styles.newButton}
-              title="Create Agentic Cron"
-            >
-              <Plus size={16} />
-              <span>New</span>
-            </button>
-          </div>
-        </header>
+              <div className={styles.headerActions}>
+                <div className={styles.searchWrapper}>
+                  <Search size={14} className={styles.searchIcon} />
+                  <input
+                    type="text"
+                    placeholder="Search tasks…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={styles.searchInput}
+                  />
+                </div>
 
-        {/* Task Content */}
-        <div>
-          {loading ? (
-            <div className={styles.loadingState}>
-              <Loader2 size={32} className={styles.spin} />
-              <p>Loading Scheduled Tasks…</p>
-            </div>
-          ) : filteredTasks.length === 0 ? (
-            <div className={styles.emptyState}>
-              <Clock size={48} className={styles.emptyIcon} />
-              <h2>No Scheduled Tasks found</h2>
-              <p>Create a background agent automation task to get started.</p>
-              <button
-                onClick={() => setShowNewModal(true)}
-                className={styles.emptyButton}
-              >
-                Create your first task
-              </button>
-            </div>
-          ) : viewMode === "table" ? (
-            /* ── Table View ── */
-            <TableComponent
-              columns={[
-                {
-                  key: "name",
-                  label: "Name",
-                  render: (row: any) => (
-                    <span className={styles.tableNameCell}>{row.name}</span>
-                  ),
-                },
-                {
-                  key: "schedule",
-                  label: "Schedule",
-                  sortable: false,
-                  render: (row: any) => (
-                    <span className={styles.tableScheduleCell}>{formatScheduleText(row)}</span>
-                  ),
-                },
-                {
-                  key: "agent",
-                  label: "Agent",
-                  sortable: false,
-                  render: (row: any) => {
-                    const taskAgent = agents.find((a) => a.id === row.agent);
-                    return (
-                      <BadgeComponent variant="info" mini>
-                        <Bot size={10} />
-                        {taskAgent ? taskAgent.name : "Direct Chat"}
-                      </BadgeComponent>
-                    );
-                  },
-                },
-                {
-                  key: "model",
-                  label: "Model",
-                  render: (row: any) => (
-                    <BadgeComponent variant="provider" mini>
-                      <Sparkles size={10} />
-                      {row.model?.split("/").pop()}
-                    </BadgeComponent>
-                  ),
-                },
-                {
-                  key: "project",
-                  label: "Project",
-                  render: (row: any) => row.project
-                    ? <BadgeComponent variant="info" mini>{row.project}</BadgeComponent>
-                    : <span className={styles.tableDash}>—</span>,
-                },
-                {
-                  key: "enabled",
-                  label: "Status",
-                  sortValue: (row: any) => (row.enabled ? 1 : 0),
-                  render: (row: any) => (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleToggleTask(row); }}
-                      className={`${styles.toggleSwitch} ${styles.toggleSwitchSmall} ${row.enabled ? styles.toggleSwitchOn : ""}`}
-                      title={row.enabled ? "Disable task" : "Enable task"}
-                    >
-                      <span className={styles.toggleKnob} />
-                    </button>
-                  ),
-                },
-                {
-                  key: "createdAt",
-                  label: "Created",
-                  sortable: true,
-                  align: "right",
-                  render: (row: any) => row.createdAt
-                    ? <BadgeComponent type="dateTime" date={row.createdAt} />
-                    : <span className={styles.tableDash}>—</span>,
-                },
-                {
-                  key: "actions",
-                  label: "",
-                  sortable: false,
-                  align: "right",
-                  render: (row: any) => {
-                    const isMenuOpen = activeMenuId === row.id;
-                    const isTriggering = triggeringId === row.id;
-                    return (
-                      <div className={styles.tableActionsCell}>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleTriggerTask(row); }}
-                          className={styles.tableActionButton}
-                          disabled={isTriggering}
-                          title="Trigger task"
-                        >
-                          {isTriggering ? <Loader2 size={13} className={styles.spin} /> : <Play size={13} />}
-                        </button>
-                        <div className={styles.menuContainer}>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setActiveMenuId(isMenuOpen ? null : row.id); }}
-                            className={styles.menuButton}
-                            title="More Actions"
-                          >
-                            <MoreVertical size={14} />
-                          </button>
-                          {isMenuOpen && (
-                            <>
-                              <div className={styles.menuBackdrop} onClick={() => setActiveMenuId(null)} />
-                              <div className={styles.menuDropdown}>
-                                <button onClick={() => handleCopyConfig(row)}>
-                                  <Copy size={13} /><span>Copy Config</span>
-                                </button>
-                                <button
-                                  onClick={() => { setConfirmDeleteId(row.id); setActiveMenuId(null); }}
-                                  className={styles.deleteBtnText}
-                                >
-                                  <Trash2 size={13} /><span>Delete</span>
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  },
-                },
-              ]}
-              data={filteredTasks}
-              getRowKey={(t: any) => t.id}
-              emptyText="No Scheduled Tasks found"
-              storageKey="scheduled-tasks"
-            />
-          ) : (
-            /* ── Card View ── */
-            <div className={styles.grid}>
-              {filteredTasks.map((task) => {
-                const isMenuOpen = activeMenuId === task.id;
-                const isConfirming = confirmDeleteId === task.id;
-                const isTriggering = triggeringId === task.id;
-                const taskAgent = agents.find((a) => a.id === task.agent);
+                <MultiSelectComponent
+                  label="Sort"
+                  icon={<ArrowUpDown size={12} />}
+                  value={activeSortKeys}
+                  options={sortOptions}
+                  onChange={setActiveSortKeys}
+                  allLabel="Default"
+                  compact
+                />
 
-                return (
-                  <div
-                    key={task.id}
-                    className={`${styles.card} ${!task.enabled ? styles.disabledCard : ""}`}
+                <ViewModeToggleComponent
+                  mode={viewMode}
+                  onChange={setViewMode}
+                  modes={[
+                    { key: "card", icon: LayoutGrid, title: "Card view" },
+                    { key: "table", icon: List, title: "Table view" },
+                    {
+                      key: "calendar",
+                      icon: CalendarDays,
+                      title: "Calendar view",
+                    },
+                  ]}
+                />
+
+                <button
+                  onClick={() => setShowNewModal(true)}
+                  className={styles.newButton}
+                  title="Create Agentic Cron"
+                >
+                  <Plus size={16} />
+                  <span>New</span>
+                </button>
+              </div>
+            </header>
+
+            {/* Task Content */}
+            <div>
+              {loading ? (
+                <div className={styles.loadingState}>
+                  <Loader2 size={32} className={styles.spin} />
+                  <p>Loading Scheduled Tasks…</p>
+                </div>
+              ) : filteredTasks.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <Clock size={48} className={styles.emptyIcon} />
+                  <h2>No Scheduled Tasks found</h2>
+                  <p>
+                    Create a background agent automation task to get started.
+                  </p>
+                  <button
+                    onClick={() => setShowNewModal(true)}
+                    className={styles.emptyButton}
                   >
-                    <div className={styles.cardHeader}>
-                      <div className={styles.cardTitleInfo}>
-                        <h3 className={styles.cardTitle}>{task.name}</h3>
-                        <p className={styles.cardSchedule}>
-                          {formatScheduleText(task)}
-                        </p>
-                      </div>
-
-                      <div className={styles.cardActions}>
-                        {/* Custom sleek toggle switch */}
+                    Create your first task
+                  </button>
+                </div>
+              ) : viewMode === "calendar" ? (
+                /* ── Calendar View ── */
+                <ScheduledTaskCalendarComponent tasks={filteredTasks} />
+              ) : viewMode === "table" ? (
+                /* ── Table View ── */
+                <TableComponent
+                  columns={[
+                    {
+                      key: "name",
+                      label: "Name",
+                      render: (row: any) => (
+                        <span className={styles.tableNameCell}>{row.name}</span>
+                      ),
+                    },
+                    {
+                      key: "schedule",
+                      label: "Schedule",
+                      sortable: false,
+                      render: (row: any) => (
+                        <span className={styles.tableScheduleCell}>
+                          {formatScheduleText(row)}
+                        </span>
+                      ),
+                    },
+                    {
+                      key: "agent",
+                      label: "Agent",
+                      sortable: false,
+                      render: (row: any) => {
+                        const taskAgent = agents.find(
+                          (a) => a.id === row.agent,
+                        );
+                        return (
+                          <BadgeComponent variant="info" mini>
+                            <Bot size={10} />
+                            {taskAgent ? taskAgent.name : "Direct Chat"}
+                          </BadgeComponent>
+                        );
+                      },
+                    },
+                    {
+                      key: "model",
+                      label: "Model",
+                      render: (row: any) => (
+                        <BadgeComponent variant="provider" mini>
+                          <Sparkles size={10} />
+                          {row.model?.split("/").pop()}
+                        </BadgeComponent>
+                      ),
+                    },
+                    {
+                      key: "project",
+                      label: "Project",
+                      render: (row: any) =>
+                        row.project ? (
+                          <BadgeComponent variant="info" mini>
+                            {row.project}
+                          </BadgeComponent>
+                        ) : (
+                          <span className={styles.tableDash}>—</span>
+                        ),
+                    },
+                    {
+                      key: "enabled",
+                      label: "Status",
+                      sortValue: (row: any) => (row.enabled ? 1 : 0),
+                      render: (row: any) => (
                         <button
-                          onClick={() => handleToggleTask(task)}
-                          className={`${styles.toggleSwitch} ${task.enabled ? styles.toggleSwitchOn : ""}`}
-                          title={task.enabled ? "Disable task" : "Enable task"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleTask(row);
+                          }}
+                          className={`${styles.toggleSwitch} ${styles.toggleSwitchSmall} ${row.enabled ? styles.toggleSwitchOn : ""}`}
+                          title={row.enabled ? "Disable task" : "Enable task"}
                         >
                           <span className={styles.toggleKnob} />
                         </button>
+                      ),
+                    },
+                    {
+                      key: "createdAt",
+                      label: "Created",
+                      sortable: true,
+                      align: "right",
+                      render: (row: any) =>
+                        row.createdAt ? (
+                          <BadgeComponent
+                            type="dateTime"
+                            date={row.createdAt}
+                          />
+                        ) : (
+                          <span className={styles.tableDash}>—</span>
+                        ),
+                    },
+                    {
+                      key: "actions",
+                      label: "",
+                      sortable: false,
+                      align: "right",
+                      render: (row: any) => {
+                        const isMenuOpen = activeMenuId === row.id;
+                        const isTriggering = triggeringId === row.id;
+                        return (
+                          <div className={styles.tableActionsCell}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTriggerTask(row);
+                              }}
+                              className={styles.tableActionButton}
+                              disabled={isTriggering}
+                              title="Trigger task"
+                            >
+                              {isTriggering ? (
+                                <Loader2 size={13} className={styles.spin} />
+                              ) : (
+                                <Play size={13} />
+                              )}
+                            </button>
+                            <div className={styles.menuContainer}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMenuId(isMenuOpen ? null : row.id);
+                                }}
+                                className={styles.menuButton}
+                                title="More Actions"
+                              >
+                                <MoreVertical size={14} />
+                              </button>
+                              {isMenuOpen && (
+                                <>
+                                  <div
+                                    className={styles.menuBackdrop}
+                                    onClick={() => setActiveMenuId(null)}
+                                  />
+                                  <div className={styles.menuDropdown}>
+                                    <button
+                                      onClick={() => handleCopyConfig(row)}
+                                    >
+                                      <Copy size={13} />
+                                      <span>Copy Config</span>
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setConfirmDeleteId(row.id);
+                                        setActiveMenuId(null);
+                                      }}
+                                      className={styles.deleteBtnText}
+                                    >
+                                      <Trash2 size={13} />
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      },
+                    },
+                  ]}
+                  data={filteredTasks}
+                  getRowKey={(t: any) => t.id}
+                  emptyText="No Scheduled Tasks found"
+                  storageKey="scheduled-tasks"
+                />
+              ) : (
+                /* ── Card View ── */
+                <div className={styles.grid}>
+                  {filteredTasks.map((task) => {
+                    const isMenuOpen = activeMenuId === task.id;
+                    const isConfirming = confirmDeleteId === task.id;
+                    const isTriggering = triggeringId === task.id;
+                    const taskAgent = agents.find((a) => a.id === task.agent);
 
-                        <div className={styles.menuContainer}>
-                          <button
-                            onClick={() => setActiveMenuId(isMenuOpen ? null : task.id)}
-                            className={styles.menuButton}
-                            title="More Actions"
-                          >
-                            <MoreVertical size={16} />
-                          </button>
+                    return (
+                      <div
+                        key={task.id}
+                        className={`${styles.card} ${!task.enabled ? styles.disabledCard : ""}`}
+                      >
+                        <div className={styles.cardHeader}>
+                          <div className={styles.cardTitleInfo}>
+                            <h3 className={styles.cardTitle}>{task.name}</h3>
+                            <p className={styles.cardSchedule}>
+                              {formatScheduleText(task)}
+                            </p>
+                          </div>
 
-                          {/* Menu dropdown */}
-                          {isMenuOpen && (
-                            <>
-                              <div
-                                className={styles.menuBackdrop}
-                                onClick={() => setActiveMenuId(null)}
-                              />
-                              <div className={styles.menuDropdown}>
-                                <button onClick={() => handleCopyConfig(task)}>
-                                  <Copy size={13} />
-                                  <span>Copy Config Path</span>
-                                </button>
-                                <button
-                                  onClick={() => handleTriggerTask(task)}
-                                  disabled={isTriggering}
-                                >
-                                  {isTriggering ? (
-                                    <Loader2 size={13} className={styles.spin} />
-                                  ) : (
-                                    <Play size={13} />
-                                  )}
-                                  <span>Restart Task</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setConfirmDeleteId(task.id);
-                                    setActiveMenuId(null);
-                                  }}
-                                  className={styles.deleteBtnText}
-                                >
-                                  <Trash2 size={13} />
-                                  <span>Delete Task</span>
-                                </button>
-                              </div>
-                            </>
-                          )}
+                          <div className={styles.cardActions}>
+                            {/* Custom sleek toggle switch */}
+                            <button
+                              onClick={() => handleToggleTask(task)}
+                              className={`${styles.toggleSwitch} ${task.enabled ? styles.toggleSwitchOn : ""}`}
+                              title={
+                                task.enabled ? "Disable task" : "Enable task"
+                              }
+                            >
+                              <span className={styles.toggleKnob} />
+                            </button>
+
+                            <div className={styles.menuContainer}>
+                              <button
+                                onClick={() =>
+                                  setActiveMenuId(isMenuOpen ? null : task.id)
+                                }
+                                className={styles.menuButton}
+                                title="More Actions"
+                              >
+                                <MoreVertical size={16} />
+                              </button>
+
+                              {/* Menu dropdown */}
+                              {isMenuOpen && (
+                                <>
+                                  <div
+                                    className={styles.menuBackdrop}
+                                    onClick={() => setActiveMenuId(null)}
+                                  />
+                                  <div className={styles.menuDropdown}>
+                                    <button
+                                      onClick={() => handleCopyConfig(task)}
+                                    >
+                                      <Copy size={13} />
+                                      <span>Copy Config Path</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleTriggerTask(task)}
+                                      disabled={isTriggering}
+                                    >
+                                      {isTriggering ? (
+                                        <Loader2
+                                          size={13}
+                                          className={styles.spin}
+                                        />
+                                      ) : (
+                                        <Play size={13} />
+                                      )}
+                                      <span>Restart Task</span>
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setConfirmDeleteId(task.id);
+                                        setActiveMenuId(null);
+                                      }}
+                                      className={styles.deleteBtnText}
+                                    >
+                                      <Trash2 size={13} />
+                                      <span>Delete Task</span>
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
 
-                    <div className={styles.cardBody}>
-                      <div className={styles.promptWrapper}>
-                        <p className={styles.promptText}>{task.prompt}</p>
-                      </div>
+                        <div className={styles.cardBody}>
+                          <div className={styles.promptWrapper}>
+                            <p className={styles.promptText}>{task.prompt}</p>
+                          </div>
 
-                      <div className={styles.tagsRow}>
-                        <span className={styles.tag}>
-                          <Bot size={11} />
-                          <span>{taskAgent ? taskAgent.name : "Direct Chat"}</span>
-                        </span>
-                        <span className={styles.tag} title={`${task.provider}/${task.model}`}>
-                          <Sparkles size={11} />
-                          <span>{task.model.split("/").pop()}</span>
-                        </span>
-                        {task.project && (
-                          <span className={styles.tag}>
-                            <span>{task.project}</span>
-                          </span>
+                          <div className={styles.tagsRow}>
+                            <span className={styles.tag}>
+                              <Bot size={11} />
+                              <span>
+                                {taskAgent ? taskAgent.name : "Direct Chat"}
+                              </span>
+                            </span>
+                            <span
+                              className={styles.tag}
+                              title={`${task.provider}/${task.model}`}
+                            >
+                              <Sparkles size={11} />
+                              <span>{task.model.split("/").pop()}</span>
+                            </span>
+                            {task.project && (
+                              <span className={styles.tag}>
+                                <span>{task.project}</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Inline Confirm Delete */}
+                        {isConfirming && (
+                          <div className={styles.confirmRow}>
+                            <span>Delete task permanently?</span>
+                            <div className={styles.confirmButtons}>
+                              <button
+                                onClick={() => handleDeleteTask(task)}
+                                className={styles.confirmYes}
+                              >
+                                Delete
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className={styles.confirmNo}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
-                    </div>
-
-                    {/* Inline Confirm Delete */}
-                    {isConfirming && (
-                      <div className={styles.confirmRow}>
-                        <span>Delete task permanently?</span>
-                        <div className={styles.confirmButtons}>
-                          <button
-                            onClick={() => handleDeleteTask(task)}
-                            className={styles.confirmYes}
-                          >
-                            Delete
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className={styles.confirmNo}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Modal for New Agentic Cron — using ModalComponent from components-library */}
-        {showNewModal && (
-          <ModalComponent
-            title="New Agentic Cron"
-            onClose={() => setShowNewModal(false)}
-            size="md"
-            footer={
-              <div className={styles.modalActions}>
-                <ButtonComponent
-                  variant="disabled"
-                  onClick={() => setShowNewModal(false)}
-                >
-                  Cancel
-                </ButtonComponent>
-                <ButtonComponent
-                  variant="submit"
-                  icon={Check}
-                  loading={formSubmitting}
-                  disabled={formSubmitting}
-                  onClick={handleSubmitTask}
-                >
-                  Add Agentic Cron
-                </ButtonComponent>
-              </div>
-            }
-          >
-            <form onSubmit={handleSubmitTask} className={styles.form}>
-              {/* Task Name */}
-              <FormGroupComponent label="Name">
-                <InputComponent
-                  id="taskName"
-                  required
-                  placeholder="Enter task name"
-                  value={formName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)}
-                />
-              </FormGroupComponent>
-
-              <div className={styles.formRow}>
-                {/* Project / Workspace */}
-                <FormGroupComponent label="Project">
-                  <SelectComponent
-                    value={formProject}
-                    onChange={(val: string) => setFormProject(val)}
-                    options={workspaces.map((w) => ({
-                      value: w.name,
-                      label: w.name,
-                    }))}
-                    placeholder="Select project"
-                  />
-                </FormGroupComponent>
-
-                {/* Agent Persona */}
-                <FormGroupComponent label="Agent">
-                  <AgentPickerComponent
-                    agents={agents}
-                    activeAgentId={formAgent}
-                    onSelect={setFormAgent}
-                  />
-                </FormGroupComponent>
-              </div>
-
-              {/* Model Selection */}
-              <FormGroupComponent label="Model">
-                <ModelPickerPopoverComponent
-                  config={config}
-                  settings={{ provider: formProvider, model: formModel }}
-                  onSelectModel={(provider: string, model: string) => {
-                    setFormProvider(provider);
-                    setFormModel(model);
-                  }}
-                  favorites={favoriteKeys}
-                  onToggleFavorite={handleToggleFavorite}
-                />
-              </FormGroupComponent>
-
-              {/* Prompt */}
-              <FormGroupComponent label="Prompt">
-                <TextAreaComponent
-                  id="taskPrompt"
-                  required
-                  placeholder="Enter a prompt for the agent..."
-                  value={formPrompt}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormPrompt(e.target.value)}
-                  minRows={4}
-                  maxRows={10}
-                />
-              </FormGroupComponent>
-
-              {/* Schedule Selector */}
-              <div className={styles.scheduleBuilder}>
-                <FormGroupComponent label="Schedule">
-                  <SelectComponent
-                    value={formScheduleType}
-                    onChange={(val: string) => setFormScheduleType(val as typeof formScheduleType)}
-                    options={[
-                      { value: "once", label: "One-time" },
-                      { value: "hourly", label: "Hourly" },
-                      { value: "daily", label: "Daily" },
-                      { value: "weekly", label: "Weekly" },
-                      { value: "cron", label: "Cron Expression" },
-                      { value: "trigger", label: "Trigger (Manual / Remote)" },
-                    ]}
-                  />
-                </FormGroupComponent>
-
-                {/* Time picker for daily */}
-                {formScheduleType === "daily" && (
-                  <div className={styles.timePickerRow}>
-                    <span className={styles.pickerLabel}>around</span>
-                    <SelectComponent
-                      value={formTimeHour}
-                      onChange={(val: string) => setFormTimeHour(val)}
-                      options={Array.from({ length: 12 }, (_, i) => {
-                        const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
-                        return { value: formattedHour, label: formattedHour };
-                      })}
-                    />
-                    <span className={styles.timeColon}>:</span>
-                    <SelectComponent
-                      value={formTimeMinute}
-                      onChange={(val: string) => setFormTimeMinute(val)}
-                      options={["00", "15", "30", "45"].map((m) => ({ value: m, label: m }))}
-                    />
-                    <SelectComponent
-                      value={formTimeAmpm}
-                      onChange={(val: string) => setFormTimeAmpm(val)}
-                      options={[
-                        { value: "AM", label: "AM" },
-                        { value: "PM", label: "PM" },
-                      ]}
-                    />
+            {/* Modal for New Agentic Cron — using ModalComponent from components-library */}
+            {showNewModal && (
+              <ModalComponent
+                title="New Agentic Cron"
+                onClose={() => setShowNewModal(false)}
+                size="md"
+                footer={
+                  <div className={styles.modalActions}>
+                    <ButtonComponent
+                      variant="disabled"
+                      onClick={() => setShowNewModal(false)}
+                    >
+                      Cancel
+                    </ButtonComponent>
+                    <ButtonComponent
+                      variant="submit"
+                      icon={Check}
+                      loading={formSubmitting}
+                      disabled={formSubmitting}
+                      onClick={handleSubmitTask}
+                    >
+                      Add Agentic Cron
+                    </ButtonComponent>
                   </div>
-                )}
-
-                {/* Day + time picker for weekly */}
-                {formScheduleType === "weekly" && (
-                  <div className={styles.weeklyPickerRow}>
-                    <SelectComponent
-                      value={String(formWeeklyDay)}
-                      onChange={(val: string) => setFormWeeklyDay(Number(val))}
-                      options={[
-                        { value: "0", label: "Sunday" },
-                        { value: "1", label: "Monday" },
-                        { value: "2", label: "Tuesday" },
-                        { value: "3", label: "Wednesday" },
-                        { value: "4", label: "Thursday" },
-                        { value: "5", label: "Friday" },
-                        { value: "6", label: "Saturday" },
-                      ]}
-                    />
-                    <span className={styles.pickerLabel}>around</span>
-                    <SelectComponent
-                      value={formTimeHour}
-                      onChange={(val: string) => setFormTimeHour(val)}
-                      options={Array.from({ length: 12 }, (_, i) => {
-                        const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
-                        return { value: formattedHour, label: formattedHour };
-                      })}
-                    />
-                    <span className={styles.timeColon}>:</span>
-                    <SelectComponent
-                      value={formTimeMinute}
-                      onChange={(val: string) => setFormTimeMinute(val)}
-                      options={["00", "15", "30", "45"].map((m) => ({ value: m, label: m }))}
-                    />
-                    <SelectComponent
-                      value={formTimeAmpm}
-                      onChange={(val: string) => setFormTimeAmpm(val)}
-                      options={[
-                        { value: "AM", label: "AM" },
-                        { value: "PM", label: "PM" },
-                      ]}
-                    />
-                  </div>
-                )}
-
-                {/* Date + time picker for once */}
-                {formScheduleType === "once" && (
-                  <div className={styles.weeklyPickerRow}>
+                }
+              >
+                <form onSubmit={handleSubmitTask} className={styles.form}>
+                  {/* Task Name */}
+                  <FormGroupComponent label="Name">
                     <InputComponent
-                      type="date"
-                      value={formOnceDate}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormOnceDate(e.target.value)}
-                    />
-                    <span className={styles.pickerLabel}>around</span>
-                    <SelectComponent
-                      value={formTimeHour}
-                      onChange={(val: string) => setFormTimeHour(val)}
-                      options={Array.from({ length: 12 }, (_, i) => {
-                        const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
-                        return { value: formattedHour, label: formattedHour };
-                      })}
-                    />
-                    <span className={styles.timeColon}>:</span>
-                    <SelectComponent
-                      value={formTimeMinute}
-                      onChange={(val: string) => setFormTimeMinute(val)}
-                      options={["00", "15", "30", "45"].map((m) => ({ value: m, label: m }))}
-                    />
-                    <SelectComponent
-                      value={formTimeAmpm}
-                      onChange={(val: string) => setFormTimeAmpm(val)}
-                      options={[
-                        { value: "AM", label: "AM" },
-                        { value: "PM", label: "PM" },
-                      ]}
-                    />
-                  </div>
-                )}
-
-                {/* Cron expression input */}
-                {formScheduleType === "cron" && (
-                  <FormGroupComponent label="Cron Expression">
-                    <InputComponent
-                      id="taskCron"
+                      id="taskName"
                       required
-                      placeholder="* * * * *"
-                      value={formCron}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormCron(e.target.value)}
+                      placeholder="Enter task name"
+                      value={formName}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setFormName(e.target.value)
+                      }
                     />
                   </FormGroupComponent>
-                )}
-              </div>
-            </form>
-          </ModalComponent>
-        )}
-        </div>
+
+                  <div className={styles.formRow}>
+                    {/* Project / Workspace */}
+                    <FormGroupComponent label="Project">
+                      <SelectComponent
+                        value={formProject}
+                        onChange={(val: string) => setFormProject(val)}
+                        options={workspaces.map((w) => ({
+                          value: w.name,
+                          label: w.name,
+                        }))}
+                        placeholder="Select project"
+                      />
+                    </FormGroupComponent>
+
+                    {/* Agent Persona */}
+                    <FormGroupComponent label="Agent">
+                      <AgentPickerComponent
+                        agents={agents}
+                        activeAgentId={formAgent}
+                        onSelect={setFormAgent}
+                      />
+                    </FormGroupComponent>
+                  </div>
+
+                  {/* Model Selection */}
+                  <FormGroupComponent label="Model">
+                    <ModelPickerPopoverComponent
+                      config={config}
+                      settings={{ provider: formProvider, model: formModel }}
+                      onSelectModel={(provider: string, model: string) => {
+                        setFormProvider(provider);
+                        setFormModel(model);
+                      }}
+                      favorites={favoriteKeys}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  </FormGroupComponent>
+
+                  {/* Prompt */}
+                  <FormGroupComponent label="Prompt">
+                    <TextAreaComponent
+                      id="taskPrompt"
+                      required
+                      placeholder="Enter a prompt for the agent..."
+                      value={formPrompt}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        setFormPrompt(e.target.value)
+                      }
+                      minRows={4}
+                      maxRows={10}
+                    />
+                  </FormGroupComponent>
+
+                  {/* Schedule Selector */}
+                  <div className={styles.scheduleBuilder}>
+                    <FormGroupComponent label="Schedule">
+                      <SelectComponent
+                        value={formScheduleType}
+                        onChange={(val: string) =>
+                          setFormScheduleType(val as typeof formScheduleType)
+                        }
+                        options={[
+                          { value: "once", label: "One-time" },
+                          { value: "hourly", label: "Hourly" },
+                          { value: "daily", label: "Daily" },
+                          { value: "weekly", label: "Weekly" },
+                          { value: "cron", label: "Cron Expression" },
+                          {
+                            value: "trigger",
+                            label: "Trigger (Manual / Remote)",
+                          },
+                        ]}
+                      />
+                    </FormGroupComponent>
+
+                    {/* Time picker for daily */}
+                    {formScheduleType === "daily" && (
+                      <div className={styles.timePickerRow}>
+                        <span className={styles.pickerLabel}>around</span>
+                        <SelectComponent
+                          value={formTimeHour}
+                          onChange={(val: string) => setFormTimeHour(val)}
+                          options={Array.from({ length: 12 }, (_, i) => {
+                            const formattedHour = String(
+                              i === 0 ? 12 : i,
+                            ).padStart(2, "0");
+                            return {
+                              value: formattedHour,
+                              label: formattedHour,
+                            };
+                          })}
+                        />
+                        <span className={styles.timeColon}>:</span>
+                        <SelectComponent
+                          value={formTimeMinute}
+                          onChange={(val: string) => setFormTimeMinute(val)}
+                          options={["00", "15", "30", "45"].map((m) => ({
+                            value: m,
+                            label: m,
+                          }))}
+                        />
+                        <SelectComponent
+                          value={formTimeAmpm}
+                          onChange={(val: string) => setFormTimeAmpm(val)}
+                          options={[
+                            { value: "AM", label: "AM" },
+                            { value: "PM", label: "PM" },
+                          ]}
+                        />
+                      </div>
+                    )}
+
+                    {/* Day + time picker for weekly */}
+                    {formScheduleType === "weekly" && (
+                      <div className={styles.weeklyPickerRow}>
+                        <SelectComponent
+                          value={String(formWeeklyDay)}
+                          onChange={(val: string) =>
+                            setFormWeeklyDay(Number(val))
+                          }
+                          options={[
+                            { value: "0", label: "Sunday" },
+                            { value: "1", label: "Monday" },
+                            { value: "2", label: "Tuesday" },
+                            { value: "3", label: "Wednesday" },
+                            { value: "4", label: "Thursday" },
+                            { value: "5", label: "Friday" },
+                            { value: "6", label: "Saturday" },
+                          ]}
+                        />
+                        <span className={styles.pickerLabel}>around</span>
+                        <SelectComponent
+                          value={formTimeHour}
+                          onChange={(val: string) => setFormTimeHour(val)}
+                          options={Array.from({ length: 12 }, (_, i) => {
+                            const formattedHour = String(
+                              i === 0 ? 12 : i,
+                            ).padStart(2, "0");
+                            return {
+                              value: formattedHour,
+                              label: formattedHour,
+                            };
+                          })}
+                        />
+                        <span className={styles.timeColon}>:</span>
+                        <SelectComponent
+                          value={formTimeMinute}
+                          onChange={(val: string) => setFormTimeMinute(val)}
+                          options={["00", "15", "30", "45"].map((m) => ({
+                            value: m,
+                            label: m,
+                          }))}
+                        />
+                        <SelectComponent
+                          value={formTimeAmpm}
+                          onChange={(val: string) => setFormTimeAmpm(val)}
+                          options={[
+                            { value: "AM", label: "AM" },
+                            { value: "PM", label: "PM" },
+                          ]}
+                        />
+                      </div>
+                    )}
+
+                    {/* Date + time picker for once */}
+                    {formScheduleType === "once" && (
+                      <div className={styles.weeklyPickerRow}>
+                        <InputComponent
+                          type="date"
+                          value={formOnceDate}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setFormOnceDate(e.target.value)
+                          }
+                        />
+                        <span className={styles.pickerLabel}>around</span>
+                        <SelectComponent
+                          value={formTimeHour}
+                          onChange={(val: string) => setFormTimeHour(val)}
+                          options={Array.from({ length: 12 }, (_, i) => {
+                            const formattedHour = String(
+                              i === 0 ? 12 : i,
+                            ).padStart(2, "0");
+                            return {
+                              value: formattedHour,
+                              label: formattedHour,
+                            };
+                          })}
+                        />
+                        <span className={styles.timeColon}>:</span>
+                        <SelectComponent
+                          value={formTimeMinute}
+                          onChange={(val: string) => setFormTimeMinute(val)}
+                          options={["00", "15", "30", "45"].map((m) => ({
+                            value: m,
+                            label: m,
+                          }))}
+                        />
+                        <SelectComponent
+                          value={formTimeAmpm}
+                          onChange={(val: string) => setFormTimeAmpm(val)}
+                          options={[
+                            { value: "AM", label: "AM" },
+                            { value: "PM", label: "PM" },
+                          ]}
+                        />
+                      </div>
+                    )}
+
+                    {/* Cron expression input */}
+                    {formScheduleType === "cron" && (
+                      <FormGroupComponent label="Cron Expression">
+                        <InputComponent
+                          id="taskCron"
+                          required
+                          placeholder="* * * * *"
+                          value={formCron}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setFormCron(e.target.value)
+                          }
+                        />
+                      </FormGroupComponent>
+                    )}
+                  </div>
+                </form>
+              </ModalComponent>
+            )}
+          </div>
         </div>
       </div>
     </div>
