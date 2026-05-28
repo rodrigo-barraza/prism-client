@@ -112,6 +112,7 @@ export default function ScheduledTasksPage() {
   const [loading, setLoading] = useState(true);
   const [showNewModal, setShowNewModal] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [menuAnchorPosition, setMenuAnchorPosition] = useState<{ top: number; left: number } | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [triggeringId, setTriggeringId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -710,20 +711,27 @@ export default function ScheduledTasksPage() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setActiveMenuId(isMenuOpen ? null : row.id);
+                                  if (isMenuOpen) {
+                                    setActiveMenuId(null);
+                                    setMenuAnchorPosition(null);
+                                  } else {
+                                    const buttonRect = e.currentTarget.getBoundingClientRect();
+                                    setMenuAnchorPosition({ top: buttonRect.bottom + 4, left: buttonRect.right });
+                                    setActiveMenuId(row.id);
+                                  }
                                 }}
                                 className={styles.menuButton}
                                 title="More Actions"
                               >
                                 <MoreVertical size={14} />
                               </button>
-                              {isMenuOpen && (
+                              {isMenuOpen && menuAnchorPosition && (
                                 <>
                                   <div
                                     className={styles.menuBackdrop}
-                                    onClick={() => setActiveMenuId(null)}
+                                    onClick={() => { setActiveMenuId(null); setMenuAnchorPosition(null); }}
                                   />
-                                  <div className={styles.menuDropdown}>
+                                  <div className={styles.menuDropdown} style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}>
                                     <button
                                       onClick={() => handleCopyConfig(row)}
                                     >
@@ -790,9 +798,16 @@ export default function ScheduledTasksPage() {
 
                             <div className={styles.menuContainer}>
                               <button
-                                onClick={() =>
-                                  setActiveMenuId(isMenuOpen ? null : task.id)
-                                }
+                                onClick={(e) => {
+                                  if (isMenuOpen) {
+                                    setActiveMenuId(null);
+                                    setMenuAnchorPosition(null);
+                                  } else {
+                                    const buttonRect = e.currentTarget.getBoundingClientRect();
+                                    setMenuAnchorPosition({ top: buttonRect.bottom + 4, left: buttonRect.right });
+                                    setActiveMenuId(task.id);
+                                  }
+                                }}
                                 className={styles.menuButton}
                                 title="More Actions"
                               >
@@ -800,13 +815,13 @@ export default function ScheduledTasksPage() {
                               </button>
 
                               {/* Menu dropdown */}
-                              {isMenuOpen && (
+                              {isMenuOpen && menuAnchorPosition && (
                                 <>
                                   <div
                                     className={styles.menuBackdrop}
-                                    onClick={() => setActiveMenuId(null)}
+                                    onClick={() => { setActiveMenuId(null); setMenuAnchorPosition(null); }}
                                   />
-                                  <div className={styles.menuDropdown}>
+                                  <div className={styles.menuDropdown} style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}>
                                     <button
                                       onClick={() => handleCopyConfig(task)}
                                     >

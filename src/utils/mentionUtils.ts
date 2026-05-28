@@ -1,7 +1,7 @@
 /**
  * Mention Utilities — Pure functions for the @-mention system.
  *
- * Extracted from AgentComponent so they can be unit-tested without
+ * Extracted from ChatSessionComponent so they can be unit-tested without
  * rendering the full component tree.
  */
 
@@ -30,6 +30,9 @@ export function serializeEditable(element: Node) {
         ref += le && le !== ls ? `#L${ls}-${le}` : `#L${ls}`;
       }
       text += ref;
+    } else if ((node as HTMLElement).dataset?.slashCommand) {
+      // Slash command badges are stripped from serialization — rule
+      // content is injected separately by the send handler.
     } else if ((node as HTMLElement).tagName === "BR") {
       text += "\n";
     } else {
@@ -224,6 +227,33 @@ export function createMentionBadge(
   const icon = type === "directory" ? "📁" : "📄";
   badge.textContent = `${icon} ${displayName}`;
   return badge;
+}
+
+/**
+ * Create a slash command badge DOM element for use in contentEditable.
+ * Visually matches mention badges but uses amber accent for rules.
+ */
+export function createSlashCommandBadge(ruleName: string) {
+  const badge = document.createElement("span");
+  badge.contentEditable = "false";
+  badge.className = badgeStyles.slashCommandBadge;
+  badge.dataset.slashCommand = ruleName;
+  badge.title = `Rule: /${ruleName} — click to remove`;
+  badge.textContent = `⚡ /${ruleName}`;
+  return badge;
+}
+
+/**
+ * Extract all active slash command names from a contentEditable element.
+ */
+export function extractSlashCommandNames(element: HTMLElement): Set<string> {
+  const names = new Set<string>();
+  const badges = element.querySelectorAll("[data-slash-command]");
+  for (const badge of badges) {
+    const name = (badge as HTMLElement).dataset.slashCommand;
+    if (name) names.add(name);
+  }
+  return names;
 }
 
 // ── Caret Utilities ───────────────────────────────────────────────

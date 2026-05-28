@@ -154,3 +154,51 @@
   line-height: 1;
   flex-shrink: 0;
 }
+
+/* ── Slash Command Badge (inline rule activation) ────────────── */
+
+.slashCommandBadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px 1px 5px;
+  margin: 0 1px;
+  background: color-mix(
+    in srgb,
+    var(--color-amber) 10%,
+    var(--background-elevated)
+  );
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--color-amber) 25%,
+      var(--calculated-border-color)
+    );
+  border-radius: var(--radius-full, 999px);
+  font-size: var(--font-size-sm);
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+  color: var(--color-amber);
+  font-weight: 500;
+  white-space: nowrap;
+  vertical-align: baseline;
+  cursor: default;
+  line-height: 1.6;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    opacity 0.2s;
+}
+
+.slashCommandBadge:hover {
+  background: color-mix(
+    in srgb,
+    var(--color-amber) 16%,
+    var(--background-elevated)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--color-amber) 40%,
+    var(--calculated-border-color)
+  );
+}

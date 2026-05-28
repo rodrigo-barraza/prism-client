@@ -135,6 +135,8 @@ import {
   detectMentionToken,
   filterMentionResults,
   createMentionBadge as _createMentionBadge,
+  createSlashCommandBadge,
+  extractSlashCommandNames,
   placeCaretAfter,
   applyMentionToTextNode,
 } from "../utils/mentionUtils";
@@ -397,7 +399,7 @@ interface ClientMessage extends Message {
   status?: string;
 }
 
-export interface AgentComponentProps {
+export interface ChatSessionComponentProps {
   agentId?: string;
   agents?: Array<
     AgentPersona | (Partial<AgentPersona> & { id: string; name: string })
@@ -409,7 +411,7 @@ export interface AgentComponentProps {
   initialTabKey?: string | null;
 }
 
-export default function AgentComponent({
+export default function ChatSessionComponent({
   agentId: propAgentId = "CODING",
   agents = [],
   initialFcEnabled = false,
@@ -417,7 +419,7 @@ export default function AgentComponent({
   initialModel = null,
   initialSessionId = null,
   initialTabKey = null,
-}: AgentComponentProps) {
+}: ChatSessionComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<boolean>(false);
   // Track whether the URL session param has been consumed
@@ -481,9 +483,8 @@ export default function AgentComponent({
   const [skills, setSkills] = useState<Skill[]>([]);
   const [_injectedSkills, setInjectedSkills] = useState<Skill[]>([]);
   const [rules, setRules] = useState<Rule[]>([]);
-  const [activeRuleNames, setActiveRuleNames] = useState<Set<string>>(
-    new Set(),
-  );
+  // Active rules are tracked as inline badges in the contentEditable DOM.
+  // At send time we extract names via extractSlashCommandNames().
   const [slashCommandOpen, setSlashCommandOpen] = useState(false);
   const [slashCommandQuery, setSlashCommandQuery] = useState("");
   const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
@@ -1399,8 +1400,11 @@ export default function AgentComponent({
     (sessionId: string) => {
       if (!sessionId) return;
       // Direct Chat sessions live in the conversations collection which
-      // doesn't have the stats aggregation endpoint — skip.
-      if (isNoAgent) return;
+      // doesn't have the stats aggregation endpoint — skip, but update the refresh key.
+      if (isNoAgent) {
+        setRequestsRefreshKey((previousKey) => previousKey + 1);
+        return;
+      }
       // Two-phase fetch: first at 2s catches iteration requests,
       // second at 8s catches background requests (memory extraction,
       // embedding) that take longer to flush to the DB.
@@ -1505,15 +1509,18 @@ export default function AgentComponent({
       if (!element) return;
       const value = serializeEditable(element);
       inputValueRef.current = value;
-      const nowHasInput = value.trim().length > 0;
+      const hasSlashBadges = element.querySelectorAll("[data-slash-command]").length > 0;
+      const nowHasInput = value.trim().length > 0 || hasSlashBadges;
       setHasInput((previousPixelSize) =>
         previousPixelSize !== nowHasInput ? nowHasInput : previousPixelSize,
       );
       // -- Mention autocomplete detection --
       detectMentionQueryRef.current?.(element);
       // -- Slash command detection --
+      // Only open the picker when the raw text content starts with / and
+      // there are no existing badges (otherwise the user is just typing after a badge).
       const trimmedValue = value.trim();
-      if (trimmedValue.startsWith("/") && !trimmedValue.includes(" ")) {
+      if (trimmedValue.startsWith("/") && !trimmedValue.includes(" ") && !hasSlashBadges) {
         setSlashCommandOpen(true);
         setSlashCommandQuery(trimmedValue.slice(1).toLowerCase());
       } else {
@@ -3176,7 +3183,6 @@ export default function AgentComponent({
       fetchSessionStats,
       markTabNew,
       switchTabTemporarily,
-      activeRuleNames,
       rules,
     ],
   );
@@ -3281,10 +3287,14 @@ export default function AgentComponent({
 
       setCurrentTurnStart(Date.now());
       // Prepend active rules to user message (Claude Code pattern)
+      // Rules are extracted from inline badges in the contentEditable DOM.
       let finalMessageContent = text;
-      if (activeRuleNames.size > 0) {
+      const inlineActiveRuleNames = textareaRef.current
+        ? extractSlashCommandNames(textareaRef.current)
+        : new Set<string>();
+      if (inlineActiveRuleNames.size > 0) {
         const enabledRules = rules.filter(
-          (rule) => rule.enabled && activeRuleNames.has(rule.name),
+          (rule) => rule.enabled && inlineActiveRuleNames.has(rule.name),
         );
         if (enabledRules.length > 0) {
           const rulesBlock = enabledRules
@@ -5226,50 +5236,7 @@ export default function AgentComponent({
               ))}
             </div>
           )}
-          {/* ── Active Rule Badges ── */}
-          {activeRuleNames.size > 0 && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "4px",
-                padding: "6px 10px 2px",
-              }}
-            >
-              {Array.from(activeRuleNames).map((ruleName) => (
-                <span
-                  key={ruleName}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    padding: "2px 8px",
-                    fontSize: "0.7rem",
-                    fontFamily: "var(--font-mono, monospace)",
-                    fontWeight: 500,
-                    color: "var(--color-amber)",
-                    background:
-                      "color-mix(in srgb, var(--color-amber) 10%, transparent)",
-                    border:
-                      "1px solid color-mix(in srgb, var(--color-amber) 25%, transparent)",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() =>
-                    setActiveRuleNames((previous) => {
-                      const next = new Set(previous);
-                      next.delete(ruleName);
-                      return next;
-                    })
-                  }
-                  title={`Click to deactivate /${ruleName}`}
-                >
-                  /{ruleName}
-                  <X size={10} />
-                </span>
-              ))}
-            </div>
-          )}
+          {/* Active rule badges are now inline in the contentEditable */}
           <div className={chatStyles.inputRow}>
             {supportsImageInput && (
               <>
@@ -5297,6 +5264,17 @@ export default function AgentComponent({
               onInput={handleInputChange}
               onKeyDown={handleKeyDown}
               onPaste={handleEditablePaste}
+              onClick={(event) => {
+                const target = event.target as HTMLElement;
+                if (target.dataset?.slashCommand) {
+                  target.remove();
+                  const element = textareaRef.current;
+                  if (element) {
+                    inputValueRef.current = serializeEditable(element);
+                    setHasInput(inputValueRef.current.trim().length > 0 || element.querySelectorAll("[data-slash-command]").length > 0);
+                  }
+                }
+              }}
               onBlur={() => setTimeout(() => setMentionOpen(false), 150)}
               data-placeholder={placeholderText}
               suppressContentEditableWarning
@@ -5327,12 +5305,22 @@ export default function AgentComponent({
                           className={chatStyles.mentionItem}
                           onMouseDown={(event) => {
                             event.preventDefault();
-                            setActiveRuleNames((previous) =>
-                              new Set(previous).add(rule.name),
-                            );
+                            const element = textareaRef.current;
+                            if (element) {
+                              // Clear the typed /query text
+                              element.textContent = "";
+                              // Insert the inline badge
+                              const badge = createSlashCommandBadge(rule.name);
+                              const space = document.createTextNode(" ");
+                              element.appendChild(badge);
+                              element.appendChild(space);
+                              placeCaretAfter(space);
+                              inputValueRef.current = serializeEditable(element);
+                              setHasInput(true);
+                              element.focus();
+                            }
                             setSlashCommandOpen(false);
                             setSlashCommandQuery("");
-                            setTextareaValue("");
                           }}
                         >
                           <span

@@ -127,7 +127,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 
 /**
  * Get unique model names from assistant messages.
- * Shared between AgentComponent and admin/conversations.
+ * Shared between ChatSessionComponent and admin/conversations.
  */
 export function getUniqueModels(messages: Message[]): string[] {
   return [

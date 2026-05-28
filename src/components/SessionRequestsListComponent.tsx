@@ -69,17 +69,20 @@ export default function SessionRequestsListComponent({
   const rootSessionId = (data as any).rootSessionId;
   const requests = [...((data as any).requests || [])]
     .sort(
-      (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      (firstRequest, secondRequest) =>
+        new Date(secondRequest.timestamp).getTime() - new Date(firstRequest.timestamp).getTime(),
     )
-    .map((req) => ({
-      ...req,
-      isWorker: req.agentSessionId !== rootSessionId,
-      workerShortId:
-        req.agentSessionId !== rootSessionId
-          ? req.agentSessionId.slice(0, 8)
-          : null,
-    }));
+    .map((request) => {
+      const isWorker = !!request.agentSessionId && request.agentSessionId !== rootSessionId;
+      return {
+        ...request,
+        isWorker,
+        workerShortId:
+          isWorker && typeof request.agentSessionId === "string"
+            ? request.agentSessionId.slice(0, 8)
+            : null,
+      };
+    });
 
   return (
     <div className={styles.container}>
@@ -91,76 +94,76 @@ export default function SessionRequestsListComponent({
         </div>
 
         <div className={styles.requestList}>
-          {requests.map((req, i) => {
-            const isError = !req.success;
+          {requests.map((request, index) => {
+            const isError = !request.success;
             return (
               <div
-                key={`${req.requestId || "req"}-${i}`}
-                className={`${styles.requestRow} ${isError ? styles.requestError : ""} ${req.isWorker ? styles.requestWorker : ""}`}
+                key={`${request.requestId || "request"}-${index}`}
+                className={`${styles.requestRow} ${isError ? styles.requestError : ""} ${request.isWorker ? styles.requestWorker : ""}`}
               >
                 <div className={styles.requestMeta}>
-                  {req.isWorker && (
+                  {request.isWorker && (
                     <span
                       className={styles.workerTag}
-                      title={`Worker ${req.workerShortId}`}
+                      title={`Worker ${request.workerShortId}`}
                     >
                       <Users size={8} />
                     </span>
                   )}
-                  <ProviderLogo provider={req.provider} size={12} />
+                  <ProviderLogo provider={request.provider} size={12} />
                   <span className={styles.requestProvider}>
-                    {resolveProviderLabel(req.provider)}
+                    {resolveProviderLabel(request.provider)}
                   </span>
                   <span className={styles.divider}>•</span>
-                  <span className={styles.requestModel} title={req.model}>
-                    {req.model ? cleanModelName(req.model) : "—"}
+                  <span className={styles.requestModel} title={request.model}>
+                    {request.model ? cleanModelName(request.model) : "—"}
                   </span>
-                  {req.operation && (
+                  {request.operation && (
                     <span className={styles.requestOperation}>
-                      {req.operation}
+                      {request.operation}
                     </span>
                   )}
                 </div>
                 <div className={styles.requestStats}>
-                  {req.inputTokens > 0 && (
+                  {request.inputTokens > 0 && (
                     <BadgeComponent
                       type="tokens"
-                      value={req.inputTokens}
+                      value={request.inputTokens}
                       label="in"
                       mini
                     />
                   )}
-                  {req.outputTokens > 0 && (
+                  {request.outputTokens > 0 && (
                     <BadgeComponent
                       type="tokens"
-                      value={req.outputTokens}
+                      value={request.outputTokens}
                       label="out"
                       mini
                     />
                   )}
-                  {req.cacheReadInputTokens > 0 && (
+                  {request.cacheReadInputTokens > 0 && (
                     <BadgeComponent
                       type="tokens"
-                      value={req.cacheReadInputTokens}
+                      value={request.cacheReadInputTokens}
                       label="cached"
                       mini
                     />
                   )}
-                  {req.reasoningOutputTokens > 0 && (
+                  {request.reasoningOutputTokens > 0 && (
                     <BadgeComponent
                       type="tokens"
-                      value={req.reasoningOutputTokens}
+                      value={request.reasoningOutputTokens}
                       label="reasoning"
                       mini
                     />
                   )}
-                  {req.totalTime > 0 && (
-                    <BadgeComponent type="stopwatch" seconds={req.totalTime} />
+                  {request.totalTime > 0 && (
+                    <BadgeComponent type="stopwatch" seconds={request.totalTime} />
                   )}
                   <span className={styles.requestCost} title="Cost">
-                    {formatCost(req.estimatedCost ?? 0)}
+                    {formatCost(request.estimatedCost ?? 0)}
                   </span>
-                  <BadgeComponent type="dateTime" date={req.timestamp} />
+                  <BadgeComponent type="dateTime" date={request.timestamp} />
                 </div>
               </div>
             );

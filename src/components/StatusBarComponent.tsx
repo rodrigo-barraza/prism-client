@@ -69,7 +69,7 @@ const SYNTHETIC_TICK_MS = 200;
 /**
  * Unified rainbow status bar shared by the main orchestrator and worker agents.
  *
- * ### Orchestrator usage (AgentComponent)
+ * ### Orchestrator usage (ChatSessionComponent)
  * ```jsx
  * <StatusBarComponent
  *   active={isGenerating}

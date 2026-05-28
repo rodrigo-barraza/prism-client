@@ -35,7 +35,7 @@
   padding: 12px;
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius-sm);
   transition: all 0.2s ease;
 
   &:hover {
@@ -365,10 +365,10 @@
   padding: 8px 14px;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: white;
+  color: var(--background-base, #0a0a0f);
   background: var(--color-amber);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
 
