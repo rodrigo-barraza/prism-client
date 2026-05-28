@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   Bot,
   ChevronDown,
@@ -89,9 +89,18 @@ export default function AgentPickerComponent({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const triggerRef = useRef<any>(null);
 
+  // Move "NONE" / "Agentless" to the bottom of the list
+  const sortedAgents = useMemo(() => {
+    return [...agents].sort((firstAgent, secondAgent) => {
+      if (firstAgent.id === "NONE") return 1;
+      if (secondAgent.id === "NONE") return -1;
+      return 0;
+    });
+  }, [agents]);
+
   const activeAgent = addMode
     ? null
-    : agents.find((a: any) => a.id === activeAgentId) || agents[0];
+    : sortedAgents.find((agent: any) => agent.id === activeAgentId) || sortedAgents[0];
 
   const handleSelect = useCallback(
     (agentId: any) => {
@@ -131,7 +140,7 @@ export default function AgentPickerComponent({
       if (event.key === "ArrowDown") {
         event.preventDefault();
         setHighlightedIndex((previousIndex) => {
-          const maximumIndex = agents.length - 1;
+          const maximumIndex = sortedAgents.length - 1;
           if (maximumIndex < 0) return -1;
           const nextIndex =
             previousIndex < maximumIndex ? previousIndex + 1 : 0;
@@ -144,7 +153,7 @@ export default function AgentPickerComponent({
       if (event.key === "ArrowUp") {
         event.preventDefault();
         setHighlightedIndex((previousIndex) => {
-          const maximumIndex = agents.length - 1;
+          const maximumIndex = sortedAgents.length - 1;
           if (maximumIndex < 0) return -1;
           const nextIndex =
             previousIndex > 0 ? previousIndex - 1 : maximumIndex;
@@ -156,8 +165,8 @@ export default function AgentPickerComponent({
 
       if (event.key === "Enter") {
         event.preventDefault();
-        if (highlightedIndex >= 0 && highlightedIndex < agents.length) {
-          const selectedAgent = agents[highlightedIndex];
+        if (highlightedIndex >= 0 && highlightedIndex < sortedAgents.length) {
+          const selectedAgent = sortedAgents[highlightedIndex];
           SoundService.playClickButton({});
           if (addMode) {
             handleAdd(selectedAgent);
@@ -173,20 +182,20 @@ export default function AgentPickerComponent({
   }, [
     isPopoverOpen,
     highlightedIndex,
-    agents,
+    sortedAgents,
     addMode,
     handleSelect,
     handleAdd,
   ]);
 
-  if (agents.length === 0) return null;
+  if (sortedAgents.length === 0) return null;
 
   // Determine which agent should show the spinning animation.
   // When an item is highlighted (hovered or keyboard-navigated), that agent spins.
   // Otherwise, the currently selected/active agent spins.
   const spinningAgentId =
-    highlightedIndex >= 0 && highlightedIndex < agents.length
-      ? agents[highlightedIndex].id
+    highlightedIndex >= 0 && highlightedIndex < sortedAgents.length
+      ? sortedAgents[highlightedIndex].id
       : activeAgentId;
 
   // -- Add-mode trigger label ----------------------------------
@@ -283,7 +292,7 @@ export default function AgentPickerComponent({
             onClick={() => setIsPopoverOpen(false)}
           />
           <div className={styles.popover} role="listbox">
-            {agents.map((agent: any, agentIndex: number) => {
+            {sortedAgents.map((agent: any, agentIndex: number) => {
               const isActive = !addMode && agent.id === activeAgentId;
               const isHighlighted = agentIndex === highlightedIndex;
               const shouldAnimate = agent.id === spinningAgentId;
