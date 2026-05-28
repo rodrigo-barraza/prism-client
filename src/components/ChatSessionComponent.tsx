@@ -569,7 +569,7 @@ export default function ChatSessionComponent({
     }
   }, [leftTab]);
 
-  const BOTTOM_PANEL_TABS = new Set(["tools", "params", "skills", "rules", "memories", "tasks", "mcp", "workers", "requests", "coordinator"]);
+  const BOTTOM_PANEL_TABS = new Set(["tools", "params", "skills", "rules", "memories", "tasks", "mcp", "coordinator"]);
 
   useEffect(() => {
     if (initialTabKey) {
@@ -4215,6 +4215,31 @@ export default function ChatSessionComponent({
             icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
             tooltip: "Info",
           },
+          ...(!isNoAgent
+            ? [
+                {
+                  key: "workers",
+                  icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
+                  ...badgeProps(workersCount, "workers"),
+                  badgeRainbow: Object.values(workerToolActivity).some(
+                    (w: WorkerActivityEntry) =>
+                      w.currentTool ||
+                      w.phase === "generating" ||
+                      w.phase === "thinking",
+                  ),
+                  tooltip: "Workers",
+                },
+              ]
+            : []),
+          {
+            key: "requests",
+            icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
+            ...badgeProps(
+              backendSessionStats?.requestCount || 0,
+              "requests",
+            ),
+            tooltip: "Requests",
+          },
         ]}
         activeTab={leftTab}
         onChange={(tab: string) => {
@@ -4591,6 +4616,29 @@ export default function ChatSessionComponent({
         </>
       )}
 
+      {leftTab === "workers" && (
+        <>
+          <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} actions={workersHeaderActions} />
+          <WorkersPanel
+            agentSessionId={agentSessionId}
+            refreshKey={tasksRefreshKey}
+            onCountChange={setWorkersCount}
+            onActionsChange={setWorkersHeaderActions}
+            workerToolActivity={workerToolActivity}
+          />
+        </>
+      )}
+
+      {leftTab === "requests" && (
+        <>
+          <SidebarTabHeaderComponent icon={BarChart3} title="Requests" count={backendSessionStats?.requestCount || 0} />
+          <SessionRequestsListComponent
+            agentSessionId={agentSessionId}
+            refreshKey={requestsRefreshKey}
+          />
+        </>
+      )}
+
     </div>
   );
 
@@ -4664,29 +4712,8 @@ export default function ChatSessionComponent({
                   ),
                   tooltip: "MCP Servers",
                 },
-                {
-                  key: "workers",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
-                  ...badgeProps(workersCount, "workers"),
-                  badgeRainbow: Object.values(workerToolActivity).some(
-                    (w: WorkerActivityEntry) =>
-                      w.currentTool ||
-                      w.phase === "generating" ||
-                      w.phase === "thinking",
-                  ),
-                  tooltip: "Workers",
-                },
               ]
             : []),
-          {
-            key: "requests",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
-            ...badgeProps(
-              backendSessionStats?.requestCount || 0,
-              "requests",
-            ),
-            tooltip: "Requests",
-          },
           ...(!isNoAgent
             ? [
                 {
@@ -4804,29 +4831,6 @@ export default function ChatSessionComponent({
             onServersChange={loadMCPServers}
             project={agentProject}
             onActionsChange={setMcpHeaderActions}
-          />
-        </>
-      )}
-
-      {leftTabBottom === "workers" && (
-        <>
-          <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} actions={workersHeaderActions} />
-          <WorkersPanel
-            agentSessionId={agentSessionId}
-            refreshKey={tasksRefreshKey}
-            onCountChange={setWorkersCount}
-            onActionsChange={setWorkersHeaderActions}
-            workerToolActivity={workerToolActivity}
-          />
-        </>
-      )}
-
-      {leftTabBottom === "requests" && (
-        <>
-          <SidebarTabHeaderComponent icon={BarChart3} title="Requests" count={backendSessionStats?.requestCount || 0} />
-          <SessionRequestsListComponent
-            agentSessionId={agentSessionId}
-            refreshKey={requestsRefreshKey}
           />
         </>
       )}
