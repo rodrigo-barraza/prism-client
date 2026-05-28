@@ -1,6 +1,21 @@
 /* ── FileViewerPanel — VS Code-style read-only file pane ──── */
+/* Always renders in a forced dark palette regardless of the active theme.
+   The titleBar is the only child that inherits the theme's accent color. */
 
 .container {
+  /* ── Forced dark-mode token overrides ─────────────────── */
+  --background-base: #0a0a0f;
+  --background-surface: #13141c;
+  --background-elevated: #1a1b26;
+  --calculated-border-color: rgba(255, 255, 255, 0.06);
+  --calculated-border-subtle: rgba(255, 255, 255, 0.03);
+  --calculated-border-medium: rgba(255, 255, 255, 0.1);
+  --text-primary: #f8f8f8;
+  --text-secondary: #8e95ae;
+  --text-tertiary: #6b728e;
+  --text-muted: #5a6078;
+  --color-white: #fff;
+
   display: flex;
   flex-direction: column;
   height: 100%;
