@@ -862,6 +862,7 @@ export default function ChatSessionComponent({
         textToImage: { models: {} },
         textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
         audioToText: { models: {} },
+        embedding: { models: {} },
       } as PrismConfig;
     }
 
@@ -891,6 +892,7 @@ export default function ChatSessionComponent({
       textToImage: { models: {} },
       textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
       audioToText: { models: {} },
+      embedding: { models: {} },
     } as PrismConfig;
   }, [config, isNoAgent]);
 

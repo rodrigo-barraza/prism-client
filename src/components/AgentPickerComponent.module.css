@@ -1,6 +1,10 @@
 /* ── AgentPickerComponent — Popover + Agent Items ─────────────────── */
 /* Trigger rendering is delegated to SelectComponent from the library */
 
+.agent-picker-container {
+  position: relative;
+}
+
 /* ── Add-mode trigger overrides ────────────── */
 
 .triggerAdd {

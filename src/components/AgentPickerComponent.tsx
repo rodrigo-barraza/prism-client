@@ -343,16 +343,18 @@ export default function AgentPickerComponent({
 
   if (disabled) {
     return (
-      <SelectComponent
-        isOpen={false}
-        onToggle={() => {}}
-        icon={triggerIcon}
-        placeholder={triggerLabel}
-        disabled
-        triggerTooltip="Start a new session to switch agents"
-      />
+      <div className={styles["agent-picker-container"]}>
+        <SelectComponent
+          isOpen={false}
+          onToggle={() => {}}
+          icon={triggerIcon}
+          placeholder={triggerLabel}
+          disabled
+          triggerTooltip="Start a new session to switch agents"
+        />
+      </div>
     );
   }
 
-  return triggerContent;
+  return <div className={styles["agent-picker-container"]}>{triggerContent}</div>;
 }

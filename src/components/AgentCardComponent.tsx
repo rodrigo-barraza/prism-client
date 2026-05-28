@@ -61,6 +61,7 @@ export default function AgentCardComponent({
       textToImage: { models: {} },
       textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
       audioToText: { models: {} },
+      embedding: { models: {} },
     };
   }, [config]);
 

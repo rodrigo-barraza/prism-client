@@ -585,7 +585,7 @@ export default function ModelPickerPopoverComponent({
     ) : null;
 
   const triggerContent = (
-    <>
+    <div className={styles["model-picker-container"]}>
       {/* -- Trigger pill (SelectComponent in controlled mode) ---- */}
       <SelectComponent
         isOpen={open}
@@ -678,19 +678,21 @@ export default function ModelPickerPopoverComponent({
           </div>,
           document.body,
         )}
-    </>
+    </div>
   );
 
   if (disabled) {
     return (
-      <SelectComponent
-        isOpen={false}
-        onToggle={() => {}}
-        icon={triggerIconElement}
-        placeholder={displayLabel}
-        disabled
-        triggerTooltip="Start a new session to switch models"
-      />
+      <div className={styles["model-picker-container"]}>
+        <SelectComponent
+          isOpen={false}
+          onToggle={() => {}}
+          icon={triggerIconElement}
+          placeholder={displayLabel}
+          disabled
+          triggerTooltip="Start a new session to switch models"
+        />
+      </div>
     );
   }
 

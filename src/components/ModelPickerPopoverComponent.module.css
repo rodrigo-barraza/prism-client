@@ -1,6 +1,10 @@
 /* ── ModelPickerPopoverComponent ────────────────────────────────────── */
 /* Trigger rendering is delegated to SelectComponent from the library */
 
+.model-picker-container {
+  position: relative;
+}
+
 /* ── Trigger overrides ─────────────────────────────────────────────── */
 
 .triggerActive {
