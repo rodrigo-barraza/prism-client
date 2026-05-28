@@ -13,6 +13,7 @@ import {
   Workflow,
   Parentheses,
 } from "lucide-react";
+import { InputComponent } from "@rodrigo-barraza/components-library";
 import HistoryList from "./HistoryListComponent";
 import styles from "./WorkflowSidebarComponent.module.css";
 
@@ -89,15 +90,12 @@ export default function WorkflowSidebar({
       {/* Workflow name input — user mode only */}
       {!admin && (
         <div className={styles.nameInputWrapper}>
-          <input
+          <InputComponent
             type="text"
-            className={styles.nameInput}
             placeholder="Untitled Workflow"
             value={workflowName || ""}
             onChange={(
-              e: React.ChangeEvent<
-                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-              >,
+              e: React.ChangeEvent<HTMLInputElement>,
             ) => onWorkflowNameChange?.(e.target.value)}
           />
         </div>

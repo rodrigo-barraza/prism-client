@@ -12,6 +12,7 @@ import {
   Wrench,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
+import { InputComponent } from "@rodrigo-barraza/components-library";
 import styles from "./MCPServersPanelComponent.module.css";
 import type { MCPServer } from "@/types/types";
 import type { ReactNode } from "react";
@@ -201,14 +202,11 @@ export default function MCPServersPanel({
         <div className={styles.form}>
           <div className={styles.formGroup}>
             <label>Server Name</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingServer.name}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLInputElement>,
               ) =>
                 setEditingServer((s: MCPServer | null) =>
                   s
@@ -230,14 +228,11 @@ export default function MCPServersPanel({
 
           <div className={styles.formGroup}>
             <label>Display Name</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingServer.displayName}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLInputElement>,
               ) =>
                 setEditingServer((s: MCPServer | null) =>
                   s
@@ -287,14 +282,11 @@ export default function MCPServersPanel({
             <>
               <div className={styles.formGroup}>
                 <label>Command</label>
-                <input
+                <InputComponent
                   type="text"
-                  className={styles.input}
                   value={editingServer.command}
                   onChange={(
-                    e: React.ChangeEvent<
-                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                    >,
+                    e: React.ChangeEvent<HTMLInputElement>,
                   ) =>
                     setEditingServer((s: MCPServer | null) =>
                       s
@@ -310,18 +302,15 @@ export default function MCPServersPanel({
               </div>
               <div className={styles.formGroup}>
                 <label>Arguments</label>
-                <input
+                <InputComponent
                   type="text"
-                  className={styles.input}
                   value={
                     Array.isArray(editingServer.args)
                       ? editingServer.args.join(", ")
                       : editingServer.args
                   }
                   onChange={(
-                    e: React.ChangeEvent<
-                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                    >,
+                    e: React.ChangeEvent<HTMLInputElement>,
                   ) =>
                     setEditingServer((s: MCPServer | null) =>
                       s
@@ -340,14 +329,11 @@ export default function MCPServersPanel({
           ) : (
             <div className={styles.formGroup}>
               <label>Server URL</label>
-              <input
+              <InputComponent
                 type="text"
-                className={styles.input}
                 value={editingServer.url}
                 onChange={(
-                  e: React.ChangeEvent<
-                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                  >,
+                  e: React.ChangeEvent<HTMLInputElement>,
                 ) =>
                   setEditingServer((s: MCPServer | null) =>
                     s ? { ...s, url: e.target.value } : null,

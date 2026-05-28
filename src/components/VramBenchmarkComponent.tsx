@@ -46,6 +46,7 @@ import {
   FilterSelectComponent,
 } from "./FilterBarComponent";
 import {
+  InputComponent,
   PageHeaderComponent,
   SelectComponent,
   StatsCardComponent as StatsCard,
@@ -3964,15 +3965,13 @@ export default function VramBenchmarkComponent() {
           <FilterBarComponent>
             <div className={styles.chartSearchGroup}>
               <Search size={13} className={styles.chartSearchIcon} />
-              <input
+              <InputComponent
                 type="text"
                 className={styles.chartSearchInput}
                 placeholder="Highlight model…"
                 value={chartSearch}
                 onChange={(
-                  e: React.ChangeEvent<
-                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                  >,
+                  e: React.ChangeEvent<HTMLInputElement>,
                 ) => setChartSearch(e.target.value)}
               />
               {chartSearch && (
@@ -4012,33 +4011,25 @@ export default function VramBenchmarkComponent() {
               <div className={styles.vramClipGroup}>
                 <label className={styles.vramClipLabel}>Context Range</label>
                 <div className={styles.vramClipInputs}>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.vramClipInput}
                     placeholder="Min"
                     value={ctxMin}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) => setCtxMin(e.target.value)}
                     min="0"
                     step="1"
                   />
                   <span className={styles.vramClipSeparator}>–</span>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.vramClipInput}
                     placeholder="Max"
                     value={ctxMax}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) => setCtxMax(e.target.value)}
                     min="0"
                     step="1"
@@ -4085,33 +4076,25 @@ export default function VramBenchmarkComponent() {
                   {activeScatterMode.xLabel.split(" (")[0]} Range
                 </label>
                 <div className={styles.vramClipInputs}>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.vramClipInput}
                     placeholder="Min"
                     value={scatterClipXMin}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) => setScatterClipXMin(e.target.value)}
                     min="0"
                     step="0.5"
                   />
                   <span className={styles.vramClipSeparator}>–</span>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.vramClipInput}
                     placeholder="Max"
                     value={scatterClipXMax}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) => setScatterClipXMax(e.target.value)}
                     min="0"
                     step="0.5"
@@ -4126,33 +4109,25 @@ export default function VramBenchmarkComponent() {
               <div className={styles.vramClipGroup}>
                 <label className={styles.vramClipLabel}>VRAM Range</label>
                 <div className={styles.vramClipInputs}>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.vramClipInput}
                     placeholder="Min"
                     value={vramClipMin}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) => setVramClipMin(e.target.value)}
                     min="0"
                     step="0.5"
                   />
                   <span className={styles.vramClipSeparator}>–</span>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.vramClipInput}
                     placeholder="Max"
                     value={vramClipMax}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) => setVramClipMax(e.target.value)}
                     min="0"
                     step="0.5"
@@ -4165,33 +4140,25 @@ export default function VramBenchmarkComponent() {
               <div className={styles.vramClipGroup}>
                 <label className={styles.vramClipLabel}>TPS Range</label>
                 <div className={styles.vramClipInputs}>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.vramClipInput}
                     placeholder="Min"
                     value={tpsClipMin}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) => setTpsClipMin(e.target.value)}
                     min="0"
                     step="5"
                   />
                   <span className={styles.vramClipSeparator}>–</span>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.vramClipInput}
                     placeholder="Max"
                     value={tpsClipMax}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) => setTpsClipMax(e.target.value)}
                     min="0"
                     step="5"

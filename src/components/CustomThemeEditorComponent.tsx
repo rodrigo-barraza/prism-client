@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import {
+  InputComponent,
   useTheme,
   CustomThemeService,
 } from "@rodrigo-barraza/components-library";
@@ -428,9 +429,8 @@ export default function CustomThemeEditorComponent({
           {/* Name input */}
           <div className={styles.editorNameRow}>
             <label className={styles.editorLabel}>Name</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.editorNameInput}
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               placeholder="Theme name"
@@ -588,7 +588,7 @@ export default function CustomThemeEditorComponent({
                                 style={{ background: editTokens[field.key] }}
                               />
                             </div>
-                            <input
+                            <InputComponent
                               type="text"
                               className={styles.hexInput}
                               value={editTokens[field.key]}

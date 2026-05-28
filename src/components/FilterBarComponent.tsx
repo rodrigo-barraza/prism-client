@@ -1,7 +1,11 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
+import {
+  InputComponent,
+  SelectComponent as LibSelectComponent,
+  TooltipComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./FilterBarComponent.module.css";
 
 export interface FilterBarProps {
@@ -89,14 +93,12 @@ export function SearchInputComponent({
   return (
     <form className={styles.searchBox} onSubmit={onSubmit}>
       <Search size={14} />
-      <input
+      <InputComponent
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={(
-          e: React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-          >,
+          e: React.ChangeEvent<HTMLInputElement>,
         ) => onChange(e.target.value)}
         className={styles.searchInput}
       />
@@ -215,15 +217,13 @@ export function FilterInputComponent({
   className = "",
 }: FilterInputProps) {
   return (
-    <input
+    <InputComponent
       type="text"
       className={`${styles.filterInput} ${className}`}
       placeholder={placeholder}
       value={value}
       onChange={(
-        e: React.ChangeEvent<
-          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >,
+        e: React.ChangeEvent<HTMLInputElement>,
       ) => onChange(e.target.value)}
     />
   );
@@ -248,21 +248,11 @@ export function FilterSelectComponent({
   className = "",
 }: FilterSelectProps) {
   return (
-    <select
-      className={`${styles.filterSelect} ${className}`}
+    <LibSelectComponent
       value={value}
-      onChange={(
-        e: React.ChangeEvent<
-          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >,
-      ) => onChange(e.target.value)}
-    >
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
+      options={options}
+      onChange={(val: string) => onChange(val)}
+    />
   );
 }
 

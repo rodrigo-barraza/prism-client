@@ -74,6 +74,9 @@ import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
   ToggleComponent,
+  InputComponent,
+  TextAreaComponent,
+  SelectComponent,
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
@@ -336,14 +339,11 @@ export default function CustomAgentsPanel({
           <div className={styles.formRow}>
             <div className={styles.formGroup} style={{ flex: 2 }}>
               <label>Agent Name</label>
-              <input
+              <InputComponent
                 type="text"
-                className={styles.input}
                 value={editingAgent.name}
                 onChange={(
-                  e: React.ChangeEvent<
-                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                  >,
+                  e: React.ChangeEvent<HTMLInputElement>,
                 ) => updateField("name", e.target.value)}
                 placeholder="My Agent"
               />
@@ -359,14 +359,11 @@ export default function CustomAgentsPanel({
             </div>
             <div className={styles.formGroup} style={{ flex: 1 }}>
               <label>Project</label>
-              <input
+              <InputComponent
                 type="text"
-                className={styles.input}
                 value={editingAgent.project}
                 onChange={(
-                  e: React.ChangeEvent<
-                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                  >,
+                  e: React.ChangeEvent<HTMLInputElement>,
                 ) => updateField("project", e.target.value)}
                 placeholder="coding"
               />
@@ -377,14 +374,11 @@ export default function CustomAgentsPanel({
           {/* Description */}
           <div className={styles.formGroup}>
             <label>Description</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingAgent.description}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLInputElement>,
               ) => updateField("description", e.target.value)}
               placeholder="Short description for the agent picker..."
             />
@@ -471,14 +465,11 @@ export default function CustomAgentsPanel({
               />
               Background Image
             </label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingAgent.backgroundImage || ""}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLInputElement>,
               ) => updateField("backgroundImage", e.target.value)}
               placeholder="https://example.com/background.jpg"
             />
@@ -512,16 +503,13 @@ export default function CustomAgentsPanel({
           {/* Identity Prompt */}
           <div className={styles.formGroup}>
             <label>Identity Prompt</label>
-            <textarea
-              className={styles.textarea}
-              value={editingAgent.identity}
+            <TextAreaComponent
+              value={editingAgent.identity || ""}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLTextAreaElement>,
               ) => updateField("identity", e.target.value)}
               placeholder="You are a senior backend engineer specializing in..."
-              rows={5}
+              minRows={5}
             />
             <span className={styles.hint}>
               Core personality and role — injected at the top of the system
@@ -532,16 +520,13 @@ export default function CustomAgentsPanel({
           {/* Guidelines */}
           <div className={styles.formGroup}>
             <label>Response Guidelines</label>
-            <textarea
-              className={styles.textarea}
-              value={editingAgent.guidelines}
+            <TextAreaComponent
+              value={editingAgent.guidelines || ""}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLTextAreaElement>,
               ) => updateField("guidelines", e.target.value)}
-              placeholder="## Guidelines&#10;- Always explain your reasoning...&#10;- Use bullet points for clarity..."
-              rows={4}
+              placeholder={"## Guidelines\n- Always explain your reasoning...\n- Use bullet points for clarity..."}
+              minRows={4}
             />
             <span className={styles.hint}>
               Always injected into the system prompt — behavioral instructions
@@ -552,16 +537,13 @@ export default function CustomAgentsPanel({
           {/* Tool Policy */}
           <div className={styles.formGroup}>
             <label>Tool Policy</label>
-            <textarea
-              className={styles.textarea}
-              value={editingAgent.toolPolicy}
+            <TextAreaComponent
+              value={editingAgent.toolPolicy || ""}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLTextAreaElement>,
               ) => updateField("toolPolicy", e.target.value)}
-              placeholder="# Tool Usage&#10;- Use read_file before editing...&#10;- Always run tests after changes..."
-              rows={4}
+              placeholder={"# Tool Usage\n- Use read_file before editing...\n- Always run tests after changes..."}
+              minRows={4}
             />
             <span className={styles.hint}>
               Instructions for how the agent should use its tools
@@ -645,27 +627,25 @@ export default function CustomAgentsPanel({
             {(editingAgent.policies || []).map(
               (policy: SerializedPolicy, idx: number) => (
                 <div key={idx} className={styles.policyRow}>
-                  <select
-                    className={styles.policySelect}
+                  <SelectComponent
                     value={policy.decision}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    options={[
+                      { value: "DENY", label: "Deny" },
+                      { value: "ASK_USER", label: "Ask User" },
+                      { value: "APPROVE", label: "Allow" },
+                    ]}
+                    onChange={(value: string) => {
                       const updated = [...(editingAgent.policies || [])];
                       updated[idx] = {
                         ...updated[idx],
-                        decision: e.target
-                          .value as SerializedPolicy["decision"],
+                        decision: value as SerializedPolicy["decision"],
                       };
                       updateField("policies", updated);
                     }}
-                  >
-                    <option value="DENY">Deny</option>
-                    <option value="ASK_USER">Ask User</option>
-                    <option value="APPROVE">Allow</option>
-                  </select>
+                  />
 
-                  <input
+                  <InputComponent
                     type="text"
-                    className={styles.policyInput}
                     value={policy.tool}
                     placeholder="Tool name or *"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -675,9 +655,8 @@ export default function CustomAgentsPanel({
                     }}
                   />
 
-                  <input
+                  <InputComponent
                     type="text"
-                    className={styles.policyInput}
                     value={policy.pattern || ""}
                     placeholder="Regex pattern (optional)"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -690,9 +669,8 @@ export default function CustomAgentsPanel({
                     }}
                   />
 
-                  <input
+                  <InputComponent
                     type="text"
-                    className={styles.policyInput}
                     value={policy.field || ""}
                     placeholder="Field (default: command)"
                     style={{ maxWidth: 140 }}

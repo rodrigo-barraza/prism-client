@@ -23,6 +23,8 @@ import {
 import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
+  InputComponent,
+  SelectComponent,
   TextAreaComponent,
   ToggleComponent,
 } from "@rodrigo-barraza/components-library";
@@ -434,14 +436,11 @@ export default function CustomToolsPanel({
         <div className={styles.form}>
           <div className={styles.formGroup}>
             <label>Function Name</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingTool.name}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLInputElement>,
               ) =>
                 setEditingTool((t: CustomToolFormState | null) =>
                   t
@@ -567,16 +566,11 @@ export default function CustomToolsPanel({
                       <div className={styles.paramRow}>
                         <div className={styles.paramField}>
                           <label>Name</label>
-                          <input
+                          <InputComponent
                             type="text"
-                            className={styles.inputSmall}
                             value={param.name}
                             onChange={(
-                              e: React.ChangeEvent<
-                                | HTMLInputElement
-                                | HTMLTextAreaElement
-                                | HTMLSelectElement
-                              >,
+                              e: React.ChangeEvent<HTMLInputElement>,
                             ) => updateParameter(i, "name", e.target.value)}
                             placeholder="symbol"
                           />
@@ -586,23 +580,13 @@ export default function CustomToolsPanel({
                           style={{ width: 100 }}
                         >
                           <label>Type</label>
-                          <select
-                            className={styles.selectSmall}
+                          <SelectComponent
                             value={param.type}
-                            onChange={(
-                              e: React.ChangeEvent<
-                                | HTMLInputElement
-                                | HTMLTextAreaElement
-                                | HTMLSelectElement
-                              >,
-                            ) => updateParameter(i, "type", e.target.value)}
-                          >
-                            {PARAM_TYPES.map((t) => (
-                              <option key={t.value} value={t.value}>
-                                {t.label}
-                              </option>
-                            ))}
-                          </select>
+                            options={PARAM_TYPES}
+                            onChange={(val: string) =>
+                              updateParameter(i, "type", val)
+                            }
+                          />
                         </div>
                         <div className={styles.paramFieldToggle}>
                           <label>Req</label>
@@ -618,16 +602,11 @@ export default function CustomToolsPanel({
 
                       <div className={styles.paramField}>
                         <label>Description</label>
-                        <input
+                        <InputComponent
                           type="text"
-                          className={styles.inputSmall}
                           value={param.description}
                           onChange={(
-                            e: React.ChangeEvent<
-                              | HTMLInputElement
-                              | HTMLTextAreaElement
-                              | HTMLSelectElement
-                            >,
+                            e: React.ChangeEvent<HTMLInputElement>,
                           ) =>
                             updateParameter(i, "description", e.target.value)
                           }
@@ -642,16 +621,11 @@ export default function CustomToolsPanel({
                             (comma-separated, optional)
                           </span>
                         </label>
-                        <input
+                        <InputComponent
                           type="text"
-                          className={styles.inputSmall}
                           value={param.enum}
                           onChange={(
-                            e: React.ChangeEvent<
-                              | HTMLInputElement
-                              | HTMLTextAreaElement
-                              | HTMLSelectElement
-                            >,
+                            e: React.ChangeEvent<HTMLInputElement>,
                           ) => updateParameter(i, "enum", e.target.value)}
                           placeholder="1d, 5d, 1m, 3m, 1y"
                         />

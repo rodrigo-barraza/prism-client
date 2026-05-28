@@ -32,6 +32,7 @@ import ThreePanelLayout from "../../components/ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
 import {
   ButtonComponent,
+  InputComponent,
   ToastComponent,
   useToast,
 } from "@rodrigo-barraza/components-library";
@@ -1440,7 +1441,7 @@ export default function WorkflowsPage({
       {/* Footer: save workflow (matches ChatArea inputWrapper) */}
       <div className={styles.inputWrapper}>
         <div className={styles.inputBox}>
-          <input
+          <InputComponent
             type="text"
             className={styles.nameInput}
             placeholder="Untitled Workflow"

@@ -7,6 +7,8 @@ import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
   ToggleComponent,
+  InputComponent,
+  TextAreaComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./SkillsPanelComponent.module.css";
 import type { Skill } from "@/types/types";
@@ -175,14 +177,11 @@ export default function SkillsPanel({
         <div className={styles.form}>
           <div className={styles.formGroup}>
             <label>Skill Name</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingSkill.name}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLInputElement>,
               ) =>
                 setEditingSkill((s: Skill | null) =>
                   s
@@ -204,14 +203,11 @@ export default function SkillsPanel({
 
           <div className={styles.formGroup}>
             <label>Description</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingSkill.description || ""}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLInputElement>,
               ) =>
                 setEditingSkill((s: Skill | null) =>
                   s
@@ -231,13 +227,11 @@ export default function SkillsPanel({
 
           <div className={styles.formGroup}>
             <label>Content (Markdown)</label>
-            <textarea
-              className={`${styles.textarea} ${styles.contentTextarea}`}
+            <TextAreaComponent
+              className={styles.contentTextarea}
               value={editingSkill.content || ""}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLTextAreaElement>,
               ) => {
                 const value = e.target.value;
                 if (value.length <= CONTENT_MAX_CHARS) {
@@ -247,6 +241,7 @@ export default function SkillsPanel({
                 }
               }}
               placeholder={`## Coding Guidelines\n\n- Always use const over let\n- Prefer async/await over .then()\n- Use JSDoc comments for public functions\n- ...`}
+              autoResize={false}
             />
             <div
               className={`${styles.charCounter} ${isOverMax ? styles.charCounterDanger : isOverWarn ? styles.charCounterWarn : ""}`}

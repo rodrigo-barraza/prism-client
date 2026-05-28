@@ -14,6 +14,8 @@ import {
   ButtonComponent,
   FormGroupComponent,
   IconButtonComponent,
+  InputComponent,
+  SelectComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./AgentAssertionsComponent.module.css";
 
@@ -215,34 +217,24 @@ export default function AgentAssertionsComponent({
                   {typeDef.hasOperand && (
                     <div className={styles.operandGroup}>
                       <FormGroupComponent label="Condition">
-                        <select
+                        <SelectComponent
                           value={a.operator || typeDef.operators[0].value}
-                          onChange={(
-                            e: React.ChangeEvent<
-                              | HTMLInputElement
-                              | HTMLTextAreaElement
-                              | HTMLSelectElement
-                            >,
-                          ) => updateAssertion(i, "operator", e.target.value)}
-                        >
-                          {typeDef.operators.map((op: any) => (
-                            <option key={op.value} value={op.value}>
-                              {op.label}
-                            </option>
-                          ))}
-                        </select>
+                          options={typeDef.operators.map((op: any) => ({
+                            value: op.value,
+                            label: op.label,
+                          }))}
+                          onChange={(value: string) =>
+                            updateAssertion(i, "operator", value)
+                          }
+                        />
                       </FormGroupComponent>
                       <FormGroupComponent label="Value">
-                        <input
+                        <InputComponent
                           type="number"
-                          min="0"
+                          min={0}
                           value={a.operand ?? ""}
                           onChange={(
-                            e: React.ChangeEvent<
-                              | HTMLInputElement
-                              | HTMLTextAreaElement
-                              | HTMLSelectElement
-                            >,
+                            e: React.ChangeEvent<HTMLInputElement>,
                           ) => updateAssertion(i, "operand", e.target.value)}
                           placeholder={typeDef.placeholder}
                         />

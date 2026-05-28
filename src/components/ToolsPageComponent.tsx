@@ -1,6 +1,10 @@
 "use client";
 
-import { ToolCardComponent as ToolSchemaCard } from "@rodrigo-barraza/components-library";
+import {
+  InputComponent,
+  SelectComponent,
+  ToolCardComponent as ToolSchemaCard,
+} from "@rodrigo-barraza/components-library";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -897,69 +901,46 @@ export default function ToolsPageComponent() {
       <div className={styles.filterBar}>
         <div className={styles.searchWrapper}>
           <Search className={styles.searchIcon} />
-          <input
+          <InputComponent
             className={styles.searchInput}
             type="text"
             placeholder="Search tools by name, description, or label…"
             value={search}
             onChange={(
-              e: React.ChangeEvent<
-                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-              >,
+              e: React.ChangeEvent<HTMLInputElement>,
             ) => setSearch(e.target.value)}
           />
         </div>
 
-        <select
-          className={styles.domainFilter}
+        <SelectComponent
           value={domainFilter}
-          onChange={(
-            e: React.ChangeEvent<
-              HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-            >,
-          ) => setDomainFilter(e.target.value)}
-        >
-          <option value="">All Domains</option>
-          {allDomains.map((d: string) => (
-            <option key={d} value={d}>
-              {d}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: "", label: "All Domains" },
+            ...allDomains.map((d: string) => ({ value: d, label: d })),
+          ]}
+          onChange={(val: string) => setDomainFilter(val)}
+        />
 
-        <select
-          className={styles.labelFilter}
+        <SelectComponent
           value={labelFilter}
-          onChange={(
-            e: React.ChangeEvent<
-              HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-            >,
-          ) => setLabelFilter(e.target.value)}
-        >
-          <option value="">All Labels</option>
-          {allLabels.map((l: string) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: "", label: "All Labels" },
+            ...allLabels.map((l: string) => ({ value: l, label: l })),
+          ]}
+          onChange={(val: string) => setLabelFilter(val)}
+        />
 
-        <select
-          className={styles.agentFilterSelect}
+        <SelectComponent
           value={agentFilter}
-          onChange={(
-            e: React.ChangeEvent<
-              HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-            >,
-          ) => setAgentFilter(e.target.value)}
-        >
-          <option value="">All Agents</option>
-          {agents.map((a: AgentMinimal) => (
-            <option key={a.id} value={a.id}>
-              {a.name} {a.toolCount !== undefined ? `(${a.toolCount})` : ""}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: "", label: "All Agents" },
+            ...agents.map((a: AgentMinimal) => ({
+              value: a.id,
+              label: `${a.name}${a.toolCount !== undefined ? ` (${a.toolCount})` : ""}`,
+            })),
+          ]}
+          onChange={(val: string) => setAgentFilter(val)}
+        />
 
         <div className={styles.viewToggle}>
           <button

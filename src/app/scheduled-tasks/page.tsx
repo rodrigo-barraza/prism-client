@@ -523,7 +523,7 @@ export default function ScheduledTasksPage() {
               <div className={styles.headerActions}>
                 <div className={styles.searchWrapper}>
                   <Search size={14} className={styles.searchIcon} />
-                  <input
+                  <InputComponent
                     type="text"
                     placeholder="Search tasks…"
                     value={searchQuery}

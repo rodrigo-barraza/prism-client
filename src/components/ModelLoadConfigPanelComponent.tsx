@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Cpu, HardDrive, Zap, Database, Loader2 } from "lucide-react";
 import {
+  InputComponent,
   ModalComponent,
   SliderComponent,
   ToggleComponent as ToggleSwitch,
@@ -316,7 +317,7 @@ export default function ModelLoadConfigPanel({
             <Database size={14} />
             Context Length
           </span>
-          <input
+          <InputComponent
             type="number"
             className={styles.sliderInput}
             value={contextLength}
@@ -348,7 +349,7 @@ export default function ModelLoadConfigPanel({
               Est.
             </span>
           </span>
-          <input
+          <InputComponent
             type="number"
             className={styles.sliderInput}
             value={gpuLayers}

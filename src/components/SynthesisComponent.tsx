@@ -27,6 +27,7 @@ import {
   CopyButtonComponent,
   EmptyStateComponent,
   IconButtonComponent,
+  InputComponent,
   SelectComponent,
   TabBarComponent,
   TextAreaComponent,
@@ -944,7 +945,7 @@ export default function SynthesisComponent() {
                 Length
               </div>
               <div className={styles.configBarControl}>
-                <input
+                <InputComponent
                   type="number"
                   className={styles.turnsInput}
                   value={targetTurns}

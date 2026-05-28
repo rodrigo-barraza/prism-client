@@ -19,7 +19,11 @@ import {
 import ToolsApiService from "../services/ToolsApiService";
 import type { AgenticTask } from "../services/ToolsApiService";
 import { getErrorMessage } from "../utils/errorMessage";
-import { SearchInputComponent } from "@rodrigo-barraza/components-library";
+import {
+  SearchInputComponent,
+  InputComponent,
+  TextAreaComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./TasksPanelComponent.module.css";
 
 interface StatusConfigEntry {
@@ -312,27 +316,21 @@ export default function TasksPanel({
       {/* -- New Task Form ------------------------------------ */}
       {showNewForm && (
         <form className={styles.newTaskForm} onSubmit={handleCreate}>
-          <input
-            className={styles.newTaskInput}
+          <InputComponent
             placeholder="Task subject…"
             value={newSubject}
             onChange={(
-              e: React.ChangeEvent<
-                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-              >,
+              e: React.ChangeEvent<HTMLInputElement>,
             ) => setNewSubject(e.target.value)}
             autoFocus
           />
-          <textarea
-            className={styles.newTaskTextarea}
+          <TextAreaComponent
             placeholder="Description…"
             value={newDescription}
             onChange={(
-              e: React.ChangeEvent<
-                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-              >,
+              e: React.ChangeEvent<HTMLTextAreaElement>,
             ) => setNewDescription(e.target.value)}
-            rows={2}
+            minRows={2}
           />
           <div className={styles.newTaskActions}>
             <button

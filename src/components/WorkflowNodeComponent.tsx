@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { TextAreaComponent } from "@rodrigo-barraza/components-library";
 import {
   X,
   Upload,
@@ -1188,7 +1189,7 @@ function AssetNode(props: AssetNodeProps) {
                 ) : node.modality === "text" &&
                   node.content !== undefined &&
                   node.modality !== null ? (
-                  <textarea
+                  <TextAreaComponent
                     className={styles.assetTextarea}
                     value={(node.content as string) || ""}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -1199,6 +1200,7 @@ function AssetNode(props: AssetNodeProps) {
                       e.stopPropagation();
                       onSelectNode?.(node.id);
                     }}
+                    autoResize={false}
                   />
                 ) : node.modality === "conversation" ? null : (
                   /* File input: upload / drag-drop zone or preview */

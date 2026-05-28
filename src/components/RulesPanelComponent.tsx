@@ -15,6 +15,8 @@ import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
   ToggleComponent,
+  InputComponent,
+  TextAreaComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./RulesPanelComponent.module.css";
 import type { Rule } from "@/types/types";
@@ -178,9 +180,8 @@ export default function RulesPanel({
         <div className={styles.form}>
           <div className={styles["form-group"]}>
             <label>Rule Name</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingRule.name}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                 setEditingRule((previous: Rule | null) =>
@@ -206,9 +207,8 @@ export default function RulesPanel({
 
           <div className={styles["form-group"]}>
             <label>Description</label>
-            <input
+            <InputComponent
               type="text"
-              className={styles.input}
               value={editingRule.description || ""}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                 setEditingRule((previous: Rule | null) =>
@@ -229,8 +229,8 @@ export default function RulesPanel({
 
           <div className={styles["form-group"]}>
             <label>Content (Markdown)</label>
-            <textarea
-              className={`${styles.textarea} ${styles["content-textarea"]}`}
+            <TextAreaComponent
+              className={styles["content-textarea"]}
               value={editingRule.content || ""}
               onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
                 const value = event.target.value;
@@ -241,6 +241,7 @@ export default function RulesPanel({
                 }
               }}
               placeholder={`## TypeScript Conventions\n\n- Always use const over let\n- Prefer async/await over .then()\n- Use descriptive variable names\n- ...`}
+              autoResize={false}
             />
             <div
               className={`${styles["character-counter"]} ${isOverMaximumThreshold ? styles["character-counter-danger"] : isOverWarningThreshold ? styles["character-counter-warning"] : ""}`}

@@ -23,7 +23,11 @@ import type { PrismConfig, ModelOption } from "../types/types";
 import PrismService from "../services/PrismService";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ProviderLogo from "./ProviderLogosComponent";
-import { PageHeaderComponent } from "@rodrigo-barraza/components-library";
+import {
+  InputComponent,
+  PageHeaderComponent,
+  TextAreaComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./VisionPageComponent.module.css";
 
 // ── Source type definitions ───────────────────────────────────────
@@ -685,15 +689,12 @@ export default function VisionPageComponent() {
             {/* IP Camera URL input */}
             {sourceType === "ipcam" && (
               <div className={styles.urlInputRow}>
-                <input
+                <InputComponent
                   type="text"
-                  className={styles.urlInput}
                   placeholder="rtsp://user:pass@192.168.1.100/stream1 or http://…/mjpeg"
                   value={ipCamUrl}
                   onChange={(
-                    e: React.ChangeEvent<
-                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                    >,
+                    e: React.ChangeEvent<HTMLInputElement>,
                   ) => setIpCamUrl(e.target.value)}
                 />
                 <button
@@ -859,16 +860,12 @@ export default function VisionPageComponent() {
                 {/* Interval */}
                 <div className={styles.controlGroup}>
                   <span className={styles.controlLabel}>Every</span>
-                  <input
+                  <InputComponent
                     type="number"
                     className={styles.intervalInput}
                     value={intervalSec}
                     onChange={(
-                      e: React.ChangeEvent<
-                        | HTMLInputElement
-                        | HTMLTextAreaElement
-                        | HTMLSelectElement
-                      >,
+                      e: React.ChangeEvent<HTMLInputElement>,
                     ) =>
                       setIntervalSec(Math.max(1, parseInt(e.target.value) || 1))
                     }
@@ -910,17 +907,15 @@ export default function VisionPageComponent() {
 
               {/* Prompt */}
               <div className={styles.promptRow}>
-                <textarea
+                <TextAreaComponent
                   className={styles.promptTextarea}
                   value={prompt}
                   onChange={(
-                    e: React.ChangeEvent<
-                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                    >,
+                    e: React.ChangeEvent<HTMLTextAreaElement>,
                   ) => setPrompt(e.target.value)}
                   placeholder="What should the AI look for?"
                   disabled={isAnalyzing}
-                  rows={2}
+                  minRows={2}
                 />
               </div>
 
@@ -1124,13 +1119,11 @@ export default function VisionPageComponent() {
 
               {/* Chat Input Row */}
               <div className={styles.chatInputRow}>
-                <textarea
+                <TextAreaComponent
                   className={styles.chatInput}
                   value={chatInput}
                   onChange={(
-                    e: React.ChangeEvent<
-                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                    >,
+                    e: React.ChangeEvent<HTMLTextAreaElement>,
                   ) => setChatInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
@@ -1140,7 +1133,7 @@ export default function VisionPageComponent() {
                   }}
                   placeholder="Tell the agent what to check, e.g., 'What changes do you see?' or 'Make this web page design...'"
                   disabled={isAgentStreaming || !settings.model}
-                  rows={2}
+                  minRows={2}
                 />
                 <button
                   className={styles.sendButton}

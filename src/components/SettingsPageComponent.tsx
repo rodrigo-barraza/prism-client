@@ -40,6 +40,7 @@ import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
 import {
   ButtonComponent,
   CardComponent,
+  InputComponent,
   PageHeaderComponent,
   ToggleComponent,
 } from "@rodrigo-barraza/components-library";
@@ -690,15 +691,13 @@ export default function SettingsPageComponent() {
 
           {/* Add workspace input */}
           <div className={styles.addWorkspaceRow}>
-            <input
+            <InputComponent
               type="text"
-              className={`${styles.addWorkspaceInput} ${wsValidation ? ((wsValidation as { valid: boolean; error?: string }).valid ? styles.valid : styles.invalid) : ""}`}
+              className={`${wsValidation ? ((wsValidation as { valid: boolean; error?: string }).valid ? styles.valid : styles.invalid) : ""}`}
               placeholder="Add workspace path (e.g. /home/user/projects or C:\Users\...)"
               value={wsAddPath}
               onChange={(
-                e: React.ChangeEvent<
-                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                >,
+                e: React.ChangeEvent<HTMLInputElement>,
               ) => handleWsPathChange(e.target.value)}
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (

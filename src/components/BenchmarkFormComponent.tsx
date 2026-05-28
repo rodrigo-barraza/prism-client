@@ -7,6 +7,8 @@ import {
   ButtonComponent,
   FormGroupComponent,
   IconButtonComponent,
+  InputComponent,
+  SelectComponent,
   TextAreaComponent,
 } from "@rodrigo-barraza/components-library";
 
@@ -183,21 +185,36 @@ export default function BenchmarkFormComponent({
 
       {mode !== "agent" && (
         <FormGroupComponent label="Load Preset (Optional)">
-          <select onChange={handlePresetChange} defaultValue="">
-            <option value="" disabled>
-              -- Select an industry standard benchmark --
-            </option>
-            {benchmarkPresets.map((p, index: number) => (
-              <option key={index} value={index}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          <SelectComponent
+            value=""
+            options={[
+              { value: "", label: "-- Select an industry standard benchmark --" },
+              ...benchmarkPresets.map((p, index: number) => ({
+                value: String(index),
+                label: p.name,
+              })),
+            ]}
+            onChange={(val: string) => {
+              const index = parseInt(val, 10);
+              if (!isNaN(index) && benchmarkPresets[index]) {
+                const preset = benchmarkPresets[index];
+                onChange((f) => ({
+                  ...f,
+                  name: preset.name,
+                  systemPrompt: preset.systemPrompt,
+                  prompt: preset.prompt,
+                  assertions: preset.assertions.map((a) => ({ ...a })),
+                  assertionOperator: preset.assertionOperator || "AND",
+                  benchmarkMode: "model",
+                }));
+              }
+            }}
+          />
         </FormGroupComponent>
       )}
 
       <FormGroupComponent label="Name">
-        <input
+        <InputComponent
           type="text"
           value={form.name}
           onChange={update("name")}
@@ -275,7 +292,7 @@ export default function BenchmarkFormComponent({
                       i === 0 ? "Expected Value" : `Expected Value ${i + 1}`
                     }
                   >
-                    <input
+                    <InputComponent
                       type="text"
                       value={a.expectedValue}
                       onChange={updateAssertion(i, "expectedValue")}
@@ -284,16 +301,24 @@ export default function BenchmarkFormComponent({
                   </FormGroupComponent>
 
                   <FormGroupComponent label="Match Mode">
-                    <select
+                    <SelectComponent
                       value={a.matchMode}
-                      onChange={updateAssertion(i, "matchMode")}
-                    >
-                      {matchModes.map((m) => (
-                        <option key={m.value} value={m.value}>
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
+                      options={matchModes}
+                      onChange={(val: string) => {
+                        onChange((f) => {
+                          const next = [
+                            ...(f.assertions || [
+                              {
+                                expectedValue: f.expectedValue || "",
+                                matchMode: f.matchMode || "contains",
+                              },
+                            ]),
+                          ];
+                          next[i] = { ...next[i], matchMode: val };
+                          return { ...f, assertions: next };
+                        });
+                      }}
+                    />
                   </FormGroupComponent>
 
                   {assertions.length > 1 && (

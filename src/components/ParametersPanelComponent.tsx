@@ -2,6 +2,7 @@
 
 import { Settings2 } from "lucide-react";
 import {
+  InputComponent,
   SelectComponent,
   SliderComponent,
 } from "@rodrigo-barraza/components-library";
@@ -296,12 +297,11 @@ export default function ParametersPanelComponent({
             {["anthropic", "google"].includes(settings.provider || "") && (
               <div className={styles.formGroup}>
                 <label>Thinking Budget (Tokens)</label>
-                <input
+                <InputComponent
                   type="number"
                   placeholder="e.g. 1024"
                   value={settings.thinkingBudget || ""}
                   onChange={handleThinkingBudgetChange}
-                  className={styles.inputField}
                 />
               </div>
             )}
@@ -349,12 +349,11 @@ export default function ParametersPanelComponent({
 
               <div className={styles.formGroup}>
                 <label>Stop Sequences (comma separated)</label>
-                <input
+                <InputComponent
                   type="text"
                   placeholder="\n, Human:"
                   value={settings.stopSequences || ""}
                   onChange={handleStopSeqChange}
-                  className={styles.inputField}
                 />
               </div>
 
@@ -412,12 +411,11 @@ export default function ParametersPanelComponent({
               ) && (
                 <div className={styles.formGroup}>
                   <label>Seed</label>
-                  <input
+                  <InputComponent
                     type="number"
                     placeholder="Random"
                     value={settings.seed ?? ""}
                     onChange={handleSeedChange}
-                    className={styles.inputField}
                   />
                 </div>
               )}

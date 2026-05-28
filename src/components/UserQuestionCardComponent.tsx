@@ -9,6 +9,10 @@ import {
   ChevronRight,
   StickyNote,
 } from "lucide-react";
+import {
+  InputComponent,
+  TextAreaComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./UserQuestionCardComponent.module.css";
 
 /**
@@ -136,10 +140,9 @@ function QuestionBlock({
       {/* Free-text input (always available) */}
       {isPending && (
         <div className={styles.inputRow}>
-          <input
+          <InputComponent
             ref={inputRef}
             type="text"
-            className={styles.input}
             placeholder={
               options.length > 0
                 ? "Or type a custom answer…"
@@ -147,9 +150,7 @@ function QuestionBlock({
             }
             value={freeText}
             onChange={(
-              e: React.ChangeEvent<
-                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-              >,
+              e: React.ChangeEvent<HTMLInputElement>,
             ) => setFreeText(e.target.value)}
             onKeyDown={handleKeyDown}
           />
@@ -178,16 +179,13 @@ function QuestionBlock({
       {/* Annotations textarea */}
       {isPending && showAnnotations && (
         <div className={styles.annotationsRow}>
-          <textarea
-            className={styles.annotationsInput}
+          <TextAreaComponent
             placeholder="Add notes or context for this answer…"
             value={annotations}
             onChange={(
-              e: React.ChangeEvent<
-                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-              >,
+              e: React.ChangeEvent<HTMLTextAreaElement>,
             ) => setAnnotations(e.target.value)}
-            rows={2}
+            minRows={2}
           />
         </div>
       )}
