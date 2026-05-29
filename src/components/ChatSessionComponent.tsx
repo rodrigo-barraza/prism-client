@@ -627,6 +627,7 @@ export default function ChatSessionComponent({
   }, [isGenerating, workerToolActivity]);
   const [tasksCount, setTasksCount] = useState(0);
   const [memoryConfigured, setMemoryConfigured] = useState(false);
+  const [hasAnyMemoryModelSet, setHasAnyMemoryModelSet] = useState(false);
   // -- Agent-scoped storage keys ---------------------------------
   const toolMemoryKey =
     agentId === "CODING"
@@ -1265,8 +1266,19 @@ export default function ChatSessionComponent({
             memorySection.embeddingModel,
           ),
         );
+        const hasExtraction = Boolean(memorySection?.extractionProvider && memorySection?.extractionModel);
+        const hasConsolidation = Boolean(memorySection?.consolidationProvider && memorySection?.consolidationModel);
+        const hasEmbedding = Boolean(memorySection?.embeddingProvider && memorySection?.embeddingModel);
+        const hasAnyMemorySet = hasExtraction || hasConsolidation || hasEmbedding;
+        setHasAnyMemoryModelSet(hasAnyMemorySet);
+        if (!hasAnyMemorySet && leftTabBottomRef.current === "memories") {
+          setLeftTabBottom("tools");
+        }
       })
-      .catch(() => setMemoryConfigured(false));
+      .catch(() => {
+        setMemoryConfigured(false);
+        setHasAnyMemoryModelSet(false);
+      });
   }, []);
 
   // Tools that are force-disabled because a prerequisite isn't met
@@ -2294,7 +2306,9 @@ export default function ChatSessionComponent({
               data.status !== "calling" &&
               toolData.name === "upsert_memory"
             ) {
-              setLeftTabBottom("memories");
+              if (hasAnyMemoryModelSet) {
+                setLeftTabBottom("memories");
+              }
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
@@ -2426,7 +2440,9 @@ export default function ChatSessionComponent({
               toolData.status !== "calling" &&
               toolData.name === "upsert_memory"
             ) {
-              setLeftTabBottom("memories");
+              if (hasAnyMemoryModelSet) {
+                setLeftTabBottom("memories");
+              }
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
@@ -2654,10 +2670,12 @@ export default function ChatSessionComponent({
               setTasksRefreshKey((k) => k + 1);
               markTabNew("workers");
             } else if (statusData?.message === "memories_updated") {
-              // Ephemeral tab switch — show memories panel then revert after 5s
-              switchTabTemporarily("memories");
+              if (hasAnyMemoryModelSet) {
+                // Ephemeral tab switch — show memories panel then revert after 5s
+                switchTabTemporarily("memories");
+                markTabNew("memories");
+              }
               setMemoriesRefreshKey((k) => k + 1);
-              markTabNew("memories");
               // Re-fetch count for the tab badge (MemoriesPanel may not be mounted yet)
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
@@ -4700,12 +4718,16 @@ export default function ChatSessionComponent({
                   ),
                   tooltip: "Rules",
                 },
-                {
-                  key: "memories",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
-                  ...badgeProps(totalMemoriesCount, "memories"),
-                  tooltip: "Memories",
-                },
+                ...(hasAnyMemoryModelSet
+                  ? [
+                      {
+                        key: "memories",
+                        icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
+                        ...badgeProps(totalMemoriesCount, "memories"),
+                        tooltip: "Memories",
+                      },
+                    ]
+                  : []),
                 {
                   key: "tasks",
                   icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>,
@@ -4805,7 +4827,7 @@ export default function ChatSessionComponent({
         </>
       )}
 
-      {leftTabBottom === "memories" && (
+      {leftTabBottom === "memories" && hasAnyMemoryModelSet && (
         <>
           <SidebarTabHeaderComponent icon={Brain} title="Memories" count={totalMemoriesCount} actions={memoriesHeaderActions} />
           <MemoriesPanel
