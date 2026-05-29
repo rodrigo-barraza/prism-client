@@ -18,13 +18,6 @@
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-/* ── Segmented control (Domain / Label toggle) ────────────────── */
-
-.segmentedControl {
-  display: inline-flex;
-  gap: 4px;
-}
-
 .toolsListWrapper {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);

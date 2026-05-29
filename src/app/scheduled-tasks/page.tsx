@@ -157,7 +157,7 @@ export default function ScheduledTasksPage() {
     setLoading(true);
     try {
       // 1. Fetch tasks
-      const fetchedTasks = await PrismService.getScheduledTasks();
+      const fetchedTasks = await PrismService.getCronJobs();
       setTasks(fetchedTasks as Task[]);
 
       // 2. Fetch workspaces
@@ -254,7 +254,7 @@ export default function ScheduledTasksPage() {
   const handleToggleTask = async (task: Task) => {
     const nextVal = !task.enabled;
     try {
-      const updated = await PrismService.updateScheduledTask(task.id, {
+      const updated = await PrismService.updateCronJob(task.id, {
         enabled: nextVal,
       });
       setTasks((prev) =>
@@ -276,7 +276,7 @@ export default function ScheduledTasksPage() {
     setActiveMenuId(null);
     setTriggeringId(task.id);
     try {
-      const triggerResponse = await PrismService.triggerScheduledTask(task.id);
+      const triggerResponse = await PrismService.triggerCronJob(task.id);
       showToast(
         `Task successfully triggered. Session ID: ${triggerResponse.agentSessionId.slice(0, 8)}…`,
       );
@@ -291,7 +291,7 @@ export default function ScheduledTasksPage() {
   // -- Handle task deletion --
   const handleDeleteTask = async (task: Task) => {
     try {
-      await PrismService.deleteScheduledTask(task.id);
+      await PrismService.deleteCronJob(task.id);
       setTasks((prev) => prev.filter((t) => t.id !== task.id));
       showToast(`Deleted task "${task.name}"`);
       setConfirmDeleteId(null);
@@ -325,7 +325,7 @@ export default function ScheduledTasksPage() {
     }
 
     try {
-      const created = await PrismService.createScheduledTask({
+      const created = await PrismService.createCronJob({
         name: formName.trim(),
         prompt: formPrompt.trim(),
         agent: formAgent === "NONE" ? null : formAgent,
@@ -340,7 +340,7 @@ export default function ScheduledTasksPage() {
       });
 
       setTasks((prev) => [created, ...prev]);
-      showToast(`Agentic Cron "${formName}" created successfully!`);
+      showToast(`Cron Job "${formName}" created successfully!`);
       setShowNewModal(false);
 
       // Reset form fields
@@ -494,7 +494,7 @@ export default function ScheduledTasksPage() {
       <NavigationSidebarComponent mode="user" />
 
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent title="Scheduled Tasks" />
+        <LayoutHeaderComponent title="Cron Jobs" />
         <div className={styles["page-content-area"]}>
           <div className={styles.content}>
             {/* Sleek toast list */}
@@ -514,7 +514,7 @@ export default function ScheduledTasksPage() {
             <header className={styles.header}>
               <div className={styles.headerTitleRow}>
                 <Clock className={styles.headerIcon} />
-                <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
+                <h1 className={styles.headerTitle}>Cron Jobs</h1>
                 <span className={styles.badge}>
                   {filteredTasks.length} total
                 </span>
@@ -559,7 +559,7 @@ export default function ScheduledTasksPage() {
                 <button
                   onClick={() => setShowNewModal(true)}
                   className={styles.newButton}
-                  title="Create Agentic Cron"
+                  title="Create Cron Job"
                 >
                   <Plus size={16} />
                   <span>New</span>
@@ -572,12 +572,12 @@ export default function ScheduledTasksPage() {
               {loading ? (
                 <div className={styles.loadingState}>
                   <Loader2 size={32} className={styles.spin} />
-                  <p>Loading Scheduled Tasks…</p>
+                  <p>Loading Cron Jobs…</p>
                 </div>
               ) : filteredTasks.length === 0 ? (
                 <div className={styles.emptyState}>
                   <Clock size={48} className={styles.emptyIcon} />
-                  <h2>No Scheduled Tasks found</h2>
+                  <h2>No Cron Jobs found</h2>
                   <p>
                     Create a background agent automation task to get started.
                   </p>
@@ -759,7 +759,7 @@ export default function ScheduledTasksPage() {
                   ]}
                   data={filteredTasks}
                   getRowKey={(t: any) => t.id}
-                  emptyText="No Scheduled Tasks found"
+                  emptyText="No Cron Jobs found"
                   storageKey="scheduled-tasks"
                 />
               ) : (

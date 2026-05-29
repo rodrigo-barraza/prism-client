@@ -41,9 +41,10 @@ import {
 import { renderToolName } from "../utils/utilities";
 import {
   TooltipComponent,
-  ButtonComponent,
   SearchInputComponent,
+  SegmentedControlComponent,
 } from "@rodrigo-barraza/components-library";
+import type { SegmentDefinition } from "@rodrigo-barraza/components-library";
 import styles from "./ToolSelectionComponent.module.css";
 
 // -- Interfaces --------------------------------------------------
@@ -104,7 +105,8 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
   "Agentic: Memory": BookOpen,
   "Agentic: Agent Management": Bot,
   "Agentic: Meta": Search,
-  "Agentic: Scheduling": CalendarDays,
+  "Cron Jobs": CalendarDays,
+  Timers: CalendarDays,
   "Agentic: Skills": Layers,
   "Agentic: Control Flow": Cpu,
   "Agentic: Structured Output": Code2,
@@ -130,7 +132,8 @@ const DOMAIN_LABELS: Record<string, string> = {
   "Agentic: Memory": "Memory",
   "Agentic: Agent Management": "Agent Management",
   "Agentic: Meta": "Tool Discovery",
-  "Agentic: Scheduling": "Scheduling",
+  "Cron Jobs": "Cron Jobs",
+  Timers: "Timers",
   "Agentic: Skills": "Skills",
   "Agentic: Control Flow": "Control Flow",
   "Agentic: Structured Output": "Structured Output",
@@ -150,7 +153,8 @@ const DOMAIN_ORDER = [
   "Agentic: Memory",
   "Agentic: Agent Management",
   "Agentic: Meta",
-  "Agentic: Scheduling",
+  "Cron Jobs",
+  "Timers",
   "Agentic: Skills",
   "Agentic: Control Flow",
   "Agentic: Structured Output",
@@ -592,35 +596,17 @@ export default function ToolSelectionComponent({
         />
 
         <div className={styles.toolsSectionHeaderRight}>
-          <div className={styles.segmentedControl}>
-            <ButtonComponent
-              variant={groupMode === "domain" ? "tonal" : "secondary"}
-              size="small"
-              icon={FolderOpen}
-              iconSize={11}
-              onClick={() => setGroupMode("domain")}
-            >
-              Domain
-            </ButtonComponent>
-            <ButtonComponent
-              variant={groupMode === "label" ? "tonal" : "secondary"}
-              size="small"
-              icon={Tag}
-              iconSize={11}
-              onClick={() => setGroupMode("label")}
-            >
-              Label
-            </ButtonComponent>
-            <ButtonComponent
-              variant={groupMode === "tier" ? "tonal" : "secondary"}
-              size="small"
-              icon={Brain}
-              iconSize={11}
-              onClick={() => setGroupMode("tier")}
-            >
-              Tier
-            </ButtonComponent>
-          </div>
+          <SegmentedControlComponent
+            value={groupMode}
+            onChange={setGroupMode}
+            compact
+            fullWidth
+            segments={[
+              { value: "domain", label: "Domain", icon: <FolderOpen size={11} /> },
+              { value: "label", label: "Label", icon: <Tag size={11} /> },
+              { value: "tier", label: "Tier", icon: <Brain size={11} /> },
+            ] satisfies SegmentDefinition[]}
+          />
         </div>
 
         {/* Master select-all checkbox */}

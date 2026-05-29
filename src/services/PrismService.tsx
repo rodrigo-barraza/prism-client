@@ -952,20 +952,20 @@ export default class PrismService {
   }
 
   // ---------------------------------------------------------------------------
-  // Scheduled Tasks
+  // Cron Jobs
   // ---------------------------------------------------------------------------
 
   /**
-   * Fetch all scheduled tasks.
+   * Fetch all cron jobs.
    */
-  static async getScheduledTasks(): Promise<any[]> {
+  static async getCronJobs(): Promise<any[]> {
     return PrismService._request<any[]>("/scheduled-tasks", { method: "GET" });
   }
 
   /**
-   * Create a scheduled task.
+   * Create a cron job.
    */
-  static async createScheduledTask(task: any): Promise<any> {
+  static async createCronJob(task: any): Promise<any> {
     return PrismService._request<any>("/scheduled-tasks", {
       method: "POST",
       body: task,
@@ -973,9 +973,9 @@ export default class PrismService {
   }
 
   /**
-   * Update an existing scheduled task (e.g. toggle enabled).
+   * Update an existing cron job (e.g. toggle enabled).
    */
-  static async updateScheduledTask(
+  static async updateCronJob(
     id: string,
     updates: Partial<any>,
   ): Promise<any> {
@@ -986,9 +986,9 @@ export default class PrismService {
   }
 
   /**
-   * Delete a scheduled task.
+   * Delete a cron job.
    */
-  static async deleteScheduledTask(id: string): Promise<{ success: boolean }> {
+  static async deleteCronJob(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(
       `/scheduled-tasks/${id}`,
       {
@@ -998,9 +998,9 @@ export default class PrismService {
   }
 
   /**
-   * Trigger a scheduled task immediately in the background.
+   * Trigger a cron job immediately in the background.
    */
-  static async triggerScheduledTask(
+  static async triggerCronJob(
     id: string,
   ): Promise<{ success: boolean; agentSessionId: string }> {
     return PrismService._request<{ success: boolean; agentSessionId: string }>(
