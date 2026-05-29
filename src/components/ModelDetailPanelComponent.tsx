@@ -40,12 +40,7 @@ import {
   MODALITY_COLORS,
   TOOL_COLORS,
 } from "./WorkflowNodeConstantsComponent";
-import {
-  formatContextTokens,
-  formatFileSize,
-  formatNumber,
-  formatTokenCount,
-} from "../utils/utilities";
+import { formatContextTokens, formatFileSize, formatNumber, formatTokenCount } from "@rodrigo-barraza/utilities-library";
 import styles from "./ModelDetailPanelComponent.module.css";
 
 const TOOL_ICONS = {

@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import ProviderLogo from "./ProviderLogosComponent";
 import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
-import { renderToolName } from "../utils/utilities";
+import { renderToolName } from "@rodrigo-barraza/utilities-library";
+import { copyToClipboard } from "../utils/utilities";
 import MarkdownContent from "./MarkdownContentComponent";
 import TextContentComponent from "./TextContentComponent";
 import MessageList from "./MessageListComponent";
@@ -25,8 +26,6 @@ import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import AssetInputOptions from "./AssetInputOptionsComponent";
 import { ToggleComponent } from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
-import { copyToClipboard } from "../utils/utilities";
-
 import styles from "./WorkflowInspectorComponent.module.css";
 import { LS_WORKFLOW_INSPECTOR_WIDTH } from "../constants";
 import {

@@ -94,13 +94,8 @@ import {
 } from "../utils/toolCallStateUpdaters";
 
 import useSessionStats from "../hooks/useSessionStats";
-import {
-  mergeUsedToolsWithWorkers,
-  toolCountsToUsedTools,
-  generateUUID,
-  resolveDefaultModel,
-  renderToolName,
-} from "../utils/utilities";
+import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
+import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, resolveDefaultModel } from "../utils/utilities";
 import {
   PROJECT_AGENT,
   SETTINGS_DEFAULTS,

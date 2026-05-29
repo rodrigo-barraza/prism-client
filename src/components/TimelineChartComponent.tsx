@@ -13,8 +13,7 @@ import {
 } from "recharts";
 import styles from "./TimelineChartComponent.module.css";
 import ChartTabsComponent from "./ChartTabsComponent";
-import { formatNumber } from "../utils/utilities";
-
+import { formatNumber } from "@rodrigo-barraza/utilities-library";
 const TABS = [
   { key: "requests", label: "Requests", color: "#6366f1", unit: "" },
   { key: "tokens", label: "Tokens", color: "#a855f7", unit: "" },

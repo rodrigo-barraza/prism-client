@@ -3,7 +3,7 @@
 import { Zap, Trash2 } from "lucide-react";
 import MarkdownContent from "./MarkdownContentComponent";
 
-import { formatLatency } from "../utils/utilities";
+import { formatLatency } from "@rodrigo-barraza/utilities-library";
 import styles from "./WorkerNotificationComponent.module.css";
 import {
   IconButtonComponent,

@@ -22,7 +22,8 @@ import {
 import FilterDropdownComponent from "./FilterDropdownComponent";
 import { LoadingMessage, EmptyMessage } from "./StateMessageComponent";
 import { FilterBarComponent } from "./FilterBarComponent";
-import { formatCost, buildDateRangeParams } from "../utils/utilities";
+import { formatCost } from "@rodrigo-barraza/utilities-library";
+import { buildDateRangeParams } from "../utils/utilities";
 import styles from "./TextPageComponent.module.css";
 import { LS_DATE_RANGE } from "../constants";
 

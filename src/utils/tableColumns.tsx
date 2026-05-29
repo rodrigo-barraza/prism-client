@@ -37,6 +37,8 @@ import {
   formatLatency,
   formatTokensPerSec,
   formatDuration,
+} from "@rodrigo-barraza/utilities-library";
+import {
   getTotalInputTokens,
 } from "./utilities";
 import { PROVIDER_COLORS } from "../constants";
@@ -89,7 +91,7 @@ export function getDurationMs(row: TableRow) {
   return Math.max(0, new Date(end).getTime() - new Date(start).getTime());
 }
 
-// formatDuration(ms) imported from @rodrigo-barraza/utilities-library via ./utilities
+
 
 // Re-export PROVIDER_COLORS so existing consumers don't need to change imports
 export { PROVIDER_COLORS };

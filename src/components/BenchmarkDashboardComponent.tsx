@@ -20,7 +20,7 @@ import {
   ButtonComponent,
   EmptyStateComponent,
 } from "@rodrigo-barraza/components-library";
-import { formatCost } from "../utils/utilities";
+import { formatCost } from "@rodrigo-barraza/utilities-library";
 import styles from "./BenchmarkDashboardComponent.module.css";
 
 /**

@@ -18,7 +18,7 @@ import ProviderLogo from "./ProviderLogosComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import AssetInputOptions from "./AssetInputOptionsComponent";
 import PrismService from "../services/PrismService";
-import { renderToolName } from "../utils/utilities";
+import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
 import {
   MODALITY_COLORS,

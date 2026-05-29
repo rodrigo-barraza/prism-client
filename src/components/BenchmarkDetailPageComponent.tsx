@@ -31,7 +31,7 @@ import ChatPreviewComponent from "./ChatPreviewComponent";
 
 import StorageService from "../services/StorageService";
 import { SK_MODEL_MEMORY_BENCHMARKS } from "../constants";
-import { formatCost, generateUUID } from "../utils/utilities";
+import { formatCost, generateUUID } from "@rodrigo-barraza/utilities-library";
 import styles from "./BenchmarkPageComponent.module.css";
 import type { ReactNode } from "react";
 import type {

@@ -40,14 +40,7 @@ import FilterDropdownComponent from "./FilterDropdownComponent";
 import { FilterBarComponent } from "./FilterBarComponent";
 import ProportionBarComponent from "./ProportionBarComponent";
 import BadgeComponent from "./BadgeComponent";
-import {
-  formatFileSize,
-  formatContextTokens,
-  formatNumber,
-  formatTokenCount,
-  formatLatency,
-  formatTokensPerSec,
-} from "../utils/utilities";
+import { formatFileSize, formatContextTokens, formatNumber, formatTokenCount, formatLatency, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
 import {
   requestsColumn,
   usageColumn,

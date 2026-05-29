@@ -33,7 +33,7 @@ import {
   LoadingIndicatorComponent,
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
-import { formatTimeAgo, formatLatencyMs } from "../utils/utilities";
+import { timeAgo as formatTimeAgo, formatLatencyMs } from "@rodrigo-barraza/utilities-library";
 import FilterDropdownComponent, {
   type FilterGroup,
 } from "./FilterDropdownComponent";

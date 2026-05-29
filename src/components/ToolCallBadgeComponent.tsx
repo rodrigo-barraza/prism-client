@@ -3,7 +3,7 @@
 import React from "react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
-import { renderToolName } from "../utils/utilities";
+import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import styles from "./ToolCallBadgeComponent.module.css";
 
 // ═══════════════════════════════════════════════════════════════════════

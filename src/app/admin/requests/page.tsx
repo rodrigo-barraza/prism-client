@@ -12,11 +12,8 @@ import { useRouter } from "next/navigation";
 import HistoryItemComponent from "../../../components/HistoryItemComponent";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
 import IrisService from "../../../services/IrisService";
-import {
-  formatNumber,
-  formatTokensPerSec,
-  buildDateRangeParams,
-} from "../../../utils/utilities";
+import { formatNumber, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
+import { buildDateRangeParams } from "../../../utils/utilities";
 import { getErrorMessage } from "../../../utils/errorMessage";
 import {
   extractMediaAssets,

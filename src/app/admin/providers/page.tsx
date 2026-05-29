@@ -16,15 +16,8 @@ import {
   LoadingMessage,
   ErrorMessage,
 } from "../../../components/StateMessageComponent";
-import {
-  formatNumber,
-  formatCost,
-  formatLatency,
-  formatTokensPerSec,
-  formatCompact,
-  formatTimeAgo,
-  buildDateRangeParams,
-} from "../../../utils/utilities";
+import { formatNumber, formatCost, formatLatency, formatTokensPerSec, formatCompact, timeAgo as formatTimeAgo } from "@rodrigo-barraza/utilities-library";
+import { buildDateRangeParams } from "../../../utils/utilities";
 import { PROVIDER_COLORS } from "../../../constants";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";

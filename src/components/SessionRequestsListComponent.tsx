@@ -6,7 +6,7 @@ import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import BadgeComponent, { cleanModelName } from "./BadgeComponent";
 import IrisService from "../services/IrisService";
 import { getErrorMessage } from "../utils/errorMessage";
-import { formatCost } from "../utils/utilities";
+import { formatCost } from "@rodrigo-barraza/utilities-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./SessionRequestsListComponent.module.css";
 

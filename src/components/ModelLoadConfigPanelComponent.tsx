@@ -10,7 +10,7 @@ import {
   CheckboxComponent,
 } from "@rodrigo-barraza/components-library";
 import ProviderLogo from "./ProviderLogosComponent";
-import { formatFileSize, formatContextTokens } from "../utils/utilities";
+import { formatFileSize, formatContextTokens } from "@rodrigo-barraza/utilities-library";
 import styles from "./ModelLoadConfigPanelComponent.module.css";
 
 const LS_KEY_PREFIX = "lm-studio-load-config:";

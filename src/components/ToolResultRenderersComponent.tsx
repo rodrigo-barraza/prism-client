@@ -45,7 +45,7 @@ import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent";
 import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import PrismService from "../services/PrismService";
-import { formatLatency, renderToolName } from "../utils/utilities";
+import { formatLatency, renderToolName } from "@rodrigo-barraza/utilities-library";
 import styles from "./ToolResultRenderersComponent.module.css";
 import TimerBadgeComponent from "./TimerBadgeComponent";
 

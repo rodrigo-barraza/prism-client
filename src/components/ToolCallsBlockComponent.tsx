@@ -10,7 +10,7 @@ import {
 import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderersComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
-import { renderToolName } from "../utils/utilities";
+import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import type { ToolCallEvent } from "../types/types";
 import type { WorkerToolActivityItem } from "./MessageListComponent";
 import styles from "./ToolCallsBlockComponent.module.css";

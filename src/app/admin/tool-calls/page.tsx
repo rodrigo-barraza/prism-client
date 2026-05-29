@@ -16,13 +16,8 @@ import {
 } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import {
-  formatNumber,
-  formatLatencyMs,
-  formatDateTime,
-  formatFileSize,
-  buildDateRangeParams,
-} from "../../../utils/utilities";
+import { formatNumber, formatLatencyMs, formatDateTime, formatFileSize } from "@rodrigo-barraza/utilities-library";
+import { buildDateRangeParams } from "../../../utils/utilities";
 import styles from "./page.module.css";
 import { getErrorMessage } from "../../../utils/errorMessage";
 

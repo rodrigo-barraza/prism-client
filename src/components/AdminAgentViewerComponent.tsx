@@ -36,7 +36,7 @@ import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
 import BadgeComponent from "./BadgeComponent";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 
-import { formatNumber } from "../utils/utilities";
+import { formatNumber } from "@rodrigo-barraza/utilities-library";
 import useSessionStats from "../hooks/useSessionStats";
 import { PROJECT_AGENT } from "../constants";
 import type {

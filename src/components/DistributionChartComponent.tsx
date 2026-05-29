@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { ResponsiveContainer, PieChart, Pie, Cell, Sector } from "recharts";
 import { SelectComponent } from "@rodrigo-barraza/components-library";
 import ChartTabsComponent from "./ChartTabsComponent";
-import { formatNumber, formatCost, formatLatency } from "../utils/utilities";
+import { formatNumber, formatCost, formatLatency } from "@rodrigo-barraza/utilities-library";
 import styles from "./DistributionChartComponent.module.css";
 import type {
   IrisProjectStat,

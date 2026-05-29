@@ -3,8 +3,7 @@
  * and calling PrismService for each model, passing outputs forward via edges.
  */
 import PrismService from "./PrismService";
-import { generateUUID } from "../utils/utilities";
-
+import { generateUUID } from "@rodrigo-barraza/utilities-library";
 // ─── Local types ─────────────────────────────────────────────
 
 /** Loose message shape used during workflow execution — covers piped/merged messages */

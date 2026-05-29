@@ -41,7 +41,8 @@ import JsonViewerComponent from "./JsonViewerComponent";
 import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent";
 import { Message, SynthesisRun, PrismConfig } from "../types/types";
 import { SETTINGS_DEFAULTS, SK_MODEL_MEMORY_SYNTHESIS } from "../constants";
-import { generateUUID, resolveDefaultModel } from "../utils/utilities";
+import { generateUUID } from "@rodrigo-barraza/utilities-library";
+import { resolveDefaultModel } from "../utils/utilities";
 import styles from "./SynthesisComponent.module.css";
 import useModelMemory from "../hooks/useModelMemory";
 

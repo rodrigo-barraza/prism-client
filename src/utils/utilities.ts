@@ -1,34 +1,10 @@
 // ============================================================
 // Prism Client — Utilities
 // ============================================================
-// Functions shared across the workspace are re-exported from
-// @rodrigo-barraza/utilities-library. Prism-specific helpers remain
-// defined here as local exports.
+// Prism-specific helpers. Shared workspace functions should be
+// imported directly from @rodrigo-barraza/utilities-library at
+// each call site — never re-exported through this file.
 // ============================================================
-
-// -- Re-exports from @rodrigo-barraza/utilities-library ----------------
-
-export {
-  generateUUID,
-  formatNumber,
-  formatTokenCount,
-  formatCost,
-  formatCostAdaptive,
-  formatLatency,
-  formatLatencyMs,
-  formatContextTokens,
-  formatFileSize,
-  formatTokensPerSec,
-  formatCompact,
-  formatElapsedTime,
-  formatDuration,
-  shuffleArray,
-  renderToolName,
-  humanizeToolName,
-  sleep,
-  timeAgo as formatTimeAgo,
-  formatDateTime,
-} from "@rodrigo-barraza/utilities-library";
 
 import type {
   Message,

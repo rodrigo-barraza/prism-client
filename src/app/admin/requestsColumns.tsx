@@ -16,7 +16,7 @@ import {
   emptyDash,
   valueOrDash,
 } from "../../utils/tableColumns";
-import { formatLatency } from "../../utils/utilities";
+import { formatLatency } from "@rodrigo-barraza/utilities-library";
 import ProportionBarComponent from "../../components/ProportionBarComponent";
 
 /**

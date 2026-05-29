@@ -5,8 +5,7 @@ import {
   statusColumn,
   emptyDash,
 } from "../../../utils/tableColumns";
-import { formatLatencyMs, formatFileSize } from "../../../utils/utilities";
-
+import { formatLatencyMs, formatFileSize } from "@rodrigo-barraza/utilities-library";
 export interface ToolCallRecord {
   _id?: string;
   toolName?: string;

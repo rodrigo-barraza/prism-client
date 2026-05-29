@@ -38,7 +38,7 @@ import {
   Lock,
   Brain,
 } from "lucide-react";
-import { renderToolName } from "../utils/utilities";
+import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import {
   TooltipComponent,
   SearchInputComponent,

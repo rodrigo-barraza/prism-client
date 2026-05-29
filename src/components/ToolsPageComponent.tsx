@@ -95,14 +95,7 @@ import {
   XCircle,
 } from "lucide-react";
 import styles from "./ToolsPageComponent.module.css";
-import {
-  humanizeToolName,
-  formatCostAdaptive,
-  formatCompact,
-  formatLatencyMs,
-  formatTimeAgo,
-} from "../utils/utilities";
-
+import { humanizeToolName, formatCostAdaptive, formatCompact, formatLatencyMs, timeAgo as formatTimeAgo } from "@rodrigo-barraza/utilities-library";
 // -- Agent color mapping (stable hues per built-in agent) -------
 const AGENT_COLORS = {
   CODING: "#3b82f6",

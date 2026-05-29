@@ -35,14 +35,8 @@ import {
 } from "@rodrigo-barraza/utilities-library";
 import IrisService, { type IrisRequestEntry } from "../../services/IrisService";
 import PrismService from "../../services/PrismService";
-import {
-  formatNumber,
-  formatCost,
-  formatLatency,
-  formatTokensPerSec,
-  formatElapsedTime,
-  buildDateRangeParams,
-} from "../../utils/utilities";
+import { formatNumber, formatCost, formatLatency, formatTokensPerSec, formatElapsedTime } from "@rodrigo-barraza/utilities-library";
+import { buildDateRangeParams } from "../../utils/utilities";
 import { getErrorMessage } from "../../utils/errorMessage";
 import {
   SelectComponent,

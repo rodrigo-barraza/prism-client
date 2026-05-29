@@ -31,11 +31,7 @@ import {
 import { renderAgentIcon } from "./AgentPickerComponent";
 import ThreeCanvasComponent from "./ThreeCanvasComponent";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
-import {
-  formatCost,
-  formatElapsedTime,
-  renderToolName,
-} from "../utils/utilities";
+import { formatCost, formatElapsedTime, renderToolName } from "@rodrigo-barraza/utilities-library";
 import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 
 // Scoped Stylesheets from individual components
