@@ -3585,8 +3585,15 @@ export default function ChatSessionComponent({
     setMessages([]);
     setToolActivity([]);
     setWorkerToolActivity({});
+    setStreamingOutputs(new Map());
     setPendingImages([]);
+    setPendingApprovals([]);
+    setPendingUserQuestion(null);
     setPlanProposal(null);
+    setAgenticProgress(null);
+    setInjectedSkills([]);
+    setContextTruncated(null);
+    setIsGenerating(false);
     setAgentSessionId(generateUUID());
     setTraceId(null);
     setActiveId(null);
