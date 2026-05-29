@@ -592,7 +592,7 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
-  background: var(--background-base);
+  background: #ffffff;
   width: 75vmin;
   height: 75vmin;
   max-width: 100%;
