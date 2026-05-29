@@ -509,6 +509,58 @@ function resolveDisplayName(name: string, variant: string = "default"): string {
   return renderToolName(name);
 }
 
+function StopwatchBadge({
+  seconds,
+  startTime,
+  live: externalLive,
+  className = "",
+}: {
+  seconds?: number;
+  startTime?: string | number | null;
+  live?: boolean;
+  className?: string;
+}) {
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const isLive = !!startTime && seconds == null;
+
+  useEffect(() => {
+    if (!isLive) return;
+    const immediate = setTimeout(() => setNowMs(Date.now()), 0);
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => {
+      clearTimeout(immediate);
+      clearInterval(id);
+    };
+  }, [isLive, startTime]);
+
+  let displaySeconds: number;
+  if (isLive && startTime) {
+    const start =
+      typeof startTime === "number"
+        ? startTime
+        : new Date(startTime).getTime();
+    displaySeconds = Math.max(0, (nowMs - start) / 1000);
+  } else {
+    displaySeconds = seconds || 0;
+  }
+
+  if (displaySeconds <= 0 && !isLive) return null;
+
+  const showPulse = isLive || externalLive;
+  const tooltipLabel = `Elapsed: ${formatElapsedTime(displaySeconds)}`;
+
+  return (
+    <TooltipComponent label={tooltipLabel} position="top">
+      <span
+        className={`${stopwatchStyles.badge} ${showPulse ? stopwatchStyles.live : ""} ${className}`}
+      >
+        <Timer size={11} />
+        {formatElapsedTime(displaySeconds)}
+      </span>
+    </TooltipComponent>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // 3. Unified BadgeComponent Implementation
 // ═══════════════════════════════════════════════════════════════════════
@@ -629,45 +681,14 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 5. Stopwatch ---
     case "stopwatch": {
-      const { seconds, startTime, live: externalLive, className = "" } = props;
-      const [nowMs, setNowMs] = useState(() => Date.now());
-      const isLive = !!startTime && seconds == null;
-
-      useEffect(() => {
-        if (!isLive) return;
-        const immediate = setTimeout(() => setNowMs(Date.now()), 0);
-        const id = setInterval(() => setNowMs(Date.now()), 1000);
-        return () => {
-          clearTimeout(immediate);
-          clearInterval(id);
-        };
-      }, [isLive, startTime]);
-
-      let displaySeconds: number;
-      if (isLive && startTime) {
-        const start =
-          typeof startTime === "number"
-            ? startTime
-            : new Date(startTime).getTime();
-        displaySeconds = Math.max(0, (nowMs - start) / 1000);
-      } else {
-        displaySeconds = seconds || 0;
-      }
-
-      if (displaySeconds <= 0 && !isLive) return null;
-
-      const showPulse = isLive || externalLive;
-      const tooltipLabel = `Elapsed: ${formatElapsedTime(displaySeconds)}`;
-
+      const { seconds, startTime, live, className } = props;
       return (
-        <TooltipComponent label={tooltipLabel} position="top">
-          <span
-            className={`${stopwatchStyles.badge} ${showPulse ? stopwatchStyles.live : ""} ${className}`}
-          >
-            <Timer size={11} />
-            {formatElapsedTime(displaySeconds)}
-          </span>
-        </TooltipComponent>
+        <StopwatchBadge
+          seconds={seconds}
+          startTime={startTime}
+          live={live}
+          className={className}
+        />
       );
     }
 

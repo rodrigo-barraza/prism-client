@@ -7,7 +7,7 @@
  * aren't copy-pasted across pages.
  */
 
-import { formatNumber, formatLatency, formatTokensPerSec } from "./utilities";
+import { formatNumber, formatLatency, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
 import BadgeComponent from "../components/BadgeComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 import ToolIconComponent from "../components/ToolIconComponent";
