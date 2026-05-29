@@ -38,6 +38,7 @@ import FilterDropdownComponent, {
   type FilterGroup,
 } from "./FilterDropdownComponent";
 import MemoryCardComponent from "./MemoryCardComponent";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./MemoriesPanelComponent.module.css";
 
 const TYPE_FILTER_COLORS: Record<MemoryType, string> = {
@@ -463,13 +464,7 @@ export default function MemoriesPanel({
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.isLoadingState}>
-          <LoadingIndicatorComponent
-            size="small"
-            color="inherit"
-            label="Loading memories…"
-          />
-        </div>
+        <PanelLoadingSpinner />
       </div>
     );
   }

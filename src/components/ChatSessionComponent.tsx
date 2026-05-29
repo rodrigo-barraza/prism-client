@@ -5453,7 +5453,6 @@ export default function ChatSessionComponent({
   return (
     <>
       <ThreePanelLayout
-        headerTitle="Chat"
         navSidebar={
           <NavigationSidebarComponent
             mode="user"

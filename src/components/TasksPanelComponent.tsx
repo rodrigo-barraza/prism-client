@@ -24,6 +24,7 @@ import {
   InputComponent,
   TextAreaComponent,
 } from "@rodrigo-barraza/components-library";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./TasksPanelComponent.module.css";
 
 interface StatusConfigEntry {
@@ -256,10 +257,7 @@ export default function TasksPanel({
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.isLoadingState}>
-          <RefreshCw size={14} className={styles.spin} />
-          Loading tasks…
-        </div>
+        <PanelLoadingSpinner />
       </div>
     );
   }

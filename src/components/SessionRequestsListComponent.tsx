@@ -7,6 +7,7 @@ import BadgeComponent, { cleanModelName } from "./BadgeComponent";
 import IrisService from "../services/IrisService";
 import { getErrorMessage } from "../utils/errorMessage";
 import { formatCost } from "../utils/utilities";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./SessionRequestsListComponent.module.css";
 
 /**
@@ -55,11 +56,18 @@ export default function SessionRequestsListComponent({
         </div>
       );
     }
+    if (loading) {
+      return (
+        <div className={styles.container}>
+          <PanelLoadingSpinner />
+        </div>
+      );
+    }
     return (
       <div className={styles.container}>
         <div className={styles.emptyState}>
           <Activity size={14} />
-          <span>{loading ? "Loading requests…" : "No requests yet"}</span>
+          <span>No requests yet</span>
         </div>
       </div>
     );

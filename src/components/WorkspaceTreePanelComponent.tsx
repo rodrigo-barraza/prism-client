@@ -18,6 +18,7 @@ import type {
   WorkspaceItem,
 } from "../services/WorkspaceService";
 import { SearchInputComponent } from "@rodrigo-barraza/components-library";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./WorkspaceTreePanelComponent.module.css";
 
 // ── Type Definitions ──────────────────────────────────────────
@@ -440,7 +441,7 @@ export default function WorkspaceTreePanelComponent({
           </div>
         )}
 
-        {treeLoading && <div className={styles.treeLoading}>Loading…</div>}
+        {treeLoading && <PanelLoadingSpinner />}
         {!treeLoading && treeData?.tree && filteredTree.length > 0 && (
           <div className={styles.treeRoot}>
             {filteredTree.map((node: WorkspaceTreeNode) => (

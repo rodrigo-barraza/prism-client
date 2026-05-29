@@ -13,6 +13,7 @@ import {
 import { TOAST_DURATION_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./CoordinatorPanelComponent.module.css";
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -263,10 +264,7 @@ export default function CoordinatorPanel({
 
       {/* -- Planning Phase ----------------------------------- */}
       {phase === "planning" && (
-        <div className={styles.isLoadingState}>
-          <Loader size={14} className={styles.spin} />
-          Decomposing task into sub-tasks…
-        </div>
+        <PanelLoadingSpinner />
       )}
 
       {/* -- Plan Review Phase -------------------------------- */}
@@ -312,10 +310,7 @@ export default function CoordinatorPanel({
 
       {/* -- Executing Phase ---------------------------------- */}
       {phase === "executing" && (
-        <div className={styles.isLoadingState}>
-          <Loader size={14} className={styles.spin} />
-          Spawning workers in git worktrees…
-        </div>
+        <PanelLoadingSpinner />
       )}
 
       {/* -- Review Phase ------------------------------------- */}

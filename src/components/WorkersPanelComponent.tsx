@@ -18,6 +18,7 @@ import { renderToolName } from "../utils/utilities";
 import { formatDuration } from "../utils/utilities";
 import ModalityIconComponent from "./ModalityIconComponent";
 import BadgeComponent from "./BadgeComponent";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./WorkersPanelComponent.module.css";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -148,10 +149,7 @@ export default function WorkersPanel({
   if (loading) {
     return (
       <div className={styles.container}>
-        <div className={styles.isLoadingState}>
-          <RefreshCw size={14} className={styles.spin} />
-          Loading workers…
-        </div>
+        <PanelLoadingSpinner />
       </div>
     );
   }
