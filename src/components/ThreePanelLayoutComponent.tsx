@@ -73,20 +73,7 @@ export default function ThreePanelLayout({
   const [isMobile, setIsMobile] = useState(false);
 
   // -- Left sidebar split panel drag-resize state --
-  const [splitRatio, setSplitRatio] = useState(() => {
-    if (typeof window === "undefined") return DEFAULT_SPLIT_RATIO;
-    const stored = localStorage.getItem(LS_LEFT_SIDEBAR_SPLIT_RATIO);
-    if (stored) {
-      const parsed = parseFloat(stored);
-      if (
-        !isNaN(parsed) &&
-        parsed >= MINIMUM_PANEL_RATIO &&
-        parsed <= MAXIMUM_PANEL_RATIO
-      )
-        return parsed;
-    }
-    return DEFAULT_SPLIT_RATIO;
-  });
+  const [splitRatio, setSplitRatio] = useState(DEFAULT_SPLIT_RATIO);
   const isDraggingSplitRef = useRef(false);
   const splitContainerRef = useRef<HTMLElement>(null);
   const [isNarrow, setIsNarrow] = useState(false);
@@ -104,6 +91,19 @@ export default function ThreePanelLayout({
       setShowLeft(storedLeft !== null ? storedLeft === "true" : true);
       setShowRight(storedRight !== null ? storedRight === "true" : true);
     }
+
+    const storedRatio = localStorage.getItem(LS_LEFT_SIDEBAR_SPLIT_RATIO);
+    if (storedRatio) {
+      const parsedRatio = parseFloat(storedRatio);
+      if (
+        !isNaN(parsedRatio) &&
+        parsedRatio >= MINIMUM_PANEL_RATIO &&
+        parsedRatio <= MAXIMUM_PANEL_RATIO
+      ) {
+        setSplitRatio(parsedRatio);
+      }
+    }
+
     // eslint-disable-next-line react-compiler/react-compiler
     setHydrated(true);
   }, []);
