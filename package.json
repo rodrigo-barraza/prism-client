@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@rodrigo-barraza/components-library": "file:../components-library",
+    "@rodrigo-barraza/components-library": "github:rodrigo-barraza/components-library",
     "@rodrigo-barraza/utilities-library": "github:rodrigo-barraza/utilities-library",
     "chart.js": "^4.5.1",
     "gifuct-js": "^2.1.2",
