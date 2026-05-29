@@ -165,6 +165,8 @@
   .right-sidebar-panel {
     position: absolute;
     inset-block: 0;
+    inline-size: 100%;
+    min-inline-size: 100%;
     z-index: 200;
     border: none;
     background: var(--background-base);
