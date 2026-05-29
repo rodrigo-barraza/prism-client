@@ -1531,6 +1531,7 @@ function ModelsTableInner({
             value={searchQuery}
             onChange={setSearchQuery}
             placeholder="Search models…"
+            compact
             className={styles.searchWrapper}
           />
         )}

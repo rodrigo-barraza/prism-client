@@ -145,6 +145,7 @@ export default function BenchmarkSidebarComponent({
           value={search}
           onChange={setSearch}
           placeholder="Search benchmarks…"
+          compact
         />
       </div>
 

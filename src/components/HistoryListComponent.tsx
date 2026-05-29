@@ -253,6 +253,7 @@ export default function HistoryList({
         value={searchQuery}
         onChange={setSearchQuery}
         placeholder={searchPlaceholder}
+        compact
         className={styles.searchWrapper}
       />
 

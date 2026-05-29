@@ -283,6 +283,7 @@ export default function TasksPanel({
             value={searchQuery}
             onChange={setSearchQuery}
             placeholder="Search tasks…"
+            compact
             className={styles["search-input-wrapper"]}
           />
 

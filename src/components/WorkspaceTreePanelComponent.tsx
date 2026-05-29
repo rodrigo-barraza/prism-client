@@ -281,43 +281,6 @@ export default function WorkspaceTreePanelComponent({
     }
   }, [treeData?.totalEntries, treeData?.truncated, onTreeStats]);
 
-  if (!currentWorkspace && !unavailableWorkspace) return null;
-
-  // ── Session workspace not currently connected ──
-  if (unavailableWorkspace) {
-    // Extract the last path segment for a friendlier label
-    const label =
-      unavailableWorkspace.split("/").filter(Boolean).pop() ||
-      unavailableWorkspace;
-    return (
-      <div className={styles.container}>
-        {!hideHeader && (
-          <div className={styles.headerWrapper}>
-            <div className={styles.header}>
-              <FolderOpen size={11} className={styles.headerIcon} />
-              <span className={styles.headerLabel}>{label}</span>
-            </div>
-          </div>
-        )}
-        <div className={styles.treeScroll}>
-          <div className={styles.unavailableState}>
-            <WifiOff size={20} className={styles.unavailableIcon} />
-            <span className={styles.unavailableTitle}>
-              Workspace Unavailable
-            </span>
-            <span className={styles.unavailablePath}>
-              {unavailableWorkspace}
-            </span>
-            <span className={styles.unavailableHint}>
-              This session&apos;s workspace is not currently connected. Connect
-              the workspace or switch to an available one to browse files.
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // ── Substring Path Matching & Recursive Tree Filtering ──
   const { filteredTree, autoExpandedPaths } = useMemo(() => {
     if (!searchQuery.trim() || !treeData?.tree) {
@@ -360,6 +323,43 @@ export default function WorkspaceTreePanelComponent({
     const filtered = process(treeData.tree, "");
     return { filteredTree: filtered, autoExpandedPaths: autoPaths };
   }, [treeData?.tree, searchQuery]);
+
+  if (!currentWorkspace && !unavailableWorkspace) return null;
+
+  // ── Session workspace not currently connected ──
+  if (unavailableWorkspace) {
+    // Extract the last path segment for a friendlier label
+    const label =
+      unavailableWorkspace.split("/").filter(Boolean).pop() ||
+      unavailableWorkspace;
+    return (
+      <div className={styles.container}>
+        {!hideHeader && (
+          <div className={styles.headerWrapper}>
+            <div className={styles.header}>
+              <FolderOpen size={11} className={styles.headerIcon} />
+              <span className={styles.headerLabel}>{label}</span>
+            </div>
+          </div>
+        )}
+        <div className={styles.treeScroll}>
+          <div className={styles.unavailableState}>
+            <WifiOff size={20} className={styles.unavailableIcon} />
+            <span className={styles.unavailableTitle}>
+              Workspace Unavailable
+            </span>
+            <span className={styles.unavailablePath}>
+              {unavailableWorkspace}
+            </span>
+            <span className={styles.unavailableHint}>
+              This session&apos;s workspace is not currently connected. Connect
+              the workspace or switch to an available one to browse files.
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Snapshot the Set into a stable reference for this render, merging auto-expanded paths if searching
   const expandedPaths = autoExpandedPaths || expandedPathsRef.current;

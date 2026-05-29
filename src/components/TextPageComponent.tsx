@@ -136,6 +136,7 @@ export default function TextPageComponent({
               setPage(1);
             }}
             placeholder="Search text…"
+            compact
             className={styles.searchWrapper}
           />
 

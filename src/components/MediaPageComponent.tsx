@@ -369,6 +369,7 @@ export default function MediaPageComponent({
               }, 300);
             }}
             placeholder="Search titles & conversations…"
+            compact
             className={styles.searchWrapper}
           />
 

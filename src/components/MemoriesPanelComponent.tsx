@@ -514,6 +514,7 @@ export default function MemoriesPanel({
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Search memories…"
+          compact
           className={styles.searchField}
         />
         <FilterDropdownComponent
