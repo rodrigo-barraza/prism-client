@@ -187,6 +187,10 @@ export default function AgentPickerComponent({
     handleAdd,
   ]);
 
+  const handleToggle = useCallback(() => {
+    if (!disabled) setIsPopoverOpen((previous) => !previous);
+  }, [disabled]);
+
   if (sortedAgents.length === 0) return null;
 
   // Determine which agent should show the spinning animation.
@@ -204,10 +208,6 @@ export default function AgentPickerComponent({
       : addCount === 1
         ? "1 Agent"
         : `${addCount} Agents`;
-
-  const handleToggle = useCallback(() => {
-    if (!disabled) setIsPopoverOpen((previous) => !previous);
-  }, [disabled]);
 
   // Build trigger icon: in add-mode use Bot icon, otherwise the agent badge
   const triggerIcon = addMode ? (
