@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Tag,
@@ -43,6 +43,7 @@ import {
   TooltipComponent,
   SearchInputComponent,
   SegmentedControlComponent,
+  CheckboxComponent,
 } from "@rodrigo-barraza/components-library";
 import type { SegmentDefinition } from "@rodrigo-barraza/components-library";
 import styles from "./ToolSelectionComponent.module.css";
@@ -56,19 +57,6 @@ interface ToolSchema {
   labels?: string[];
   system?: boolean;
   intelligenceTier?: "low" | "medium" | "high" | "frontier";
-}
-
-interface MasterCheckboxProps {
-  enabledCount: number;
-  totalCount: number;
-  onToggle: () => void;
-  label: string;
-}
-
-interface DomainCheckboxProps {
-  domainEnabled: number;
-  totalCount: number;
-  onToggle: () => void;
 }
 
 interface ToolSelectionProps {
@@ -256,68 +244,6 @@ const LABEL_ORDER = [
   "energy",
   "meta",
 ];
-
-// -- Tri-state checkbox: global select-all -----------------------
-function MasterCheckbox({
-  enabledCount,
-  totalCount,
-  onToggle,
-  label,
-}: MasterCheckboxProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const allChecked = totalCount > 0 && enabledCount === totalCount;
-  const partial = enabledCount > 0 && !allChecked;
-
-  useEffect(() => {
-    if (inputRef.current) inputRef.current.indeterminate = partial;
-  }, [partial]);
-
-  return (
-    <label className={styles.bulkCheckboxRow}>
-      <input
-        ref={inputRef}
-        type="checkbox"
-        className={styles.toolCheckbox}
-        checked={allChecked}
-        onChange={onToggle}
-      />
-      <span className={styles.bulkCheckboxLabel}>{label}</span>
-    </label>
-  );
-}
-
-// -- Tri-state checkbox: per-domain select-all -------------------
-function DomainCheckbox({
-  domainEnabled,
-  totalCount,
-  onToggle,
-}: DomainCheckboxProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const allChecked = totalCount > 0 && domainEnabled === totalCount;
-  const partial = domainEnabled > 0 && !allChecked;
-
-  useEffect(() => {
-    if (inputRef.current) inputRef.current.indeterminate = partial;
-  }, [partial]);
-
-  return (
-    <input
-      ref={inputRef}
-      type="checkbox"
-      className={styles.domainCheckbox}
-      checked={allChecked}
-      onChange={(
-        e: React.ChangeEvent<
-          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >,
-      ) => {
-        e.stopPropagation();
-        onToggle();
-      }}
-      onClick={(e: React.MouseEvent) => e.stopPropagation()}
-    />
-  );
-}
 
 /**
  * ToolSelectionComponent — reusable grouped tool picker with domain/label
@@ -586,42 +512,46 @@ export default function ToolSelectionComponent({
   // -- Render ---------------------------------------------------
   return (
     <div className={styles.toolsSection}>
-      <div className={styles.toolsListWrapper}>
-        {/* Search */}
-        <SearchInputComponent
-          value={toolSearch}
-          onChange={setToolSearch}
-          placeholder="Search tools..."
-          className={styles.toolsSearch}
-        />
+      {/* Search — pinned above scroll */}
+      <SearchInputComponent
+        value={toolSearch}
+        onChange={setToolSearch}
+        placeholder="Search tools..."
+        className={styles.toolsSearch}
+      />
 
-        <div className={styles.toolsSectionHeaderRight}>
-          <SegmentedControlComponent
-            value={groupMode}
-            onChange={setGroupMode}
-            compact
-            fullWidth
-            segments={[
-              { value: "domain", label: "Domain", icon: <FolderOpen size={11} /> },
-              { value: "label", label: "Label", icon: <Tag size={11} /> },
-              { value: "tier", label: "Tier", icon: <Brain size={11} /> },
-            ] satisfies SegmentDefinition[]}
-          />
-        </div>
+      <div className={styles.toolsSectionHeaderRight}>
+        <SegmentedControlComponent
+          value={groupMode}
+          onChange={setGroupMode}
+          compact
+          fullWidth
+          segments={[
+            { value: "domain", label: "Domain", icon: <FolderOpen size={11} /> },
+            { value: "label", label: "Label", icon: <Tag size={11} /> },
+            { value: "tier", label: "Tier", icon: <Brain size={11} /> },
+          ] satisfies SegmentDefinition[]}
+        />
+      </div>
+
+      <div className={styles.toolsListWrapper}>
 
         {/* Master select-all checkbox */}
-        <MasterCheckbox
-          enabledCount={enabledConfigurableCount}
-          totalCount={configurableTools.length}
-          onToggle={() => {
-            if (enabledConfigurableCount === configurableTools.length) {
-              deselectAllTools();
-            } else {
-              selectAllTools();
-            }
-          }}
-          label="Select All"
-        />
+        <div className={styles.bulkCheckboxRow}>
+          <CheckboxComponent
+            size="compact"
+            checked={configurableTools.length > 0 && enabledConfigurableCount === configurableTools.length}
+            indeterminate={enabledConfigurableCount > 0 && enabledConfigurableCount < configurableTools.length}
+            onChange={() => {
+              if (enabledConfigurableCount === configurableTools.length) {
+                deselectAllTools();
+              } else {
+                selectAllTools();
+              }
+            }}
+            label={<span className={styles.bulkCheckboxLabel}>Select All</span>}
+          />
+        </div>
 
         {/* Core Agentic Tools Section */}
         {filteredCoreTools.length > 0 && (
@@ -646,11 +576,14 @@ export default function ToolSelectionComponent({
                   <span className={styles.domainCount}>
                     {enabledCoreCount}/{coreTools.length}
                   </span>
-                  <DomainCheckbox
-                    domainEnabled={enabledCoreCount}
-                    totalCount={coreTools.length}
-                    onToggle={() => toggleGroupTools("core", coreTools)}
-                  />
+                  <span onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                    <CheckboxComponent
+                      size="compact"
+                      checked={coreTools.length > 0 && enabledCoreCount === coreTools.length}
+                      indeterminate={enabledCoreCount > 0 && enabledCoreCount < coreTools.length}
+                      onChange={() => toggleGroupTools("core", coreTools)}
+                    />
+                  </span>
                 </>
               )}
             </div>
@@ -665,34 +598,35 @@ export default function ToolSelectionComponent({
                     delay={400}
                   >
                     {agent ? (
-                      <label
+                      <div
                         className={`${styles.toolRow} ${styles.coreToolRow}`}
                       >
-                        <input
-                          type="checkbox"
-                          className={`${styles.toolCheckbox} ${styles.coreCheckbox}`}
+                        <CheckboxComponent
+                          size="compact"
                           checked={true}
                           disabled={true}
+                          onChange={() => {}}
+                          label={
+                            <span className={`${styles.toolName} ${styles.coreToolName}`}>
+                              {renderToolName(tool.name)}
+                            </span>
+                          }
                         />
-                        <span
-                          className={`${styles.toolName} ${styles.coreToolName}`}
-                        >
-                          {renderToolName(tool.name)}
-                        </span>
                         <Lock size={10} className={styles.lockIcon} />
-                      </label>
+                      </div>
                     ) : (
-                      <label className={styles.toolRow}>
-                        <input
-                          type="checkbox"
-                          className={styles.toolCheckbox}
+                      <div className={styles.toolRow}>
+                        <CheckboxComponent
+                          size="compact"
                           checked={resolvedEnabledSet.has(tool.name)}
                           onChange={() => toggleTool(tool.name)}
+                          label={
+                            <span className={styles.toolName}>
+                              {renderToolName(tool.name)}
+                            </span>
+                          }
                         />
-                        <span className={styles.toolName}>
-                          {renderToolName(tool.name)}
-                        </span>
-                      </label>
+                      </div>
                     )}
                   </TooltipComponent>
                 ))}
@@ -749,11 +683,14 @@ export default function ToolSelectionComponent({
                 <span className={styles.domainCount}>
                   {groupEnabled}/{tools.length}
                 </span>
-                <DomainCheckbox
-                  domainEnabled={groupEnabled}
-                  totalCount={tools.length}
-                  onToggle={() => toggleGroupTools(groupKey, tools)}
-                />
+                <span onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                  <CheckboxComponent
+                    size="compact"
+                    checked={tools.length > 0 && groupEnabled === tools.length}
+                    indeterminate={groupEnabled > 0 && groupEnabled < tools.length}
+                    onChange={() => toggleGroupTools(groupKey, tools)}
+                  />
+                </span>
               </div>
 
               {!collapsed &&
@@ -764,17 +701,18 @@ export default function ToolSelectionComponent({
                     position="right"
                     delay={400}
                   >
-                    <label className={styles.toolRow}>
-                      <input
-                        type="checkbox"
-                        className={styles.toolCheckbox}
+                    <div className={styles.toolRow}>
+                      <CheckboxComponent
+                        size="compact"
                         checked={resolvedEnabledSet.has(tool.name)}
                         onChange={() => toggleTool(tool.name)}
+                        label={
+                          <span className={styles.toolName}>
+                            {renderToolName(tool.name)}
+                          </span>
+                        }
                       />
-                      <span className={styles.toolName}>
-                        {renderToolName(tool.name)}
-                      </span>
-                    </label>
+                    </div>
                   </TooltipComponent>
                 ))}
             </div>

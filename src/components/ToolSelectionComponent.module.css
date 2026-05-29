@@ -15,7 +15,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 6px 8px;
-  border-bottom: 1px solid var(--calculated-border-subtle);
+  flex-shrink: 0;
 }
 
 .toolsListWrapper {
@@ -29,12 +29,8 @@
 }
 
 .toolsSearch {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   padding: 8px;
-  background: var(--background-base);
-  border-bottom: 1px solid var(--calculated-border-subtle);
+  flex-shrink: 0;
 }
 
 .toolsSearchInput {
@@ -101,14 +97,7 @@
   color: var(--text-tertiary);
 }
 
-.domainCheckbox {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  accent-color: var(--accent-primary);
-  cursor: pointer;
-  margin-left: 4px;
-}
+
 
 /* ── Tool row within domain ───────────────────────────────────── */
 
@@ -126,13 +115,7 @@
   background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
-.toolCheckbox {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  accent-color: var(--accent-primary);
-  cursor: pointer;
-}
+
 
 .toolName {
   font-size: var(--font-size-sm);
@@ -236,11 +219,7 @@
   background: transparent !important;
 }
 
-.coreCheckbox {
-  accent-color: var(--accent-primary) !important;
-  cursor: default !important;
-  opacity: 0.7;
-}
+
 
 .coreToolName {
   font-weight: 500;

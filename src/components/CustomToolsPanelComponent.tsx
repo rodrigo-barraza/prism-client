@@ -24,10 +24,12 @@ import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
   InputComponent,
+  SegmentedControlComponent,
   SelectComponent,
   TextAreaComponent,
   ToggleComponent,
 } from "@rodrigo-barraza/components-library";
+import type { SegmentDefinition } from "@rodrigo-barraza/components-library";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import styles from "./CustomToolsPanelComponent.module.css";
 
@@ -762,24 +764,16 @@ export default function CustomToolsPanel({
 
   return (
     <div className={styles.container}>
-      <div className={styles["subtab-toggle-container"]}>
-        <ButtonComponent
-          variant={activeSubtab === "tools" ? "tonal" : "text"}
-          size="small"
-          onClick={() => setActiveSubtab("tools")}
-          className={styles["subtab-toggle-button"]}
-        >
-          Tools
-        </ButtonComponent>
-        <ButtonComponent
-          variant={activeSubtab === "custom" ? "tonal" : "text"}
-          size="small"
-          onClick={() => setActiveSubtab("custom")}
-          className={styles["subtab-toggle-button"]}
-        >
-          Custom Tools
-        </ButtonComponent>
-      </div>
+      <SegmentedControlComponent
+        value={activeSubtab}
+        onChange={(value: string) => setActiveSubtab(value as "tools" | "custom")}
+        compact
+        fullWidth
+        segments={[
+          { value: "tools", label: "Tools" },
+          { value: "custom", label: "Custom Tools" },
+        ] satisfies SegmentDefinition[]}
+      />
 
       {activeSubtab === "tools" && (
         <ToolSelectionComponent

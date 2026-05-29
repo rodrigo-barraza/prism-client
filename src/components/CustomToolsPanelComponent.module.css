@@ -936,36 +936,7 @@
   background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
-/* ── Subtab Toggle (ButtonComponent-based) ──────────────── */
 
-.subtab-toggle-container {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  margin-block-end: 12px;
-}
-
-.subtab-toggle-button {
-  height: 28px !important;
-  min-height: 28px !important;
-  padding: 0 10px !important;
-  font-size: 10px !important;
-  border-radius: var(--border-radius-sm) !important;
-  font-weight: 600 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid transparent !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.subtab-toggle-button:hover {
-  transform: translateY(-1px);
-}
-
-.subtab-toggle-button:active {
-  transform: translateY(0);
-}
 
 .subtab-actions-header {
   display: flex;

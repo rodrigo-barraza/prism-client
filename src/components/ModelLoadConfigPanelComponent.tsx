@@ -7,6 +7,7 @@ import {
   ModalComponent,
   SliderComponent,
   ToggleComponent as ToggleSwitch,
+  CheckboxComponent,
 } from "@rodrigo-barraza/components-library";
 import ProviderLogo from "./ProviderLogosComponent";
 import { formatFileSize, formatContextTokens } from "../utils/utilities";
@@ -405,18 +406,18 @@ export default function ModelLoadConfigPanel({
       <div className={styles.divider} />
 
       {/* Remember settings */}
-      <label className={styles.rememberRow}>
-        <input
-          type="checkbox"
-          className={styles.rememberCheckbox}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setRememberSettings(e.target.checked)
+      <div className={styles.rememberRow}>
+        <CheckboxComponent
+          size="compact"
+          checked={rememberSettings}
+          onChange={setRememberSettings}
+          label={
+            <span className={styles.rememberLabel}>
+              Remember settings for <strong>{modelKey}</strong>
+            </span>
           }
         />
-        <span className={styles.rememberLabel}>
-          Remember settings for <strong>{modelKey}</strong>
-        </span>
-      </label>
+      </div>
     </ModalComponent>
   );
 }

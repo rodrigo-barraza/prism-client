@@ -259,12 +259,7 @@
   padding: 4px 0;
 }
 
-.rememberCheckbox {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--color-info-strong);
-  cursor: pointer;
-}
+
 
 .rememberLabel {
   font-size: var(--font-size-sm);
