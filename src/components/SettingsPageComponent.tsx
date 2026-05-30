@@ -1502,7 +1502,7 @@ export default function SettingsPageComponent() {
               <span className={styles.rowDescription}>
                 A fast reviewer model that evaluates dangerous tool calls before
                 execution. When enabled, high-risk actions are reviewed by this
-                model for safety. Uses Gemini 2.5 Flash by default.
+                model for safety. Uses the active agent model by default.
               </span>
             </div>
             <div className={styles.rowControl}>
@@ -1515,7 +1515,7 @@ export default function SettingsPageComponent() {
                 onSelectModel={handleCriticModelSelect}
                 modelTypeFilter="conversation"
                 allowDeselect
-                placeholderLabel="gemini-2.5-flash (default)"
+                placeholderLabel="Uses agent model"
               />
             </div>
           </div>
