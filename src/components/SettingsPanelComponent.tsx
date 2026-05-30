@@ -23,7 +23,7 @@ import styles from "./SettingsPanelComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
 import StatsTabBarComponent from "./StatsTabBarComponent";
 import { formatCost } from "@rodrigo-barraza/utilities-library";
-import { CAPABILITY_TOOL_NAMES } from "../utils/utilities";
+import { CAPABILITY_TOOL_NAMES, calculateEstimatedLiveCost } from "../utils/utilities";
 import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstantsComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
@@ -224,6 +224,14 @@ export default function SettingsPanel({
   const renderStatsBadges = (stats: SessionStats, showFull: boolean) => {
     const ttftVal =
       stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
+
+    const estimatedLiveCost = calculateEstimatedLiveCost(
+      stats.totalCost,
+      stats.totalTokens,
+      stats.requestCount,
+      selectedModelDef
+    );
+
     return (
       <div className={styles.statsBadges}>
         <BadgeComponent
@@ -303,9 +311,9 @@ export default function SettingsPanel({
             </span>
           )
         )}
-        <BadgeComponent type="cost" cost={stats.totalCost} />
+        <BadgeComponent type="cost" cost={estimatedLiveCost} />
         {stats.originalTotalCost > 0 &&
-          stats.originalTotalCost !== stats.totalCost && (
+          stats.originalTotalCost !== estimatedLiveCost && (
             <span className={`${styles.statBadge} ${styles.statBadgeSub}`}>
               ({formatCost(stats.originalTotalCost)} total)
             </span>

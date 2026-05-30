@@ -4453,14 +4453,29 @@ export default function ChatSessionComponent({
                         liveTotal,
                       );
 
+                      const activeModel =
+                        lastMessage?.role === "assistant"
+                          ? lastMessage.model
+                          : null;
+                      const hasActiveUncountedRequest =
+                        lastMessage?.role === "assistant" &&
+                        !lastMessage.usage &&
+                        !lastMessage._intermediateUsage;
+
                       return {
                         // -- Backend is source of truth (all requests incl. background) --
                         messageCount: messages.length,
                         deletedCount: 0,
                         requestCount:
                           (backendSessionStats.requestCount || 0) +
-                          (bgUsage?.requests || 0),
-                        uniqueModels: backendSessionStats.models,
+                          (bgUsage?.requests || 0) +
+                          (hasActiveUncountedRequest ? 1 : 0),
+                        uniqueModels: [
+                          ...new Set([
+                            ...(backendSessionStats.models || []),
+                            ...(activeModel ? [activeModel] : []),
+                          ]),
+                        ],
                         uniqueProviders,
                         totalTokens: (() => {
                           const hwm = tokenHwmRef.current;
@@ -4561,10 +4576,19 @@ export default function ChatSessionComponent({
                             output: (totalTokens.output || 0) + bgOut,
                             total: (totalTokens.total || 0) + bgIn + bgOut,
                           };
+
+                      const hasActiveUncountedRequest =
+                        lastMessage?.role === "assistant" &&
+                        !lastMessage.usage &&
+                        !lastMessage._intermediateUsage;
+
                       return {
                         messageCount: messages.length,
                         deletedCount: 0,
-                        requestCount: requestCount + (bgUsage?.requests || 0),
+                        requestCount:
+                          requestCount +
+                          (bgUsage?.requests || 0) +
+                          (hasActiveUncountedRequest ? 1 : 0),
                         uniqueModels,
                         uniqueProviders,
                         totalTokens: (() => {
