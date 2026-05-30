@@ -492,12 +492,11 @@ export default function ModelPickerPopoverComponent({
     }
 
     // Single-select: show current model name
-    const rawLabel =
-      currentModel?.label ||
-      settings?.model ||
-      placeholderLabel ||
-      "Select Model";
-    const provider = currentModel?.provider || settings?.provider;
+    if (!settings?.model) {
+      return placeholderLabel || "Select Model";
+    }
+    const rawLabel = currentModel?.label || settings.model;
+    const provider = currentModel?.provider || settings.provider;
     if (!provider || LOCAL_PROVIDERS.has(provider)) return rawLabel;
     const providerName = resolveProviderLabel(provider);
     return `${providerName}'s ${rawLabel}`;
