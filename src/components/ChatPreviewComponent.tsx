@@ -1,4 +1,8 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import MessageList from "./MessageListComponent";
+import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ChatPreviewComponent.module.css";
 
 /**
@@ -37,18 +41,60 @@ export default function ChatPreviewComponent({
   maxHeight,
   className,
 }: ChatPreviewProps) {
+  const [showRaw, setShowRaw] = useState(false);
+
+  const hasSystemContextMessage = useMemo(() => {
+    if (!messages) return false;
+    return messages.some(
+      (message) =>
+        message.role === "user" &&
+        (message.content?.startsWith("[System Context]") ||
+          message.rawContent?.startsWith("[System Context]") ||
+          message.content?.startsWith("[System Context - Local Time:") ||
+          message.rawContent?.startsWith("[System Context - Local Time:")),
+    );
+  }, [messages]);
+
   // -- MessageList mode --
   if (messages) {
+    const showHeader = hasSystemContextMessage && !mini;
+
     return (
-      <div
-        className={`${styles.chatPreview} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
-        style={maxHeight ? { maxHeight } : undefined}
-      >
-        <MessageList
-          messages={messages}
-          readOnly={readOnly}
-          systemPrompt={systemPrompt}
-        />
+      <div className={styles.chatPreviewContainer}>
+        {showHeader && (
+          <div className={styles.chatPreviewHeader}>
+            <span className={styles.chatPreviewHeaderTitle}>Chat Preview</span>
+            <div className={styles.debugToggleContainer}>
+              <ButtonComponent
+                variant={!showRaw ? "tonal" : "text"}
+                size="small"
+                onClick={() => setShowRaw(false)}
+                className={styles.debugToggleButton}
+              >
+                Clean
+              </ButtonComponent>
+              <ButtonComponent
+                variant={showRaw ? "tonal" : "text"}
+                size="small"
+                onClick={() => setShowRaw(true)}
+                className={styles.debugToggleButton}
+              >
+                Raw
+              </ButtonComponent>
+            </div>
+          </div>
+        )}
+        <div
+          className={`${styles.chatPreview} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
+          style={maxHeight ? { maxHeight } : undefined}
+        >
+          <MessageList
+            messages={messages}
+            readOnly={readOnly}
+            systemPrompt={systemPrompt}
+            showRaw={showRaw}
+          />
+        </div>
       </div>
     );
   }
@@ -82,3 +128,4 @@ export default function ChatPreviewComponent({
     </div>
   );
 }
+
