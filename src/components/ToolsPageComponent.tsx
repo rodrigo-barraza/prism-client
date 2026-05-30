@@ -937,16 +937,6 @@ export default function ToolsPageComponent() {
         ),
       },
       {
-        key: "description",
-        label: "Description",
-        sortable: false,
-        render: (row: ClientToolSchema) => (
-          <span className={styles.tableDescCellText}>
-            {row.description}
-          </span>
-        ),
-      },
-      {
         key: "domain",
         label: "Domain",
         sortable: true,

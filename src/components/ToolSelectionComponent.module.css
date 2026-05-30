@@ -105,8 +105,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-block: 5px;
-  padding-inline: 12px;
+  padding: 0;
   cursor: pointer;
   transition: background var(--transition-fast);
   user-select: none;
