@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import * as THREE from "three";
 import {
   Coins,
   Hash,
@@ -53,9 +54,14 @@ import mentionStyles from "./MentionBadgeComponent.module.css";
 
 export { mentionStyles as mentionBadgeStyles };
 
-// ═══════════════════════════════════════════════════════════════════════
-// 1. Types & Discriminated Union for Unified BadgeComponent
-// ═══════════════════════════════════════════════════════════════════════
+export interface ClientAgent {
+  id?: string;
+  name?: string;
+  description?: string;
+  project?: string;
+  color?: string;
+  icon?: string;
+}
 
 export type BadgeProps =
   | {
@@ -73,7 +79,7 @@ export type BadgeProps =
       mini?: boolean;
       className?: string;
       children?: React.ReactNode;
-      [key: string]: any;
+      [key: string]: unknown;
     }
   | {
       type: "cost";
@@ -164,8 +170,8 @@ export type BadgeProps =
     }
   | {
       type: "agent";
-      agent?: any;
-      agents?: any[];
+      agent?: string | ClientAgent;
+      agents?: (string | ClientAgent)[];
       size?: number;
       iconSize?: number;
       animation?: boolean;
@@ -334,19 +340,37 @@ const AGENT_GRADIENTS: Record<string, string[]> = {
 };
 const FALLBACK_GRADIENT = ["#8b5cf6", "#06b6d4"];
 
-function resolveGradient(agent: any): string[] {
+function resolveGradient(agent?: string | ClientAgent | null): string[] {
+  if (typeof agent === "string") {
+    return (AGENT_GRADIENTS as Record<string, string[]>)[agent] || FALLBACK_GRADIENT;
+  }
   if (agent?.color) return [agent.color, agent.color];
   return (
-    (AGENT_GRADIENTS as Record<string, string[]>)[agent?.id] ||
+    (agent?.id && (AGENT_GRADIENTS as Record<string, string[]>)[agent.id]) ||
     FALLBACK_GRADIENT
   );
 }
 
 const TEXTURE_SIZE = 256;
 
-function useCoinAnimation({ agent, size }: any) {
-  const meshReference = useRef<any>(null);
-  const textureReference = useRef<any>(null);
+type ThreeScene = InstanceType<typeof THREE.Scene>;
+type ThreePerspectiveCamera = InstanceType<typeof THREE.PerspectiveCamera>;
+type ThreeMesh = InstanceType<typeof THREE.Mesh>;
+type ThreeCanvasTexture = InstanceType<typeof THREE.CanvasTexture>;
+
+interface SetupState {
+  scene: ThreeScene;
+  camera: ThreePerspectiveCamera;
+  THREE: typeof THREE;
+}
+
+interface TickState {
+  elapsed: number;
+}
+
+function useCoinAnimation({ agent, size }: { agent?: string | ClientAgent | null; size: number }) {
+  const meshReference = useRef<ThreeMesh | null>(null);
+  const textureReference = useRef<ThreeCanvasTexture | null>(null);
   const textureCanvasReference = useRef<HTMLCanvasElement | null>(null);
   const iconCanvasReference = useRef<HTMLCanvasElement | null>(null);
   const coinWrapperReference = useRef<HTMLSpanElement | null>(null);
@@ -411,7 +435,7 @@ function useCoinAnimation({ agent, size }: any) {
   }, []);
 
   const handleSetup = useCallback(
-    ({ scene, camera, THREE }: any) => {
+    ({ scene, camera, THREE }: SetupState) => {
       camera.position.set(0, 0, 20);
       camera.lookAt(0, 0, 0);
 
@@ -510,21 +534,19 @@ function useCoinAnimation({ agent, size }: any) {
   const rotationAccumulator = useRef(0);
   const lastElapsed = useRef(0);
 
-  const handleTick = useCallback(({ elapsed }: any) => {
+  const handleTick = useCallback(({ elapsed }: TickState) => {
     if (!meshReference.current) return;
     const deltaTime = elapsed - lastElapsed.current;
     lastElapsed.current = elapsed;
     rotationAccumulator.current +=
       deltaTime * BASE_ROTATION_SPEED * typingSpeedMultiplier.current;
-    (
-      meshReference.current as { rotation: { x: number; y: number; z: number } }
-    ).rotation.y = rotationAccumulator.current;
+    meshReference.current.rotation.y = rotationAccumulator.current;
   }, []);
 
   return { iconRef: iconCanvasReference, coinWrapRef: coinWrapperReference, handleSetup, handleTick, size, agent };
 }
 
-function CoinStaticRenderer({ agent, size }: any) {
+function CoinStaticRenderer({ agent, size }: { agent?: string | ClientAgent | null; size: number }) {
   const { iconRef: iconCanvasReference, coinWrapRef: coinWrapperReference, handleSetup, handleTick } = useCoinAnimation({
     agent,
     size,
@@ -947,10 +969,12 @@ export default function BadgeComponent(props: BadgeProps) {
         return <span style={{ color: "var(--text-muted)" }}>—</span>;
       }
 
-      const meta: any = (MODEL_TYPE_META as any)[modelType] || {
-        icon: MessageSquare,
-        label: modelType,
-      };
+      const meta = (modelType in MODEL_TYPE_META)
+        ? MODEL_TYPE_META[modelType as keyof typeof MODEL_TYPE_META]
+        : {
+            icon: MessageSquare,
+            label: modelType,
+          };
       const Icon = meta.icon;
       const cls = `${modelTypeStyles.badge} ${modelTypeStyles[modelType] || ""} ${mini ? modelTypeStyles.mini : ""} ${className}`;
 
@@ -1009,10 +1033,10 @@ export default function BadgeComponent(props: BadgeProps) {
             className={agentStyles.agentsList || ""}
             style={{ display: "flex", gap: "4px" }}
           >
-            {agents.map((singleAgent: any, index: number) => {
-              const normalizedAgent =
+            {agents.map((singleAgent: string | ClientAgent, index: number) => {
+              const normalizedAgent: ClientAgent =
                 typeof singleAgent === "string"
-                  ? { id: singleAgent }
+                  ? { id: singleAgent, name: singleAgent }
                   : singleAgent;
               return (
                 <BadgeComponent
@@ -1030,20 +1054,24 @@ export default function BadgeComponent(props: BadgeProps) {
         );
       }
 
-      const agentId = agent?.id || "";
+      const normalizedAgent: ClientAgent =
+        typeof agent === "string"
+          ? { id: agent, name: agent }
+          : agent || { id: "NONE", name: "Agentless" };
+      const agentId = normalizedAgent.id || "";
 
       if (animation) {
         return (
           <span className={`${agentStyles.coinWrap} ${className}`}>
-            <CoinStaticRenderer key={agentId} agent={agent} size={size} />
+            <CoinStaticRenderer key={agentId} agent={normalizedAgent} size={size} />
           </span>
         );
       }
 
       const outerStyle = { width: size, height: size };
-      const gradientStyle = agent?.color
+      const gradientStyle = normalizedAgent.color
         ? {
-            background: `linear-gradient(135deg, ${agent.color} 0%, color-mix(in srgb, ${agent.color} 70%, #fff) 100%)`,
+            background: `linear-gradient(135deg, ${normalizedAgent.color} 0%, color-mix(in srgb, ${normalizedAgent.color} 70%, #fff) 100%)`,
           }
         : undefined;
 
@@ -1058,7 +1086,7 @@ export default function BadgeComponent(props: BadgeProps) {
             data-agent-identifier={agentId}
             style={gradientStyle}
           >
-            {renderAgentIcon(agent, iconSize)}
+            {renderAgentIcon(normalizedAgent, iconSize)}
           </span>
         </span>
       );
@@ -1138,7 +1166,7 @@ export default function BadgeComponent(props: BadgeProps) {
       const { name, count, active, variant = "default", tooltip } = props;
       const isCompact = variant === "compact";
       const displayName = resolveDisplayName(name, variant);
-      const { Icon, color } = resolveToolVisuals(name) as any;
+      const { Icon, color } = resolveToolVisuals(name) as { Icon: React.ComponentType<{ size?: number; className?: string }>; color: string };
       const tooltipLabel = tooltip || name;
 
       const badge = (
