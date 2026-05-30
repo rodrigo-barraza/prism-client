@@ -27,7 +27,6 @@ import {
   ButtonComponent,
   PaginationComponent,
   SelectComponent,
-  MultiSelectComponent,
 } from "@rodrigo-barraza/components-library";
 
 import { ErrorMessage } from "../../../components/StateMessageComponent";
@@ -432,7 +431,8 @@ export default function RequestsPage() {
     <div className={styles.page}>
       {/* Filters */}
       <div className={styles.filterBar}>
-        <MultiSelectComponent
+        <SelectComponent
+          multiple
           label="Provider"
           icon={<Filter size={12} />}
           value={filters.provider}
@@ -448,7 +448,8 @@ export default function RequestsPage() {
           value={filters.model}
           onChange={handleModelFilterChange}
         />
-        <MultiSelectComponent
+        <SelectComponent
+          multiple
           label="Endpoint"
           icon={<Filter size={12} />}
           value={filters.endpoint}
@@ -459,7 +460,8 @@ export default function RequestsPage() {
           allLabel="All Endpoints"
           compact
         />
-        <MultiSelectComponent
+        <SelectComponent
+          multiple
           label="Operation"
           icon={<Filter size={12} />}
           value={filters.operation}
@@ -470,7 +472,8 @@ export default function RequestsPage() {
           allLabel="All Operations"
           compact
         />
-        <MultiSelectComponent
+        <SelectComponent
+          multiple
           label="Status"
           icon={<Filter size={12} />}
           value={filters.success}

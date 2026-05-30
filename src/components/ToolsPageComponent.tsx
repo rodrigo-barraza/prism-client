@@ -4,11 +4,14 @@ import {
   InputComponent,
   SelectComponent,
   ToolCardComponent as ToolSchemaCard,
+  TableComponent,
+  BadgeComponent,
 } from "@rodrigo-barraza/components-library";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import PrismService from "../services/PrismService";
+import ToolsApiService from "../services/ToolsApiService";
 import { ToolSchema, CustomAgent, ToolUsageStat } from "../types/types";
 import { getErrorMessage } from "../utils/errorMessage";
 
@@ -49,6 +52,10 @@ interface ExtendedToolStats extends ToolUsageStat {
   failureCount?: number;
   firstUsed?: string;
   lastUsed?: string;
+  minLatency?: number;
+  maxLatency?: number;
+  errorRate?: number;
+  totalTransferBytes?: number;
 }
 
 import StorageService from "../services/StorageService";
@@ -57,6 +64,7 @@ import {
   Search,
   LayoutGrid,
   List,
+  Table,
   RefreshCw,
   X,
   Play,
@@ -668,38 +676,70 @@ function ToolRow({
   tool,
   onClick,
   agents,
+  statistics,
 }: {
   tool: ClientToolSchema;
-  onClick: (t: ClientToolSchema) => void;
+  onClick: (tool: ClientToolSchema) => void;
   agents: { id: string; name: string }[];
+  statistics?: ExtendedToolStats;
 }) {
-  const paramCount = countParams(tool);
+  const parameterCount = countParams(tool);
+  const totalCallsCount = statistics?.totalCalls ?? 0;
+  const averageLatency = statistics?.avgLatency ?? 0;
+  const minimumLatency = statistics?.minLatency ?? 0;
+  const maximumLatency = statistics?.maxLatency ?? 0;
+  const errorRatePercentage = statistics?.errorRate ?? 0;
+  const totalTransferBytes = statistics?.totalTransferBytes ?? 0;
+
   return (
     <div className={styles.toolRow} onClick={() => onClick(tool)}>
-      {tool.emoji && <span className={styles.toolRowEmoji}>{tool.emoji}</span>}
-      <span className={styles.toolRowName}>{tool.name}</span>
-      <span className={styles.toolRowDesc}>{tool.description}</span>
+      {tool.emoji ? (
+        <span className={styles.toolRowEmoji}>{tool.emoji}</span>
+      ) : (
+        <span className={styles.toolRowEmoji} />
+      )}
+      <span className={styles.toolRowName} title={tool.name}>
+        {tool.name}
+      </span>
+      <span className={styles["statistic-cell"]}>
+        {totalCallsCount > 0 ? formatCompact(totalCallsCount) : "—"}
+      </span>
+      <span className={styles["statistic-cell"]}>
+        {totalCallsCount > 0 ? formatLatencyMs(averageLatency) : "—"}
+      </span>
+      <span className={styles["statistic-cell"]}>
+        {totalCallsCount > 0 ? formatLatencyMs(minimumLatency) : "—"}
+      </span>
+      <span className={styles["statistic-cell"]}>
+        {totalCallsCount > 0 ? formatLatencyMs(maximumLatency) : "—"}
+      </span>
+      <span className={styles["statistic-cell"]}>
+        {totalCallsCount > 0 ? `${errorRatePercentage.toFixed(0)}%` : "—"}
+      </span>
+      <span className={styles["statistic-cell"]}>
+        {totalTransferBytes > 0 ? formatCompact(totalTransferBytes) : "—"}
+      </span>
       <div className={styles.toolRowMeta}>
         {agents?.length > 0 &&
-          agents.map((a: { id: string; name: string }) => (
+          agents.map((agent: { id: string; name: string }) => (
             <span
-              key={a.id}
+              key={agent.id}
               className={styles.agentBadge}
               style={
-                { "--agent-color": getAgentColor(a.id) } as React.CSSProperties
+                { "--agent-color": getAgentColor(agent.id) } as React.CSSProperties
               }
-              title={`Used by ${a.name}`}
+              title={`Used by ${agent.name}`}
             >
               <Bot size={10} />
-              {a.name}
+              {agent.name}
             </span>
           ))}
         {tool.domain && (
           <span className={styles.toolDomain}>{tool.domain}</span>
         )}
-        {paramCount > 0 && (
+        {parameterCount > 0 && (
           <span className={styles.paramCount}>
-            <Braces /> {paramCount}
+            <Braces /> {parameterCount}
           </span>
         )}
       </div>
@@ -724,7 +764,7 @@ export default function ToolsPageComponent() {
   const [domainFilter, setDomainFilter] = useState("");
   const [labelFilter, setLabelFilter] = useState("");
   const [agentFilter, setAgentFilter] = useState("");
-  const [view, setView] = useState("grid"); // "grid" | "list"
+  const [view, setView] = useState("grid"); // "grid" | "list" | "table"
 
   // Detail modal
   const [selectedTool, setSelectedTool] = useState<ClientToolSchema | null>(
@@ -752,12 +792,31 @@ export default function ToolsPageComponent() {
   // -- Fetch tool usage stats (non-blocking) --------------------
   const fetchToolStats = useCallback(async () => {
     try {
-      const stats = await PrismService.getToolStats();
-      const map = {};
-      for (const s of stats || []) {
-        (map as Record<string, ExtendedToolStats>)[s.tool] = s;
+      const [prismStatistics, toolCallStatistics] = await Promise.all([
+        PrismService.getToolStats().catch(() => []),
+        ToolsApiService.getToolCallStats().catch(() => null) as Promise<any>,
+      ]);
+      const statisticsMap: Record<string, ExtendedToolStats> = {};
+      for (const statistics of prismStatistics || []) {
+        statisticsMap[statistics.tool] = statistics;
       }
-      setToolStats(map);
+      if (toolCallStatistics && toolCallStatistics.byTool) {
+        for (const toolStat of toolCallStatistics.byTool) {
+          const toolName = toolStat.toolName;
+          const existingStatistics = statisticsMap[toolName] || {};
+          statisticsMap[toolName] = {
+            ...existingStatistics,
+            tool: toolName,
+            totalCalls: toolStat.count,
+            avgLatency: toolStat.avgMs,
+            minLatency: toolStat.minMs,
+            maxLatency: toolStat.maxMs,
+            errorRate: toolStat.errorRate,
+            totalTransferBytes: toolStat.totalTransferBytes,
+          };
+        }
+      }
+      setToolStats(statisticsMap);
     } catch {
       // Non-critical — silently ignore
     }
@@ -827,6 +886,229 @@ export default function ToolsPageComponent() {
   ]);
 
   const grouped = useMemo(() => groupByDomain(filtered), [filtered]);
+
+  const tableColumns = useMemo(() => {
+    return [
+      {
+        key: "emoji",
+        label: "",
+        align: "center" as const,
+        sortable: false,
+        width: "40px",
+        render: (row: ClientToolSchema) => (
+          row.emoji ? (
+            <span style={{ fontSize: "1.1rem" }}>{row.emoji}</span>
+          ) : (
+            <Wrench size={14} style={{ opacity: 0.4 }} />
+          )
+        ),
+      },
+      {
+        key: "name",
+        label: "Name",
+        sortable: true,
+        sortValue: (row: ClientToolSchema) => row.name.toLowerCase(),
+        render: (row: ClientToolSchema) => (
+          <span className={styles.tableNameCellMono}>
+            {row.name}
+          </span>
+        ),
+      },
+      {
+        key: "description",
+        label: "Description",
+        sortable: false,
+        render: (row: ClientToolSchema) => (
+          <span className={styles.tableDescCellText}>
+            {row.description}
+          </span>
+        ),
+      },
+      {
+        key: "domain",
+        label: "Domain",
+        sortable: true,
+        sortValue: (row: ClientToolSchema) => (row.domain || "").toLowerCase(),
+        render: (row: ClientToolSchema) => (
+          row.domain ? (
+            <span className={styles.toolDomain}>{row.domain}</span>
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>—</span>
+          )
+        ),
+      },
+      {
+        key: "params",
+        label: "Params",
+        sortable: true,
+        sortValue: (row: ClientToolSchema) => countParams(row),
+        render: (row: ClientToolSchema) => {
+          const paramCount = countParams(row);
+          return paramCount > 0 ? (
+            <span className={styles.tableParamCell}>
+              <Braces size={12} /> {paramCount}
+            </span>
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>0</span>
+          );
+        },
+      },
+      {
+        key: "agents",
+        label: "Agents",
+        sortable: false,
+        render: (row: ClientToolSchema) => {
+          const rowAgents = (toolAgentMap as Record<string, { id: string; name: string }[]>)[row.name] || [];
+          return rowAgents.length > 0 ? (
+            <div className={styles.agentBadges}>
+              {rowAgents.map((a) => (
+                <span
+                  key={a.id}
+                  className={styles.agentBadge}
+                  style={
+                    {
+                      "--agent-color": getAgentColor(a.id),
+                    } as React.CSSProperties
+                  }
+                >
+                  <Bot size={10} />
+                  {a.name}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>—</span>
+          );
+        },
+      },
+      {
+        key: "calls",
+        label: "Calls",
+        sortable: true,
+        align: "right" as const,
+        sortValue: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.totalCalls || 0;
+        },
+        render: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.totalCalls ? (
+            <span className={styles.tableStatValue}>
+              {formatCompact(stat.totalCalls)}
+            </span>
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>—</span>
+          );
+        },
+      },
+      {
+        key: "latency",
+        label: "Avg Latency",
+        sortable: true,
+        align: "right" as const,
+        sortValue: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.avgLatency || 0;
+        },
+        render: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.avgLatency ? (
+            <span className={styles.tableStatValue}>
+              {formatLatencyMs(stat.avgLatency)}
+            </span>
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>—</span>
+          );
+        },
+      },
+      {
+        key: "minLatency",
+        label: "Min Latency",
+        sortable: true,
+        align: "right" as const,
+        sortValue: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.minLatency || 0;
+        },
+        render: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.minLatency ? (
+            <span className={styles.tableStatValue}>
+              {formatLatencyMs(stat.minLatency)}
+            </span>
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>—</span>
+          );
+        },
+      },
+      {
+        key: "maxLatency",
+        label: "Max Latency",
+        sortable: true,
+        align: "right" as const,
+        sortValue: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.maxLatency || 0;
+        },
+        render: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.maxLatency ? (
+            <span className={styles.tableStatValue}>
+              {formatLatencyMs(stat.maxLatency)}
+            </span>
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>—</span>
+          );
+        },
+      },
+      {
+        key: "errorRate",
+        label: "Error Rate",
+        sortable: true,
+        align: "right" as const,
+        sortValue: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.errorRate || 0;
+        },
+        render: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          if (!stat || stat.totalCalls === 0) return <span style={{ color: "var(--text-muted)" }}>—</span>;
+          const rate = stat.errorRate ?? 0;
+          const color =
+            rate === 0
+              ? "var(--color-success)"
+              : rate <= 15
+                ? "var(--color-warning)"
+                : "var(--color-danger)";
+          return (
+            <span style={{ fontWeight: 600, color, fontVariantNumeric: "tabular-nums" }}>
+              {rate.toFixed(0)}%
+            </span>
+          );
+        },
+      },
+      {
+        key: "transfer",
+        label: "Transfer",
+        sortable: true,
+        align: "right" as const,
+        sortValue: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.totalTransferBytes || 0;
+        },
+        render: (row: ClientToolSchema) => {
+          const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
+          return stat?.totalTransferBytes ? (
+            <span className={styles.tableStatValue}>
+              {formatCompact(stat.totalTransferBytes)}
+            </span>
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>—</span>
+          );
+        },
+      },
+    ];
+  }, [toolAgentMap, toolStats]);
 
   // -- Render ---------------------------------------------------
 
@@ -951,6 +1233,13 @@ export default function ToolsPageComponent() {
           >
             <List />
           </button>
+          <button
+            className={`${styles.viewButton} ${view === "table" ? styles.viewActive : ""}`}
+            onClick={() => setView("table")}
+            title="Table view"
+          >
+            <Table />
+          </button>
         </div>
       </div>
 
@@ -959,6 +1248,17 @@ export default function ToolsPageComponent() {
         <div className={styles.emptyState}>
           <Search />
           <p>No tools match your filters.</p>
+        </div>
+      ) : view === "table" ? (
+        <div className={styles.tableWrapper}>
+          <TableComponent
+            columns={tableColumns as any}
+            data={filtered}
+            getRowKey={(tool: ClientToolSchema) => tool.name}
+            emptyText="No tools match your filters."
+            onRowClick={(tool: ClientToolSchema) => setSelectedTool(tool)}
+            storageKey="tools-explorer-table"
+          />
         </div>
       ) : (
         Object.entries(grouped).map(
@@ -994,10 +1294,22 @@ export default function ToolsPageComponent() {
                   </div>
                 ) : (
                   <div className={styles.toolList}>
+                    <div className={`${styles.toolRow} ${styles["list-header"]}`}>
+                      <span className={styles.toolRowEmoji} />
+                      <span className={styles.toolRowName}>Tool Name</span>
+                      <span className={styles["statistic-cell-header"]}>Calls</span>
+                      <span className={styles["statistic-cell-header"]}>Avg Latency</span>
+                      <span className={styles["statistic-cell-header"]}>Min</span>
+                      <span className={styles["statistic-cell-header"]}>Max</span>
+                      <span className={styles["statistic-cell-header"]}>Error %</span>
+                      <span className={styles["statistic-cell-header"]}>Transfer</span>
+                      <span className={styles["tool-row-metadata-header"]}>Meta</span>
+                    </div>
                     {domainTools.map((tool: ClientToolSchema) => (
                       <ToolRow
                         key={tool.name}
                         tool={tool}
+                        statistics={(toolStats as Record<string, ExtendedToolStats>)[tool.name]}
                         agents={
                           (
                             toolAgentMap as Record<

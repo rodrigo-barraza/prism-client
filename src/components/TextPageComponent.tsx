@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
+  FileText,
   User,
   Sparkles,
   ExternalLink,
@@ -14,7 +15,6 @@ import PrismService from "../services/PrismService";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 import SearchFilterComponent from "./SearchFilterComponent";
 import {
-  PageHeaderComponent,
   PaginationComponent,
   SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
@@ -120,181 +120,371 @@ export default function TextPageComponent({
 
   return (
     <>
-      {!isAdmin && (
-        <PageHeaderComponent
-          title="Text"
-          subtitle={`${total} messages across conversations`}
-        />
-      )}
-      <div className={isAdmin ? styles.adminPage : styles.page}>
-        {/* Filters */}
-        <FilterBarComponent>
-          <SearchInputComponent
-            value={searchInput}
-            onChange={(v: any) => {
-              setSearchInput(v);
-              setSearch(v);
-              setPage(1);
-            }}
-            placeholder="Search text…"
-            compact
-            className={styles.searchWrapper}
-          />
+      {!isAdmin ? (
+        <div className={styles.container}>
+          {/* Header */}
+          <div className={styles.header}>
+            <div className={styles.headerLeft}>
+              <h1 className={styles.title}>
+                <FileText className={styles.titleIcon} size={22} />
+                Text
+              </h1>
+              <p className={styles.subtitle}>
+                All text message segments and prompts recorded across conversations.
+              </p>
+            </div>
 
-          <FilterDropdownComponent
-            groups={[
-              {
-                label: "Source",
-                items: ORIGIN_FILTERS.map((f) => ({
-                  key: f.key,
-                  icon: f.icon,
-                  title: f.label,
-                })),
-                activeKeys: origin === "all" ? null : origin,
-                isSingleSelect: true,
-                onToggle: (v) => {
-                  setOrigin(v || "all");
-                  setPage(1);
-                },
-              },
-              {
-                label: "Favorites",
-                items: [
-                  { key: "favorites", icon: Star, title: "Favorites Only" },
-                ],
-                activeKeys: showFavoritesOnly ? "favorites" : null,
-                isSingleSelect: true,
-                onToggle: (v) => setShowFavoritesOnly(v === "favorites"),
-              },
-            ]}
-            dateRange={!externalDateRange ? dateRange : undefined}
-            onDateChange={
-              !externalDateRange
-                ? (v) => {
-                    setInternalDateRange(v);
-                    setPage(1);
-                  }
-                : undefined
-            }
-            dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
-          />
-
-          <SearchFilterComponent
-            options={providers}
-            value={provider}
-            onChange={(v) => {
-              setProvider(v);
-              setModel("");
-              setPage(1);
-            }}
-            placeholder="All Providers"
-            allLabel="All Providers"
-          />
-
-          <SearchFilterComponent
-            options={
-              provider
-                ? models.filter((m) => m.startsWith(provider + "/"))
-                : models
-            }
-            value={model}
-            onChange={(v) => {
-              setModel(v);
-              setPage(1);
-            }}
-            placeholder="All Models"
-            allLabel="All Models"
-          />
-        </FilterBarComponent>
-
-        {loading && <LoadingMessage message="Loading messages..." />}
-
-        {/* Text List */}
-        {!loading && (
-          <div className={styles.textList}>
-            {displayTexts.map((t, i) => {
-              const textKey = getTextKey(t, i);
-              const isFav = favoriteKeys.includes(textKey);
-              return (
-                <div key={`${t.convId}-${i}`} className={styles.textCard}>
-                  <div className={styles.textHeader}>
-                    <button
-                      className={`${styles.favButton} ${isFav ? styles.favBtnActive : ""}`}
-                      onClick={() => toggleFavorite(textKey)}
-                      title={
-                        isFav ? "Remove from favorites" : "Add to favorites"
-                      }
-                    >
-                      <Star size={11} fill={isFav ? "currentColor" : "none"} />
-                    </button>
-                    <span
-                      className={`${styles.roleBadge} ${t.origin === "ai" ? styles.roleAi : styles.roleUser}`}
-                    >
-                      {t.origin === "ai" ? (
-                        <>
-                          <Sparkles size={10} /> Response
-                        </>
-                      ) : (
-                        <>
-                          <User size={10} /> Prompt
-                        </>
-                      )}
-                    </span>
-                    <Link
-                      href={`${convBasePath}/${t.convId}`}
-                      className={styles.convLink}
-                      title={t.convTitle}
-                    >
-                      <ExternalLink size={10} />
-                      <span>{t.convTitle}</span>
-                    </Link>
-                    {t.hasImages && (
-                      <span className={styles.attachmentTag}>
-                        <ImageIcon size={10} /> +media
-                      </span>
-                    )}
-                    {t.model && (
-                      <span className={styles.modelTag}>
-                        {t.model.split("/").pop()}
-                      </span>
-                    )}
-                    {t.timestamp && (
-                      <span className={styles.time}>
-                        {new Date(t.timestamp).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                  <ChatPreviewComponent
-                    messages={[
-                      {
-                        role: t.origin === "ai" ? "assistant" : "user",
-                        content: t.content,
-                        model: t.model,
-                        estimatedCost: t.estimatedCost,
-                      },
-                    ]}
-                    readOnly
-                    maxHeight="400px"
-                    className={styles.cardPreview}
-                  />
+            <div className={styles.headerRight}>
+              {/* Stats */}
+              <div className={styles.statsBadges}>
+                <div className={styles.statBadge}>
+                  <span className={styles.statValue}>{total}</span> messages
                 </div>
-              );
-            })}
+              </div>
+            </div>
           </div>
-        )}
 
-        {!loading && displayTexts.length === 0 && (
-          <EmptyMessage message="No text content found" />
-        )}
+          <div className={styles.page}>
+            {/* Filters */}
+            <FilterBarComponent>
+              <SearchInputComponent
+                value={searchInput}
+                onChange={(v: any) => {
+                  setSearchInput(v);
+                  setSearch(v);
+                  setPage(1);
+                }}
+                placeholder="Search text…"
+                compact
+                className={styles.searchWrapper}
+              />
 
-        {/* Pagination */}
-        <PaginationComponent
-          page={page}
-          totalPages={totalPages}
-          totalItems={total}
-          onPageChange={setPage}
-        />
-      </div>
+              <FilterDropdownComponent
+                groups={[
+                  {
+                    label: "Source",
+                    items: ORIGIN_FILTERS.map((f) => ({
+                      key: f.key,
+                      icon: f.icon,
+                      title: f.label,
+                    })),
+                    activeKeys: origin === "all" ? null : origin,
+                    isSingleSelect: true,
+                    onToggle: (v) => {
+                      setOrigin(v || "all");
+                      setPage(1);
+                    },
+                  },
+                  {
+                    label: "Favorites",
+                    items: [
+                      { key: "favorites", icon: Star, title: "Favorites Only" },
+                    ],
+                    activeKeys: showFavoritesOnly ? "favorites" : null,
+                    isSingleSelect: true,
+                    onToggle: (v) => setShowFavoritesOnly(v === "favorites"),
+                  },
+                ]}
+                dateRange={!externalDateRange ? dateRange : undefined}
+                onDateChange={
+                  !externalDateRange
+                    ? (v) => {
+                        setInternalDateRange(v);
+                        setPage(1);
+                      }
+                    : undefined
+                }
+                dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
+              />
+
+              <SearchFilterComponent
+                options={providers}
+                value={provider}
+                onChange={(v) => {
+                  setProvider(v);
+                  setModel("");
+                  setPage(1);
+                }}
+                placeholder="All Providers"
+                allLabel="All Providers"
+              />
+
+              <SearchFilterComponent
+                options={
+                  provider
+                    ? models.filter((m) => m.startsWith(provider + "/"))
+                    : models
+                }
+                value={model}
+                onChange={(v) => {
+                  setModel(v);
+                  setPage(1);
+                }}
+                placeholder="All Models"
+                allLabel="All Models"
+              />
+            </FilterBarComponent>
+
+            {loading && <LoadingMessage message="Loading messages..." />}
+
+            {/* Text List */}
+            {!loading && (
+              <div className={styles.textList}>
+                {displayTexts.map((t, i) => {
+                  const textKey = getTextKey(t, i);
+                  const isFav = favoriteKeys.includes(textKey);
+                  return (
+                    <div key={`${t.convId}-${i}`} className={styles.textCard}>
+                      <div className={styles.textHeader}>
+                        <button
+                          className={`${styles.favButton} ${isFav ? styles.favBtnActive : ""}`}
+                          onClick={() => toggleFavorite(textKey)}
+                          title={
+                            isFav ? "Remove from favorites" : "Add to favorites"
+                          }
+                        >
+                          <Star size={11} fill={isFav ? "currentColor" : "none"} />
+                        </button>
+                        <span
+                          className={`${styles.roleBadge} ${t.origin === "ai" ? styles.roleAi : styles.roleUser}`}
+                        >
+                          {t.origin === "ai" ? (
+                            <>
+                              <Sparkles size={10} /> Response
+                            </>
+                          ) : (
+                            <>
+                              <User size={10} /> Prompt
+                            </>
+                          )}
+                        </span>
+                        <Link
+                          href={`${convBasePath}/${t.convId}`}
+                          className={styles.convLink}
+                          title={t.convTitle}
+                        >
+                          <ExternalLink size={10} />
+                          <span>{t.convTitle}</span>
+                        </Link>
+                        {t.hasImages && (
+                          <span className={styles.attachmentTag}>
+                            <ImageIcon size={10} /> +media
+                          </span>
+                        )}
+                        {t.model && (
+                          <span className={styles.modelTag}>
+                            {t.model.split("/").pop()}
+                          </span>
+                        )}
+                        {t.timestamp && (
+                          <span className={styles.time}>
+                            {new Date(t.timestamp).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                      <ChatPreviewComponent
+                        messages={[
+                          {
+                            role: t.origin === "ai" ? "assistant" : "user",
+                            content: t.content,
+                            model: t.model,
+                            estimatedCost: t.estimatedCost,
+                          },
+                        ]}
+                        readOnly
+                        maxHeight="400px"
+                        className={styles.cardPreview}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {!loading && displayTexts.length === 0 && (
+              <EmptyMessage message="No text content found" />
+            )}
+
+            {/* Pagination */}
+            <PaginationComponent
+              page={page}
+              totalPages={totalPages}
+              totalItems={total}
+              onPageChange={setPage}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className={styles.adminPage}>
+          {/* Filters */}
+          <FilterBarComponent>
+            <SearchInputComponent
+              value={searchInput}
+              onChange={(v: any) => {
+                setSearchInput(v);
+                setSearch(v);
+                setPage(1);
+              }}
+              placeholder="Search text…"
+              compact
+              className={styles.searchWrapper}
+            />
+
+            <FilterDropdownComponent
+              groups={[
+                {
+                  label: "Source",
+                  items: ORIGIN_FILTERS.map((f) => ({
+                    key: f.key,
+                    icon: f.icon,
+                    title: f.label,
+                  })),
+                  activeKeys: origin === "all" ? null : origin,
+                  isSingleSelect: true,
+                  onToggle: (v) => {
+                    setOrigin(v || "all");
+                    setPage(1);
+                  },
+                },
+                {
+                  label: "Favorites",
+                  items: [
+                    { key: "favorites", icon: Star, title: "Favorites Only" },
+                  ],
+                  activeKeys: showFavoritesOnly ? "favorites" : null,
+                  isSingleSelect: true,
+                  onToggle: (v) => setShowFavoritesOnly(v === "favorites"),
+                },
+              ]}
+              dateRange={!externalDateRange ? dateRange : undefined}
+              onDateChange={
+                !externalDateRange
+                  ? (v) => {
+                      setInternalDateRange(v);
+                      setPage(1);
+                    }
+                  : undefined
+              }
+              dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
+            />
+
+            <SearchFilterComponent
+              options={providers}
+              value={provider}
+              onChange={(v) => {
+                setProvider(v);
+                setModel("");
+                setPage(1);
+              }}
+              placeholder="All Providers"
+              allLabel="All Providers"
+            />
+
+            <SearchFilterComponent
+              options={
+                provider
+                  ? models.filter((m) => m.startsWith(provider + "/"))
+                  : models
+              }
+              value={model}
+              onChange={(v) => {
+                setModel(v);
+                setPage(1);
+              }}
+              placeholder="All Models"
+              allLabel="All Models"
+            />
+          </FilterBarComponent>
+
+          {loading && <LoadingMessage message="Loading messages..." />}
+
+          {/* Text List */}
+          {!loading && (
+            <div className={styles.textList}>
+              {displayTexts.map((t, i) => {
+                const textKey = getTextKey(t, i);
+                const isFav = favoriteKeys.includes(textKey);
+                return (
+                  <div key={`${t.convId}-${i}`} className={styles.textCard}>
+                    <div className={styles.textHeader}>
+                      <button
+                        className={`${styles.favButton} ${isFav ? styles.favBtnActive : ""}`}
+                        onClick={() => toggleFavorite(textKey)}
+                        title={
+                          isFav ? "Remove from favorites" : "Add to favorites"
+                        }
+                      >
+                        <Star size={11} fill={isFav ? "currentColor" : "none"} />
+                      </button>
+                      <span
+                        className={`${styles.roleBadge} ${t.origin === "ai" ? styles.roleAi : styles.roleUser}`}
+                      >
+                        {t.origin === "ai" ? (
+                          <>
+                            <Sparkles size={10} /> Response
+                          </>
+                        ) : (
+                          <>
+                            <User size={10} /> Prompt
+                          </>
+                        )}
+                      </span>
+                      <Link
+                        href={`${convBasePath}/${t.convId}`}
+                        className={styles.convLink}
+                        title={t.convTitle}
+                      >
+                        <ExternalLink size={10} />
+                        <span>{t.convTitle}</span>
+                      </Link>
+                      {t.hasImages && (
+                        <span className={styles.attachmentTag}>
+                          <ImageIcon size={10} /> +media
+                        </span>
+                      )}
+                      {t.model && (
+                        <span className={styles.modelTag}>
+                          {t.model.split("/").pop()}
+                        </span>
+                      )}
+                      {t.timestamp && (
+                        <span className={styles.time}>
+                          {new Date(t.timestamp).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                    <ChatPreviewComponent
+                      messages={[
+                        {
+                          role: t.origin === "ai" ? "assistant" : "user",
+                          content: t.content,
+                          model: t.model,
+                          estimatedCost: t.estimatedCost,
+                        },
+                      ]}
+                      readOnly
+                      maxHeight="400px"
+                      className={styles.cardPreview}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!loading && displayTexts.length === 0 && (
+            <EmptyMessage message="No text content found" />
+          )}
+
+          {/* Pagination */}
+          <PaginationComponent
+            page={page}
+            totalPages={totalPages}
+            totalItems={total}
+            onPageChange={setPage}
+          />
+        </div>
+      )}
     </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, Power, PowerOff, RefreshCw } from "lucide-react";
+import { Cpu, Loader2, Power, PowerOff, RefreshCw } from "lucide-react";
 import { POLL_MODERATE } from "@rodrigo-barraza/utilities-library";
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
@@ -11,7 +11,6 @@ import ModelDetailPanelComponent from "./ModelDetailPanelComponent";
 
 import { ErrorMessage } from "./StateMessageComponent";
 import {
-  PageHeaderComponent,
   ToastComponent,
   useToast,
 } from "@rodrigo-barraza/components-library";
@@ -394,51 +393,95 @@ export default function ModelsPageComponent({
   return (
     <>
       {!isAdmin ? (
-        <PageHeaderComponent
-          title="Models"
-          subtitle={`${allModels.length} models across ${providerSet.size} providers`}
-        >
-          <button
-            className={styles.refreshButton}
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            <RefreshCw size={16} className={loading ? styles.spinning : ""} />
-            Refresh
-          </button>
-        </PageHeaderComponent>
-      ) : (
-        <div className={styles.adminActions}>
-          <button
-            className={styles.refreshButton}
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            <RefreshCw size={16} className={loading ? styles.spinning : ""} />
-            Refresh
-          </button>
-        </div>
-      )}
-      <div className={isAdmin ? styles.adminContent : styles.content}>
-        <ErrorMessage message={error} />
+        <div className={styles.container}>
+          {/* Header */}
+          <div className={styles.header}>
+            <div className={styles.headerLeft}>
+              <h1 className={styles.title}>
+                <Cpu className={styles.titleIcon} size={22} />
+                Models
+              </h1>
+              <p className={styles.subtitle}>
+                All available models configured in the ecosystem across different providers.
+              </p>
+            </div>
 
-        <ToastComponent toasts={toasts} onRemove={removeToast} />
+            <div className={styles.headerRight}>
+              {/* Stats */}
+              <div className={styles.statsBadges}>
+                <div className={styles.statBadge}>
+                  <span className={styles.statValue}>{allModels.length}</span> models
+                </div>
+                <div className={styles.statBadge}>
+                  <span className={styles.statValue}>{providerSet.size}</span> providers
+                </div>
+              </div>
 
-        {loading && allModels.length === 0 ? (
-          <div className={styles.loadingState}>
-            <Loader2 size={24} className={styles.spinning} />
-            <span>Loading models...</span>
+              <button
+                className={`${styles.refreshButton} ${loading ? styles.spinning : ""}`}
+                onClick={handleRefresh}
+                disabled={loading}
+                title="Refresh models status"
+              >
+                <RefreshCw /> Refresh
+              </button>
+            </div>
           </div>
-        ) : (
-          <ModelsTableComponent
-            models={allModels}
-            onSelect={setSelectedModel}
-            renderActions={renderActions}
-            favorites={favoriteKeys}
-            onToggleFavorite={handleToggleFavorite}
-          />
-        )}
-      </div>
+
+          <div className={styles.content}>
+            <ErrorMessage message={error} />
+
+            <ToastComponent toasts={toasts} onRemove={removeToast} />
+
+            {loading && allModels.length === 0 ? (
+              <div className={styles.loadingState}>
+                <Loader2 size={24} className={styles.spinning} />
+                <span>Loading models...</span>
+              </div>
+            ) : (
+              <ModelsTableComponent
+                models={allModels}
+                onSelect={setSelectedModel}
+                renderActions={renderActions}
+                favorites={favoriteKeys}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className={styles.adminActions}>
+            <button
+              className={`${styles.refreshButton} ${loading ? styles.spinning : ""}`}
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw /> Refresh
+            </button>
+          </div>
+          <div className={styles.adminContent}>
+            <ErrorMessage message={error} />
+
+            <ToastComponent toasts={toasts} onRemove={removeToast} />
+
+            {loading && allModels.length === 0 ? (
+              <div className={styles.loadingState}>
+                <Loader2 size={24} className={styles.spinning} />
+                <span>Loading models...</span>
+              </div>
+            ) : (
+              <ModelsTableComponent
+                models={allModels}
+                onSelect={setSelectedModel}
+                renderActions={renderActions}
+                favorites={favoriteKeys}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            )}
+          </div>
+        </>
+      )}
 
       {loadConfigModel && (
         <ModelLoadConfigPanel

@@ -1,5 +1,13 @@
-.page {
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   padding: 32px 40px;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+.page {
   animation: fadeIn var(--transition-normal) ease-out;
 }
 
@@ -9,6 +17,76 @@
 
 .searchWrapper {
   flex: 1;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  & .titleIcon {
+    color: var(--accent-primary);
+    opacity: 0.8;
+  }
+}
+
+.subtitle {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ── Stats Badges ──────────────────────────────────────────── */
+
+.statsBadges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.statBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+
+  & .statValue {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 /* Text List */

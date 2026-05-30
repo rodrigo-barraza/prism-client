@@ -32,7 +32,6 @@ import {
   ButtonComponent,
   TableComponent,
   BadgeComponent,
-  MultiSelectComponent,
 } from "@rodrigo-barraza/components-library";
 import { AgentPersona, PrismConfig } from "../../types/types";
 import AgentPickerComponent from "../../components/AgentPickerComponent";
@@ -532,7 +531,8 @@ export default function ScheduledTasksPage() {
                   />
                 </div>
 
-                <MultiSelectComponent
+                <SelectComponent
+                  multiple
                   label="Sort"
                   icon={<ArrowUpDown size={12} />}
                   value={activeSortKeys}

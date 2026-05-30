@@ -23,7 +23,6 @@ import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import {
-  PageHeaderComponent,
   PaginationComponent,
   SearchInputComponent,
   TableComponent,
@@ -349,203 +348,415 @@ export default function MediaPageComponent({
 
   return (
     <>
-      {!isAdmin && (
-        <PageHeaderComponent
-          title="Media"
-          subtitle={`${total} files across conversations`}
-        />
-      )}
-      <div className={isAdmin ? styles.adminContent : styles.content}>
-        {/* Filters */}
-        <FilterBarComponent>
-          <SearchInputComponent
-            value={searchInput}
-            onChange={(v: any) => {
-              setSearchInput(v);
-              clearTimeout(searchTimerRef.current);
-              searchTimerRef.current = setTimeout(() => {
-                setSearch(v);
-                setPage(1);
-              }, 300);
-            }}
-            placeholder="Search titles & conversations…"
-            compact
-            className={styles.searchWrapper}
-          />
+      {!isAdmin ? (
+        <div className={styles.container}>
+          {/* Header */}
+          <div className={styles.header}>
+            <div className={styles.headerLeft}>
+              <h1 className={styles.title}>
+                <Film className={styles.titleIcon} size={22} />
+                Media
+              </h1>
+              <p className={styles.subtitle}>
+                All uploaded and generated files across your conversations.
+              </p>
+            </div>
 
-          <FilterDropdownComponent
-            groups={[
-              {
-                label: "Source",
-                items: ORIGIN_FILTERS.map((f) => ({
-                  key: f.key,
-                  icon: f.icon,
-                  title: f.label,
-                })),
-                activeKeys: origin === "all" ? null : origin,
-                isSingleSelect: true,
-                onToggle: (v: any) => {
-                  setOrigin(v || "all");
-                  setPage(1);
-                },
-              },
-              {
-                label: "Type",
-                items: TYPE_FILTERS.map((f) => ({
-                  key: f.key,
-                  icon: f.icon,
-                  color: f.color,
-                  title: f.label,
-                })),
-                activeKeys: type === "all" ? null : type,
-                isSingleSelect: true,
-                onToggle: (v: any) => {
-                  setType(v || "all");
-                  setPage(1);
-                },
-              },
-              ...(providers.length >= 2
-                ? [
-                    {
-                      label: "Providers",
-                      items: providers.map((p) => ({
-                        key: p,
-                        icon: () => <ProviderLogo provider={p} size={13} />,
-                        title: resolveProviderLabel(p),
-                      })),
-                      activeKeys: provider || null,
-                      isSingleSelect: true,
-                      onToggle: (v: any) => {
-                        setProvider(v || "");
-                        setModel("");
-                        setPage(1);
-                      },
-                    },
-                  ]
-                : []),
-              ...(models.length >= 2
-                ? [
-                    {
-                      label: "Models",
-                      items: models.map((m) => ({
-                        key: m,
-                        icon: Bot,
-                        title: m,
-                      })),
-                      activeKeys: model || null,
-                      isSingleSelect: true,
-                      onToggle: (v: any) => {
-                        setModel(v || "");
-                        setPage(1);
-                      },
-                    },
-                  ]
-                : []),
-              {
-                label: "Favorites",
-                items: [
-                  { key: "favorites", icon: Star, title: "Favorites Only" },
-                ],
-                activeKeys: showFavoritesOnly ? "favorites" : null,
-                isSingleSelect: true,
-                onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
-              },
-            ]}
-            dateRange={!externalDateRange ? dateRange : undefined}
-            onDateChange={
-              !externalDateRange
-                ? (v) => {
-                    setInternalDateRange(v);
+            <div className={styles.headerRight}>
+              {/* Stats */}
+              <div className={styles.statsBadges}>
+                <div className={styles.statBadge}>
+                  <span className={styles.statValue}>{total}</span> files
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.content}>
+            {/* Filters */}
+            <FilterBarComponent>
+              <SearchInputComponent
+                value={searchInput}
+                onChange={(v: any) => {
+                  setSearchInput(v);
+                  clearTimeout(searchTimerRef.current);
+                  searchTimerRef.current = setTimeout(() => {
+                    setSearch(v);
                     setPage(1);
-                  }
-                : undefined
-            }
-            dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
-          />
+                  }, 300);
+                }}
+                placeholder="Search titles & conversations…"
+                compact
+                className={styles.searchWrapper}
+              />
 
-          {isAdmin && externalProject === undefined && (
-            <SearchFilterComponent
-              options={projects}
-              value={project}
-              onChange={(v) => {
-                setInternalProject(v);
-                setPage(1);
-              }}
-              placeholder="All Projects"
-              allLabel="All Projects"
-            />
-          )}
+              <FilterDropdownComponent
+                groups={[
+                  {
+                    label: "Source",
+                    items: ORIGIN_FILTERS.map((f) => ({
+                      key: f.key,
+                      icon: f.icon,
+                      title: f.label,
+                    })),
+                    activeKeys: origin === "all" ? null : origin,
+                    isSingleSelect: true,
+                    onToggle: (v: any) => {
+                      setOrigin(v || "all");
+                      setPage(1);
+                    },
+                  },
+                  {
+                    label: "Type",
+                    items: TYPE_FILTERS.map((f) => ({
+                      key: f.key,
+                      icon: f.icon,
+                      color: f.color,
+                      title: f.label,
+                    })),
+                    activeKeys: type === "all" ? null : type,
+                    isSingleSelect: true,
+                    onToggle: (v: any) => {
+                      setType(v || "all");
+                      setPage(1);
+                    },
+                  },
+                  ...(providers.length >= 2
+                    ? [
+                        {
+                          label: "Providers",
+                          items: providers.map((p) => ({
+                            key: p,
+                            icon: () => <ProviderLogo provider={p} size={13} />,
+                            title: resolveProviderLabel(p),
+                          })),
+                          activeKeys: provider || null,
+                          isSingleSelect: true,
+                          onToggle: (v: any) => {
+                            setProvider(v || "");
+                            setModel("");
+                            setPage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                  ...(models.length >= 2
+                    ? [
+                        {
+                          label: "Models",
+                          items: models.map((m) => ({
+                            key: m,
+                            icon: Bot,
+                            title: m,
+                          })),
+                          activeKeys: model || null,
+                          isSingleSelect: true,
+                          onToggle: (v: any) => {
+                            setModel(v || "");
+                            setPage(1);
+                          },
+                        },
+                      ]
+                    : []),
+                  {
+                    label: "Favorites",
+                    items: [
+                      { key: "favorites", icon: Star, title: "Favorites Only" },
+                    ],
+                    activeKeys: showFavoritesOnly ? "favorites" : null,
+                    isSingleSelect: true,
+                    onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
+                  },
+                ]}
+                dateRange={!externalDateRange ? dateRange : undefined}
+                onDateChange={
+                  !externalDateRange
+                    ? (v) => {
+                        setInternalDateRange(v);
+                        setPage(1);
+                      }
+                    : undefined
+                }
+                dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
+              />
 
-          {isAdmin && (
-            <SearchFilterComponent
-              options={usernames}
-              value={username}
-              onChange={(v) => {
-                setUsername(v);
-                setPage(1);
-              }}
-              placeholder="All Users"
-              allLabel="All Users"
-              icon={User}
-            />
-          )}
-
-          <ViewModeToggleComponent
-            mode={viewMode}
-            onChange={setViewMode}
-            modes={[
-              { key: "grid", icon: Grid, title: "Grid view" },
-              { key: "list", icon: List, title: "List view" },
-            ]}
-          />
-        </FilterBarComponent>
-
-        {loading && <LoadingMessage message="Loading media..." />}
-
-        {/* -- Grid View -- */}
-        {!loading && viewMode === "grid" && (
-          <div className={styles.mediaGrid}>
-            {displayMedia.map((m, i) => {
-              const mediaKey = getMediaKey(m, i);
-              const isFav = favoriteKeys.includes(mediaKey);
-              return (
-                <MediaCardComponent
-                  key={`${m.convId}-${i}`}
-                  media={m}
-                  convBasePath={convBasePath}
-                  showFavorite
-                  isFavorite={isFav}
-                  onFavorite={() => toggleFavorite(mediaKey)}
-                  onImageClick={(url: any) => setLightboxSrc(url)}
+              {isAdmin && externalProject === undefined && (
+                <SearchFilterComponent
+                  options={projects}
+                  value={project}
+                  onChange={(v) => {
+                    setInternalProject(v);
+                    setPage(1);
+                  }}
+                  placeholder="All Projects"
+                  allLabel="All Projects"
                 />
-              );
-            })}
-          </div>
-        )}
+              )}
 
-        {/* -- List View -- */}
-        {!loading && viewMode === "list" && (
-          <div className={styles.listWrapper}>
-            <TableComponent
-              columns={listColumns}
-              data={displayMedia}
-              getRowKey={(m: any, i: any) => `${m.convId}-${i}`}
+              {isAdmin && (
+                <SearchFilterComponent
+                  options={usernames}
+                  value={username}
+                  onChange={(v) => {
+                    setUsername(v);
+                    setPage(1);
+                  }}
+                  placeholder="All Users"
+                  allLabel="All Users"
+                  icon={User}
+                />
+              )}
+
+              <ViewModeToggleComponent
+                mode={viewMode}
+                onChange={setViewMode}
+                modes={[
+                  { key: "grid", icon: Grid, title: "Grid view" },
+                  { key: "list", icon: List, title: "List view" },
+                ]}
+              />
+            </FilterBarComponent>
+
+            {loading && <LoadingMessage message="Loading media..." />}
+
+            {/* -- Grid View -- */}
+            {!loading && viewMode === "grid" && (
+              <div className={styles.mediaGrid}>
+                {displayMedia.map((m, i) => {
+                  const mediaKey = getMediaKey(m, i);
+                  const isFav = favoriteKeys.includes(mediaKey);
+                  return (
+                    <MediaCardComponent
+                      key={`${m.convId}-${i}`}
+                      media={m}
+                      convBasePath={convBasePath}
+                      showFavorite
+                      isFavorite={isFav}
+                      onFavorite={() => toggleFavorite(mediaKey)}
+                      onImageClick={(url: any) => setLightboxSrc(url)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {/* -- List View -- */}
+            {!loading && viewMode === "list" && (
+              <div className={styles.listWrapper}>
+                <TableComponent
+                  columns={listColumns}
+                  data={displayMedia}
+                  getRowKey={(m: any, i: any) => `${m.convId}-${i}`}
+                />
+              </div>
+            )}
+
+            {!loading && displayMedia.length === 0 && (
+              <EmptyMessage message="No media found" />
+            )}
+
+            {/* Pagination */}
+            <PaginationComponent
+              page={page}
+              totalPages={totalPages}
+              totalItems={total}
+              onPageChange={setPage}
             />
           </div>
-        )}
+        </div>
+      ) : (
+        <div className={styles.adminContent}>
+          {/* Filters */}
+          <FilterBarComponent>
+            <SearchInputComponent
+              value={searchInput}
+              onChange={(v: any) => {
+                setSearchInput(v);
+                clearTimeout(searchTimerRef.current);
+                searchTimerRef.current = setTimeout(() => {
+                  setSearch(v);
+                  setPage(1);
+                }, 300);
+              }}
+              placeholder="Search titles & conversations…"
+              compact
+              className={styles.searchWrapper}
+            />
 
-        {!loading && displayMedia.length === 0 && (
-          <EmptyMessage message="No media found" />
-        )}
+            <FilterDropdownComponent
+              groups={[
+                {
+                  label: "Source",
+                  items: ORIGIN_FILTERS.map((f) => ({
+                    key: f.key,
+                    icon: f.icon,
+                    title: f.label,
+                  })),
+                  activeKeys: origin === "all" ? null : origin,
+                  isSingleSelect: true,
+                  onToggle: (v: any) => {
+                    setOrigin(v || "all");
+                    setPage(1);
+                  },
+                },
+                {
+                  label: "Type",
+                  items: TYPE_FILTERS.map((f) => ({
+                    key: f.key,
+                    icon: f.icon,
+                    color: f.color,
+                    title: f.label,
+                  })),
+                  activeKeys: type === "all" ? null : type,
+                  isSingleSelect: true,
+                  onToggle: (v: any) => {
+                    setType(v || "all");
+                    setPage(1);
+                  },
+                },
+                ...(providers.length >= 2
+                  ? [
+                      {
+                        label: "Providers",
+                        items: providers.map((p) => ({
+                          key: p,
+                          icon: () => <ProviderLogo provider={p} size={13} />,
+                          title: resolveProviderLabel(p),
+                        })),
+                        activeKeys: provider || null,
+                        isSingleSelect: true,
+                        onToggle: (v: any) => {
+                          setProvider(v || "");
+                          setModel("");
+                          setPage(1);
+                        },
+                      },
+                    ]
+                  : []),
+                ...(models.length >= 2
+                  ? [
+                      {
+                        label: "Models",
+                        items: models.map((m) => ({
+                          key: m,
+                          icon: Bot,
+                          title: m,
+                        })),
+                        activeKeys: model || null,
+                        isSingleSelect: true,
+                        onToggle: (v: any) => {
+                          setModel(v || "");
+                          setPage(1);
+                        },
+                      },
+                    ]
+                  : []),
+                {
+                  label: "Favorites",
+                  items: [
+                    { key: "favorites", icon: Star, title: "Favorites Only" },
+                  ],
+                  activeKeys: showFavoritesOnly ? "favorites" : null,
+                  isSingleSelect: true,
+                  onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
+                },
+              ]}
+              dateRange={!externalDateRange ? dateRange : undefined}
+              onDateChange={
+                !externalDateRange
+                  ? (v) => {
+                      setInternalDateRange(v);
+                      setPage(1);
+                    }
+                  : undefined
+              }
+              dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
+            />
 
-        {/* Pagination */}
-        <PaginationComponent
-          page={page}
-          totalPages={totalPages}
-          totalItems={total}
-          onPageChange={setPage}
-        />
-      </div>
+            {isAdmin && externalProject === undefined && (
+              <SearchFilterComponent
+                options={projects}
+                value={project}
+                onChange={(v) => {
+                  setInternalProject(v);
+                  setPage(1);
+                }}
+                placeholder="All Projects"
+                allLabel="All Projects"
+              />
+            )}
+
+            {isAdmin && (
+              <SearchFilterComponent
+                options={usernames}
+                value={username}
+                onChange={(v) => {
+                  setUsername(v);
+                  setPage(1);
+                }}
+                placeholder="All Users"
+                allLabel="All Users"
+                icon={User}
+              />
+            )}
+
+            <ViewModeToggleComponent
+              mode={viewMode}
+              onChange={setViewMode}
+              modes={[
+                { key: "grid", icon: Grid, title: "Grid view" },
+                { key: "list", icon: List, title: "List view" },
+              ]}
+            />
+          </FilterBarComponent>
+
+          {loading && <LoadingMessage message="Loading media..." />}
+
+          {/* -- Grid View -- */}
+          {!loading && viewMode === "grid" && (
+            <div className={styles.mediaGrid}>
+              {displayMedia.map((m, i) => {
+                const mediaKey = getMediaKey(m, i);
+                const isFav = favoriteKeys.includes(mediaKey);
+                return (
+                  <MediaCardComponent
+                    key={`${m.convId}-${i}`}
+                    media={m}
+                    convBasePath={convBasePath}
+                    showFavorite
+                    isFavorite={isFav}
+                    onFavorite={() => toggleFavorite(mediaKey)}
+                    onImageClick={(url: any) => setLightboxSrc(url)}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          {/* -- List View -- */}
+          {!loading && viewMode === "list" && (
+            <div className={styles.listWrapper}>
+              <TableComponent
+                columns={listColumns}
+                data={displayMedia}
+                getRowKey={(m: any, i: any) => `${m.convId}-${i}`}
+              />
+            </div>
+          )}
+
+          {!loading && displayMedia.length === 0 && (
+            <EmptyMessage message="No media found" />
+          )}
+
+          {/* Pagination */}
+          <PaginationComponent
+            page={page}
+            totalPages={totalPages}
+            totalItems={total}
+            onPageChange={setPage}
+          />
+        </div>
+      )}
 
       {lightboxSrc && (
         <ImagePreviewComponent

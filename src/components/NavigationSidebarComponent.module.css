@@ -450,11 +450,11 @@
 .mobileHamburger {
   display: none;
   position: fixed;
-  bottom: 49px;
-  left: 12px;
+  bottom: 0;
+  left: 0;
   z-index: 10000;
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 100px;
   background: none;
   border: none;
   padding: 0;
@@ -471,17 +471,16 @@
 .circleSpin {
   position: absolute;
   inset: 0;
-  animation: spin 20s linear infinite;
   will-change: transform;
   transition: transform 0.15s ease;
-  border-radius: 50%;
+  transform-origin: bottom left;
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
 
 /* Outer circle — the rainbow canvas clipped to circle shape */
 .triangleOuter {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
   overflow: hidden;
 
   & canvas {
@@ -495,15 +494,18 @@
 /* Inner circle — solid fill, inset to create the rainbow ring border */
 .triangleInner {
   position: absolute;
-  inset: 3px;
-  border-radius: 50%;
+  inset: 0;
   background: var(--background-surface);
+  clip-path: polygon(3px 13px, 3px 97px, 45px 97px);
 }
 
 /* Icon — centered, counter-rotates to stay upright */
 .triangleIcon {
   position: absolute;
-  inset: 0;
+  left: 8px;
+  bottom: 8px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
