@@ -756,9 +756,9 @@ export default function ToolsPageComponent() {
 
   // Filters
   const [search, setSearch] = useState("");
-  const [domainFilter, setDomainFilter] = useState("");
-  const [labelFilter, setLabelFilter] = useState("");
-  const [agentFilter, setAgentFilter] = useState("");
+  const [domainFilter, setDomainFilter] = useState<string[]>([]);
+  const [labelFilter, setLabelFilter] = useState<string[]>([]);
+  const [agentFilter, setAgentFilter] = useState<string[]>([]);
   const [view, setView] = useState("grid"); // "grid" | "list" | "table"
 
   // Detail modal
@@ -842,20 +842,34 @@ export default function ToolsPageComponent() {
 
   const filtered = useMemo(() => {
     const normalizedSearch = search.toLowerCase().trim();
-    // Pre-compute agent filter set if active
-    // Wildcard ("*") means all tools — treat as no filter
-    const agentData = agentFilter
-      ? agents.find((a: AgentMinimal) => a.id === agentFilter)
-      : null;
-    const isWildcard = agentData?.enabledToolNames?.includes("*");
-    const agentToolSet =
-      agentData && !isWildcard
-        ? new Set(agentData.enabledToolNames || [])
-        : null;
+    const hasDomainFilter = domainFilter.length > 0;
+    const hasLabelFilter = labelFilter.length > 0;
+    const hasAgentFilter = agentFilter.length > 0;
+
+    // Pre-compute the union of tool names across all selected agents
+    let agentToolUnion: Set<string> | null = null;
+    if (hasAgentFilter) {
+      agentToolUnion = new Set<string>();
+      let hasWildcard = false;
+      for (const selectedAgentId of agentFilter) {
+        const agentData = agents.find((a: AgentMinimal) => a.id === selectedAgentId);
+        if (agentData?.enabledToolNames?.includes("*")) {
+          hasWildcard = true;
+          break;
+        }
+        if (agentData?.enabledToolNames) {
+          for (const toolName of agentData.enabledToolNames) {
+            agentToolUnion.add(toolName);
+          }
+        }
+      }
+      if (hasWildcard) agentToolUnion = null;
+    }
+
     return tools.filter((t: ClientToolSchema) => {
-      if (domainFilter && t.domain !== domainFilter) return false;
-      if (labelFilter && !t.labels?.includes(labelFilter)) return false;
-      if (agentToolSet && !agentToolSet.has(t.name)) return false;
+      if (hasDomainFilter && (!t.domain || !domainFilter.includes(t.domain))) return false;
+      if (hasLabelFilter && (!t.labels || !t.labels.some((label: string) => labelFilter.includes(label)))) return false;
+      if (agentToolUnion && !agentToolUnion.has(t.name)) return false;
       if (normalizedSearch) {
         const agentNames = (
           (toolAgentMap as Record<string, { id: string; name: string }[]>)[
@@ -1179,32 +1193,35 @@ export default function ToolsPageComponent() {
 
         <SelectComponent
           value={domainFilter}
-          options={[
-            { value: "", label: "All Domains" },
-            ...allDomains.map((d: string) => ({ value: d, label: d })),
-          ]}
-          onChange={(val: string) => setDomainFilter(val)}
+          multiple
+          compact
+          allLabel="All Domains"
+          placeholder="Filter Domains"
+          options={allDomains.map((d: string) => ({ value: d, label: d }))}
+          onChange={(val: string[]) => setDomainFilter(val)}
         />
 
         <SelectComponent
           value={labelFilter}
-          options={[
-            { value: "", label: "All Labels" },
-            ...allLabels.map((l: string) => ({ value: l, label: l })),
-          ]}
-          onChange={(val: string) => setLabelFilter(val)}
+          multiple
+          compact
+          allLabel="All Labels"
+          placeholder="Filter Labels"
+          options={allLabels.map((l: string) => ({ value: l, label: l }))}
+          onChange={(val: string[]) => setLabelFilter(val)}
         />
 
         <SelectComponent
           value={agentFilter}
-          options={[
-            { value: "", label: "All Agents" },
-            ...agents.map((a: AgentMinimal) => ({
-              value: a.id,
-              label: `${a.name}${a.toolCount !== undefined ? ` (${a.toolCount})` : ""}`,
-            })),
-          ]}
-          onChange={(val: string) => setAgentFilter(val)}
+          multiple
+          compact
+          allLabel="All Agents"
+          placeholder="Filter Agents"
+          options={agents.map((a: AgentMinimal) => ({
+            value: a.id,
+            label: `${a.name}${a.toolCount !== undefined ? ` (${a.toolCount})` : ""}`,
+          }))}
+          onChange={(val: string[]) => setAgentFilter(val)}
         />
 
         <div className={styles.viewToggle}>

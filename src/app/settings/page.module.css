@@ -50,26 +50,28 @@
   scroll-behavior: smooth;
 }
 
-/* ── Responsive: show sidebar as elegant overlay drawer on narrow viewports ── */
+/* ── Responsive: full-width overlay drawer on narrow viewports ── */
 
 @media (max-width: 900px) {
   .settings-sidebar-panel {
     position: absolute;
-    inset-block-start: 0;
-    inset-block-end: 0;
-    inset-inline-start: 0;
-    z-index: 50;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    inset-block: 0;
+    inset-inline: 0 auto;
+    inline-size: 100%;
+    min-inline-size: 100%;
+    z-index: 200;
+    border: none;
+    background: var(--background-base);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     will-change: translate;
-    transition:
-      translate 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: translate 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     translate: 0 0;
   }
 
   .is-sidebar-hidden {
     translate: -100% 0 !important;
-    opacity: 0 !important;
     pointer-events: none;
+    border-width: 0;
   }
 }
