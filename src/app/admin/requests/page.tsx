@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import HistoryItemComponent from "../../../components/HistoryItemComponent";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
 import IrisService from "../../../services/IrisService";
+import PrismService from "../../../services/PrismService";
 import { formatNumber, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import { getErrorMessage } from "../../../utils/errorMessage";
@@ -36,6 +37,7 @@ import ChatPreviewComponent from "../../../components/ChatPreviewComponent";
 import MediaCardComponent from "../../../components/MediaCardComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
+import type { AgentPersona } from "../../../types/types";
 import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000;
@@ -49,6 +51,7 @@ interface RequestFilters {
   endpoint: string[];
   operation: string[];
   success: string[];
+  agent: string[];
 }
 
 interface RequestAssociations {
@@ -105,6 +108,7 @@ export default function RequestsPage() {
     endpoint: [],
     operation: [],
     success: [],
+    agent: [],
   });
 
   const [hoveredConversationId, setHoveredConversationId] = useState<
@@ -112,6 +116,7 @@ export default function RequestsPage() {
   >(null);
   const initialLoadDone = useRef<boolean>(false);
   const fetchGenRef = useRef<number>(0);
+  const [agentPersonas, setAgentPersonas] = useState<AgentPersona[]>([]);
 
   // "Just now" row highlighting — track fresh rows and fade-outs
   const prevJustNowIds = useRef<Set<string>>(new Set());
@@ -297,6 +302,7 @@ export default function RequestsPage() {
       endpoint: [],
       operation: [],
       success: [],
+      agent: [],
     });
     setPage(1);
   }
@@ -348,6 +354,21 @@ export default function RequestsPage() {
     ],
     [],
   );
+
+  const agentFilterOptions = useMemo(
+    () =>
+      agentPersonas.map((persona) => ({
+        value: persona.id,
+        label: persona.name,
+      })),
+    [agentPersonas],
+  );
+
+  useEffect(() => {
+    PrismService.getAgentPersonas()
+      .then(setAgentPersonas)
+      .catch(() => setAgentPersonas([]));
+  }, []);
 
   const exportCSV = useCallback(() => {
     const headers = [
@@ -431,69 +452,87 @@ export default function RequestsPage() {
     <div className={styles.page}>
       {/* Filters */}
       <div className={styles.filterBar}>
-        <SelectComponent
-          multiple
-          label="Provider"
-          icon={<Filter size={12} />}
-          value={filters.provider}
-          options={providerFilterOptions}
-          onChange={(values: string[]) =>
-            handleMultiFilterChange("provider", values)
-          }
-          allLabel="All Providers"
-          compact
-        />
-        <FilterInputComponent
-          placeholder="Filter by model…"
-          value={filters.model}
-          onChange={handleModelFilterChange}
-        />
-        <SelectComponent
-          multiple
-          label="Endpoint"
-          icon={<Filter size={12} />}
-          value={filters.endpoint}
-          options={endpointFilterOptions}
-          onChange={(values: string[]) =>
-            handleMultiFilterChange("endpoint", values)
-          }
-          allLabel="All Endpoints"
-          compact
-        />
-        <SelectComponent
-          multiple
-          label="Operation"
-          icon={<Filter size={12} />}
-          value={filters.operation}
-          options={operationFilterOptions}
-          onChange={(values: string[]) =>
-            handleMultiFilterChange("operation", values)
-          }
-          allLabel="All Operations"
-          compact
-        />
-        <SelectComponent
-          multiple
-          label="Status"
-          icon={<Filter size={12} />}
-          value={filters.success}
-          options={statusFilterOptions}
-          onChange={(values: string[]) =>
-            handleMultiFilterChange("success", values)
-          }
-          allLabel="All Statuses"
-          compact
-        />
-        <ButtonComponent variant="ghost" onClick={clearFilters}>
-          Clear
-        </ButtonComponent>
-        <ButtonComponent
-          variant="secondary"
-          icon={Download}
-          onClick={exportCSV}
-        >
-          Export CSV
-        </ButtonComponent>
+        <div className={styles.filterRow}>
+          <SelectComponent
+            multiple
+            label="Provider"
+            icon={<Filter size={12} />}
+            value={filters.provider}
+            options={providerFilterOptions}
+            onChange={(values: string[]) =>
+              handleMultiFilterChange("provider", values)
+            }
+            allLabel="All Providers"
+            compact
+          />
+          <FilterInputComponent
+            placeholder="Filter by model…"
+            value={filters.model}
+            onChange={handleModelFilterChange}
+          />
+          <SelectComponent
+            multiple
+            label="Agent"
+            icon={<Filter size={12} />}
+            value={filters.agent}
+            options={agentFilterOptions}
+            onChange={(values: string[]) =>
+              handleMultiFilterChange("agent", values)
+            }
+            allLabel="All Agents"
+            compact
+          />
+        </div>
+        <div className={styles.filterRow}>
+          <SelectComponent
+            multiple
+            label="Endpoint"
+            icon={<Filter size={12} />}
+            value={filters.endpoint}
+            options={endpointFilterOptions}
+            onChange={(values: string[]) =>
+              handleMultiFilterChange("endpoint", values)
+            }
+            allLabel="All Endpoints"
+            compact
+          />
+          <SelectComponent
+            multiple
+            label="Operation"
+            icon={<Filter size={12} />}
+            value={filters.operation}
+            options={operationFilterOptions}
+            onChange={(values: string[]) =>
+              handleMultiFilterChange("operation", values)
+            }
+            allLabel="All Operations"
+            compact
+          />
+          <SelectComponent
+            multiple
+            label="Status"
+            icon={<Filter size={12} />}
+            value={filters.success}
+            options={statusFilterOptions}
+            onChange={(values: string[]) =>
+              handleMultiFilterChange("success", values)
+            }
+            allLabel="All Statuses"
+            compact
+          />
+        </div>
+        <div className={styles.filterActions}>
+          <ButtonComponent variant="ghost" onClick={clearFilters}>
+            Clear
+          </ButtonComponent>
+          <ButtonComponent
+            variant="secondary"
+            icon={Download}
+            onClick={exportCSV}
+          >
+            Export CSV
+          </ButtonComponent>
+        </div>
       </div>
 
       {/* Table */}
