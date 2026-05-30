@@ -206,16 +206,15 @@ function ThinkingBlock({
   // - Not streaming: collapsed unless user explicitly opened it
   const collapsed = isStreaming ? streamClosed : !manualOpen;
 
-  // Auto-scroll to bottom of thinking content while streaming (smooth)
+  // Auto-scroll to bottom of thinking content while streaming (instant snap)
+  // Direct scrollTop assignment avoids the race condition where queued smooth
+  // scroll animations can never keep up with rapid token emission.
   useEffect(() => {
     if (isStreaming && !streamClosed && contentRef.current) {
       const element = contentRef.current;
       requestAnimationFrame(() => {
         if (element) {
-          element.scrollTo({
-            top: element.scrollHeight,
-            behavior: "smooth",
-          });
+          element.scrollTop = element.scrollHeight;
         }
       });
     }
