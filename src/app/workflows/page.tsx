@@ -20,6 +20,7 @@ import {
   Workflow,
   Parentheses,
 } from "lucide-react";
+import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 import PrismService from "../../services/PrismService";
 import WorkflowService from "../../services/WorkflowService";
 import { executeWorkflow } from "../../services/WorkflowExecutor";
@@ -1414,7 +1415,7 @@ export default function WorkflowsPage({
       <div className={styles.canvasWrapper}>
         {isLoadingWorkflow && (
           <div className={styles.loadingOverlay}>
-            <Loader2 size={24} className={styles.loadingSpinner} />
+            <PanelLoadingSpinner />
           </div>
         )}
         <WorkflowCanvas

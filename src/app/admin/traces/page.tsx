@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { FolderOpen, MessageSquare, GitBranch } from "lucide-react";
-import { LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
+import PanelLoadingSpinner from "../../../components/PanelLoadingSpinnerComponent";
 import { useRouter } from "next/navigation";
 import IrisService, {
   type IrisRequestEntry,
@@ -231,11 +231,7 @@ export default function TracesPage() {
     return (
       <div className={styles.page}>
         <div className={styles.isLoadingState}>
-          <LoadingIndicatorComponent
-            size="small"
-            color="inherit"
-            label="Loading traces…"
-          />
+          <PanelLoadingSpinner size="large" />
         </div>
       </div>
     );

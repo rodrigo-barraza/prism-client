@@ -30,7 +30,6 @@ import type {
 import {
   ButtonComponent,
   SearchInputComponent,
-  LoadingIndicatorComponent,
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
 import { timeAgo as formatTimeAgo, formatLatencyMs } from "@rodrigo-barraza/utilities-library";
@@ -614,11 +613,7 @@ export default function MemoriesPanel({
       {hasMore && (
         <div ref={sentinelRef} className={styles.sentinel}>
           {loadingMore && (
-            <LoadingIndicatorComponent
-              size="small"
-              color="inherit"
-              label="Loading more..."
-            />
+            <PanelLoadingSpinner size="small" inline />
           )}
         </div>
       )}

@@ -12,8 +12,8 @@ import FilterDropdownComponent, {
 } from "./FilterDropdownComponent";
 import {
   SearchInputComponent,
-  LoadingIndicatorComponent,
 } from "@rodrigo-barraza/components-library";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import HistoryItemComponent from "./HistoryItemComponent";
 import styles from "./HistoryListComponent.module.css";
 import { LS_DATE_RANGE } from "../constants";
@@ -392,7 +392,7 @@ export default function HistoryList({
         {hasMore && <div ref={sentinelRef} className={styles.sentinel} />}
         {loadingMore && (
           <div className={styles.loadingMore}>
-            <LoadingIndicatorComponent size="small" />
+            <PanelLoadingSpinner size="small" inline />
           </div>
         )}
       </div>

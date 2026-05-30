@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   Coins,
   Cpu,
-  Loader2,
   XCircle,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
@@ -22,6 +21,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import { formatCost } from "@rodrigo-barraza/utilities-library";
 import styles from "./BenchmarkDashboardComponent.module.css";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 
 /**
  * Build a Map<"provider:model", configModelObject> from the config.
@@ -335,8 +335,7 @@ export default function BenchmarkDashboardComponent({
       <div className={styles.container}>
         {loading ? (
           <div className={styles.loadingState}>
-            <Loader2 size={20} className={styles.spinIcon} />
-            <span>Loading benchmark stats…</span>
+            <PanelLoadingSpinner size="large" />
           </div>
         ) : !stats || stats.models.length === 0 ? (
           <EmptyStateComponent

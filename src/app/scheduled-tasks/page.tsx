@@ -19,6 +19,7 @@ import {
   List,
   CalendarDays,
 } from "lucide-react";
+import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 import PrismService from "../../services/PrismService";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
 import {
@@ -567,8 +568,7 @@ export default function ScheduledTasksPage() {
             <div>
               {loading ? (
                 <div className={styles.loadingState}>
-                  <Loader2 size={32} className={styles.spin} />
-                  <p>Loading Cron Jobs…</p>
+                  <PanelLoadingSpinner size="large" />
                 </div>
               ) : filteredTasks.length === 0 ? (
                 <div className={styles.emptyState}>

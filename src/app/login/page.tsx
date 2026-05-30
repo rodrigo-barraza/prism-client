@@ -13,6 +13,7 @@ import {
   Loader2 
 } from "lucide-react";
 import styles from "./login.module.css";
+import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 
 function LogInContentComponent() {
   const router = useRouter();
@@ -349,9 +350,8 @@ export default function LogInPage() {
         justifyContent: "center",
         minHeight: "100vh",
         backgroundColor: "oklch(0.08 0.01 250)",
-        color: "oklch(0.98 0.01 250)"
       }}>
-        <Loader2 size={36} className={styles["spinnerIcon-element"]} style={{ animation: "rotateSpinner 800ms linear infinite" }} />
+        <PanelLoadingSpinner size="large" />
       </div>
     }>
       <LogInContentComponent />

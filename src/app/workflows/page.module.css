@@ -236,10 +236,6 @@
   animation: fadeIn 0.1s ease-out;
 }
 
-.loadingSpinner {
-  color: var(--accent-primary);
-  animation: spin 1s linear infinite;
-}
 
 /* ── Mobile ── */
 @media (max-width: 767px) {

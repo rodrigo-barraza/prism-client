@@ -1,5 +1,5 @@
 import { AlertCircle } from "lucide-react";
-import { LoadingIndicatorComponent } from "@rodrigo-barraza/components-library";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./StateMessageComponent.module.css";
 
 interface LoadingMessageProps {
@@ -11,7 +11,7 @@ export function LoadingMessage({
 }: LoadingMessageProps) {
   return (
     <div className={styles.container}>
-      <LoadingIndicatorComponent size="small" color="inherit" />
+      <PanelLoadingSpinner size="small" inline />
       <span>{message}</span>
     </div>
   );

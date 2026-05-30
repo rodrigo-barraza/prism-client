@@ -12,8 +12,8 @@ import ToolsApiService from "../../../services/ToolsApiService";
 import {
   BadgeComponent,
   TableComponent,
-  LoadingIndicatorComponent,
 } from "@rodrigo-barraza/components-library";
+import PanelLoadingSpinner from "../../../components/PanelLoadingSpinnerComponent";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import { formatNumber, formatLatencyMs, formatDateTime, formatFileSize } from "@rodrigo-barraza/utilities-library";
@@ -369,11 +369,7 @@ export default function ToolCallsPage() {
     return (
       <div className={styles.page}>
         <div className={styles.loadingState}>
-          <LoadingIndicatorComponent
-            size="small"
-            color="inherit"
-            label="Loading tool call statistics…"
-          />
+          <PanelLoadingSpinner size="large" />
         </div>
       </div>
     );

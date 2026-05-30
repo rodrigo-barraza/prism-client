@@ -8,10 +8,10 @@ import WorkflowComponent from "../../../components/WorkflowComponent";
 import WorkflowHeaderStatsComponent from "../../../components/WorkflowHeaderStatsComponent";
 import {
   SelectComponent,
-  LoadingIndicatorComponent,
   ToastComponent,
   useToast,
 } from "@rodrigo-barraza/components-library";
+import PanelLoadingSpinner from "../../../components/PanelLoadingSpinnerComponent";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
@@ -223,11 +223,7 @@ function AdminWorkflowsPageInner() {
       <div className={styles.body}>
         {loadingDetail && !selectedWorkflow ? (
           <div className={styles.emptyCanvas}>
-            <LoadingIndicatorComponent
-              size="small"
-              color="inherit"
-              label="Loading workflow…"
-            />
+            <PanelLoadingSpinner size="large" />
           </div>
         ) : (
           <WorkflowComponent
