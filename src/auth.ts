@@ -1,9 +1,8 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 
-export const AUTH_ENABLED = !!(
-  process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
-);
+export const AUTH_ENABLED = true;
 
 const ALLOWED_EMAILS = (process.env.AUTH_ALLOWED_EMAILS || "")
   .split(",")
@@ -11,17 +10,88 @@ const ALLOWED_EMAILS = (process.env.AUTH_ALLOWED_EMAILS || "")
   .filter(Boolean);
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: AUTH_ENABLED ? [Google] : [],
+  providers: [
+    ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+          }),
+        ]
+      : []),
+    Credentials({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          const accountsServiceUrl = process.env.ACCOUNTS_SERVICE_URL || "http://localhost:5615";
+          const response = await fetch(`${accountsServiceUrl}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
+
+          if (!response.ok) {
+            return null;
+          }
+
+          const userProfile = await response.json();
+          return {
+            id: userProfile.id,
+            email: userProfile.email,
+            name: userProfile.name,
+            image: userProfile.picture,
+          };
+        } catch (error) {
+          return null;
+        }
+      },
+    }),
+  ],
   trustHost: true,
+  pages: {
+    signIn: "/login",
+  },
 
   callbacks: {
-    signIn({ user }) {
+    signIn({ user, account }) {
       if (!AUTH_ENABLED) return true;
-      if (ALLOWED_EMAILS.length === 0) return true;
-      const userEmailAddress = user.email?.toLowerCase();
-      return userEmailAddress
-        ? ALLOWED_EMAILS.includes(userEmailAddress)
-        : false;
+      if (account?.provider === "google") {
+        if (ALLOWED_EMAILS.length === 0) return true;
+        const userEmailAddress = user.email?.toLowerCase();
+        return userEmailAddress
+          ? ALLOWED_EMAILS.includes(userEmailAddress)
+          : false;
+      }
+      return true;
+    },
+
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.picture = user.image;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.id as string;
+        session.user.image = token.picture as string | null;
+      }
+      return session;
     },
 
     authorized() {

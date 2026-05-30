@@ -10,6 +10,7 @@ import { SessionProvider } from "next-auth/react";
 import { WorkspaceProvider } from "../components/WorkspaceContextComponent";
 import "./globals.css";
 import SessionTrackerComponent from "@/components/SessionTrackerComponent";
+import UserAvatarDropdownComponent from "@/components/UserAvatarDropdownComponent";
 
 // Force all pages to render dynamically — prevents SSG prerender
 // failures during Docker builds when Vault/Prism APIs are unreachable
@@ -82,7 +83,7 @@ export default function RootLayout({
         <SessionProvider>
           <ThemeProvider storageKey="prism:theme" defaultTheme="light">
             <CustomThemeBootComponent storageKey="prism:custom-themes" />
-            <ComponentsProvider sound>
+            <ComponentsProvider sound userMenu={<UserAvatarDropdownComponent />}>
               <WorkspaceProvider>
                 {children}
                 <SessionTrackerComponent />

@@ -588,15 +588,14 @@
 /* ── Turtle Graphics Embed ─────────────────────────────────── */
 
 .turtleEmbedWrapper {
-  margin-top: 6px;
+  margin-block-start: 6px;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
   background: #ffffff;
-  width: 75vmin;
-  height: 75vmin;
-  max-width: 100%;
-  max-height: 75vh;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1 / 1;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   animation: turtleFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: transform, opacity;
