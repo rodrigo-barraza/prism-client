@@ -519,6 +519,341 @@ export default function SettingsPageComponent() {
         </span>
       </PageHeaderComponent>
 
+      {/* -- Memory Models Section ------------------------------------ */}
+      <CardComponent className={styles.section} data-settings-section="memory-models">
+        <CardComponent.Header
+          icon={Brain}
+          title="Memory Models"
+          subtitle="Models used for memory extraction, consolidation, and embedding"
+        />
+
+        <CardComponent.Body>
+          {/* Extraction Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Extraction Model</span>
+              <span className={styles.rowDescription}>
+                Extracts personal facts and knowledge from conversations
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: memorySettings.extractionProvider || "",
+                  model: memorySettings.extractionModel || "",
+                }}
+                onSelectModel={handleExtractionModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+              />
+            </div>
+          </div>
+
+          {/* Consolidation Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Consolidation Model</span>
+              <span className={styles.rowDescription}>
+                Merges, deduplicates, and prunes stored memories
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: memorySettings.consolidationProvider || "",
+                  model: memorySettings.consolidationModel || "",
+                }}
+                onSelectModel={handleConsolidationModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+              />
+            </div>
+          </div>
+
+          {/* Embedding Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Embedding Model</span>
+              <span className={styles.rowDescription}>
+                Generates vector embeddings for semantic memory search
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: memorySettings.embeddingProvider || "",
+                  model: memorySettings.embeddingModel || "",
+                }}
+                onSelectModel={handleEmbeddingModelSelect}
+                modelTypeFilter="embed"
+                allowDeselect
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetMemory}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Agent Defaults Section ----------------------------------- */}
+      <CardComponent className={styles.section} data-settings-section="agent-defaults">
+        <CardComponent.Header
+          icon={Network}
+          title="Agent Defaults"
+          subtitle="Default model for subagent workers spawned by the coordinator"
+        />
+
+        <CardComponent.Body>
+          {/* Harness Selector */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Agentic Harness</span>
+              <span className={styles.rowDescription}>
+                The execution strategy used by the agent loop. Different
+                harnesses define how the model interacts with tools.
+              </span>
+            </div>
+          </div>
+          <div className={styles.harnessGrid}>
+            {harnesses.map((h: AgenticHarness) => {
+              const isActive = (agentDefaults.harness || "standard") === h.id;
+              return (
+                <button
+                  key={h.id}
+                  className={`${styles.harnessCard} ${isActive ? styles.harnessActive : ""}`}
+                  onClick={() => handleHarnessSelect(h.id)}
+                >
+                  <div className={styles.harnessCardHeader}>
+                    <Cpu size={16} className={styles.harnessIcon} />
+                    <span className={styles.harnessLabel}>{h.label}</span>
+                    {isActive && (
+                      <span className={styles.harnessBadge}>Current</span>
+                    )}
+                  </div>
+                  <span className={styles.harnessDescription}>
+                    {h.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className={styles.harnessDivider} />
+
+          {/* Subagent Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Subagent Model</span>
+              <span className={styles.rowDescription}>
+                Pick a default subagent model for Prism to use when it spawns
+                subagents. If not set, it will use the current active model.
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.subagentProvider || "",
+                  model: agentDefaults.subagentModel || "",
+                }}
+                onSelectModel={handleSubagentModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Uses agent model"
+              />
+            </div>
+          </div>
+
+          {/* Critic Gate Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Critic Gate Model</span>
+              <span className={styles.rowDescription}>
+                A fast reviewer model that evaluates dangerous tool calls before
+                execution. When enabled, high-risk actions are reviewed by this
+                model for safety. Uses the active agent model by default.
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.criticProvider || "",
+                  model: agentDefaults.criticModel || "",
+                }}
+                onSelectModel={handleCriticModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Uses agent model"
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetAgents}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Creative Tools Section ------------------------------------ */}
+      <CardComponent className={styles.section} data-settings-section="creative-tools">
+        <CardComponent.Header
+          icon={Palette}
+          title="Creative Tools"
+          subtitle="Models used for image generation and image description"
+        />
+
+        <CardComponent.Body>
+          {/* Image Generation Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Image Generation Model</span>
+              <span className={styles.rowDescription}>
+                Model used by the generate_image tool to create native
+                illustrations
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: creativeSettings.imageProvider || "",
+                  model: creativeSettings.imageModel || "",
+                }}
+                onSelectModel={handleImageModelSelect}
+                modelTypeFilter="image"
+                allowDeselect
+              />
+            </div>
+          </div>
+
+          {/* Image Description (Vision) Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Vision Model</span>
+              <span className={styles.rowDescription}>
+                Model used by the describe_image tool to analyze user-attached
+                or reference images
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: creativeSettings.visionProvider || "",
+                  model: creativeSettings.visionModel || "",
+                }}
+                onSelectModel={handleVisionModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetCreative}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Audio Tools Section -------------------------------------- */}
+      <CardComponent className={styles.section} data-settings-section="audio-tools">
+        <CardComponent.Header
+          icon={Volume2}
+          title="Audio Tools"
+          subtitle="Models used for speech synthesis (text-to-speech) and transcription (speech-to-text)"
+        />
+
+        <CardComponent.Body>
+          {/* Text-to-Speech Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Speech Synthesis Model</span>
+              <span className={styles.rowDescription}>
+                Model used by the text_to_speech tool to generate audio files
+                from written text
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: creativeSettings.textToSpeechProvider || "",
+                  model: creativeSettings.textToSpeechModel || "",
+                }}
+                onSelectModel={handleTextToSpeechModelSelect}
+                modelTypeFilter="tts"
+                allowDeselect
+              />
+            </div>
+          </div>
+
+          {/* Speech-to-Text (Transcription) Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Transcription Model</span>
+              <span className={styles.rowDescription}>
+                Model used by the speech_to_text tool to transcribe spoken audio
+                recordings into text
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: creativeSettings.speechToTextProvider || "",
+                  model: creativeSettings.speechToTextModel || "",
+                }}
+                onSelectModel={handleSpeechToTextModelSelect}
+                modelTypeFilter="transcribe"
+                allowDeselect
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetAudio}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
       {/* -- Workspaces Section ---------------------------------------- */}
       <CardComponent className={styles.section} data-settings-section="workspaces">
         <CardComponent.Header
@@ -1335,341 +1670,6 @@ export default function SettingsPageComponent() {
           onAgentsChange={loadCustomAgents}
           availableTools={availableTools}
         />
-      </CardComponent>
-
-      {/* -- Memory Models Section ------------------------------------ */}
-      <CardComponent className={styles.section} data-settings-section="memory-models">
-        <CardComponent.Header
-          icon={Brain}
-          title="Memory Models"
-          subtitle="Models used for memory extraction, consolidation, and embedding"
-        />
-
-        <CardComponent.Body>
-          {/* Extraction Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Extraction Model</span>
-              <span className={styles.rowDescription}>
-                Extracts personal facts and knowledge from conversations
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: memorySettings.extractionProvider || "",
-                  model: memorySettings.extractionModel || "",
-                }}
-                onSelectModel={handleExtractionModelSelect}
-                modelTypeFilter="conversation"
-                allowDeselect
-              />
-            </div>
-          </div>
-
-          {/* Consolidation Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Consolidation Model</span>
-              <span className={styles.rowDescription}>
-                Merges, deduplicates, and prunes stored memories
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: memorySettings.consolidationProvider || "",
-                  model: memorySettings.consolidationModel || "",
-                }}
-                onSelectModel={handleConsolidationModelSelect}
-                modelTypeFilter="conversation"
-                allowDeselect
-              />
-            </div>
-          </div>
-
-          {/* Embedding Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Embedding Model</span>
-              <span className={styles.rowDescription}>
-                Generates vector embeddings for semantic memory search
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: memorySettings.embeddingProvider || "",
-                  model: memorySettings.embeddingModel || "",
-                }}
-                onSelectModel={handleEmbeddingModelSelect}
-                modelTypeFilter="embed"
-                allowDeselect
-              />
-            </div>
-          </div>
-        </CardComponent.Body>
-
-        {/* Reset */}
-        <CardComponent.Footer>
-          <ButtonComponent
-            variant="disabled"
-            icon={RotateCcw}
-            onClick={handleResetMemory}
-            disabled={saving}
-          >
-            Reset to Defaults
-          </ButtonComponent>
-        </CardComponent.Footer>
-      </CardComponent>
-
-      {/* -- Agent Defaults Section ----------------------------------- */}
-      <CardComponent className={styles.section} data-settings-section="agent-defaults">
-        <CardComponent.Header
-          icon={Network}
-          title="Agent Defaults"
-          subtitle="Default model for subagent workers spawned by the coordinator"
-        />
-
-        <CardComponent.Body>
-          {/* Harness Selector */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Agentic Harness</span>
-              <span className={styles.rowDescription}>
-                The execution strategy used by the agent loop. Different
-                harnesses define how the model interacts with tools.
-              </span>
-            </div>
-          </div>
-          <div className={styles.harnessGrid}>
-            {harnesses.map((h: AgenticHarness) => {
-              const isActive = (agentDefaults.harness || "standard") === h.id;
-              return (
-                <button
-                  key={h.id}
-                  className={`${styles.harnessCard} ${isActive ? styles.harnessActive : ""}`}
-                  onClick={() => handleHarnessSelect(h.id)}
-                >
-                  <div className={styles.harnessCardHeader}>
-                    <Cpu size={16} className={styles.harnessIcon} />
-                    <span className={styles.harnessLabel}>{h.label}</span>
-                    {isActive && (
-                      <span className={styles.harnessBadge}>Current</span>
-                    )}
-                  </div>
-                  <span className={styles.harnessDescription}>
-                    {h.description}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className={styles.harnessDivider} />
-
-          {/* Subagent Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Subagent Model</span>
-              <span className={styles.rowDescription}>
-                Pick a default subagent model for Prism to use when it spawns
-                subagents. If not set, it will use the current active model.
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: agentDefaults.subagentProvider || "",
-                  model: agentDefaults.subagentModel || "",
-                }}
-                onSelectModel={handleSubagentModelSelect}
-                modelTypeFilter="conversation"
-                allowDeselect
-                placeholderLabel="Uses agent model"
-              />
-            </div>
-          </div>
-
-          {/* Critic Gate Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Critic Gate Model</span>
-              <span className={styles.rowDescription}>
-                A fast reviewer model that evaluates dangerous tool calls before
-                execution. When enabled, high-risk actions are reviewed by this
-                model for safety. Uses the active agent model by default.
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: agentDefaults.criticProvider || "",
-                  model: agentDefaults.criticModel || "",
-                }}
-                onSelectModel={handleCriticModelSelect}
-                modelTypeFilter="conversation"
-                allowDeselect
-                placeholderLabel="Uses agent model"
-              />
-            </div>
-          </div>
-        </CardComponent.Body>
-
-        {/* Reset */}
-        <CardComponent.Footer>
-          <ButtonComponent
-            variant="disabled"
-            icon={RotateCcw}
-            onClick={handleResetAgents}
-            disabled={saving}
-          >
-            Reset to Defaults
-          </ButtonComponent>
-        </CardComponent.Footer>
-      </CardComponent>
-
-      {/* -- Creative Tools Section ------------------------------------ */}
-      <CardComponent className={styles.section} data-settings-section="creative-tools">
-        <CardComponent.Header
-          icon={Palette}
-          title="Creative Tools"
-          subtitle="Models used for image generation and image description"
-        />
-
-        <CardComponent.Body>
-          {/* Image Generation Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Image Generation Model</span>
-              <span className={styles.rowDescription}>
-                Model used by the generate_image tool to create native
-                illustrations
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: creativeSettings.imageProvider || "",
-                  model: creativeSettings.imageModel || "",
-                }}
-                onSelectModel={handleImageModelSelect}
-                modelTypeFilter="image"
-                allowDeselect
-              />
-            </div>
-          </div>
-
-          {/* Image Description (Vision) Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Vision Model</span>
-              <span className={styles.rowDescription}>
-                Model used by the describe_image tool to analyze user-attached
-                or reference images
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: creativeSettings.visionProvider || "",
-                  model: creativeSettings.visionModel || "",
-                }}
-                onSelectModel={handleVisionModelSelect}
-                modelTypeFilter="conversation"
-                allowDeselect
-              />
-            </div>
-          </div>
-        </CardComponent.Body>
-
-        {/* Reset */}
-        <CardComponent.Footer>
-          <ButtonComponent
-            variant="disabled"
-            icon={RotateCcw}
-            onClick={handleResetCreative}
-            disabled={saving}
-          >
-            Reset to Defaults
-          </ButtonComponent>
-        </CardComponent.Footer>
-      </CardComponent>
-
-      {/* -- Audio Tools Section -------------------------------------- */}
-      <CardComponent className={styles.section} data-settings-section="audio-tools">
-        <CardComponent.Header
-          icon={Volume2}
-          title="Audio Tools"
-          subtitle="Models used for speech synthesis (text-to-speech) and transcription (speech-to-text)"
-        />
-
-        <CardComponent.Body>
-          {/* Text-to-Speech Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Speech Synthesis Model</span>
-              <span className={styles.rowDescription}>
-                Model used by the text_to_speech tool to generate audio files
-                from written text
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: creativeSettings.textToSpeechProvider || "",
-                  model: creativeSettings.textToSpeechModel || "",
-                }}
-                onSelectModel={handleTextToSpeechModelSelect}
-                modelTypeFilter="tts"
-                allowDeselect
-              />
-            </div>
-          </div>
-
-          {/* Speech-to-Text (Transcription) Model */}
-          <div className={styles.settingsRow}>
-            <div className={styles.rowLabel}>
-              <span className={styles.rowTitle}>Transcription Model</span>
-              <span className={styles.rowDescription}>
-                Model used by the speech_to_text tool to transcribe spoken audio
-                recordings into text
-              </span>
-            </div>
-            <div className={styles.rowControl}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: creativeSettings.speechToTextProvider || "",
-                  model: creativeSettings.speechToTextModel || "",
-                }}
-                onSelectModel={handleSpeechToTextModelSelect}
-                modelTypeFilter="transcribe"
-                allowDeselect
-              />
-            </div>
-          </div>
-        </CardComponent.Body>
-
-        {/* Reset */}
-        <CardComponent.Footer>
-          <ButtonComponent
-            variant="disabled"
-            icon={RotateCcw}
-            onClick={handleResetAudio}
-            disabled={saving}
-          >
-            Reset to Defaults
-          </ButtonComponent>
-        </CardComponent.Footer>
       </CardComponent>
 
       {/* -- Security & Sandboxing Section ---------------------------- */}

@@ -41,11 +41,8 @@ const DOMAIN_OPTIONS = [
   { value: "Compute", label: "Compute" },
   { value: "Maritime", label: "Maritime" },
   { value: "Energy", label: "Energy" },
-  { value: "Agentic: File Operations", label: "File Ops" },
-  { value: "Agentic: Search & Discovery", label: "Search" },
+  { value: "Agentic: Workspace", label: "Workspace" },
   { value: "Agentic: Web", label: "Web" },
-  { value: "Agentic: Command Execution", label: "Command" },
-  { value: "Agentic: Git", label: "Git" },
   { value: "Agentic: Browser", label: "Browser" },
   { value: "Communication", label: "Communication" },
 ];

@@ -1235,12 +1235,7 @@ export default function ChatSessionComponent({
       // SystemPromptAssembler context and cannot actually read/write files.
       if (isNoAgent) {
         const agentOnlyDomains = new Set([
-          "Agentic: File Operations",
-          "Agentic: Git",
-          "Agentic: Git Isolation",
-          "Agentic: Command Execution",
-          "Agentic: Code Intelligence",
-          "Agentic: Search & Discovery",
+          "Agentic: Workspace",
         ]);
         tools = tools.filter(
           (tool) => !agentOnlyDomains.has(tool.domain || ""),
@@ -1476,9 +1471,9 @@ export default function ChatSessionComponent({
     return builtInTools.filter((tool) => (tool as any).system === true).length;
   }, [builtInTools]);
 
-  // Derive whether the active agent has File Operations capability
+  // Derive whether the active agent has Workspace capability (files, git, search, etc.)
   const hasFileOps = useMemo(
-    () => builtInTools.some((t) => t.domain === "Agentic: File Operations"),
+    () => builtInTools.some((t) => t.domain === "Agentic: Workspace"),
     [builtInTools],
   );
 

@@ -169,13 +169,9 @@ const DOMAIN_ICONS = {
   "Smart Home": Lightbulb,
   Reasoning: Brain,
   Coordinator: Bot,
-  "Agentic: File Operations": FolderOpen,
-  "Agentic: Search & Discovery": FileSearch,
+  "Agentic: Workspace": FolderOpen,
   "Agentic: Web": Globe,
-  "Agentic: Command Execution": Terminal,
-  "Agentic: Git": GitBranch,
   "Agentic: Browser": Globe,
-  "Agentic: Code Intelligence": Cpu,
   "Agentic: Task Management": Layers,
   "Agentic: Memory": Brain,
   "Agentic: Agent Management": Bot,
@@ -185,7 +181,6 @@ const DOMAIN_ICONS = {
   "Agentic: Skills": Zap,
   "Agentic: Control Flow": Shield,
   "Agentic: Structured Output": Braces,
-  "Agentic: Git Isolation": GitBranch,
 };
 
 function getDomainIcon(domain: string) {
