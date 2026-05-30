@@ -453,8 +453,8 @@
   bottom: 0;
   left: 0;
   z-index: 10000;
-  width: 50px;
-  height: 100px;
+  width: 80px;
+  height: 90px;
   background: none;
   border: none;
   padding: 0;
@@ -496,7 +496,7 @@
   position: absolute;
   inset: 0;
   background: var(--background-surface);
-  clip-path: polygon(3px 13px, 3px 97px, 45px 97px);
+  clip-path: polygon(3px 10px, 3px 87px, 75px 87px);
 }
 
 /* Icon — centered, counter-rotates to stay upright */
