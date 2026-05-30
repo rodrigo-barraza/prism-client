@@ -2215,7 +2215,9 @@ export default function MessageList({
                       {/* Plan proposal card — fallback for non-segmented messages */}
                       {planProposal &&
                         message.role === "assistant" &&
-                        i === messages.length - 1 &&
+                        (planProposal.status === "pending"
+                          ? i === messages.length - 1
+                          : message.toolCalls?.some((t) => t.name === "exit_plan_mode")) &&
                         !message.contentSegments?.some(
                           (s) => s.type === "plan",
                         ) && (
