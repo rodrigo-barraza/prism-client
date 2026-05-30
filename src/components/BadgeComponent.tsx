@@ -1028,29 +1028,64 @@ export default function BadgeComponent(props: BadgeProps) {
       } = props;
 
       if (Array.isArray(agents) && agents.length > 0) {
-        return (
-          <div
-            className={agentStyles.agentsList || ""}
-            style={{ display: "flex", gap: "4px" }}
-          >
+        if (agents.length === 1) {
+          return (
+            <BadgeComponent
+              type="agent"
+              agent={agents[0]}
+              size={size}
+              iconSize={iconSize}
+              animation={animation}
+              className={className}
+            />
+          );
+        }
+
+        const tooltipContent = (
+          <div className={agentStyles["agent-tooltip-list"]}>
             {agents.map((singleAgent: string | ClientAgent, index: number) => {
               const normalizedAgent: ClientAgent =
                 typeof singleAgent === "string"
                   ? { id: singleAgent, name: singleAgent }
                   : singleAgent;
+              const [colorStart, colorEnd] = resolveGradient(normalizedAgent);
+              const gradientStyle = {
+                background: `linear-gradient(135deg, ${colorStart} 0%, ${colorEnd} 100%)`,
+              };
               return (
-                <BadgeComponent
-                  key={index}
-                  type="agent"
-                  agent={normalizedAgent}
-                  size={size}
-                  iconSize={iconSize}
-                  animation={animation}
-                  className={className}
-                />
+                <div key={index} className={agentStyles["agent-tooltip-item"]}>
+                  <span
+                    className={agentStyles["agent-tooltip-icon"]}
+                    style={gradientStyle}
+                  >
+                    {renderAgentIcon(normalizedAgent, 10)}
+                  </span>
+                  <span className={agentStyles["agent-tooltip-name"]}>
+                    {normalizedAgent.name || normalizedAgent.id}
+                  </span>
+                </div>
               );
             })}
           </div>
+        );
+
+        return (
+          <TooltipComponent label={tooltipContent} position="top">
+            <span
+              className={`${agentStyles.badge} ${agentStyles["multi-agent-badge"]} ${className}`}
+              style={{ width: size, height: size }}
+            >
+              <span
+                className={agentStyles.badgeInner}
+                style={{
+                  background: "linear-gradient(135deg, var(--background-elevated) 0%, var(--background-surface) 100%)",
+                  border: "1px solid var(--calculated-border-color)",
+                }}
+              >
+                <span className={agentStyles["multi-agent-count"]}>{agents.length}</span>
+              </span>
+            </span>
+          </TooltipComponent>
         );
       }
 

@@ -5,8 +5,8 @@ import {
   SelectComponent,
   ToolCardComponent as ToolSchemaCard,
   TableComponent,
-  BadgeComponent,
 } from "@rodrigo-barraza/components-library";
+import BadgeComponent from "./BadgeComponent";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -649,19 +649,7 @@ function ToolCard({
     >
       {agents?.length > 0 && (
         <div className={styles.agentBadges}>
-          {agents.map((a: { id: string; name: string }) => (
-            <span
-              key={a.id}
-              className={styles.agentBadge}
-              style={
-                { "--agent-color": getAgentColor(a.id) } as React.CSSProperties
-              }
-              title={`Used by ${a.name}`}
-            >
-              <Bot size={10} />
-              {a.name}
-            </span>
-          ))}
+          <BadgeComponent type="agent" agents={agents} size={20} iconSize={11} />
         </div>
       )}
       {tool.labels?.slice(0, 4).map((l: string) => (
@@ -728,20 +716,9 @@ function ToolRow({
         {totalTransferBytes > 0 ? formatCompact(totalTransferBytes) : "—"}
       </span>
       <div className={styles.toolRowMeta}>
-        {agents?.length > 0 &&
-          agents.map((agent: { id: string; name: string }) => (
-            <span
-              key={agent.id}
-              className={styles.agentBadge}
-              style={
-                { "--agent-color": getAgentColor(agent.id) } as React.CSSProperties
-              }
-              title={`Used by ${agent.name}`}
-            >
-              <Bot size={10} />
-              {agent.name}
-            </span>
-          ))}
+        {agents?.length > 0 && (
+          <BadgeComponent type="agent" agents={agents} size={20} iconSize={11} />
+        )}
         {tool.domain && (
           <span className={styles.toolDomain}>{tool.domain}</span>
         )}
@@ -915,7 +892,8 @@ export default function ToolsPageComponent() {
         key: "emoji",
         label: "",
         align: "center" as const,
-        sortable: false,
+        sortable: true,
+        sortValue: (row: ClientToolSchema) => row.emoji || "",
         width: "40px",
         render: (row: ClientToolSchema) => (
           row.emoji ? (
@@ -968,26 +946,20 @@ export default function ToolsPageComponent() {
       {
         key: "agents",
         label: "Agents",
-        sortable: false,
+        sortable: true,
+        sortValue: (row: ClientToolSchema) => {
+          const rowAgents = (toolAgentMap as Record<string, { id: string; name: string }[]>)[row.name] || [];
+          return rowAgents.map((agent) => agent.name).sort().join(",");
+        },
         render: (row: ClientToolSchema) => {
           const rowAgents = (toolAgentMap as Record<string, { id: string; name: string }[]>)[row.name] || [];
           return rowAgents.length > 0 ? (
-            <div className={styles.agentBadges}>
-              {rowAgents.map((a) => (
-                <span
-                  key={a.id}
-                  className={styles.agentBadge}
-                  style={
-                    {
-                      "--agent-color": getAgentColor(a.id),
-                    } as React.CSSProperties
-                  }
-                >
-                  <Bot size={10} />
-                  {a.name}
-                </span>
-              ))}
-            </div>
+            <BadgeComponent
+              type="agent"
+              agents={rowAgents}
+              size={20}
+              iconSize={11}
+            />
           ) : (
             <span style={{ color: "var(--text-muted)" }}>—</span>
           );
