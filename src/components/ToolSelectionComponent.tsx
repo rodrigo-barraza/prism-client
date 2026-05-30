@@ -588,6 +588,7 @@ export default function ToolSelectionComponent({
                       >
                         <CheckboxComponent
                           size="compact"
+                          className={styles.toolCheckbox}
                           checked={true}
                           disabled={true}
                           onChange={() => {}}
@@ -603,6 +604,7 @@ export default function ToolSelectionComponent({
                       <div className={styles.toolRow}>
                         <CheckboxComponent
                           size="compact"
+                          className={styles.toolCheckbox}
                           checked={resolvedEnabledSet.has(tool.name)}
                           onChange={() => toggleTool(tool.name)}
                           label={
@@ -678,28 +680,32 @@ export default function ToolSelectionComponent({
                 </span>
               </div>
 
-              {!collapsed &&
-                tools.map((tool) => (
-                  <TooltipComponent
-                    key={tool.name}
-                    label={tool.description}
-                    position="right"
-                    delay={400}
-                  >
-                    <div className={styles.toolRow}>
-                      <CheckboxComponent
-                        size="compact"
-                        checked={resolvedEnabledSet.has(tool.name)}
-                        onChange={() => toggleTool(tool.name)}
-                        label={
-                          <span className={styles.toolName}>
-                            {renderToolName(tool.name)}
-                          </span>
-                        }
-                      />
-                    </div>
-                  </TooltipComponent>
-                ))}
+              {!collapsed && (
+                <div className={styles.toolsGrid}>
+                  {tools.map((tool) => (
+                    <TooltipComponent
+                      key={tool.name}
+                      label={tool.description}
+                      position="right"
+                      delay={400}
+                    >
+                      <div className={styles.toolRow}>
+                        <CheckboxComponent
+                          size="compact"
+                          className={styles.toolCheckbox}
+                          checked={resolvedEnabledSet.has(tool.name)}
+                          onChange={() => toggleTool(tool.name)}
+                          label={
+                            <span className={styles.toolName}>
+                              {renderToolName(tool.name)}
+                            </span>
+                          }
+                        />
+                      </div>
+                    </TooltipComponent>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}

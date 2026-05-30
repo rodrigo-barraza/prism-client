@@ -217,9 +217,9 @@ export default function ThreePanelLayout({
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       if (!isDraggingSplitRef.current || !splitContainerRef.current) return;
-      const containerRect = splitContainerRef.current.getBoundingClientRect();
+      const containerRectangle = splitContainerRef.current.getBoundingClientRect();
       const relativePosition =
-        (moveEvent.clientY - containerRect.top) / containerRect.height;
+        (moveEvent.clientY - containerRectangle.top) / containerRectangle.height;
       const clampedRatio = Math.min(
         MAXIMUM_PANEL_RATIO,
         Math.max(MINIMUM_PANEL_RATIO, relativePosition),
@@ -242,6 +242,44 @@ export default function ThreePanelLayout({
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
+  }, []);
+
+  const handleSplitTouchStart = useCallback((dragEvent: React.TouchEvent) => {
+    dragEvent.preventDefault();
+    isDraggingSplitRef.current = true;
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
+
+    const handleTouchMove = (moveEvent: TouchEvent) => {
+      if (!isDraggingSplitRef.current || !splitContainerRef.current) return;
+      const containerRectangle = splitContainerRef.current.getBoundingClientRect();
+      const touchPoint = moveEvent.touches[0];
+      if (!touchPoint) return;
+
+      const relativePosition =
+        (touchPoint.clientY - containerRectangle.top) / containerRectangle.height;
+      const clampedRatio = Math.min(
+        MAXIMUM_PANEL_RATIO,
+        Math.max(MINIMUM_PANEL_RATIO, relativePosition),
+      );
+      setSplitRatio(clampedRatio);
+    };
+
+    const handleTouchEnd = () => {
+      isDraggingSplitRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+      // Persist final ratio
+      setSplitRatio((currentRatio) => {
+        localStorage.setItem(LS_LEFT_SIDEBAR_SPLIT_RATIO, String(currentRatio));
+        return currentRatio;
+      });
+    };
+
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
   }, []);
 
   // Suppress the CSS transition on first paint so panels don't animate from open→closed
@@ -300,6 +338,7 @@ export default function ThreePanelLayout({
                 <div
                   className={styles["split-panel-resize-handle"]}
                   onMouseDown={handleSplitDragStart}
+                  onTouchStart={handleSplitTouchStart}
                   role="separator"
                   aria-orientation="horizontal"
                   aria-label="Resize sidebar panels"

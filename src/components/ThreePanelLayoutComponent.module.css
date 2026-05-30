@@ -76,6 +76,14 @@
   z-index: 10;
   background: var(--calculated-border-color);
   transition: background 0.2s ease;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-block: -8px;
+    inset-inline: 0;
+    z-index: 1;
+  }
 }
 
 .split-panel-resize-handle:hover {

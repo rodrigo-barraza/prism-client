@@ -14,6 +14,7 @@
   display: flex;
   min-block-size: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .settings-sidebar-panel {
@@ -25,6 +26,20 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition:
+    inline-size 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    min-inline-size 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-inline-end-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+}
+
+.is-sidebar-hidden {
+  inline-size: 0 !important;
+  min-inline-size: 0 !important;
+  opacity: 0;
+  border-inline-end-width: 0 !important;
+  pointer-events: none;
 }
 
 .page-content-area {
@@ -35,10 +50,26 @@
   scroll-behavior: smooth;
 }
 
-/* ── Responsive: hide sidebar on narrow viewports ────────────────── */
+/* ── Responsive: show sidebar as elegant overlay drawer on narrow viewports ── */
 
 @media (max-width: 900px) {
   .settings-sidebar-panel {
-    display: none;
+    position: absolute;
+    inset-block-start: 0;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    z-index: 50;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    will-change: translate;
+    transition:
+      translate 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    translate: 0 0;
+  }
+
+  .is-sidebar-hidden {
+    translate: -100% 0 !important;
+    opacity: 0 !important;
+    pointer-events: none;
   }
 }

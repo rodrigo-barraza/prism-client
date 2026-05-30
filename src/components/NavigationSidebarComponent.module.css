@@ -495,7 +495,7 @@
 .triangleInner {
   position: absolute;
   inset: 0;
-  background: var(--background-surface);
+  background: rgba(255, 255, 255, 0.33);
   clip-path: polygon(3px 10px, 3px 87px, 75px 87px);
 }
 

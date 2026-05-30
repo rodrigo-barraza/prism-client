@@ -43,7 +43,6 @@ import {
   ButtonComponent,
   CardComponent,
   InputComponent,
-  PageHeaderComponent,
   ToggleComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./SettingsPageComponent.module.css";
@@ -487,10 +486,17 @@ export default function SettingsPageComponent() {
   if (!config || !settings) {
     return (
       <div className={styles.container}>
-        <PageHeaderComponent
-          title="Settings"
-          subtitle="Configure system-wide preferences"
-        />
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.title}>
+              <Settings2 className={styles.titleIcon} size={22} />
+              Settings
+            </h1>
+            <p className={styles.subtitle}>
+              Configure system-wide preferences
+            </p>
+          </div>
+        </div>
         <div className={styles.isLoadingState}>
           <Loader2 size={20} className={styles.spinning} />
           <span>Loading settings…</span>
@@ -507,17 +513,25 @@ export default function SettingsPageComponent() {
 
   return (
     <div className={styles.container}>
-      <PageHeaderComponent
-        title="Settings"
-        subtitle="Configure system-wide preferences"
-      >
-        <span
-          className={`${styles.savedIndicator} ${saved ? styles.isVisibleState : ""}`}
-        >
-          <Check size={14} />
-          Saved
-        </span>
-      </PageHeaderComponent>
+      <div className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.title}>
+            <Settings2 className={styles.titleIcon} size={22} />
+            Settings
+          </h1>
+          <p className={styles.subtitle}>
+            Configure system-wide preferences
+          </p>
+        </div>
+        <div className={styles.headerRight}>
+          <span
+            className={`${styles.savedIndicator} ${saved ? styles.isVisibleState : ""}`}
+          >
+            <Check size={14} />
+            Saved
+          </span>
+        </div>
+      </div>
 
       {/* -- Memory Models Section ------------------------------------ */}
       <CardComponent className={styles.section} data-settings-section="memory-models">

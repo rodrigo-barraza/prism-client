@@ -794,7 +794,7 @@ export default function NavigationSidebarComponent({
                     <span className={styles.activeStateLayer}>
                       <ShieldCheck className={styles.navigationIcon} />
                       <span className={styles.navigationLabel}>
-                        Admin
+                        User
                       </span>
                     </span>
                   </Link>
@@ -1000,7 +1000,7 @@ export default function NavigationSidebarComponent({
           ) : null}
           {isAdmin ? (
             <TooltipComponent
-              label="Admin"
+              label="User"
               position="right"
               delay={200}
               disabled={showNav}
@@ -1018,7 +1018,7 @@ export default function NavigationSidebarComponent({
               >
                 <span className={styles.activeStateLayer}>
                   <ShieldCheck className={styles.navigationIcon} />
-                  <span className={styles.navigationLabel}>Admin</span>
+                  <span className={styles.navigationLabel}>User</span>
                 </span>
               </Link>
             </TooltipComponent>
