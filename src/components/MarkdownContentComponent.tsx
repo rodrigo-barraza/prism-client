@@ -158,6 +158,36 @@ function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
       />
     );
   }
+  if (isStringSrc && src.includes("/compute/3d/embed")) {
+    return (
+      <AutoResizeEmbed
+        src={src}
+        title={alt || "3D Scene"}
+        fallbackHeight={480}
+        className={styles.embedFrame}
+      />
+    );
+  }
+  if (isStringSrc && src.includes("/compute/image/ascii/embed")) {
+    return (
+      <AutoResizeEmbed
+        src={src}
+        title={alt || "ASCII Art"}
+        fallbackHeight={600}
+        className={styles.embedFrame}
+      />
+    );
+  }
+  if (isStringSrc && src.includes("/gaming/bonfire/embed")) {
+    return (
+      <AutoResizeEmbed
+        src={src}
+        title={alt || "Bonfire"}
+        fallbackHeight={480}
+        className={styles.embedFrame}
+      />
+    );
+  }
   if (isStringSrc && src.includes("/compute/turtle/embed")) {
     return (
       <span className={`${styles.embedWrapper} ${styles.turtleEmbedWrapper}`}>
