@@ -247,6 +247,21 @@ export default function SettingsPageComponent() {
     [settings, persistSettings],
   );
 
+  const handleCriticModelSelect = useCallback(
+    (provider: string, model: string) => {
+      const updated = {
+        agents: {
+          ...settings?.agents,
+          criticProvider: provider || "",
+          criticModel: model || "",
+        },
+      };
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
   // -- Harness change handler -----------------------------------------
   const handleHarnessSelect = useCallback(
     (harnessId: string) => {
@@ -1476,6 +1491,31 @@ export default function SettingsPageComponent() {
                 modelTypeFilter="conversation"
                 allowDeselect
                 placeholderLabel="Uses agent model"
+              />
+            </div>
+          </div>
+
+          {/* Critic Gate Model */}
+          <div className={styles.settingsRow}>
+            <div className={styles.rowLabel}>
+              <span className={styles.rowTitle}>Critic Gate Model</span>
+              <span className={styles.rowDescription}>
+                A fast reviewer model that evaluates dangerous tool calls before
+                execution. When enabled, high-risk actions are reviewed by this
+                model for safety. Uses Gemini 2.5 Flash by default.
+              </span>
+            </div>
+            <div className={styles.rowControl}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.criticProvider || "",
+                  model: agentDefaults.criticModel || "",
+                }}
+                onSelectModel={handleCriticModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="gemini-2.5-flash (default)"
               />
             </div>
           </div>

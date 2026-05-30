@@ -814,11 +814,12 @@ export interface MemoryConfig {
   embeddingModel?: string;
 }
 
-export interface AgentDefaultsConfig {
-  [agentId: string]: {
-    provider?: string;
-    model?: string;
-  };
+export type AgentDefaultsConfig = Record<string, unknown> & {
+  subagentProvider?: string;
+  subagentModel?: string;
+  criticProvider?: string;
+  criticModel?: string;
+  harness?: string;
 }
 
 export interface SecurityConfig {

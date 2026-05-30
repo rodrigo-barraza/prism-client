@@ -29,6 +29,7 @@ import {
   Bot,
   BarChart3,
   ScrollText,
+  ShieldCheck,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, {
@@ -688,6 +689,12 @@ export default function ChatSessionComponent({
     if (workerIter != null) setMaxWorkerIterations(workerIter);
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
+  const [criticGateEnabled, setCriticGateEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("agent:criticGateEnabled") === "true";
+    }
+    return false;
+  });
   const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>(
     [],
   );
@@ -2005,6 +2012,7 @@ export default function ChatSessionComponent({
               maxWorkerIterations: Number.isFinite(maxWorkerIterations)
                 ? maxWorkerIterations
                 : 0,
+              ...(criticGateEnabled && { enableCriticGate: true }),
             };
 
         let streamedText = "";
@@ -4322,6 +4330,22 @@ export default function ChatSessionComponent({
                       label: "Auto Approve Tool Use",
                       checked: autoApprove,
                       onChange: () => setAutoApprove((v) => !v),
+                    },
+                    {
+                      key: "criticGate",
+                      icon: <ShieldCheck size={12} />,
+                      label: "Critic Gate",
+                      checked: criticGateEnabled,
+                      onChange: () => {
+                        setCriticGateEnabled((v) => {
+                          const next = !v;
+                          localStorage.setItem(
+                            "agent:criticGateEnabled",
+                            String(next),
+                          );
+                          return next;
+                        });
+                      },
                     },
                     {
                       key: "iterations",
