@@ -520,7 +520,7 @@ export default function SettingsPageComponent() {
       </PageHeaderComponent>
 
       {/* -- Workspaces Section ---------------------------------------- */}
-      <CardComponent className={styles.section}>
+      <CardComponent className={styles.section} data-settings-section="workspaces">
         <CardComponent.Header
           icon={FolderOpen}
           title="Workspaces"
@@ -1323,7 +1323,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Custom Agents Section ------------------------------------ */}
-      <CardComponent className={styles.section}>
+      <CardComponent className={styles.section} data-settings-section="custom-agents">
         <CardComponent.Header
           icon={Bot}
           title="Custom Agents"
@@ -1338,7 +1338,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Memory Models Section ------------------------------------ */}
-      <CardComponent className={styles.section}>
+      <CardComponent className={styles.section} data-settings-section="memory-models">
         <CardComponent.Header
           icon={Brain}
           title="Memory Models"
@@ -1427,7 +1427,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Agent Defaults Section ----------------------------------- */}
-      <CardComponent className={styles.section}>
+      <CardComponent className={styles.section} data-settings-section="agent-defaults">
         <CardComponent.Header
           icon={Network}
           title="Agent Defaults"
@@ -1535,7 +1535,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Creative Tools Section ------------------------------------ */}
-      <CardComponent className={styles.section}>
+      <CardComponent className={styles.section} data-settings-section="creative-tools">
         <CardComponent.Header
           icon={Palette}
           title="Creative Tools"
@@ -1604,7 +1604,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Audio Tools Section -------------------------------------- */}
-      <CardComponent className={styles.section}>
+      <CardComponent className={styles.section} data-settings-section="audio-tools">
         <CardComponent.Header
           icon={Volume2}
           title="Audio Tools"
@@ -1673,7 +1673,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Security & Sandboxing Section ---------------------------- */}
-      <CardComponent className={styles.section}>
+      <CardComponent className={styles.section} data-settings-section="security-sandboxing">
         <CardComponent.Header
           icon={Lock}
           title="Security & Sandboxing"
@@ -1720,7 +1720,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Custom Themes Section ------------------------------------ */}
-      <CardComponent className={styles.section}>
+      <CardComponent className={styles.section} data-settings-section="custom-themes">
         <CardComponent.Header
           icon={Palette}
           title="Custom Themes"

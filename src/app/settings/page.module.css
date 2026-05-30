@@ -7,8 +7,38 @@
   overflow: hidden;
 }
 
+/* ── Two-column body: sidebar + scrollable content ───────────────── */
+
+.settings-body-row {
+  flex: 1;
+  display: flex;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.settings-sidebar-panel {
+  inline-size: 240px;
+  min-inline-size: 240px;
+  block-size: 100%;
+  border-inline-end: 1px solid var(--calculated-border-color);
+  background: var(--background-surface);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .page-content-area {
   flex: 1;
   min-block-size: 0;
+  min-inline-size: 0;
   overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* ── Responsive: hide sidebar on narrow viewports ────────────────── */
+
+@media (max-width: 900px) {
+  .settings-sidebar-panel {
+    display: none;
+  }
 }
