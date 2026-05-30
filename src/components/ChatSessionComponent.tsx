@@ -138,48 +138,7 @@ import {
 } from "../utils/mentionUtils";
 import SoundService from "../services/SoundService";
 
-// -- Per-agent empty state config ---------------------------------
-const AGENT_EMPTY_STATE = {
-  CODING: {
-    title: "Coding Agent",
-    subtitle:
-      "Read, edit, search, and browse your codebase with AI-powered tools.",
-    placeholder: "Ask me to read, edit, search, or explore your codebase...",
-  },
-  OMNI: {
-    title: "Omni Agent",
-    subtitle:
-      "Universal agent with access to every tool — coding, web, health, finance, smart home, and more.",
-    placeholder: "Ask me anything — I have access to all tools...",
-  },
-  LUPOS: {
-    title: "Lupos",
-    subtitle:
-      "The insane wolf king. Web search, image generation, trends, and more.",
-    placeholder: "Talk to the wolf king...",
-  },
-  STICKERS: {
-    title: "Clankerbox",
-    subtitle:
-      "Sticker-designing vending machine. Image generation and web search.",
-    placeholder: "Ask Clankerbox to create something...",
-  },
-  DIGEST: {
-    title: "Digest",
-    subtitle:
-      "Evidence-based nutrition & exercise coach. USDA data, meal planning, calorie tracking, and workout search.",
-    placeholder:
-      "Ask about nutrition, exercises, meal plans, or calorie targets...",
-  },
-  IMAGE: {
-    title: "Image Agent",
-    subtitle:
-      "A visionary AI artist. Creative prompt design, image generation, visual styles, and inspiration.",
-    placeholder: "Describe the image or concept you want to create...",
-  },
-};
-
-const DEFAULT_EMPTY_STATE = {
+const DEFAULT_EMPTY_STATE: EmptyStateConfig = {
   title: "Agent",
   subtitle: "AI-powered agent with tool access.",
   placeholder: "Send a message...",
@@ -431,22 +390,16 @@ export default function ChatSessionComponent({
     : activeAgentData?.project ||
       (agentId.toUpperCase() === "CODING" ? "coding" : "prism-chat");
   const agentBackgroundImage = activeAgentData?.backgroundImage || "";
-  const rawEmptyState: EmptyStateConfig = isNoAgent
+  const emptyState: EmptyStateConfig = isNoAgent
     ? NONE_EMPTY_STATE
-    : (AGENT_EMPTY_STATE as Record<string, EmptyStateConfig>)[agentId] ||
-      (activeAgentData?.name
-        ? {
-            title: activeAgentData.name,
-            subtitle:
-              activeAgentData.description ||
-              "AI-powered agent with tool access.",
-            placeholder: `Talk to ${activeAgentData.name}...`,
-          }
-        : DEFAULT_EMPTY_STATE);
-  const emptyState = {
-    ...rawEmptyState,
-    subtitle: activeAgentData?.description || rawEmptyState.subtitle,
-  };
+    : activeAgentData?.name
+      ? {
+          title: activeAgentData.name,
+          subtitle:
+            activeAgentData.description || DEFAULT_EMPTY_STATE.subtitle,
+          placeholder: `Talk to ${activeAgentData.name}...`,
+        }
+      : DEFAULT_EMPTY_STATE;
 
   const { currentWorkspace, setCurrentWorkspace, workspaces } = useWorkspace();
 
@@ -624,6 +577,13 @@ export default function ChatSessionComponent({
   const [tasksCount, setTasksCount] = useState(0);
   const [memoryConfigured, setMemoryConfigured] = useState(false);
   const [hasAnyMemoryModelSet, setHasAnyMemoryModelSet] = useState(false);
+  const [imageModelConfigured, setImageModelConfigured] = useState(false);
+  const [visionModelConfigured, setVisionModelConfigured] = useState(false);
+  const [textToSpeechModelConfigured, setTextToSpeechModelConfigured] = useState(false);
+  const [speechToTextModelConfigured, setSpeechToTextModelConfigured] = useState(false);
+  const [extractionModelConfigured, setExtractionModelConfigured] = useState(false);
+  const [consolidationModelConfigured, setConsolidationModelConfigured] = useState(false);
+  const [embeddingModelConfigured, setEmbeddingModelConfigured] = useState(false);
   // -- Agent-scoped storage keys ---------------------------------
   const toolMemoryKey =
     agentId === "CODING"
@@ -1247,43 +1207,61 @@ export default function ChatSessionComponent({
     loadAgenticTools().catch(console.error);
   }, [agentId, isNoAgent]);
 
-  // -- Fetch memory settings to determine if memories are configured --
+  // -- Fetch settings to determine which model-dependent tools are configured --
   useEffect(() => {
     PrismService.getSettings()
       .then((s: PrismSettings) => {
         const memorySection = s?.memory;
-        setMemoryConfigured(
-          Boolean(
-            memorySection &&
-            memorySection.extractionProvider &&
-            memorySection.extractionModel &&
-            memorySection.consolidationProvider &&
-            memorySection.consolidationModel &&
-            memorySection.embeddingProvider &&
-            memorySection.embeddingModel,
-          ),
-        );
+        const creativeSection = s?.creative;
+
         const hasExtraction = Boolean(memorySection?.extractionProvider && memorySection?.extractionModel);
         const hasConsolidation = Boolean(memorySection?.consolidationProvider && memorySection?.consolidationModel);
         const hasEmbedding = Boolean(memorySection?.embeddingProvider && memorySection?.embeddingModel);
+        const isFullyConfigured = hasExtraction && hasConsolidation && hasEmbedding;
+
+        setMemoryConfigured(isFullyConfigured);
+        setExtractionModelConfigured(hasExtraction);
+        setConsolidationModelConfigured(hasConsolidation);
+        setEmbeddingModelConfigured(hasEmbedding);
+
         const hasAnyMemorySet = hasExtraction || hasConsolidation || hasEmbedding;
         setHasAnyMemoryModelSet(hasAnyMemorySet);
         if (!hasAnyMemorySet && leftTabBottomRef.current === "memories") {
           setLeftTabBottom("tools");
         }
+
+        setImageModelConfigured(Boolean(creativeSection?.imageProvider && creativeSection?.imageModel));
+        setVisionModelConfigured(Boolean(creativeSection?.visionProvider && creativeSection?.visionModel));
+        setTextToSpeechModelConfigured(Boolean(creativeSection?.textToSpeechProvider && creativeSection?.textToSpeechModel));
+        setSpeechToTextModelConfigured(Boolean(creativeSection?.speechToTextProvider && creativeSection?.speechToTextModel));
       })
       .catch(() => {
         setMemoryConfigured(false);
         setHasAnyMemoryModelSet(false);
+        setImageModelConfigured(false);
+        setVisionModelConfigured(false);
+        setTextToSpeechModelConfigured(false);
+        setSpeechToTextModelConfigured(false);
+        setExtractionModelConfigured(false);
+        setConsolidationModelConfigured(false);
+        setEmbeddingModelConfigured(false);
       });
   }, []);
 
-  // Tools that are force-disabled because a prerequisite isn't met
+  // Tools that are force-disabled because a prerequisite settings model isn't configured.
+  // Maps tool name → human-readable reason (shown in tooltip).
   const lockedOffTools = useMemo(() => {
-    const set = new Set<string>();
-    if (!memoryConfigured) set.add("upsert_memory");
-    return set;
-  }, [memoryConfigured]);
+    const lockedToolsMap = new Map<string, string>();
+    if (!memoryConfigured) lockedToolsMap.set("upsert_memory", "Configure all Memory Models in Settings to unlock");
+    if (!extractionModelConfigured) lockedToolsMap.set("extract_memories", "Configure the Extraction Model in Settings → Memory Models to unlock");
+    if (!consolidationModelConfigured) lockedToolsMap.set("consolidate_memories", "Configure the Consolidation Model in Settings → Memory Models to unlock");
+    if (!embeddingModelConfigured) lockedToolsMap.set("search_memories", "Configure the Embedding Model in Settings → Memory Models to unlock");
+    if (!imageModelConfigured) lockedToolsMap.set("generate_image", "Configure the Image Generation Model in Settings → Creative Tools to unlock");
+    if (!visionModelConfigured) lockedToolsMap.set("describe_image", "Configure the Vision Model in Settings → Creative Tools to unlock");
+    if (!textToSpeechModelConfigured) lockedToolsMap.set("text_to_speech", "Configure the Text-to-Speech Model in Settings → Audio to unlock");
+    if (!speechToTextModelConfigured) lockedToolsMap.set("speech_to_text", "Configure the Speech-to-Text Model in Settings → Audio to unlock");
+    return lockedToolsMap;
+  }, [memoryConfigured, extractionModelConfigured, consolidationModelConfigured, embeddingModelConfigured, imageModelConfigured, visionModelConfigured, textToSpeechModelConfigured, speechToTextModelConfigured]);
 
   // -- Eager-fetch tab badge counts (fires on mount / session change) --
 

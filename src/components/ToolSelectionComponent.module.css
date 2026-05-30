@@ -254,3 +254,20 @@
   opacity: 0.5;
   margin-left: auto;
 }
+
+/* ── Locked (settings-dependent) tool rows ────────────────────── */
+
+.lockedToolRow {
+  opacity: 0.5;
+  cursor: default !important;
+  pointer-events: auto;
+}
+
+.lockedToolRow:hover {
+  background: transparent !important;
+}
+
+.lockedToolName {
+  font-weight: 400;
+  color: var(--text-tertiary) !important;
+}

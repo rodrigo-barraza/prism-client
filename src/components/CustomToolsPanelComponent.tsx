@@ -90,7 +90,7 @@ export default function CustomToolsPanel({
   onToggleBuiltIn,
   onToggleAllBuiltIn,
   readOnly = false,
-  lockedOffTools = new Set(),
+  lockedOffTools = new Map(),
   agent = true,
 }: {
   tools?: CustomTool[];
@@ -101,7 +101,7 @@ export default function CustomToolsPanel({
   onToggleBuiltIn?: (name: string) => void;
   onToggleAllBuiltIn?: (enableAll: boolean) => void;
   readOnly?: boolean;
-  lockedOffTools?: Set<string>;
+  lockedOffTools?: Map<string, string>;
   agent?: boolean;
 }) {
   const [editingTool, setEditingTool] = useState<any | null>(null);
@@ -743,6 +743,7 @@ export default function CustomToolsPanel({
           }
         }}
         agent={agent}
+        lockedOffTools={lockedOffTools}
       />
     );
   }
@@ -781,6 +782,7 @@ export default function CustomToolsPanel({
           enabledTools={derivedEnabled}
           onEnabledToolsChange={handleSelectionChange}
           agent={agent}
+          lockedOffTools={lockedOffTools}
         />
       )}
 

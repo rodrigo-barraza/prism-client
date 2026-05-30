@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  InputComponent,
+  SearchInputComponent,
   SelectComponent,
   ToolCardComponent as ToolSchemaCard,
   TableComponent,
@@ -1170,18 +1170,12 @@ export default function ToolsPageComponent() {
 
       {/* Filter bar */}
       <div className={styles.filterBar}>
-        <div className={styles.searchWrapper}>
-          <Search className={styles.searchIcon} />
-          <InputComponent
-            className={styles.searchInput}
-            type="text"
-            placeholder="Search tools by name, description, or label…"
-            value={search}
-            onChange={(
-              e: React.ChangeEvent<HTMLInputElement>,
-            ) => setSearch(e.target.value)}
-          />
-        </div>
+        <SearchInputComponent
+          value={search}
+          onChange={setSearch}
+          placeholder="Search tools by name, description, or label…"
+          className={styles.toolsSearch}
+        />
 
         <SelectComponent
           value={domainFilter}

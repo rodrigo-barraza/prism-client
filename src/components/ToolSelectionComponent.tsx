@@ -64,6 +64,7 @@ interface ToolSelectionProps {
   enabledTools?: string[];
   onEnabledToolsChange: (tools: string[]) => void;
   agent?: boolean;
+  lockedOffTools?: Map<string, string>;
 }
 
 // -- Domain icon mapping (mirrors CustomToolsPanel) --------------
@@ -244,6 +245,7 @@ export default function ToolSelectionComponent({
   enabledTools = [],
   onEnabledToolsChange,
   agent = true,
+  lockedOffTools = new Map(),
 }: ToolSelectionProps) {
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set<string>());
@@ -682,13 +684,33 @@ export default function ToolSelectionComponent({
 
               {!collapsed && (
                 <div className={styles.toolsGrid}>
-                  {tools.map((tool) => (
+                  {tools.map((tool) => {
+                    const isLocked = lockedOffTools.has(tool.name);
+                    const lockReason = lockedOffTools.get(tool.name);
+                    return (
                     <TooltipComponent
                       key={tool.name}
-                      label={tool.description}
+                      label={isLocked ? lockReason! : (tool.description || "")}
                       position="right"
-                      delay={400}
+                      delay={isLocked ? 0 : 400}
                     >
+                      {isLocked ? (
+                        <div className={`${styles.toolRow} ${styles.lockedToolRow}`}>
+                          <CheckboxComponent
+                            size="compact"
+                            className={styles.toolCheckbox}
+                            checked={false}
+                            disabled={true}
+                            onChange={() => {}}
+                            label={
+                              <span className={`${styles.toolName} ${styles.lockedToolName}`}>
+                                {renderToolName(tool.name)}
+                              </span>
+                            }
+                          />
+                          <Lock size={10} className={styles.lockIcon} />
+                        </div>
+                      ) : (
                       <div className={styles.toolRow}>
                         <CheckboxComponent
                           size="compact"
@@ -702,8 +724,10 @@ export default function ToolSelectionComponent({
                           }
                         />
                       </div>
+                      )}
                     </TooltipComponent>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
