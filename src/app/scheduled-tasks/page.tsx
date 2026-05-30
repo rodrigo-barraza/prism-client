@@ -6,7 +6,6 @@ import {
   ArrowUpDown,
   Clock,
   Plus,
-  Search,
   MoreVertical,
   Trash2,
   Play,
@@ -26,6 +25,7 @@ import {
   LayoutHeaderComponent,
   ModalComponent,
   SelectComponent,
+  SearchInputComponent,
   InputComponent,
   TextAreaComponent,
   FormGroupComponent,
@@ -520,16 +520,12 @@ export default function ScheduledTasksPage() {
               </div>
 
               <div className={styles.headerActions}>
-                <div className={styles.searchWrapper}>
-                  <Search size={14} className={styles.searchIcon} />
-                  <InputComponent
-                    type="text"
-                    placeholder="Search tasks…"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={styles.searchInput}
-                  />
-                </div>
+                <SearchInputComponent
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search tasks…"
+                  className={styles.tasksSearch}
+                />
 
                 <SelectComponent
                   multiple

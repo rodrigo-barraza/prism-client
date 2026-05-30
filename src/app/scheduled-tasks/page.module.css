@@ -125,44 +125,11 @@
   flex-shrink: 0;
 }
 
-/* ── Search Input ──────────────────────────────────────────── */
+/* ── Search Input ────────────────────────────────────────────────── */
 
-.searchWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.searchIcon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  color: var(--text-tertiary);
-  pointer-events: none;
-}
-
-.searchInput {
-  height: 36px;
-  padding: 0 12px 0 32px;
-  font-size: 0.8125rem;
-  background: var(--background-elevated);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
-  width: 240px;
-  transition:
-    border-color var(--transition-fast),
-    width var(--transition-normal);
-}
-
-.searchInput:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
-  width: 280px;
+.tasksSearch {
+  min-width: 200px;
+  max-width: 280px;
 }
 
 /* ── New Button ────────────────────────────────────────────── */
@@ -754,16 +721,9 @@
     justify-content: space-between;
   }
 
-  .searchWrapper {
+  .tasksSearch {
     flex: 1;
-  }
-
-  .searchInput {
-    width: 100%;
-  }
-
-  .searchInput:focus {
-    width: 100%;
+    max-width: 100%;
   }
 
   .grid {

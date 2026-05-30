@@ -102,6 +102,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  scale: 1;
+  will-change: scale;
+  transition: scale 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.coinWrap:has([data-is-typing-state="true"]) {
+  scale: 1.1;
+  transition: scale 150ms ease-out;
 }
 
 .coinCanvas {

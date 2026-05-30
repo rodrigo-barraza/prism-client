@@ -23,6 +23,7 @@ import {
 import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
+  IconButtonComponent,
   InputComponent,
   SegmentedControlComponent,
   SelectComponent,
@@ -430,9 +431,11 @@ export default function CustomToolsPanel({
       <div className={styles.container}>
         <div className={styles.formHeader}>
           <h3>{isNew ? "New Tool" : "Edit Tool"}</h3>
-          <button className={styles.cancelButton} onClick={handleCancel}>
-            <X size={16} />
-          </button>
+          <IconButtonComponent
+            icon={<X size={16} />}
+            onClick={handleCancel}
+            tooltip="Cancel"
+          />
         </div>
 
         <div className={styles.form}>
@@ -519,28 +522,24 @@ export default function CustomToolsPanel({
           <div className={styles.paramsSection}>
             <div className={styles.paramsSectionHeader}>
               <label>Parameters</label>
-              <div className={styles.paramsModeToggle}>
-                <button
-                  className={`${styles.modeButton} ${inputMode === "manual" ? styles.modeBtnActive : ""}`}
-                  onClick={() => setInputMode("manual")}
-                >
-                  Manual
-                </button>
-                <button
-                  className={`${styles.modeButton} ${inputMode === "json" ? styles.modeBtnActive : ""}`}
-                  onClick={() => setInputMode("json")}
-                >
-                  <FileText size={10} />
-                  JSON
-                </button>
-              </div>
+              <SegmentedControlComponent
+                value={inputMode}
+                onChange={(value: string) => setInputMode(value)}
+                compact
+                segments={[
+                  { value: "manual", label: "Manual" },
+                  { value: "json", label: "JSON", icon: <FileText size={10} /> },
+                ] satisfies SegmentDefinition[]}
+              />
               {inputMode === "manual" && (
-                <button
-                  className={styles.addParamButton}
+                <ButtonComponent
+                  variant="secondary"
+                  size="small"
+                  icon={Plus}
                   onClick={addParameter}
                 >
-                  <Plus size={12} /> Add
-                </button>
+                  Add
+                </ButtonComponent>
               )}
             </div>
 
@@ -556,12 +555,12 @@ export default function CustomToolsPanel({
                   <div key={i} className={styles.paramCard}>
                     <div className={styles.paramCardHeader}>
                       <span className={styles.paramIndex}>#{i + 1}</span>
-                      <button
-                        className={styles.paramRemoveButton}
+                      <IconButtonComponent
+                        icon={<Trash2 size={12} />}
                         onClick={() => removeParameter(i)}
-                      >
-                        <Trash2 size={12} />
-                      </button>
+                        variant="destructive"
+                        tooltip="Remove parameter"
+                      />
                     </div>
 
                     <div className={styles.paramFields}>
@@ -664,14 +663,15 @@ export default function CustomToolsPanel({
                   spellCheck={false}
                 />
                 <div className={styles.jsonActions}>
-                  <button
-                    className={styles.jsonParseButton}
+                  <ButtonComponent
+                    variant="primary"
+                    size="small"
+                    icon={CheckCircle}
                     onClick={() => parseJsonDefinition(jsonText)}
                     disabled={!jsonText.trim()}
                   >
-                    <CheckCircle size={12} />
                     Apply JSON
-                  </button>
+                  </ButtonComponent>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -679,13 +679,14 @@ export default function CustomToolsPanel({
                     style={{ display: "none" }}
                     onChange={handleJsonFileUpload}
                   />
-                  <button
-                    className={styles.jsonUploadButton}
+                  <ButtonComponent
+                    variant="secondary"
+                    size="small"
+                    icon={Upload}
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload size={12} />
                     Upload .json
-                  </button>
+                  </ButtonComponent>
                 </div>
                 {jsonError && (
                   <div
@@ -709,14 +710,16 @@ export default function CustomToolsPanel({
             )}
           </div>
 
-          <button
-            className={styles.saveButton}
+          <ButtonComponent
+            variant="primary"
+            icon={Save}
             onClick={handleSave}
             disabled={!editingTool.name || !editingTool.code || saving}
+            loading={saving}
+            fullWidth
           >
-            <Save size={14} />
             {saving ? "Saving..." : isNew ? "Create Tool" : "Save Changes"}
-          </button>
+          </ButtonComponent>
         </div>
       </div>
     );

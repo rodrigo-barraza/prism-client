@@ -1195,7 +1195,7 @@ export default function ChatSessionComponent({
       // SystemPromptAssembler context and cannot actually read/write files.
       if (isNoAgent) {
         const agentOnlyDomains = new Set([
-          "Agentic: Workspace",
+          "Workspace",
         ]);
         tools = tools.filter(
           (tool) => !agentOnlyDomains.has(tool.domain || ""),
@@ -1450,8 +1450,8 @@ export default function ChatSessionComponent({
   }, [builtInTools]);
 
   // Derive whether the active agent has Workspace capability (files, git, search, etc.)
-  const hasFileOps = useMemo(
-    () => builtInTools.some((t) => t.domain === "Agentic: Workspace"),
+  const hasFileOperations = useMemo(
+    () => builtInTools.some((t) => t.domain === "Workspace"),
     [builtInTools],
   );
 
@@ -1498,6 +1498,7 @@ export default function ChatSessionComponent({
       if (!element) return;
       const value = serializeEditable(element);
       inputValueRef.current = value;
+      window.dispatchEvent(new CustomEvent("user:typing"));
       const hasSlashBadges = element.querySelectorAll("[data-slash-command]").length > 0;
       const nowHasInput = value.trim().length > 0 || hasSlashBadges;
       setHasInput((previousPixelSize) =>
@@ -4204,7 +4205,7 @@ export default function ChatSessionComponent({
             tooltip: "Settings",
           },
           ...(!isNoAgent &&
-          ((currentWorkspace && hasFileOps) || unavailableWorkspace)
+          ((currentWorkspace && hasFileOperations) || unavailableWorkspace)
             ? [
                 {
                   key: "workspace",
@@ -5482,7 +5483,7 @@ export default function ChatSessionComponent({
         fileViewerPanel={
           !isNoAgent &&
           currentWorkspace &&
-          hasFileOps && (
+          hasFileOperations && (
             <FileViewerPanelComponent
               openFiles={viewerOpenFiles}
               activeFileId={viewerActiveFileId}

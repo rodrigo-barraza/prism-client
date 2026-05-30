@@ -16,6 +16,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import ToolsApiService from "../services/ToolsApiService";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./FileViewerPanelComponent.module.css";
 
 // ─── Binary file type detection ─────────────────────────────
@@ -870,7 +871,7 @@ export default function FileViewerPanelComponent({
         {/* Loading state — only show full spinner for initial loads (no cached content) */}
         {cached?.loading && cached?.content == null && !cached?.isBinary && (
           <div className={styles.isLoadingState}>
-            <span className={styles.spinner} />
+            <PanelLoadingSpinner size="small" inline />
             Loading…
           </div>
         )}
@@ -1015,10 +1016,7 @@ export default function FileViewerPanelComponent({
         <div className={styles.metaBar}>
           {cached.loading && (
             <>
-              <span
-                className={styles.spinner}
-                style={{ width: 10, height: 10, borderWidth: 1.5 }}
-              />
+              <PanelLoadingSpinner size="small" inline />
               <span className={styles.metaDot} />
             </>
           )}

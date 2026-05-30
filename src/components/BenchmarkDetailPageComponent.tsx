@@ -32,6 +32,7 @@ import ChatPreviewComponent from "./ChatPreviewComponent";
 import StorageService from "../services/StorageService";
 import { SK_MODEL_MEMORY_BENCHMARKS } from "../constants";
 import { formatCost, generateUUID } from "@rodrigo-barraza/utilities-library";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./BenchmarkPageComponent.module.css";
 import type { ReactNode } from "react";
 import type {
@@ -1283,7 +1284,7 @@ export default function BenchmarkDetailPageComponent({
       >
         <div className={styles.contentMain}>
           <div className={styles.runProgress}>
-            <div className={styles.progressSpinner} />
+            <PanelLoadingSpinner size="small" inline />
             <div className={styles.progressText}>Loading benchmark…</div>
           </div>
         </div>
@@ -1491,7 +1492,7 @@ export default function BenchmarkDetailPageComponent({
               return (
                 <div className={styles.runProgress}>
                   <div className={styles.progressHeader}>
-                    <div className={styles.progressSpinner} />
+                    <PanelLoadingSpinner size="small" inline />
                     <div className={styles.progressText}>
                       Running benchmark against{" "}
                       {streamingTotal > 0 && streamingTotal !== allModels.length

@@ -83,18 +83,18 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
   Energy: Fuel,
   Compute: Cpu,
   Communication: Radio,
-  "Agentic: Workspace": FolderOpen,
-  "Agentic: Web": Globe2,
-  "Agentic: Browser": MonitorSmartphone,
-  "Agentic: Task Management": Wrench,
-  "Agentic: Memory": BookOpen,
-  "Agentic: Agent Management": Bot,
-  "Agentic: Meta": Search,
+  Workspace: FolderOpen,
+  Web: Globe2,
+  Browser: MonitorSmartphone,
+  "Task Management": Wrench,
+  Memory: BookOpen,
+  "Agent Management": Bot,
+  Meta: Search,
   "Cron Jobs": CalendarDays,
   Timers: CalendarDays,
-  "Agentic: Skills": Layers,
-  "Agentic: Control Flow": Cpu,
-  "Agentic: Structured Output": Code2,
+  Skills: Layers,
+  "Control Flow": Cpu,
+  "Structured Output": Code2,
   Creative: Sparkles,
   Discord: Radio,
   "Smart Home": Lightbulb,
@@ -105,33 +105,33 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
 };
 
 const DOMAIN_LABELS: Record<string, string> = {
-  "Agentic: Workspace": "Workspace Tools",
-  "Agentic: Web": "Web",
-  "Agentic: Browser": "Browser",
-  "Agentic: Task Management": "Task Management",
-  "Agentic: Memory": "Memory",
-  "Agentic: Agent Management": "Agent Management",
-  "Agentic: Meta": "Tool Discovery",
+  Workspace: "Workspace Tools",
+  Web: "Web",
+  Browser: "Browser",
+  "Task Management": "Task Management",
+  Memory: "Memory",
+  "Agent Management": "Agent Management",
+  Meta: "Tool Discovery",
   "Cron Jobs": "Cron Jobs",
   Timers: "Timers",
-  "Agentic: Skills": "Skills",
-  "Agentic: Control Flow": "Control Flow",
-  "Agentic: Structured Output": "Structured Output",
+  Skills: "Skills",
+  "Control Flow": "Control Flow",
+  "Structured Output": "Structured Output",
 };
 
 const DOMAIN_ORDER = [
-  "Agentic: Workspace",
-  "Agentic: Web",
-  "Agentic: Browser",
-  "Agentic: Task Management",
-  "Agentic: Memory",
-  "Agentic: Agent Management",
-  "Agentic: Meta",
+  "Workspace",
+  "Web",
+  "Browser",
+  "Task Management",
+  "Memory",
+  "Agent Management",
+  "Meta",
   "Cron Jobs",
   "Timers",
-  "Agentic: Skills",
-  "Agentic: Control Flow",
-  "Agentic: Structured Output",
+  "Skills",
+  "Control Flow",
+  "Structured Output",
   "Reasoning",
   "Coordinator",
   "Weather & Environment",
@@ -538,6 +538,9 @@ export default function ToolSelectionComponent({
             }}
             label={<span className={styles.bulkCheckboxLabel}>Select All</span>}
           />
+          <span className={styles.domainCount}>
+            {enabledConfigurableCount}/{configurableTools.length}
+          </span>
         </div>
 
         {/* Core Agentic Tools Section */}

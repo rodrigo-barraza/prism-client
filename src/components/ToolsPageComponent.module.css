@@ -1131,14 +1131,7 @@
   text-align: center;
 }
 
-.loadingSpinner {
-  width: 28px;
-  height: 28px;
-  border: 2px solid var(--calculated-border-color);
-  border-top-color: var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
+/* Spinner is rendered via PanelLoadingSpinnerComponent */
 
 .loadingText {
   font-size: 0.8125rem;

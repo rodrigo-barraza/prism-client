@@ -6,7 +6,6 @@ import {
   Network,
   Bot,
   RotateCcw,
-  Loader2,
   Check,
   FolderOpen,
   Lock,
@@ -45,6 +44,7 @@ import {
   InputComponent,
   ToggleComponent,
 } from "@rodrigo-barraza/components-library";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./SettingsPageComponent.module.css";
 
 import { PrismSettings, AgenticHarness } from "../types/types";
@@ -498,8 +498,7 @@ export default function SettingsPageComponent() {
           </div>
         </div>
         <div className={styles.isLoadingState}>
-          <Loader2 size={20} className={styles.spinning} />
-          <span>Loading settings…</span>
+          <PanelLoadingSpinner size="medium" />
         </div>
       </div>
     );

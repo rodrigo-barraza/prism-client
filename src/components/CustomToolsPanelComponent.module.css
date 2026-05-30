@@ -435,24 +435,7 @@
   }
 }
 
-.cancelButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--border-radius-sm);
-  background: none;
-  border: none;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: all 0.15s ease;
 
-  &:hover {
-    background: var(--background-surface);
-    color: var(--text-primary);
-  }
-}
 
 .form {
   display: flex;
@@ -540,61 +523,7 @@
   }
 }
 
-/* ── Mode Toggle (Manual / JSON) ──────────────────────────── */
 
-.paramsModeToggle {
-  display: flex;
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  overflow: hidden;
-}
-
-.modeButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:not(:last-child) {
-    border-right: 1px solid var(--calculated-border-color);
-  }
-
-  &:hover:not(.modeBtnActive) {
-    color: var(--text-secondary);
-    background: color-mix(in srgb, var(--background-surface) 60%, transparent);
-  }
-}
-
-.modeBtnActive {
-  color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
-}
-
-.addParamButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px 8px;
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
-  }
-}
 
 .paramsEmpty {
   font-size: var(--font-size-xs);
@@ -645,55 +574,7 @@
   gap: 6px;
 }
 
-.jsonParseButton,
-.jsonUploadButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
 
-.jsonParseButton {
-  color: var(--color-white);
-  background: var(--accent-primary);
-
-  &:hover:not(:disabled) {
-    background: var(--calculated-accent-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px var(--calculated-accent-primary-glow);
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-}
-
-.jsonUploadButton {
-  color: var(--text-secondary);
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-
-  &:hover {
-    color: var(--text-primary);
-    border-color: color-mix(
-      in srgb,
-      var(--accent-primary) 40%,
-      var(--calculated-border-color)
-    );
-    background: color-mix(
-      in srgb,
-      var(--accent-primary) 5%,
-      var(--background-surface)
-    );
-  }
-}
 
 .jsonFeedback {
   display: flex;
@@ -748,24 +629,7 @@
   font-family: var(--font-mono);
 }
 
-.paramRemoveButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  background: none;
-  border: none;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  border-radius: 3px;
-  transition: all 0.15s ease;
 
-  &:hover {
-    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
-    color: var(--color-danger);
-  }
-}
 
 .paramFields {
   display: flex;
@@ -831,35 +695,7 @@
   cursor: pointer;
 }
 
-/* ── Save Button ───────────────────────────────────────────── */
 
-.saveButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 9px 16px;
-  margin-top: 4px;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-white);
-  background: var(--accent-primary);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: var(--calculated-accent-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--calculated-accent-primary-glow);
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-}
 
 /* ── Locked Icon (force-disabled tools) ───────────────────── */
 

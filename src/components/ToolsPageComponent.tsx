@@ -102,6 +102,7 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./ToolsPageComponent.module.css";
 import { humanizeToolName, formatCostAdaptive, formatCompact, formatLatencyMs, timeAgo as formatTimeAgo } from "@rodrigo-barraza/utilities-library";
 // -- Agent color mapping (stable hues per built-in agent) -------
@@ -169,18 +170,18 @@ const DOMAIN_ICONS = {
   "Smart Home": Lightbulb,
   Reasoning: Brain,
   Coordinator: Bot,
-  "Agentic: Workspace": FolderOpen,
-  "Agentic: Web": Globe,
-  "Agentic: Browser": Globe,
-  "Agentic: Task Management": Layers,
-  "Agentic: Memory": Brain,
-  "Agentic: Agent Management": Bot,
-  "Agentic: Meta": Cog,
+  Workspace: FolderOpen,
+  Web: Globe,
+  Browser: Globe,
+  "Task Management": Layers,
+  Memory: Brain,
+  "Agent Management": Bot,
+  Meta: Cog,
   "Cron Jobs": Clock,
   Timers: Clock,
-  "Agentic: Skills": Zap,
-  "Agentic: Control Flow": Shield,
-  "Agentic: Structured Output": Braces,
+  Skills: Zap,
+  "Control Flow": Shield,
+  "Structured Output": Braces,
 };
 
 function getDomainIcon(domain: string) {
@@ -225,11 +226,23 @@ function groupByDomain(
       (groups as Record<string, ClientToolSchema[]>)[domain] = [];
     (groups as Record<string, ClientToolSchema[]>)[domain].push(tool);
   }
-  const sortKey = (d: string) => {
-    if (d.startsWith("Agentic:")) return `2_${d}`;
-    if (d === "Coordinator") return "3_Coordinator";
-    if (d === "Reasoning") return "3_Reasoning";
-    return `0_${d}`;
+  const agenticDomains = new Set([
+    "Workspace",
+    "Web",
+    "Browser",
+    "Task Management",
+    "Memory",
+    "Agent Management",
+    "Meta",
+    "Skills",
+    "Control Flow",
+    "Structured Output"
+  ]);
+  const sortKey = (domain: string) => {
+    if (agenticDomains.has(domain)) return `2_${domain}`;
+    if (domain === "Coordinator") return "3_Coordinator";
+    if (domain === "Reasoning") return "3_Reasoning";
+    return `0_${domain}`;
   };
   return Object.fromEntries(
     Object.entries(groups).sort((a, b) =>
@@ -1125,7 +1138,7 @@ export default function ToolsPageComponent() {
     return (
       <div className={styles.container}>
         <div className={styles.isLoadingState}>
-          <div className={styles.loadingSpinner} />
+          <PanelLoadingSpinner size="large" />
           <span className={styles.loadingText}>Loading tools from Prism…</span>
         </div>
       </div>

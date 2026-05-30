@@ -8,6 +8,7 @@ import PrismService from "../services/PrismService";
 import ModelsTableComponent, { RawModel } from "./ModelsTableComponent";
 import ModelLoadConfigPanel from "./ModelLoadConfigPanelComponent";
 import ModelDetailPanelComponent from "./ModelDetailPanelComponent";
+import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 
 import { ErrorMessage } from "./StateMessageComponent";
 import {
@@ -435,8 +436,7 @@ export default function ModelsPageComponent({
 
             {loading && allModels.length === 0 ? (
               <div className={styles.loadingState}>
-                <Loader2 size={24} className={styles.spinning} />
-                <span>Loading models...</span>
+                <PanelLoadingSpinner size="large" />
               </div>
             ) : (
               <ModelsTableComponent
@@ -467,8 +467,7 @@ export default function ModelsPageComponent({
 
             {loading && allModels.length === 0 ? (
               <div className={styles.loadingState}>
-                <Loader2 size={24} className={styles.spinning} />
-                <span>Loading models...</span>
+                <PanelLoadingSpinner size="large" />
               </div>
             ) : (
               <ModelsTableComponent

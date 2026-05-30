@@ -292,8 +292,8 @@ export default function SettingsPanel({
         )}
         <BadgeComponent
           type="throughput"
-          liveTokPerSec={liveTokensPerSec}
-          avgTokPerSec={stats.avgTokensPerSec}
+          liveTokensPerSecond={liveTokensPerSec}
+          averageTokensPerSecond={stats.avgTokensPerSec}
           isActivelyGenerating={computedTokPerSec !== null || hasActiveWorkers}
           turnActive={turnActive}
         />

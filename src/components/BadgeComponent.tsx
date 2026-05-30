@@ -100,8 +100,8 @@ export type BadgeProps =
     }
   | {
       type: "throughput";
-      liveTokPerSec: number | null;
-      avgTokPerSec?: number | null;
+      liveTokensPerSecond: number | null;
+      averageTokensPerSecond?: number | null;
       isActivelyGenerating?: boolean;
       turnActive?: boolean;
     }
@@ -342,78 +342,137 @@ function resolveGradient(agent: any): string[] {
   );
 }
 
-const TEX_SIZE = 256;
+const TEXTURE_SIZE = 256;
 
-function CoinStatic({ agent, size }: any) {
-  const meshRef = useRef<any>(null);
-  const texRef = useRef<any>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const iconRef = useRef<HTMLCanvasElement | null>(null);
+function useCoinAnimation({ agent, size }: any) {
+  const meshReference = useRef<any>(null);
+  const textureReference = useRef<any>(null);
+  const textureCanvasReference = useRef<HTMLCanvasElement | null>(null);
+  const iconCanvasReference = useRef<HTMLCanvasElement | null>(null);
+  const coinWrapperReference = useRef<HTMLSpanElement | null>(null);
   const gradient = useMemo(() => resolveGradient(agent), [agent]);
+
+  const typingSpeedMultiplier = useRef(1.0);
+  const typingDecayTimerId = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingDecayRequestAnimationFrameId = useRef<number | null>(null);
+
+  const BASE_ROTATION_SPEED = 1.2;
+  const SPEED_INCREMENT_PER_KEYSTROKE = 0.6;
+  const MAXIMUM_SPEED_MULTIPLIER = 12;
+  const DECAY_RATE = 0.92;
+  const TYPING_IDLE_DELAY_MILLISECONDS = 400;
+
+  useEffect(() => {
+    const handleTypingEvent = () => {
+      typingSpeedMultiplier.current = Math.min(
+        typingSpeedMultiplier.current + SPEED_INCREMENT_PER_KEYSTROKE,
+        MAXIMUM_SPEED_MULTIPLIER,
+      );
+
+      if (coinWrapperReference.current) {
+        coinWrapperReference.current.setAttribute("data-is-typing-state", "true");
+      }
+
+      if (typingDecayTimerId.current) {
+        clearTimeout(typingDecayTimerId.current);
+      }
+      if (typingDecayRequestAnimationFrameId.current) {
+        cancelAnimationFrame(typingDecayRequestAnimationFrameId.current);
+        typingDecayRequestAnimationFrameId.current = null;
+      }
+
+      typingDecayTimerId.current = setTimeout(() => {
+        const decayLoop = () => {
+          typingSpeedMultiplier.current =
+            1.0 +
+            (typingSpeedMultiplier.current - 1.0) * DECAY_RATE;
+
+          if (typingSpeedMultiplier.current <= 1.02) {
+            typingSpeedMultiplier.current = 1.0;
+            typingDecayRequestAnimationFrameId.current = null;
+
+            if (coinWrapperReference.current) {
+              coinWrapperReference.current.setAttribute("data-is-typing-state", "false");
+            }
+            return;
+          }
+          typingDecayRequestAnimationFrameId.current = requestAnimationFrame(decayLoop);
+        };
+        decayLoop();
+      }, TYPING_IDLE_DELAY_MILLISECONDS);
+    };
+
+    window.addEventListener("user:typing", handleTypingEvent);
+    return () => {
+      window.removeEventListener("user:typing", handleTypingEvent);
+      if (typingDecayTimerId.current) clearTimeout(typingDecayTimerId.current);
+      if (typingDecayRequestAnimationFrameId.current) cancelAnimationFrame(typingDecayRequestAnimationFrameId.current);
+    };
+  }, []);
 
   const handleSetup = useCallback(
     ({ scene, camera, THREE }: any) => {
       camera.position.set(0, 0, 20);
       camera.lookAt(0, 0, 0);
 
-      const texCanvas = document.createElement("canvas");
-      texCanvas.width = TEX_SIZE;
-      texCanvas.height = TEX_SIZE;
-      const context = texCanvas.getContext("2d");
+      const textureCanvas = document.createElement("canvas");
+      textureCanvas.width = TEXTURE_SIZE;
+      textureCanvas.height = TEXTURE_SIZE;
+      const context = textureCanvas.getContext("2d");
       if (context) {
-        const r = TEX_SIZE * 0.16;
+        const radius = TEXTURE_SIZE * 0.16;
         context.beginPath();
-        context.roundRect(0, 0, TEX_SIZE, TEX_SIZE, r);
+        context.roundRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE, radius);
         context.closePath();
         const canvasGradient = context.createLinearGradient(
           0,
           0,
-          TEX_SIZE,
-          TEX_SIZE,
+          TEXTURE_SIZE,
+          TEXTURE_SIZE,
         );
         canvasGradient.addColorStop(0, gradient[0]);
         canvasGradient.addColorStop(1, gradient[1]);
         context.fillStyle = canvasGradient;
         context.fill();
       }
-      canvasRef.current = texCanvas;
+      textureCanvasReference.current = textureCanvas;
 
-      const tex = new THREE.CanvasTexture(texCanvas);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      texRef.current = tex;
+      const texture = new THREE.CanvasTexture(textureCanvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      textureReference.current = texture;
 
-      const geo = new THREE.PlaneGeometry(1.2, 1.2);
-      const mat = new THREE.MeshBasicMaterial({
-        map: tex,
+      const geometry = new THREE.PlaneGeometry(1.2, 1.2);
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
         transparent: true,
         side: THREE.DoubleSide,
       });
 
-      const mesh = new THREE.Mesh(geo, mat);
-      meshRef.current = mesh;
+      const mesh = new THREE.Mesh(geometry, material);
+      meshReference.current = mesh;
       scene.add(mesh);
     },
     [gradient],
   );
 
   useEffect(() => {
-    if (!iconRef.current) return;
+    if (!iconCanvasReference.current) return;
 
-    const raf = requestAnimationFrame(() => {
-      if (!canvasRef.current) return;
-      const iconSz = TEX_SIZE * 0.55;
-      const off = (TEX_SIZE - iconSz) / 2;
-      const context = (canvasRef.current as HTMLCanvasElement).getContext("2d");
+    const animationFrameId = requestAnimationFrame(() => {
+      if (!textureCanvasReference.current) return;
+      const iconSize = TEXTURE_SIZE * 0.55;
+      const offset = (TEXTURE_SIZE - iconSize) / 2;
+      const context = (textureCanvasReference.current as HTMLCanvasElement).getContext("2d");
       if (!context) return;
 
-      const imageElement = (iconRef.current as HTMLElement).querySelector(
+      const imageElement = (iconCanvasReference.current as HTMLElement).querySelector(
         "img",
       );
       if (imageElement) {
         const drawImg = () => {
-          context.drawImage(imageElement, off, off, iconSz, iconSz);
-          if (texRef.current)
-            (texRef.current as { needsUpdate: boolean }).needsUpdate = true;
+          context.drawImage(imageElement, offset, offset, iconSize, iconSize);
+          if (textureReference.current)
+            (textureReference.current as { needsUpdate: boolean }).needsUpdate = true;
         };
         if (imageElement.complete && imageElement.naturalWidth > 0) {
           drawImg();
@@ -423,7 +482,7 @@ function CoinStatic({ agent, size }: any) {
         return;
       }
 
-      const svg = (iconRef.current as HTMLElement).querySelector("svg");
+      const svg = (iconCanvasReference.current as HTMLElement).querySelector("svg");
       if (!svg) return;
 
       svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
@@ -431,34 +490,50 @@ function CoinStatic({ agent, size }: any) {
 
       const image = new Image();
       const blob = new Blob([markup], { type: "image/svg+xml;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
+      const objectUrl = URL.createObjectURL(blob);
       image.onload = () => {
-        URL.revokeObjectURL(url);
-        if (!canvasRef.current) return;
-        context.drawImage(image, off, off, iconSz, iconSz);
-        if (texRef.current)
-          (texRef.current as { needsUpdate: boolean }).needsUpdate = true;
+        URL.revokeObjectURL(objectUrl);
+        if (!textureCanvasReference.current) return;
+        context.drawImage(image, offset, offset, iconSize, iconSize);
+        if (textureReference.current)
+          (textureReference.current as { needsUpdate: boolean }).needsUpdate = true;
       };
       image.onerror = () => {
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(objectUrl);
       };
-      image.src = url;
+      image.src = objectUrl;
     });
 
-    return () => cancelAnimationFrame(raf);
+    return () => cancelAnimationFrame(animationFrameId);
   }, [agent]);
 
+  const rotationAccumulator = useRef(0);
+  const lastElapsed = useRef(0);
+
   const handleTick = useCallback(({ elapsed }: any) => {
-    if (!meshRef.current) return;
+    if (!meshReference.current) return;
+    const deltaTime = elapsed - lastElapsed.current;
+    lastElapsed.current = elapsed;
+    rotationAccumulator.current +=
+      deltaTime * BASE_ROTATION_SPEED * typingSpeedMultiplier.current;
     (
-      meshRef.current as { rotation: { x: number; y: number; z: number } }
-    ).rotation.y = elapsed * 1.2;
+      meshReference.current as { rotation: { x: number; y: number; z: number } }
+    ).rotation.y = rotationAccumulator.current;
   }, []);
 
+  return { iconRef: iconCanvasReference, coinWrapRef: coinWrapperReference, handleSetup, handleTick, size, agent };
+}
+
+function CoinStaticRenderer({ agent, size }: any) {
+  const { iconRef: iconCanvasReference, coinWrapRef: coinWrapperReference, handleSetup, handleTick } = useCoinAnimation({
+    agent,
+    size,
+  });
+
   return (
-    <>
-      <span ref={iconRef} className={agentStyles.hiddenIcon}>
-        {renderAgentIcon(agent, Math.round(TEX_SIZE * 0.5))}
+    <span ref={coinWrapperReference} data-is-typing-state="false">
+      <span ref={iconCanvasReference} className={agentStyles.hiddenIcon}>
+        {renderAgentIcon(agent, Math.round(TEXTURE_SIZE * 0.5))}
       </span>
       <ThreeCanvasComponent
         onSetup={handleSetup}
@@ -471,7 +546,7 @@ function CoinStatic({ agent, size }: any) {
         className={agentStyles.coinCanvas}
         style={{ width: size, height: size }}
       />
-    </>
+    </span>
   );
 }
 
@@ -652,9 +727,9 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 4. Throughput ---
     case "throughput": {
-      const { liveTokPerSec, avgTokPerSec, isActivelyGenerating, turnActive } =
+      const { liveTokensPerSecond, averageTokensPerSecond, isActivelyGenerating, turnActive } =
         props;
-      if (liveTokPerSec !== null && liveTokPerSec !== undefined) {
+      if (liveTokensPerSecond !== null && liveTokensPerSecond !== undefined) {
         const variant =
           isActivelyGenerating || turnActive
             ? throughputStyles.live
@@ -662,17 +737,17 @@ export default function BadgeComponent(props: BadgeProps) {
         return (
           <span className={`${throughputStyles.badge} ${variant}`}>
             <GaugeIcon size={10} className={throughputStyles.icon} />
-            {liveTokPerSec.toFixed(1)} tok/s
+            {liveTokensPerSecond.toFixed(1)} tok/s
           </span>
         );
       }
-      if (avgTokPerSec != null) {
+      if (averageTokensPerSecond != null) {
         return (
           <span
             className={`${throughputStyles.badge} ${throughputStyles.average}`}
           >
             <GaugeIcon size={10} className={throughputStyles.icon} />
-            {avgTokPerSec.toFixed(1)} tok/s
+            {averageTokensPerSecond.toFixed(1)} tok/s
           </span>
         );
       }
@@ -960,7 +1035,7 @@ export default function BadgeComponent(props: BadgeProps) {
       if (animation) {
         return (
           <span className={`${agentStyles.coinWrap} ${className}`}>
-            <CoinStatic key={agentId} agent={agent} size={size} />
+            <CoinStaticRenderer key={agentId} agent={agent} size={size} />
           </span>
         );
       }

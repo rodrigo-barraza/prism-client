@@ -1,6 +1,7 @@
 /* ============================================================
-   PanelLoadingSpinner — Premium orbital spinner for sidebar tabs
+   PanelLoadingSpinner — Premium orbital spinner
    GPU-optimized: only transforms & opacity are animated.
+   Supports size variants: small (20px), medium (36px), large (48px).
    ============================================================ */
 
 .loading-spinner-container {
@@ -13,11 +14,35 @@
   animation: spinner-fade-in 0.3s ease-out both;
 }
 
-/* Wrapper that sizes & positions the concentric rings */
+/* Inline variant — no flex container, just the orbital group */
+.spinner-inline-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: spinner-fade-in 0.3s ease-out both;
+}
+
+/* ── Orbit group sizing ──────────────────────────────────────── */
+
 .spinner-orbit-group {
   position: relative;
   inline-size: 36px;
   block-size: 36px;
+}
+
+.spinner-size-small {
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+.spinner-size-medium {
+  inline-size: 36px;
+  block-size: 36px;
+}
+
+.spinner-size-large {
+  inline-size: 48px;
+  block-size: 48px;
 }
 
 /* ── Shared ring base ─────────────────────────────────────── */
@@ -28,6 +53,16 @@
   border-radius: 50%;
   border: 2px solid transparent;
   will-change: transform, opacity;
+}
+
+/* Thinner border for small size */
+.spinner-size-small .spinner-ring {
+  border-width: 1.5px;
+}
+
+/* Thicker border for large size */
+.spinner-size-large .spinner-ring {
+  border-width: 2.5px;
 }
 
 /* ── Outer ring — slow rotation ─────────────────────────── */
@@ -56,6 +91,15 @@
   animation: spinner-orbit-middle 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Scale middle ring inset for different sizes */
+.spinner-size-small .spinner-ring-middle {
+  inset: 3px;
+}
+
+.spinner-size-large .spinner-ring-middle {
+  inset: 6px;
+}
+
 /* ── Inner dot — pulsing glow ──────────────────────────── */
 
 .spinner-core-dot {
@@ -65,6 +109,15 @@
   background: var(--accent-primary, oklch(0.637 0.237 275));
   will-change: transform, opacity;
   animation: spinner-core-pulse 1.4s ease-in-out infinite;
+}
+
+/* Scale core dot for different sizes */
+.spinner-size-small .spinner-core-dot {
+  inset: 7px;
+}
+
+.spinner-size-large .spinner-core-dot {
+  inset: 16px;
 }
 
 /* ── Keyframes ─────────────────────────────────────────── */
