@@ -2114,7 +2114,7 @@ const TOOL_RESULT_REGISTRY = {
 
   // Web
   web_search: { Renderer: WebSearchRenderer },
-  fetch_url: { Renderer: FetchUrlRenderer },
+  read_web_page: { Renderer: FetchUrlRenderer },
 
   // Execution
   execute_shell: { Renderer: TerminalRenderer, language: "bash" },
@@ -2135,7 +2135,7 @@ const TOOL_RESULT_REGISTRY = {
   browser_action: { Renderer: BrowserActionRenderer },
 
   // Turtle Graphics
-  turtle_draw: { Renderer: TurtleDrawRenderer },
+  draw_turtle: { Renderer: TurtleDrawRenderer },
 
   // Image to ASCII Art
   convert_image_to_ascii: { Renderer: AsciiImageRenderer },
