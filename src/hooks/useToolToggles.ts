@@ -11,13 +11,14 @@ export default function useToolToggles(
   storageKey?: string,
 ) {
   // Load initial state from localStorage if a storage key is provided
-  const [disabledBuiltIns, setDisabledBuiltIns] = useState<Set<string>>(() => {
+  const [disabledTools, setDisabledTools] = useState<Set<string>>(() => {
     if (storageKey) {
-      const saved = StorageService.get<{ disabledBuiltIns?: string[] }>(
+      const saved = StorageService.get<{ disabledTools?: string[]; disabledBuiltIns?: string[] }>(
         storageKey,
       );
-      if (saved?.disabledBuiltIns && Array.isArray(saved.disabledBuiltIns)) {
-        return new Set(saved.disabledBuiltIns);
+      const list = saved?.disabledTools || saved?.disabledBuiltIns;
+      if (list && Array.isArray(list)) {
+        return new Set(list);
       }
     }
     return new Set();
@@ -36,12 +37,12 @@ export default function useToolToggles(
       StorageService.get<Record<string, unknown>>(storageKey) || {};
     StorageService.set(storageKey, {
       ...current,
-      disabledBuiltIns: [...disabledBuiltIns],
+      disabledTools: [...disabledTools],
     });
-  }, [disabledBuiltIns, storageKey]);
+  }, [disabledTools, storageKey]);
 
   const handleToggleBuiltIn = useCallback((toolName: string) => {
-    setDisabledBuiltIns((prev) => {
+    setDisabledTools((prev) => {
       const next = new Set(prev);
       if (next.has(toolName)) next.delete(toolName);
       else next.add(toolName);
@@ -51,7 +52,7 @@ export default function useToolToggles(
 
   const handleToggleAllBuiltIn = useCallback(
     (enableAll: boolean) => {
-      setDisabledBuiltIns((prev) => {
+      setDisabledTools((prev) => {
         const next = new Set(prev);
         for (const tool of builtInTools) {
           if (enableAll) {
@@ -66,5 +67,5 @@ export default function useToolToggles(
     [builtInTools],
   );
 
-  return { disabledBuiltIns, handleToggleBuiltIn, handleToggleAllBuiltIn };
+  return { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn };
 }

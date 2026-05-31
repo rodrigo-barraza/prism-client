@@ -300,10 +300,10 @@ function ToolDetailModal({
   const handleTryTool = () => {
     if (!allTools) return;
     const allToolNames = allTools.map((t: ClientToolSchema) => t.name);
-    const disabledBuiltIns = allToolNames.filter(
-      (n: string) => n !== tool.name,
+    const disabledTools = allToolNames.filter(
+      (name: string) => name !== tool.name,
     );
-    StorageService.set("toolMemory:agent:NONE", { disabledBuiltIns });
+    StorageService.set("toolMemory:agent:NONE", { disabledTools });
     router.push("/chat?agent=NONE&fc=true&thinking=true");
   };
 

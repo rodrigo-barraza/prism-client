@@ -87,7 +87,7 @@ export default function CustomToolsPanel({
   onToolsChange,
   project,
   builtInTools = [] as ToolSchema[],
-  disabledBuiltIns = new Set(),
+  disabledTools = new Set(),
   onToggleBuiltIn,
   onToggleAllBuiltIn,
   readOnly = false,
@@ -99,7 +99,7 @@ export default function CustomToolsPanel({
   onToolsChange: () => void;
   project?: string;
   builtInTools?: ToolSchema[];
-  disabledBuiltIns?: Set<string>;
+  disabledTools?: Set<string>;
   onToggleBuiltIn?: (name: string) => void;
   onToggleAllBuiltIn?: (enableAll: boolean) => void;
   readOnly?: boolean;
@@ -730,7 +730,7 @@ export default function CustomToolsPanel({
   // -- Non-agent view: lightweight ToolSelectionComponent only --
   if (!agent) {
     const derivedEnabled = builtInTools
-      .filter((t: ToolSchema) => !disabledBuiltIns.has(t.name))
+      .filter((t: ToolSchema) => !disabledTools.has(t.name))
       .map((t: ToolSchema) => t.name);
 
     return (
@@ -740,7 +740,7 @@ export default function CustomToolsPanel({
         onEnabledToolsChange={(newEnabled: string[]) => {
           const enabledSet = resolveShorthands(newEnabled, builtInTools);
           for (const tool of builtInTools) {
-            const isDisabled = disabledBuiltIns.has(tool.name);
+            const isDisabled = disabledTools.has(tool.name);
             const shouldBeEnabled = enabledSet.has(tool.name);
             if (isDisabled && shouldBeEnabled) onToggleBuiltIn?.(tool.name);
             else if (!isDisabled && !shouldBeEnabled)
@@ -753,15 +753,15 @@ export default function CustomToolsPanel({
     );
   }
 
-  // -- Derive enabled tools from disabledBuiltIns for ToolSelectionComponent --
+  // -- Derive enabled tools from disabledTools for ToolSelectionComponent --
   const derivedEnabled = builtInTools
-    .filter((t: any) => !disabledBuiltIns.has(t.name))
+    .filter((t: any) => !disabledTools.has(t.name))
     .map((t: ToolSchema) => t.name);
 
   const handleSelectionChange = (newEnabled: string[]) => {
     const enabledSet = resolveShorthands(newEnabled, builtInTools);
     for (const tool of builtInTools) {
-      const isDisabled = disabledBuiltIns.has(tool.name);
+      const isDisabled = disabledTools.has(tool.name);
       const shouldBeEnabled = enabledSet.has(tool.name);
       if (isDisabled && shouldBeEnabled) onToggleBuiltIn?.(tool.name);
       else if (!isDisabled && !shouldBeEnabled) onToggleBuiltIn?.(tool.name);

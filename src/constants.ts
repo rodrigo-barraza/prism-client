@@ -26,7 +26,7 @@ export const SK_MODEL_MEMORY_BENCHMARKS = "modelMemory:benchmarks";
 
 // -- Page-scoped tool toggle memory keys (auto-prefixed "prism:<key>") --
 // Each page remembers which tools are toggled on/off.
-// Value shape: { disabledBuiltIns: string[], toolToggles: { key: boolean } }
+// Value shape: { disabledTools: string[], toolToggles: { key: boolean } }
 export const SK_TOOL_MEMORY_AGENT = "toolMemory:agent";
 export const SK_TOOL_MEMORY_AGENT_PREFIX = "toolMemory:agent:";
 export const SK_TOOL_MEMORY_SYNTHESIS = "toolMemory:synthesis";

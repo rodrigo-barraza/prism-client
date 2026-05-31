@@ -421,7 +421,7 @@ export default function AdminAgentViewerComponent() {
           onToolsChange={() => {}}
           project={PROJECT_AGENT}
           builtInTools={builtInTools}
-          disabledBuiltIns={new Set()}
+          disabledTools={new Set()}
           onToggleBuiltIn={() => {}}
           onToggleAllBuiltIn={() => {}}
           readOnly

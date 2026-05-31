@@ -1125,7 +1125,7 @@ export default function AdminChatViewerComponent({
                       onToolsChange={() => {}}
                       project={targetProject || PROJECT_AGENT}
                       builtInTools={builtInTools}
-                      disabledBuiltIns={new Set()}
+                      disabledTools={new Set()}
                       onToggleBuiltIn={() => {}}
                       onToggleAllBuiltIn={() => {}}
                       readOnly

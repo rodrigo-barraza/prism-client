@@ -27,10 +27,10 @@ export function sanitizeToolName(name: string): string {
  */
 export function buildToolSchemas(
   builtInTools: ToolSchema[],
-  disabledBuiltIns: Set<string>,
+  disabledTools: Set<string>,
   customTools: CustomTool[],
 ): ToolSchema[] {
-  const builtIn = builtInTools.filter((t) => !disabledBuiltIns.has(t.name));
+  const builtIn = builtInTools.filter((t) => !disabledTools.has(t.name));
   const custom: ToolSchema[] = customTools
     .filter((t) => t.enabled)
     .map((t) => ({

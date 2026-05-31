@@ -594,7 +594,7 @@ export default function ChatSessionComponent({
       ? SK_MODEL_MEMORY_AGENT
       : SK_MODEL_MEMORY_AGENT_PREFIX + agentId;
 
-  const { disabledBuiltIns, handleToggleBuiltIn, handleToggleAllBuiltIn } =
+  const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn } =
     useToolToggles(builtInTools, toolMemoryKey);
 
   // -- Model memory (persist last-used model per agent) ----------
@@ -1432,8 +1432,8 @@ export default function ChatSessionComponent({
 
   // Build final tool schemas
   const allToolSchemas = useMemo(
-    () => buildToolSchemas(builtInTools, disabledBuiltIns, customTools),
-    [customTools, builtInTools, disabledBuiltIns],
+    () => buildToolSchemas(builtInTools, disabledTools, customTools),
+    [customTools, builtInTools, disabledTools],
   );
 
   const configurableTools = useMemo(() => {
@@ -1441,9 +1441,9 @@ export default function ChatSessionComponent({
   }, [builtInTools]);
 
   const enabledConfigurableCount = useMemo(() => {
-    return configurableTools.filter((tool) => !disabledBuiltIns.has(tool.name))
+    return configurableTools.filter((tool) => !disabledTools.has(tool.name))
       .length;
-  }, [configurableTools, disabledBuiltIns]);
+  }, [configurableTools, disabledTools]);
 
   const coreToolsCount = useMemo(() => {
     return builtInTools.filter((tool) => tool.system === true).length;
@@ -1452,8 +1452,8 @@ export default function ChatSessionComponent({
   const isCoreToolsLocked = !isNoAgent && (activeAgentData?.coreToolsLocked ?? true);
 
   const enabledCoreToolsCount = useMemo(() => {
-    return builtInTools.filter((tool) => tool.system === true && !disabledBuiltIns.has(tool.name)).length;
-  }, [builtInTools, disabledBuiltIns]);
+    return builtInTools.filter((tool) => tool.system === true && !disabledTools.has(tool.name)).length;
+  }, [builtInTools, disabledTools]);
 
   // Derive whether the active agent has Workspace capability (files, git, search, etc.)
   const hasFileOperations = useMemo(
@@ -1933,7 +1933,7 @@ export default function ChatSessionComponent({
               // Native provider FC (Google code exec, LM Studio MCP, etc.)
               functionCallingEnabled: settings.functionCallingEnabled ?? false,
               ...(settings.functionCallingEnabled && {
-                disabledBuiltIns: [...disabledBuiltIns],
+                disabledTools: [...disabledTools],
               }),
               // Provider-native capabilities
               ...(settings.webSearchEnabled ? { webSearch: true } : {}),
@@ -1963,7 +1963,7 @@ export default function ChatSessionComponent({
                 ...currentMessages,
               ],
               functionCallingEnabled: true,
-              disabledBuiltIns: [...disabledBuiltIns],
+              disabledTools: [...disabledTools],
               maxTokens: settings.maxTokens,
               temperature: settings.temperature,
               ...(settings.thinkingEnabled !== undefined && {
@@ -3177,7 +3177,7 @@ export default function ChatSessionComponent({
       settings.urlContextEnabled,
       agentSessionId,
       traceId,
-      disabledBuiltIns,
+      disabledTools,
       autoApprove,
       planFirst,
       maxIterations,
@@ -4832,7 +4832,7 @@ export default function ChatSessionComponent({
             onToolsChange={loadCustomTools}
             project={agentProject}
             builtInTools={builtInTools}
-            disabledBuiltIns={disabledBuiltIns}
+            disabledTools={disabledTools}
             onToggleBuiltIn={handleToggleBuiltIn}
             onToggleAllBuiltIn={handleToggleAllBuiltIn}
             lockedOffTools={lockedOffTools}
