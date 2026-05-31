@@ -31,13 +31,23 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
 
 interface SettingsSidebarNavigationProps {
   scrollContainerRef: React.RefObject<HTMLElement | null>;
+  initialSectionId?: string;
+  onActiveSectionChange?: (sectionId: string) => void;
 }
 
 export default function SettingsSidebarNavigationComponent({
   scrollContainerRef,
+  initialSectionId,
+  onActiveSectionChange,
 }: SettingsSidebarNavigationProps) {
+  const resolvedInitialSection =
+    initialSectionId &&
+    SETTINGS_SECTIONS.some((section) => section.id === initialSectionId)
+      ? initialSectionId
+      : SETTINGS_SECTIONS[0].id;
+
   const [activeSectionId, setActiveSectionId] = useState<string>(
-    SETTINGS_SECTIONS[0].id,
+    resolvedInitialSection,
   );
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isUserScrolling = useRef(true);
@@ -73,6 +83,7 @@ export default function SettingsSidebarNavigationComponent({
             .settingsSection;
           if (sectionId) {
             setActiveSectionId(sectionId);
+            onActiveSectionChange?.(sectionId);
           }
         }
       },
@@ -90,7 +101,30 @@ export default function SettingsSidebarNavigationComponent({
     return () => {
       observerRef.current?.disconnect();
     };
-  }, [scrollContainerRef]);
+  }, [scrollContainerRef, onActiveSectionChange]);
+
+  useEffect(() => {
+    if (!initialSectionId || initialSectionId === SETTINGS_SECTIONS[0].id) return;
+
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const scrollToInitialSection = () => {
+      const targetElement = scrollContainer.querySelector(
+        `[data-settings-section="${initialSectionId}"]`,
+      );
+      if (!targetElement) return;
+
+      isUserScrolling.current = false;
+      targetElement.scrollIntoView({ behavior: "instant", block: "start" });
+
+      requestAnimationFrame(() => {
+        isUserScrolling.current = true;
+      });
+    };
+
+    requestAnimationFrame(scrollToInitialSection);
+  }, [initialSectionId, scrollContainerRef]);
 
   const handleSectionClick = useCallback(
     (sectionId: string) => {
@@ -104,6 +138,7 @@ export default function SettingsSidebarNavigationComponent({
 
       isUserScrolling.current = false;
       setActiveSectionId(sectionId);
+      onActiveSectionChange?.(sectionId);
 
       targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -111,7 +146,7 @@ export default function SettingsSidebarNavigationComponent({
         isUserScrolling.current = true;
       }, 800);
     },
-    [scrollContainerRef],
+    [scrollContainerRef, onActiveSectionChange],
   );
 
   return (

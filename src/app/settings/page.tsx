@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
 import { PanelLeftClose, PanelLeft } from "lucide-react";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
 import { LayoutHeaderComponent } from "@rodrigo-barraza/components-library";
@@ -14,6 +15,18 @@ export default function SettingsPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(true);
   const [hydrated, setHydrated] = useState(false);
+
+  const searchParameters = useSearchParams();
+  const pathname = usePathname();
+  const initialSectionId = searchParameters.get("section") ?? undefined;
+
+  const handleActiveSectionChange = useCallback(
+    (sectionId: string) => {
+      const nextUrl = `${pathname}?section=${encodeURIComponent(sectionId)}`;
+      window.history.replaceState(null, "", nextUrl);
+    },
+    [pathname],
+  );
 
   useEffect(() => {
     const isMobile = window.innerWidth <= 900;
@@ -57,6 +70,8 @@ export default function SettingsPage() {
           >
             <SettingsSidebarNavigationComponent
               scrollContainerRef={scrollContainerRef}
+              initialSectionId={initialSectionId}
+              onActiveSectionChange={handleActiveSectionChange}
             />
           </aside>
           <div
