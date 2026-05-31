@@ -58,6 +58,7 @@ export interface SessionStats {
   originalTotalCost: number;
   completedElapsedTime?: number;
   currentTurnStart?: string | number;
+  conversationStartTime?: string | number | null;
   usedTools?: Array<{ name: string; count: number }>;
   orchestrator?: SessionStats;
   workers?: SessionStats;
@@ -349,11 +350,20 @@ export default function SettingsPanel({
               ({formatCost(stats.originalTotalCost)} total)
             </span>
           )}
+        {stats.conversationStartTime && (
+          <BadgeComponent
+            type="stopwatch"
+            startTime={stats.conversationStartTime}
+            variant="conversation"
+            live
+          />
+        )}
         {showFull && activeElapsedTime > 0 && (
           <BadgeComponent
             type="stopwatch"
             seconds={activeElapsedTime}
             live={!!stats.currentTurnStart}
+            variant="processing"
           />
         )}
         {!showFull &&
@@ -363,6 +373,7 @@ export default function SettingsPanel({
               type="stopwatch"
               seconds={stats.completedElapsedTime}
               live={false}
+              variant="processing"
             />
           )}
         {(() => {

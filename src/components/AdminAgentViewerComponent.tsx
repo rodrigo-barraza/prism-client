@@ -404,6 +404,7 @@ export default function AdminAgentViewerComponent() {
                   completedElapsedTime:
                     backendSessionStats?.totalElapsedTime ||
                     completedElapsedTime,
+                  conversationStartTime: messages.length > 0 ? messages[0]?.timestamp : null,
                 }
               : null
           }

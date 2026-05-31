@@ -4506,6 +4506,7 @@ export default function ChatSessionComponent({
                           backendSessionStats.totalElapsedTime ||
                           completedElapsedTime,
                         currentTurnStart,
+                        conversationStartTime: messages.length > 0 ? messages[0]?.timestamp : null,
                         liveStreamingTokens,
                         liveStreamingStartTime,
                         liveStreamingLastChunkTime,
@@ -4616,6 +4617,7 @@ export default function ChatSessionComponent({
                         })(),
                         completedElapsedTime,
                         currentTurnStart,
+                        conversationStartTime: messages.length > 0 ? messages[0]?.timestamp : null,
                         liveStreamingTokens,
                         liveStreamingStartTime,
                         liveStreamingLastChunkTime,

@@ -928,6 +928,7 @@ export default function AdminChatViewerComponent({
         modalities: backendSessionStats.modalities || modalities,
         completedElapsedTime:
           backendSessionStats.totalElapsedTime || completedElapsedTime,
+        conversationStartTime: selectedEntry.messages.length > 0 ? selectedEntry.messages[0]?.timestamp : null,
       };
     }
 
@@ -944,6 +945,7 @@ export default function AdminChatViewerComponent({
       originalTotalCost: (selectedEntry as Conversation).totalCost || 0,
       usedTools,
       modalities,
+      conversationStartTime: selectedEntry.messages.length > 0 ? selectedEntry.messages[0]?.timestamp : null,
     };
   }, [
     selectedEntry,

@@ -13,6 +13,7 @@ import {
   Hash,
   Zap,
   Timer,
+  Clock,
   MessageSquare,
   LetterText,
   FunctionSquare,
@@ -116,6 +117,7 @@ export type BadgeProps =
       seconds?: number;
       startTime?: string | number | null;
       live?: boolean;
+      variant?: "conversation" | "processing";
       className?: string;
     }
   | {
@@ -610,11 +612,13 @@ function StopwatchBadge({
   seconds,
   startTime,
   live: externalLive,
+  variant = "processing",
   className = "",
 }: {
   seconds?: number;
   startTime?: string | number | null;
   live?: boolean;
+  variant?: "conversation" | "processing";
   className?: string;
 }) {
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -643,15 +647,18 @@ function StopwatchBadge({
 
   if (displaySeconds <= 0 && !isLive) return null;
 
+  const isConversationVariant = variant === "conversation";
+  const IconComponent = isConversationVariant ? Clock : Timer;
   const showPulse = isLive || externalLive;
-  const tooltipLabel = `Elapsed: ${formatElapsedTime(displaySeconds)}`;
+  const tooltipPrefix = isConversationVariant ? "Conversation" : "Processing";
+  const tooltipLabel = `${tooltipPrefix}: ${formatElapsedTime(displaySeconds)}`;
 
   return (
     <TooltipComponent label={tooltipLabel} position="top">
       <span
         className={`${stopwatchStyles.badge} ${showPulse ? stopwatchStyles.live : ""} ${className}`}
       >
-        <Timer size={11} />
+        <IconComponent size={11} />
         {formatElapsedTime(displaySeconds)}
       </span>
     </TooltipComponent>
@@ -778,12 +785,13 @@ export default function BadgeComponent(props: BadgeProps) {
 
     // --- 5. Stopwatch ---
     case "stopwatch": {
-      const { seconds, startTime, live, className } = props;
+      const { seconds, startTime, live, variant, className } = props;
       return (
         <StopwatchBadge
           seconds={seconds}
           startTime={startTime}
           live={live}
+          variant={variant}
           className={className}
         />
       );
