@@ -247,49 +247,80 @@ export default function SettingsPanel({
             providers={stats.uniqueProviders}
           />
         )}
-        {stats.totalTokens && stats.totalTokens.total > 0 && (
-          <>
-            <BadgeComponent
-              type="tokens"
-              value={stats.totalTokens.input}
-              label="tokens in"
-            />
-            <BadgeComponent
-              type="tokens"
-              value={stats.totalTokens.output}
-              label="tokens out"
-            />
-            <BadgeComponent
-              type="tokens"
-              value={stats.totalTokens.total}
-              label="tokens total"
-            />
-            {stats.totalTokens.cacheRead !== undefined &&
-              stats.totalTokens.cacheRead > 0 && (
-                <BadgeComponent
-                  type="tokens"
-                  value={stats.totalTokens.cacheRead}
-                  label="cached read"
-                />
-              )}
-            {stats.totalTokens.cacheWrite !== undefined &&
-              stats.totalTokens.cacheWrite > 0 && (
-                <BadgeComponent
-                  type="tokens"
-                  value={stats.totalTokens.cacheWrite}
-                  label="cached write"
-                />
-              )}
-            {stats.totalTokens.reasoning !== undefined &&
-              stats.totalTokens.reasoning > 0 && (
-                <BadgeComponent
-                  type="tokens"
-                  value={stats.totalTokens.reasoning}
-                  label="reasoning"
-                />
-              )}
-          </>
-        )}
+        {stats.totalTokens && stats.totalTokens.total > 0 && (() => {
+          const cacheRead = stats.totalTokens.cacheRead || 0;
+          const cacheWrite = stats.totalTokens.cacheWrite || 0;
+          const hasCachedTokens = cacheRead + cacheWrite > 0;
+          const uncachedInputTokens = Math.max(0, stats.totalTokens.input - cacheRead - cacheWrite);
+          const reasoning = stats.totalTokens.reasoning || 0;
+          const outputTokens = stats.totalTokens.output || 0;
+
+          let inputTokensLabel = "tokens in";
+          if (hasCachedTokens) {
+            const labelParts = [];
+            if (uncachedInputTokens) {
+              labelParts.push(`${uncachedInputTokens.toLocaleString()} new`);
+            }
+            if (cacheRead) {
+              labelParts.push(`${cacheRead.toLocaleString()} read`);
+            }
+            if (cacheWrite) {
+              labelParts.push(`${cacheWrite.toLocaleString()} write`);
+            }
+            inputTokensLabel = `tokens in (${labelParts.join(" · ")})`;
+          }
+
+          let outputTokensLabel = "tokens out";
+          if (reasoning > 0) {
+            outputTokensLabel = `tokens out (${reasoning.toLocaleString()} reasoning)`;
+          }
+
+          let totalTokensLabel = "tokens total";
+          if (hasCachedTokens || reasoning > 0) {
+            const labelParts = [];
+            if (uncachedInputTokens) {
+              labelParts.push(`${uncachedInputTokens.toLocaleString()} new`);
+            }
+            if (cacheRead) {
+              labelParts.push(`${cacheRead.toLocaleString()} read`);
+            }
+            if (cacheWrite) {
+              labelParts.push(`${cacheWrite.toLocaleString()} write`);
+            }
+            if (outputTokens) {
+              if (reasoning > 0) {
+                const nonReasoningOutput = Math.max(0, outputTokens - reasoning);
+                if (nonReasoningOutput > 0) {
+                  labelParts.push(`${nonReasoningOutput.toLocaleString()} out`);
+                }
+                labelParts.push(`${reasoning.toLocaleString()} reasoning`);
+              } else {
+                labelParts.push(`${outputTokens.toLocaleString()} out`);
+              }
+            }
+            totalTokensLabel = `tokens total (${labelParts.join(" · ")})`;
+          }
+
+          return (
+            <>
+              <BadgeComponent
+                type="tokens"
+                value={stats.totalTokens.input}
+                label={inputTokensLabel}
+              />
+              <BadgeComponent
+                type="tokens"
+                value={stats.totalTokens.output}
+                label={outputTokensLabel}
+              />
+              <BadgeComponent
+                type="tokens"
+                value={stats.totalTokens.total}
+                label={totalTokensLabel}
+              />
+            </>
+          );
+        })()}
         <BadgeComponent
           type="throughput"
           liveTokensPerSecond={liveTokensPerSec}
