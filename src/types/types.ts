@@ -717,6 +717,7 @@ export interface AgentPersona {
   project?: string;
   toolCount: number;
   enabledToolNames: string[];
+  coreToolsLocked: boolean;
   canSpawnWorkers: boolean;
   usesDirectoryTree: boolean;
   usesCodingGuidelines: boolean;
@@ -936,6 +937,8 @@ export interface ToolSchema {
   description: string;
   domain?: string;
   labels?: string[];
+  system?: boolean;
+  intelligenceTier?: "low" | "medium" | "high" | "frontier";
   parameters?: JsonSchemaObject;
   function?: {
     name: string;

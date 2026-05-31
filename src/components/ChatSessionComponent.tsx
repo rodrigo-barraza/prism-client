@@ -1437,7 +1437,7 @@ export default function ChatSessionComponent({
   );
 
   const configurableTools = useMemo(() => {
-    return builtInTools.filter((tool) => (tool as any).system !== true);
+    return builtInTools.filter((tool) => tool.system !== true);
   }, [builtInTools]);
 
   const enabledConfigurableCount = useMemo(() => {
@@ -1446,8 +1446,14 @@ export default function ChatSessionComponent({
   }, [configurableTools, disabledBuiltIns]);
 
   const coreToolsCount = useMemo(() => {
-    return builtInTools.filter((tool) => (tool as any).system === true).length;
+    return builtInTools.filter((tool) => tool.system === true).length;
   }, [builtInTools]);
+
+  const isCoreToolsLocked = !isNoAgent && (activeAgentData?.coreToolsLocked ?? true);
+
+  const enabledCoreToolsCount = useMemo(() => {
+    return builtInTools.filter((tool) => tool.system === true && !disabledBuiltIns.has(tool.name)).length;
+  }, [builtInTools, disabledBuiltIns]);
 
   // Derive whether the active agent has Workspace capability (files, git, search, etc.)
   const hasFileOperations = useMemo(
@@ -4792,8 +4798,8 @@ export default function ChatSessionComponent({
           <SidebarTabHeaderComponent
             icon={Wrench}
             title="Tools"
-            count={`${enabledConfigurableCount + coreToolsCount} / ${configurableTools.length + coreToolsCount}`}
-            hasOnlyCoreToolsActive={enabledConfigurableCount === 0}
+            count={`${enabledConfigurableCount + (isCoreToolsLocked ? coreToolsCount : enabledCoreToolsCount)} / ${configurableTools.length + coreToolsCount}`}
+            hasOnlyCoreToolsActive={enabledConfigurableCount === 0 && (isCoreToolsLocked || enabledCoreToolsCount === 0)}
           />
           <CustomToolsPanel
             tools={customTools}
@@ -4805,6 +4811,7 @@ export default function ChatSessionComponent({
             onToggleAllBuiltIn={handleToggleAllBuiltIn}
             lockedOffTools={lockedOffTools}
             agent={!isNoAgent}
+            coreToolsLocked={!isNoAgent && (activeAgentData?.coreToolsLocked ?? true)}
           />
         </>
       )}

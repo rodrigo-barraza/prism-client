@@ -63,7 +63,7 @@ interface ToolSelectionProps {
   availableTools?: ToolSchema[];
   enabledTools?: string[];
   onEnabledToolsChange: (tools: string[]) => void;
-  agent?: boolean;
+  coreToolsLocked?: boolean;
   lockedOffTools?: Map<string, string>;
 }
 
@@ -251,7 +251,7 @@ export default function ToolSelectionComponent({
   availableTools = [],
   enabledTools = [],
   onEnabledToolsChange,
-  agent = true,
+  coreToolsLocked = true,
   lockedOffTools = new Map(),
 }: ToolSelectionProps) {
   const [toolSearch, setToolSearch] = useState("");
@@ -347,9 +347,9 @@ export default function ToolSelectionComponent({
 
   // -- Total enabled and total tools count taking Core Tools into account --
   const totalEnabledCount = useMemo(() => {
-    const coreCount = agent ? coreTools.length : enabledCoreCount;
+    const coreCount = coreToolsLocked ? coreTools.length : enabledCoreCount;
     return coreCount + enabledConfigurableCount;
-  }, [agent, coreTools.length, enabledCoreCount, enabledConfigurableCount]);
+  }, [coreToolsLocked, coreTools.length, enabledCoreCount, enabledConfigurableCount]);
 
   const totalToolsCount = useMemo(() => {
     return coreTools.length + configurableTools.length;
@@ -597,7 +597,7 @@ export default function ToolSelectionComponent({
                 <Bot size={12} />
               </span>
               <span className={styles.coreLabel}>Core Tools</span>
-              {agent ? (
+              {coreToolsLocked ? (
                 <span className={styles.coreBadge}>Locked On</span>
               ) : (
                 <>
@@ -625,7 +625,7 @@ export default function ToolSelectionComponent({
                     position="right"
                     delay={400}
                   >
-                    {agent ? (
+                    {coreToolsLocked ? (
                       <div
                         className={`${styles.toolRow} ${styles.coreToolRow}`}
                       >

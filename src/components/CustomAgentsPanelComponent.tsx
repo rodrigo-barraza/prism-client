@@ -609,7 +609,7 @@ export default function CustomAgentsPanel({
             onEnabledToolsChange={(tools: string[]) =>
               updateField("enabledTools", tools)
             }
-            agent={true}
+            coreToolsLocked={true}
           />
 
           {/* Policy Editor */}
