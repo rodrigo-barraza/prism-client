@@ -207,6 +207,36 @@ export default function NavigationSidebarComponent({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLocal, setIsLocal] = useState(false);
   const [memoryConfigured, setMemoryConfigured] = useState(true);
+  const [cronJobNotificationsCount, setCronJobNotificationsCount] = useState(0);
+
+  const clearCronJobNotifications = useCallback(() => {
+    localStorage.setItem("cron-job-notifications-count", "0");
+    setCronJobNotificationsCount(0);
+    window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
+  }, []);
+
+  useEffect(() => {
+    const storedCount = parseInt(localStorage.getItem("cron-job-notifications-count") || "0", 10);
+    if (pathname.startsWith("/cron-jobs")) {
+      if (storedCount > 0) {
+        clearCronJobNotifications();
+      }
+    } else {
+      setCronJobNotificationsCount(storedCount);
+    }
+  }, [pathname, clearCronJobNotifications]);
+
+  useEffect(() => {
+    const handleCronJobScheduledEvent = () => {
+      const storedCount = parseInt(localStorage.getItem("cron-job-notifications-count") || "0", 10);
+      setCronJobNotificationsCount(storedCount);
+    };
+
+    window.addEventListener("cron-job-scheduled", handleCronJobScheduledEvent);
+    return () => {
+      window.removeEventListener("cron-job-scheduled", handleCronJobScheduledEvent);
+    };
+  }, []);
 
   // Fetch memory settings to determine if action is needed on /settings
   useEffect(() => {
@@ -704,18 +734,21 @@ export default function NavigationSidebarComponent({
                               key={item.href}
                               href={item.href}
                               className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
-                              onMouseEnter={(e: React.MouseEvent) =>
-                                SoundService.playHover({ event: e.nativeEvent })
+                              onMouseEnter={(mouseEnterEvent: React.MouseEvent) =>
+                                SoundService.playHover({ event: mouseEnterEvent.nativeEvent })
                               }
-                              onClick={(e: React.MouseEvent) => {
+                              onClick={(clickEvent: React.MouseEvent) => {
                                 SoundService.playClick({
-                                  event: e.nativeEvent,
+                                  event: clickEvent.nativeEvent,
                                 });
                                 onNavClick?.(item.href);
                                 setMobileOpen(false);
                                 // Pre-close ThreePanelLayout sidebars so the next page mounts clean
                                 localStorage.setItem(LS_PANEL_LEFT, "false");
                                 localStorage.setItem(LS_PANEL_RIGHT, "false");
+                                if (item.href === "/cron-jobs") {
+                                  clearCronJobNotifications();
+                                }
                               }}
                             >
                               <span className={styles.activeStateLayer}>
@@ -730,6 +763,14 @@ export default function NavigationSidebarComponent({
                                       title="Memory models need to be configured"
                                     >
                                       <AlertCircle size={13} />
+                                    </span>
+                                  )}
+                                {item.href === "/cron-jobs" &&
+                                  cronJobNotificationsCount > 0 && (
+                                    <span
+                                      className={styles["cron-job-notification-badge"]}
+                                    >
+                                      {cronJobNotificationsCount}
                                     </span>
                                   )}
                                 {item.showBadge &&
@@ -895,12 +936,15 @@ export default function NavigationSidebarComponent({
                         key={item.href}
                         href={item.href}
                         className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
-                        onMouseEnter={(e: React.MouseEvent) =>
-                          SoundService.playHover({ event: e.nativeEvent })
+                        onMouseEnter={(mouseEnterEvent: React.MouseEvent) =>
+                          SoundService.playHover({ event: mouseEnterEvent.nativeEvent })
                         }
-                        onClick={(e: React.MouseEvent) => {
-                          SoundService.playClick({ event: e.nativeEvent });
+                        onClick={(clickEvent: React.MouseEvent) => {
+                          SoundService.playClick({ event: clickEvent.nativeEvent });
                           onNavClick?.(item.href);
+                          if (item.href === "/cron-jobs") {
+                            clearCronJobNotifications();
+                          }
                         }}
                       >
                         <span className={styles.activeStateLayer}>
@@ -914,6 +958,13 @@ export default function NavigationSidebarComponent({
                               title="Memory models need to be configured"
                             >
                               <AlertCircle size={13} />
+                            </span>
+                          )}
+                          {item.href === "/cron-jobs" && cronJobNotificationsCount > 0 && (
+                            <span
+                              className={styles["cron-job-notification-badge"]}
+                            >
+                              {cronJobNotificationsCount}
                             </span>
                           )}
                           {item.showBadge &&

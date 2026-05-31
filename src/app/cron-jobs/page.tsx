@@ -643,6 +643,9 @@ export default function ScheduledTasksPage() {
         const createdTask = await PrismService.createCronJob(taskPayload);
         setTasks((prev) => [createdTask, ...prev]);
         showToast(`Cron Job "${formName}" created successfully!`);
+        const currentNotificationCount = parseInt(localStorage.getItem("cron-job-notifications-count") || "0", 10);
+        localStorage.setItem("cron-job-notifications-count", String(currentNotificationCount + 1));
+        window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
       }
 
       setShowNewModal(false);
