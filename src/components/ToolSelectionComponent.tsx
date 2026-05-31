@@ -69,6 +69,7 @@ interface ToolSelectionProps {
 
 // -- Domain icon mapping (mirrors CustomToolsPanel) --------------
 const DOMAIN_ICONS: Record<string, LucideIcon> = {
+  "Core Tools": Bot,
   "Weather & Environment": CloudSun,
   Events: CalendarDays,
   "Markets & Commodities": BarChart3,
@@ -102,10 +103,12 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
   Sports: Trophy,
   Utilities: Wrench,
   Coordinator: Bot,
+  Reasoning: Brain,
   Other: Layers,
 };
 
 const DOMAIN_LABELS: Record<string, string> = {
+  "Core Tools": "Core Tools",
   Workspace: "Workspace Tools",
   Web: "Web",
   Browser: "Browser",
@@ -122,6 +125,7 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 const DOMAIN_ORDER = [
+  "Core Tools",
   "Workspace",
   "Web",
   "Browser",
@@ -341,7 +345,7 @@ export default function ToolSelectionComponent({
     return count;
   }, [configurableTools, resolvedEnabledSet]);
 
-  // -- Total enabled and total tools count taking Core Agentic Tools into account --
+  // -- Total enabled and total tools count taking Core Tools into account --
   const totalEnabledCount = useMemo(() => {
     const coreCount = agent ? coreTools.length : enabledCoreCount;
     return coreCount + enabledConfigurableCount;
@@ -577,7 +581,7 @@ export default function ToolSelectionComponent({
           </span>
         </div>
 
-        {/* Core Agentic Tools Section */}
+        {/* Core Tools Section */}
         {filteredCoreTools.length > 0 && (
           <div className={styles.coreGroup}>
             <div
@@ -592,7 +596,7 @@ export default function ToolSelectionComponent({
               <span className={styles.coreIcon}>
                 <Bot size={12} />
               </span>
-              <span className={styles.coreLabel}>Core Agentic Tools</span>
+              <span className={styles.coreLabel}>Core Tools</span>
               {agent ? (
                 <span className={styles.coreBadge}>Locked On</span>
               ) : (
