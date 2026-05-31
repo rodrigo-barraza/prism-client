@@ -4020,14 +4020,37 @@ export default function ChatSessionComponent({
   );
 
   useEffect(() => {
+    let listRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const debouncedListRefresh = () => {
+      if (listRefreshTimer) clearTimeout(listRefreshTimer);
+      listRefreshTimer = setTimeout(() => {
+        loadSessions();
+      }, 500);
+    };
+
     const onCollectionChange = (event: IrisCollectionChangeEvent) => {
       if (
-        (event.collection === "agent_conversations" ||
-          event.collection === "model_conversations") &&
-        event.id &&
-        event.id === agentSessionIdRef.current
+        event.collection !== "agent_conversations" &&
+        event.collection !== "model_conversations"
       ) {
+        return;
+      }
+
+      // Active session update → refresh its messages in-place
+      if (event.id && event.id === agentSessionIdRef.current) {
         refreshActiveSession(event.id);
+      }
+
+      // New or externally modified session → refresh the sidebar list.
+      // Inserts always warrant a list refresh; updates for non-active
+      // sessions (e.g., title changes from background summarization)
+      // also need to propagate to the sidebar.
+      if (
+        event.operationType === "insert" ||
+        (event.id && event.id !== agentSessionIdRef.current)
+      ) {
+        debouncedListRefresh();
       }
     };
 
@@ -4037,8 +4060,9 @@ export default function ChatSessionComponent({
 
     return () => {
       sseSubscription.close();
+      if (listRefreshTimer) clearTimeout(listRefreshTimer);
     };
-  }, [refreshActiveSession]);
+  }, [refreshActiveSession, loadSessions]);
 
   const handleUndoDelete = useCallback(
     (convId: string, toastId: number) => {
