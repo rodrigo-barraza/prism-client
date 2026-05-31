@@ -89,6 +89,7 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
   "Task Management": Wrench,
   Memory: BookOpen,
   "Agent Management": Bot,
+  "Model Context Protocol": Network,
   Meta: Search,
   "Cron Jobs": CalendarDays,
   Timers: CalendarDays,
@@ -111,6 +112,7 @@ const DOMAIN_LABELS: Record<string, string> = {
   "Task Management": "Task Management",
   Memory: "Memory",
   "Agent Management": "Agent Management",
+  "Model Context Protocol": "Model Context Protocol",
   Meta: "Tool Discovery",
   "Cron Jobs": "Cron Jobs",
   Timers: "Timers",
@@ -126,6 +128,7 @@ const DOMAIN_ORDER = [
   "Task Management",
   "Memory",
   "Agent Management",
+  "Model Context Protocol",
   "Meta",
   "Cron Jobs",
   "Timers",
@@ -337,6 +340,16 @@ export default function ToolSelectionComponent({
     }
     return count;
   }, [configurableTools, resolvedEnabledSet]);
+
+  // -- Total enabled and total tools count taking Core Agentic Tools into account --
+  const totalEnabledCount = useMemo(() => {
+    const coreCount = agent ? coreTools.length : enabledCoreCount;
+    return coreCount + enabledConfigurableCount;
+  }, [agent, coreTools.length, enabledCoreCount, enabledConfigurableCount]);
+
+  const totalToolsCount = useMemo(() => {
+    return coreTools.length + configurableTools.length;
+  }, [coreTools.length, configurableTools.length]);
 
   // -- Tool toggling --------------------------------------------
   const toggleTool = useCallback(
@@ -560,7 +573,7 @@ export default function ToolSelectionComponent({
             label={<span className={styles.bulkCheckboxLabel}>Select All</span>}
           />
           <span className={styles.domainCount}>
-            {enabledConfigurableCount}/{configurableTools.length}
+            {totalEnabledCount}/{totalToolsCount}
           </span>
         </div>
 
@@ -658,7 +671,7 @@ export default function ToolSelectionComponent({
           const isDomain = groupMode === "domain";
           const isLabel = groupMode === "label";
           const isMcp =
-            isDomain && groupKey.startsWith("Model Context Protocol:");
+            isDomain && (groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol");
           const GroupIcon: LucideIcon = isMcp
             ? Network
             : isDomain

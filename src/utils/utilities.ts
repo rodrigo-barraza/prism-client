@@ -455,7 +455,8 @@ export function getModalities(messages: Message[]) {
     thinking: false,
   };
 
-  const WEB_SEARCH_NAMES = new Set(["web_search", "web_search_preview"]);
+  // TODO(cleanup): Remove "web_search" and "web_search_preview" once historical sessions have aged out
+  const WEB_SEARCH_NAMES = new Set(["web_search", "search_web", "web_search_preview", "search_web_preview"]);
   const CODE_EXEC_NAMES = new Set(["code_execution"]);
 
   for (const message of messages || []) {

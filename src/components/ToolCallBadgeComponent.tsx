@@ -17,7 +17,9 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   grep_search: "Grep",
   glob_files: "Glob",
   list_directory: "List Dir",
-  web_search: "Web Search",
+  search_web: "Search Web",
+  // TODO(cleanup): Remove legacy name once historical sessions have aged out
+  web_search: "Search Web",
   read_web_page: "Fetch",
   execute_shell: "Shell",
   execute_python: "Python",
@@ -31,20 +33,46 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   project_summary: "Summary",
   generate_image: "Image Gen",
   // Coordinator tools
-  team_create: "Team",
-  team_delete: "Team Stop",
+  create_team: "Create Team",
+  delete_team: "Delete Team",
+  // TODO(cleanup): Remove legacy names once historical sessions have aged out
+  team_create: "Create Team",
+  team_delete: "Delete Team",
   sleep: "Sleep",
   enter_plan_mode: "Plan",
   exit_plan_mode: "Execute",
   search_tools: "Tool Search",
+  create_cron: "Schedule",
+  create_cron_job: "Schedule",
+  // TODO(cleanup): Remove legacy name once historical sessions have aged out
   cron_create: "Schedule",
+  trigger_cron_job: "Trigger",
   remote_trigger: "Trigger",
   notebook_edit: "Notebook",
   // Skill tools
-  skill_create: "Skill Create",
-  skill_execute: "Skill Run",
+  create_skill: "Create Skill",
+  execute_skill: "Run Skill",
+  list_skills: "Skills",
+  delete_skill: "Delete Skill",
+  // TODO(cleanup): Remove legacy names once historical sessions have aged out
+  skill_create: "Create Skill",
+  skill_execute: "Run Skill",
   skill_list: "Skills",
-  skill_delete: "Skill Delete",
+  skill_delete: "Delete Skill",
+  // Todo & Task tools
+  write_todo: "Write Todo",
+  create_task: "Create Task",
+  list_tasks: "List Tasks",
+  get_task: "Get Task",
+  update_task: "Update Task",
+  get_task_output: "Get Task Output",
+  // TODO(cleanup): Remove legacy names once historical sessions have aged out
+  todo_write: "Write Todo",
+  task_create: "Create Task",
+  task_list: "List Tasks",
+  task_get: "Get Task",
+  task_update: "Update Task",
+  task_output: "Get Task Output",
   // Structured output
   synthetic_output: "Output",
   // Worktree isolation

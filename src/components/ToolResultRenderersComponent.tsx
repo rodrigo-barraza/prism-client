@@ -2113,6 +2113,8 @@ const TOOL_RESULT_REGISTRY = {
   list_directory: { Renderer: DirectoryListRenderer },
 
   // Web
+  search_web: { Renderer: WebSearchRenderer },
+  // TODO(cleanup): Remove legacy name once historical sessions have aged out
   web_search: { Renderer: WebSearchRenderer },
   read_web_page: { Renderer: FetchUrlRenderer },
 
@@ -2148,6 +2150,8 @@ const TOOL_RESULT_REGISTRY = {
   generate_audio: { Renderer: AudioGeneratorRenderer },
 
   // Coordinator
+  create_team: { Renderer: TeamCreateRenderer },
+  // TODO(cleanup): Remove legacy name once historical sessions have aged out
   team_create: { Renderer: TeamCreateRenderer },
   send_message: { Renderer: SendMessageRenderer },
   stop_agent: { Renderer: StopAgentRenderer },
