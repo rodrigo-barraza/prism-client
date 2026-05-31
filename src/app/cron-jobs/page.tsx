@@ -1601,11 +1601,11 @@ export default function ScheduledTasksPage() {
                       <div className={styles.customRecurrencePanel}>
                         <div className={styles.recurrenceRow}>
                           <span className={styles.recurrenceText}>Repeat every</span>
-                          <input
+                          <InputComponent
                             type="number"
-                            min="1"
-                            value={formCustomInterval}
-                            onChange={(e) => setFormCustomInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                            min={1}
+                            value={String(formCustomInterval)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormCustomInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
                             className={styles.recurrenceInput}
                           />
                           <SelectComponent

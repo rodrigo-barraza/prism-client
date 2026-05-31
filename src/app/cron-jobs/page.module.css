@@ -980,20 +980,12 @@
 }
 
 .recurrenceInput {
-  width: 60px;
-  padding: 6px 10px;
-  border-radius: var(--border-radius-sm);
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  text-align: center;
+  width: 70px;
+  flex-shrink: 0;
 
-  &:focus {
-    border-color: var(--accent-primary);
-    outline: none;
-    box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
+  & input {
+    text-align: center;
+    font-weight: 600;
   }
 }
 
