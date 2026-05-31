@@ -18,6 +18,7 @@ import {
   LayoutGrid,
   List,
   CalendarDays,
+  Pencil,
 } from "lucide-react";
 import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 import PrismService from "../../services/PrismService";
@@ -117,6 +118,7 @@ interface CronJobDetailPanelProps {
   onTrigger: (task: Task) => void;
   onDelete: (task: Task) => void;
   onToggle: (task: Task) => void;
+  onEdit: (task: Task) => void;
   agentName: string;
   formatScheduleText: (task: Task) => string;
 }
@@ -127,6 +129,7 @@ function CronJobDetailPanel({
   onTrigger,
   onDelete,
   onToggle,
+  onEdit,
   agentName,
   formatScheduleText,
 }: CronJobDetailPanelProps) {
@@ -172,6 +175,16 @@ function CronJobDetailPanel({
               Status & Actions
             </div>
             <div className={styles.detailActionsRow}>
+              <button
+                className={`${styles.detailActionButton} ${styles.detailEditButton}`}
+                onClick={() => {
+                  onEdit(task);
+                  onClose();
+                }}
+                title="Edit cron job"
+              >
+                <Pencil size={14} /> Edit
+              </button>
               <button
                 className={`${styles.detailActionButton} ${styles.detailTriggerButton}`}
                 onClick={() => onTrigger(task)}
@@ -287,6 +300,7 @@ export default function ScheduledTasksPage() {
   const [viewMode, setViewMode] = useState("card");
   const [activeSortKeys, setActiveSortKeys] = useState<string[]>(["createdAt"]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // New task form state
   const [formName, setFormName] = useState("");
@@ -320,6 +334,81 @@ export default function ScheduledTasksPage() {
   const [formCustomMonths, setFormCustomMonths] = useState<number[]>([5]); // default May
 
   const [formSubmitting, setFormSubmitting] = useState(false);
+
+  const isEditMode = editingTask !== null;
+
+  const populateFormFromTask = useCallback((task: Task) => {
+    setFormName(task.name);
+    setFormPrompt(task.prompt);
+    setFormAgent(task.agent || "NONE");
+    setFormProvider(task.provider);
+    setFormModel(task.model);
+    setFormProject(task.project || "");
+    setFormScheduleType(task.scheduleType);
+    setFormCron(task.cronExpression || "0 9 * * *");
+    setFormOnceDate(task.scheduleDate || new Date().toISOString().split("T")[0]);
+
+    if (task.scheduleType === "weekly") {
+      setFormWeeklyDay(task.scheduleDay ?? 1);
+    }
+
+    if (task.scheduleTime) {
+      const [hourValue, minuteValue] = task.scheduleTime.split(":").map(Number);
+      const isPM = hourValue >= 12;
+      const displayHour = hourValue % 12 || 12;
+      setFormTimeHour(String(displayHour).padStart(2, "0"));
+      setFormTimeMinute(String(minuteValue).padStart(2, "0"));
+      setFormTimeAmpm(isPM ? "PM" : "AM");
+    } else {
+      setFormTimeHour("09");
+      setFormTimeMinute("00");
+      setFormTimeAmpm("AM");
+    }
+
+    if (task.scheduleType === "custom" && task.recurrenceRule) {
+      const rule = task.recurrenceRule;
+      setFormCustomFrequency(rule.frequency);
+      setFormCustomInterval(rule.interval || 1);
+      setFormCustomWeekdays(rule.weekdays || [1]);
+      setFormCustomMonthlyType(rule.monthlyType || "dayOfMonth");
+      setFormCustomDayOfMonth(rule.dayOfMonth ?? 1);
+      setFormCustomNthDayOccurrence((rule.nthDayOfWeek?.occurrence as 1 | 2 | 3 | 4 | -1) ?? 1);
+      setFormCustomNthDayOfWeek(rule.nthDayOfWeek?.dayOfWeek ?? 2);
+      setFormCustomYearlyType(rule.yearlyType || "specificDate");
+      setFormCustomMonths(rule.months || [5]);
+    }
+  }, []);
+
+  const handleEditTask = useCallback((task: Task) => {
+    setEditingTask(task);
+    populateFormFromTask(task);
+    setShowNewModal(true);
+    setSelectedTask(null);
+    setActiveMenuId(null);
+  }, [populateFormFromTask]);
+
+  const resetFormFields = useCallback(() => {
+    setFormName("");
+    setFormPrompt("");
+    setFormAgent("CODING");
+    setFormScheduleType("daily");
+    setFormTimeHour("09");
+    setFormTimeMinute("00");
+    setFormTimeAmpm("AM");
+    setFormWeeklyDay(1);
+    setFormCron("0 9 * * *");
+    setFormOnceDate(new Date().toISOString().split("T")[0]);
+    setFormCustomFrequency("weekly");
+    setFormCustomInterval(1);
+    setFormCustomWeekdays([1]);
+    setFormCustomMonthlyType("dayOfMonth");
+    setFormCustomDayOfMonth(1);
+    setFormCustomNthDayOccurrence(1);
+    setFormCustomNthDayOfWeek(2);
+    setFormCustomYearlyType("specificDate");
+    setFormCustomMonths([5]);
+    setEditingTask(null);
+  }, []);
 
   // -- Show Toast Helper --
   const showToast = useCallback(
@@ -482,7 +571,7 @@ export default function ScheduledTasksPage() {
     }
   };
 
-  // -- Handle task creation submit --
+  // -- Handle task creation or update submit --
   const handleSubmitTask = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formPrompt.trim() || !formProvider || !formModel) {
@@ -528,32 +617,39 @@ export default function ScheduledTasksPage() {
       };
     }
 
+    const taskPayload = {
+      name: formName.trim(),
+      prompt: formPrompt.trim(),
+      agent: formAgent === "NONE" ? null : formAgent,
+      provider: formProvider,
+      model: formModel,
+      scheduleType: formScheduleType,
+      scheduleTime: scheduleTime || undefined,
+      scheduleDay: formScheduleType === "weekly" ? formWeeklyDay : undefined,
+      scheduleDate: formScheduleType === "once" ? formOnceDate : undefined,
+      cronExpression:
+        formScheduleType === "cron" ? formCron.trim() : undefined,
+      recurrenceRule: recurrenceRule as any,
+    };
+
     try {
-      const created = await PrismService.createCronJob({
-        name: formName.trim(),
-        prompt: formPrompt.trim(),
-        agent: formAgent === "NONE" ? null : formAgent,
-        provider: formProvider,
-        model: formModel,
-        scheduleType: formScheduleType,
-        scheduleTime: scheduleTime || undefined,
-        scheduleDay: formScheduleType === "weekly" ? formWeeklyDay : undefined,
-        scheduleDate: formScheduleType === "once" ? formOnceDate : undefined,
-        cronExpression:
-          formScheduleType === "cron" ? formCron.trim() : undefined,
-        recurrenceRule: recurrenceRule as any,
-      });
+      if (editingTask) {
+        const updatedTask = await PrismService.updateCronJob(editingTask.id, taskPayload);
+        setTasks((prev) =>
+          prev.map((task) => (task.id === editingTask.id ? { ...task, ...updatedTask } : task)),
+        );
+        showToast(`Cron Job "${formName}" updated successfully!`);
+      } else {
+        const createdTask = await PrismService.createCronJob(taskPayload);
+        setTasks((prev) => [createdTask, ...prev]);
+        showToast(`Cron Job "${formName}" created successfully!`);
+      }
 
-      setTasks((prev) => [created, ...prev]);
-      showToast(`Cron Job "${formName}" created successfully!`);
       setShowNewModal(false);
-
-      // Reset form fields
-      setFormName("");
-      setFormPrompt("");
+      resetFormFields();
     } catch (err: any) {
       console.error(err);
-      showToast(err.message || "Failed to create task", "error");
+      showToast(err.message || `Failed to ${editingTask ? "update" : "create"} task`, "error");
     } finally {
       setFormSubmitting(false);
     }
@@ -812,7 +908,10 @@ export default function ScheduledTasksPage() {
                 />
 
                 <button
-                  onClick={() => setShowNewModal(true)}
+                  onClick={() => {
+                    resetFormFields();
+                    setShowNewModal(true);
+                  }}
                   className={styles.newButton}
                   title="Create Cron Job"
                 >
@@ -999,6 +1098,12 @@ export default function ScheduledTasksPage() {
                                   />
                                   <div className={styles.menuDropdown} style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}>
                                     <button
+                                      onClick={() => handleEditTask(row)}
+                                    >
+                                      <Pencil size={13} />
+                                      <span>Edit</span>
+                                    </button>
+                                    <button
                                       onClick={() => handleCopyConfig(row)}
                                     >
                                       <Copy size={13} />
@@ -1102,6 +1207,15 @@ export default function ScheduledTasksPage() {
                                     style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}
                                     onClick={(clickEvent) => clickEvent.stopPropagation()}
                                   >
+                                    <button
+                                      onClick={(clickEvent) => {
+                                        clickEvent.stopPropagation();
+                                        handleEditTask(task);
+                                      }}
+                                    >
+                                      <Pencil size={13} />
+                                      <span>Edit</span>
+                                    </button>
                                     <button
                                       onClick={(clickEvent) => {
                                         clickEvent.stopPropagation();
@@ -1212,25 +1326,31 @@ export default function ScheduledTasksPage() {
             {/* Modal for New Agentic Cron — using ModalComponent from components-library */}
             {showNewModal && (
               <ModalComponent
-                title="New Agentic Cron"
-                onClose={() => setShowNewModal(false)}
+                title={isEditMode ? "Edit Agentic Cron" : "New Agentic Cron"}
+                onClose={() => {
+                  setShowNewModal(false);
+                  resetFormFields();
+                }}
                 size="md"
                 footer={
                   <div className={styles.modalActions}>
                     <ButtonComponent
                       variant="disabled"
-                      onClick={() => setShowNewModal(false)}
+                      onClick={() => {
+                        setShowNewModal(false);
+                        resetFormFields();
+                      }}
                     >
                       Cancel
                     </ButtonComponent>
                     <ButtonComponent
                       variant="submit"
-                      icon={Check}
+                      icon={isEditMode ? Pencil : Check}
                       loading={formSubmitting}
                       disabled={formSubmitting}
                       onClick={handleSubmitTask}
                     >
-                      Add Agentic Cron
+                      {isEditMode ? "Save Changes" : "Add Agentic Cron"}
                     </ButtonComponent>
                   </div>
                 }
@@ -1724,6 +1844,7 @@ export default function ScheduledTasksPage() {
                 onTrigger={handleTriggerTask}
                 onDelete={handleDeleteTask}
                 onToggle={handleToggleTask}
+                onEdit={handleEditTask}
                 agentName={
                   agents.find((agent) => agent.id === selectedTask.agent)?.name ||
                   "Direct Chat"
