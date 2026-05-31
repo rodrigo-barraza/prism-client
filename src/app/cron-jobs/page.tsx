@@ -68,11 +68,25 @@ interface Task {
   agent: string | null;
   provider: string;
   model: string;
-  scheduleType: "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once";
+  scheduleType: "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once" | "custom";
   scheduleTime?: string;
   scheduleDay?: number;
   scheduleDate?: string;
   cronExpression?: string;
+  recurrenceRule?: {
+    frequency: "daily" | "weekly" | "monthly" | "yearly";
+    interval: number;
+    startDate?: string;
+    weekdays?: number[];
+    monthlyType?: "dayOfMonth" | "nthDayOfWeek";
+    dayOfMonth?: number;
+    nthDayOfWeek?: {
+      occurrence: 1 | 2 | 3 | 4 | -1;
+      dayOfWeek: number;
+    };
+    yearlyType?: "specificDate" | "nthDayOfWeek";
+    months?: number[];
+  };
   enabled: boolean;
   lastRunMinute?: string;
   createdAt: string;
@@ -97,6 +111,160 @@ const NONE_AGENT = {
   color: "",
 };
 
+interface CronJobDetailPanelProps {
+  task: Task;
+  onClose: () => void;
+  onTrigger: (task: Task) => void;
+  onDelete: (task: Task) => void;
+  onToggle: (task: Task) => void;
+  agentName: string;
+  formatScheduleText: (task: Task) => string;
+}
+
+function CronJobDetailPanel({
+  task,
+  onClose,
+  onTrigger,
+  onDelete,
+  onToggle,
+  agentName,
+  formatScheduleText,
+}: CronJobDetailPanelProps) {
+  // Close on Escape
+  useEffect(() => {
+    const handleKeyDown = (clickEvent: KeyboardEvent) => {
+      if (clickEvent.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className={styles.detailOverlay} onClick={onClose}>
+      <aside
+        className={styles.detailPanel}
+        onClick={(clickEvent: React.MouseEvent) => clickEvent.stopPropagation()}
+        aria-labelledby="cron-job-detail-title"
+      >
+        {/* Header */}
+        <header className={styles.detailHeader}>
+          <div className={styles.detailTitleBlock}>
+            <h2 id="cron-job-detail-title" className={styles.detailCleanName}>
+              {task.name}
+            </h2>
+            <div className={styles.detailTitle}>{task.id}</div>
+          </div>
+          <button
+            className={styles.detailClose}
+            onClick={onClose}
+            title="Close"
+            aria-label="Close details"
+          >
+            <X />
+          </button>
+        </header>
+
+        {/* Body */}
+        <main className={styles.detailBody}>
+          {/* Status and Action Buttons */}
+          <section className={styles.detailSection}>
+            <div className={styles.detailSectionTitle}>
+              Status & Actions
+            </div>
+            <div className={styles.detailActionsRow}>
+              <button
+                className={`${styles.detailActionButton} ${styles.detailTriggerButton}`}
+                onClick={() => onTrigger(task)}
+                title="Run cron job now"
+              >
+                <Play size={14} /> Run Now
+              </button>
+              <button
+                className={`${styles.detailActionButton} ${styles.detailDeleteButton}`}
+                onClick={() => {
+                  if (confirm("Are you sure you want to delete this Cron Job?")) {
+                    onDelete(task);
+                    onClose();
+                  }
+                }}
+                title="Delete cron job"
+              >
+                <Trash2 size={14} /> Delete
+              </button>
+            </div>
+          </section>
+
+          {/* Schedule */}
+          <section className={styles.detailSection}>
+            <div className={styles.detailSectionTitle}>
+              <Clock size={12} /> Schedule
+            </div>
+            <div className={styles.detailMetadataGrid}>
+              <div className={styles.detailMetadataItem}>
+                <span className={styles.detailMetadataLabel}>Type</span>
+                <span className={styles.detailMetadataValue}>
+                  {task.scheduleType.toUpperCase()}
+                </span>
+              </div>
+              <div className={styles.detailMetadataItem}>
+                <span className={styles.detailMetadataLabel}>Details</span>
+                <span className={styles.detailMetadataValue}>
+                  {formatScheduleText(task)}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* Prompt */}
+          <section className={styles.detailSection}>
+            <div className={styles.detailSectionTitle}>
+              Prompt
+            </div>
+            <div className={styles.detailPromptBlock}>
+              {task.prompt}
+            </div>
+          </section>
+
+          {/* Configuration / Metadata */}
+          <section className={styles.detailSection}>
+            <div className={styles.detailSectionTitle}>
+              Configuration
+            </div>
+            <div className={styles.detailMetadataGrid}>
+              <div className={styles.detailMetadataItem}>
+                <span className={styles.detailMetadataLabel}>Agent</span>
+                <span className={styles.detailMetadataValue}>
+                  <Bot size={14} style={{ color: "var(--accent-primary)", opacity: 0.7 }} />
+                  {agentName}
+                </span>
+              </div>
+              <div className={styles.detailMetadataItem}>
+                <span className={styles.detailMetadataLabel}>Model</span>
+                <span className={styles.detailMetadataValue}>
+                  <Sparkles size={14} style={{ color: "var(--accent-primary)", opacity: 0.7 }} />
+                  {task.model.split("/").pop()}
+                </span>
+              </div>
+              <div className={styles.detailMetadataItem}>
+                <span className={styles.detailMetadataLabel}>Project</span>
+                <span className={styles.detailMetadataValue}>
+                  {task.project || "—"}
+                </span>
+              </div>
+              <div className={styles.detailMetadataItem}>
+                <span className={styles.detailMetadataLabel}>Status</span>
+                <span className={styles.detailMetadataValue}>
+                  {task.enabled ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+            </div>
+          </section>
+        </main>
+      </aside>
+    </div>
+  );
+}
+
 export default function ScheduledTasksPage() {
   // Data state
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -118,6 +286,7 @@ export default function ScheduledTasksPage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [viewMode, setViewMode] = useState("card");
   const [activeSortKeys, setActiveSortKeys] = useState<string[]>(["createdAt"]);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // New task form state
   const [formName, setFormName] = useState("");
@@ -127,7 +296,7 @@ export default function ScheduledTasksPage() {
   const [formProvider, setFormProvider] = useState("");
   const [formModel, setFormModel] = useState("");
   const [formScheduleType, setFormScheduleType] = useState<
-    "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once"
+    "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once" | "custom"
   >("daily");
   const [formTimeHour, setFormTimeHour] = useState("09");
   const [formTimeMinute, setFormTimeMinute] = useState("00");
@@ -138,6 +307,18 @@ export default function ScheduledTasksPage() {
     const today = new Date();
     return today.toISOString().split("T")[0];
   });
+  
+  // Custom recurrence states
+  const [formCustomFrequency, setFormCustomFrequency] = useState<"daily" | "weekly" | "monthly" | "yearly">("weekly");
+  const [formCustomInterval, setFormCustomInterval] = useState<number>(1);
+  const [formCustomWeekdays, setFormCustomWeekdays] = useState<number[]>([1]); // default Monday
+  const [formCustomMonthlyType, setFormCustomMonthlyType] = useState<"dayOfMonth" | "nthDayOfWeek">("dayOfMonth");
+  const [formCustomDayOfMonth, setFormCustomDayOfMonth] = useState<number>(1);
+  const [formCustomNthDayOccurrence, setFormCustomNthDayOccurrence] = useState<1 | 2 | 3 | 4 | -1>(1);
+  const [formCustomNthDayOfWeek, setFormCustomNthDayOfWeek] = useState<number>(2); // Tuesday
+  const [formCustomYearlyType, setFormCustomYearlyType] = useState<"specificDate" | "nthDayOfWeek">("specificDate");
+  const [formCustomMonths, setFormCustomMonths] = useState<number[]>([5]); // default May
+
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   // -- Show Toast Helper --
@@ -316,12 +497,35 @@ export default function ScheduledTasksPage() {
     if (
       formScheduleType === "daily" ||
       formScheduleType === "weekly" ||
-      formScheduleType === "once"
+      formScheduleType === "once" ||
+      formScheduleType === "custom"
     ) {
       let h = parseInt(formTimeHour, 10);
       if (formTimeAmpm === "PM" && h < 12) h += 12;
       if (formTimeAmpm === "AM" && h === 12) h = 0;
       scheduleTime = `${String(h).padStart(2, "0")}:${formTimeMinute}`;
+    }
+
+    let recurrenceRule = undefined;
+    if (formScheduleType === "custom") {
+      recurrenceRule = {
+        frequency: formCustomFrequency,
+        interval: formCustomInterval,
+        weekdays: formCustomFrequency === "weekly" ? formCustomWeekdays : undefined,
+        monthlyType: formCustomFrequency === "monthly" ? formCustomMonthlyType : undefined,
+        dayOfMonth: formCustomFrequency === "monthly"
+          ? (formCustomMonthlyType === "dayOfMonth" ? formCustomDayOfMonth : undefined)
+          : (formCustomFrequency === "yearly"
+            ? (formCustomYearlyType === "specificDate" ? formCustomDayOfMonth : undefined)
+            : undefined),
+        nthDayOfWeek: (formCustomFrequency === "monthly" && formCustomMonthlyType === "nthDayOfWeek")
+          ? { occurrence: formCustomNthDayOccurrence, dayOfWeek: formCustomNthDayOfWeek }
+          : ((formCustomFrequency === "yearly" && formCustomYearlyType === "nthDayOfWeek")
+            ? { occurrence: formCustomNthDayOccurrence, dayOfWeek: formCustomNthDayOfWeek }
+            : undefined),
+        yearlyType: formCustomFrequency === "yearly" ? formCustomYearlyType : undefined,
+        months: formCustomFrequency === "yearly" ? formCustomMonths : undefined,
+      };
     }
 
     try {
@@ -337,6 +541,7 @@ export default function ScheduledTasksPage() {
         scheduleDate: formScheduleType === "once" ? formOnceDate : undefined,
         cronExpression:
           formScheduleType === "cron" ? formCron.trim() : undefined,
+        recurrenceRule: recurrenceRule as any,
       });
 
       setTasks((prev) => [created, ...prev]);
@@ -395,6 +600,59 @@ export default function ScheduledTasksPage() {
 
     if (task.scheduleType === "once") {
       return `One-time on ${task.scheduleDate || ""} around ${formatTime(task.scheduleTime)}`;
+    }
+
+    if (task.scheduleType === "custom" && task.recurrenceRule) {
+      const rule = task.recurrenceRule;
+      const freq = rule.frequency;
+      const intervalStr = rule.interval > 1
+        ? `every ${rule.interval} ${freq === "daily" ? "days" : freq === "weekly" ? "weeks" : freq === "monthly" ? "months" : "years"}`
+        : `every ${freq === "daily" ? "day" : freq === "weekly" ? "week" : freq === "monthly" ? "month" : "year"}`;
+      
+      const timeStr = formatTime(task.scheduleTime);
+      const timeSuffix = timeStr ? ` around ${timeStr}` : "";
+
+      const daysOfWeekLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const monthLabels = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+      if (freq === "daily") {
+        return `Custom: Repeat ${intervalStr}${timeSuffix}`;
+      }
+
+      if (freq === "weekly") {
+        const weekdaysNames = rule.weekdays && rule.weekdays.length > 0
+          ? rule.weekdays.map(d => daysOfWeekLabels[d]).join(", ")
+          : daysOfWeekLabels[task.scheduleDay ?? 1];
+        return `Custom: Repeat ${intervalStr} on ${weekdaysNames}${timeSuffix}`;
+      }
+
+      if (freq === "monthly") {
+        if (rule.monthlyType === "nthDayOfWeek" && rule.nthDayOfWeek) {
+          const occ = rule.nthDayOfWeek.occurrence;
+          const occName = occ === 1 ? "first" : occ === 2 ? "second" : occ === 3 ? "third" : occ === 4 ? "fourth" : "last";
+          const dayName = daysOfWeekLabels[rule.nthDayOfWeek.dayOfWeek];
+          return `Custom: Repeat ${intervalStr} on the ${occName} ${dayName}${timeSuffix}`;
+        }
+        const dom = rule.dayOfMonth ?? 1;
+        const domName = dom === -1 ? "last day" : `${dom}${dom === 1 ? "st" : dom === 2 ? "nd" : dom === 3 ? "rd" : "th"}`;
+        return `Custom: Repeat ${intervalStr} on the ${domName} of the month${timeSuffix}`;
+      }
+
+      if (freq === "yearly") {
+        const monthNames = rule.months && rule.months.length > 0
+          ? rule.months.map(m => monthLabels[m - 1]).join(", ")
+          : monthLabels[5 - 1];
+
+        if (rule.yearlyType === "nthDayOfWeek" && rule.nthDayOfWeek) {
+          const occ = rule.nthDayOfWeek.occurrence;
+          const occName = occ === 1 ? "first" : occ === 2 ? "second" : occ === 3 ? "third" : occ === 4 ? "fourth" : "last";
+          const dayName = daysOfWeekLabels[rule.nthDayOfWeek.dayOfWeek];
+          return `Custom: Repeat ${intervalStr} in ${monthNames} on the ${occName} ${dayName}${timeSuffix}`;
+        }
+        const dom = rule.dayOfMonth ?? 1;
+        const domName = dom === -1 ? "last day" : `${dom}${dom === 1 ? "st" : dom === 2 ? "nd" : dom === 3 ? "rd" : "th"}`;
+        return `Custom: Repeat ${intervalStr} in ${monthNames} on the ${domName}${timeSuffix}`;
+      }
     }
 
     return "Unknown schedule";
@@ -586,7 +844,13 @@ export default function ScheduledTasksPage() {
                 </div>
               ) : viewMode === "calendar" ? (
                 /* ── Calendar View ── */
-                <ScheduledTaskCalendarComponent tasks={filteredTasks} />
+                <ScheduledTaskCalendarComponent
+                  tasks={filteredTasks}
+                  onEventClick={(taskId: string) => {
+                    const task = tasks.find((t) => t.id === taskId);
+                    if (task) setSelectedTask(task);
+                  }}
+                />
               ) : viewMode === "table" ? (
                 /* ── Table View ── */
                 <TableComponent
@@ -595,7 +859,13 @@ export default function ScheduledTasksPage() {
                       key: "name",
                       label: "Name",
                       render: (row: any) => (
-                        <span className={styles.tableNameCell}>{row.name}</span>
+                        <span
+                          className={styles.tableNameCell}
+                          onClick={() => setSelectedTask(row)}
+                          style={{ cursor: "pointer", textDecoration: "underline" }}
+                        >
+                          {row.name}
+                        </span>
                       ),
                     },
                     {
@@ -771,6 +1041,8 @@ export default function ScheduledTasksPage() {
                       <div
                         key={task.id}
                         className={`${styles.card} ${!task.enabled ? styles.disabledCard : ""}`}
+                        onClick={() => setSelectedTask(task)}
+                        style={{ cursor: "pointer" }}
                       >
                         <div className={styles.cardHeader}>
                           <div className={styles.cardTitleInfo}>
@@ -783,7 +1055,10 @@ export default function ScheduledTasksPage() {
                           <div className={styles.cardActions}>
                             {/* Custom sleek toggle switch */}
                             <button
-                              onClick={() => handleToggleTask(task)}
+                              onClick={(clickEvent) => {
+                                clickEvent.stopPropagation();
+                                handleToggleTask(task);
+                              }}
                               className={`${styles.toggleSwitch} ${task.enabled ? styles.toggleSwitchOn : ""}`}
                               title={
                                 task.enabled ? "Disable task" : "Enable task"
@@ -794,12 +1069,13 @@ export default function ScheduledTasksPage() {
 
                             <div className={styles.menuContainer}>
                               <button
-                                onClick={(e) => {
+                                onClick={(clickEvent) => {
+                                  clickEvent.stopPropagation();
                                   if (isMenuOpen) {
                                     setActiveMenuId(null);
                                     setMenuAnchorPosition(null);
                                   } else {
-                                    const buttonRect = e.currentTarget.getBoundingClientRect();
+                                    const buttonRect = clickEvent.currentTarget.getBoundingClientRect();
                                     setMenuAnchorPosition({ top: buttonRect.bottom + 4, left: buttonRect.right });
                                     setActiveMenuId(task.id);
                                   }
@@ -815,17 +1091,31 @@ export default function ScheduledTasksPage() {
                                 <>
                                   <div
                                     className={styles.menuBackdrop}
-                                    onClick={() => { setActiveMenuId(null); setMenuAnchorPosition(null); }}
+                                    onClick={(clickEvent) => {
+                                      clickEvent.stopPropagation();
+                                      setActiveMenuId(null);
+                                      setMenuAnchorPosition(null);
+                                    }}
                                   />
-                                  <div className={styles.menuDropdown} style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}>
+                                  <div
+                                    className={styles.menuDropdown}
+                                    style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}
+                                    onClick={(clickEvent) => clickEvent.stopPropagation()}
+                                  >
                                     <button
-                                      onClick={() => handleCopyConfig(task)}
+                                      onClick={(clickEvent) => {
+                                        clickEvent.stopPropagation();
+                                        handleCopyConfig(task);
+                                      }}
                                     >
                                       <Copy size={13} />
                                       <span>Copy Config Path</span>
                                     </button>
                                     <button
-                                      onClick={() => handleTriggerTask(task)}
+                                      onClick={(clickEvent) => {
+                                        clickEvent.stopPropagation();
+                                        handleTriggerTask(task);
+                                      }}
                                       disabled={isTriggering}
                                     >
                                       {isTriggering ? (
@@ -839,7 +1129,8 @@ export default function ScheduledTasksPage() {
                                       <span>Restart Task</span>
                                     </button>
                                     <button
-                                      onClick={() => {
+                                      onClick={(clickEvent) => {
+                                        clickEvent.stopPropagation();
                                         setConfirmDeleteId(task.id);
                                         setActiveMenuId(null);
                                       }}
@@ -884,17 +1175,26 @@ export default function ScheduledTasksPage() {
 
                         {/* Inline Confirm Delete */}
                         {isConfirming && (
-                          <div className={styles.confirmRow}>
+                          <div
+                            className={styles.confirmRow}
+                            onClick={(clickEvent) => clickEvent.stopPropagation()}
+                          >
                             <span>Delete task permanently?</span>
                             <div className={styles.confirmButtons}>
                               <button
-                                onClick={() => handleDeleteTask(task)}
+                                onClick={(clickEvent) => {
+                                  clickEvent.stopPropagation();
+                                  handleDeleteTask(task);
+                                }}
                                 className={styles.confirmYes}
                               >
                                 Delete
                               </button>
                               <button
-                                onClick={() => setConfirmDeleteId(null)}
+                                onClick={(clickEvent) => {
+                                  clickEvent.stopPropagation();
+                                  setConfirmDeleteId(null);
+                                }}
                                 className={styles.confirmNo}
                               >
                                 Cancel
@@ -1016,6 +1316,7 @@ export default function ScheduledTasksPage() {
                           { value: "daily", label: "Daily" },
                           { value: "weekly", label: "Weekly" },
                           { value: "cron", label: "Cron Expression" },
+                          { value: "custom", label: "Custom Recurrence" },
                           {
                             value: "trigger",
                             label: "Trigger (Manual / Remote)",
@@ -1171,9 +1472,264 @@ export default function ScheduledTasksPage() {
                         />
                       </FormGroupComponent>
                     )}
+
+                    {/* Custom recurrence visual builder panel */}
+                    {formScheduleType === "custom" && (
+                      <div className={styles.customRecurrencePanel}>
+                        <div className={styles.recurrenceRow}>
+                          <span className={styles.recurrenceText}>Repeat every</span>
+                          <input
+                            type="number"
+                            min="1"
+                            value={formCustomInterval}
+                            onChange={(e) => setFormCustomInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                            className={styles.recurrenceInput}
+                          />
+                          <SelectComponent
+                            value={formCustomFrequency}
+                            onChange={(val: string) => setFormCustomFrequency(val as any)}
+                            options={[
+                              { value: "daily", label: "Day(s)" },
+                              { value: "weekly", label: "Week(s)" },
+                              { value: "monthly", label: "Month(s)" },
+                              { value: "yearly", label: "Year(s)" },
+                            ]}
+                          />
+                          <span className={styles.recurrenceText}>around</span>
+                          <SelectComponent
+                            value={formTimeHour}
+                            onChange={(val: string) => setFormTimeHour(val)}
+                            options={Array.from({ length: 12 }, (_, i) => {
+                              const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
+                              return { value: formattedHour, label: formattedHour };
+                            })}
+                          />
+                          <span className={styles.timeColon}>:</span>
+                          <SelectComponent
+                            value={formTimeMinute}
+                            onChange={(val: string) => setFormTimeMinute(val)}
+                            options={["00", "15", "30", "45"].map((m) => ({ value: m, label: m }))}
+                          />
+                          <SelectComponent
+                            value={formTimeAmpm}
+                            onChange={(val: string) => setFormTimeAmpm(val)}
+                            options={[
+                              { value: "AM", label: "AM" },
+                              { value: "PM", label: "PM" },
+                            ]}
+                          />
+                        </div>
+
+                        {formCustomFrequency === "weekly" && (
+                          <div className={styles.weekdayPickerPanel}>
+                            <span className={styles.recurrenceSublabel}>On days:</span>
+                            <div className={styles.weekdayButtonsGrid}>
+                              {["S", "M", "T", "W", "T", "F", "S"].map((label, dayIndex) => {
+                                const isSelected = formCustomWeekdays.includes(dayIndex);
+                                return (
+                                  <button
+                                    key={dayIndex}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setFormCustomWeekdays(prev => prev.filter(d => d !== dayIndex));
+                                      } else {
+                                        setFormCustomWeekdays(prev => [...prev, dayIndex].sort());
+                                      }
+                                    }}
+                                    className={`${styles.weekdayBadgeButton} ${isSelected ? styles.weekdayBadgeActive : ""}`}
+                                  >
+                                    {label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {formCustomFrequency === "monthly" && (
+                          <div className={styles.monthlyPickerPanel}>
+                            <div className={styles.recurrenceSubrow}>
+                              <input
+                                type="radio"
+                                id="monthlyTypeDay"
+                                name="monthlyType"
+                                checked={formCustomMonthlyType === "dayOfMonth"}
+                                onChange={() => setFormCustomMonthlyType("dayOfMonth")}
+                              />
+                              <label htmlFor="monthlyTypeDay" className={styles.radioLabel}>
+                                On the
+                                <SelectComponent
+                                  value={String(formCustomDayOfMonth)}
+                                  onChange={(val: string) => setFormCustomDayOfMonth(Number(val))}
+                                  options={[
+                                    { value: "-1", label: "last day" },
+                                    ...Array.from({ length: 31 }, (_, i) => ({
+                                      value: String(i + 1),
+                                      label: `${i + 1}${i + 1 === 1 ? "st" : i + 1 === 2 ? "nd" : i + 1 === 3 ? "rd" : "th"}`
+                                    }))
+                                  ]}
+                                  disabled={formCustomMonthlyType !== "dayOfMonth"}
+                                />
+                                of the month
+                              </label>
+                            </div>
+
+                            <div className={styles.recurrenceSubrow}>
+                              <input
+                                type="radio"
+                                id="monthlyTypeNth"
+                                name="monthlyType"
+                                checked={formCustomMonthlyType === "nthDayOfWeek"}
+                                onChange={() => setFormCustomMonthlyType("nthDayOfWeek")}
+                              />
+                              <label htmlFor="monthlyTypeNth" className={styles.radioLabel}>
+                                On the
+                                <SelectComponent
+                                  value={String(formCustomNthDayOccurrence)}
+                                  onChange={(val: string) => setFormCustomNthDayOccurrence(Number(val) as any)}
+                                  options={[
+                                    { value: "1", label: "first" },
+                                    { value: "2", label: "second" },
+                                    { value: "3", label: "third" },
+                                    { value: "4", label: "fourth" },
+                                    { value: "-1", label: "last" },
+                                  ]}
+                                  disabled={formCustomMonthlyType !== "nthDayOfWeek"}
+                                />
+                                <SelectComponent
+                                  value={String(formCustomNthDayOfWeek)}
+                                  onChange={(val: string) => setFormCustomNthDayOfWeek(Number(val))}
+                                  options={[
+                                    { value: "0", label: "Sunday" },
+                                    { value: "1", label: "Monday" },
+                                    { value: "2", label: "Tuesday" },
+                                    { value: "3", label: "Wednesday" },
+                                    { value: "4", label: "Thursday" },
+                                    { value: "5", label: "Friday" },
+                                    { value: "6", label: "Saturday" },
+                                  ]}
+                                  disabled={formCustomMonthlyType !== "nthDayOfWeek"}
+                                />
+                                of the month
+                              </label>
+                            </div>
+                          </div>
+                        )}
+
+                        {formCustomFrequency === "yearly" && (
+                          <div className={styles.yearlyPickerPanel}>
+                            <span className={styles.recurrenceSublabel}>In months:</span>
+                            <div className={styles.monthsGrid}>
+                              {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((label, monthIndex) => {
+                                const monthOneIndexed = monthIndex + 1;
+                                const isSelected = formCustomMonths.includes(monthOneIndexed);
+                                return (
+                                  <button
+                                    key={monthIndex}
+                                    type="button"
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setFormCustomMonths(prev => prev.filter(m => m !== monthOneIndexed));
+                                      } else {
+                                        setFormCustomMonths(prev => [...prev, monthOneIndexed].sort());
+                                      }
+                                    }}
+                                    className={`${styles.monthBadgeButton} ${isSelected ? styles.monthBadgeActive : ""}`}
+                                  >
+                                    {label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            <div className={styles.recurrenceSubrow}>
+                              <input
+                                type="radio"
+                                id="yearlyTypeDay"
+                                name="yearlyType"
+                                checked={formCustomYearlyType === "specificDate"}
+                                onChange={() => setFormCustomYearlyType("specificDate")}
+                              />
+                              <label htmlFor="yearlyTypeDay" className={styles.radioLabel}>
+                                On the
+                                <SelectComponent
+                                  value={String(formCustomDayOfMonth)}
+                                  onChange={(val: string) => setFormCustomDayOfMonth(Number(val))}
+                                  options={[
+                                    { value: "-1", label: "last day" },
+                                    ...Array.from({ length: 31 }, (_, i) => ({
+                                      value: String(i + 1),
+                                      label: `${i + 1}${i + 1 === 1 ? "st" : i + 1 === 2 ? "nd" : i + 1 === 3 ? "rd" : "th"}`
+                                    }))
+                                  ]}
+                                  disabled={formCustomYearlyType !== "specificDate"}
+                                />
+                                of those months
+                              </label>
+                            </div>
+
+                            <div className={styles.recurrenceSubrow}>
+                              <input
+                                type="radio"
+                                id="yearlyTypeNth"
+                                name="yearlyType"
+                                checked={formCustomYearlyType === "nthDayOfWeek"}
+                                onChange={() => setFormCustomYearlyType("nthDayOfWeek")}
+                              />
+                              <label htmlFor="yearlyTypeNth" className={styles.radioLabel}>
+                                On the
+                                <SelectComponent
+                                  value={String(formCustomNthDayOccurrence)}
+                                  onChange={(val: string) => setFormCustomNthDayOccurrence(Number(val) as any)}
+                                  options={[
+                                    { value: "1", label: "first" },
+                                    { value: "2", label: "second" },
+                                    { value: "3", label: "third" },
+                                    { value: "4", label: "fourth" },
+                                    { value: "-1", label: "last" },
+                                  ]}
+                                  disabled={formCustomYearlyType !== "nthDayOfWeek"}
+                                />
+                                <SelectComponent
+                                  value={String(formCustomNthDayOfWeek)}
+                                  onChange={(val: string) => setFormCustomNthDayOfWeek(Number(val))}
+                                  options={[
+                                    { value: "0", label: "Sunday" },
+                                    { value: "1", label: "Monday" },
+                                    { value: "2", label: "Tuesday" },
+                                    { value: "3", label: "Wednesday" },
+                                    { value: "4", label: "Thursday" },
+                                    { value: "5", label: "Friday" },
+                                    { value: "6", label: "Saturday" },
+                                  ]}
+                                  disabled={formCustomYearlyType !== "nthDayOfWeek"}
+                                />
+                                of those months
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </form>
               </ModalComponent>
+            )}
+
+            {selectedTask && (
+              <CronJobDetailPanel
+                task={selectedTask}
+                onClose={() => setSelectedTask(null)}
+                onTrigger={handleTriggerTask}
+                onDelete={handleDeleteTask}
+                onToggle={handleToggleTask}
+                agentName={
+                  agents.find((agent) => agent.id === selectedTask.agent)?.name ||
+                  "Direct Chat"
+                }
+                formatScheduleText={formatScheduleText}
+              />
             )}
           </div>
         </div>

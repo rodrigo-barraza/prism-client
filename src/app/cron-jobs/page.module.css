@@ -735,3 +735,373 @@
     gap: 12px;
   }
 }
+
+/* ── Cron Job Detail Overlay & Panel ── */
+
+.detailOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInPure 0.15s ease-out;
+  backdrop-filter: blur(4px);
+}
+
+.detailPanel {
+  width: 680px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 80px);
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--calculated-shadow-lg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease-out;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--calculated-border-color);
+}
+
+.detailTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.detailCleanName {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detailTitle {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  word-break: break-all;
+}
+
+.detailClose {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  border-radius: var(--border-radius-sm);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  & svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--background-elevated);
+  }
+}
+
+.detailBody {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailSectionTitle {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  & svg {
+    opacity: 0.6;
+  }
+}
+
+.detailPromptBlock {
+  background: var(--background-base);
+  border-radius: var(--border-radius-sm);
+  padding: 16px;
+  border: 1px solid var(--calculated-border-subtle);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.detailMetadataGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.detailMetadataItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+}
+
+.detailMetadataLabel {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.detailMetadataValue {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detailActionsRow {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.detailActionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  padding: 12px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.detailTriggerButton {
+  background: var(--accent-primary);
+  color: var(--calculated-text-inverse);
+  border: none;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.detailDeleteButton {
+  background: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+
+  &:hover {
+    background: var(--calculated-color-danger-subtle);
+  }
+}
+
+/* ── Custom Recurrence Panel ── */
+.customRecurrencePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  margin-top: 10px;
+  animation: slideDown 0.2s ease-out forwards;
+}
+
+.recurrenceRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.recurrenceText {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.recurrenceInput {
+  width: 60px;
+  padding: 6px 10px;
+  border-radius: var(--border-radius-sm);
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-align: center;
+
+  &:focus {
+    border-color: var(--accent-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
+  }
+}
+
+.recurrenceSublabel {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Weekday Selector Grid */
+.weekdayPickerPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weekdayButtonsGrid {
+  display: flex;
+  gap: 6px;
+}
+
+.weekdayBadgeButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.weekdayBadgeActive {
+  background: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  color: var(--calculated-text-inverse) !important;
+  box-shadow: 0 2px 8px var(--calculated-accent-primary-glow);
+}
+
+/* Monthly & Yearly Radio Inputs & Subrows */
+.recurrenceSubrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+
+  & input[type="radio"] {
+    cursor: pointer;
+    accent-color: var(--accent-primary);
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.radioLabel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Yearly Months Selector Grid */
+.yearlyPickerPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.monthsGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.monthBadgeButton {
+  padding: 6px 4px;
+  border-radius: var(--border-radius-sm);
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+  }
+}
+
+.monthBadgeActive {
+  background: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  color: var(--calculated-text-inverse) !important;
+  font-weight: 600;
+}

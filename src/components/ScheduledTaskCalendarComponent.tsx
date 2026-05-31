@@ -14,12 +14,27 @@ import styles from "./ScheduledTaskCalendarComponent.module.css";
 interface ScheduledTask {
   id: string;
   name: string;
-  scheduleType: "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once";
+  scheduleType: "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once" | "custom";
   scheduleTime?: string;
   scheduleDay?: number;
   scheduleDate?: string;
   cronExpression?: string;
+  recurrenceRule?: {
+    frequency: "daily" | "weekly" | "monthly" | "yearly";
+    interval: number;
+    startDate?: string;
+    weekdays?: number[];
+    monthlyType?: "dayOfMonth" | "nthDayOfWeek";
+    dayOfMonth?: number;
+    nthDayOfWeek?: {
+      occurrence: 1 | 2 | 3 | 4 | -1;
+      dayOfWeek: number;
+    };
+    yearlyType?: "specificDate" | "nthDayOfWeek";
+    months?: number[];
+  };
   enabled: boolean;
+  createdAt?: string;
 }
 
 interface CalendarEvent {
@@ -40,6 +55,7 @@ interface CalendarDay {
 
 interface ScheduledTaskCalendarComponentProps {
   tasks: ScheduledTask[];
+  onEventClick?: (taskId: string) => void;
 }
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -66,6 +82,7 @@ const SCHEDULE_TYPE_KEYS: ScheduledTask["scheduleType"][] = [
   "weekly",
   "cron",
   "once",
+  "custom",
   "trigger",
 ];
 
@@ -76,6 +93,7 @@ function getColorVariantClassName(scheduleType: string): string {
     weekly: styles["is-color-weekly"],
     cron: styles["is-color-cron"],
     once: styles["is-color-once"],
+    custom: styles["is-color-custom"],
     trigger: styles["is-color-trigger"],
   };
   return classNameMap[scheduleType] || "";
@@ -223,9 +241,136 @@ function getEventsForDate(
         if (task.scheduleDate) {
           const [year, month, day] = task.scheduleDate.split("-").map(Number);
           matchesDate =
-            targetDate.getFullYear() === year &&
-            targetDate.getMonth() === month - 1 &&
-            targetDate.getDate() === day;
+              targetDate.getFullYear() === year &&
+              targetDate.getMonth() === month - 1 &&
+              targetDate.getDate() === day;
+          timeLabel = formatTimeFromSchedule(task.scheduleTime);
+        }
+        break;
+      }
+
+      case "custom": {
+        if (task.recurrenceRule) {
+          const rule = task.recurrenceRule;
+          const startDateInput = task.createdAt ? new Date(task.createdAt) : new Date();
+          
+          const startDate = new Date(
+            startDateInput.getFullYear(),
+            startDateInput.getMonth(),
+            startDateInput.getDate()
+          );
+          const targetDateNormalized = new Date(
+            targetDate.getFullYear(),
+            targetDate.getMonth(),
+            targetDate.getDate()
+          );
+
+          if (targetDateNormalized.getTime() >= startDate.getTime()) {
+            const interval = Math.max(1, rule.interval);
+            const freq = rule.frequency;
+
+            if (freq === "daily") {
+              const differenceInMs = targetDateNormalized.getTime() - startDate.getTime();
+              const differenceInDays = Math.floor(differenceInMs / (24 * 60 * 60 * 1000));
+              matchesDate = differenceInDays % interval === 0;
+            } else if (freq === "weekly") {
+              const startSunday = new Date(startDate);
+              startSunday.setDate(startDate.getDate() - startDate.getDay());
+
+              const targetSunday = new Date(targetDateNormalized);
+              targetSunday.setDate(targetDateNormalized.getDate() - targetDateNormalized.getDay());
+
+              const differenceInMs = targetSunday.getTime() - startSunday.getTime();
+              const differenceInWeeks = Math.floor(differenceInMs / (7 * 24 * 60 * 60 * 1000));
+
+              if (differenceInWeeks % interval === 0) {
+                if (!rule.weekdays || rule.weekdays.length === 0) {
+                  matchesDate = targetDateNormalized.getDay() === startDate.getDay();
+                } else {
+                  matchesDate = rule.weekdays.includes(targetDateNormalized.getDay());
+                }
+              }
+            } else if (freq === "monthly") {
+              const differenceInMonths =
+                (targetDateNormalized.getFullYear() - startDate.getFullYear()) * 12 +
+                (targetDateNormalized.getMonth() - startDate.getMonth());
+
+              if (differenceInMonths % interval === 0) {
+                if (rule.monthlyType === "nthDayOfWeek" && rule.nthDayOfWeek) {
+                  const nthRule = rule.nthDayOfWeek;
+                  if (targetDateNormalized.getDay() === nthRule.dayOfWeek) {
+                    const occurrence = nthRule.occurrence;
+                    const dayOfMonth = targetDateNormalized.getDate();
+                    if (occurrence > 0) {
+                      const startRange = (occurrence - 1) * 7 + 1;
+                      const endRange = occurrence * 7;
+                      matchesDate = dayOfMonth >= startRange && dayOfMonth <= endRange;
+                    } else if (occurrence === -1) {
+                      const lastDayOfMonth = new Date(
+                        targetDateNormalized.getFullYear(),
+                        targetDateNormalized.getMonth() + 1,
+                        0
+                      ).getDate();
+                      matchesDate = dayOfMonth >= lastDayOfMonth - 6 && dayOfMonth <= lastDayOfMonth;
+                    }
+                  }
+                } else {
+                  const dayOfMonthRule = rule.dayOfMonth ?? 1;
+                  if (dayOfMonthRule === -1) {
+                    const nextDay = new Date(
+                      targetDateNormalized.getFullYear(),
+                      targetDateNormalized.getMonth(),
+                      targetDateNormalized.getDate() + 1
+                    );
+                    matchesDate = nextDay.getMonth() !== targetDateNormalized.getMonth();
+                  } else {
+                    matchesDate = targetDateNormalized.getDate() === dayOfMonthRule;
+                  }
+                }
+              }
+            } else if (freq === "yearly") {
+              const differenceInYears = targetDateNormalized.getFullYear() - startDate.getFullYear();
+
+              if (differenceInYears % interval === 0) {
+                const activeMonths = rule.months || [startDate.getMonth() + 1];
+                const targetMonthOneIndexed = targetDateNormalized.getMonth() + 1;
+
+                if (activeMonths.includes(targetMonthOneIndexed)) {
+                  if (rule.yearlyType === "nthDayOfWeek" && rule.nthDayOfWeek) {
+                    const nthRule = rule.nthDayOfWeek;
+                    if (targetDateNormalized.getDay() === nthRule.dayOfWeek) {
+                      const occurrence = nthRule.occurrence;
+                      const dayOfMonth = targetDateNormalized.getDate();
+                      if (occurrence > 0) {
+                        const startRange = (occurrence - 1) * 7 + 1;
+                        const endRange = occurrence * 7;
+                        matchesDate = dayOfMonth >= startRange && dayOfMonth <= endRange;
+                      } else if (occurrence === -1) {
+                        const lastDayOfMonth = new Date(
+                          targetDateNormalized.getFullYear(),
+                          targetDateNormalized.getMonth() + 1,
+                          0
+                        ).getDate();
+                        matchesDate = dayOfMonth >= lastDayOfMonth - 6 && dayOfMonth <= lastDayOfMonth;
+                      }
+                    }
+                  } else {
+                    const dayOfMonthRule = rule.dayOfMonth ?? 1;
+                    if (dayOfMonthRule === -1) {
+                      const nextDay = new Date(
+                        targetDateNormalized.getFullYear(),
+                        targetDateNormalized.getMonth(),
+                        targetDateNormalized.getDate() + 1
+                      );
+                      matchesDate = nextDay.getMonth() !== targetDateNormalized.getMonth();
+                    } else {
+                      matchesDate = targetDateNormalized.getDate() === dayOfMonthRule;
+                    }
+                  }
+                }
+              }
+            }
+          }
           timeLabel = formatTimeFromSchedule(task.scheduleTime);
         }
         break;
@@ -271,11 +416,11 @@ function buildCalendarGrid(
     currentDate.setDate(calendarStartDate.getDate() + cellIndex);
 
     const isCurrentMonth =
-      currentDate.getMonth() === month && currentDate.getFullYear() === year;
+        currentDate.getMonth() === month && currentDate.getFullYear() === year;
     const isToday =
-      currentDate.getFullYear() === todayYear &&
-      currentDate.getMonth() === todayMonth &&
-      currentDate.getDate() === todayDate;
+        currentDate.getFullYear() === todayYear &&
+        currentDate.getMonth() === todayMonth &&
+        currentDate.getDate() === todayDate;
 
     calendarDays.push({
       date: currentDate,
@@ -304,6 +449,7 @@ function classNames(...values: (string | false | null | undefined)[]): string {
 
 export default function ScheduledTaskCalendarComponent({
   tasks,
+  onEventClick,
 }: ScheduledTaskCalendarComponentProps) {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -470,7 +616,11 @@ export default function ScheduledTaskCalendarComponent({
                         !event.isEnabled && styles["is-disabled-task"],
                       )}
                       title={`${event.taskName}${event.timeLabel ? ` — ${event.timeLabel}` : ""}`}
-                      style={{ animationDelay: `${eventIndex * 30}ms` }}
+                      style={{ animationDelay: `${eventIndex * 30}ms`, cursor: "pointer" }}
+                      onClick={(clickEvent) => {
+                        clickEvent.stopPropagation();
+                        onEventClick?.(event.taskId);
+                      }}
                     >
                       <span
                         className={classNames(
@@ -522,7 +672,15 @@ export default function ScheduledTaskCalendarComponent({
                       {calendarDay.events.map((event, eventIndex) => (
                         <div
                           key={`${event.taskId}-${eventIndex}`}
-                          className={styles["calendar-popover-event-item"]}
+                          className={classNames(
+                            styles["calendar-popover-event-item"],
+                            !event.isEnabled && styles["is-disabled-task"],
+                          )}
+                          onClick={() => {
+                            setPopoverDayKey(null);
+                            onEventClick?.(event.taskId);
+                          }}
+                          style={{ cursor: "pointer" }}
                         >
                           <span
                             className={classNames(

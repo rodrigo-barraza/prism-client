@@ -205,9 +205,14 @@
     opacity: 0.85;
     translate: 1px 0;
   }
+}
 
-  &.is-disabled-task {
-    opacity: 0.4;
+.is-disabled-task {
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.55;
   }
 }
 
@@ -251,6 +256,11 @@
   color: var(--color-rose);
 }
 
+.calendar-event-chip.is-color-custom {
+  background: color-mix(in oklch, var(--color-indigo, #6366f1) 18%, transparent);
+  color: var(--color-indigo, #6366f1);
+}
+
 .calendar-event-chip.is-color-trigger {
   background: color-mix(in oklch, var(--color-purple) 18%, transparent);
   color: var(--color-purple);
@@ -284,6 +294,12 @@
 .is-color-once.calendar-popover-event-dot,
 .is-color-once.calendar-legend-dot {
   background: var(--color-rose);
+}
+
+.is-color-custom.calendar-event-chip-dot,
+.is-color-custom.calendar-popover-event-dot,
+.is-color-custom.calendar-legend-dot {
+  background: var(--color-indigo, #6366f1);
 }
 
 .is-color-trigger.calendar-event-chip-dot,

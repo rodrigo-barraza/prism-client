@@ -107,7 +107,8 @@ export default function ToolCallsBlockComponent({
                 <span className={styles.toolCallName}>{name}</span>
 
                 {/* Worker tool badges — show which tools a spawned agent used */}
-                {toolCall.name === "team_create" &&
+                {/* TODO(cleanup): Remove "team_create" once historical sessions have aged out */}
+                {(toolCall.name === "create_team" || toolCall.name === "team_create") &&
                   (() => {
                     const parsed = toolCall.result
                       ? typeof toolCall.result === "string"

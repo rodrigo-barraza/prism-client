@@ -78,7 +78,7 @@ const USER_NAV_SECTIONS = [
         alsoMatches: ["/coding-agent", "/agents"],
       },
       {
-        href: "/scheduled-tasks",
+        href: "/cron-jobs",
         label: "Cron Jobs",
         icon: Clock,
       },

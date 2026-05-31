@@ -2273,7 +2273,8 @@ export default function ChatSessionComponent({
             // Auto-refresh tasks panel when any task tool completes
             if (
               data.status !== "calling" &&
-              (toolData.name || "").startsWith("task_")
+              // TODO(cleanup): Remove "task_" startsWith once historical sessions have aged out
+              ((toolData.name || "").includes("_task") || (toolData.name || "").startsWith("task_"))
             ) {
               setTasksRefreshKey((k) => k + 1);
             }
@@ -2407,7 +2408,8 @@ export default function ChatSessionComponent({
             // Auto-refresh tasks panel when any task tool completes (MCP path)
             if (
               toolData.status !== "calling" &&
-              toolData.name?.startsWith("task_")
+              // TODO(cleanup): Remove "task_" startsWith once historical sessions have aged out
+              (toolData.name?.includes("_task") || toolData.name?.startsWith("task_"))
             ) {
               setTasksRefreshKey((k) => k + 1);
             }
