@@ -36,11 +36,13 @@ export default function RulesPanel({
   onRulesChange,
   agent,
   onActionsChange,
+  readOnly = false,
 }: {
   rules: Rule[];
   onRulesChange: () => void;
   agent?: string;
   onActionsChange?: (actions: ReactNode) => void;
+  readOnly?: boolean;
 }) {
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -138,6 +140,10 @@ export default function RulesPanel({
   }, [rules, onRulesChange]);
 
   useEffect(() => {
+    if (readOnly) {
+      onActionsChange?.(null);
+      return;
+    }
     onActionsChange?.(
       <>
         {rules.length > 0 && (
@@ -154,7 +160,7 @@ export default function RulesPanel({
         </ButtonComponent>
       </>,
     );
-  }, [onActionsChange, rules, handleToggleAll, handleCreate]);
+  }, [onActionsChange, rules, handleToggleAll, handleCreate, readOnly]);
 
   useEffect(() => {
     return () => onActionsChange?.(null);
@@ -294,13 +300,15 @@ export default function RulesPanel({
             <strong>/rule-name</strong> to inject the rule&apos;s content into
             your message.
           </div>
-          <ButtonComponent
-            variant="disabled"
-            icon={Plus}
-            onClick={handleCreate}
-          >
-            Create your first rule
-          </ButtonComponent>
+          {!readOnly && (
+            <ButtonComponent
+              variant="disabled"
+              icon={Plus}
+              onClick={handleCreate}
+            >
+              Create your first rule
+            </ButtonComponent>
+          )}
         </div>
       )}
 
@@ -326,22 +334,24 @@ export default function RulesPanel({
                   </div>
                 )}
               </div>
-              <div className={styles["rule-actions"]}>
-                <button
-                  className={styles["rule-action-button"]}
-                  onClick={() => handleEdit(rule)}
-                  title="Edit rule"
-                >
-                  <Edit3 size={13} />
-                </button>
-                <button
-                  className={`${styles["rule-action-button"]} ${styles["rule-delete-button"]}`}
-                  onClick={() => handleDelete(ruleId)}
-                  title="Delete rule"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
+              {!readOnly && (
+                <div className={styles["rule-actions"]}>
+                  <button
+                    className={styles["rule-action-button"]}
+                    onClick={() => handleEdit(rule)}
+                    title="Edit rule"
+                  >
+                    <Edit3 size={13} />
+                  </button>
+                  <button
+                    className={`${styles["rule-action-button"]} ${styles["rule-delete-button"]}`}
+                    onClick={() => handleDelete(ruleId)}
+                    title="Delete rule"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              )}
             </div>
 
             {rule.content && (

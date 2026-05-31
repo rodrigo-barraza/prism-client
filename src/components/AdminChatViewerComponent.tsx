@@ -19,6 +19,7 @@ import {
   BotMessageSquare,
   GitBranch,
   Activity,
+  ScrollText,
 } from "lucide-react";
 
 import IrisService from "../services/IrisService";
@@ -37,6 +38,8 @@ import MCPServersPanel from "./MCPServersPanelComponent";
 import CoordinatorPanel from "./CoordinatorPanelComponent";
 import WorkersPanel from "./WorkersPanelComponent";
 import SessionRequestsListComponent from "./SessionRequestsListComponent";
+import RulesPanel from "./RulesPanelComponent";
+import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import {
@@ -70,6 +73,7 @@ import type {
   SessionStats,
   TransformedRequestItem,
   Message,
+  Rule,
 } from "../types/types";
 import styles from "../app/admin/chat/page.module.css";
 import chatStyles from "./ChatAreaComponent.module.css";
@@ -172,12 +176,14 @@ export default function AdminChatViewerComponent({
 
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [leftTab, setLeftTab] = useState("settings");
+  const [leftTabBottom, setLeftTabBottom] = useState("tools");
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   // Agent-specific sub-panel state
   const [customTools, setCustomTools] = useState<CustomTool[]>([]);
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [rules, setRules] = useState<Rule[]>([]);
   const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
@@ -218,25 +224,60 @@ export default function AdminChatViewerComponent({
       .catch(() => {});
   }, []);
 
-  // ── Agent-specific data (tools, skills, memories, MCP) ───────
+  const isSelectedAgent = selectedSource === "agent_session";
+  const targetAgentId = isSelectedAgent ? selectedEntry?.agent : (isAgentMode ? activeAgentId : null);
+  const targetProject = isSelectedAgent ? (selectedEntry?.project || selectedEntry?.agent || PROJECT_AGENT) : (isAgentMode ? PROJECT_AGENT : null);
+
+  // ── Agent-specific data (tools, skills, memories, MCP, rules) ───────
   useEffect(() => {
-    if (!isAgentMode) return;
-    PrismService.getCustomTools(PROJECT_AGENT)
+    if (!targetAgentId) {
+      setCustomTools([]);
+      setSkills([]);
+      setMcpServers([]);
+      setBuiltInTools([]);
+      setTotalMemoriesCount(0);
+      setRules([]);
+      return;
+    }
+
+    const project = targetProject || PROJECT_AGENT;
+
+    PrismService.getCustomTools(project)
       .then((tools: CustomTool[]) => setCustomTools(tools))
       .catch(() => {});
-    PrismService.getSkills(PROJECT_AGENT)
+    PrismService.getSkills(project)
       .then((s: Skill[]) => setSkills(s))
       .catch(() => {});
-    PrismService.getMCPServers(PROJECT_AGENT)
+    PrismService.getMCPServers(project)
       .then((s: MCPServer[]) => setMcpServers(s))
       .catch(() => {});
-    PrismService.getBuiltInToolSchemas(activeAgentId)
+    PrismService.getBuiltInToolSchemas(targetAgentId)
       .then((tools: ToolSchema[]) => setBuiltInTools(tools))
       .catch(() => {});
-    PrismService.getAgentMemories(PROJECT_AGENT, 1, undefined)
+    PrismService.getAgentMemories(project, 1, undefined)
       .then((r: { total?: number }) => setTotalMemoriesCount(r.total || 0))
       .catch(() => {});
-  }, [isAgentMode, activeAgentId]);
+    PrismService.getRules(targetAgentId)
+      .then((rulesList: Rule[]) => setRules(rulesList))
+      .catch(() => {});
+  }, [targetAgentId, targetProject]);
+
+  // Align active tab states on mode transitions (agent vs direct chat)
+  useEffect(() => {
+    if (isSelectedAgent) {
+      if (leftTab === "params") {
+        setLeftTab("settings");
+      }
+      if (leftTabBottom === "params") {
+        setLeftTabBottom("tools");
+      }
+    } else {
+      if (leftTab !== "settings" && leftTab !== "info") {
+        setLeftTab("settings");
+      }
+      setLeftTabBottom("params");
+    }
+  }, [isSelectedAgent, leftTab, leftTabBottom]);
 
   // ── Favorites toggle ─────────────────────────────────────────
   const handleToggleFavorite = useCallback(
@@ -744,7 +785,6 @@ export default function AdminChatViewerComponent({
   }, [settingsWithDefaults, selectedEntry, backendSessionStats]);
 
   // Resolve whether selected entry is an agent session
-  const isSelectedAgent = selectedSource === "agent_session";
 
   const hasSystemContextMessage = useMemo(() => {
     return (selectedEntry?.messages || []).some(
@@ -807,8 +847,8 @@ export default function AdminChatViewerComponent({
 
   const allToolCount = builtInTools.length + customTools.length;
 
-  // ── Left panel tab definitions (adaptive) ────────────────────
-  const leftTabs = useMemo(() => {
+  // ── Top panel tab definitions (adaptive) ────────────────────
+  const topTabs = useMemo(() => {
     const tabs: Array<{
       key: string;
       icon: React.ReactNode;
@@ -832,6 +872,36 @@ export default function AdminChatViewerComponent({
       // Agent mode tabs
       tabs.push(
         {
+          key: "workers",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
+          ...badgeProps(workersCount),
+          tooltip: "Workers",
+        },
+        {
+          key: "requests",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
+          ...badgeProps(backendSessionStats?.requestCount || 0),
+          tooltip: "Requests",
+        },
+      );
+    }
+
+    return tabs;
+  }, [isSelectedAgent, workersCount, backendSessionStats]);
+
+  // ── Bottom panel tab definitions (adaptive) ─────────────────
+  const bottomTabs = useMemo(() => {
+    const tabs: Array<{
+      key: string;
+      icon: React.ReactNode;
+      tooltip: string;
+      badge?: number;
+      badgeDisabled?: boolean;
+    }> = [];
+
+    if (isSelectedAgent) {
+      tabs.push(
+        {
           key: "tools",
           icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
           ...badgeProps(allToolCount),
@@ -842,6 +912,12 @@ export default function AdminChatViewerComponent({
           icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>,
           ...badgeProps(skills.filter((s) => s.enabled).length),
           tooltip: "Skills",
+        },
+        {
+          key: "rules",
+          icon: <span className={tabBarStyles.tabEmojiIcon}>📏</span>,
+          ...badgeProps(rules.filter((r) => r.enabled).length),
+          tooltip: "Rules",
         },
         {
           key: "memories",
@@ -860,18 +936,6 @@ export default function AdminChatViewerComponent({
           icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>,
           ...badgeProps(mcpServers.filter((s) => s.connected).length),
           tooltip: "MCP Servers",
-        },
-        {
-          key: "workers",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
-          ...badgeProps(workersCount),
-          tooltip: "Workers",
-        },
-        {
-          key: "requests",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
-          ...badgeProps(backendSessionStats?.requestCount || 0),
-          tooltip: "Requests",
         },
         {
           key: "coordinator",
@@ -893,11 +957,10 @@ export default function AdminChatViewerComponent({
     isSelectedAgent,
     allToolCount,
     skills,
+    rules,
     totalMemoriesCount,
     tasksCount,
     mcpServers,
-    workersCount,
-    backendSessionStats,
   ]);
 
   // ── Build session stats for SettingsPanel ────────────────────
@@ -968,105 +1031,180 @@ export default function AdminChatViewerComponent({
         <ThreePanelLayout
           leftPanel={
             (selectedEntry as Conversation)?.settings || isSelectedAgent ? (
-              <>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  minHeight: 0,
+                  flex: 1,
+                  overflow: "hidden",
+                }}
+              >
                 <TabBarComponent
-                  tabs={leftTabs}
+                  tabs={topTabs}
                   activeTab={leftTab}
                   onChange={setLeftTab}
                 />
                 {leftTab === "settings" && (
-                  <SettingsPanel
-                    config={config}
-                    settings={settingsWithDefaults}
-                    readOnly
-                    hideProviderModel
-                    hideSystemPrompt={isSelectedAgent}
-                    workflows={workflows}
-                    sessionType={isSelectedAgent ? "agent" : "chat"}
-                    sessionStats={sessionStatsForPanel as any}
-                  />
+                  <>
+                    <SidebarTabHeaderComponent icon={Settings} title="Settings" />
+                    <SettingsPanel
+                      config={config}
+                      settings={settingsWithDefaults}
+                      readOnly
+                      hideProviderModel
+                      hideSystemPrompt={isSelectedAgent}
+                      workflows={workflows}
+                      sessionType={isSelectedAgent ? "agent" : "chat"}
+                      sessionStats={sessionStatsForPanel as any}
+                    />
+                  </>
                 )}
                 {leftTab === "info" && (
-                  <ModelInfoPanel
-                    config={config}
-                    settings={settingsWithDefaults}
-                    readOnly
-                  />
+                  <>
+                    <SidebarTabHeaderComponent icon={Info} title="Model Info" />
+                    <ModelInfoPanel
+                      config={config}
+                      settings={settingsWithDefaults}
+                      readOnly
+                    />
+                  </>
                 )}
-                {leftTab === "params" && (
-                  <ParametersPanelComponent
-                    settings={settingsWithDefaults}
-                    config={config}
-                    readOnly
-                  />
-                )}
-                {leftTab === "tools" && isSelectedAgent && (
-                  <CustomToolsPanel
-                    tools={customTools}
-                    onToolsChange={() => {}}
-                    project={PROJECT_AGENT}
-                    builtInTools={builtInTools}
-                    disabledBuiltIns={new Set()}
-                    onToggleBuiltIn={() => {}}
-                    onToggleAllBuiltIn={() => {}}
-                    readOnly
-                  />
-                )}
-                {leftTab === "skills" && isSelectedAgent && (
-                  <SkillsPanel
-                    skills={skills}
-                    onSkillsChange={() => {}}
-                    project={PROJECT_AGENT}
-                    readOnly
-                  />
-                )}
-                {leftTab === "memories" && isSelectedAgent && (
-                  <MemoriesPanel
-                    project={PROJECT_AGENT}
-                    refreshKey={0}
-                    onCountChange={setTotalMemoriesCount}
-                    memoryConfigured
-                  />
-                )}
-                {leftTab === "tasks" && isSelectedAgent && selectedId && (
-                  <TasksPanel
-                    project={PROJECT_AGENT}
-                    refreshKey={0}
-                    agentSessionId={selectedId}
-                    onCountChange={setTasksCount}
-                  />
-                )}
-                {leftTab === "mcp" && isSelectedAgent && (
-                  <MCPServersPanel
-                    servers={mcpServers}
-                    onServersChange={() => {}}
-                    project={PROJECT_AGENT}
-                    readOnly
-                  />
-                )}
-                {leftTab === "workers" && isSelectedAgent && selectedId && (
-                  <WorkersPanel
-                    agentSessionId={selectedId}
-                    refreshKey={0}
-                    onCountChange={setWorkersCount}
-                    workerToolActivity={{}}
-                  />
+                {leftTab === "workers" && isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent icon={BotMessageSquare} title="Workers" count={workersCount} />
+                    <WorkersPanel
+                      agentSessionId={selectedId || ""}
+                      refreshKey={0}
+                      onCountChange={setWorkersCount}
+                      workerToolActivity={{}}
+                    />
+                  </>
                 )}
                 {leftTab === "requests" && isSelectedAgent && selectedId && (
-                  <SessionRequestsListComponent
-                    agentSessionId={selectedId}
-                    refreshKey={0}
-                  />
+                  <>
+                    <SidebarTabHeaderComponent icon={Activity} title="Requests" count={backendSessionStats?.requestCount || 0} />
+                    <SessionRequestsListComponent
+                      agentSessionId={selectedId}
+                      refreshKey={0}
+                    />
+                  </>
                 )}
-                {leftTab === "coordinator" && isSelectedAgent && (
-                  <CoordinatorPanel project={PROJECT_AGENT} />
-                )}
-              </>
+              </div>
             ) : (
               <div className={styles.emptyPanel}>
                 Select a conversation to view settings
               </div>
             )
+          }
+          leftPanelBottom={
+            ((selectedEntry as Conversation)?.settings || isSelectedAgent) ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  minHeight: 0,
+                  flex: 1,
+                  overflow: "hidden",
+                }}
+              >
+                <TabBarComponent
+                  tabs={bottomTabs}
+                  activeTab={leftTabBottom}
+                  onChange={setLeftTabBottom}
+                />
+                {leftTabBottom === "tools" && isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent
+                      icon={Wrench}
+                      title="Tools"
+                      count={`${builtInTools.length + customTools.length}`}
+                    />
+                    <CustomToolsPanel
+                      tools={customTools}
+                      onToolsChange={() => {}}
+                      project={targetProject || PROJECT_AGENT}
+                      builtInTools={builtInTools}
+                      disabledBuiltIns={new Set()}
+                      onToggleBuiltIn={() => {}}
+                      onToggleAllBuiltIn={() => {}}
+                      readOnly
+                    />
+                  </>
+                )}
+                {leftTabBottom === "params" && !isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
+                    <ParametersPanelComponent
+                      settings={settingsWithDefaults}
+                      config={config}
+                      readOnly
+                    />
+                  </>
+                )}
+                {leftTabBottom === "skills" && isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent icon={BookOpen} title="Skills" count={skills.length} />
+                    <SkillsPanel
+                      skills={skills}
+                      onSkillsChange={() => {}}
+                      project={targetProject || PROJECT_AGENT}
+                      readOnly
+                    />
+                  </>
+                )}
+                {leftTabBottom === "rules" && isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent icon={ScrollText} title="Rules" count={rules.length} />
+                    <RulesPanel
+                      rules={rules}
+                      onRulesChange={() => {}}
+                      agent={targetAgentId || undefined}
+                      readOnly
+                    />
+                  </>
+                )}
+                {leftTabBottom === "memories" && isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent icon={Brain} title="Memories" count={totalMemoriesCount} />
+                    <MemoriesPanel
+                      project={targetProject || PROJECT_AGENT}
+                      refreshKey={0}
+                      onCountChange={setTotalMemoriesCount}
+                      memoryConfigured
+                    />
+                  </>
+                )}
+                {leftTabBottom === "tasks" && isSelectedAgent && selectedId && (
+                  <>
+                    <SidebarTabHeaderComponent icon={ListChecks} title="Tasks" count={tasksCount} />
+                    <TasksPanel
+                      project={targetProject || PROJECT_AGENT}
+                      refreshKey={0}
+                      agentSessionId={selectedId}
+                      onCountChange={setTasksCount}
+                    />
+                  </>
+                )}
+                {leftTabBottom === "mcp" && isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent icon={Plug} title="MCP Servers" count={`${mcpServers.filter((server) => server.connected).length} / ${mcpServers.length}`} />
+                    <MCPServersPanel
+                      servers={mcpServers}
+                      onServersChange={() => {}}
+                      project={targetProject || PROJECT_AGENT}
+                      readOnly
+                    />
+                  </>
+                )}
+                {leftTabBottom === "coordinator" && isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent icon={GitBranch} title="Coordinator" />
+                    <CoordinatorPanel project={targetProject || PROJECT_AGENT} />
+                  </>
+                )}
+              </div>
+            ) : null
           }
           rightPanel={
             <HistoryPanel
