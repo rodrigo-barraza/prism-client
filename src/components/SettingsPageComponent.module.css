@@ -1083,3 +1083,20 @@
   transform: translateY(0);
 }
 
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .harnessGrid {
+    grid-template-columns: 1fr;
+    padding: 0 16px 14px;
+  }
+}

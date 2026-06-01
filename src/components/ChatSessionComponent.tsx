@@ -11,7 +11,6 @@ import {
   Settings,
   Wrench,
   Brain,
-  Plug,
   GitBranch,
   Repeat,
   ListChecks,
@@ -43,7 +42,6 @@ import {
   CustomTool,
   Skill,
   Rule,
-  MCPServer,
   ToolCallEvent,
   CustomAgent,
   PrismSettings,
@@ -69,7 +67,6 @@ import SkillsPanel from "./SkillsPanelComponent";
 import RulesPanel from "./RulesPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
-import MCPServersPanel from "./MCPServersPanelComponent";
 
 import WorkersPanel from "./WorkersPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
@@ -436,7 +433,6 @@ export default function ChatSessionComponent({
   // At send time we extract names via extractSlashCommandNames().
   const [slashCommandOpen, setSlashCommandOpen] = useState(false);
   const [slashCommandQuery, setSlashCommandQuery] = useState("");
-  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
   const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
@@ -487,7 +483,6 @@ export default function ChatSessionComponent({
   const [workersCount, setWorkersCount] = useState(0);
   const [workersHeaderActions, setWorkersHeaderActions] =
     useState<ReactNode>(null);
-  const [mcpHeaderActions, setMcpHeaderActions] = useState<ReactNode>(null);
   const [skillsHeaderActions, setSkillsHeaderActions] =
     useState<ReactNode>(null);
   const [rulesHeaderActions, setRulesHeaderActions] = useState<ReactNode>(null);
@@ -518,7 +513,7 @@ export default function ChatSessionComponent({
     }
   }, [leftTab]);
 
-  const BOTTOM_PANEL_TABS = new Set(["tools", "params", "skills", "rules", "memories", "tasks", "mcp"]);
+  const BOTTOM_PANEL_TABS = new Set(["tools", "params", "skills", "rules", "memories", "tasks"]);
 
   useEffect(() => {
     if (initialTabKey) {
@@ -1161,19 +1156,7 @@ export default function ChatSessionComponent({
     loadRules();
   }, [loadRules]);
 
-  // Load MCP servers
-  const loadMCPServers = useCallback(async () => {
-    try {
-      const mcpServers = await PrismService.getMCPServers(agentProject);
-      setMcpServers(mcpServers);
-    } catch (error: unknown) {
-      console.error("Failed to load MCP servers:", error);
-    }
-  }, [agentProject]);
 
-  useEffect(() => {
-    loadMCPServers();
-  }, [loadMCPServers]);
 
   // Fetch built-in tools for the active agent (filtered server-side by persona)
   // NONE = no agent filter → all tools exposed, but workspace/file tools are
@@ -4785,15 +4768,6 @@ export default function ChatSessionComponent({
                   ...badgeProps(tasksCount, "tasks"),
                   tooltip: "Tasks",
                 },
-                {
-                  key: "mcp",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>,
-                  ...badgeProps(
-                    mcpServers.filter((s) => s.connected).length,
-                    "mcp",
-                  ),
-                  tooltip: "MCP Servers",
-                },
               ]
             : []),
 
@@ -4898,17 +4872,6 @@ export default function ChatSessionComponent({
         </>
       )}
 
-      {leftTabBottom === "mcp" && (
-        <>
-          <SidebarTabHeaderComponent icon={Plug} title="MCP Servers" count={`${mcpServers.filter((server) => server.connected).length} / ${mcpServers.length}`} actions={mcpHeaderActions} />
-          <MCPServersPanel
-            servers={mcpServers}
-            onServersChange={loadMCPServers}
-            project={agentProject}
-            onActionsChange={setMcpHeaderActions}
-          />
-        </>
-      )}
 
 
     </div>

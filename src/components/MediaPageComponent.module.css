@@ -222,7 +222,19 @@
   overflow: hidden;
 }
 
-@media (max-width: 767px) {
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
   .mediaGrid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;

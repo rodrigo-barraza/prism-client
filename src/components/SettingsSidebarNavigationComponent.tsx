@@ -6,6 +6,7 @@ import {
   Bot,
   Brain,
   Network,
+  Plug,
   Palette,
   Volume2,
   Lock,
@@ -21,6 +22,7 @@ interface SettingsSection {
 const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: "memory-models", label: "Memory Models", icon: Brain },
   { id: "agent-defaults", label: "Agent Defaults", icon: Network },
+  { id: "mcp-servers", label: "MCP Servers", icon: Plug },
   { id: "creative-tools", label: "Creative Tools", icon: Palette },
   { id: "audio-tools", label: "Audio Tools", icon: Volume2 },
   { id: "workspaces", label: "Workspaces", icon: FolderOpen },

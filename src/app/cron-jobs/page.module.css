@@ -707,7 +707,8 @@
 
 @media (max-width: 768px) {
   .content {
-    padding: 20px;
+    padding: 20px 16px;
+    gap: 16px;
   }
 
   .header {
@@ -733,6 +734,39 @@
   .formRow {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+
+  .detailPanel {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 48px);
+  }
+
+  .detailHeader {
+    padding: 16px 16px 12px;
+  }
+
+  .detailBody {
+    padding: 16px;
+  }
+
+  .detailMetadataGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .detailActionsRow {
+    flex-direction: column;
+  }
+
+  .headerActions {
+    flex-wrap: wrap;
+  }
+
+  .weekdayButtonsGrid {
+    flex-wrap: wrap;
+  }
+
+  .monthsGrid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 

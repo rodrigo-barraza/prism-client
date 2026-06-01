@@ -11,6 +11,7 @@ import {
   Lock,
   X,
   Plus,
+  Plug,
   ArrowRight,
   CheckCircle2,
   XCircle,
@@ -38,6 +39,7 @@ import { useWorkspace } from "./WorkspaceContextComponent";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import CustomAgentsPanel from "./CustomAgentsPanelComponent";
 import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
+import MCPServersPanel from "./MCPServersPanelComponent";
 import {
   ButtonComponent,
   CardComponent,
@@ -47,7 +49,7 @@ import {
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./SettingsPageComponent.module.css";
 
-import { PrismSettings, AgenticHarness } from "../types/types";
+import type { PrismSettings, AgenticHarness, MCPServer } from "../types/types";
 
 interface LocalWorkspace {
   id?: string;
@@ -91,6 +93,9 @@ export default function SettingsPageComponent() {
   const [harnesses, setHarnesses] = useState<any[]>([]);
   const [expandedGuide, setExpandedGuide] = useState<any>(null); // 'download' | 'docker' | 'local' | null
   const [copiedBlock, setCopiedBlock] = useState<any>(null);
+
+  // -- MCP Servers state -----------------------------------------------
+  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
 
   // -- Workspace state ------------------------------------------------
   const { refreshWorkspaces } = useWorkspace();
@@ -144,6 +149,11 @@ export default function SettingsPageComponent() {
 
     // Fetch available harnesses
     PrismService.getHarnesses().then(setHarnesses).catch(console.error);
+
+    // Fetch MCP servers
+    PrismService.getMCPServers()
+      .then((servers: MCPServer[]) => setMcpServers(servers))
+      .catch(console.error);
 
     // Fetch full workspace config (workspaces + agents)
     WorkspaceService.listFull()
@@ -474,6 +484,16 @@ export default function SettingsPageComponent() {
     }
   }, []);
 
+  // -- MCP servers refresh --------------------------------------------
+  const loadMCPServers = useCallback(async () => {
+    try {
+      const servers = await PrismService.getMCPServers();
+      setMcpServers(servers);
+    } catch (error: unknown) {
+      console.error("Failed to load MCP servers:", error);
+    }
+  }, []);
+
   // -- Derived workspace data -----------------------------------------
   const localStaticRoots = wsWorkspaces.filter(
     (w: LocalWorkspace) => w.isPinned && !w.isAgentServed,
@@ -727,6 +747,20 @@ export default function SettingsPageComponent() {
             Reset to Defaults
           </ButtonComponent>
         </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- MCP Servers Section ---------------------------------------- */}
+      <CardComponent className={styles.section} data-settings-section="mcp-servers">
+        <CardComponent.Header
+          icon={Plug}
+          title="MCP Servers"
+          subtitle="Connect external tool providers via the Model Context Protocol"
+        />
+
+        <MCPServersPanel
+          servers={mcpServers}
+          onServersChange={loadMCPServers}
+        />
       </CardComponent>
 
       {/* -- Creative Tools Section ------------------------------------ */}

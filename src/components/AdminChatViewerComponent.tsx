@@ -15,7 +15,6 @@ import {
   BookOpen,
   Brain,
   ListChecks,
-  Plug,
   BotMessageSquare,
   GitBranch,
   Activity,
@@ -34,7 +33,6 @@ import CustomToolsPanel from "./CustomToolsPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
-import MCPServersPanel from "./MCPServersPanelComponent";
 
 import WorkersPanel from "./WorkersPanelComponent";
 import SessionRequestsListComponent from "./SessionRequestsListComponent";
@@ -68,7 +66,6 @@ import type {
   AgentPersona,
   CustomTool,
   Skill,
-  MCPServer,
   ToolSchema,
   SessionStats,
   TransformedRequestItem,
@@ -184,7 +181,6 @@ export default function AdminChatViewerComponent({
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [rules, setRules] = useState<Rule[]>([]);
-  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [workersCount, setWorkersCount] = useState(0);
   const [tasksCount, setTasksCount] = useState(0);
@@ -233,7 +229,6 @@ export default function AdminChatViewerComponent({
     if (!targetAgentId) {
       setCustomTools([]);
       setSkills([]);
-      setMcpServers([]);
       setBuiltInTools([]);
       setTotalMemoriesCount(0);
       setRules([]);
@@ -247,9 +242,6 @@ export default function AdminChatViewerComponent({
       .catch(() => {});
     PrismService.getSkills(project)
       .then((s: Skill[]) => setSkills(s))
-      .catch(() => {});
-    PrismService.getMCPServers(project)
-      .then((s: MCPServer[]) => setMcpServers(s))
       .catch(() => {});
     PrismService.getBuiltInToolSchemas(targetAgentId)
       .then((tools: ToolSchema[]) => setBuiltInTools(tools))
@@ -931,12 +923,6 @@ export default function AdminChatViewerComponent({
           ...badgeProps(tasksCount),
           tooltip: "Tasks",
         },
-        {
-          key: "mcp",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>🔌</span>,
-          ...badgeProps(mcpServers.filter((s) => s.connected).length),
-          tooltip: "MCP Servers",
-        },
 
       );
     } else {
@@ -956,7 +942,6 @@ export default function AdminChatViewerComponent({
     rules,
     totalMemoriesCount,
     tasksCount,
-    mcpServers,
   ]);
 
   // ── Build session stats for SettingsPanel ────────────────────
@@ -1179,17 +1164,6 @@ export default function AdminChatViewerComponent({
                       refreshKey={0}
                       agentSessionId={selectedId}
                       onCountChange={setTasksCount}
-                    />
-                  </>
-                )}
-                {leftTabBottom === "mcp" && isSelectedAgent && (
-                  <>
-                    <SidebarTabHeaderComponent icon={Plug} title="MCP Servers" count={`${mcpServers.filter((server) => server.connected).length} / ${mcpServers.length}`} />
-                    <MCPServersPanel
-                      servers={mcpServers}
-                      onServersChange={() => {}}
-                      project={targetProject || PROJECT_AGENT}
-                      readOnly
                     />
                   </>
                 )}
