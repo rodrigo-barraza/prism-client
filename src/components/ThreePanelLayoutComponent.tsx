@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSwipeToDismiss } from "../hooks/useSwipeToDismiss";
 import {
   PanelLeftClose,
   PanelLeft,
@@ -184,18 +185,36 @@ export default function ThreePanelLayout({
     [isMobile],
   );
 
+  /* -- Mobile: close individual sidebars -- */
+  const closeLeftSidebar = useCallback(() => {
+    setShowLeft(false);
+    localStorage.setItem(LS_PANEL_LEFT, "false");
+  }, []);
+
+  const closeRightSidebar = useCallback(() => {
+    setShowRight(false);
+    localStorage.setItem(LS_PANEL_RIGHT, "false");
+  }, []);
+
   /* -- Mobile: dismiss all open sidebars -- */
   const dismissSidebars = useCallback(() => {
     if (!isMobile) return;
-    if (showLeft) {
-      setShowLeft(false);
-      localStorage.setItem(LS_PANEL_LEFT, "false");
-    }
-    if (showRight) {
-      setShowRight(false);
-      localStorage.setItem(LS_PANEL_RIGHT, "false");
-    }
-  }, [isMobile, showLeft, showRight]);
+    if (showLeft) closeLeftSidebar();
+    if (showRight) closeRightSidebar();
+  }, [isMobile, showLeft, showRight, closeLeftSidebar, closeRightSidebar]);
+
+  /* -- Mobile: swipe-to-dismiss gestures -- */
+  const leftSwipeReference = useSwipeToDismiss({
+    direction: "left",
+    onDismiss: closeLeftSidebar,
+    isEnabled: isMobile && showLeft,
+  });
+
+  const rightSwipeReference = useSwipeToDismiss({
+    direction: "right",
+    onDismiss: closeRightSidebar,
+    isEnabled: isMobile && showRight,
+  });
 
   /* Backdrop dismiss — tap main area to close any open sidebar */
   const handleMainClick = dismissSidebars;
@@ -325,7 +344,10 @@ export default function ThreePanelLayout({
             className={`${styles["left-sidebar-panel"]} ${!showLeft ? styles["is-sidebar-hidden"] : ""} ${hasSplitPanels ? styles["has-split-panels"] : ""}`}
             style={transitionStyle}
             onClick={handleSidebarClick(toggleLeft)}
-            ref={splitContainerRef}
+            ref={(node) => {
+              (splitContainerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+              (leftSwipeReference as React.MutableRefObject<HTMLElement | null>).current = node;
+            }}
           >
             {hasSplitPanels ? (
               <>
@@ -375,6 +397,7 @@ export default function ThreePanelLayout({
               className={`${styles["right-sidebar-panel"]} ${!showRight ? styles["is-sidebar-hidden"] : ""}`}
               style={transitionStyle}
               onClick={handleSidebarClick(toggleRight)}
+              ref={rightSwipeReference}
             >
               {rightPanel}
             </aside>

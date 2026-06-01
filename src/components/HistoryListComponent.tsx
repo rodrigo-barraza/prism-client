@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Star } from "lucide-react";
+import { Star, DollarSign } from "lucide-react";
 import ProviderLogo, {
   PROVIDER_LABELS,
   resolveProviderLabel,
@@ -42,6 +42,16 @@ interface FilterItem {
   color?: string;
 }
 
+const COST_TIERS = [
+  { key: "free", title: "Free", min: 0, max: 0 },
+  { key: "under-0.01", title: "Under $0.01", min: 0.000001, max: 0.01 },
+  { key: "under-0.10", title: "Under $0.10", min: 0.01, max: 0.1 },
+  { key: "under-1.00", title: "Under $1.00", min: 0.1, max: 1 },
+  { key: "over-1.00", title: "Over $1.00", min: 1, max: Infinity },
+];
+
+const COST_FILTER_COLOR = "#22c55e";
+
 interface HistoryListProps {
   items?: HistoryListItem[];
   activeId?: string | null;
@@ -55,6 +65,7 @@ interface HistoryListProps {
   searchPlaceholder?: string;
   showProviderFilters?: boolean;
   showModalityFilters?: boolean;
+  showCostFilters?: boolean;
   admin?: boolean;
   newIds?: Set<string>;
   favorites?: string[];
@@ -103,6 +114,7 @@ export default function HistoryList({
   searchPlaceholder = "Search...",
   showProviderFilters = true,
   showModalityFilters = true,
+  showCostFilters = true,
   admin = false,
   newIds,
   favorites = [],
@@ -127,6 +139,7 @@ export default function HistoryList({
   const [activeProviders, setActiveProviders] = useState<Set<string>>(
     () => new Set(initialProviders || []),
   );
+  const [activeCostTiers, setActiveCostTiers] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [localDateRange, setLocalDateRange] = useState({ from: "", to: "" });
 
@@ -175,6 +188,24 @@ export default function HistoryList({
     });
   }, [items]);
 
+  // Discover cost tiers present in items
+  const availableCostTiers = useMemo(() => {
+    const presentTierKeys = new Set<string>();
+    for (const item of items || []) {
+      const cost = item.totalCost ?? 0;
+      for (const tier of COST_TIERS) {
+        if (tier.key === "free" && cost === 0) {
+          presentTierKeys.add(tier.key);
+        } else if (tier.key !== "free" && cost > tier.min && cost <= tier.max) {
+          presentTierKeys.add(tier.key);
+        } else if (tier.key === "over-1.00" && cost > tier.min) {
+          presentTierKeys.add(tier.key);
+        }
+      }
+    }
+    return COST_TIERS.filter((tier) => presentTierKeys.has(tier.key));
+  }, [items]);
+
   const filtered = useMemo(() => {
     return (items || []).filter((item: HistoryListItem) => {
       if (showFavoritesOnly && onToggleFavorite) {
@@ -207,6 +238,17 @@ export default function HistoryList({
         );
         if (!matches) return false;
       }
+      if (activeCostTiers.size > 0) {
+        const cost = item.totalCost ?? 0;
+        const matchesCostTier = [...activeCostTiers].some((tierKey) => {
+          const tier = COST_TIERS.find((t) => t.key === tierKey);
+          if (!tier) return false;
+          if (tier.key === "free") return cost === 0;
+          if (tier.key === "over-1.00") return cost > tier.min;
+          return cost > tier.min && cost <= tier.max;
+        });
+        if (!matchesCostTier) return false;
+      }
       if (dateRange.from || dateRange.to) {
         const itemDate = new Date(item.updatedAt || item.createdAt || "");
         if (dateRange.from && itemDate < new Date(dateRange.from)) return false;
@@ -221,6 +263,7 @@ export default function HistoryList({
     activeModalities,
     activeTools,
     activeProviders,
+    activeCostTiers,
     showFavoritesOnly,
     favorites,
     onToggleFavorite,
@@ -333,6 +376,27 @@ export default function HistoryList({
                     activeKeys: activeProviders,
                     onToggle: (key: string) => {
                       setActiveProviders((prev) => {
+                        const next = new Set(prev);
+                        next.has(key) ? next.delete(key) : next.add(key);
+                        return next;
+                      });
+                    },
+                  },
+                ]
+              : []),
+            ...(showCostFilters && availableCostTiers.length >= 2
+              ? [
+                  {
+                    label: "Cost",
+                    items: availableCostTiers.map((tier) => ({
+                      key: tier.key,
+                      icon: DollarSign,
+                      title: tier.title,
+                      color: COST_FILTER_COLOR,
+                    })),
+                    activeKeys: activeCostTiers,
+                    onToggle: (key: string) => {
+                      setActiveCostTiers((prev) => {
                         const next = new Set(prev);
                         next.has(key) ? next.delete(key) : next.add(key);
                         return next;

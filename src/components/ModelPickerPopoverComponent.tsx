@@ -495,11 +495,7 @@ export default function ModelPickerPopoverComponent({
     if (!settings?.model) {
       return placeholderLabel || "Select Model";
     }
-    const rawLabel = currentModel?.label || settings.model;
-    const provider = currentModel?.provider || settings.provider;
-    if (!provider || LOCAL_PROVIDERS.has(provider)) return rawLabel;
-    const providerName = resolveProviderLabel(provider);
-    return `${providerName}'s ${rawLabel}`;
+    return currentModel?.label || settings.model;
   })();
 
   // Build modalities object for the currently selected model
