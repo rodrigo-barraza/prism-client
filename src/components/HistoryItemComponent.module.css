@@ -133,6 +133,19 @@
   max-width: none;
 }
 
+.modelBadgeAndCostContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+}
+
+.costBadgeRightAligned {
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
 /* ── Row 4: modalities (left) · tools (right) ── */
 .bottomRow {
   display: flex;

@@ -54,6 +54,7 @@ interface HistoryItemProps {
   dataPanelClose?: boolean;
   onOpenInNewTab?: (item: HistoryItem) => void;
   isGenerating?: boolean;
+  isCondensed?: boolean;
   children?: React.ReactNode;
 }
 
@@ -96,6 +97,7 @@ export default function HistoryItemComponent({
   dataPanelClose = false,
   onOpenInNewTab,
   isGenerating = false,
+  isCondensed = false,
   children,
 }: HistoryItemProps) {
   const itemDate = item.updatedAt || item.createdAt;
@@ -242,42 +244,55 @@ export default function HistoryItemComponent({
           {isNew && <span className={styles.newBadge}>NEW</span>}
         </div>
 
-        {/* Row 3: model badge */}
-        {hasModel && (
-          <BadgeComponent
-            type="model"
-            models={
-              (item.modelNames?.length ?? 0) > 0
-                ? (item.modelNames!.filter(Boolean) as string[])
-                : ([item.modelName].filter(Boolean) as string[])
-            }
-            providers={item.providers}
-            className={styles.modelBadge}
-            noHover
-          />
+        {/* Row 3: model badge & cost badge (when condensed) */}
+        {(hasModel || (isCondensed && item.totalCost !== undefined && item.totalCost > 0)) && (
+          <div className={styles.modelBadgeAndCostContainer}>
+            {hasModel && (
+              <BadgeComponent
+                type="model"
+                models={
+                  (item.modelNames?.length ?? 0) > 0
+                    ? (item.modelNames!.filter(Boolean) as string[])
+                    : ([item.modelName].filter(Boolean) as string[])
+                }
+                providers={item.providers}
+                className={styles.modelBadge}
+                noHover
+              />
+            )}
+            {isCondensed && item.totalCost !== undefined && item.totalCost > 0 && (
+              <BadgeComponent
+                type="cost"
+                cost={item.totalCost ?? 0}
+                showIcon={false}
+                className={styles.costBadgeRightAligned}
+              />
+            )}
+          </div>
         )}
 
         {/* Row 4: tool badge row */}
-        {hasActiveTools && (
+        {!isCondensed && hasActiveTools && (
           <ModelToolsRow tools={modalities} variant="condensed" />
         )}
 
         {/* Row 5: very bottom row - modalities (left) & cost badge (right) */}
-        {(hasInputOutputModalities ||
-          (item.totalCost !== undefined && item.totalCost > 0)) && (
-          <div className={styles.bottomRow}>
-            <div className={styles.bottomLeft}>
-              {hasInputOutputModalities && (
-                <ModalityIconComponent modalities={modalities} />
-              )}
+        {!isCondensed &&
+          (hasInputOutputModalities ||
+            (item.totalCost !== undefined && item.totalCost > 0)) && (
+            <div className={styles.bottomRow}>
+              <div className={styles.bottomLeft}>
+                {hasInputOutputModalities && (
+                  <ModalityIconComponent modalities={modalities} />
+                )}
+              </div>
+              <BadgeComponent
+                type="cost"
+                cost={item.totalCost ?? 0}
+                showIcon={false}
+              />
             </div>
-            <BadgeComponent
-              type="cost"
-              cost={item.totalCost ?? 0}
-              showIcon={false}
-            />
-          </div>
-        )}
+          )}
 
         {children}
       </div>

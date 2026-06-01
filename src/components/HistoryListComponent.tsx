@@ -381,6 +381,7 @@ export default function HistoryList({
                 : undefined
             }
             isGenerating={generatingSessionIds?.has?.(item.id)}
+            isCondensed={true}
           />
         ))}
         {filtered.length === 0 && !loadingMore && (
