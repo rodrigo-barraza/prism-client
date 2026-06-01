@@ -63,15 +63,15 @@
 /* ── Active state — rainbow hue-rotate ─────────────────── */
 
 .isActiveState {
-  border-color: color-mix(in srgb, hsl(0, 90%, 65%) 50%, transparent);
-  background: color-mix(in srgb, hsl(0, 90%, 65%) 10%, transparent);
-  color: hsl(0, 90%, 65%);
+  border-color: color-mix(in srgb, oklch(66.8% 0.1972 24.2) 50%, transparent);
+  background: color-mix(in srgb, oklch(66.8% 0.1972 24.2) 10%, transparent);
+  color: oklch(66.8% 0.1972 24.2);
   animation: toggleRainbowBorder 4s linear infinite;
   will-change: filter;
 
   & svg,
   & span {
-    color: hsl(0, 90%, 65%);
+    color: oklch(66.8% 0.1972 24.2);
     opacity: 1;
     filter: hue-rotate(0deg);
     animation: toggleRainbow 4s linear infinite;
@@ -79,8 +79,8 @@
   }
 
   &:hover {
-    border-color: color-mix(in srgb, hsl(0, 90%, 65%) 70%, transparent);
-    background: color-mix(in srgb, hsl(0, 90%, 65%) 15%, transparent);
+    border-color: color-mix(in srgb, oklch(66.8% 0.1972 24.2) 70%, transparent);
+    background: color-mix(in srgb, oklch(66.8% 0.1972 24.2) 15%, transparent);
   }
 }
 

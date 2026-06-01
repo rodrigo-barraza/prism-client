@@ -9,7 +9,7 @@
   height: 44px;
   z-index: 1;
   pointer-events: none;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 1px 4px oklch(0.0% 0.0 0.0 / 0.45));
   will-change: transform, filter;
 }
 

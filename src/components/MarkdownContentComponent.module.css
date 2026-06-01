@@ -49,7 +49,7 @@
   a {
     color: var(--accent-primary);
     text-decoration: underline;
-    text-decoration-color: rgba(138, 120, 255, 0.3);
+    text-decoration-color: oklch(65.5% 0.1932 285.8 / 0.3);
     transition: text-decoration-color 0.2s;
 
     &:hover {
@@ -123,8 +123,8 @@
   width: 100%;
   max-width: 480px;
   aspect-ratio: 1 / 1;
-  background: #ffffff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background: oklch(100.0% 0.0001 263.3);
+  box-shadow: 0 4px 20px oklch(0.0% 0.0 0.0 / 0.15);
 }
 
 .turtleEmbedFrame {

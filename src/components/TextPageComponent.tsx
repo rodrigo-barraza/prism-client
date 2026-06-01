@@ -237,7 +237,7 @@ export default function TextPageComponent({
                     <div key={`${t.convId}-${i}`} className={styles.textCard}>
                       <div className={styles.textHeader}>
                         <button
-                          className={`${styles.favButton} ${isFav ? styles.favBtnActive : ""}`}
+                          className={`${styles.favoriteButton} ${isFav ? styles.favoriteButtonActive : ""}`}
                           onClick={() => toggleFavorite(textKey)}
                           title={
                             isFav ? "Remove from favorites" : "Add to favorites"
@@ -260,7 +260,7 @@ export default function TextPageComponent({
                         </span>
                         <Link
                           href={`${convBasePath}/${t.convId}`}
-                          className={styles.convLink}
+                          className={styles.conversationLink}
                           title={t.convTitle}
                         >
                           <ExternalLink size={10} />
@@ -408,7 +408,7 @@ export default function TextPageComponent({
                   <div key={`${t.convId}-${i}`} className={styles.textCard}>
                     <div className={styles.textHeader}>
                       <button
-                        className={`${styles.favButton} ${isFav ? styles.favBtnActive : ""}`}
+                        className={`${styles.favoriteButton} ${isFav ? styles.favoriteButtonActive : ""}`}
                         onClick={() => toggleFavorite(textKey)}
                         title={
                           isFav ? "Remove from favorites" : "Add to favorites"
@@ -431,7 +431,7 @@ export default function TextPageComponent({
                       </span>
                       <Link
                         href={`${convBasePath}/${t.convId}`}
-                        className={styles.convLink}
+                        className={styles.conversationLink}
                         title={t.convTitle}
                       >
                         <ExternalLink size={10} />

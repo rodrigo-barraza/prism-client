@@ -264,12 +264,12 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               <Info size={12} />
               Identity
             </div>
-            <div className={styles.kvGrid}>
-              <span className={styles.kvLabel}>API Name</span>
-              <span className={styles.kvValueMono}>{modelDetail.key}</span>
+            <div className={styles.keyValueGrid}>
+              <span className={styles.keyValueLabel}>API Name</span>
+              <span className={styles.keyValueContentMono}>{modelDetail.key}</span>
 
-              <span className={styles.kvLabel}>Provider</span>
-              <span className={styles.kvValue}>
+              <span className={styles.keyValueLabel}>Provider</span>
+              <span className={styles.keyValueContent}>
                 <BadgeComponent
                   type="providers"
                   providers={[modelDetail.provider]}
@@ -278,15 +278,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               {modelDetail.year && (
                 <>
-                  <span className={styles.kvLabel}>Release Year</span>
-                  <span className={styles.kvValue}>{modelDetail.year}</span>
+                  <span className={styles.keyValueLabel}>Release Year</span>
+                  <span className={styles.keyValueContent}>{modelDetail.year}</span>
                 </>
               )}
 
               {modelDetail.publisher && (
                 <>
-                  <span className={styles.kvLabel}>Publisher</span>
-                  <span className={styles.kvValue}>
+                  <span className={styles.keyValueLabel}>Publisher</span>
+                  <span className={styles.keyValueContent}>
                     {modelDetail.publisher}
                   </span>
                 </>
@@ -294,8 +294,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               {modelDetail.architecture && (
                 <>
-                  <span className={styles.kvLabel}>Architecture</span>
-                  <span className={styles.kvValue}>
+                  <span className={styles.keyValueLabel}>Architecture</span>
+                  <span className={styles.keyValueContent}>
                     {modelDetail.architecture}
                   </span>
                 </>
@@ -303,8 +303,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               {modelDetail.provider === "lm-studio" && (
                 <>
-                  <span className={styles.kvLabel}>Status</span>
-                  <span className={styles.kvValue}>
+                  <span className={styles.keyValueLabel}>Status</span>
+                  <span className={styles.keyValueContent}>
                     <span
                       className={`${styles.statusBadge} ${modelDetail.isLoaded ? styles.loaded : styles.available}`}
                     >
@@ -329,11 +329,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   <Cpu size={12} />
                   Specifications
                 </div>
-                <div className={styles.kvGrid}>
+                <div className={styles.keyValueGrid}>
                   {modelDetail.contextLength && (
                     <>
-                      <span className={styles.kvLabel}>Context Window</span>
-                      <span className={styles.kvValue}>
+                      <span className={styles.keyValueLabel}>Context Window</span>
+                      <span className={styles.keyValueContent}>
                         <div className={styles.contextBar}>
                           <div className={styles.contextBarTrack}>
                             <div
@@ -351,8 +351,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.maxOutputTokens && (
                     <>
-                      <span className={styles.kvLabel}>Max Output</span>
-                      <span className={styles.kvValueMono}>
+                      <span className={styles.keyValueLabel}>Max Output</span>
+                      <span className={styles.keyValueContentMono}>
                         {formatContextTokens(modelDetail.maxOutputTokens)}
                       </span>
                     </>
@@ -360,8 +360,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.params && (
                     <>
-                      <span className={styles.kvLabel}>Parameters</span>
-                      <span className={styles.kvValue}>
+                      <span className={styles.keyValueLabel}>Parameters</span>
+                      <span className={styles.keyValueContent}>
                         {modelDetail.params}
                       </span>
                     </>
@@ -369,15 +369,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.size && (
                     <>
-                      <span className={styles.kvLabel}>Size on Disk</span>
-                      <span className={styles.kvValue}>{modelDetail.size}</span>
+                      <span className={styles.keyValueLabel}>Size on Disk</span>
+                      <span className={styles.keyValueContent}>{modelDetail.size}</span>
                     </>
                   )}
 
                   {modelDetail.quantization && (
                     <>
-                      <span className={styles.kvLabel}>Quantization</span>
-                      <span className={styles.kvValueMono}>
+                      <span className={styles.keyValueLabel}>Quantization</span>
+                      <span className={styles.keyValueContentMono}>
                         {modelDetail.quantization}
                       </span>
                     </>
@@ -385,8 +385,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.bitsPerWeight != null && (
                     <>
-                      <span className={styles.kvLabel}>Bits per Weight</span>
-                      <span className={styles.kvValueMono}>
+                      <span className={styles.keyValueLabel}>Bits per Weight</span>
+                      <span className={styles.keyValueContentMono}>
                         {modelDetail.bitsPerWeight}
                       </span>
                     </>
@@ -394,8 +394,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.defaultTemperature != null && (
                     <>
-                      <span className={styles.kvLabel}>Default Temp</span>
-                      <span className={styles.kvValueMono}>
+                      <span className={styles.keyValueLabel}>Default Temp</span>
+                      <span className={styles.keyValueContentMono}>
                         {modelDetail.defaultTemperature}
                       </span>
                     </>
@@ -521,9 +521,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 {/* Thinking levels */}
                 {modelDetail.thinkingLevels &&
                   modelDetail.thinkingLevels.length > 0 && (
-                    <div className={styles.kvGrid} style={{ marginTop: 10 }}>
-                      <span className={styles.kvLabel}>Thinking Levels</span>
-                      <span className={styles.kvValue}>
+                    <div className={styles.keyValueGrid} style={{ marginTop: 10 }}>
+                      <span className={styles.keyValueLabel}>Thinking Levels</span>
+                      <span className={styles.keyValueContent}>
                         {modelDetail.thinkingLevels.join(", ")}
                       </span>
                     </div>
@@ -685,11 +685,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               )}
 
               {/* -- Detail Rows ----------------------- */}
-              <div className={styles.kvGrid} style={{ marginTop: 12 }}>
+              <div className={styles.keyValueGrid} style={{ marginTop: 12 }}>
                 {modelDetail.totalInputTokens > 0 && (
                   <>
-                    <span className={styles.kvLabel}>Input Tokens</span>
-                    <span className={styles.kvValueMono}>
+                    <span className={styles.keyValueLabel}>Input Tokens</span>
+                    <span className={styles.keyValueContentMono}>
                       {formatTokenCount(modelDetail.totalInputTokens)}
                     </span>
                   </>
@@ -697,8 +697,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                 {modelDetail.totalOutputTokens > 0 && (
                   <>
-                    <span className={styles.kvLabel}>Output Tokens</span>
-                    <span className={styles.kvValueMono}>
+                    <span className={styles.keyValueLabel}>Output Tokens</span>
+                    <span className={styles.keyValueContentMono}>
                       {formatTokenCount(modelDetail.totalOutputTokens)}
                     </span>
                   </>
@@ -706,8 +706,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                 {modelDetail.avgLatency > 0 && (
                   <>
-                    <span className={styles.kvLabel}>Avg Latency</span>
-                    <span className={styles.kvValueMono}>
+                    <span className={styles.keyValueLabel}>Avg Latency</span>
+                    <span className={styles.keyValueContentMono}>
                       {modelDetail.avgLatency >= 1000
                         ? `${(modelDetail.avgLatency / 1000).toFixed(1)}s`
                         : `${Math.round(modelDetail.avgLatency)}ms`}
@@ -717,14 +717,14 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                 {modelDetail.firstUsed && (
                   <>
-                    <span className={styles.kvLabel}>
+                    <span className={styles.keyValueLabel}>
                       <Calendar
                         size={10}
                         style={{ marginRight: 4, opacity: 0.5 }}
                       />
                       First Used
                     </span>
-                    <span className={styles.kvValueMono}>
+                    <span className={styles.keyValueContentMono}>
                       {new Date(modelDetail.firstUsed).toLocaleDateString(
                         undefined,
                         {
@@ -739,14 +739,14 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                 {modelDetail.lastUsed && (
                   <>
-                    <span className={styles.kvLabel}>
+                    <span className={styles.keyValueLabel}>
                       <Clock
                         size={10}
                         style={{ marginRight: 4, opacity: 0.5 }}
                       />
                       Last Used
                     </span>
-                    <span className={styles.kvValueMono}>
+                    <span className={styles.keyValueContentMono}>
                       {new Date(modelDetail.lastUsed).toLocaleDateString(
                         undefined,
                         {

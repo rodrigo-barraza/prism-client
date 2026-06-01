@@ -10,75 +10,75 @@
 
 /* JavaScript family — warm yellow */
 .iconJs {
-  color: hsl(50, 85%, 55%);
+  color: oklch(85.1% 0.1662 96.9);
   opacity: 0.85;
 }
 .iconJsx {
-  color: hsl(195, 90%, 55%);
+  color: oklch(75.2% 0.1393 227.5);
   opacity: 0.85;
 }
 /* TypeScript family — blue */
 .iconTs {
-  color: hsl(211, 80%, 55%);
+  color: oklch(62.6% 0.1655 253.3);
   opacity: 0.85;
 }
 .iconTsx {
-  color: hsl(211, 80%, 55%);
+  color: oklch(62.6% 0.1655 253.3);
   opacity: 0.85;
 }
 .iconDts {
-  color: hsl(211, 50%, 60%);
+  color: oklch(66.3% 0.096 250.8);
   opacity: 0.7;
 }
 /* Web */
 .iconHtml {
-  color: hsl(14, 85%, 55%);
+  color: oklch(65.2% 0.1929 36.9);
   opacity: 0.85;
 }
 .iconCss {
-  color: hsl(228, 80%, 60%);
+  color: oklch(56.8% 0.1997 268.5);
   opacity: 0.85;
 }
 .iconScss {
-  color: hsl(330, 65%, 58%);
+  color: oklch(63.1% 0.186 353.0);
   opacity: 0.85;
 }
 .iconSvg {
-  color: hsl(36, 95%, 55%);
+  color: oklch(78.1% 0.1626 69.6);
   opacity: 0.85;
 }
 /* Frameworks */
 .iconVue {
-  color: hsl(153, 72%, 48%);
+  color: oklch(76.3% 0.1753 156.8);
   opacity: 0.85;
 }
 .iconSvelte {
-  color: hsl(15, 85%, 55%);
+  color: oklch(65.6% 0.1903 37.8);
   opacity: 0.85;
 }
 .iconAstro {
-  color: hsl(280, 65%, 58%);
+  color: oklch(60.2% 0.212 312.6);
   opacity: 0.85;
 }
 /* Data / Config */
 .iconJson {
-  color: hsl(50, 70%, 50%);
+  color: oklch(79.4% 0.1549 97.1);
   opacity: 0.8;
 }
 .iconYaml {
-  color: hsl(0, 60%, 55%);
+  color: oklch(59.1% 0.1743 24.2);
   opacity: 0.75;
 }
 .iconToml {
-  color: hsl(200, 40%, 55%);
+  color: oklch(66.0% 0.0783 231.8);
   opacity: 0.75;
 }
 .iconXml {
-  color: hsl(30, 70%, 55%);
+  color: oklch(70.9% 0.1353 62.5);
   opacity: 0.75;
 }
 .iconCsv {
-  color: hsl(140, 55%, 50%);
+  color: oklch(72.8% 0.1773 150.2);
   opacity: 0.8;
 }
 .iconConfig {
@@ -87,189 +87,189 @@
 }
 /* Python — blue/green */
 .iconPython {
-  color: hsl(210, 65%, 55%);
+  color: oklch(62.7% 0.1346 250.6);
   opacity: 0.85;
 }
 .iconNotebook {
-  color: hsl(28, 85%, 55%);
+  color: oklch(71.7% 0.1597 56.1);
   opacity: 0.85;
 }
 /* Ruby — red gem */
 .iconRuby {
-  color: hsl(0, 72%, 52%);
+  color: oklch(58.2% 0.2108 26.8);
   opacity: 0.85;
 }
 /* Rust — burnt orange */
 .iconRust {
-  color: hsl(25, 80%, 50%);
+  color: oklch(66.9% 0.1708 49.1);
   opacity: 0.85;
 }
 /* Go — cyan */
 .iconGo {
-  color: hsl(190, 80%, 50%);
+  color: oklch(75.5% 0.1313 216.8);
   opacity: 0.85;
 }
 /* C family */
 .iconC {
-  color: hsl(210, 55%, 55%);
+  color: oklch(62.6% 0.1159 250.2);
   opacity: 0.8;
 }
 .iconCpp {
-  color: hsl(210, 70%, 50%);
+  color: oklch(59.1% 0.1585 252.5);
   opacity: 0.85;
 }
 .iconCsharp {
-  color: hsl(265, 55%, 55%);
+  color: oklch(54.3% 0.1875 299.0);
   opacity: 0.85;
 }
 /* Objective-C — steely blue */
 .iconObjc {
-  color: hsl(200, 55%, 50%);
+  color: oklch(63.9% 0.1112 234.5);
   opacity: 0.85;
 }
 /* Java — orange/red */
 .iconJava {
-  color: hsl(16, 85%, 50%);
+  color: oklch(63.4% 0.2042 37.0);
   opacity: 0.85;
 }
 /* Kotlin — purple/orange gradient */
 .iconKotlin {
-  color: hsl(270, 60%, 58%);
+  color: oklch(57.7% 0.1928 303.8);
   opacity: 0.85;
 }
 /* Swift — orange */
 .iconSwift {
-  color: hsl(20, 90%, 55%);
+  color: oklch(68.3% 0.186 43.0);
   opacity: 0.85;
 }
 /* PHP — indigo */
 .iconPhp {
-  color: hsl(240, 45%, 58%);
+  color: oklch(54.8% 0.1474 280.4);
   opacity: 0.85;
 }
 /* Perl — dark teal */
 .iconPerl {
-  color: hsl(180, 55%, 45%);
+  color: oklch(69.4% 0.1061 195.0);
   opacity: 0.85;
 }
 /* Lua — navy blue */
 .iconLua {
-  color: hsl(225, 65%, 55%);
+  color: oklch(54.6% 0.1773 266.7);
   opacity: 0.85;
 }
 /* R — statistical blue */
 .iconR {
-  color: hsl(216, 70%, 50%);
+  color: oklch(55.2% 0.1788 259.0);
   opacity: 0.85;
 }
 /* Dart — teal */
 .iconDart {
-  color: hsl(195, 85%, 48%);
+  color: oklch(70.3% 0.1358 229.0);
   opacity: 0.85;
 }
 /* Scala — red */
 .iconScala {
-  color: hsl(0, 75%, 50%);
+  color: oklch(57.8% 0.222 27.9);
   opacity: 0.85;
 }
 /* Groovy — teal/blue */
 .iconGroovy {
-  color: hsl(195, 60%, 48%);
+  color: oklch(65.7% 0.1097 224.4);
   opacity: 0.85;
 }
 /* Julia — purple/green */
 .iconJulia {
-  color: hsl(275, 60%, 55%);
+  color: oklch(56.4% 0.2069 307.7);
   opacity: 0.85;
 }
 /* CoffeeScript — brown */
 .iconCoffee {
-  color: hsl(25, 55%, 45%);
+  color: oklch(58.9% 0.1154 54.1);
   opacity: 0.85;
 }
 /* Solidity — grey/charcoal */
 .iconSolidity {
-  color: hsl(210, 15%, 50%);
+  color: oklch(58.8% 0.0368 248.5);
   opacity: 0.85;
 }
 /* CUDA — green */
 .iconCuda {
-  color: hsl(120, 65%, 45%);
+  color: oklch(69.7% 0.2191 142.8);
   opacity: 0.85;
 }
 /* Assembly — steel */
 .iconAssembly {
-  color: hsl(210, 20%, 50%);
+  color: oklch(58.7% 0.0495 249.7);
   opacity: 0.8;
 }
 /* Fortran — dark purple */
 .iconFortran {
-  color: hsl(280, 40%, 48%);
+  color: oklch(52.7% 0.1591 312.8);
   opacity: 0.8;
 }
 /* MATLAB — orange */
 .iconMatlab {
-  color: hsl(20, 85%, 52%);
+  color: oklch(66.1% 0.187 42.3);
   opacity: 0.85;
 }
 /* Nix — light blue */
 .iconNix {
-  color: hsl(210, 60%, 58%);
+  color: oklch(64.9% 0.1182 250.4);
   opacity: 0.85;
 }
 /* Elixir — purple */
 .iconElixir {
-  color: hsl(270, 50%, 55%);
+  color: oklch(55.8% 0.1754 304.6);
   opacity: 0.85;
 }
 /* Erlang — dark magenta */
 .iconErlang {
-  color: hsl(330, 55%, 45%);
+  color: oklch(52.8% 0.1718 354.0);
   opacity: 0.85;
 }
 /* Haskell — violet */
 .iconHaskell {
-  color: hsl(275, 55%, 52%);
+  color: oklch(54.1% 0.2021 307.7);
   opacity: 0.85;
 }
 /* Clojure — green */
 .iconClojure {
-  color: hsl(160, 65%, 45%);
+  color: oklch(71.1% 0.1411 164.6);
   opacity: 0.85;
 }
 /* OCaml — orange */
 .iconOcaml {
-  color: hsl(30, 85%, 50%);
+  color: oklch(70.3% 0.1667 56.4);
   opacity: 0.85;
 }
 /* F# — blue/purple */
 .iconFsharp {
-  color: hsl(230, 60%, 55%);
+  color: oklch(52.9% 0.1786 270.6);
   opacity: 0.85;
 }
 /* Zig — golden amber */
 .iconZig {
-  color: hsl(40, 95%, 50%);
+  color: oklch(78.8% 0.1661 74.0);
   opacity: 0.85;
 }
 /* Nim — crown gold */
 .iconNim {
-  color: hsl(48, 85%, 50%);
+  color: oklch(82.2% 0.1653 92.1);
   opacity: 0.85;
 }
 /* V lang — blue */
 .iconVlang {
-  color: hsl(210, 85%, 52%);
+  color: oklch(61.3% 0.1801 253.6);
   opacity: 0.85;
 }
 /* Shell — terminal green */
 .iconShell {
-  color: hsl(140, 60%, 48%);
+  color: oklch(72.0% 0.1837 149.6);
   opacity: 0.85;
 }
 /* Markdown / Docs */
 .iconMarkdown {
-  color: hsl(210, 15%, 60%);
+  color: oklch(67.5% 0.0288 246.5);
   opacity: 0.8;
 }
 .iconText {
@@ -281,162 +281,162 @@
   opacity: 0.5;
 }
 .iconLicense {
-  color: hsl(45, 65%, 50%);
+  color: oklch(75.0% 0.1406 88.7);
   opacity: 0.75;
 }
 /* Templates */
 .iconPug {
-  color: hsl(30, 50%, 50%);
+  color: oklch(65.0% 0.1125 63.4);
   opacity: 0.85;
 }
 .iconEjs {
-  color: hsl(140, 55%, 48%);
+  color: oklch(70.6% 0.1721 150.0);
   opacity: 0.8;
 }
 .iconHandlebars {
-  color: hsl(30, 65%, 48%);
+  color: oklch(65.1% 0.1335 61.2);
   opacity: 0.85;
 }
 /* LaTeX — dark teal */
 .iconLatex {
-  color: hsl(175, 50%, 40%);
+  color: oklch(62.3% 0.0931 186.8);
   opacity: 0.85;
 }
 /* Cucumber / BDD — green */
 .iconCucumber {
-  color: hsl(100, 55%, 45%);
+  color: oklch(68.2% 0.1795 137.2);
   opacity: 0.85;
 }
 /* Shaders — electric green */
 .iconShader {
-  color: hsl(150, 70%, 45%);
+  color: oklch(72.1% 0.1718 154.5);
   opacity: 0.85;
 }
 /* Diff / Patch */
 .iconDiff {
-  color: hsl(30, 60%, 50%);
+  color: oklch(66.5% 0.1302 61.4);
   opacity: 0.8;
 }
 /* GraphQL — magenta/pink */
 .iconGraphql {
-  color: hsl(320, 75%, 55%);
+  color: oklch(63.1% 0.2313 345.3);
   opacity: 0.85;
 }
 /* Protocol Buffers — blue */
 .iconProto {
-  color: hsl(205, 60%, 50%);
+  color: oklch(61.7% 0.1277 244.1);
   opacity: 0.8;
 }
 /* Prisma — dark navy/teal */
 .iconPrisma {
-  color: hsl(210, 50%, 55%);
+  color: oklch(62.5% 0.1061 249.5);
   opacity: 0.85;
 }
 /* Terraform / HCL — purple */
 .iconTerraform {
-  color: hsl(265, 60%, 55%);
+  color: oklch(53.8% 0.2022 298.3);
   opacity: 0.85;
 }
 /* Nginx — green */
 .iconNginx {
-  color: hsl(140, 50%, 48%);
+  color: oklch(69.3% 0.1593 150.9);
   opacity: 0.8;
 }
 /* Design files — pink/magenta */
 .iconDesign {
-  color: hsl(300, 55%, 55%);
+  color: oklch(63.4% 0.215 327.7);
   opacity: 0.85;
 }
 /* Images — purple/magenta */
 .iconImage {
-  color: hsl(280, 60%, 58%);
+  color: oklch(60.3% 0.1994 312.7);
   opacity: 0.85;
 }
 /* Video — warm magenta */
 .iconVideo {
-  color: hsl(330, 70%, 55%);
+  color: oklch(61.5% 0.2083 354.4);
   opacity: 0.85;
 }
 /* Audio — teal */
 .iconAudio {
-  color: hsl(170, 60%, 45%);
+  color: oklch(70.3% 0.1185 178.6);
   opacity: 0.85;
 }
 /* Archives — brown/khaki */
 .iconArchive {
-  color: hsl(35, 45%, 50%);
+  color: oklch(66.2% 0.102 74.1);
   opacity: 0.75;
 }
 /* Fonts */
 .iconFont {
-  color: hsl(0, 0%, 55%);
+  color: oklch(64.0% 0.0001 263.3);
   opacity: 0.7;
 }
 /* Database — warm amber */
 .iconDatabase {
-  color: hsl(35, 75%, 50%);
+  color: oklch(71.6% 0.1486 68.2);
   opacity: 0.85;
 }
 /* Documents */
 .iconPdf {
-  color: hsl(0, 70%, 50%);
+  color: oklch(57.0% 0.2116 27.2);
   opacity: 0.85;
 }
 .iconDoc {
-  color: hsl(215, 75%, 55%);
+  color: oklch(59.8% 0.1693 257.8);
   opacity: 0.8;
 }
 .iconSpreadsheet {
-  color: hsl(140, 65%, 42%);
+  color: oklch(66.6% 0.175 149.1);
   opacity: 0.85;
 }
 .iconPresentation {
-  color: hsl(20, 80%, 52%);
+  color: oklch(65.5% 0.1783 43.0);
   opacity: 0.85;
 }
 /* Subtitles — muted blue */
 .iconSubtitle {
-  color: hsl(210, 40%, 55%);
+  color: oklch(62.6% 0.0862 249.4);
   opacity: 0.75;
 }
 /* 3D Models — teal/cyan */
 .icon3d {
-  color: hsl(185, 60%, 48%);
+  color: oklch(71.5% 0.1114 204.0);
   opacity: 0.85;
 }
 /* Binaries — dark grey */
 .iconBinary {
-  color: hsl(210, 10%, 45%);
+  color: oklch(54.7% 0.023 250.6);
   opacity: 0.6;
 }
 /* Env / Secrets — muted yellow */
 .iconEnv {
-  color: hsl(50, 60%, 48%);
+  color: oklch(74.1% 0.1379 97.6);
   opacity: 0.8;
 }
 /* Certificates */
 .iconCert {
-  color: hsl(140, 50%, 45%);
+  color: oklch(66.1% 0.1526 150.7);
   opacity: 0.8;
 }
 /* Docker — docker blue */
 .iconDocker {
-  color: hsl(205, 80%, 55%);
+  color: oklch(66.6% 0.1482 245.0);
   opacity: 0.85;
 }
 /* Git */
 .iconGit {
-  color: hsl(10, 75%, 52%);
+  color: oklch(61.2% 0.1947 33.2);
   opacity: 0.8;
 }
 /* Test files — green vial */
 .iconTest {
-  color: hsl(145, 60%, 48%);
+  color: oklch(72.2% 0.172 152.6);
   opacity: 0.85;
 }
 /* Storybook — magenta-pink */
 .iconStorybook {
-  color: hsl(335, 70%, 55%);
+  color: oklch(61.0% 0.203 0.1);
   opacity: 0.85;
 }
 /* Lock files */
@@ -451,7 +451,7 @@
 }
 /* WebAssembly — purple/blue */
 .iconWasm {
-  color: hsl(260, 70%, 55%);
+  color: oklch(51.7% 0.2273 291.7);
   opacity: 0.85;
 }
 /* Default fallback */

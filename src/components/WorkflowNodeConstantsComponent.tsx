@@ -1,5 +1,7 @@
 "use client";
 
+import type { ComponentType } from "react";
+import type { WorkflowNode } from "../types/types";
 import {
   Type,
   Image,
@@ -59,7 +61,7 @@ export const MODALITY_COLORS = {
 };
 
 // -- Tool Colors --
-export const TOOL_COLORS = {
+export const TOOL_COLORS: Record<string, string> = {
   Thinking: "#eab308",
   "Tool Calling": "#f97316",
   "Web Search": "#3b82f6",
@@ -73,8 +75,8 @@ export const TOOL_COLORS = {
   "Image Generation": "#f43f5e",
 };
 
-// -- Tool Icon Map (Component references — render as <Icon size={n} />) --
-export const TOOL_ICON_MAP = {
+// -- Tool Icon Map (Component references — render as <Icon size={size} />) --
+export const TOOL_ICON_MAP: Record<string, ComponentType<{ size?: number; className?: string }>> = {
   Thinking: Brain,
   "Tool Calling": Parentheses,
   "Web Search": Globe,
@@ -88,15 +90,21 @@ export const TOOL_ICON_MAP = {
   "Image Generation": ImagePlus,
 };
 
+export interface ToolVisuals {
+  Icon: ComponentType<{ size?: number; className?: string }>;
+  color: string;
+}
+
 /**
  * Resolve a tool name to its icon component and color.
  * Falls back to Wrench / "Tool Calling" amber for unknown tools.
  */
-export function resolveToolVisuals(name: string) {
-  if ((TOOL_ICON_MAP as Record<string, any>)[name]) {
+export function resolveToolVisuals(name: string): ToolVisuals {
+  const resolvedIcon = TOOL_ICON_MAP[name];
+  if (resolvedIcon) {
     return {
-      Icon: (TOOL_ICON_MAP as Record<string, any>)[name],
-      color: (TOOL_COLORS as Record<string, any>)[name] || "#f59e0b",
+      Icon: resolvedIcon,
+      color: TOOL_COLORS[name] || "#f59e0b",
     };
   }
   return {
@@ -151,11 +159,11 @@ export const ASSET_INFO_HEIGHT = 80;
 // -- Compound port ID helpers for conversation input nodes --
 // Port format: "{msgIndex}.{modality}" e.g. "0.text", "1.image"
 export function parseCompoundPort(portId: string) {
-  const dotIdx = portId.indexOf(".");
-  if (dotIdx === -1) return null;
+  const dotIndex = portId.indexOf(".");
+  if (dotIndex === -1) return null;
   return {
-    index: parseInt(portId.substring(0, dotIdx)),
-    modality: portId.substring(dotIdx + 1),
+    index: parseInt(portId.substring(0, dotIndex)),
+    modality: portId.substring(dotIndex + 1),
   };
 }
 
@@ -165,53 +173,53 @@ export function getBaseModality(portId: string) {
 }
 
 // -- Node dimensions --
-export function getNodeWidth(node: any) {
+export function getNodeWidth(node: WorkflowNode) {
   if (node.nodeType) {
     if (node.modality === "conversation") {
-      const mods = (node.supportedModalities || ["text"]).filter(
-        (t: string) => t !== "conversation",
+      const modalities = (node.supportedModalities || ["text"]).filter(
+        (modalityType: string) => modalityType !== "conversation",
       );
-      const extraIcons = Math.max(0, mods.length - MIN_MODALITY_ICONS_FOR_BASE);
-      return NODE_WIDTH_BASE + extraIcons * MODALITY_ICON_WIDTH;
+      const extraModalityIcons = Math.max(0, modalities.length - MIN_MODALITY_ICONS_FOR_BASE);
+      return NODE_WIDTH_BASE + extraModalityIcons * MODALITY_ICON_WIDTH;
     }
     return ASSET_NODE_WIDTH_BASE;
   }
-  const rawInputs = (node.rawInputTypes || node.inputTypes || []).filter(
-    (t: string) => t !== "conversation",
+  const rawInputTypes = (node.rawInputTypes || node.inputTypes || []).filter(
+    (modalityType: string) => modalityType !== "conversation",
   );
-  const extraIcons = Math.max(
+  const extraModalityIcons = Math.max(
     0,
-    rawInputs.length - MIN_MODALITY_ICONS_FOR_BASE,
+    rawInputTypes.length - MIN_MODALITY_ICONS_FOR_BASE,
   );
-  return NODE_WIDTH_BASE + extraIcons * MODALITY_ICON_WIDTH;
+  return NODE_WIDTH_BASE + extraModalityIcons * MODALITY_ICON_WIDTH;
 }
 
 const TEXT_LINE_HEIGHT = 16; // ~11px font × 1.4 line-height + padding
 const TEXT_MIN_HEIGHT = 36;
 const CHARS_PER_LINE = 22; // rough estimate for node width
 
-export function getAssetContentHeight(node: any) {
+export function getAssetContentHeight(node: WorkflowNode) {
   // Text input nodes: auto-size based on content, up to 175px
   if (node.nodeType === "input" && node.modality === "text") {
-    const text = node.content || "";
-    if (!text) return TEXT_MIN_HEIGHT;
-    const lines = text.split("\n");
+    const textContent = (node.content as string) || "";
+    if (!textContent) return TEXT_MIN_HEIGHT;
+    const lines = textContent.split("\n");
     let totalLines = 0;
     for (const line of lines) {
       totalLines += Math.max(1, Math.ceil(line.length / CHARS_PER_LINE));
     }
-    const estimated = totalLines * TEXT_LINE_HEIGHT + 12; // 12px padding
-    return Math.max(TEXT_MIN_HEIGHT, Math.min(estimated, ASSET_CONTENT_HEIGHT));
+    const estimatedHeight = totalLines * TEXT_LINE_HEIGHT + 12; // 12px padding
+    return Math.max(TEXT_MIN_HEIGHT, Math.min(estimatedHeight, ASSET_CONTENT_HEIGHT));
   }
   return ASSET_CONTENT_HEIGHT;
 }
 
-export function getAssetInfoHeight(node: any) {
+export function getAssetInfoHeight(node: WorkflowNode) {
   if (node.nodeType === "viewer" || node.modality === "text") return 0;
   return ASSET_INFO_HEIGHT;
 }
 
-export function getNodeHeight(node: any, isExpanded = false) {
+export function getNodeHeight(node: WorkflowNode, isExpanded = false) {
   if (node.nodeType) {
     const inputCount = (node.inputTypes || []).length;
     const outputCount = (node.outputTypes || []).length;
@@ -230,24 +238,25 @@ export function getNodeHeight(node: any, isExpanded = false) {
 }
 
 export function getPortPosition(
-  node: any,
+  node: WorkflowNode,
   portType: string,
   portIndex: number,
   configOffset = 0,
 ) {
   const width = getNodeWidth(node);
-  const x = portType === "input" ? 0 : width;
+  const coordinateX = portType === "input" ? 0 : width;
   const startY = HEADER_HEIGHT + configOffset + 8;
   const spacing = PORT_SECTION_HEIGHT;
-  const y = startY + portIndex * spacing + spacing / 2;
-  return { x: node.position.x + x, y: node.position.y + y };
+  const coordinateY = startY + portIndex * spacing + spacing / 2;
+  if (!node.position) return { x: coordinateX, y: coordinateY };
+  return { x: node.position.x + coordinateX, y: node.position.y + coordinateY };
 }
 
 /**
  * Generate a smooth bezier curve path between two points.
  */
 export function edgePath(x1: number, y1: number, x2: number, y2: number) {
-  const dx = Math.abs(x2 - x1);
-  const cp = Math.max(dx * 0.5, 60);
-  return `M ${x1} ${y1} C ${x1 + cp} ${y1}, ${x2 - cp} ${y2}, ${x2} ${y2}`;
+  const deltaX = Math.abs(x2 - x1);
+  const controlPointOffset = Math.max(deltaX * 0.5, 60);
+  return `M ${x1} ${y1} C ${x1 + controlPointOffset} ${y1}, ${x2 - controlPointOffset} ${y2}, ${x2} ${y2}`;
 }

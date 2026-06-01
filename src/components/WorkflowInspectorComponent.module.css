@@ -218,7 +218,7 @@
   max-height: 240px;
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--calculated-border-subtle);
-  background: #000;
+  background: oklch(0.0% 0.0 0.0);
 }
 
 .previewPdf {
@@ -226,7 +226,7 @@
   height: 310px;
   border: none;
   border-radius: var(--border-radius-sm);
-  background: #fff;
+  background: oklch(100.0% 0.0001 263.3);
 }
 
 .previewPdfWrap {
@@ -387,8 +387,8 @@
   padding: 8px;
   font-size: var(--font-size-xs);
   color: var(--color-rose);
-  background: rgba(244, 63, 94, 0.08);
-  border: 1px solid rgba(244, 63, 94, 0.2);
+  background: oklch(64.5% 0.2154 16.4 / 0.08);
+  border: 1px solid oklch(64.5% 0.2154 16.4 / 0.2);
   border-radius: var(--border-radius-sm);
   white-space: pre-wrap;
   word-break: break-word;
@@ -460,7 +460,7 @@
   border-top: none;
   border-bottom-left-radius: var(--border-radius-sm);
   border-bottom-right-radius: var(--border-radius-sm);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px oklch(0.0% 0.0 0.0 / 0.25);
   overflow: hidden;
 }
 

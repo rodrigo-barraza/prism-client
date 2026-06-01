@@ -97,7 +97,7 @@ export default function MediaCardComponent({
     <div className={cardClasses}>
       {showFavorite && (
         <button
-          className={`${styles.favButton} ${isFavorite ? styles.favBtnActive : ""}`}
+          className={`${styles.favoriteButton} ${isFavorite ? styles.favoriteButtonActive : ""}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onFavorite?.();
@@ -176,7 +176,7 @@ export default function MediaCardComponent({
           {mediaItem.convId && mediaItem.convTitle && (
             <Link
               href={`${convBasePath}/${mediaItem.convId}`}
-              className={styles.convLink}
+              className={styles.conversationLink}
               title={mediaItem.convTitle}
             >
               <ExternalLink size={10} />

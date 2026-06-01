@@ -949,7 +949,7 @@ function ModelsTableInner({
         if (!onToggleFavorite) return "—";
         return (
           <span
-            className={styles.favWrap}
+            className={styles.favoriteWrapper}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onToggleFavorite(row._favKey);
@@ -957,7 +957,7 @@ function ModelsTableInner({
           >
             <Star
               size={14}
-              className={`${styles.favStar} ${isFav ? styles.favStarActive : ""}`}
+              className={`${styles.favoriteStar} ${isFav ? styles.favoriteStarActive : ""}`}
               fill={isFav ? "currentColor" : "none"}
             />
           </span>

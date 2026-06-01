@@ -72,7 +72,7 @@
 
 /* ── Rainbow tween while counting ──────────────────────── */
 .tweening {
-  color: hsl(0, 90%, 65%);
+  color: oklch(66.8% 0.1972 24.2);
   filter: hue-rotate(0deg);
   animation: cycleCountRainbow 0.5s linear;
   will-change: filter;
@@ -97,14 +97,14 @@
   font-size: var(--font-size-xs);
   font-weight: 800;
   letter-spacing: -0.5px;
-  color: hsl(300, 100%, 70%);
+  color: oklch(75.6% 0.2525 327.7);
   animation:
     glitchHue 0.15s linear infinite,
     glitchJitter 0.05s steps(2) infinite;
   will-change: filter, transform, text-shadow;
   text-shadow:
-    1px 0 0 hsl(0, 100%, 60%),
-    -1px 0 0 hsl(180, 100%, 60%);
+    1px 0 0 oklch(64.8% 0.2376 27.0),
+    -1px 0 0 oklch(90.9% 0.1481 194.9);
   overflow: hidden;
 }
 
@@ -113,9 +113,9 @@
   animation:
     glitchHue 0.15s linear infinite,
     glitchJitter 0.05s steps(2) infinite;
-  color: hsl(300, 100%, 85%);
-  background: hsl(280, 80%, 20%);
-  border-color: hsl(300, 100%, 50%);
+  color: oklch(86.1% 0.1325 326.6);
+  background: oklch(29.2% 0.133 310.5);
+  border-color: oklch(70.2% 0.3225 328.4);
 }
 
 @keyframes glitchHue {

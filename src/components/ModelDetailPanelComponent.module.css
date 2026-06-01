@@ -14,7 +14,7 @@
 .backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: oklch(0.0% 0.0 0.0 / 0.5);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -39,7 +39,7 @@
   flex-direction: column;
   z-index: 1;
   animation: panelSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3);
+  box-shadow: -8px 0 32px oklch(0.0% 0.0 0.0 / 0.3);
 }
 
 @keyframes panelSlideIn {
@@ -157,13 +157,13 @@
 
 /* ── Key-Value Grid ─────────────────────────────────── */
 
-.kvGrid {
+.keyValueGrid {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 2px 12px;
 }
 
-.kvLabel {
+.keyValueLabel {
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-tertiary);
@@ -171,7 +171,7 @@
   white-space: nowrap;
 }
 
-.kvValue {
+.keyValueContent {
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-primary);
@@ -184,7 +184,7 @@
   text-overflow: ellipsis;
 }
 
-.kvValueMono {
+.keyValueContentMono {
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-primary);
@@ -353,7 +353,7 @@
 }
 
 .loaded {
-  background: rgba(16, 185, 129, 0.1);
+  background: oklch(69.6% 0.1491 162.5 / 0.1);
   color: var(--color-success);
 }
 

@@ -178,7 +178,7 @@
   border-radius: 2px;
   font-size: 0.625rem;
   font-weight: 600;
-  background: rgba(245, 158, 11, 0.12);
+  background: oklch(76.9% 0.1646 70.1 / 0.12);
   color: rgb(245, 158, 11);
 }
 
@@ -193,7 +193,7 @@
   font-weight: 600;
   line-height: 1;
   background: var(--calculated-accent-primary-subtle);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  border: 1px solid oklch(58.5% 0.2041 277.1 / 0.25);
   color: var(--accent-primary);
   transition:
     transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
@@ -205,7 +205,7 @@
 
 .agentBadge:hover {
   transform: translateY(-0.5px);
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 2px 6px oklch(58.5% 0.2041 277.1 / 0.15);
 }
 
 .agentBadgeName {
@@ -216,87 +216,87 @@
 /* ── Dynamic Agent Theme Styling ── */
 
 .agentBadge[data-agent-identifier="CODING"] {
-  background: rgba(99, 102, 241, 0.08);
-  border-color: rgba(99, 102, 241, 0.22);
-  color: #818cf8;
+  background: oklch(58.5% 0.2041 277.1 / 0.08);
+  border-color: oklch(58.5% 0.2041 277.1 / 0.22);
+  color: oklch(68.0% 0.1584 276.9);
 }
 
 .agentBadge[data-agent-identifier="CODING"]:hover {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  background: oklch(58.5% 0.2041 277.1 / 0.12);
+  border-color: oklch(58.5% 0.2041 277.1 / 0.3);
+  box-shadow: 0 2px 8px oklch(58.5% 0.2041 277.1 / 0.2);
 }
 
 .agentBadge[data-agent-identifier="LUPOS"] {
-  background: rgba(239, 68, 68, 0.06);
-  border-color: rgba(239, 68, 68, 0.18);
-  color: #f97316;
+  background: oklch(63.7% 0.2078 25.3 / 0.06);
+  border-color: oklch(63.7% 0.2078 25.3 / 0.18);
+  color: oklch(70.5% 0.1867 47.6);
 }
 
 .agentBadge[data-agent-identifier="LUPOS"]:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.25);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+  background: oklch(63.7% 0.2078 25.3 / 0.1);
+  border-color: oklch(63.7% 0.2078 25.3 / 0.25);
+  box-shadow: 0 2px 8px oklch(63.7% 0.2078 25.3 / 0.15);
 }
 
 .agentBadge[data-agent-identifier="STICKERS"] {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: rgba(16, 185, 129, 0.18);
-  color: #34d399;
+  background: oklch(69.6% 0.1491 162.5 / 0.06);
+  border-color: oklch(69.6% 0.1491 162.5 / 0.18);
+  color: oklch(77.3% 0.1535 163.3);
 }
 
 .agentBadge[data-agent-identifier="STICKERS"]:hover {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.25);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+  background: oklch(69.6% 0.1491 162.5 / 0.1);
+  border-color: oklch(69.6% 0.1491 162.5 / 0.25);
+  box-shadow: 0 2px 8px oklch(69.6% 0.1491 162.5 / 0.15);
 }
 
 .agentBadge[data-agent-identifier="LIGHTS"] {
-  background: rgba(234, 179, 8, 0.06);
-  border-color: rgba(234, 179, 8, 0.18);
-  color: #fbbf24;
+  background: oklch(79.5% 0.1616 86.0 / 0.06);
+  border-color: oklch(79.5% 0.1616 86.0 / 0.18);
+  color: oklch(83.7% 0.1643 84.4);
 }
 
 .agentBadge[data-agent-identifier="LIGHTS"]:hover {
-  background: rgba(234, 179, 8, 0.1);
-  border-color: rgba(234, 179, 8, 0.25);
-  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.15);
+  background: oklch(79.5% 0.1616 86.0 / 0.1);
+  border-color: oklch(79.5% 0.1616 86.0 / 0.25);
+  box-shadow: 0 2px 8px oklch(79.5% 0.1616 86.0 / 0.15);
 }
 
 .agentBadge[data-agent-identifier="OOG"] {
-  background: rgba(120, 113, 108, 0.06);
-  border-color: rgba(120, 113, 108, 0.18);
-  color: #a8a29e;
+  background: oklch(55.3% 0.0116 58.0 / 0.06);
+  border-color: oklch(55.3% 0.0116 58.0 / 0.18);
+  color: oklch(71.6% 0.009 56.1);
 }
 
 .agentBadge[data-agent-identifier="OOG"]:hover {
-  background: rgba(120, 113, 108, 0.1);
-  border-color: rgba(120, 113, 108, 0.25);
-  box-shadow: 0 2px 8px rgba(120, 113, 108, 0.15);
+  background: oklch(55.3% 0.0116 58.0 / 0.1);
+  border-color: oklch(55.3% 0.0116 58.0 / 0.25);
+  box-shadow: 0 2px 8px oklch(55.3% 0.0116 58.0 / 0.15);
 }
 
 .agentBadge[data-agent-identifier="OMNI"] {
-  background: rgba(185, 28, 28, 0.06);
-  border-color: rgba(185, 28, 28, 0.18);
-  color: #dc2626;
+  background: oklch(50.5% 0.1905 27.5 / 0.06);
+  border-color: oklch(50.5% 0.1905 27.5 / 0.18);
+  color: oklch(57.7% 0.2151 27.3);
 }
 
 .agentBadge[data-agent-identifier="OMNI"]:hover {
-  background: rgba(185, 28, 28, 0.1);
-  border-color: rgba(185, 28, 28, 0.25);
-  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.15);
+  background: oklch(50.5% 0.1905 27.5 / 0.1);
+  border-color: oklch(50.5% 0.1905 27.5 / 0.25);
+  box-shadow: 0 2px 8px oklch(50.5% 0.1905 27.5 / 0.15);
 }
 
 .agentBadge[data-agent-identifier="IMAGE"] {
-  background: rgba(236, 72, 153, 0.06);
-  border-color: rgba(236, 72, 153, 0.18);
-  color: #f472b6;
+  background: oklch(65.6% 0.2118 354.3 / 0.06);
+  border-color: oklch(65.6% 0.2118 354.3 / 0.18);
+  color: oklch(72.5% 0.1752 349.7);
 }
 
 .agentBadge[data-agent-identifier="IMAGE"]:hover {
-  background: rgba(236, 72, 153, 0.1);
-  border-color: rgba(236, 72, 153, 0.25);
-  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.15);
+  background: oklch(65.6% 0.2118 354.3 / 0.1);
+  border-color: oklch(65.6% 0.2118 354.3 / 0.25);
+  box-shadow: 0 2px 8px oklch(65.6% 0.2118 354.3 / 0.15);
 }
 
 /* Fallback for other custom agents */
@@ -307,9 +307,9 @@
   ):not([data-agent-identifier="OOG"]):not(
     [data-agent-identifier="LIGHTS"]
   ):not([data-agent-identifier="IMAGE"]) {
-  background: rgba(139, 92, 246, 0.06);
-  border-color: rgba(139, 92, 246, 0.18);
-  color: #a78bfa;
+  background: oklch(60.6% 0.219 292.7 / 0.06);
+  border-color: oklch(60.6% 0.219 292.7 / 0.18);
+  color: oklch(70.9% 0.1592 293.5);
 }
 
 .agentBadge:not([data-agent-identifier="CODING"]):not(
@@ -319,9 +319,9 @@
   ):not([data-agent-identifier="OOG"]):not(
     [data-agent-identifier="LIGHTS"]
   ):not([data-agent-identifier="IMAGE"]):hover {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.25);
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
+  background: oklch(60.6% 0.219 292.7 / 0.1);
+  border-color: oklch(60.6% 0.219 292.7 / 0.25);
+  box-shadow: 0 2px 8px oklch(60.6% 0.219 292.7 / 0.15);
 }
 
 /* Modality styles live in ModalityIconComponent.module.css */
@@ -338,7 +338,7 @@
 }
 
 /* ── Favorite Star ── */
-.favButton {
+.favoriteButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,7 +360,7 @@
   }
 }
 
-.favBtnActive {
+.favoriteButtonActive {
   color: var(--color-warning);
   opacity: 1;
 

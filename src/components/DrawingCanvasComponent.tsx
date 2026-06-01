@@ -454,11 +454,11 @@ export default function DrawingCanvas({
             <img
               src={src}
               alt="Background"
-              className={styles.bgImage}
+              className={styles.backgroundImage}
               draggable={false}
             />
           ) : (
-            <div className={styles.bgWhite} />
+            <div className={styles.backgroundWhite} />
           )}
           <canvas
             ref={canvasRef}

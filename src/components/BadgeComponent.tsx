@@ -1306,7 +1306,7 @@ export function ToolBadgeRow({
 }
 
 export interface ModelToolsRowProps {
-  tools?: Record<string, any> | null;
+  tools?: Record<string, boolean> | null;
   variant?: "default" | "compact" | "condensed";
   className?: string;
 }

@@ -1455,12 +1455,12 @@ export default function SettingsPageComponent() {
                 </div>
 
                 <div className={styles.guideEnvTable}>
-                  <span className={styles.envTableTitle}>
+                  <span className={styles.environmentTableTitle}>
                     Environment Variables
                   </span>
-                  <div className={styles.envRow}>
-                    <code className={styles.envKey}>WORKSPACE_BACKEND</code>
-                    <span className={styles.envDesc}>
+                  <div className={styles.environmentRow}>
+                    <code className={styles.environmentKey}>WORKSPACE_BACKEND</code>
+                    <span className={styles.environmentDescription}>
                       WebSocket URL of tools-service (e.g.{" "}
                       <code className={styles.inlineCode}>
                         ws://192.168.86.2:5590
@@ -1468,18 +1468,18 @@ export default function SettingsPageComponent() {
                       )
                     </span>
                   </div>
-                  <div className={styles.envRow}>
-                    <code className={styles.envKey}>WORKSPACE_ROOTS</code>
-                    <span className={styles.envDesc}>
+                  <div className={styles.environmentRow}>
+                    <code className={styles.environmentKey}>WORKSPACE_ROOTS</code>
+                    <span className={styles.environmentDescription}>
                       Comma-separated root directories (default:{" "}
                       <code className={styles.inlineCode}>/workspace</code>)
                     </span>
                   </div>
-                  <div className={styles.envRow}>
-                    <code className={styles.envKey}>
+                  <div className={styles.environmentRow}>
+                    <code className={styles.environmentKey}>
                       WORKSPACE_SERVICE_SECRET
                     </code>
-                    <span className={styles.envDesc}>
+                    <span className={styles.environmentDescription}>
                       Must match your tools-service agent secret
                     </span>
                   </div>
@@ -1657,7 +1657,7 @@ export default function SettingsPageComponent() {
                 </div>
 
                 <div className={styles.guideCompareTable}>
-                  <span className={styles.envTableTitle}>Docker vs. Local</span>
+                  <span className={styles.environmentTableTitle}>Docker vs. Local</span>
                   <div className={styles.compareRow}>
                     <span className={styles.compareLabel}>Filesystem</span>
                     <span className={styles.compareDocker}>Volume-mounted</span>

@@ -94,7 +94,7 @@
 
 /* ── Key ── */
 .key {
-  color: #c792ea;
+  color: oklch(74.3% 0.1349 311.0);
 }
 
 /* ── Brackets ── */
@@ -119,7 +119,7 @@
   padding: 0 4px;
 }
 
-.val_null {
+.value_null {
   color: var(--text-muted);
   font-style: italic;
 }

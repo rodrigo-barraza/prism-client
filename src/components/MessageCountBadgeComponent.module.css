@@ -11,8 +11,8 @@
   letter-spacing: 0.2px;
   font-variant-numeric: tabular-nums;
   color: rgb(167, 139, 250);
-  background: rgba(167, 139, 250, 0.08);
-  border: 1px solid rgba(167, 139, 250, 0.2);
+  background: oklch(70.9% 0.1592 293.5 / 0.08);
+  border: 1px solid oklch(70.9% 0.1592 293.5 / 0.2);
   white-space: nowrap;
   transition:
     border-color 0.2s,
@@ -21,8 +21,8 @@
 }
 
 .badge:hover {
-  border-color: rgba(167, 139, 250, 0.45);
-  background: rgba(167, 139, 250, 0.12);
+  border-color: oklch(70.9% 0.1592 293.5 / 0.45);
+  background: oklch(70.9% 0.1592 293.5 / 0.12);
 }
 
 .badge svg {
@@ -48,7 +48,7 @@
 /* ── Rainbow hue-rotate while tweening ───────────── */
 
 .tweening {
-  color: hsl(0, 90%, 65%);
+  color: oklch(66.8% 0.1972 24.2);
   filter: hue-rotate(0deg);
   animation: messageRainbow 0.6s linear;
   will-change: filter;

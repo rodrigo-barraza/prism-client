@@ -1158,7 +1158,7 @@ export default function MessageList({
             ? styles.userNode
             : message.role === "system"
               ? styles.systemNode
-              : styles.aiNode;
+              : styles.assistantNode;
         const isStreaming =
           (isGenerating &&
             message.role === "assistant" &&
@@ -1299,7 +1299,7 @@ export default function MessageList({
                           ? styles.userNode
                           : gMsg.role === "system"
                             ? styles.systemNode
-                            : styles.aiNode;
+                            : styles.assistantNode;
 
                       const gShowModelChange = swapBefore[gi];
                       const gIsFadedSwap =

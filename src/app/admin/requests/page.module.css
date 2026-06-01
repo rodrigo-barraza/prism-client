@@ -99,11 +99,11 @@
 
 /* Shared conversation row highlighting */
 .sharedConversationRow td {
-  background: rgba(99, 102, 241, 0.06) !important;
+  background: oklch(58.5% 0.2041 277.1 / 0.06) !important;
 }
 
 .sharedConversationRow td:first-child {
-  background: rgba(99, 102, 241, 0.1) !important;
+  background: oklch(58.5% 0.2041 277.1 / 0.1) !important;
   box-shadow: inset 2px 0 0 var(--accent-primary) !important;
 }
 

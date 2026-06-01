@@ -117,16 +117,16 @@
 }
 
 .originUser {
-  background: rgba(99, 102, 241, 0.15);
+  background: oklch(58.5% 0.2041 277.1 / 0.15);
   color: var(--accent-primary);
 }
 
 .originAi {
-  background: rgba(168, 85, 247, 0.15);
+  background: oklch(62.7% 0.2326 303.9 / 0.15);
   color: var(--color-purple);
 }
 
-.convLink {
+.conversationLink {
   display: flex;
   align-items: center;
   gap: 5px;

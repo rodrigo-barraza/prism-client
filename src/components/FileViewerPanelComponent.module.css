@@ -4,17 +4,17 @@
 
 .container {
   /* ── Forced dark-mode token overrides ─────────────────── */
-  --background-base: #0a0a0f;
-  --background-surface: #13141c;
-  --background-elevated: #1a1b26;
-  --calculated-border-color: rgba(255, 255, 255, 0.06);
-  --calculated-border-subtle: rgba(255, 255, 255, 0.03);
-  --calculated-border-medium: rgba(255, 255, 255, 0.1);
-  --text-primary: #f8f8f8;
-  --text-secondary: #8e95ae;
-  --text-tertiary: #6b728e;
-  --text-muted: #5a6078;
-  --color-white: #fff;
+  --background-base: oklch(14.7% 0.0107 285.0);
+  --background-surface: oklch(19.4% 0.0162 279.2);
+  --background-elevated: oklch(22.6% 0.0214 280.5);
+  --calculated-border-color: oklch(100.0% 0.0001 263.3 / 0.06);
+  --calculated-border-subtle: oklch(100.0% 0.0001 263.3 / 0.03);
+  --calculated-border-medium: oklch(100.0% 0.0001 263.3 / 0.1);
+  --text-primary: oklch(97.9% 0.0001 263.3);
+  --text-secondary: oklch(67.3% 0.0379 273.0);
+  --text-tertiary: oklch(55.7% 0.0444 273.9);
+  --text-muted: oklch(49.3% 0.0392 273.9);
+  --color-white: oklch(100.0% 0.0001 263.3);
 
   display: flex;
   flex-direction: column;
@@ -61,7 +61,7 @@
 .titleBarLabel {
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: oklch(100.0% 0.0001 263.3 / 0.85);
   letter-spacing: 0.02em;
   white-space: nowrap;
   pointer-events: none;
@@ -83,7 +83,7 @@
   border: none;
   border-radius: 4px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.75);
+  color: oklch(100.0% 0.0001 263.3 / 0.75);
   cursor: pointer;
   padding: 0;
   transition:
@@ -92,21 +92,21 @@
 }
 
 .titleBarButton:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: oklch(100.0% 0.0001 263.3 / 0.15);
   color: var(--color-white);
 }
 
 .titleBarButton:active {
-  background: rgba(255, 255, 255, 0.22);
+  background: oklch(100.0% 0.0001 263.3 / 0.22);
 }
 
 .titleBarBtnActive {
-  background: rgba(255, 255, 255, 0.12);
+  background: oklch(100.0% 0.0001 263.3 / 0.12);
   color: var(--color-white);
 }
 
 .titleBarBtnActive:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: oklch(100.0% 0.0001 263.3 / 0.22);
 }
 
 /* ── Tab bar ─────────────────────────────────────────────── */
@@ -202,7 +202,7 @@
 
   &:hover {
     color: var(--color-white);
-    background: rgba(255, 255, 255, 0.12);
+    background: oklch(100.0% 0.0001 263.3 / 0.12);
   }
 }
 
@@ -358,18 +358,18 @@
 }
 
 .codeLine:hover {
-  background-color: rgba(255, 255, 255, 0.03) !important;
+  background-color: oklch(100.0% 0.0001 263.3 / 0.03) !important;
 }
 
 /* Brighten line numbers on hover */
 .codeLine:hover .react-syntax-highlighter-line-number {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: oklch(100.0% 0.0001 263.3 / 0.5) !important;
 }
 
 /* ── Selected line state ─────────────────────────────────── */
 
 .codeLineSelected {
-  background-color: rgba(99, 102, 241, 0.12) !important;
+  background-color: oklch(58.5% 0.2041 277.1 / 0.12) !important;
 }
 
 .codeLineSelected .react-syntax-highlighter-line-number {

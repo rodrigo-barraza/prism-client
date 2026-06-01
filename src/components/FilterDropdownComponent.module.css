@@ -37,7 +37,7 @@
   user-select: none;
 
   &:hover {
-    border-color: rgba(99, 102, 241, 0.3);
+    border-color: oklch(58.5% 0.2041 277.1 / 0.3);
   }
 }
 
@@ -105,7 +105,7 @@
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md, 6px);
-  box-shadow: var(--calculated-shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.25));
+  box-shadow: var(--calculated-shadow-lg, 0 12px 40px oklch(0.0% 0.0 0.0 / 0.25));
   padding: 4px 0;
   animation: filterDropdownSlideIn 0.15s ease-out;
 }
@@ -261,5 +261,5 @@
 
 .badgeRemove:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.08);
+  background: oklch(100.0% 0.0001 263.3 / 0.08);
 }

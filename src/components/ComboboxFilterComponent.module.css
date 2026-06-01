@@ -80,7 +80,7 @@
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px oklch(0.0% 0.0 0.0 / 0.25);
   z-index: 100;
   padding: 4px;
 }

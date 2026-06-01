@@ -26,36 +26,36 @@
 
 .conversation {
   color: var(--color-indigo);
-  background: rgba(99, 102, 241, 0.08);
-  border-color: rgba(99, 102, 241, 0.2);
+  background: oklch(58.5% 0.2041 277.1 / 0.08);
+  border-color: oklch(58.5% 0.2041 277.1 / 0.2);
 }
 .conversation:hover {
-  border-color: rgba(99, 102, 241, 0.45);
-  background: rgba(99, 102, 241, 0.12);
+  border-color: oklch(58.5% 0.2041 277.1 / 0.45);
+  background: oklch(58.5% 0.2041 277.1 / 0.12);
 }
 
 /* ── Audio ────────────────────────────────────────── */
 
 .audio {
   color: var(--color-warning);
-  background: rgba(245, 158, 11, 0.08);
-  border-color: rgba(245, 158, 11, 0.2);
+  background: oklch(76.9% 0.1646 70.1 / 0.08);
+  border-color: oklch(76.9% 0.1646 70.1 / 0.2);
 }
 .audio:hover {
-  border-color: rgba(245, 158, 11, 0.45);
-  background: rgba(245, 158, 11, 0.12);
+  border-color: oklch(76.9% 0.1646 70.1 / 0.45);
+  background: oklch(76.9% 0.1646 70.1 / 0.12);
 }
 
 /* ── Embed ────────────────────────────────────────── */
 
 .embed {
   color: var(--color-emerald);
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.2);
+  background: oklch(69.6% 0.1491 162.5 / 0.08);
+  border-color: oklch(69.6% 0.1491 162.5 / 0.2);
 }
 .embed:hover {
-  border-color: rgba(16, 185, 129, 0.45);
-  background: rgba(16, 185, 129, 0.12);
+  border-color: oklch(69.6% 0.1491 162.5 / 0.45);
+  background: oklch(69.6% 0.1491 162.5 / 0.12);
 }
 
 /* ── Mini ─────────────────────────────────────────── */

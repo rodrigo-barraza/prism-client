@@ -145,7 +145,7 @@
 .vramClipInputs:focus-within {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px
-    var(--calculated-accent-primary-glow, rgba(99, 102, 241, 0.1));
+    var(--calculated-accent-primary-glow, oklch(58.5% 0.2041 277.1 / 0.1));
 }
 
 .vramClipInput {
@@ -210,7 +210,7 @@
 .chartSearchGroup:focus-within {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px
-    var(--calculated-accent-primary-glow, rgba(99, 102, 241, 0.1));
+    var(--calculated-accent-primary-glow, oklch(58.5% 0.2041 277.1 / 0.1));
 }
 
 .chartSearchIcon {

@@ -65,14 +65,14 @@
   border-radius: 6px;
 }
 
-.argRow {
+.argumentRow {
   display: flex;
   gap: 8px;
   font-size: 11.5px;
   line-height: 1.4;
 }
 
-.argKey {
+.argumentKey {
   color: var(--text-muted);
   font-family: var(--font-mono, monospace);
   flex-shrink: 0;
@@ -83,7 +83,7 @@
   }
 }
 
-.argValue {
+.argumentValue {
   color: var(--text-secondary);
   word-break: break-all;
   font-family: var(--font-mono, monospace);

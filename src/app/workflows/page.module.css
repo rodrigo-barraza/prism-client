@@ -37,7 +37,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-white);
-  background: linear-gradient(135deg, var(--color-emerald), #059669);
+  background: linear-gradient(135deg, var(--color-emerald), oklch(59.6% 0.1274 163.3));
   border: none;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
@@ -45,7 +45,7 @@
 
   &:hover {
     filter: brightness(1.1);
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 12px oklch(69.6% 0.1491 162.5 / 0.3);
   }
 
   &:disabled {
@@ -58,10 +58,10 @@
 }
 
 .runBtnStop {
-  background: linear-gradient(135deg, var(--color-rose), #e11d48);
+  background: linear-gradient(135deg, var(--color-rose), oklch(58.6% 0.222 17.6));
 
   &:hover {
-    box-shadow: 0 0 12px rgba(244, 63, 94, 0.3);
+    box-shadow: 0 0 12px oklch(64.5% 0.2154 16.4 / 0.3);
   }
 }
 
@@ -185,13 +185,13 @@
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px oklch(0.0% 0.0 0.0 / 0.2);
 
   &:focus-within {
     border-color: var(--accent-primary);
     box-shadow:
       0 0 0 2px var(--calculated-accent-primary-glow),
-      0 4px 20px rgba(0, 0, 0, 0.3);
+      0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
   }
 }
 

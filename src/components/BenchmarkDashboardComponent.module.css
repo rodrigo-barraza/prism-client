@@ -71,7 +71,7 @@
   color: var(--text-primary);
   background: var(--background-surface);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 3px oklch(0.0% 0.0 0.0 / 0.12),
     0 0 0 1px color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 

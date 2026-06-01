@@ -718,7 +718,7 @@ function DirectoryListRenderer({ result, args }: RendererProps) {
           {basename(dirPath) || "Directory"}
         </span>
       </div>
-      <div className={styles.dirList}>
+      <div className={styles.directoryList}>
         {entries.slice(0, 40).map((entry, i) => {
           const name =
             typeof entry === "string" ? entry : entry.name || entry.path || "";
@@ -726,9 +726,9 @@ function DirectoryListRenderer({ result, args }: RendererProps) {
             typeof entry === "object" &&
             (entry.type === "directory" || entry.isDirectory);
           return (
-            <div key={i} className={styles.dirEntry}>
+            <div key={i} className={styles.directoryEntry}>
               {isDir ? (
-                <Folder size={11} className={styles.dirIcon} />
+                <Folder size={11} className={styles.directoryIcon} />
               ) : (
                 <File size={11} className={styles.fileIcon} />
               )}
@@ -760,11 +760,11 @@ function GlobFilesRenderer({ result, args }: RendererProps) {
           <code className={styles.inlineCode}>{pattern}</code>
         </span>
       </div>
-      <div className={styles.dirList}>
+      <div className={styles.directoryList}>
         {files.slice(0, 40).map((f, i) => {
           const path = typeof f === "string" ? f : f.path || f.name || "";
           return (
-            <div key={i} className={styles.dirEntry}>
+            <div key={i} className={styles.directoryEntry}>
               <File size={11} className={styles.fileIcon} />
               <span>{path}</span>
             </div>
@@ -1254,7 +1254,7 @@ function GitStatusRenderer({ result }: RendererProps) {
         />
       </div>
       {!clean && (
-        <div className={styles.dirList}>
+        <div className={styles.directoryList}>
           {files.slice(0, 30).map((f, i) => {
             const name = typeof f === "string" ? f : f.path || f.file || "";
             const status =
@@ -1262,7 +1262,7 @@ function GitStatusRenderer({ result }: RendererProps) {
                 ? f.status || f.state || ""
                 : "";
             return (
-              <div key={i} className={styles.dirEntry}>
+              <div key={i} className={styles.directoryEntry}>
                 {status && <span className={styles.gitStatus}>{status}</span>}
                 <span>{name}</span>
               </div>
@@ -1473,11 +1473,11 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
       )}
 
       {action === "get_elements" && parsed.elements && (
-        <div className={styles.dirList}>
+        <div className={styles.directoryList}>
           {parsed.elements
             .slice(0, 30)
             .map((element: { selector: string; text?: string }, i: number) => (
-              <div key={i} className={styles.dirEntry}>
+              <div key={i} className={styles.directoryEntry}>
                 <code className={styles.inlineCode}>{element.selector}</code>
 
                 {element.text && <span>{element.text}</span>}

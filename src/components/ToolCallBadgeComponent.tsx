@@ -124,7 +124,7 @@ export default function ToolCallBadgeComponent({
   tooltip,
 }: ToolCallBadgeProps) {
   const displayName = resolveDisplayName(name);
-  const { Icon, color } = resolveToolVisuals(name) as any;
+  const { Icon, color } = resolveToolVisuals(name);
   const tooltipLabel = tooltip || name;
 
   const badge = (

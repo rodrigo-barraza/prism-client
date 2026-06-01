@@ -41,7 +41,7 @@
   justify-content: center;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px oklch(0.0% 0.0 0.0 / 0.2);
 }
 
 /* ── Role node avatar variants ── */
@@ -51,7 +51,7 @@
   color: var(--text-primary);
 }
 
-.aiNode .avatar {
+.assistantNode .avatar {
   background: var(--calculated-accent-primary-glow);
   color: var(--accent-primary);
   border: 1px solid var(--accent-primary);
@@ -76,7 +76,7 @@
 }
 
 .systemNode .avatar {
-  background: var(--calculated-color-warning-subtle, rgba(245, 158, 11, 0.08));
+  background: var(--calculated-color-warning-subtle, oklch(76.9% 0.1646 70.1 / 0.08));
   color: var(--color-warning, var(--color-warning));
   border: 1px solid var(--color-warning, var(--color-warning));
 }
@@ -210,8 +210,8 @@
 .thinkingStreaming {
   border-color: transparent;
   box-shadow:
-    0 0 12px -2px rgba(99, 102, 241, 0.4),
-    0 0 24px -4px rgba(139, 92, 246, 0.2);
+    0 0 12px -2px oklch(58.5% 0.2041 277.1 / 0.4),
+    0 0 24px -4px oklch(60.6% 0.219 292.7 / 0.2);
 
   /* Spinning conic-gradient pseudo-element as rainbow border */
   &::before {
@@ -391,7 +391,7 @@
   display: block;
   background: var(
     --calculated-text-inverse,
-    #fff
+    oklch(100.0% 0.0001 263.3)
   ); /* PDF renderer needs light background */
 }
 
@@ -446,7 +446,7 @@
   & a {
     color: var(--accent-primary);
     text-decoration: underline;
-    text-decoration-color: rgba(138, 120, 255, 0.3);
+    text-decoration-color: oklch(65.5% 0.1932 285.8 / 0.3);
     transition: text-decoration-color 0.2s;
 
     &:hover {
@@ -828,8 +828,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 4px 12px oklch(0.0% 0.0 0.0 / 0.15),
+    0 1px 3px oklch(0.0% 0.0 0.0 / 0.1),
     inset 0 0 12px -6px
       color-mix(in srgb, var(--accent-primary) 15%, transparent);
 
@@ -838,7 +838,7 @@
     border-color: var(--accent-primary);
     box-shadow:
       0 6px 20px color-mix(in srgb, var(--accent-primary) 40%, transparent),
-      0 2px 6px rgba(0, 0, 0, 0.15);
+      0 2px 6px oklch(0.0% 0.0 0.0 / 0.15);
     transform: translateY(1px);
 
     & .stickyUserMsgText {
@@ -847,15 +847,15 @@
     }
 
     & .stickyUserMsgAvatar {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.25);
+      background: oklch(100.0% 0.0001 263.3 / 0.15);
+      border-color: oklch(100.0% 0.0001 263.3 / 0.25);
       color: var(--color-white);
     }
 
     & .stickyUserMsgBadge {
-      background: rgba(255, 255, 255, 0.15);
+      background: oklch(100.0% 0.0001 263.3 / 0.15);
       color: var(--color-white);
-      border-color: rgba(255, 255, 255, 0.25);
+      border-color: oklch(100.0% 0.0001 263.3 / 0.25);
     }
 
     & .stickyUserMsgChevron {

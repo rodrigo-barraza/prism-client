@@ -38,8 +38,8 @@
 }
 
 .audioRecording {
-  border-color: rgba(239, 68, 68, 0.25);
-  background: rgba(239, 68, 68, 0.04);
+  border-color: oklch(63.7% 0.2078 25.3 / 0.25);
+  background: oklch(63.7% 0.2078 25.3 / 0.04);
 }
 
 .audioStreaming {
@@ -79,7 +79,7 @@
   justify-content: center;
   color: white;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 1px 3px oklch(0.0% 0.0 0.0 / 0.4));
 }
 
 .streamingBars {
@@ -97,11 +97,11 @@
   width: 2px;
   height: 18px;
   border-radius: 1px;
-  background: rgba(255, 255, 255, 0.9);
+  background: oklch(100.0% 0.0001 263.3 / 0.9);
   transform-origin: center;
   will-change: transform, opacity;
   animation: streamingBarPulse 1.2s ease-in-out infinite;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 2px oklch(100.0% 0.0001 263.3 / 0.3));
 }
 
 @keyframes streamingBarPulse {
@@ -122,7 +122,7 @@
   color: white;
   white-space: nowrap;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 1px 3px oklch(0.0% 0.0 0.0 / 0.4));
 }
 
 /* ── Waveform area (shared) ── */
@@ -198,7 +198,7 @@
   flex-shrink: 0;
 }
 
-.recTimer {
+.recordingTimer {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-danger);

@@ -478,19 +478,19 @@ export default function CustomAgentsPanel({
               a subtle, dark image for best results
             </span>
             {editingAgent.backgroundImage && (
-              <div className={styles.bgPreview}>
+              <div className={styles.backgroundPreview}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={editingAgent.backgroundImage}
                   alt="Background preview"
-                  className={styles.bgPreviewImg}
+                  className={styles.backgroundPreviewImg}
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     e.currentTarget.style.display = "none";
                   }}
                 />
                 <button
                   type="button"
-                  className={styles.bgPreviewClear}
+                  className={styles.backgroundPreviewClear}
                   onClick={() => updateField("backgroundImage", "")}
                   title="Remove background image"
                 >

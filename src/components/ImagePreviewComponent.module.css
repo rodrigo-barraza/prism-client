@@ -6,7 +6,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.92);
+  background: oklch(0.0% 0.0 0.0 / 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -196,8 +196,8 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: oklch(100.0% 0.0001 263.3 / 0.1);
+  border: 1px solid oklch(100.0% 0.0001 263.3 / 0.15);
   border-radius: 50%;
   color: var(--color-white);
   width: 40px;
@@ -211,7 +211,7 @@
 }
 
 .closeButton:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: oklch(100.0% 0.0001 263.3 / 0.2);
 }
 
 /* Eraser mode cursor */

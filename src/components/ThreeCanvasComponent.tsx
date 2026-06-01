@@ -1,8 +1,30 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
+import type { CSSProperties } from "react";
+import * as THREE from "three";
 import ThreeService from "../services/ThreeService";
+import type { ThreeCreateOptions, TickState } from "../services/ThreeService";
 import styles from "./ThreeCanvasComponent.module.css";
+
+export interface SetupState {
+  scene: InstanceType<typeof THREE.Scene>;
+  camera: InstanceType<typeof THREE.PerspectiveCamera>;
+  renderer: InstanceType<typeof THREE.WebGLRenderer>;
+  timer: InstanceType<typeof THREE.Timer>;
+  THREE: typeof THREE;
+}
+
+export type SetupCallback = (state: SetupState) => (() => void) | void;
+
+export interface ThreeCanvasComponentProps extends Omit<ThreeCreateOptions, "toneMapping"> {
+  onSetup?: SetupCallback;
+  onTick?: (state: TickState) => void;
+  toneMapping?: string;
+  paused?: boolean;
+  className?: string;
+  style?: CSSProperties;
+}
 
 /**
  * ThreeCanvasComponent — Declarative React wrapper over ThreeService.
@@ -17,25 +39,6 @@ import styles from "./ThreeCanvasComponent.module.css";
  *   - `onTick(state)` fires every frame. Use it for animation logic.
  *   - All GPU resources are deterministically disposed on unmount via
  *     ThreeService.destroy().
- *
- * Props:
- *   onSetup         — (state: SetupState) => void | cleanup function
- *   onTick          — (state: TickState) => void
- *   cameraFov       — Perspective camera FOV (default 60)
- *   cameraNear      — Near clipping plane (default 0.1)
- *   cameraFar       — Far clipping plane (default 1000)
- *   cameraPosition  — [x, y, z] initial camera position (default [0, 0, 5])
- *   antialias       — WebGL antialiasing (default true)
- *   alpha           — Transparent canvas background (default true)
- *   toneMapping     — Tone mapping preset string (default "ACESFilmic")
- *   toneMappingExposure — Exposure value (default 1)
- *   shadowMap       — Enable shadow maps (default false)
- *   paused          — Pause rendering (default false)
- *   className       — CSS class for the container div
- *   style           — Inline styles for the container div
- *
- * SetupState: { scene, camera, renderer, clock, THREE }
- * TickState:  { scene, camera, renderer, clock, dt, elapsed, width, height }
  */
 export default function ThreeCanvasComponent({
   onSetup,
@@ -52,12 +55,12 @@ export default function ThreeCanvasComponent({
   paused = false,
   className = "",
   style,
-}: any) {
+}: ThreeCanvasComponentProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const instanceIdRef = useRef<any>(null);
-  const onTickRef = useRef<any>(onTick);
-  const setupCleanupRef = useRef<any>(null);
+  const instanceIdRef = useRef<string | null>(null);
+  const onTickRef = useRef<((state: TickState) => void) | undefined>(onTick);
+  const setupCleanupRef = useRef<(() => void) | void | null>(null);
 
   // Keep onTick ref current without re-creating the instance
   useEffect(() => {
@@ -66,12 +69,12 @@ export default function ThreeCanvasComponent({
 
   // Pause/resume reactively
   useEffect(() => {
-    const id = instanceIdRef.current;
-    if (!id) return;
+    const instanceId = instanceIdRef.current;
+    if (!instanceId) return;
     if (paused) {
-      ThreeService.pause(id);
+      ThreeService.pause(instanceId);
     } else {
-      ThreeService.resume(id);
+      ThreeService.resume(instanceId);
     }
   }, [paused]);
 
@@ -104,7 +107,7 @@ export default function ThreeCanvasComponent({
   });
 
   // Stable tick wrapper that always calls the latest onTick ref
-  const tickWrapper = useCallback((state: any) => {
+  const tickWrapper = useCallback((state: TickState) => {
     onTickRef.current?.(state);
   }, []);
 
@@ -127,25 +130,25 @@ export default function ThreeCanvasComponent({
     } = propsRef.current;
 
     // Create the Three.js instance
-    const id = ThreeService.create(canvas, {
+    const instanceId = ThreeService.create(canvas, {
       cameraFov: fov,
       cameraNear: near,
       cameraFar: far,
       cameraPosition: pos,
       antialias: anti,
       alpha: alp,
-      toneMapping: tone,
+      toneMapping: tone as ThreeCreateOptions["toneMapping"],
       toneMappingExposure: exp,
       shadowMap: shadow,
     });
 
-    instanceIdRef.current = id;
+    instanceIdRef.current = instanceId;
 
     // Register the tick callback
-    ThreeService.setTick(id, tickWrapper);
+    ThreeService.setTick(instanceId, tickWrapper);
 
     // Fire the setup callback — pass THREE so consumers don't import it
-    const instance = ThreeService.getInstance(id);
+    const instance = ThreeService.getInstance(instanceId);
     if (instance && currentSetup) {
       const cleanup = currentSetup({
         ...instance,
@@ -162,7 +165,7 @@ export default function ThreeCanvasComponent({
       setupCleanupRef.current = null;
 
       // Destroy the Three.js instance (disposes all GPU resources)
-      ThreeService.destroy(id);
+      ThreeService.destroy(instanceId);
       instanceIdRef.current = null;
     };
   }, [tickWrapper]);

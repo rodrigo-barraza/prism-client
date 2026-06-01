@@ -176,7 +176,7 @@ export default function HistoryItemComponent({
     >
       {onToggleFavorite && (
         <button
-          className={`${styles.favButton} ${isFavorite ? styles.favBtnActive : ""}`}
+          className={`${styles.favoriteButton} ${isFavorite ? styles.favoriteButtonActive : ""}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onToggleFavorite(item.id);

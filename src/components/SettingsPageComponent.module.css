@@ -925,7 +925,7 @@
   overflow: hidden;
 }
 
-.envTableTitle {
+.environmentTableTitle {
   display: block;
   padding: 8px 10px;
   font-size: 0.6875rem;
@@ -937,7 +937,7 @@
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.envRow {
+.environmentRow {
   display: flex;
   align-items: baseline;
   gap: 12px;
@@ -945,12 +945,12 @@
   font-size: var(--font-size-xs);
 }
 
-.envRow + .envRow {
+.environmentRow + .environmentRow {
   border-top: 1px solid
     color-mix(in srgb, var(--calculated-border-subtle) 50%, transparent);
 }
 
-.envKey {
+.environmentKey {
   flex-shrink: 0;
   font-family: var(--font-mono, monospace);
   font-size: 10.5px;
@@ -959,7 +959,7 @@
   min-width: 190px;
 }
 
-.envDesc {
+.environmentDescription {
   color: var(--text-tertiary);
   line-height: 1.4;
 }

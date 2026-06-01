@@ -16,8 +16,8 @@
 .toolCallsStreaming {
   position: relative;
   box-shadow:
-    0 0 12px -2px rgba(249, 115, 22, 0.4),
-    0 0 24px -4px rgba(245, 158, 11, 0.2);
+    0 0 12px -2px oklch(70.5% 0.1867 47.6 / 0.4),
+    0 0 24px -4px oklch(76.9% 0.1646 70.1 / 0.2);
 
   /* Spinning conic-gradient pseudo-element as rainbow border */
   &::before {
@@ -86,7 +86,7 @@
   }
 
   & svg:first-child {
-    filter: drop-shadow(0 0 3px rgba(249, 115, 22, 0.4));
+    filter: drop-shadow(0 0 3px oklch(70.5% 0.1867 47.6 / 0.4));
   }
 }
 

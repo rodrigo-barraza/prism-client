@@ -33,9 +33,9 @@
   border: 1px solid var(--calculated-border-color);
   border-radius: 2px;
   box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.45),
-    0 4px 16px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 24px 64px oklch(0.0% 0.0 0.0 / 0.45),
+    0 4px 16px oklch(0.0% 0.0 0.0 / 0.25),
+    inset 0 1px 0 oklch(100.0% 0.0001 263.3 / 0.04);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   overflow: visible;

@@ -606,7 +606,7 @@ export default function AudioPlayerRecorderComponent({
           />
         </div>
 
-        <span className={styles.recTimer}>{formatTime(recSeconds)}</span>
+        <span className={styles.recordingTimer}>{formatTime(recSeconds)}</span>
 
         <Volume2 size={14} className={styles.fadedIcon} />
         <div className={styles.fadedSlider} />

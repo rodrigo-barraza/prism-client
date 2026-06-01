@@ -105,16 +105,16 @@
 .chatHeaderNewBtnGlitch {
   font-weight: 800;
   letter-spacing: -0.5px;
-  color: hsl(300, 100%, 85%) !important;
-  background: hsl(280, 80%, 20%) !important;
-  border-color: hsl(300, 100%, 50%) !important;
+  color: oklch(86.1% 0.1325 326.6) !important;
+  background: oklch(29.2% 0.133 310.5) !important;
+  border-color: oklch(70.2% 0.3225 328.4) !important;
   animation:
     chatGlitchHue 0.15s linear infinite,
     chatGlitchJitter 0.05s steps(2) infinite;
   will-change: filter, transform, text-shadow;
   text-shadow:
-    1px 0 0 hsl(0, 100%, 60%),
-    -1px 0 0 hsl(180, 100%, 60%);
+    1px 0 0 oklch(64.8% 0.2376 27.0),
+    -1px 0 0 oklch(90.9% 0.1481 194.9);
   overflow: hidden;
 }
 
@@ -195,8 +195,8 @@
 .hasBackground {
   background-image:
     linear-gradient(
-      var(--background-surface, rgba(10, 10, 15, 0.94)),
-      var(--background-surface, rgba(10, 10, 15, 0.94))
+      var(--background-surface, oklch(14.7% 0.0107 285.0 / 0.94)),
+      var(--background-surface, oklch(14.7% 0.0107 285.0 / 0.94))
     ),
     var(--agent-background-image);
   background-size: cover;
@@ -305,14 +305,14 @@
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px oklch(0.0% 0.0 0.0 / 0.2);
 }
 
 .inputBox:focus-within {
   border-color: var(--accent-primary);
   box-shadow:
     0 0 0 2px var(--calculated-accent-primary-glow),
-    0 4px 20px rgba(0, 0, 0, 0.3);
+    0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
 }
 
 .inputBoxDragActive {
@@ -320,7 +320,7 @@
   border-style: dashed;
   box-shadow:
     0 0 0 2px var(--calculated-accent-primary-glow),
-    0 4px 20px rgba(0, 0, 0, 0.3);
+    0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
 }
 
 .inputBoxGenerating {
@@ -332,8 +332,8 @@
   background-clip: padding-box, border-box;
   animation: prismRotate var(--prism-speed) linear infinite;
   box-shadow:
-    0 0 12px rgba(99, 102, 241, 0.15),
-    0 4px 20px rgba(0, 0, 0, 0.3);
+    0 0 12px oklch(58.5% 0.2041 277.1 / 0.15),
+    0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
 }
 
 .dragOverlay {
@@ -412,7 +412,7 @@
   background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 -8px 32px oklch(0.0% 0.0 0.0 / 0.25);
   display: flex;
   flex-direction: column;
   padding: 4px 0;
@@ -659,7 +659,7 @@
   background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-lg);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px oklch(0.0% 0.0 0.0 / 0.2);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -676,13 +676,13 @@
     --rainbow-gradient,
     linear-gradient(
       90deg,
-      #ff0000,
-      #ff7f00,
-      #ffff00,
-      #00ff00,
-      #0000ff,
-      #4b0082,
-      #8b00ff
+      oklch(62.8% 0.2576 29.2),
+      oklch(73.0% 0.1864 52.6),
+      oklch(96.8% 0.2109 109.8),
+      oklch(86.6% 0.2948 142.5),
+      oklch(45.2% 0.3133 264.1),
+      oklch(33.9% 0.1793 301.7),
+      oklch(54.3% 0.294 297.5)
     )
   );
 }
@@ -865,8 +865,8 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--color-success);
-  background: rgba(52, 211, 153, 0.06);
-  border: 1px solid rgba(52, 211, 153, 0.15);
+  background: oklch(77.3% 0.1535 163.3 / 0.06);
+  border: 1px solid oklch(77.3% 0.1535 163.3 / 0.15);
   border-radius: var(--border-radius-sm);
   animation: fadeIn 0.3s ease-out;
 }
@@ -876,7 +876,7 @@
   height: 8px;
   border-radius: 50%;
   background: var(--color-success);
-  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+  box-shadow: 0 0 6px oklch(77.3% 0.1535 163.3 / 0.6);
   animation: liveStreamPulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -885,18 +885,18 @@
   0%,
   100% {
     opacity: 1;
-    filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.6));
+    filter: drop-shadow(0 0 6px oklch(77.3% 0.1535 163.3 / 0.6));
   }
   50% {
     opacity: 0.5;
-    filter: drop-shadow(0 0 12px rgba(52, 211, 153, 0.3));
+    filter: drop-shadow(0 0 12px oklch(77.3% 0.1535 163.3 / 0.3));
   }
 }
 
 .liveStreamStale {
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: oklch(100.0% 0.0001 263.3 / 0.03);
+  border-color: oklch(100.0% 0.0001 263.3 / 0.08);
 }
 
 .liveStreamDotStale {
@@ -910,7 +910,7 @@
 
 .liveMicReady {
   background: var(--accent-primary) !important;
-  color: #fff !important;
+  color: oklch(100.0% 0.0001 263.3) !important;
   transition:
     background 0.2s,
     color 0.2s;
@@ -924,7 +924,7 @@
 .liveMicButton {
   position: relative;
   background: var(--color-danger) !important;
-  color: #fff !important;
+  color: oklch(100.0% 0.0001 263.3) !important;
 }
 
 .liveMicButton::after {
@@ -932,7 +932,7 @@
   position: absolute;
   inset: -6px;
   border-radius: 50%;
-  border: 2px solid rgba(239, 68, 68, 0.4);
+  border: 2px solid oklch(63.7% 0.2078 25.3 / 0.4);
   animation: liveMicRing 1.5s ease-in-out infinite;
   pointer-events: none;
   will-change: transform, opacity;

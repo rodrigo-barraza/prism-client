@@ -28,30 +28,30 @@
 /* ── Live tok/s — actively generating ── */
 .live {
   color: rgb(52, 211, 153);
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.25);
+  background: oklch(77.3% 0.1535 163.3 / 0.08);
+  border-color: oklch(77.3% 0.1535 163.3 / 0.25);
   animation: throughputPulse 2s ease-in-out infinite;
   will-change: opacity;
 }
 
 .live:hover {
-  border-color: rgba(52, 211, 153, 0.5);
-  background: rgba(52, 211, 153, 0.14);
+  border-color: oklch(77.3% 0.1535 163.3 / 0.5);
+  background: oklch(77.3% 0.1535 163.3 / 0.14);
 }
 
 /* ── Stale tok/s — held value, no active generation ── */
 .stale {
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: oklch(100.0% 0.0001 263.3 / 0.03);
+  border-color: oklch(100.0% 0.0001 263.3 / 0.08);
   opacity: 0.5;
 }
 
 /* ── Average tok/s — static from completed session ── */
 .average {
   color: rgb(52, 211, 153);
-  background: rgba(52, 211, 153, 0.06);
-  border-color: rgba(52, 211, 153, 0.15);
+  background: oklch(77.3% 0.1535 163.3 / 0.06);
+  border-color: oklch(77.3% 0.1535 163.3 / 0.15);
   opacity: 0.7;
 }
 

@@ -40,16 +40,16 @@
 .newBtnGlitch {
   font-weight: 800;
   letter-spacing: -0.5px;
-  color: hsl(300, 100%, 85%) !important;
-  background: hsl(280, 80%, 20%) !important;
-  border-color: hsl(300, 100%, 50%) !important;
+  color: oklch(86.1% 0.1325 326.6) !important;
+  background: oklch(29.2% 0.133 310.5) !important;
+  border-color: oklch(70.2% 0.3225 328.4) !important;
   animation:
     glitchHueButton 0.15s linear infinite,
     glitchJitterButton 0.05s steps(2) infinite;
   will-change: filter, transform, text-shadow;
   text-shadow:
-    1px 0 0 hsl(0, 100%, 60%),
-    -1px 0 0 hsl(180, 100%, 60%);
+    1px 0 0 oklch(64.8% 0.2376 27.0),
+    -1px 0 0 oklch(90.9% 0.1481 194.9);
   overflow: hidden;
 }
 

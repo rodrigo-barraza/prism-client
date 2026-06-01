@@ -41,12 +41,12 @@
 
 .statusSuccess {
   color: var(--color-success);
-  background: rgba(52, 211, 153, 0.1);
+  background: oklch(77.3% 0.1535 163.3 / 0.1);
 }
 
 .statusError {
   color: var(--color-danger-light);
-  background: rgba(248, 113, 113, 0.1);
+  background: oklch(71.1% 0.1661 22.2 / 0.1);
 }
 
 /* ── Path pill ─────────────────────────────────────────────── */
@@ -132,13 +132,13 @@
 
 .diffAdded {
   color: var(--color-success);
-  background: rgba(52, 211, 153, 0.08);
+  background: oklch(77.3% 0.1535 163.3 / 0.08);
   display: inline;
 }
 
 .diffRemoved {
   color: var(--color-danger-light);
-  background: rgba(248, 113, 113, 0.08);
+  background: oklch(71.1% 0.1661 22.2 / 0.08);
   display: inline;
 }
 
@@ -154,7 +154,7 @@
   color: var(--color-danger-light);
   padding: 4px 8px;
   border-radius: 4px;
-  background: rgba(248, 113, 113, 0.06);
+  background: oklch(71.1% 0.1661 22.2 / 0.06);
 }
 
 /* ── Raw result toggle ─────────────────────────────────────── */
@@ -246,7 +246,7 @@
 
 /* ── Directory list ────────────────────────────────────────── */
 
-.dirList {
+.directoryList {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -255,7 +255,7 @@
   padding: 4px 0;
 }
 
-.dirEntry {
+.directoryEntry {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -266,11 +266,11 @@
   border-radius: 3px;
 }
 
-.dirEntry:hover {
+.directoryEntry:hover {
   background: var(--background-elevated);
 }
 
-.dirIcon {
+.directoryIcon {
   color: var(--color-info);
   flex-shrink: 0;
 }
@@ -345,8 +345,8 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.015);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: oklch(100.0% 0.0001 263.3 / 0.015);
+  border-bottom: 1px solid oklch(100.0% 0.0001 263.3 / 0.06);
   flex-shrink: 0;
 }
 
@@ -370,7 +370,7 @@
 .terminalLineCount {
   margin-left: auto;
   font-size: 0.625rem;
-  color: rgba(255, 255, 255, 0.2);
+  color: oklch(100.0% 0.0001 263.3 / 0.2);
   font-family: var(--font-mono, monospace);
   font-weight: 400;
 }
@@ -400,7 +400,7 @@
 }
 
 .termLine:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: oklch(100.0% 0.0001 263.3 / 0.02);
 }
 
 /* ── Line Number Gutter ────────────────────────────────────── */
@@ -410,15 +410,15 @@
   width: 32px;
   text-align: right;
   padding-right: 10px;
-  color: rgba(255, 255, 255, 0.08);
+  color: oklch(100.0% 0.0001 263.3 / 0.08);
   font-size: 0.625rem;
   user-select: none;
-  border-right: 1px solid rgba(255, 255, 255, 0.03);
+  border-right: 1px solid oklch(100.0% 0.0001 263.3 / 0.03);
   margin-right: 10px;
 }
 
 .termLine:hover .termLineNum {
-  color: rgba(255, 255, 255, 0.18);
+  color: oklch(100.0% 0.0001 263.3 / 0.18);
 }
 
 /* ── Line Content ──────────────────────────────────────────── */
@@ -433,17 +433,17 @@
 /* ── Log Level Line Accents ────────────────────────────────── */
 
 .termLineError {
-  border-left-color: rgba(248, 113, 113, 0.5);
-  background: rgba(239, 68, 68, 0.03);
+  border-left-color: oklch(71.1% 0.1661 22.2 / 0.5);
+  background: oklch(63.7% 0.2078 25.3 / 0.03);
 }
 
 .termLineWarn {
-  border-left-color: rgba(251, 191, 36, 0.4);
-  background: rgba(251, 191, 36, 0.02);
+  border-left-color: oklch(83.7% 0.1643 84.4 / 0.4);
+  background: oklch(83.7% 0.1643 84.4 / 0.02);
 }
 
 .termLineSuccess {
-  border-left-color: rgba(52, 211, 153, 0.4);
+  border-left-color: oklch(77.3% 0.1535 163.3 / 0.4);
 }
 
 /* ── Log Level Content Colors ──────────────────────────────── */
@@ -505,7 +505,7 @@
   font-family: var(--font-mono, monospace);
   padding: 0 4px;
   border-radius: 3px;
-  background: rgba(96, 165, 250, 0.12);
+  background: oklch(71.4% 0.1435 254.6 / 0.12);
   color: var(--color-info);
   flex-shrink: 0;
 }
@@ -592,11 +592,11 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
-  background: #ffffff;
+  background: oklch(100.0% 0.0001 263.3);
   width: 100%;
   max-width: 480px;
   aspect-ratio: 1 / 1;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px oklch(0.0% 0.0 0.0 / 0.15);
   animation: turtleFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: transform, opacity;
   transition:
@@ -606,7 +606,7 @@
 
 .turtleEmbedWrapper:hover {
   border-color: var(--accent-primary);
-  box-shadow: 0 6px 24px rgba(138, 120, 255, 0.15);
+  box-shadow: 0 6px 24px oklch(65.5% 0.1932 285.8 / 0.15);
 }
 
 .turtleEmbedFrame {
@@ -635,10 +635,10 @@
   border-radius: 8px;
   overflow: auto;
   border: 1px solid var(--calculated-border-color);
-  background: #0c0c0c;
+  background: oklch(15.4% 0.0 263.3);
   max-width: 100%;
   max-height: 520px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 20px oklch(0.0% 0.0 0.0 / 0.25);
   animation: turtleFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   scrollbar-width: thin;
 }
@@ -652,7 +652,7 @@
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.02em;
-  color: #c8d6e5;
+  color: oklch(87.0% 0.0258 250.0);
   white-space: pre;
   user-select: all;
 }
@@ -942,8 +942,8 @@
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
   color: var(--color-success);
-  background: rgba(52, 211, 153, 0.08);
-  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: oklch(77.3% 0.1535 163.3 / 0.08);
+  border: 1px solid oklch(77.3% 0.1535 163.3 / 0.25);
   animation: workerSpeedPulse 2s ease-in-out infinite;
   will-change: opacity;
   flex-shrink: 0;
@@ -970,7 +970,7 @@
   border-radius: 12px;
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 32px oklch(0.0% 0.0 0.0 / 0.12);
   backdrop-filter: blur(12px);
   overflow: hidden;
   position: relative;
@@ -992,9 +992,9 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: oklch(100.0% 0.0001 263.3 / 0.05);
+  border: 1px solid oklch(100.0% 0.0001 263.3 / 0.1);
+  box-shadow: 0 4px 12px oklch(0.0% 0.0 0.0 / 0.1);
   transition:
     transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.2s;
@@ -1027,9 +1027,9 @@
   height: 200px;
   position: relative;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
+  background: oklch(100.0% 0.0001 263.3 / 0.02);
+  border: 1px solid oklch(100.0% 0.0001 263.3 / 0.05);
+  box-shadow: inset 0 0 20px oklch(100.0% 0.0001 263.3 / 0.02);
   overflow: hidden;
 }
 
@@ -1069,7 +1069,7 @@
   z-index: 2;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+  filter: drop-shadow(0 8px 16px oklch(0.0% 0.0 0.0 / 0.25));
 }
 
 .mergedEmojiImage:hover {
@@ -1129,7 +1129,7 @@
   border-radius: 10px;
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px oklch(0.0% 0.0 0.0 / 0.05);
   transition:
     transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.2s,
@@ -1142,7 +1142,7 @@
   transform: translateY(-3px);
   border-color: var(--accent-primary);
   box-shadow: 0 8px 20px
-    color-mix(in srgb, var(--accent-primary) 12%, rgba(0, 0, 0, 0.1));
+    color-mix(in srgb, var(--accent-primary) 12%, oklch(0.0% 0.0 0.0 / 0.1));
 }
 
 .optionCardHeader {
@@ -1182,5 +1182,5 @@
   width: 60px;
   height: 60px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 4px 8px oklch(0.0% 0.0 0.0 / 0.15));
 }

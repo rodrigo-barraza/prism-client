@@ -303,7 +303,7 @@ export default function MediaPageComponent({
       render: (m: any) => (
         <Link
           href={`${convBasePath}/${m.convId}`}
-          className={styles.convLink}
+          className={styles.conversationLink}
           title={m.convTitle}
         >
           <ExternalLink size={10} />

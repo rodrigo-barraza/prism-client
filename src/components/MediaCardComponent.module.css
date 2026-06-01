@@ -15,15 +15,15 @@
 .card:hover {
   border-color: var(--accent-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px oklch(0.0% 0.0 0.0 / 0.15);
 }
 
-.card:hover .favButton {
+.card:hover .favoriteButton {
   opacity: 0.5;
 }
 
 /* ── Favorite button ── */
-.favButton {
+.favoriteButton {
   position: absolute;
   top: 6px;
   left: 6px;
@@ -33,7 +33,7 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: rgba(0, 0, 0, 0.5);
+  background: oklch(0.0% 0.0 0.0 / 0.5);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border: none;
@@ -45,12 +45,12 @@
   transition: all 0.2s ease;
 }
 
-.favButton:hover {
+.favoriteButton:hover {
   opacity: 1 !important;
   transform: scale(1.1);
 }
 
-.favBtnActive {
+.favoriteButtonActive {
   color: var(--color-warning);
   opacity: 1;
 }
@@ -128,12 +128,12 @@
 }
 
 .originUser {
-  background: rgba(99, 102, 241, 0.75);
+  background: oklch(58.5% 0.2041 277.1 / 0.75);
   color: white;
 }
 
 .originAi {
-  background: rgba(168, 85, 247, 0.75);
+  background: oklch(62.7% 0.2326 303.9 / 0.75);
   color: white;
 }
 
@@ -145,7 +145,7 @@
   gap: 6px;
 }
 
-.convLink {
+.conversationLink {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -156,13 +156,13 @@
   transition: color 0.15s ease;
 }
 
-.convLink > span {
+.conversationLink > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.convLink:hover {
+.conversationLink:hover {
   color: var(--accent-primary);
 }
 
@@ -183,7 +183,7 @@
   gap: 4px;
 }
 
-.compact .convLink {
+.compact .conversationLink {
   font-size: var(--font-size-xs);
 }
 

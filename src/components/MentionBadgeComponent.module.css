@@ -63,7 +63,7 @@
   background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 16px oklch(0.0% 0.0 0.0 / 0.25);
   font-size: var(--font-size-xs);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   color: var(--text-primary);

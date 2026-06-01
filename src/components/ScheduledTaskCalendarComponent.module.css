@@ -257,8 +257,8 @@
 }
 
 .calendar-event-chip.is-color-custom {
-  background: color-mix(in oklch, var(--color-indigo, #6366f1) 18%, transparent);
-  color: var(--color-indigo, #6366f1);
+  background: color-mix(in oklch, var(--color-indigo, oklch(58.5% 0.2041 277.1)) 18%, transparent);
+  color: var(--color-indigo, oklch(58.5% 0.2041 277.1));
 }
 
 .calendar-event-chip.is-color-trigger {
@@ -299,7 +299,7 @@
 .is-color-custom.calendar-event-chip-dot,
 .is-color-custom.calendar-popover-event-dot,
 .is-color-custom.calendar-legend-dot {
-  background: var(--color-indigo, #6366f1);
+  background: var(--color-indigo, oklch(58.5% 0.2041 277.1));
 }
 
 .is-color-trigger.calendar-event-chip-dot,

@@ -10,8 +10,8 @@
   font-weight: 500;
   letter-spacing: 0.2px;
   color: rgb(99, 102, 241);
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: oklch(58.5% 0.2041 277.1 / 0.08);
+  border: 1px solid oklch(58.5% 0.2041 277.1 / 0.2);
   white-space: nowrap;
   transition:
     border-color 0.2s,
@@ -20,8 +20,8 @@
 }
 
 .badge:hover {
-  border-color: rgba(99, 102, 241, 0.45);
-  background: rgba(99, 102, 241, 0.12);
+  border-color: oklch(58.5% 0.2041 277.1 / 0.45);
+  background: oklch(58.5% 0.2041 277.1 / 0.12);
 }
 
 .badge svg {

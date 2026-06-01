@@ -48,7 +48,7 @@
 
   &:hover {
     border-color: var(--calculated-border-color);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px oklch(0.0% 0.0 0.0 / 0.08);
   }
 }
 
@@ -66,17 +66,17 @@
 
 .successIcon {
   background: hsla(145, 65%, 42%, 0.12);
-  color: hsl(145, 65%, 42%);
+  color: oklch(66.8% 0.1642 152.0);
 }
 
 .latencyIcon {
   background: hsla(35, 90%, 55%, 0.12);
-  color: hsl(35, 90%, 55%);
+  color: oklch(76.5% 0.158 68.5);
 }
 
 .domainIcon {
   background: hsla(270, 60%, 55%, 0.12);
-  color: hsl(270, 60%, 55%);
+  color: oklch(55.2% 0.2042 303.2);
 }
 
 .statContent {
@@ -126,19 +126,19 @@
 }
 
 .errorTitle {
-  color: hsl(0, 70%, 60%);
+  color: oklch(62.8% 0.1787 23.8);
 }
 
 /* ── Cell styles ──────────────────────────────────────────── */
 
 .errorCount {
-  color: hsl(0, 70%, 60%);
+  color: oklch(62.8% 0.1787 23.8);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .highErrorRate {
-  color: hsl(0, 80%, 55%);
+  color: oklch(60.6% 0.2187 26.8);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -181,7 +181,7 @@
 .errorCardCount {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: hsl(0, 70%, 60%);
+  color: oklch(62.8% 0.1787 23.8);
   white-space: nowrap;
 }
 

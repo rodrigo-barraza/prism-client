@@ -429,7 +429,7 @@
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: #0891b2;
+    background: oklch(60.9% 0.111 221.7);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px
       color-mix(in srgb, var(--color-cyan) 30%, transparent);

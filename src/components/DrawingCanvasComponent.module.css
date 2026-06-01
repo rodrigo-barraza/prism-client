@@ -6,7 +6,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.92);
+  background: oklch(0.0% 0.0 0.0 / 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   animation: fadeInPure 0.15s ease;
@@ -17,8 +17,8 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: oklch(100.0% 0.0001 263.3 / 0.1);
+  border: 1px solid oklch(100.0% 0.0001 263.3 / 0.15);
   border-radius: 50%;
   color: var(--color-white);
   width: 40px;
@@ -31,7 +31,7 @@
   z-index: 10;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: oklch(100.0% 0.0001 263.3 / 0.2);
   }
 }
 
@@ -204,10 +204,10 @@
   max-height: 100%;
   overflow: hidden;
   border-radius: 4px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 24px oklch(0.0% 0.0 0.0 / 0.4);
 }
 
-.bgImage {
+.backgroundImage {
   display: block;
   width: 100%;
   height: 100%;
@@ -216,7 +216,7 @@
   pointer-events: none;
 }
 
-.bgWhite {
+.backgroundWhite {
   width: 100%;
   height: 100%;
   background: var(--color-white);
@@ -245,15 +245,15 @@
   padding: 10px 20px;
   border-radius: var(--border-radius-sm);
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid oklch(100.0% 0.0001 263.3 / 0.2);
+  color: oklch(100.0% 0.0001 263.3 / 0.7);
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: oklch(100.0% 0.0001 263.3 / 0.08);
     color: var(--color-white);
   }
 }

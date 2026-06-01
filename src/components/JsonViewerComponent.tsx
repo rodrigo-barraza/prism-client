@@ -162,7 +162,7 @@ function JsonNode({
             {JSON.stringify(String(keyName))}:{" "}
           </span>
         )}
-        <span className={styles[`val_${type}`] || styles.val_null}>
+        <span className={styles[`value_${type}`] || styles.value_null}>
           {formatValue(value, type)}
         </span>
         {!isLast && <span className={styles.comma}>,</span>}

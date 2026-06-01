@@ -54,12 +54,12 @@
 
 .loadedBadge {
   color: var(--color-success);
-  background: rgba(16, 185, 129, 0.1);
+  background: oklch(69.6% 0.1491 162.5 / 0.1);
 }
 
 .loadingBadge {
   color: var(--color-warning);
-  background: rgba(245, 158, 11, 0.1);
+  background: oklch(76.9% 0.1646 70.1 / 0.1);
 }
 
 .loadingSpin {
@@ -89,7 +89,7 @@
   &.isActiveState {
     background: var(--color-success);
     opacity: 1;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 8px oklch(69.6% 0.1491 162.5 / 0.5);
     animation: pulse 2s ease-in-out infinite;
   }
 }
@@ -111,7 +111,7 @@
 
 /* ── Favorite star ─────────────────────────────────── */
 
-.favWrap {
+.favoriteWrapper {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -119,7 +119,7 @@
   flex-shrink: 0;
 }
 
-.favStar {
+.favoriteStar {
   color: var(--text-secondary);
   opacity: 0.4;
   transition: all 0.2s ease;
@@ -130,7 +130,7 @@
   }
 }
 
-.favStarActive {
+.favoriteStarActive {
   color: var(--color-warning);
   opacity: 1;
 
@@ -144,7 +144,7 @@
 /* Tint the star filter button amber when active, matching row-level fav stars */
 
 .toolbar [class*="discreteBtnActive"] svg[style*="var(--color-warning)"] {
-  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.5));
+  filter: drop-shadow(0 0 4px oklch(76.9% 0.1646 70.1 / 0.5));
 }
 
 /* ── Selection checkbox ───────────────────────────── */
@@ -328,7 +328,7 @@
   font-size: 0.625rem;
   font-weight: 600;
   color: var(--color-violet);
-  background: rgba(167, 139, 250, 0.1);
+  background: oklch(70.9% 0.1592 293.5 / 0.1);
   padding: 2px 6px;
   border-radius: 2px;
   white-space: nowrap;
@@ -345,7 +345,7 @@
   font-size: 0.625rem;
   font-weight: 600;
   color: var(--color-success);
-  background: rgba(52, 211, 153, 0.1);
+  background: oklch(77.3% 0.1535 163.3 / 0.1);
   padding: 2px 6px;
   border-radius: 2px;
   white-space: nowrap;

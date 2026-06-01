@@ -30,7 +30,7 @@ const TOOL_DEFS = [
     key: "functionCalling",
     label: "Function Calling",
     icon: Parentheses,
-    color: (TOOL_COLORS as Record<string, any>)["Function Calling"],
+    color: TOOL_COLORS["Tool Calling"],
   },
   {
     key: "webSearch",
@@ -70,6 +70,12 @@ const TOOL_DEFS = [
   },
 ];
 
+export interface ModelToolsProps {
+  tools: Record<string, boolean | number> | null | undefined;
+  size?: number;
+  className?: string;
+}
+
 /**
  * ModelToolsComponent — renders a compact row of tool-capability badges
  * for a model. Separated from ModalityIconComponent which handles
@@ -86,29 +92,29 @@ export default function ModelToolsComponent({
   tools,
   size = 11,
   className,
-}: any) {
+}: ModelToolsProps) {
   if (!tools) return null;
 
-  const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);
+  const activeTools = TOOL_DEFS.filter((toolDefinition) => tools[toolDefinition.key]);
   if (activeTools.length === 0) return null;
 
   return (
     <div className={`${styles.toolsRow} ${className || ""}`}>
-      {activeTools.map((def) => {
-        const raw = tools[def.key];
-        const count = typeof raw === "number" ? raw : 0;
-        const tooltipLabel = count > 1 ? `${def.label} — ×${count}` : def.label;
+      {activeTools.map((toolDefinition) => {
+        const rawValue = tools[toolDefinition.key];
+        const count = typeof rawValue === "number" ? rawValue : 0;
+        const tooltipLabel = count > 1 ? `${toolDefinition.label} — ×${count}` : toolDefinition.label;
 
         return (
-          <TooltipComponent key={def.key} label={tooltipLabel} position="top">
+          <TooltipComponent key={toolDefinition.key} label={tooltipLabel} position="top">
             <span
               className={styles.toolBadge}
               style={{
-                color: def.color,
-                borderColor: `color-mix(in srgb, ${def.color} 30%, transparent)`,
+                color: toolDefinition.color,
+                borderColor: `color-mix(in srgb, ${toolDefinition.color} 30%, transparent)`,
               }}
             >
-              <def.icon size={size} />
+              <toolDefinition.icon size={size} />
               {count > 1 && <span className={styles.toolCount}>×{count}</span>}
             </span>
           </TooltipComponent>

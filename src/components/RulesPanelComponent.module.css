@@ -365,7 +365,7 @@
   padding: 8px 14px;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--background-base, #0a0a0f);
+  color: var(--background-base, oklch(14.7% 0.0107 285.0));
   background: var(--color-amber);
   border: none;
   border-radius: var(--border-radius-sm);

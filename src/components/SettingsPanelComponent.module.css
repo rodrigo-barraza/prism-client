@@ -60,8 +60,8 @@
 /* ── TTFT badge (retroactive, after completion) ── */
 .ttftBadge {
   color: rgb(147, 197, 253);
-  background: rgba(59, 130, 246, 0.06);
-  border-color: rgba(59, 130, 246, 0.15);
+  background: oklch(62.3% 0.1881 259.8 / 0.06);
+  border-color: oklch(62.3% 0.1881 259.8 / 0.15);
   font-variant-numeric: tabular-nums;
   opacity: 0.7;
 }
@@ -69,8 +69,8 @@
 /* ── TTFT badge (live, during processing) ── */
 .ttftBadgeLive {
   color: rgb(147, 197, 253);
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(96, 165, 250, 0.3);
+  background: oklch(62.3% 0.1881 259.8 / 0.1);
+  border-color: oklch(71.4% 0.1435 254.6 / 0.3);
   font-variant-numeric: tabular-nums;
   animation: ttftPulse 1.6s ease-in-out infinite;
 }

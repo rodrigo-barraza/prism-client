@@ -95,7 +95,7 @@
   border: 1px solid var(--calculated-border-color);
   border-top: none;
   border-radius: 0 0 6px 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px oklch(0.0% 0.0 0.0 / 0.15);
   padding: 4px 0;
   animation: switcherSlideIn 0.15s ease-out;
 }
