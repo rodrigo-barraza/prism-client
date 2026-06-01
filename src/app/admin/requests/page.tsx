@@ -465,11 +465,14 @@ export default function RequestsPage() {
             allLabel="All Providers"
             compact
           />
-          <FilterInputComponent
-            placeholder="Filter by model…"
-            value={filters.model}
-            onChange={handleModelFilterChange}
-          />
+          <div className={styles.filterLabelGroup}>
+            <span className={styles.filterLabelText}>Model</span>
+            <FilterInputComponent
+              placeholder="Filter by model…"
+              value={filters.model}
+              onChange={handleModelFilterChange}
+            />
+          </div>
           <SelectComponent
             multiple
             label="Agent"
