@@ -38,7 +38,6 @@ const notoEmoji = Noto_Emoji({
 export const metadata = {
   title: "Prism Playground",
   description: "Advanced Developer Playground for Prism AI Gateway",
-  icons: { icon: "/favicon.ico" },
 };
 
 export const viewport: Viewport = {

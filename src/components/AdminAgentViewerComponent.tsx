@@ -7,7 +7,7 @@ import {
   Wrench,
   Brain,
   Plug,
-  GitBranch,
+
   ListChecks,
   BookOpen,
   Users,
@@ -29,7 +29,7 @@ import SkillsPanel from "./SkillsPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
-import CoordinatorPanel from "./CoordinatorPanelComponent";
+
 import WorkersPanel from "./WorkersPanelComponent";
 import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
 
@@ -353,11 +353,7 @@ export default function AdminAgentViewerComponent() {
             ...badgeProps(workersCount),
             tooltip: "Workers",
           },
-          {
-            key: "coordinator",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>,
-            tooltip: "Coordinator",
-          },
+
         ]}
         activeTab={leftTab}
         onChange={setLeftTab}
@@ -473,9 +469,7 @@ export default function AdminAgentViewerComponent() {
         />
       )}
 
-      {leftTab === "coordinator" && (
-        <CoordinatorPanel project={PROJECT_AGENT} />
-      )}
+
     </>
   );
 

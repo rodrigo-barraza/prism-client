@@ -70,7 +70,7 @@ import RulesPanel from "./RulesPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
-import CoordinatorPanel from "./CoordinatorPanelComponent";
+
 import WorkersPanel from "./WorkersPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
 import SessionRequestsListComponent from "./SessionRequestsListComponent";
@@ -518,7 +518,7 @@ export default function ChatSessionComponent({
     }
   }, [leftTab]);
 
-  const BOTTOM_PANEL_TABS = new Set(["tools", "params", "skills", "rules", "memories", "tasks", "mcp", "coordinator"]);
+  const BOTTOM_PANEL_TABS = new Set(["tools", "params", "skills", "rules", "memories", "tasks", "mcp"]);
 
   useEffect(() => {
     if (initialTabKey) {
@@ -4796,15 +4796,7 @@ export default function ChatSessionComponent({
                 },
               ]
             : []),
-          ...(!isNoAgent
-            ? [
-                {
-                  key: "coordinator",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>,
-                  tooltip: "Coordinator",
-                },
-              ]
-            : []),
+
         ]}
         activeTab={leftTabBottom}
         onChange={(tab: string) => {
@@ -4918,12 +4910,7 @@ export default function ChatSessionComponent({
         </>
       )}
 
-      {leftTabBottom === "coordinator" && (
-        <>
-          <SidebarTabHeaderComponent icon={GitBranch} title="Coordinator" />
-          <CoordinatorPanel project={agentProject} />
-        </>
-      )}
+
     </div>
   );
 

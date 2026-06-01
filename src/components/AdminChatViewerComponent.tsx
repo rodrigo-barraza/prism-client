@@ -35,7 +35,7 @@ import SkillsPanel from "./SkillsPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
-import CoordinatorPanel from "./CoordinatorPanelComponent";
+
 import WorkersPanel from "./WorkersPanelComponent";
 import SessionRequestsListComponent from "./SessionRequestsListComponent";
 import RulesPanel from "./RulesPanelComponent";
@@ -937,11 +937,7 @@ export default function AdminChatViewerComponent({
           ...badgeProps(mcpServers.filter((s) => s.connected).length),
           tooltip: "MCP Servers",
         },
-        {
-          key: "coordinator",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>🌿</span>,
-          tooltip: "Coordinator",
-        },
+
       );
     } else {
       // Agentless / conversation tabs
@@ -1197,12 +1193,7 @@ export default function AdminChatViewerComponent({
                     />
                   </>
                 )}
-                {leftTabBottom === "coordinator" && isSelectedAgent && (
-                  <>
-                    <SidebarTabHeaderComponent icon={GitBranch} title="Coordinator" />
-                    <CoordinatorPanel project={targetProject || PROJECT_AGENT} />
-                  </>
-                )}
+
               </div>
             ) : null
           }
