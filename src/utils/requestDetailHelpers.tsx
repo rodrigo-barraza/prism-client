@@ -477,7 +477,7 @@ export function reconstructChatMessages(
         : undefined;
     if (Array.isArray(toolCalls) && toolCalls.length) {
       assistantMsg.toolCalls = toolCalls.map(
-        (tc: {
+        (toolCall: {
           id: string;
           name?: string;
           args?: Record<string, unknown>;
@@ -485,13 +485,17 @@ export function reconstructChatMessages(
             name: string;
             arguments: string | Record<string, unknown>;
           };
+          result?: unknown;
+          status?: string;
         }) => ({
-          id: tc.id,
-          name: tc.function?.name || tc.name || "",
+          id: toolCall.id,
+          name: toolCall.function?.name || toolCall.name || "",
           args:
-            typeof tc.function?.arguments === "string"
-              ? JSON.parse(tc.function.arguments)
-              : tc.function?.arguments || tc.args || {},
+            typeof toolCall.function?.arguments === "string"
+              ? JSON.parse(toolCall.function.arguments)
+              : toolCall.function?.arguments || toolCall.args || {},
+          result: toolCall.result,
+          status: toolCall.status,
         }),
       );
     }
