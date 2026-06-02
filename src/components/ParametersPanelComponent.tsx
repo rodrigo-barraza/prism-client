@@ -182,7 +182,7 @@ export default function ParametersPanelComponent({
       })()}
 
       {(() => {
-        const maxOutput = selectedModelDef?.maxOutputTokens || 32000;
+        const maxOutput = selectedModelDef?.maxOutputTokens || 128000;
         // Round step to nearest power based on range — keep slider snappy
         const step = maxOutput > 32000 ? 1024 : 256;
         return (
