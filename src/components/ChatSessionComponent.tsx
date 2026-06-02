@@ -4814,6 +4814,7 @@ export default function ChatSessionComponent({
               setSettings((s) => ({ ...s, ...updates }))
             }
             config={filteredConfig}
+            isAgentMode={!isNoAgent}
           />
         </>
       )}

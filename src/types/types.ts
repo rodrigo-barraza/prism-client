@@ -102,6 +102,28 @@ export interface LocalProviderInfo {
   nickname?: string;
 }
 
+// ─── Parameter Descriptors ──────────────────────────────────
+
+export interface ParameterDescriptor {
+  key: string;
+  label: string;
+  controlType: "slider" | "select" | "input" | "toggle";
+  dataType: "number" | "string" | "boolean";
+  min?: number;
+  max?: number;
+  step?: number;
+  options?: Array<{ value: string; label: string }>;
+  defaultValue: number | string | boolean;
+  agentDefault: number | string | boolean;
+  locked?: boolean;
+  lockedReason?: string;
+  group: "sampling" | "reasoning" | "output" | "penalties" | "advanced";
+  providers: string[];
+  requiresThinking?: boolean;
+  requiresResponsesAPI?: boolean;
+  hideWhenReasoning?: boolean;
+}
+
 export interface PrismConfig {
   fileBaseUrl: string | null;
   fcSystemPrompt: string;
@@ -115,6 +137,7 @@ export interface PrismConfig {
   imageToText: ModalityConfig;
   embedding: ModalityConfig;
   audioToText: ModalityConfig;
+  parameterDescriptors?: ParameterDescriptor[];
 }
 
 // ─── Background / Incremental Usage ─────────────────────────

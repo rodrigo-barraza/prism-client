@@ -1,12 +1,12 @@
 "use client";
 
-import { Settings2 } from "lucide-react";
+import { Settings2, RotateCcw } from "lucide-react";
 import {
   InputComponent,
   SelectComponent,
   SliderComponent,
 } from "@rodrigo-barraza/components-library";
-import type { PrismSettings, PrismConfig, ModelOption } from "../types/types";
+import type { PrismSettings, PrismConfig, ModelOption, ParameterDescriptor } from "../types/types";
 import styles from "./SettingsPanelComponent.module.css";
 
 export interface ParametersPanelProps {
@@ -14,6 +14,7 @@ export interface ParametersPanelProps {
   onChange?: (changes: Partial<PrismSettings>) => void;
   config: PrismConfig | null;
   readOnly?: boolean;
+  isAgentMode?: boolean;
 }
 
 interface ExtendedModelOption extends ModelOption {
@@ -22,18 +23,28 @@ interface ExtendedModelOption extends ModelOption {
   _isTTS?: boolean;
 }
 
+const GROUP_LABELS: Record<string, string> = {
+  output: "Output",
+  sampling: "Sampling",
+  reasoning: "Reasoning",
+  penalties: "Penalties",
+  advanced: "Advanced",
+};
+
+const GROUP_ORDER = ["output", "reasoning", "sampling", "penalties", "advanced"];
+
 export default function ParametersPanelComponent({
   settings,
   onChange,
   config,
   readOnly = false,
+  isAgentMode = false,
 }: ParametersPanelProps) {
   const textModelsMap = config?.textToText?.models || {};
   const imageModelsMap = config?.textToImage?.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
   const ttsModelsMap = config?.textToSpeech?.models || {};
 
-  // Build merged models map
   const allProviderKeys = new Set([
     ...Object.keys(textModelsMap),
     ...Object.keys(imageModelsMap),
@@ -41,99 +52,280 @@ export default function ParametersPanelComponent({
     ...Object.keys(ttsModelsMap),
   ]);
   const modelsMap: Record<string, ExtendedModelOption[]> = {};
-  for (const p of allProviderKeys) {
-    const textModels = (textModelsMap[p] || []) as ExtendedModelOption[];
-    const imgModels = ((imageModelsMap[p] || []) as ExtendedModelOption[]).map(
-      (m) => ({
-        ...m,
-        _isImageGen: true,
-      }),
+  for (const providerKey of allProviderKeys) {
+    const textModels = (textModelsMap[providerKey] || []) as ExtendedModelOption[];
+    const imageGenerationModels = ((imageModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
+      (model) => ({ ...model, _isImageGen: true }),
     );
-    const sttModels = (
-      (audioToTextModelsMap[p] || []) as ExtendedModelOption[]
-    ).map((m) => ({
-      ...m,
-      _isTranscription: true,
-    }));
-    const ttsModels = ((ttsModelsMap[p] || []) as ExtendedModelOption[]).map(
-      (m) => ({
-        ...m,
-        _isTTS: true,
-      }),
+    const speechToTextModels = (
+      (audioToTextModelsMap[providerKey] || []) as ExtendedModelOption[]
+    ).map((model) => ({ ...model, _isTranscription: true }));
+    const textToSpeechModels = ((ttsModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
+      (model) => ({ ...model, _isTTS: true }),
     );
 
-    const seen = new Set<string>();
-    const merged: ExtendedModelOption[] = [];
-    for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
-      if (!seen.has(m.name)) {
-        seen.add(m.name);
-        merged.push(m);
+    const seenModelNames = new Set<string>();
+    const mergedModels: ExtendedModelOption[] = [];
+    for (const model of [...textModels, ...imageGenerationModels, ...speechToTextModels, ...textToSpeechModels]) {
+      if (!seenModelNames.has(model.name)) {
+        seenModelNames.add(model.name);
+        mergedModels.push(model);
       }
     }
-    modelsMap[p] = merged;
+    modelsMap[providerKey] = mergedModels;
   }
 
   const currentProviderModels = modelsMap[settings.provider || ""] || [];
-  const selectedModelDef = currentProviderModels.find(
-    (m) => m.name === settings.model,
+  const selectedModelDefinition = currentProviderModels.find(
+    (model) => model.name === settings.model,
   );
-  const isReasoning =
-    selectedModelDef?.thinking ||
+  const isReasoningModel =
+    selectedModelDefinition?.thinking ||
     (settings.model || "").includes("o1") ||
     (settings.model || "").includes("o3");
-  const isTranscription = selectedModelDef?._isTranscription === true;
-  const isTTS = selectedModelDef?._isTTS === true;
-  const isSpecialModel = isTranscription || isTTS;
+  const isTranscriptionModel = selectedModelDefinition?._isTranscription === true;
+  const isTextToSpeechModel = selectedModelDefinition?._isTTS === true;
+  const isSpecialModel = isTranscriptionModel || isTextToSpeechModel;
 
-  const handleTempChange = (value: number) => {
-    onChange?.({ temperature: value });
+  const descriptors = config?.parameterDescriptors || [];
+  const currentProvider = settings.provider || "";
+
+  // Anthropic thinking models lock temperature to 1
+  const isAnthropicThinkingLocked =
+    isReasoningModel &&
+    settings.thinkingEnabled &&
+    currentProvider === "anthropic";
+
+  // Anthropic max temperature cap
+  const anthropicMaxTemperature = currentProvider === "anthropic" ? 1 : 2;
+
+  const handleParameterChange = (key: string, value: unknown) => {
+    onChange?.({ [key]: value } as Partial<PrismSettings>);
   };
-  const handleMaxTokensChange = (value: number) => {
-    onChange?.({ maxTokens: value });
+
+  const resolveDefaultValue = (descriptor: ParameterDescriptor): number | string | boolean => {
+    return isAgentMode ? descriptor.agentDefault : descriptor.defaultValue;
   };
-  const handleTopPChange = (value: number) => {
-    onChange?.({ topP: value });
+
+  const resolveCurrentValue = (descriptor: ParameterDescriptor): unknown => {
+    const settingsValue = (settings as Record<string, unknown>)[descriptor.key];
+    if (settingsValue !== undefined && settingsValue !== null) {
+      return settingsValue;
+    }
+    return resolveDefaultValue(descriptor);
   };
-  const handleTopKChange = (value: number) => {
-    onChange?.({ topK: value });
+
+  // Filter descriptors to only those applicable to current provider/model
+  const filterDescriptors = (allDescriptors: ParameterDescriptor[]): ParameterDescriptor[] => {
+    return allDescriptors.filter((descriptor) => {
+      // Provider check
+      if (!descriptor.providers.includes(currentProvider)) return false;
+
+      // Requires thinking model but current model doesn't support thinking
+      if (descriptor.requiresThinking && !isReasoningModel) return false;
+
+      // Requires thinking to be enabled
+      if (descriptor.requiresThinking && settings.thinkingEnabled === false) return false;
+
+      // Requires Responses API (OpenAI-specific)
+      if (descriptor.requiresResponsesAPI && !selectedModelDefinition?.responsesAPI) return false;
+
+      // Reasoning Summary: only show if model supports it
+      if (descriptor.key === "reasoningSummary" && !selectedModelDefinition?.reasoningSummary) return false;
+
+      // Verbosity: only show if model supports it
+      if (descriptor.key === "verbosity" && !selectedModelDefinition?.verbosity) return false;
+
+      // Thinking Level: only show if model has thinkingLevels
+      if (descriptor.key === "thinkingLevel" && !selectedModelDefinition?.thinkingLevels) return false;
+
+      // Hide sampling/penalty controls when using reasoning models (they're locked/ignored)
+      if (descriptor.hideWhenReasoning && isReasoningModel) return false;
+
+      // Response format: only show if model supports JSON mode
+      if (descriptor.key === "responseFormat" && !selectedModelDefinition?.jsonMode) return false;
+
+      return true;
+    });
   };
-  const handleFreqPenaltyChange = (value: number) => {
-    onChange?.({ frequencyPenalty: value });
+
+  const filteredDescriptors = filterDescriptors(descriptors);
+
+  // Group descriptors by category
+  const groupedDescriptors: Record<string, ParameterDescriptor[]> = {};
+  for (const descriptor of filteredDescriptors) {
+    if (!groupedDescriptors[descriptor.group]) {
+      groupedDescriptors[descriptor.group] = [];
+    }
+    groupedDescriptors[descriptor.group].push(descriptor);
+  }
+
+  const handleResetGroup = (group: string) => {
+    const groupDescriptors = groupedDescriptors[group];
+    if (!groupDescriptors) return;
+    const resetChanges: Record<string, unknown> = {};
+    for (const descriptor of groupDescriptors) {
+      resetChanges[descriptor.key] = resolveDefaultValue(descriptor);
+    }
+    onChange?.(resetChanges as Partial<PrismSettings>);
   };
-  const handlePresPenaltyChange = (value: number) => {
-    onChange?.({ presencePenalty: value });
-  };
-  const handleMinPChange = (value: number) => {
-    onChange?.({ minP: value });
-  };
-  const handleRepeatPenaltyChange = (value: number) => {
-    onChange?.({ repeatPenalty: value });
-  };
-  const handleSeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    onChange?.({ seed: inputValue === "" ? undefined : inputValue });
-  };
-  const handleStopSeqChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    onChange?.({ stopSequences: e.target.value });
-  const handleReasoningEffortChange = (value: string) => {
-    onChange?.({ reasoningEffort: value });
-  };
-  const handleThinkingLevelChange = (value: string) => {
-    onChange?.({ thinkingLevel: value });
-  };
-  const handleThinkingBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    onChange?.({ thinkingBudget: e.target.value });
-  const handleVerbosityChange = (value: string) => {
-    onChange?.({ verbosity: value });
-  };
-  const handleReasoningSummaryChange = (value: string) => {
-    onChange?.({ reasoningSummary: value });
-  };
-  const handleResponseFormatChange = (value: string) => {
-    onChange?.({ responseFormat: value });
-  };
-  const handleServiceTierChange = (value: string) => {
-    onChange?.({ serviceTier: value });
+
+  const renderControl = (descriptor: ParameterDescriptor) => {
+    const currentValue = resolveCurrentValue(descriptor);
+
+    // Special handling for temperature when Anthropic thinking is locked
+    if (descriptor.key === "temperature" && isAnthropicThinkingLocked) {
+      return (
+        <div className={styles.formGroup} key={descriptor.key}>
+          <label>{descriptor.label} (1 — Locked by Thinking)</label>
+          {!readOnly && (
+            <SliderComponent
+              min={descriptor.min ?? 0}
+              max={anthropicMaxTemperature}
+              step={descriptor.step ?? 0.1}
+              value={1}
+              onChange={() => {}}
+              disabled={true}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Special handling for temperature max on Anthropic
+    const effectiveMax =
+      descriptor.key === "temperature" ? anthropicMaxTemperature : descriptor.max;
+
+    // Special handling for maxTokens — use model's actual max
+    const effectiveMaxTokens =
+      descriptor.key === "maxTokens"
+        ? selectedModelDefinition?.maxOutputTokens || 128000
+        : effectiveMax;
+
+    // Dynamic step for maxTokens based on range
+    const effectiveStep =
+      descriptor.key === "maxTokens"
+        ? (effectiveMaxTokens ?? 128000) > 32000
+          ? 1024
+          : 256
+        : descriptor.step;
+
+    // Thinking level: use model's available levels instead of static options
+    const effectiveOptions =
+      descriptor.key === "thinkingLevel" && selectedModelDefinition?.thinkingLevels
+        ? selectedModelDefinition.thinkingLevels.map((level: string) => ({
+            value: level,
+            label: level.charAt(0).toUpperCase() + level.slice(1),
+          }))
+        : descriptor.options;
+
+    // Service tier: OpenAI and Anthropic have different options
+    const effectiveServiceTierOptions =
+      descriptor.key === "serviceTier"
+        ? [
+            { value: "", label: "Default" },
+            { value: "auto", label: "Auto" },
+            ...(currentProvider === "openai"
+              ? [
+                  { value: "default", label: "Standard" },
+                  { value: "priority", label: "Priority" },
+                ]
+              : currentProvider === "anthropic"
+                ? [{ value: "standard_only", label: "Standard Only" }]
+                : []),
+          ]
+        : effectiveOptions;
+
+    switch (descriptor.controlType) {
+      case "slider": {
+        const sliderMax =
+          descriptor.key === "maxTokens" ? effectiveMaxTokens : effectiveMax;
+        const numericValue = typeof currentValue === "number" ? currentValue : Number(currentValue) || 0;
+        const clampedValue = Math.min(numericValue, sliderMax ?? numericValue);
+
+        return (
+          <div className={styles.formGroup} key={descriptor.key}>
+            <label>
+              {descriptor.label} ({clampedValue})
+            </label>
+            {!readOnly && (
+              <SliderComponent
+                min={descriptor.min ?? 0}
+                max={sliderMax ?? 1}
+                step={effectiveStep ?? 0.1}
+                value={clampedValue}
+                onChange={(value: number) => handleParameterChange(descriptor.key, value)}
+              />
+            )}
+          </div>
+        );
+      }
+
+      case "select": {
+        const selectOptions =
+          descriptor.key === "serviceTier"
+            ? effectiveServiceTierOptions
+            : effectiveOptions;
+
+        return (
+          <div className={styles.formGroup} key={descriptor.key}>
+            <label>{descriptor.label}</label>
+            {readOnly ? (
+              <div className={styles.readOnlyValue}>
+                {String(currentValue) ||
+                  selectOptions?.find((option) => option.value === currentValue)?.label ||
+                  "Default"}
+              </div>
+            ) : (
+              <SelectComponent
+                value={String(currentValue || "")}
+                options={selectOptions || []}
+                onChange={(value: string) => handleParameterChange(descriptor.key, value)}
+              />
+            )}
+          </div>
+        );
+      }
+
+      case "input": {
+        const inputType = descriptor.dataType === "number" ? "number" : "text";
+        const placeholder =
+          descriptor.key === "stopSequences"
+            ? "\\n, Human:"
+            : descriptor.key === "seed"
+              ? "Random"
+              : descriptor.key === "thinkingBudget"
+                ? "e.g. 1024"
+                : "";
+
+        return (
+          <div className={styles.formGroup} key={descriptor.key}>
+            <label>{descriptor.label}</label>
+            {!readOnly && (
+              <InputComponent
+                type={inputType}
+                placeholder={placeholder}
+                value={String(currentValue ?? "")}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  const inputValue = event.target.value;
+                  if (descriptor.dataType === "number") {
+                    handleParameterChange(
+                      descriptor.key,
+                      inputValue === "" ? undefined : inputValue,
+                    );
+                  } else {
+                    handleParameterChange(descriptor.key, inputValue);
+                  }
+                }}
+              />
+            )}
+          </div>
+        );
+      }
+
+      default:
+        return null;
+    }
   };
 
   if (isSpecialModel || settings.provider === "ollama") {
@@ -153,344 +345,77 @@ export default function ParametersPanelComponent({
     <div className={styles.container}>
       <div className={styles.sectionTitle}>
         <Settings2 size={16} /> Parameters
+        {isAgentMode && (
+          <span
+            style={{
+              fontSize: 10,
+              color: "var(--accent-primary)",
+              marginInlineStart: 8,
+              opacity: 0.8,
+              fontWeight: 500,
+            }}
+          >
+            Agent Defaults
+          </span>
+        )}
       </div>
 
-      {(() => {
-        const thinkingLocked =
-          isReasoning &&
-          settings.thinkingEnabled &&
-          (settings.provider || "") === "anthropic";
-        const maxTemp = (settings.provider || "") === "anthropic" ? 1 : 2;
+      {GROUP_ORDER.map((group) => {
+        const groupDescriptors = groupedDescriptors[group];
+        if (!groupDescriptors || groupDescriptors.length === 0) return null;
+
         return (
-          <div className={styles.formGroup}>
-            <label>
-              Temperature (
-              {thinkingLocked ? "1 — Locked" : (settings.temperature ?? 1)})
-            </label>
-            {!readOnly && (
-              <SliderComponent
-                min={0}
-                max={maxTemp}
-                step={0.1}
-                value={thinkingLocked ? 1 : (settings.temperature ?? 1)}
-                onChange={handleTempChange}
-                disabled={thinkingLocked}
-              />
-            )}
-          </div>
-        );
-      })()}
-
-      {(() => {
-        const maxOutput = selectedModelDef?.maxOutputTokens || 128000;
-        // Round step to nearest power based on range — keep slider snappy
-        const step = maxOutput > 32000 ? 1024 : 256;
-        return (
-          <div className={styles.formGroup}>
-            <label>Max Tokens ({settings.maxTokens ?? 2048})</label>
-            {!readOnly && (
-              <SliderComponent
-                min={256}
-                max={maxOutput}
-                step={step}
-                value={Math.min(settings.maxTokens ?? 2048, maxOutput)}
-                onChange={handleMaxTokensChange}
-              />
-            )}
-          </div>
-        );
-      })()}
-
-      {(isReasoning && selectedModelDef?.responsesAPI) ||
-      (readOnly && settings.reasoningEffort) ? (
-        <>
-          <div className={styles.formGroup}>
-            <label>Reasoning Effort</label>
-            {readOnly ? (
-              <div className={styles.readOnlyValue}>
-                {settings.reasoningEffort || "high"}
-              </div>
-            ) : (
-              <SelectComponent
-                value={settings.reasoningEffort || "high"}
-                options={[
-                  { value: "none", label: "None" },
-                  { value: "low", label: "Low" },
-                  { value: "medium", label: "Medium" },
-                  { value: "high", label: "High" },
-                  { value: "xhigh", label: "Extra High" },
-                ]}
-                onChange={handleReasoningEffortChange}
-              />
-            )}
-          </div>
-
-          {(selectedModelDef?.reasoningSummary ||
-            (readOnly && settings.reasoningSummary)) && (
-            <div className={styles.formGroup}>
-              <label>Reasoning Summary</label>
-              {readOnly ? (
-                <div className={styles.readOnlyValue}>
-                  {settings.reasoningSummary || "auto"}
-                </div>
-              ) : (
-                <SelectComponent
-                  value={settings.reasoningSummary || "auto"}
-                  options={[
-                    { value: "auto", label: "Auto" },
-                    { value: "concise", label: "Concise" },
-                    { value: "detailed", label: "Detailed" },
-                  ]}
-                  onChange={handleReasoningSummaryChange}
-                />
+          <div key={group}>
+            {group !== "output" && <div className={styles.sectionSeparator} />}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBlockEnd: 4,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  color: "var(--text-tertiary)",
+                }}
+              >
+                {GROUP_LABELS[group] || group}
+              </span>
+              {!readOnly && (
+                <button
+                  onClick={() => handleResetGroup(group)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--text-tertiary)",
+                    padding: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    opacity: 0.6,
+                    transition: "opacity 0.15s",
+                  }}
+                  onMouseEnter={(event) => {
+                    (event.currentTarget as HTMLElement).style.opacity = "1";
+                  }}
+                  onMouseLeave={(event) => {
+                    (event.currentTarget as HTMLElement).style.opacity = "0.6";
+                  }}
+                  title={`Reset ${GROUP_LABELS[group] || group} to defaults`}
+                >
+                  <RotateCcw size={10} />
+                </button>
               )}
             </div>
-          )}
-        </>
-      ) : null}
-
-      {/* Thinking sub-settings — shown when Thinking is toggled on */}
-      {isReasoning &&
-        !selectedModelDef?.responsesAPI &&
-        (settings.thinkingEnabled ||
-          ((settings.provider || "") === "lm-studio" &&
-            settings.thinkingEnabled !== false)) && (
-          <>
-            {[
-              "openai",
-              "lm-studio",
-              "vllm",
-              "anthropic",
-              "ollama",
-              "llama-cpp",
-            ].includes(settings.provider || "") && (
-              <div className={styles.formGroup}>
-                <label>Reasoning Effort</label>
-                <SelectComponent
-                  value={settings.reasoningEffort || "high"}
-                  options={[
-                    { value: "low", label: "Low" },
-                    { value: "medium", label: "Medium" },
-                    { value: "high", label: "High" },
-                  ]}
-                  onChange={handleReasoningEffortChange}
-                />
-              </div>
-            )}
-
-            {selectedModelDef?.thinkingLevels && (
-              <div className={styles.formGroup}>
-                <label>Thinking Level</label>
-                <SelectComponent
-                  value={settings.thinkingLevel || "high"}
-                  options={selectedModelDef.thinkingLevels.map(
-                    (level: string) => ({
-                      value: level,
-                      label: level.charAt(0).toUpperCase() + level.slice(1),
-                    }),
-                  )}
-                  onChange={handleThinkingLevelChange}
-                />
-              </div>
-            )}
-
-            {["anthropic", "google"].includes(settings.provider || "") && (
-              <div className={styles.formGroup}>
-                <label>Thinking Budget (Tokens)</label>
-                <InputComponent
-                  type="number"
-                  placeholder="e.g. 1024"
-                  value={settings.thinkingBudget || ""}
-                  onChange={handleThinkingBudgetChange}
-                />
-              </div>
-            )}
-          </>
-        )}
-
-      {/* Standard Generation Parameters (Non-reasoning or supported reasoning overrides) */}
-      {(!isReasoning ||
-        ["anthropic", "google", "lm-studio", "vllm", "llama-cpp"].includes(
-          settings.provider || "",
-        )) && (
-        <>
-          <div className={styles.sectionSeparator} />
-
-          {/* Verbosity (Google-specific override) */}
-          {(settings.provider || "") === "google" &&
-            selectedModelDef?.verbosity && (
-              <div className={styles.formGroup}>
-                <label>Verbosity</label>
-                <SelectComponent
-                  value={settings.verbosity || ""}
-                  options={[
-                    { value: "", label: "Default" },
-                    { value: "low", label: "Low" },
-                    { value: "medium", label: "Medium" },
-                    { value: "high", label: "High" },
-                  ]}
-                  onChange={handleVerbosityChange}
-                />
-              </div>
-            )}
-
-          {!isReasoning && !readOnly && (
-            <>
-              <div className={styles.formGroup}>
-                <label>Top P ({settings.topP ?? 1})</label>
-                <SliderComponent
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={settings.topP ?? 1}
-                  onChange={handleTopPChange}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Stop Sequences (comma separated)</label>
-                <InputComponent
-                  type="text"
-                  placeholder="\n, Human:"
-                  value={settings.stopSequences || ""}
-                  onChange={handleStopSeqChange}
-                />
-              </div>
-
-              {[
-                "anthropic",
-                "google",
-                "llama-cpp",
-                "lm-studio",
-                "vllm",
-              ].includes(settings.provider || "") && (
-                <div className={styles.formGroup}>
-                  <label>Top K ({settings.topK ?? 40})</label>
-                  <SliderComponent
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={settings.topK ?? 40}
-                    onChange={handleTopKChange}
-                  />
-                </div>
-              )}
-
-              {["llama-cpp", "lm-studio", "vllm"].includes(
-                settings.provider || "",
-              ) && (
-                <div className={styles.formGroup}>
-                  <label>Min P ({settings.minP ?? 0})</label>
-                  <SliderComponent
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={settings.minP ?? 0}
-                    onChange={handleMinPChange}
-                  />
-                </div>
-              )}
-
-              {["llama-cpp", "lm-studio", "vllm"].includes(
-                settings.provider || "",
-              ) && (
-                <div className={styles.formGroup}>
-                  <label>Repeat Penalty ({settings.repeatPenalty ?? 1})</label>
-                  <SliderComponent
-                    min={1}
-                    max={2}
-                    step={0.05}
-                    value={settings.repeatPenalty ?? 1}
-                    onChange={handleRepeatPenaltyChange}
-                  />
-                </div>
-              )}
-
-              {["openai", "google", "llama-cpp", "lm-studio", "vllm"].includes(
-                settings.provider || "",
-              ) && (
-                <div className={styles.formGroup}>
-                  <label>Seed</label>
-                  <InputComponent
-                    type="number"
-                    placeholder="Random"
-                    value={settings.seed ?? ""}
-                    onChange={handleSeedChange}
-                  />
-                </div>
-              )}
-
-              {["openai", "lm-studio", "vllm", "google", "llama-cpp"].includes(
-                settings.provider || "",
-              ) && (
-                <>
-                  <div className={styles.formGroup}>
-                    <label>
-                      Frequency Penalty ({settings.frequencyPenalty ?? 0})
-                    </label>
-                    <SliderComponent
-                      min={-2}
-                      max={2}
-                      step={0.1}
-                      value={settings.frequencyPenalty ?? 0}
-                      onChange={handleFreqPenaltyChange}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>
-                      Presence Penalty ({settings.presencePenalty ?? 0})
-                    </label>
-                    <SliderComponent
-                      min={-2}
-                      max={2}
-                      step={0.1}
-                      value={settings.presencePenalty ?? 0}
-                      onChange={handlePresPenaltyChange}
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* Response Format — JSON mode for OpenAI + Google */}
-              {selectedModelDef?.jsonMode && (
-                <div className={styles.formGroup}>
-                  <label>Response Format</label>
-                  <SelectComponent
-                    value={settings.responseFormat || ""}
-                    options={[
-                      { value: "", label: "Default (Text)" },
-                      { value: "json_object", label: "JSON Object" },
-                    ]}
-                    onChange={handleResponseFormatChange}
-                  />
-                </div>
-              )}
-
-              {/* Service Tier — request priority routing */}
-              {["openai", "anthropic"].includes(settings.provider || "") && (
-                <div className={styles.formGroup}>
-                  <label>Service Tier</label>
-                  <SelectComponent
-                    value={settings.serviceTier || ""}
-                    options={[
-                      { value: "", label: "Default" },
-                      { value: "auto", label: "Auto" },
-                      ...((settings.provider || "") === "openai"
-                        ? [
-                            { value: "default", label: "Standard" },
-                            { value: "priority", label: "Priority" },
-                          ]
-                        : [{ value: "standard_only", label: "Standard Only" }]),
-                    ]}
-                    onChange={handleServiceTierChange}
-                  />
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
+            {groupDescriptors.map(renderControl)}
+          </div>
+        );
+      })}
     </div>
   );
 }
