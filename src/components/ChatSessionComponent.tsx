@@ -3590,13 +3590,54 @@ export default function ChatSessionComponent({
     tokenHwmRef.current = { input: 0, output: 0, total: 0 };
     isUserNearBottomRef.current = true;
     textareaRef.current?.focus();
+
+    setSettings((currentSettings) => {
+      let defaultTemperature = 1.0;
+      if (config && currentSettings.provider && currentSettings.model) {
+        const providerModels =
+          config.textToText?.models?.[currentSettings.provider] || [];
+        const modelDefinition = providerModels.find(
+          (model) => model.name === currentSettings.model,
+        );
+        if (
+          modelDefinition &&
+          modelDefinition.defaultTemperature !== undefined
+        ) {
+          defaultTemperature = modelDefinition.defaultTemperature;
+        }
+      }
+
+      return {
+        ...SETTINGS_DEFAULTS,
+        provider: currentSettings.provider,
+        model: currentSettings.model,
+        temperature: defaultTemperature,
+        maxTokens: 64000,
+        functionCallingEnabled: !isNoAgent,
+        thinkingEnabled: false,
+        minP: 0,
+        repeatPenalty: 1.0,
+        seed: null,
+        responseFormat: "",
+        serviceTier: !isNoAgent ? "auto" : "",
+        parallelToolCalls: true,
+        candidateCount: 1,
+        responseMimeType: "",
+        store: true,
+        mediaResolution: "",
+        topLogprobs: 0,
+        responseLogprobs: false,
+        logprobs: 0,
+      };
+    });
+
     // Clear session from URL
     window.dispatchEvent(
       new CustomEvent("conversation:change", {
         detail: { conversationId: null },
       }),
     );
-  }, [isNoAgent]);
+  }, [isNoAgent, config]);
 
   const handleNewChat = useCallback(() => {
     // If generating, snapshot the current session so user can switch back to it
