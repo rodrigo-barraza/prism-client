@@ -22,6 +22,7 @@ import {
   AlertCircle,
   TrendingUp,
   Box,
+  Bot,
   Layers,
   Server,
   ScrollText,
@@ -173,9 +174,9 @@ export default function DashboardPage() {
           for (const [provider, models] of Object.entries(
             config.textToText?.models || {},
           ) as [string, ModelOption[]][]) {
-            for (const m of models) {
-              const key = `${provider}:${m.name}`;
-              if (m.tools?.length) lookup[key] = m.tools;
+            for (const modelOption of models) {
+              const key = `${provider}:${modelOption.name}`;
+              if (modelOption.tools?.length) lookup[key] = modelOption.tools;
             }
           }
           return lookup;
@@ -237,7 +238,7 @@ export default function DashboardPage() {
       }, FEEDBACK_STANDARD_MS);
     };
 
-    const es = IrisService.subscribeCollectionChanges({
+    const eventSource = IrisService.subscribeCollectionChanges({
       onStatus: (data) => {
         if (!data.changeStreams) {
           // No Change Streams — fall back to 60s polling
@@ -250,7 +251,7 @@ export default function DashboardPage() {
     });
 
     return () => {
-      es.close();
+      eventSource.close();
       if (pollInterval) clearInterval(pollInterval);
       if (debounceTimer) clearTimeout(debounceTimer);
     };
@@ -268,10 +269,10 @@ export default function DashboardPage() {
 
   // Build provider distribution from model stats
   const providerAgg: Record<string, ProviderAggregation> = {};
-  modelStats.forEach((m) => {
-    if (!providerAgg[m.provider]) {
-      providerAgg[m.provider] = {
-        provider: m.provider,
+  modelStats.forEach((modelStat) => {
+    if (!providerAgg[modelStat.provider]) {
+      providerAgg[modelStat.provider] = {
+        provider: modelStat.provider,
         totalRequests: 0,
         totalInputTokens: 0,
         totalOutputTokens: 0,
@@ -286,33 +287,33 @@ export default function DashboardPage() {
         sessionCount: 0,
       };
     }
-    const providerData = providerAgg[m.provider];
-    providerData.totalRequests += m.totalRequests;
-    providerData.totalInputTokens += m.totalInputTokens || 0;
-    providerData.totalOutputTokens += m.totalOutputTokens || 0;
-    providerData.totalCost += m.totalCost || 0;
-    providerData.latencySum += (m.avgLatency || 0) * m.totalRequests;
+    const providerData = providerAgg[modelStat.provider];
+    providerData.totalRequests += modelStat.totalRequests;
+    providerData.totalInputTokens += modelStat.totalInputTokens || 0;
+    providerData.totalOutputTokens += modelStat.totalOutputTokens || 0;
+    providerData.totalCost += modelStat.totalCost || 0;
+    providerData.latencySum += (modelStat.avgLatency || 0) * modelStat.totalRequests;
     providerData.modelCount += 1;
-    if (m.model) providerData.models.push(m.model);
-    providerData.conversationCount += m.conversationCount || 0;
-    providerData.workflowCount += m.workflowCount || 0;
-    providerData.sessionCount += m.sessionCount || 0;
-    if (m.avgTokensPerSec) {
-      providerData.tpsSum += m.avgTokensPerSec * m.totalRequests;
-      providerData.tpsCount += m.totalRequests;
+    if (modelStat.model) providerData.models.push(modelStat.model);
+    providerData.conversationCount += modelStat.conversationCount || 0;
+    providerData.workflowCount += modelStat.workflowCount || 0;
+    providerData.sessionCount += modelStat.sessionCount || 0;
+    if (modelStat.avgTokensPerSec) {
+      providerData.tpsSum += modelStat.avgTokensPerSec * modelStat.totalRequests;
+      providerData.tpsCount += modelStat.totalRequests;
     }
   });
   const providerData: ProviderAggregationComputed[] = Object.values(providerAgg)
-    .map((p) => ({
-      ...p,
-      avgLatency: p.totalRequests > 0 ? p.latencySum / p.totalRequests : 0,
-      avgTokensPerSec: p.tpsCount > 0 ? p.tpsSum / p.tpsCount : null,
+    .map((providerAggItem) => ({
+      ...providerAggItem,
+      avgLatency: providerAggItem.totalRequests > 0 ? providerAggItem.latencySum / providerAggItem.totalRequests : 0,
+      avgTokensPerSec: providerAggItem.tpsCount > 0 ? providerAggItem.tpsSum / providerAggItem.tpsCount : null,
     }))
     .sort((a, b) => b.totalRequests - a.totalRequests);
   const totalProviderRequests =
-    providerData.reduce((s, p) => s + p.totalRequests, 0) || 1;
+    providerData.reduce((sum, provider) => sum + provider.totalRequests, 0) || 1;
   const totalProviderCost =
-    providerData.reduce((s, p) => s + p.totalCost, 0) || 1;
+    providerData.reduce((sum, provider) => sum + provider.totalCost, 0) || 1;
 
   // Top 10 models
   const topModels = [...modelStats].sort(
@@ -320,23 +321,23 @@ export default function DashboardPage() {
   );
 
   const totalModelRequests =
-    modelStats.reduce((s, m) => s + m.totalRequests, 0) || 1;
+    modelStats.reduce((sum, model) => sum + model.totalRequests, 0) || 1;
   const totalModelCost =
-    modelStats.reduce((s, m) => s + (m.totalCost || 0), 0) || 1;
+    modelStats.reduce((sum, model) => sum + (model.totalCost || 0), 0) || 1;
 
   // Project totals for proportion bars
   const totalProjectRequests =
-    projectStats.reduce((s, x) => s + x.totalRequests, 0) || 1;
+    projectStats.reduce((sum, project) => sum + project.totalRequests, 0) || 1;
   const totalProjectCost =
-    projectStats.reduce((s, x) => s + (x.totalCost || 0), 0) || 1;
+    projectStats.reduce((sum, project) => sum + (project.totalCost || 0), 0) || 1;
 
   // Recharts-friendly timeline data — convert UTC keys to local timezone labels
   const chartData = useMemo(() => {
-    return timeline.map((t) => {
+    return timeline.map((timelineEntry) => {
       let label = "";
       let tickLabel = "";
-      if (t.hour) {
-        const key = t.hour;
+      if (timelineEntry.hour) {
+        const key = timelineEntry.hour;
         if (key.length <= 10) {
           // Daily bin: "2026-03-21"
           const date = new Date(key + "T00:00:00Z");
@@ -353,45 +354,45 @@ export default function DashboardPage() {
 
           if (colonCount >= 2) {
             // Has seconds: 1s, 5s, 15s, or 30s bins — "22:05:31", "22:05:05"
-            const [hh, mm, ss] = timePart
+            const [hoursString, minutesString, secondsString] = timePart
               .split(":")
-              .map((s) => s.padStart(2, "0"));
-            const date = new Date(`${key.slice(0, 10)}T${hh}:${mm}:${ss}Z`);
-            const lH = String(date.getHours()).padStart(2, "0");
-            const lM = String(date.getMinutes()).padStart(2, "0");
-            const lS = String(date.getSeconds()).padStart(2, "0");
-            label = `${lH}:${lM}:${lS}`;
+              .map((part) => part.padStart(2, "0"));
+            const date = new Date(`${key.slice(0, 10)}T${hoursString}:${minutesString}:${secondsString}Z`);
+            const localHours = String(date.getHours()).padStart(2, "0");
+            const localMinutes = String(date.getMinutes()).padStart(2, "0");
+            const localSeconds = String(date.getSeconds()).padStart(2, "0");
+            label = `${localHours}:${localMinutes}:${localSeconds}`;
             // Tick label every 30 seconds for readability at high density
-            const secNum = parseInt(lS, 10);
-            tickLabel = secNum % 30 === 0 ? `${lH}:${lM}:${lS}` : "";
+            const secNum = parseInt(localSeconds, 10);
+            tickLabel = secNum % 30 === 0 ? `${localHours}:${localMinutes}:${localSeconds}` : "";
           } else if (colonCount === 1) {
             // Has minutes: 1min, 5min, or 15min bins — "22:05", "14:0"
-            const [, mm] = timePart.split(":");
-            const paddedKey = key.slice(0, 14) + (mm || "0").padStart(2, "0");
+            const [, minutesString] = timePart.split(":");
+            const paddedKey = key.slice(0, 14) + (minutesString || "0").padStart(2, "0");
             const date = new Date(paddedKey + ":00Z");
-            const lH = String(date.getHours()).padStart(2, "0");
-            const lM = String(date.getMinutes()).padStart(2, "0");
-            label = `${lH}:${lM}`;
+            const localHours = String(date.getHours()).padStart(2, "0");
+            const localMinutes = String(date.getMinutes()).padStart(2, "0");
+            label = `${localHours}:${localMinutes}`;
             // Tick on hour marks or every 15 minutes
-            const minNum = parseInt(lM, 10);
+            const minNum = parseInt(localMinutes, 10);
             tickLabel =
-              minNum === 0 ? `${lH}h` : minNum % 15 === 0 ? `${lH}:${lM}` : "";
+              minNum === 0 ? `${localHours}h` : minNum % 15 === 0 ? `${localHours}:${localMinutes}` : "";
           } else {
             // Hourly or 4-hour bin: "14", "06"
             const hourStr = timePart.padStart(2, "0");
             const date = new Date(`${key.slice(0, 10)}T${hourStr}:00:00Z`);
-            const lH = String(date.getHours()).padStart(2, "0");
+            const localHours = String(date.getHours()).padStart(2, "0");
             const dayLabel = date.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
             });
-            label = `${lH}h`;
+            label = `${localHours}h`;
             // For 6h bins across multi-day spans, show day at midnight
-            tickLabel = lH === "00" ? dayLabel : `${lH}h`;
+            tickLabel = localHours === "00" ? dayLabel : `${localHours}h`;
           }
         }
       }
-      return { ...t, label, tickLabel };
+      return { ...timelineEntry, label, tickLabel };
     });
   }, [timeline]);
 
@@ -430,6 +431,18 @@ export default function DashboardPage() {
           icon={Server}
           count={loading ? "—" : formatNumber(modelStats.length)}
           label="Models"
+        />
+        <ResourceCardComponent
+          href="#"
+          icon={Bot}
+          count={loading ? "—" : formatNumber(agentStats.length)}
+          label="Agents"
+          onClick={(e: React.MouseEvent) => {
+            e.preventDefault();
+            document
+              .getElementById("agents-table")
+              ?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
         />
         <ResourceCardComponent
           href="/admin/traces"
@@ -545,7 +558,7 @@ export default function DashboardPage() {
             data={chartData}
             loading={loading}
             height={220}
-            granularity={activeGranularity}
+            granularity={timelineGranularity}
             defaultGranularity={defaultGranularity}
             validGranularities={validGranularities}
             onGranularityChange={handleGranularityChange}
@@ -593,10 +606,12 @@ export default function DashboardPage() {
       />
 
       {/* -- Agents -- */}
-      <AgentsTableComponent
-        agents={agentStats}
-        emptyText={loading ? "Loading..." : "No agent data yet"}
-      />
+      <div id="agents-table">
+        <AgentsTableComponent
+          agents={agentStats}
+          emptyText={loading ? "Loading..." : "No agent data yet"}
+        />
+      </div>
 
       {/* -- Recent Traces -- */}
       <TracesTableComponent

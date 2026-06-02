@@ -30,9 +30,14 @@ export interface WorkspaceUpdateResponse {
 }
 
 export interface WorkspaceValidateResponse {
+  valid: boolean;
   resolvedPath: string;
+  originalPath: string;
   isWsl: boolean;
   exists: boolean;
+  isDirectory: boolean;
+  alreadyRegistered: boolean;
+  error?: string;
 }
 
 export interface WorkspaceTreeNode {

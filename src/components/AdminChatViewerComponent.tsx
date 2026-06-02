@@ -25,7 +25,7 @@ import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
 import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
-import SettingsPanel from "./SettingsPanelComponent";
+import SettingsPanel, { SessionStats as PanelSessionStats } from "./SettingsPanelComponent";
 import ModelInfoPanel from "./ModelInfoPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
 import HistoryPanel from "./HistoryPanelComponent";
@@ -209,13 +209,13 @@ export default function AdminChatViewerComponent({
   // ── Fetch config ─────────────────────────────────────────────
   useEffect(() => {
     PrismService.getConfigWithLocalModels({
-      onConfig: (c: PrismConfig) => setConfig(c),
+      onConfig: (prismConfig: PrismConfig) => setConfig(prismConfig),
       onLocalMerge: (merged: PrismConfig) => setConfig(merged),
     }).catch(() => {});
 
     PrismService.getFavorites("model")
-      .then((favs: Favorite[]) =>
-        setFavoriteKeys(favs.map((f: Favorite) => f.key as string)),
+      .then((favorites: Favorite[]) =>
+        setFavoriteKeys(favorites.map((favorite: Favorite) => favorite.key as string)),
       )
       .catch(() => {});
   }, []);
@@ -241,13 +241,13 @@ export default function AdminChatViewerComponent({
       .then((tools: CustomTool[]) => setCustomTools(tools))
       .catch(() => {});
     PrismService.getSkills(project)
-      .then((s: Skill[]) => setSkills(s))
+      .then((loadedSkills: Skill[]) => setSkills(loadedSkills))
       .catch(() => {});
     PrismService.getBuiltInToolSchemas(targetAgentId)
       .then((tools: ToolSchema[]) => setBuiltInTools(tools))
       .catch(() => {});
     PrismService.getAgentMemories(project, 1, undefined)
-      .then((r: { total?: number }) => setTotalMemoriesCount(r.total || 0))
+      .then((result: { total?: number }) => setTotalMemoriesCount(result.total || 0))
       .catch(() => {});
     PrismService.getRules(targetAgentId)
       .then((rulesList: Rule[]) => setRules(rulesList))
@@ -264,10 +264,9 @@ export default function AdminChatViewerComponent({
         setLeftTabBottom("tools");
       }
     } else {
-      if (leftTab !== "settings" && leftTab !== "info") {
+      if (leftTab !== "settings" && leftTab !== "info" && leftTab !== "params") {
         setLeftTab("settings");
       }
-      setLeftTabBottom("params");
     }
   }, [isSelectedAgent, leftTab, leftTabBottom]);
 
@@ -275,7 +274,7 @@ export default function AdminChatViewerComponent({
   const handleToggleFavorite = useCallback(
     async (key: string) => {
       if (favoriteKeys.includes(key)) {
-        setFavoriteKeys((prev) => prev.filter((k: string) => k !== key));
+        setFavoriteKeys((prev) => prev.filter((favoriteKey: string) => favoriteKey !== key));
         PrismService.removeFavorite("model", key).catch(() => {});
       } else {
         setFavoriteKeys((prev) => [...prev, key]);
@@ -294,8 +293,8 @@ export default function AdminChatViewerComponent({
     if (!initialId) return;
     setLoadingDetail(true);
     IrisService.getConversation(initialId)
-      .then((conv: unknown) => {
-        const conversationEntry = conv as UnifiedEntry & { type?: string };
+      .then((conversation: unknown) => {
+        const conversationEntry = conversation as UnifiedEntry & { type?: string };
         setSelectedEntry(conversationEntry);
         setSelectedSource(
           conversationEntry.type === "agent" ? "agent_session" : "conversation",
@@ -322,7 +321,7 @@ export default function AdminChatViewerComponent({
           | { messages?: Message[] }
           | undefined;
         const sysMsg = payload?.messages?.find(
-          (m: Message) => m.role === "system",
+          (message: Message) => message.role === "system",
         );
         if (sysMsg?.content) {
           setSessionSystemPrompt(sysMsg.content as string);
@@ -361,10 +360,10 @@ export default function AdminChatViewerComponent({
 
       const data = await IrisService.getConversations(params);
       const list = (data.data || []).map(
-        (c: Conversation & { type?: string }) => ({
-          ...c,
+        (conversation: Conversation & { type?: string }) => ({
+          ...conversation,
           _source:
-            c.type === "agent"
+            conversation.type === "agent"
               ? ("agent_session" as const)
               : ("conversation" as const),
         }),
@@ -374,8 +373,8 @@ export default function AdminChatViewerComponent({
       // Fingerprint for dedup
       const fp = list
         .map(
-          (c) =>
-            `${c.id}:${c.messages?.length || (c as Conversation).messageCount || 0}`,
+          (conversation) =>
+            `${conversation.id}:${conversation.messages?.length || (conversation as Conversation).messageCount || 0}`,
         )
         .join("|");
 
@@ -390,7 +389,7 @@ export default function AdminChatViewerComponent({
       setEntriesHasMore(list.length < total);
 
       // Track new IDs
-      const currentIds = new Set(list.map((c) => c.id || ""));
+      const currentIds = new Set(list.map((conversation) => conversation.id || ""));
       if (knownIdsRef.current === null) {
         knownIdsRef.current = currentIds;
       } else {
@@ -458,10 +457,10 @@ export default function AdminChatViewerComponent({
 
       const data = await IrisService.getConversations(params);
       const newItems = (data.data || []).map(
-        (c: Conversation & { type?: string }) => ({
-          ...c,
+        (conversation: Conversation & { type?: string }) => ({
+          ...conversation,
           _source:
-            c.type === "agent"
+            conversation.type === "agent"
               ? ("agent_session" as const)
               : ("conversation" as const),
         }),
@@ -628,11 +627,11 @@ export default function AdminChatViewerComponent({
         .catch(() => setBackendSessionStats(null));
 
       ToolsApiService.getAllAgenticTasks({ agentSessionId: selectedId })
-        .then((r) => setTasksCount(r.summary?.total || (r.tasks || []).length))
+        .then((result) => setTasksCount(result.summary?.total || (result.tasks || []).length))
         .catch(() => setTasksCount(0));
 
       PrismService.getCoordinatorWorkers(selectedId)
-        .then((r) => setWorkersCount((r.workers || []).length))
+        .then((result) => setWorkersCount((result.workers || []).length))
         .catch(() => setWorkersCount(0));
     } else {
       setBackendSessionStats(null);
@@ -780,12 +779,12 @@ export default function AdminChatViewerComponent({
 
   const hasSystemContextMessage = useMemo(() => {
     return (selectedEntry?.messages || []).some(
-      (m) =>
-        m.role === "user" &&
-        (m.content?.startsWith("[System Context]") ||
-          m.rawContent?.startsWith("[System Context]") ||
-          m.content?.startsWith("[System Context - Local Time:") ||
-          m.rawContent?.startsWith("[System Context - Local Time:")),
+      (message) =>
+        message.role === "user" &&
+        (message.content?.startsWith("[System Context]") ||
+          message.rawContent?.startsWith("[System Context]") ||
+          message.content?.startsWith("[System Context - Local Time:") ||
+          message.rawContent?.startsWith("[System Context - Local Time:")),
     );
   }, [selectedEntry?.messages]);
 
@@ -853,12 +852,21 @@ export default function AdminChatViewerComponent({
         icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
         tooltip: "Settings",
       },
-      {
-        key: "info",
-        icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
-        tooltip: "Info",
-      },
     ];
+
+    if (!isSelectedAgent) {
+      tabs.push({
+        key: "params",
+        icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
+        tooltip: "Parameters",
+      });
+    }
+
+    tabs.push({
+      key: "info",
+      icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
+      tooltip: "Info",
+    });
 
     if (isSelectedAgent) {
       // Agent mode tabs
@@ -923,15 +931,7 @@ export default function AdminChatViewerComponent({
           ...badgeProps(tasksCount),
           tooltip: "Tasks",
         },
-
       );
-    } else {
-      // Agentless / conversation tabs
-      tabs.push({
-        key: "params",
-        icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
-        tooltip: "Parameters",
-      });
     }
 
     return tabs;
@@ -945,11 +945,23 @@ export default function AdminChatViewerComponent({
   ]);
 
   // ── Build session stats for SettingsPanel ────────────────────
-  const sessionStatsForPanel = useMemo(() => {
+  const sessionStatsForPanel = useMemo((): PanelSessionStats | null => {
     if (!selectedEntry?.messages || selectedEntry.messages.length === 0)
       return null;
 
     const displayMessages = prepareDisplayMessages(selectedEntry.messages);
+
+    const transformModalities = (
+      inputModalities: Record<string, number | boolean> | undefined,
+    ): Record<string, boolean> => {
+      const result: Record<string, boolean> = {};
+      if (inputModalities) {
+        for (const [key, value] of Object.entries(inputModalities)) {
+          result[key] = Boolean(value);
+        }
+      }
+      return result;
+    };
 
     if (isSelectedAgent && backendSessionStats) {
       return {
@@ -969,7 +981,7 @@ export default function AdminChatViewerComponent({
         totalCost: backendSessionStats.totalCost ?? totalCost,
         originalTotalCost: 0,
         usedTools,
-        modalities: backendSessionStats.modalities || modalities,
+        modalities: transformModalities(backendSessionStats.modalities || modalities),
         completedElapsedTime:
           backendSessionStats.totalElapsedTime || completedElapsedTime,
         conversationStartTime: selectedEntry.messages.length > 0 ? selectedEntry.messages[0]?.timestamp : null,
@@ -988,7 +1000,7 @@ export default function AdminChatViewerComponent({
       totalCost,
       originalTotalCost: (selectedEntry as Conversation).totalCost || 0,
       usedTools,
-      modalities,
+      modalities: transformModalities(modalities),
       conversationStartTime: selectedEntry.messages.length > 0 ? selectedEntry.messages[0]?.timestamp : null,
     };
   }, [
@@ -1037,7 +1049,17 @@ export default function AdminChatViewerComponent({
                       hideSystemPrompt={isSelectedAgent}
                       workflows={workflows}
                       sessionType={isSelectedAgent ? "agent" : "chat"}
-                      sessionStats={sessionStatsForPanel as any}
+                      sessionStats={sessionStatsForPanel}
+                    />
+                  </>
+                )}
+                {leftTab === "params" && !isSelectedAgent && (
+                  <>
+                    <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
+                    <ParametersPanelComponent
+                      settings={settingsWithDefaults}
+                      config={config}
+                      readOnly
                     />
                   </>
                 )}
@@ -1079,7 +1101,7 @@ export default function AdminChatViewerComponent({
             )
           }
           leftPanelBottom={
-            ((selectedEntry as Conversation)?.settings || isSelectedAgent) ? (
+            ((selectedEntry as Conversation)?.settings || isSelectedAgent) && isSelectedAgent ? (
               <div
                 style={{
                   display: "flex",
@@ -1109,16 +1131,6 @@ export default function AdminChatViewerComponent({
                       disabledTools={new Set()}
                       onToggleBuiltIn={() => {}}
                       onToggleAllBuiltIn={() => {}}
-                      readOnly
-                    />
-                  </>
-                )}
-                {leftTabBottom === "params" && !isSelectedAgent && (
-                  <>
-                    <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
-                    <ParametersPanelComponent
-                      settings={settingsWithDefaults}
-                      config={config}
                       readOnly
                     />
                   </>

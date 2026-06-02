@@ -962,6 +962,10 @@ export default class PrismService {
     return PrismService._request<any[]>("/scheduled-tasks", { method: "GET" });
   }
 
+  static async getAllCronJobs(): Promise<any[]> {
+    return PrismService._request<any[]>("/scheduled-tasks/all", { method: "GET" });
+  }
+
   /**
    * Create a cron job.
    */

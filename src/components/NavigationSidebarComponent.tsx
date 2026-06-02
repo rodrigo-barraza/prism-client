@@ -31,13 +31,13 @@ import {
   Target,
   MemoryStick,
   Wrench,
-  BarChart3,
   AlertCircle,
   Eye,
   Clock,
   CircleUser,
   LogOut,
-
+  Bot,
+  type LucideIcon,
 } from "lucide-react";
 import {
   useTheme,
@@ -68,7 +68,21 @@ function RainbowCanvas({
   );
 }
 
-const USER_NAV_SECTIONS = [
+interface NavigationItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  exact?: boolean;
+  alsoMatches?: string[];
+  showBadge?: string;
+}
+
+interface NavigationSection {
+  label: string | null;
+  items: NavigationItem[];
+}
+
+const USER_NAV_SECTIONS: NavigationSection[] = [
   {
     label: "Workspace",
     items: [
@@ -76,7 +90,12 @@ const USER_NAV_SECTIONS = [
         href: "/chat",
         label: "Chat",
         icon: MessageSquare,
-        alsoMatches: ["/coding-agent", "/agents"],
+        alsoMatches: ["/coding-agent"],
+      },
+      {
+        href: "/agents",
+        label: "Agents",
+        icon: Bot,
       },
       {
         href: "/cron-jobs",
@@ -112,39 +131,47 @@ const USER_NAV_SECTIONS = [
   },
 ];
 
-const ADMIN_NAV_ITEMS = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+const ADMIN_NAV_SECTIONS: NavigationSection[] = [
   {
-    href: "/admin/requests",
-    label: "Requests",
-    icon: ScrollText,
-    showBadge: "requests",
+    label: "Analytics",
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      {
+        href: "/admin/requests",
+        label: "Requests",
+        icon: ScrollText,
+        showBadge: "requests",
+      },
+      { href: "/admin/tool-requests", label: "Tool Requests", icon: Wrench },
+      { href: "/admin/tools", label: "Tools", icon: Wrench },
+      {
+        href: "/admin/traces",
+        label: "Traces",
+        icon: FolderOpen,
+        showBadge: "traces",
+      },
+    ],
   },
-  { href: "/admin/tool-requests", label: "Tool Requests", icon: Wrench },
-  { href: "/admin/tool-calls", label: "Tool Calls", icon: BarChart3 },
   {
-    href: "/admin/chat",
-    label: "Chat",
-    icon: MessageSquare,
-    showBadge: "conversations",
+    label: "Workspace",
+    items: [
+      {
+        href: "/admin/chat",
+        label: "Chat",
+        icon: MessageSquare,
+        showBadge: "conversations",
+      },
+      { href: "/admin/providers", label: "Providers", icon: Layers },
+      { href: "/admin/models", label: "Models", icon: Server },
+      { href: "/admin/cron-jobs", label: "Cron Jobs", icon: Clock },
+    ],
   },
-
   {
-    href: "/admin/traces",
-    label: "Traces",
-    icon: FolderOpen,
-    showBadge: "traces",
-  },
-  { href: "/admin/providers", label: "Providers", icon: Layers },
-  { href: "/admin/media", label: "Media", icon: ImageIcon, showBadge: "media" },
-  { href: "/admin/text", label: "Text", icon: Type, showBadge: "text" },
-  { href: "/admin/models", label: "Models", icon: Server },
-];
-
-const ADMIN_NAV_SECTIONS = [
-  {
-    label: null,
-    items: ADMIN_NAV_ITEMS,
+    label: "Data",
+    items: [
+      { href: "/admin/media", label: "Media", icon: ImageIcon, showBadge: "media" },
+      { href: "/admin/text", label: "Text", icon: Type, showBadge: "text" },
+    ],
   },
   {
     label: "Experiments",
@@ -367,8 +394,8 @@ export default function NavigationSidebarComponent({
         let toRetire = activeCount - needed;
         const next = [...prev];
         for (let i = next.length - 1; i >= 0 && toRetire > 0; i--) {
-          if (!(next[i] as any).retired) {
-            next[i] = { ...(next[i] as any), retired: true };
+          if (!next[i].retired) {
+            next[i] = { ...next[i], retired: true };
             toRetire--;
           }
         }
@@ -704,7 +731,7 @@ export default function NavigationSidebarComponent({
               <nav className={styles.mobilePopoverNav}>
                 {navSections.map(
                   (
-                    section: { label: string | null; items: any[] },
+                    section: NavigationSection,
                     sectionIdx: number,
                   ) => (
                     <React.Fragment key={section.label || sectionIdx}>
@@ -716,11 +743,7 @@ export default function NavigationSidebarComponent({
                       )}
                       {section.items.map(
                         (
-                          item: (typeof USER_NAV_SECTIONS)[0]["items"][0] & {
-                            exact?: boolean;
-                            alsoMatches?: string[];
-                            showBadge?: string;
-                          },
+                          item: NavigationItem,
                         ) => {
                           const Icon = item.icon;
                           const isActive =
@@ -878,7 +901,7 @@ export default function NavigationSidebarComponent({
         {/* Rainbow logo banner */}
         <div className={styles.logoBanner} ref={bannerRef}>
           <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
-          {miniCats.map((cat: any) => (
+          {miniCats.map((cat: MiniCat) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={cat.id}
@@ -906,7 +929,7 @@ export default function NavigationSidebarComponent({
         <nav className={styles.navigationList}>
           {navSections.map(
             (
-              section: { label: string | null; items: any[] },
+              section: NavigationSection,
               sectionIdx: number,
             ) => (
               <React.Fragment key={section.label || sectionIdx}>
@@ -918,11 +941,7 @@ export default function NavigationSidebarComponent({
                 )}
                 {section.items.map(
                   (
-                    item: (typeof USER_NAV_SECTIONS)[0]["items"][0] & {
-                      exact?: boolean;
-                      alsoMatches?: string[];
-                      showBadge?: string;
-                    },
+                    item: NavigationItem,
                   ) => {
                     const Icon = item.icon;
                     const isActive =

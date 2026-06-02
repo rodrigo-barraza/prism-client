@@ -553,6 +553,23 @@
   gap: 16px;
 }
 
+/* Force dropdown-style select triggers inside the form to fill their
+   parent width instead of shrink-wrapping to fit-content (library default). */
+.form [class*="dropdown"],
+.form [class*="agent-picker-container"],
+.form [class*="model-picker-container"] {
+  width: 100%;
+}
+
+/* Inline time-picker and weekday-picker row selects should stay compact. */
+.timePickerRow [class*="dropdown"],
+.weeklyPickerRow [class*="dropdown"],
+.recurrenceRow [class*="dropdown"],
+.recurrenceSubrow [class*="dropdown"],
+.radioLabel [class*="dropdown"] {
+  width: fit-content;
+}
+
 .formRow {
   display: grid;
   grid-template-columns: 1fr 1fr;

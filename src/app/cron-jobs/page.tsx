@@ -35,8 +35,9 @@ import {
   TableComponent,
   BadgeComponent,
 } from "@rodrigo-barraza/components-library";
-import { AgentPersona, PrismConfig } from "../../types/types";
+import { AgentPersona, PrismConfig, ModelOption } from "../../types/types";
 import AgentPickerComponent from "../../components/AgentPickerComponent";
+import { getErrorMessage } from "../../utils/errorMessage";
 import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComponent";
 import { ViewModeToggleComponent } from "../../components/FilterBarComponent";
 import ScheduledTaskCalendarComponent from "../../components/ScheduledTaskCalendarComponent";
@@ -92,6 +93,7 @@ interface Task {
   lastRunMinute?: string;
   createdAt: string;
   updatedAt: string;
+  username?: string;
 }
 
 interface Toast {
@@ -100,7 +102,7 @@ interface Toast {
   type: "success" | "error" | "info";
 }
 
-const NONE_AGENT = {
+const NONE_AGENT: AgentPersona = {
   id: "NONE",
   name: "Agentless",
   description:
@@ -110,6 +112,12 @@ const NONE_AGENT = {
   custom: false,
   icon: "",
   color: "",
+  backgroundImage: "",
+  enabledToolNames: [],
+  coreToolsLocked: false,
+  canSpawnWorkers: false,
+  usesDirectoryTree: false,
+  usesCodingGuidelines: false,
 };
 
 interface CronJobDetailPanelProps {
@@ -278,11 +286,17 @@ function CronJobDetailPanel({
   );
 }
 
-export default function ScheduledTasksPage() {
+interface ScheduledTasksPageProps {
+  mode?: "user" | "admin";
+}
+
+export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
+  const isAdminMode = mode === "admin";
+
   // Data state
   const [tasks, setTasks] = useState<Task[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [agents, setAgents] = useState<any[]>([]);
+  const [agents, setAgents] = useState<AgentPersona[]>([]);
   const [modelsMap, setModelsMap] = useState<Record<string, Model[]>>({});
   const [providers, setProviders] = useState<string[]>([]);
   const [config, setConfig] = useState<PrismConfig | null>(null);
@@ -427,7 +441,9 @@ export default function ScheduledTasksPage() {
     setLoading(true);
     try {
       // 1. Fetch tasks
-      const fetchedTasks = await PrismService.getCronJobs();
+      const fetchedTasks = isAdminMode
+        ? await PrismService.getAllCronJobs()
+        : await PrismService.getCronJobs();
       setTasks(fetchedTasks as Task[]);
 
       // 2. Fetch workspaces
@@ -454,12 +470,12 @@ export default function ScheduledTasksPage() {
       const activeProviders: string[] = [];
 
       for (const [provider, modelOpts] of Object.entries(
-        textModelsMap as Record<string, any[]>,
-      )) {
+        textModelsMap,
+      ) as [string, ModelOption[]][]) {
         if (modelOpts.length > 0) {
           cleanModelsMap[provider] = modelOpts.map((m) => ({
             name: m.name,
-            displayName: m.displayName || m.name,
+            displayName: m.display_name || m.label || m.name,
             tools: m.tools || [],
           }));
           activeProviders.push(provider);
@@ -489,7 +505,7 @@ export default function ScheduledTasksPage() {
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, isAdminMode]);
 
   useEffect(() => {
     loadData();
@@ -550,9 +566,9 @@ export default function ScheduledTasksPage() {
       showToast(
         `Task successfully triggered. Session ID: ${triggerResponse.agentSessionId.slice(0, 8)}…`,
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      showToast(err.message || "Failed to trigger task", "error");
+      showToast(getErrorMessage(err) || "Failed to trigger task", "error");
     } finally {
       setTriggeringId(null);
     }
@@ -595,7 +611,7 @@ export default function ScheduledTasksPage() {
       scheduleTime = `${String(h).padStart(2, "0")}:${formTimeMinute}`;
     }
 
-    let recurrenceRule = undefined;
+    let recurrenceRule: Task["recurrenceRule"] = undefined;
     if (formScheduleType === "custom") {
       recurrenceRule = {
         frequency: formCustomFrequency,
@@ -629,7 +645,7 @@ export default function ScheduledTasksPage() {
       scheduleDate: formScheduleType === "once" ? formOnceDate : undefined,
       cronExpression:
         formScheduleType === "cron" ? formCron.trim() : undefined,
-      recurrenceRule: recurrenceRule as any,
+      recurrenceRule: recurrenceRule,
     };
 
     try {
@@ -650,9 +666,9 @@ export default function ScheduledTasksPage() {
 
       setShowNewModal(false);
       resetFormFields();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      showToast(err.message || `Failed to ${editingTask ? "update" : "create"} task`, "error");
+      showToast(getErrorMessage(err) || `Failed to ${editingTask ? "update" : "create"} task`, "error");
     } finally {
       setFormSubmitting(false);
     }
@@ -846,13 +862,7 @@ export default function ScheduledTasksPage() {
     });
   }, [tasks, searchQuery, activeSortKeys]);
 
-  return (
-    <div className="page-wrapper">
-      <NavigationSidebarComponent mode="user" />
-
-      <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent title="Cron Jobs" />
-        <div className={styles["page-content-area"]}>
+  const contentBlock = (
           <div className={styles.content}>
             {/* Sleek toast list */}
             <div className={styles.toastContainer}>
@@ -960,7 +970,7 @@ export default function ScheduledTasksPage() {
                     {
                       key: "name",
                       label: "Name",
-                      render: (row: any) => (
+                      render: (row: Task) => (
                         <span
                           className={styles.tableNameCell}
                           onClick={() => setSelectedTask(row)}
@@ -974,7 +984,7 @@ export default function ScheduledTasksPage() {
                       key: "schedule",
                       label: "Schedule",
                       sortable: false,
-                      render: (row: any) => (
+                      render: (row: Task) => (
                         <span className={styles.tableScheduleCell}>
                           {formatScheduleText(row)}
                         </span>
@@ -984,7 +994,7 @@ export default function ScheduledTasksPage() {
                       key: "agent",
                       label: "Agent",
                       sortable: false,
-                      render: (row: any) => {
+                      render: (row: Task) => {
                         const taskAgent = agents.find(
                           (a) => a.id === row.agent,
                         );
@@ -999,7 +1009,7 @@ export default function ScheduledTasksPage() {
                     {
                       key: "model",
                       label: "Model",
-                      render: (row: any) => (
+                      render: (row: Task) => (
                         <BadgeComponent variant="provider" mini>
                           <Sparkles size={10} />
                           {row.model?.split("/").pop()}
@@ -1009,7 +1019,7 @@ export default function ScheduledTasksPage() {
                     {
                       key: "project",
                       label: "Project",
-                      render: (row: any) =>
+                      render: (row: Task) =>
                         row.project ? (
                           <BadgeComponent variant="info" mini>
                             {row.project}
@@ -1018,11 +1028,27 @@ export default function ScheduledTasksPage() {
                           <span className={styles.tableDash}>—</span>
                         ),
                     },
+                    ...(isAdminMode
+                      ? [
+                          {
+                            key: "username",
+                            label: "Owner",
+                            render: (row: Task) =>
+                              row.username ? (
+                                <BadgeComponent variant="info" mini>
+                                  {row.username}
+                                </BadgeComponent>
+                              ) : (
+                                <span className={styles.tableDash}>—</span>
+                              ),
+                          },
+                        ]
+                      : []),
                     {
                       key: "enabled",
                       label: "Status",
-                      sortValue: (row: any) => (row.enabled ? 1 : 0),
-                      render: (row: any) => (
+                      sortValue: (row: Task) => (row.enabled ? 1 : 0),
+                      render: (row: Task) => (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1040,7 +1066,7 @@ export default function ScheduledTasksPage() {
                       label: "Created",
                       sortable: true,
                       align: "right",
-                      render: (row: any) =>
+                      render: (row: Task) =>
                         row.createdAt ? (
                           <BadgeComponent
                             type="dateTime"
@@ -1055,7 +1081,7 @@ export default function ScheduledTasksPage() {
                       label: "",
                       sortable: false,
                       align: "right",
-                      render: (row: any) => {
+                      render: (row: Task) => {
                         const isMenuOpen = activeMenuId === row.id;
                         const isTriggering = triggeringId === row.id;
                         return (
@@ -1132,7 +1158,7 @@ export default function ScheduledTasksPage() {
                     },
                   ]}
                   data={filteredTasks}
-                  getRowKey={(t: any) => t.id}
+                  getRowKey={(t: Task) => t.id}
                   emptyText="No Cron Jobs found"
                   storageKey="scheduled-tasks"
                 />
@@ -1347,7 +1373,7 @@ export default function ScheduledTasksPage() {
                       Cancel
                     </ButtonComponent>
                     <ButtonComponent
-                      variant="submit"
+                      variant="primary"
                       icon={isEditMode ? Pencil : Check}
                       loading={formSubmitting}
                       disabled={formSubmitting}
@@ -1610,7 +1636,7 @@ export default function ScheduledTasksPage() {
                           />
                           <SelectComponent
                             value={formCustomFrequency}
-                            onChange={(val: string) => setFormCustomFrequency(val as any)}
+                            onChange={(val: string) => setFormCustomFrequency(val as "daily" | "weekly" | "monthly" | "yearly")}
                             options={[
                               { value: "daily", label: "Day(s)" },
                               { value: "weekly", label: "Week(s)" },
@@ -1710,7 +1736,7 @@ export default function ScheduledTasksPage() {
                                 On the
                                 <SelectComponent
                                   value={String(formCustomNthDayOccurrence)}
-                                  onChange={(val: string) => setFormCustomNthDayOccurrence(Number(val) as any)}
+                                  onChange={(val: string) => setFormCustomNthDayOccurrence(Number(val) as 1 | 2 | 3 | 4 | -1)}
                                   options={[
                                     { value: "1", label: "first" },
                                     { value: "2", label: "second" },
@@ -1804,7 +1830,7 @@ export default function ScheduledTasksPage() {
                                 On the
                                 <SelectComponent
                                   value={String(formCustomNthDayOccurrence)}
-                                  onChange={(val: string) => setFormCustomNthDayOccurrence(Number(val) as any)}
+                                  onChange={(val: string) => setFormCustomNthDayOccurrence(Number(val) as 1 | 2 | 3 | 4 | -1)}
                                   options={[
                                     { value: "1", label: "first" },
                                     { value: "2", label: "second" },
@@ -1856,8 +1882,26 @@ export default function ScheduledTasksPage() {
               />
             )}
           </div>
+  );
+
+  if (isAdminMode) {
+    return contentBlock;
+  }
+
+  return (
+    <div className="page-wrapper">
+      <NavigationSidebarComponent mode="user" />
+
+      <div className={styles["layout-page-column"]}>
+        <LayoutHeaderComponent title="Cron Jobs" />
+        <div className={styles["page-content-area"]}>
+          {contentBlock}
         </div>
       </div>
     </div>
   );
+}
+
+export default function ScheduledTasksPageWrapper() {
+  return <ScheduledTasksPage mode="user" />;
 }

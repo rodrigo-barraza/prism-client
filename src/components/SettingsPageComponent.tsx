@@ -33,11 +33,11 @@ import {
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
-import WorkspaceService from "../services/WorkspaceService";
+import WorkspaceService, { type WorkspaceValidateResponse } from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContextComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
-import CustomAgentsPanel from "./CustomAgentsPanelComponent";
+import CustomAgentsPanel, { type AvailableTool } from "./CustomAgentsPanelComponent";
 import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
 import {
@@ -49,7 +49,7 @@ import {
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./SettingsPageComponent.module.css";
 
-import type { PrismSettings, AgenticHarness, MCPServer } from "../types/types";
+import type { PrismSettings, AgenticHarness, MCPServer, PrismConfig, CustomAgent } from "../types/types";
 
 interface LocalWorkspace {
   id?: string;
@@ -82,29 +82,29 @@ interface LocalAgent {
  *   - "Agent Defaults" section for subagent/worker model configuration
  */
 export default function SettingsPageComponent() {
-  const [config, setConfig] = useState<any>(null);
-  const [settings, setSettings] = useState<any>(null);
-  const [defaults, setDefaults] = useState<any>(null);
+  const [config, setConfig] = useState<PrismConfig | null>(null);
+  const [settings, setSettings] = useState<PrismSettings | null>(null);
+  const [defaults, setDefaults] = useState<PrismSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [customAgents, setCustomAgents] = useState<any[]>([]);
-  const [availableTools, setAvailableTools] = useState<any[]>([]);
-  const [harnesses, setHarnesses] = useState<any[]>([]);
-  const [expandedGuide, setExpandedGuide] = useState<any>(null); // 'download' | 'docker' | 'local' | null
-  const [copiedBlock, setCopiedBlock] = useState<any>(null);
+  const [customAgents, setCustomAgents] = useState<CustomAgent[]>([]);
+  const [availableTools, setAvailableTools] = useState<AvailableTool[]>([]);
+  const [harnesses, setHarnesses] = useState<AgenticHarness[]>([]);
+  const [expandedGuide, setExpandedGuide] = useState<"download" | "docker" | "local" | null>(null);
+  const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
 
   // -- MCP Servers state -----------------------------------------------
   const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
 
   // -- Workspace state ------------------------------------------------
   const { refreshWorkspaces } = useWorkspace();
-  const [wsWorkspaces, setWsWorkspaces] = useState<any[]>([]);
-  const [wsAgents, setWsAgents] = useState<any[]>([]);
+  const [wsWorkspaces, setWsWorkspaces] = useState<LocalWorkspace[]>([]);
+  const [wsAgents, setWsAgents] = useState<LocalAgent[]>([]);
   const [wsAddPath, setWsAddPath] = useState("");
-  const [wsValidation, setWsValidation] = useState<any>(null);
+  const [wsValidation, setWsValidation] = useState<WorkspaceValidateResponse | null>(null);
   const [wsAdding, setWsAdding] = useState(false);
-  const wsValidateTimer = useRef<any>(null);
+  const wsValidateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /** Detect Windows-style path for instant client-side preview */
   const isWindowsPath = (p: string) => /^[A-Za-z]:[/\\]/.test(p);
@@ -298,14 +298,23 @@ export default function SettingsPageComponent() {
   const handleWsPathChange = useCallback((value: string) => {
     setWsAddPath(value);
     setWsValidation(null);
-    clearTimeout(wsValidateTimer.current);
+    if (wsValidateTimer.current) clearTimeout(wsValidateTimer.current);
     if (!value.trim()) return;
     wsValidateTimer.current = setTimeout(async () => {
       try {
         const result = await WorkspaceService.validate(value);
         setWsValidation(result);
       } catch {
-        setWsValidation({ valid: false, error: "Validation failed" });
+        setWsValidation({
+          valid: false,
+          error: "Validation failed",
+          resolvedPath: "",
+          originalPath: value,
+          isWsl: false,
+          exists: false,
+          isDirectory: false,
+          alreadyRegistered: false,
+        });
       }
     }, 400);
   }, []);
@@ -329,7 +338,16 @@ export default function SettingsPageComponent() {
       await refreshWorkspaces();
     } catch (error: unknown) {
       console.error("Failed to add workspace:", error);
-      setWsValidation({ valid: false, error: "Failed to add workspace" });
+      setWsValidation({
+        valid: false,
+        error: "Failed to add workspace",
+        resolvedPath: "",
+        originalPath: wsAddPath,
+        isWsl: false,
+        exists: false,
+        isDirectory: false,
+        alreadyRegistered: false,
+      });
     } finally {
       setWsAdding(false);
     }
@@ -749,20 +767,6 @@ export default function SettingsPageComponent() {
         </CardComponent.Footer>
       </CardComponent>
 
-      {/* -- MCP Servers Section ---------------------------------------- */}
-      <CardComponent className={styles.section} data-settings-section="mcp-servers">
-        <CardComponent.Header
-          icon={Plug}
-          title="MCP Servers"
-          subtitle="Connect external tool providers via the Model Context Protocol"
-        />
-
-        <MCPServersPanel
-          servers={mcpServers}
-          onServersChange={loadMCPServers}
-        />
-      </CardComponent>
-
       {/* -- Creative Tools Section ------------------------------------ */}
       <CardComponent className={styles.section} data-settings-section="creative-tools">
         <CardComponent.Header
@@ -1092,7 +1096,7 @@ export default function SettingsPageComponent() {
           <div className={styles.addWorkspaceRow}>
             <InputComponent
               type="text"
-              className={`${wsValidation ? ((wsValidation as { valid: boolean; error?: string }).valid ? styles.valid : styles.invalid) : ""}`}
+              className={`${wsValidation ? (wsValidation.valid ? styles.valid : styles.invalid) : ""}`}
               placeholder="Add workspace path (e.g. /home/user/projects or C:\Users\...)"
               value={wsAddPath}
               onChange={(
@@ -1101,7 +1105,7 @@ export default function SettingsPageComponent() {
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (
                   e.key === "Enter" &&
-                  (wsValidation as { valid: boolean; error?: string })?.valid
+                  wsValidation?.valid
                 )
                   handleAddWorkspace();
               }}
@@ -1109,7 +1113,7 @@ export default function SettingsPageComponent() {
             <button
               className={styles.addButton}
               disabled={
-                !(wsValidation as { valid: boolean; error?: string })?.valid ||
+                !wsValidation?.valid ||
                 wsAdding
               }
               onClick={handleAddWorkspace}
@@ -1122,16 +1126,16 @@ export default function SettingsPageComponent() {
           {/* Validation feedback */}
           {wsAddPath.trim() && wsValidation && (
             <div
-              className={`${styles.validationRow} ${(wsValidation as { valid: boolean; error?: string }).valid ? styles.success : styles.error}`}
+              className={`${styles.validationRow} ${wsValidation.valid ? styles.success : styles.error}`}
             >
-              {(wsValidation as { valid: boolean; error?: string }).valid ? (
+              {wsValidation.valid ? (
                 <>
                   <CheckCircle2 size={12} /> Valid directory
                 </>
               ) : (
                 <>
                   <XCircle size={12} />{" "}
-                  {(wsValidation as { valid: boolean; error?: string }).error}
+                  {wsValidation.error}
                 </>
               )}
             </div>
@@ -1764,6 +1768,20 @@ export default function SettingsPageComponent() {
             Reset to Defaults
           </ButtonComponent>
         </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- MCP Servers Section ---------------------------------------- */}
+      <CardComponent className={styles.section} data-settings-section="mcp-servers">
+        <CardComponent.Header
+          icon={Plug}
+          title="MCP Servers"
+          subtitle="Connect external tool providers via the Model Context Protocol"
+        />
+
+        <MCPServersPanel
+          servers={mcpServers}
+          onServersChange={loadMCPServers}
+        />
       </CardComponent>
 
       {/* -- Custom Themes Section ------------------------------------ */}

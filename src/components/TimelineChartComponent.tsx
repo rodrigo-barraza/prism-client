@@ -44,12 +44,12 @@ function VerticalGridLines(props: any) {
 
   return (
     <g className="vertical-grid-lines">
-      {points.map((pt: any, i: number) => (
+      {points.map((point: any, i: number) => (
         <line
           key={`vg-${i}`}
-          x1={pt.x}
+          x1={point.x}
           y1={yTop}
-          x2={pt.x}
+          x2={point.x}
           y2={yBottom}
           stroke="rgba(255,255,255,0.04)"
           strokeWidth={0.5}
@@ -142,7 +142,7 @@ interface TimelineChartProps {
   loading?: boolean;
   height?: number;
   title?: string;
-  granularity?: string;
+  granularity?: string | null;
   defaultGranularity?: string;
   validGranularities?: string[];
   onGranularityChange?: (granularity: string | null) => void;
@@ -221,7 +221,7 @@ export default function TimelineChartComponent({
     [onGranularityChange],
   );
 
-  const isAutoGranularity = !granularity || granularity === defaultGranularity;
+  const isAutoGranularity = !granularity;
 
   return (
     <div className={styles.container}>
@@ -282,7 +282,7 @@ export default function TimelineChartComponent({
                 tick={{ fill: "#5a6078", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v) => yTickFormatter(v, tab.key)}
+                tickFormatter={(value) => yTickFormatter(value, tab.key)}
                 domain={yDomain}
               />
               <Tooltip

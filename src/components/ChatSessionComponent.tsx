@@ -378,7 +378,7 @@ export default function ChatSessionComponent({
   const urlSessionAppliedRef = useRef<boolean>(false);
   const agentId = propAgentId;
   const isNoAgent = agentId === "NONE";
-  const activeAgentData = agents.find((a) => a.id === agentId);
+  const activeAgentData = agents.find((agent) => agent.id === agentId);
   // Direct Chat omits project so it uses the default x-project header — this
   // routes persistence to the conversations collection.
   // Agent modes use the persona's project so persistence goes to agent_conversations.
@@ -443,13 +443,18 @@ export default function ChatSessionComponent({
   >(null);
 
   // -- Notifications & Toasts ------------------------------------
-  const { toasts, addToast, removeToast } = useToast();
+  const { toasts, addToast: originalAddToast, removeToast } = useToast();
+  const addToast = originalAddToast as (
+    message: React.ReactNode,
+    type?: "success" | "warning" | "error" | "info" | string,
+    duration?: number,
+  ) => number;
   const pendingDeletionsRef = useRef<
     Map<
       string,
       {
         timeoutId: NodeJS.Timeout;
-        session: any;
+        session: AgentSession | Conversation;
         wasActive: boolean;
       }
     >
@@ -513,7 +518,7 @@ export default function ChatSessionComponent({
     }
   }, [leftTab]);
 
-  const BOTTOM_PANEL_TABS = new Set(["tools", "params", "skills", "rules", "memories", "tasks"]);
+  const BOTTOM_PANEL_TABS = new Set(["tools", "skills", "rules", "memories", "tasks"]);
 
   useEffect(() => {
     if (initialTabKey) {
@@ -3724,6 +3729,24 @@ export default function ChatSessionComponent({
         workspaceRoot?: string;
         _fromSnapshot?: boolean;
         _snapshot?: SessionSnapshot;
+        isGenerating?: boolean;
+        pendingApproval?: {
+          pending?: boolean;
+          type?: string;
+          toolCalls?: Array<{
+            id?: string;
+            name?: string;
+            args?: Record<string, unknown>;
+            _approval?: { tier?: 1 | 2 | 3 };
+          }>;
+          tools?: string[];
+        };
+        pendingQuestion?: {
+          pending?: boolean;
+          question?: string;
+          questions?: unknown[];
+          choices?: string[];
+        };
       },
     ) => {
       if (!full) return;
@@ -3790,12 +3813,12 @@ export default function ChatSessionComponent({
         setAgentSessionId(full.id || generateUUID());
         setTraceId(full.traceId || null);
         setActiveId(full.id ?? null);
-        setIsGenerating(!!(full as any).isGenerating);
+        setIsGenerating(!!full.isGenerating);
         // Passive DB load — no active SSE connection for this generation
         isClientDrivenGenerationRef.current = false;
 
         // Load pending approvals from the enriched session response
-        const pendingApprovalData = (full as any).pendingApproval;
+        const pendingApprovalData = full.pendingApproval;
         if (pendingApprovalData && pendingApprovalData.pending) {
           if (pendingApprovalData.type === "plan") {
             const lastAssistantMessage = [...(full.messages || [])]
@@ -3817,7 +3840,7 @@ export default function ChatSessionComponent({
             }
           } else if (pendingApprovalData.toolCalls) {
             setPendingApprovals(
-              pendingApprovalData.toolCalls.map((toolCall: any) => ({
+              pendingApprovalData.toolCalls.map((toolCall) => ({
                 id: toolCall.id || `ap-${Date.now()}`,
                 toolName: toolCall.name || "",
                 toolArgs: toolCall.args || {},
@@ -3841,7 +3864,7 @@ export default function ChatSessionComponent({
         }
 
         // Load pending questions from the enriched session response
-        const pendingQuestionData = (full as any).pendingQuestion;
+        const pendingQuestionData = full.pendingQuestion;
         if (pendingQuestionData && pendingQuestionData.pending) {
           setPendingUserQuestion({
             questions: pendingQuestionData.questions || [],
@@ -4090,21 +4113,21 @@ export default function ChatSessionComponent({
   }, [refreshActiveSession, loadSessions]);
 
   const handleUndoDelete = useCallback(
-    (convId: string, toastId: number) => {
-      const pending = pendingDeletionsRef.current.get(convId);
+    (conversationId: string, toastId: number) => {
+      const pending = pendingDeletionsRef.current.get(conversationId);
       if (pending) {
         clearTimeout(pending.timeoutId);
-        pendingDeletionsRef.current.delete(convId);
+        pendingDeletionsRef.current.delete(conversationId);
 
         // Restore the session to sessions state
         setSessions((previousPixelSize) => {
-          if (previousPixelSize.some((s) => s.id === convId))
+          if (previousPixelSize.some((sessionItem) => sessionItem.id === conversationId))
             return previousPixelSize;
           const updated = [...previousPixelSize, pending.session];
           // Sort by updatedAt or createdAt descending
-          return updated.sort((a, b) => {
-            const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
-            const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+          return updated.sort((sessionA, sessionB) => {
+            const dateA = new Date(sessionA.updatedAt || sessionA.createdAt || 0).getTime();
+            const dateB = new Date(sessionB.updatedAt || sessionB.createdAt || 0).getTime();
             return dateB - dateA;
           });
         });
@@ -4121,16 +4144,16 @@ export default function ChatSessionComponent({
   );
 
   const handleDeleteSession = useCallback(
-    async (convId: string) => {
+    async (conversationId: string) => {
       try {
-        const session = sessions.find((s) => s.id === convId);
+        const session = sessions.find((sessionItem) => sessionItem.id === conversationId);
         if (!session) return;
 
-        const wasActive = activeId === convId;
+        const wasActive = activeId === conversationId;
 
         // Optimistically remove from state
         setSessions((previousPixelSize) =>
-          previousPixelSize.filter((c) => c.id !== convId),
+          previousPixelSize.filter((sessionItem) => sessionItem.id !== conversationId),
         );
         if (wasActive) {
           handleNewChat();
@@ -4138,12 +4161,12 @@ export default function ChatSessionComponent({
 
         // Defer actual API deletion by 10 seconds (10000ms)
         const timeoutId = setTimeout(async () => {
-          pendingDeletionsRef.current.delete(convId);
+          pendingDeletionsRef.current.delete(conversationId);
           try {
             if (isNoAgent) {
-              await PrismService.deleteConversation(convId);
+              await PrismService.deleteConversation(conversationId);
             } else {
-              await PrismService.deleteAgentSession(convId, agentProject!);
+              await PrismService.deleteAgentSession(conversationId, agentProject!);
             }
           } catch (error) {
             console.error("Failed to delete session:", error);
@@ -4151,7 +4174,7 @@ export default function ChatSessionComponent({
         }, 10000);
 
         // Store in pending deletions
-        pendingDeletionsRef.current.set(convId, {
+        pendingDeletionsRef.current.set(conversationId, {
           timeoutId,
           session,
           wasActive,
@@ -4173,7 +4196,7 @@ export default function ChatSessionComponent({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleUndoDelete(convId, toastId);
+                  handleUndoDelete(conversationId, toastId);
                 }}
                 style={{
                   background: "rgba(99, 102, 241, 0.15)",
@@ -4199,7 +4222,7 @@ export default function ChatSessionComponent({
                 Undo
               </button>
             </div>
-          ) as any,
+          ),
           "info",
           10000,
         );
@@ -4260,6 +4283,11 @@ export default function ChatSessionComponent({
             key: "settings",
             icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
             tooltip: "Settings",
+          },
+          {
+            key: "params",
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
+            tooltip: "Parameters",
           },
           ...(!isNoAgent &&
           ((currentWorkspace && hasFileOperations) || unavailableWorkspace)
@@ -4686,6 +4714,20 @@ export default function ChatSessionComponent({
         </>
       )}
 
+      {leftTab === "params" && (
+        <>
+          <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
+          <ParametersPanelComponent
+            settings={settings}
+            onChange={(updates: Partial<PrismSettings>) =>
+              setSettings((s) => ({ ...s, ...updates }))
+            }
+            config={filteredConfig}
+            isAgentMode={!isNoAgent}
+          />
+        </>
+      )}
+
       {leftTab === "workspace" && (
         <>
           <SidebarTabHeaderComponent
@@ -4765,11 +4807,6 @@ export default function ChatSessionComponent({
             tooltip: "Tools",
             tooltipDisabled: !settings.functionCallingEnabled,
           },
-          {
-            key: "params",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
-            tooltip: "Parameters",
-          },
           ...(!isNoAgent
             ? [
                 {
@@ -4842,20 +4879,6 @@ export default function ChatSessionComponent({
             lockedOffTools={lockedOffTools}
             agent={!isNoAgent}
             coreToolsLocked={!isNoAgent && (activeAgentData?.coreToolsLocked ?? true)}
-          />
-        </>
-      )}
-
-      {leftTabBottom === "params" && (
-        <>
-          <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
-          <ParametersPanelComponent
-            settings={settings}
-            onChange={(updates: Partial<PrismSettings>) =>
-              setSettings((s) => ({ ...s, ...updates }))
-            }
-            config={filteredConfig}
-            isAgentMode={!isNoAgent}
           />
         </>
       )}
@@ -5030,7 +5053,7 @@ export default function ChatSessionComponent({
 
         {/* Pending approval cards */}
         {pendingApprovals
-          .filter((a) => a.status === "pending")
+          .filter((approvalItem) => approvalItem.status === "pending")
           .map((approval) => (
             <ApprovalCardComponent
               key={approval.id}
@@ -5039,8 +5062,8 @@ export default function ChatSessionComponent({
               tier={approval.tier}
               onApprove={() => {
                 setPendingApprovals((previousPixelSize) =>
-                  previousPixelSize.map((a) =>
-                    a.id === approval.id ? { ...a, status: "approved" } : a,
+                  previousPixelSize.map((approvalItem) =>
+                    approvalItem.id === approval.id ? { ...approvalItem, status: "approved" } : approvalItem,
                   ),
                 );
                 PrismService.sendApprovalResponse(agentSessionId, true).catch(
@@ -5049,8 +5072,8 @@ export default function ChatSessionComponent({
               }}
               onReject={() => {
                 setPendingApprovals((previousPixelSize) =>
-                  previousPixelSize.map((a) =>
-                    a.id === approval.id ? { ...a, status: "rejected" } : a,
+                  previousPixelSize.map((approvalItem) =>
+                    approvalItem.id === approval.id ? { ...approvalItem, status: "rejected" } : approvalItem,
                   ),
                 );
                 PrismService.sendApprovalResponse(agentSessionId, false).catch(
@@ -5059,8 +5082,8 @@ export default function ChatSessionComponent({
               }}
               onApproveAll={() => {
                 setPendingApprovals((previousPixelSize) =>
-                  previousPixelSize.map((a) =>
-                    a.status === "pending" ? { ...a, status: "approved" } : a,
+                  previousPixelSize.map((approvalItem) =>
+                    approvalItem.status === "pending" ? { ...approvalItem, status: "approved" } : approvalItem,
                   ),
                 );
                 setAutoApprove(true);
@@ -5130,7 +5153,7 @@ export default function ChatSessionComponent({
         // Detect awaiting-approval state (plan proposal or tool approval pending)
         const isAwaitingApproval =
           planProposal?.status === "pending" ||
-          pendingApprovals.some((a) => a.status === "pending") ||
+          pendingApprovals.some((approvalItem) => approvalItem.status === "pending") ||
           pendingUserQuestion !== null;
 
         // -- Derive phase from live worker activity --------------

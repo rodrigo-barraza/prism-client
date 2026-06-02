@@ -107,7 +107,7 @@ interface ColorOption {
   name: string;
 }
 
-interface AvailableTool {
+export interface AvailableTool {
   name: string;
   description?: string;
   domain?: string;
