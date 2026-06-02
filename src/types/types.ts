@@ -543,6 +543,7 @@ export interface TransformedRequestItem {
   project?: string;
   endpoint?: string;
   operation?: string;
+  harness?: string;
   provider?: string;
   model?: string;
   inputTokens?: number;

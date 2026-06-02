@@ -105,6 +105,17 @@ export function getMediaTypeFromRef(ref: string) {
 /* -- Detail sections builder ------------------------------------- */
 
 /**
+ * Format the harness ID into a human-readable display label.
+ */
+export function formatHarnessLabel(harness: string): string {
+  if (harness === "standard") return "Standard (ReAct)";
+  return harness
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/**
  * Build the 4-section array (General, Usage, Timing, Parameters)
  * consumed by <RequestDetailsComponent sections={…}>.
  *
@@ -163,6 +174,18 @@ export function buildRequestDetailSections(
                 value: (
                   <BadgeComponent variant="accent">
                     {req.agent as React.ReactNode}
+                  </BadgeComponent>
+                ),
+              },
+            ]
+          : []),
+        ...(req.harness
+          ? [
+              {
+                label: "Harness",
+                value: (
+                  <BadgeComponent variant="accent">
+                    {formatHarnessLabel(req.harness as string)}
                   </BadgeComponent>
                 ),
               },

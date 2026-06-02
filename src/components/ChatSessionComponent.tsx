@@ -1968,6 +1968,7 @@ export default function ChatSessionComponent({
               conversationMeta: { title: resolvedTitle },
               traceId,
               agent: agentId,
+              harness: settings?.agents?.harness || "standard",
               // Phase 1: Agentic controls
               autoApprove,
               planFirst,

@@ -104,6 +104,17 @@ interface ExtendedModelOption extends ModelOption {
   _isTTS?: boolean;
 }
 
+/**
+ * Format the harness ID into a human-readable display label.
+ */
+export function formatHarnessLabel(harness: string): string {
+  if (harness === "standard") return "Standard (ReAct)";
+  return harness
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export default function SettingsPanel({
   config,
   settings,
@@ -241,6 +252,12 @@ export default function SettingsPanel({
           deletedCount={stats.deletedCount}
         />
         <BadgeComponent type="requests" count={stats.requestCount} />
+        {sessionType === "agent" && settings.agents?.harness && (
+          <span className={styles.statBadge}>
+            <Brain size={10} />
+            {formatHarnessLabel(settings.agents.harness)}
+          </span>
+        )}
         {stats.uniqueModels && stats.uniqueModels.length > 0 && (
           <BadgeComponent
             type="model"
