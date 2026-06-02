@@ -13,9 +13,9 @@
   background: radial-gradient(
     circle at 50% 30%,
     var(--color-white) 0%,
-    oklch(95.1% 0.0251 236.9) 20%,
-    oklch(90.1% 0.0556 230.9) 50%,
-    oklch(82.8% 0.1013 230.3) 100%
+    oklch(95.1% 0.0 0.0) 20%,
+    oklch(90.1% 0.0 0.0) 50%,
+    oklch(82.8% 0.0 0.0) 100%
   );
 }
 
@@ -42,10 +42,10 @@
 :global([data-theme="muted"]) .canvas {
   background: radial-gradient(
     circle at 50% 30%,
-    oklch(93.4% 0.0056 274.8) 0%,
-    oklch(88.9% 0.0085 271.3) 20%,
-    oklch(85.8% 0.0116 269.5) 50%,
-    oklch(82.0% 0.0147 268.4) 100%
+    oklch(93.4% 0.0 0.0) 0%,
+    oklch(88.9% 0.0 0.0) 20%,
+    oklch(85.8% 0.0 0.0) 50%,
+    oklch(82.0% 0.0 0.0) 100%
   );
 }
 

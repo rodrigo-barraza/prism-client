@@ -298,12 +298,12 @@
   }
 
   :global([data-theme="muted"]) & {
-    background: oklch(29.0% 0.0092 276.8);
-    color: oklch(68.8% 0.027 273.3);
+    background: oklch(29.0% 0.0 0.0);
+    color: oklch(68.8% 0.0 0.0);
 
     &:hover {
-      background: oklch(33.5% 0.0123 279.2);
-      color: oklch(86.5% 0.0113 274.8);
+      background: oklch(33.5% 0.0 0.0);
+      color: oklch(86.5% 0.0 0.0);
     }
   }
 }

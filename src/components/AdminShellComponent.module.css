@@ -64,6 +64,10 @@
   flex-shrink: 0;
 }
 
+.agent-select-container {
+  flex-shrink: 0;
+}
+
 /* ── Session filter badge ── */
 .sessionBadge {
   display: inline-flex;

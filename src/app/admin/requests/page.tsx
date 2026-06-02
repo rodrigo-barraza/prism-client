@@ -8,7 +8,7 @@ import {
   FolderOpen,
   Filter,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import HistoryItemComponent from "../../../components/HistoryItemComponent";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
 import IrisService from "../../../services/IrisService";
@@ -51,7 +51,6 @@ interface RequestFilters {
   endpoint: string[];
   operation: string[];
   success: string[];
-  agent: string[];
 }
 
 interface RequestAssociations {
@@ -108,7 +107,6 @@ export default function RequestsPage() {
     endpoint: [],
     operation: [],
     success: [],
-    agent: [],
   });
 
   const [hoveredConversationId, setHoveredConversationId] = useState<
@@ -116,7 +114,8 @@ export default function RequestsPage() {
   >(null);
   const initialLoadDone = useRef<boolean>(false);
   const fetchGenRef = useRef<number>(0);
-  const [agentPersonas, setAgentPersonas] = useState<AgentPersona[]>([]);
+  const searchParams = useSearchParams();
+  const globalAgentFilter = searchParams.get("agent") || null;
 
   // "Just now" row highlighting — track fresh rows and fade-outs
   const prevJustNowIds = useRef<Set<string>>(new Set());
@@ -188,6 +187,8 @@ export default function RequestsPage() {
         order,
       };
       if (projectFilter) params.project = projectFilter;
+      if (globalAgentFilter) params.agent = globalAgentFilter;
+
       Object.entries(filters).forEach(([key, filterValue]) => {
         if (Array.isArray(filterValue)) {
           if (filterValue.length > 0) params[key] = filterValue.join(",");
@@ -211,7 +212,7 @@ export default function RequestsPage() {
         setLoading(false);
       }
     }
-  }, [page, sort, order, filters, dateRange, projectFilter]);
+  }, [page, sort, order, filters, dateRange, projectFilter, globalAgentFilter]);
 
   useEffect(() => {
     // Bump generation to invalidate any in-flight requests from previous effect
@@ -302,7 +303,6 @@ export default function RequestsPage() {
       endpoint: [],
       operation: [],
       success: [],
-      agent: [],
     });
     setPage(1);
   }
@@ -354,21 +354,6 @@ export default function RequestsPage() {
     ],
     [],
   );
-
-  const agentFilterOptions = useMemo(
-    () =>
-      agentPersonas.map((persona) => ({
-        value: persona.id,
-        label: persona.name,
-      })),
-    [agentPersonas],
-  );
-
-  useEffect(() => {
-    PrismService.getAgentPersonas()
-      .then(setAgentPersonas)
-      .catch(() => setAgentPersonas([]));
-  }, []);
 
   const exportCSV = useCallback(() => {
     const headers = [
@@ -473,18 +458,6 @@ export default function RequestsPage() {
               onChange={handleModelFilterChange}
             />
           </div>
-          <SelectComponent
-            multiple
-            label="Agent"
-            icon={<Filter size={12} />}
-            value={filters.agent}
-            options={agentFilterOptions}
-            onChange={(values: string[]) =>
-              handleMultiFilterChange("agent", values)
-            }
-            allLabel="All Agents"
-            compact
-          />
         </div>
         <div className={styles.filterRow}>
           <SelectComponent

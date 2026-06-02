@@ -95,38 +95,38 @@
   --accent-tertiary: oklch(75.3% 0.1391 232.7);
 }
 
-/* ── Light Mode ────────────────────────────────────────────── */
+/* ── Daylight Mode ─────────────────────────────────────────── */
 
 [data-theme="light"] {
-  --accent-primary: oklch(51.1% 0.2301 277.0);
-  --calculated-accent-primary-hover: oklch(45.7% 0.2146 277.0);
-  --calculated-accent-primary-glow: oklch(51.1% 0.2301 277.0 / 0.2);
-  --calculated-accent-primary-subtle: oklch(51.1% 0.2301 277.0 / 0.06);
+  --accent-primary: oklch(25.0% 0.0 0.0);
+  --calculated-accent-primary-hover: oklch(18.0% 0.0 0.0);
+  --calculated-accent-primary-glow: oklch(25.0% 0.0 0.0 / 0.15);
+  --calculated-accent-primary-subtle: oklch(25.0% 0.0 0.0 / 0.05);
   --calculated-accent-primary-contrast: oklch(100.0% 0.0001 263.3 / 0.92);
-  --calculated-shadow-glow: 0 0 20px oklch(51.1% 0.2301 277.0 / 0.08);
+  --calculated-shadow-glow: 0 0 20px oklch(25.0% 0.0 0.0 / 0.06);
 
-  --accent-secondary: oklch(58.6% 0.222 17.6);
-  --calculated-accent-secondary-hover: oklch(51.4% 0.1978 16.9);
-  --calculated-accent-secondary-glow: oklch(58.6% 0.222 17.6 / 0.2);
-  --calculated-accent-secondary-subtle: oklch(58.6% 0.222 17.6 / 0.06);
-  --accent-tertiary: oklch(76.9% 0.1646 70.1);
+  --accent-secondary: oklch(45.0% 0.0 0.0);
+  --calculated-accent-secondary-hover: oklch(38.0% 0.0 0.0);
+  --calculated-accent-secondary-glow: oklch(45.0% 0.0 0.0 / 0.15);
+  --calculated-accent-secondary-subtle: oklch(45.0% 0.0 0.0 / 0.05);
+  --accent-tertiary: oklch(60.0% 0.0 0.0);
 }
 
-/* ── Muted Mode ───────────────────────────────────────────── */
+/* ── Overcast Mode ────────────────────────────────────────── */
 
 [data-theme="muted"] {
-  --accent-primary: oklch(52.0% 0.2029 278.3);
-  --calculated-accent-primary-hover: oklch(46.1% 0.1786 278.7);
-  --calculated-accent-primary-glow: oklch(52.0% 0.2029 278.3 / 0.18);
-  --calculated-accent-primary-subtle: oklch(52.0% 0.2029 278.3 / 0.07);
+  --accent-primary: oklch(35.0% 0.0 0.0);
+  --calculated-accent-primary-hover: oklch(28.0% 0.0 0.0);
+  --calculated-accent-primary-glow: oklch(35.0% 0.0 0.0 / 0.14);
+  --calculated-accent-primary-subtle: oklch(35.0% 0.0 0.0 / 0.06);
   --calculated-accent-primary-contrast: oklch(100.0% 0.0001 263.3 / 0.92);
-  --calculated-shadow-glow: 0 0 20px oklch(52.0% 0.2029 278.3 / 0.06);
+  --calculated-shadow-glow: 0 0 20px oklch(35.0% 0.0 0.0 / 0.05);
 
-  --accent-secondary: oklch(66.4% 0.1635 297.0);
-  --calculated-accent-secondary-hover: oklch(56.9% 0.1813 294.1);
-  --calculated-accent-secondary-glow: oklch(66.4% 0.1635 297.0 / 0.18);
-  --calculated-accent-secondary-subtle: oklch(66.4% 0.1635 297.0 / 0.07);
-  --accent-tertiary: oklch(60.6% 0.0224 267.2);
+  --accent-secondary: oklch(55.0% 0.0 0.0);
+  --calculated-accent-secondary-hover: oklch(48.0% 0.0 0.0);
+  --calculated-accent-secondary-glow: oklch(55.0% 0.0 0.0 / 0.14);
+  --calculated-accent-secondary-subtle: oklch(55.0% 0.0 0.0 / 0.06);
+  --accent-tertiary: oklch(65.0% 0.0 0.0);
 }
 
 /* ── Tropical Mode ─────────────────────────────────────────── */
