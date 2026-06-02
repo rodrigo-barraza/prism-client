@@ -37,7 +37,7 @@ import {
   Clock,
   CircleUser,
   LogOut,
-  Bot,
+
 } from "lucide-react";
 import {
   useTheme,
@@ -128,7 +128,7 @@ const ADMIN_NAV_ITEMS = [
     icon: MessageSquare,
     showBadge: "conversations",
   },
-  { href: "/admin/agents", label: "Agents", icon: Bot },
+
   {
     href: "/admin/traces",
     label: "Traces",

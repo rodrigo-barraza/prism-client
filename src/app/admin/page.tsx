@@ -29,7 +29,7 @@ import {
   Timer,
   Wrench,
   FolderKanban,
-  Bot,
+
 } from "lucide-react";
 import {
   POLL_LAZY,
@@ -444,12 +444,7 @@ export default function DashboardPage() {
           count={loading ? "—" : formatNumber(stats?.conversationCount || 0)}
           label="Chat"
         />
-        <ResourceCardComponent
-          href="/admin/agents"
-          icon={Bot}
-          count={loading ? "—" : formatNumber(stats?.agentCount || 0)}
-          label="Agents"
-        />
+
         <ResourceCardComponent
           href="/admin/requests"
           icon={ScrollText}
