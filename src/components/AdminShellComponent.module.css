@@ -35,22 +35,6 @@
 }
 
 
-.headerControls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.headerDatePicker {
-  flex-shrink: 0;
-}
-
-.agent-select-container {
-  flex-shrink: 0;
-}
-
-/* ── Session filter badge ── */
 .sessionBadge {
   display: inline-flex;
   align-items: center;

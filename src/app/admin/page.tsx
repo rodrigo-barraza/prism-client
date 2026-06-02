@@ -13,6 +13,7 @@ import type {
 } from "@/types/types";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Zap,
   DollarSign,
@@ -29,7 +30,6 @@ import {
   Timer,
   Wrench,
   FolderKanban,
-
 } from "lucide-react";
 import {
   POLL_LAZY,
@@ -41,7 +41,6 @@ import { formatNumber, formatCost, formatLatency, formatTokensPerSec, formatElap
 import { buildDateRangeParams } from "../../utils/utilities";
 import { getErrorMessage } from "../../utils/errorMessage";
 import {
-  SelectComponent,
   StatsCardComponent as StatsCard,
 } from "@rodrigo-barraza/components-library";
 
@@ -57,7 +56,7 @@ import TracesTableComponent from "../../components/TracesTableComponent";
 
 import { ErrorMessage } from "../../components/StateMessageComponent";
 import { useAdminHeader } from "../../components/AdminHeaderContextComponent";
-import useProjectFilter from "../../hooks/useProjectFilter";
+import AdminFiltersCardComponent from "../../components/AdminFiltersCardComponent";
 import ResourceCardComponent from "../../components/ResourceCardComponent";
 import styles from "./page.module.css";
 
@@ -83,9 +82,9 @@ interface ProviderAggregationComputed extends ProviderAggregation {
 }
 
 export default function DashboardPage() {
-  const { projectFilter, projectOptions, handleProjectChange } =
-    useProjectFilter();
-  const { setControls, dateRange } = useAdminHeader();
+  const searchParams = useSearchParams();
+  const projectFilter = searchParams.get("project") || null;
+  const { dateRange, agentFilter } = useAdminHeader();
   const [stats, setStats] = useState<IrisDashboardStats | null>(null);
   const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
   const [modelStats, setModelStats] = useState<IrisModelStat[]>([]);
@@ -95,6 +94,10 @@ export default function DashboardPage() {
   );
 
   const [timeline, setTimeline] = useState<IrisTimelineEntry[]>([]);
+  const [timelineGranularity, setTimelineGranularity] = useState<string | null>(null);
+  const [activeGranularity, setActiveGranularity] = useState<string | undefined>(undefined);
+  const [defaultGranularity, setDefaultGranularity] = useState<string | undefined>(undefined);
+  const [validGranularities, setValidGranularities] = useState<string[]>([]);
   const [recentRequests, setRecentRequests] = useState<IrisRequestEntry[]>([]);
   const [recentTraces, setRecentTraces] = useState<IrisRequestEntry[]>([]);
   const [recentConversations, setRecentConversations] = useState<
@@ -117,6 +120,7 @@ export default function DashboardPage() {
     try {
       const filterParams: Record<string, string> = { ...dateParams };
       if (projectFilter) filterParams.project = projectFilter;
+      if (agentFilter) filterParams.agent = agentFilter;
 
       const [
         statsData,
@@ -133,7 +137,7 @@ export default function DashboardPage() {
         IrisService.getProjectStats(filterParams),
         IrisService.getModelStats(filterParams),
         IrisService.getAgentStats(filterParams),
-        IrisService.getTimeline(timelineHours, filterParams),
+        IrisService.getTimeline(timelineHours, filterParams, timelineGranularity || undefined),
         IrisService.getRequests({
           limit: 10,
           sort: "timestamp",
@@ -193,6 +197,9 @@ export default function DashboardPage() {
       }
 
       setTimeline(timelineData.data || timelineData);
+      setActiveGranularity(timelineData.granularity || undefined);
+      setDefaultGranularity(timelineData.defaultGranularity || undefined);
+      setValidGranularities(timelineData.validGranularities || []);
       setRecentRequests(requestsData.data || []);
       setRecentTraces(tracesData.data || []);
       setRecentConversations((conversationsData.data || []) as Conversation[]);
@@ -201,7 +208,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateParams, timelineHours, projectFilter]);
+  }, [dateParams, timelineHours, projectFilter, agentFilter, timelineGranularity]);
 
   // Live dashboard updates via Change Streams (debounced to 2s).
   // Falls back to 60s polling if Change Streams aren't available.
@@ -249,23 +256,15 @@ export default function DashboardPage() {
     };
   }, [loadDashboard]);
 
-  // Inject project dropdown into AdminShell header
+  // Reset granularity override when date range changes so the new span
+  // gets its appropriate default resolution instead of a stale override.
   useEffect(() => {
-    setControls(
-      <SelectComponent
-        value={projectFilter || ""}
-        options={projectOptions}
-        onChange={handleProjectChange}
-        placeholder="All Projects"
-        icon={<Box size={15} />}
-      />,
-    );
-  }, [setControls, projectFilter, projectOptions, handleProjectChange]);
+    setTimelineGranularity(null);
+  }, [dateRange]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => setControls(null);
-  }, [setControls]);
+  const handleGranularityChange = useCallback((value: string | null) => {
+    setTimelineGranularity(value);
+  }, []);
 
   // Build provider distribution from model stats
   const providerAgg: Record<string, ProviderAggregation> = {};
@@ -348,12 +347,12 @@ export default function DashboardPage() {
           tickLabel = label;
         } else {
           // All sub-day bins: parse as UTC
-          // Key formats: "2026-04-02T22:05:31" (1s/5s/15s), "2026-04-02T22:05" (1min/5min), "2026-04-02T14" (hour/6h)
+          // Key formats: "2026-04-02T22:05:31" (1s/5s/15s/30s), "2026-04-02T22:05" (1min/5min/15min), "2026-04-02T14" (1hr/4hr)
           const timePart = key.slice(11); // "22:05:31", "22:05", "14:0", "14", "06"
           const colonCount = (timePart.match(/:/g) || []).length;
 
           if (colonCount >= 2) {
-            // Has seconds: 1s, 5s, or 15s bins — "22:05:31", "22:05:05"
+            // Has seconds: 1s, 5s, 15s, or 30s bins — "22:05:31", "22:05:05"
             const [hh, mm, ss] = timePart
               .split(":")
               .map((s) => s.padStart(2, "0"));
@@ -366,7 +365,7 @@ export default function DashboardPage() {
             const secNum = parseInt(lS, 10);
             tickLabel = secNum % 30 === 0 ? `${lH}:${lM}:${lS}` : "";
           } else if (colonCount === 1) {
-            // Has minutes: 1min or 5min bins — "22:05", "14:0"
+            // Has minutes: 1min, 5min, or 15min bins — "22:05", "14:0"
             const [, mm] = timePart.split(":");
             const paddedKey = key.slice(0, 14) + (mm || "0").padStart(2, "0");
             const date = new Date(paddedKey + ":00Z");
@@ -378,7 +377,7 @@ export default function DashboardPage() {
             tickLabel =
               minNum === 0 ? `${lH}h` : minNum % 15 === 0 ? `${lH}:${lM}` : "";
           } else {
-            // Hourly or 6-hour bin: "14", "06"
+            // Hourly or 4-hour bin: "14", "06"
             const hourStr = timePart.padStart(2, "0");
             const date = new Date(`${key.slice(0, 10)}T${hourStr}:00:00Z`);
             const lH = String(date.getHours()).padStart(2, "0");
@@ -404,8 +403,8 @@ export default function DashboardPage() {
 
   return (
     <div className={styles.page}>
+      <AdminFiltersCardComponent />
       <ErrorMessage message={error} />
-
       {/* -- Resource Navigation -- */}
       <div className={styles.resourceNav}>
         <ResourceCardComponent
@@ -546,6 +545,10 @@ export default function DashboardPage() {
             data={chartData}
             loading={loading}
             height={220}
+            granularity={activeGranularity}
+            defaultGranularity={defaultGranularity}
+            validGranularities={validGranularities}
+            onGranularityChange={handleGranularityChange}
           />
         </div>
 

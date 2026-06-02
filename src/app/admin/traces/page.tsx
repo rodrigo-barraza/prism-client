@@ -70,7 +70,7 @@ export default function TracesPage() {
   const router = useRouter();
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
-  const { setControls, setTitleBadge, dateRange } = useAdminHeader();
+  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const [traces, setTraces] = useState<IrisRequestEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -104,6 +104,7 @@ export default function TracesPage() {
         ...dateParams,
       };
       if (projectFilter) params.project = projectFilter;
+      if (agentFilter) params.agent = agentFilter;
 
       const data = await IrisService.getTraces(params);
       // Discard stale responses from previous filter/page generations
@@ -120,7 +121,7 @@ export default function TracesPage() {
         setLoading(false);
       }
     }
-  }, [page, sort, order, dateParams, projectFilter]);
+  }, [page, sort, order, dateParams, projectFilter, agentFilter]);
 
   useEffect(() => {
     // Bump generation to invalidate any in-flight requests from previous effect

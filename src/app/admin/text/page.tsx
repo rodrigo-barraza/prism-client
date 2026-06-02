@@ -9,7 +9,7 @@ import TextPageComponent from "../../../components/TextPageComponent";
 export default function AdminTextPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
-  const { setControls, setTitleBadge, dateRange } = useAdminHeader();
+  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
 
   useEffect(() => {
     setControls(
@@ -34,6 +34,7 @@ export default function AdminTextPage() {
       mode="admin"
       project={projectFilter}
       dateRange={dateRange}
+      agent={agentFilter}
       onCountChange={setTitleBadge}
     />
   );

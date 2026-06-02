@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import {
   POLL_SLOW,
@@ -11,13 +11,7 @@ import {
 import IrisService from "../services/IrisService";
 
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
-import {
-  DatePickerComponent,
-  LayoutHeaderComponent,
-  SelectComponent,
-} from "@rodrigo-barraza/components-library";
-import PrismService from "../services/PrismService";
-import type { AgentPersona } from "../types/types";
+import { LayoutHeaderComponent } from "@rodrigo-barraza/components-library";
 import {
   AdminHeaderProvider,
   useAdminHeader,
@@ -34,40 +28,6 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   const [systemStatus, setSystemStatus] = useState("connected");
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [agentPersonas, setAgentPersonas] = useState<AgentPersona[]>([]);
-
-  useEffect(() => {
-    PrismService.getAgentPersonas()
-      .then((data) => setAgentPersonas(data || []))
-      .catch(() => setAgentPersonas([]));
-  }, []);
-
-  const selectedAgents = useMemo(() => {
-    const agentParam = searchParams.get("agent");
-    if (!agentParam) return [];
-    return agentParam.split(",").filter(Boolean);
-  }, [searchParams]);
-
-  const agentOptions = useMemo(
-    () =>
-      agentPersonas.map((persona) => ({
-        value: persona.id,
-        label: persona.name,
-      })),
-    [agentPersonas],
-  );
-
-  const handleAgentChange = useCallback((values: string[]) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (values.length > 0) {
-      params.set("agent", values.join(","));
-    } else {
-      params.delete("agent");
-    }
-    router.replace(`${pathname}?${params.toString()}`);
-  }, [searchParams, router, pathname]);
 
   // Track conversations by ID → messageCount to detect both new convos and updates
   const knownConvsRef = useRef<Map<string, number> | null>(null);
@@ -330,10 +290,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   }, []);
 
   const {
-    controls,
     titleBadge,
-    dateRange,
-    setDateRange,
     sessionFilter,
     setSessionFilter,
   } = useAdminHeader();
@@ -389,26 +346,6 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
               <X size={12} className={styles.sessionBadgeX} />
             </button>
           )}
-          <div className={styles["agent-select-container"]}>
-            <SelectComponent
-              multiple
-              value={selectedAgents}
-              options={agentOptions}
-              onChange={handleAgentChange}
-              placeholder="All Agents"
-              allLabel="All Agents"
-              compact
-            />
-          </div>
-          <div className={styles.headerDatePicker}>
-            <DatePickerComponent
-              from={dateRange.from}
-              to={dateRange.to}
-              onChange={setDateRange}
-              disabled={hasSessionFilter}
-            />
-          </div>
-          {controls && <div className={styles.headerControls}>{controls}</div>}
         </LayoutHeaderComponent>
         <div
           className={`${styles.main} ${pathname.startsWith("/admin/chat") || pathname.startsWith("/admin/workflows") ? styles.noScroll : ""}`}

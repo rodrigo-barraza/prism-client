@@ -75,6 +75,9 @@ export interface IrisConversationListResponse {
 
 export interface IrisTimelineResponse {
   data: IrisTimelineEntry[];
+  granularity?: string;
+  defaultGranularity?: string;
+  validGranularities?: string[];
 }
 
 /**
@@ -238,8 +241,10 @@ export default class IrisService {
   static async getTimeline(
     hours = 24,
     params: QueryParams = {},
+    granularity?: string,
   ): Promise<IrisTimelineResponse> {
     const allParams: QueryParams = { hours, ...params };
+    if (granularity) allParams.granularity = granularity;
     const query = toSearchParams(allParams);
     return fetchJSON<IrisTimelineResponse>(`/stats/timeline?${query}`);
   }
@@ -268,14 +273,20 @@ export default class IrisService {
   }
 
   static async getConversationFilters(): Promise<{
+    projects: string[];
+    usernames: string[];
     models: string[];
     providers: string[];
-    projects: string[];
+    workspaces: string[];
+    agents: Array<{ id: string; name: string }>;
   }> {
     return fetchJSON<{
+      projects: string[];
+      usernames: string[];
       models: string[];
       providers: string[];
-      projects: string[];
+      workspaces: string[];
+      agents: Array<{ id: string; name: string }>;
     }>("/conversations/filters");
   }
 

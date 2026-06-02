@@ -35,6 +35,7 @@ const ORIGIN_FILTERS = [
 export default function TextPageComponent({
   mode = "user",
   dateRange: externalDateRange,
+  agent: externalAgent,
   onCountChange,
 }: any) {
   const isAdmin = mode === "admin";
@@ -68,6 +69,7 @@ export default function TextPageComponent({
       if (search) params.search = search;
       if (provider) params.provider = provider;
       if (model) params.model = model;
+      if (externalAgent) params.agent = externalAgent;
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
@@ -81,7 +83,7 @@ export default function TextPageComponent({
     } finally {
       setLoading(false);
     }
-  }, [page, origin, search, provider, model, dateRange, isAdmin]);
+  }, [page, origin, search, provider, model, dateRange, isAdmin, externalAgent]);
 
   useEffect(() => {
     loadText();

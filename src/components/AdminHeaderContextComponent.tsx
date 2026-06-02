@@ -6,8 +6,9 @@ import {
   useState,
   useCallback,
   useEffect,
+  useMemo,
 } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { LS_DATE_RANGE } from "../constants";
 
 export interface DateRange {
@@ -24,6 +25,7 @@ export interface AdminHeaderContextType {
   setDateRange: (value: DateRange) => void;
   sessionFilter: string | null;
   setSessionFilter: (value: string | null) => void;
+  agentFilter: string | null;
 }
 
 const AdminHeaderContext = createContext<AdminHeaderContextType>({
@@ -35,6 +37,7 @@ const AdminHeaderContext = createContext<AdminHeaderContextType>({
   setDateRange: () => {},
   sessionFilter: null,
   setSessionFilter: () => {},
+  agentFilter: null,
 });
 
 export function AdminHeaderProvider({
@@ -43,6 +46,13 @@ export function AdminHeaderProvider({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const agentFilter = useMemo(() => {
+    const agentParam = searchParams.get("agent");
+    return agentParam || null;
+  }, [searchParams]);
+
   const [controls, setControlsState] = useState<React.ReactNode>(null);
   const [titleBadge, setTitleBadgeState] = useState<string | number | null>(
     null,
@@ -126,6 +136,7 @@ export function AdminHeaderProvider({
         setDateRange,
         sessionFilter,
         setSessionFilter,
+        agentFilter,
       }}
     >
       {children}

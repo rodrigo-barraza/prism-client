@@ -33,7 +33,7 @@ export default function AdminWorkflowsPage() {
 function AdminWorkflowsPageInner() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
-  const { setControls, setTitleBadge, dateRange } = useAdminHeader();
+  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const searchParams = useSearchParams();
   const initialId = searchParams.get("id") || null;
   const providerFilter = searchParams.get("provider") || null;
@@ -61,6 +61,7 @@ function AdminWorkflowsPageInner() {
       if (projectFilter) params.project = projectFilter;
       if (providerFilter) params.provider = providerFilter;
       if (modelFilter) params.model = modelFilter;
+      if (agentFilter) params.agent = agentFilter;
       const data = await IrisService.getWorkflows(params);
       const list = data.data || [];
       setWorkflows(list);
@@ -73,7 +74,7 @@ function AdminWorkflowsPageInner() {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectFilter, providerFilter, modelFilter, dateRange]);
+  }, [projectFilter, providerFilter, modelFilter, dateRange, agentFilter]);
 
   useEffect(() => {
     // Immediately enter loading state and clear stale data when filters change

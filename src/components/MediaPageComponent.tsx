@@ -113,6 +113,7 @@ export interface MediaPageComponentProps {
   mode?: string;
   project?: string | null;
   dateRange?: { from: string; to: string };
+  agent?: string | null;
   onCountChange?: (total: number) => void;
 }
 
@@ -120,6 +121,7 @@ export default function MediaPageComponent({
   mode = "user",
   project: externalProject,
   dateRange: externalDateRange,
+  agent: externalAgent,
   onCountChange,
 }: MediaPageComponentProps) {
   const isAdmin = mode === "admin";
@@ -167,6 +169,7 @@ export default function MediaPageComponent({
       if (search) params.search = search;
       if (provider) params.provider = provider;
       if (model) params.model = model;
+      if (externalAgent) params.agent = externalAgent;
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
@@ -193,6 +196,7 @@ export default function MediaPageComponent({
     model,
     dateRange,
     isAdmin,
+    externalAgent,
   ]);
 
   useEffect(() => {

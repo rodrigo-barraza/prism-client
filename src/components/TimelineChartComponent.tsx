@@ -11,9 +11,12 @@ import {
   ResponsiveContainer,
   Customized,
 } from "recharts";
+import { SelectComponent } from "@rodrigo-barraza/components-library";
+import { Clock } from "lucide-react";
 import styles from "./TimelineChartComponent.module.css";
 import ChartTabsComponent from "./ChartTabsComponent";
 import { formatNumber } from "@rodrigo-barraza/utilities-library";
+import { GRANULARITY_TIERS } from "../utils/timelineGranularity";
 const TABS = [
   { key: "requests", label: "Requests", color: "#6366f1", unit: "" },
   { key: "tokens", label: "Tokens", color: "#a855f7", unit: "" },
@@ -139,6 +142,10 @@ interface TimelineChartProps {
   loading?: boolean;
   height?: number;
   title?: string;
+  granularity?: string;
+  defaultGranularity?: string;
+  validGranularities?: string[];
+  onGranularityChange?: (granularity: string | null) => void;
 }
 
 export default function TimelineChartComponent({
@@ -146,6 +153,10 @@ export default function TimelineChartComponent({
   loading = false,
   height = 260,
   title = "Activity Over Time",
+  granularity,
+  defaultGranularity,
+  validGranularities = [],
+  onGranularityChange,
 }: TimelineChartProps) {
   const [activeTab, setActiveTab] = useState("requests");
   const tab = TABS.find((t) => t.key === activeTab) || TABS[0];
@@ -191,6 +202,27 @@ export default function TimelineChartComponent({
     [data],
   );
 
+  const granularityOptions = useMemo(() => {
+    if (validGranularities.length < 2) return [];
+    const options = [
+      { value: "", label: "Auto" },
+      ...validGranularities.map((key) => {
+        const tier = GRANULARITY_TIERS.find((tierItem) => tierItem.key === key);
+        return { value: key, label: tier?.shortLabel || key };
+      }),
+    ];
+    return options;
+  }, [validGranularities]);
+
+  const handleGranularityChange = useCallback(
+    (value: string) => {
+      onGranularityChange?.(value || null);
+    },
+    [onGranularityChange],
+  );
+
+  const isAutoGranularity = !granularity || granularity === defaultGranularity;
+
   return (
     <div className={styles.container}>
       {title && <h2 className={styles.title}>{title}</h2>}
@@ -200,6 +232,18 @@ export default function TimelineChartComponent({
           activeTab={activeTab}
           onChange={setActiveTab}
         />
+        {granularityOptions.length > 0 && (
+          <div className={styles["granularity-picker"]}>
+            <SelectComponent
+              value={isAutoGranularity ? "" : (granularity || "")}
+              options={granularityOptions}
+              onChange={handleGranularityChange}
+              placeholder="Auto"
+              icon={<Clock size={13} />}
+              compact
+            />
+          </div>
+        )}
       </div>
 
       <div className={styles.chartArea} style={{ height }}>

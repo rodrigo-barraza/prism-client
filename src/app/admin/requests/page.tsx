@@ -86,7 +86,7 @@ export default function RequestsPage() {
   const router = useRouter();
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
-  const { setControls, setTitleBadge, dateRange } = useAdminHeader();
+  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -115,7 +115,6 @@ export default function RequestsPage() {
   const initialLoadDone = useRef<boolean>(false);
   const fetchGenRef = useRef<number>(0);
   const searchParams = useSearchParams();
-  const globalAgentFilter = searchParams.get("agent") || null;
 
   // "Just now" row highlighting — track fresh rows and fade-outs
   const prevJustNowIds = useRef<Set<string>>(new Set());
@@ -187,7 +186,7 @@ export default function RequestsPage() {
         order,
       };
       if (projectFilter) params.project = projectFilter;
-      if (globalAgentFilter) params.agent = globalAgentFilter;
+      if (agentFilter) params.agent = agentFilter;
 
       Object.entries(filters).forEach(([key, filterValue]) => {
         if (Array.isArray(filterValue)) {
@@ -212,7 +211,7 @@ export default function RequestsPage() {
         setLoading(false);
       }
     }
-  }, [page, sort, order, filters, dateRange, projectFilter, globalAgentFilter]);
+  }, [page, sort, order, filters, dateRange, projectFilter, agentFilter]);
 
   useEffect(() => {
     // Bump generation to invalidate any in-flight requests from previous effect

@@ -1,0 +1,58 @@
+/* ── Admin Filters Card ── */
+
+.filters-card {
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+  padding: 16px 20px;
+  transition: border-color var(--transition-fast);
+
+  &:hover {
+    border-color: oklch(from var(--calculated-border-color) l c h / 0.6);
+  }
+}
+
+.filters-grid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Make each select fill available space evenly */
+.filters-grid > * {
+  flex: 1 1 0;
+  min-width: 140px;
+}
+
+/* DatePicker should not stretch beyond its natural width */
+.filters-grid > *:last-child {
+  flex: 0 0 auto;
+  min-width: auto;
+}
+
+@media (max-width: 1200px) {
+  .filters-grid {
+    gap: 8px;
+  }
+
+  .filters-grid > * {
+    flex: 1 1 calc(33.333% - 8px);
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 767px) {
+  .filters-card {
+    padding: 12px 14px;
+  }
+
+  .filters-grid {
+    gap: 6px;
+  }
+
+  .filters-grid > * {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 100px;
+  }
+}

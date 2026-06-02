@@ -47,7 +47,7 @@ interface ProviderStat {
 export default function ProvidersPage() {
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
-  const { setControls, setTitleBadge, dateRange } = useAdminHeader();
+  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const [modelStats, setModelStats] = useState<ModelStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +66,7 @@ export default function ProvidersPage() {
       try {
         const params: Record<string, string | number | boolean> = {};
         if (projectFilter) params.project = projectFilter;
+        if (agentFilter) params.agent = agentFilter;
         Object.assign(params, buildDateRangeParams(dateRange));
         const [models, limits] = await Promise.all([
           IrisService.getModelStats(params),
@@ -82,7 +83,7 @@ export default function ProvidersPage() {
       }
     }
     load();
-  }, [dateRange, projectFilter]);
+  }, [dateRange, projectFilter, agentFilter]);
 
   // Aggregate by provider
   const providers = useMemo(() => {
