@@ -4724,15 +4724,11 @@ export default function ChatSessionComponent({
             tooltip: "Tools",
             tooltipDisabled: !settings.functionCallingEnabled,
           },
-          ...(isNoAgent
-            ? [
-                {
-                  key: "params",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
-                  tooltip: "Parameters",
-                },
-              ]
-            : []),
+          {
+            key: "params",
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
+            tooltip: "Parameters",
+          },
           ...(!isNoAgent
             ? [
                 {
