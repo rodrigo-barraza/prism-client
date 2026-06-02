@@ -11,7 +11,11 @@ import {
 import IrisService from "../services/IrisService";
 
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
-import { DatePickerComponent, SelectComponent } from "@rodrigo-barraza/components-library";
+import {
+  DatePickerComponent,
+  LayoutHeaderComponent,
+  SelectComponent,
+} from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import type { AgentPersona } from "../types/types";
 import {
@@ -367,13 +371,10 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         onNavClick={handleNavClick}
       />
       <div className={styles.mainArea}>
-        <header className={styles.header}>
-          <h1 className={styles.headerTitle}>
-            {pageTitle}
-            {titleBadge != null && (
-              <span className={styles.titleCount}>: {titleBadge}</span>
-            )}
-          </h1>
+        <LayoutHeaderComponent title={pageTitle}>
+          {titleBadge != null && (
+            <span className={styles.titleBadge}>{titleBadge}</span>
+          )}
           {hasSessionFilter && (
             <button
               type="button"
@@ -408,7 +409,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
             />
           </div>
           {controls && <div className={styles.headerControls}>{controls}</div>}
-        </header>
+        </LayoutHeaderComponent>
         <div
           className={`${styles.main} ${pathname.startsWith("/admin/chat") || pathname.startsWith("/admin/workflows") ? styles.noScroll : ""}`}
         >

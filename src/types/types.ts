@@ -1559,3 +1559,24 @@ export interface IrisProviderStat {
   workflowCount?: number;
   sessionCount?: number;
 }
+
+export interface IrisAgentStat {
+  agent: string;
+  name: string;
+  type?: string;
+  custom?: boolean;
+  totalRequests: number;
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  totalCost?: number;
+  avgLatency?: number;
+  avgTokensPerSec?: number | null;
+  models?: string[];
+  modelCount?: number;
+  providers?: string[];
+  providerCount?: number;
+  conversationCount?: number;
+  lastRequest?: string;
+  successCount?: number;
+  errorCount?: number;
+}

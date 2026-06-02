@@ -7,6 +7,7 @@ import type {
   IrisDashboardStats,
   IrisProjectStat,
   IrisModelStat,
+  IrisAgentStat,
   IrisTimelineEntry,
   Conversation,
 } from "@/types/types";
@@ -51,6 +52,7 @@ import ProvidersTableComponent from "../../components/ProvidersTableComponent";
 import ModelsTableComponent from "../../components/ModelsTableComponent";
 import RequestsTableComponent from "../../components/RequestsTableComponent";
 import ConversationsTableComponent from "../../components/ConversationsTableComponent";
+import AgentsTableComponent from "../../components/AgentsTableComponent";
 import TracesTableComponent from "../../components/TracesTableComponent";
 
 import { ErrorMessage } from "../../components/StateMessageComponent";
@@ -87,6 +89,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<IrisDashboardStats | null>(null);
   const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
   const [modelStats, setModelStats] = useState<IrisModelStat[]>([]);
+  const [agentStats, setAgentStats] = useState<IrisAgentStat[]>([]);
   const [configModels, setConfigModels] = useState<Record<string, string[]>>(
     {},
   );
@@ -119,6 +122,7 @@ export default function DashboardPage() {
         statsData,
         projects,
         models,
+        agents,
         timelineData,
         requestsData,
         tracesData,
@@ -128,6 +132,7 @@ export default function DashboardPage() {
         IrisService.getStats(filterParams),
         IrisService.getProjectStats(filterParams),
         IrisService.getModelStats(filterParams),
+        IrisService.getAgentStats(filterParams),
         IrisService.getTimeline(timelineHours, filterParams),
         IrisService.getRequests({
           limit: 10,
@@ -155,6 +160,7 @@ export default function DashboardPage() {
       setStats(statsData);
       setProjectStats(projects);
       setModelStats(models);
+      setAgentStats(agents);
 
       // Build model→tools lookup from Prism config
       if (prismConfig?.textToText?.models) {
@@ -206,6 +212,7 @@ export default function DashboardPage() {
     setStats(null);
     setProjectStats([]);
     setModelStats([]);
+    setAgentStats([]);
     setTimeline([]);
     setRecentRequests([]);
     setRecentTraces([]);
@@ -585,6 +592,12 @@ export default function DashboardPage() {
         totalRequests={totalModelRequests}
         totalCost={totalModelCost}
         emptyText={loading ? "Loading..." : "No data yet"}
+      />
+
+      {/* -- Agents -- */}
+      <AgentsTableComponent
+        agents={agentStats}
+        emptyText={loading ? "Loading..." : "No agent data yet"}
       />
 
       {/* -- Recent Traces -- */}
