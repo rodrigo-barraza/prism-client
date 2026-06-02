@@ -43,9 +43,16 @@ export default function AgentsTableComponent({
 
   const allColumns = [
     {
-      key: "agent",
+      key: "name",
       label: "Agent",
-      description: "The agent persona that originated these requests",
+      description: "The display name of the agent persona",
+      render: (row: IrisAgentStat) => row.name || row.agent || "—",
+    },
+    {
+      key: "agent",
+      label: "Icon",
+      description: "The agent persona icon badge",
+      sortable: false,
       render: (row: IrisAgentStat) => (
         <BadgeComponent type="agent" agents={row.agent ? [row.agent] : []} />
       ),
@@ -106,9 +113,17 @@ export default function AgentsTableComponent({
       align: "right" as const,
       render: (row: IrisAgentStat) => row.conversationCount ?? 0,
     },
+    {
+      key: "sessionCount",
+      label: "Sessions",
+      description: "Number of distinct sessions (traces) this agent participated in",
+      align: "right" as const,
+      render: (row: IrisAgentStat) => row.sessionCount ?? 0,
+    },
   ];
 
   const COMPACT_KEYS = [
+    "name",
     "agent",
     "totalRequests",
     "totalCost",

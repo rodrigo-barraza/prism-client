@@ -1576,6 +1576,7 @@ export interface IrisAgentStat {
   providers?: string[];
   providerCount?: number;
   conversationCount?: number;
+  sessionCount?: number;
   lastRequest?: string;
   successCount?: number;
   errorCount?: number;
