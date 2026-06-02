@@ -65,6 +65,7 @@ export interface ModelOption {
   outputTypes?: string[];
   rawInputTypes?: string[];
   modelType?: string;
+  lockedSampling?: boolean;
 }
 
 export interface ModelDefaults {
@@ -177,6 +178,11 @@ export interface GenerationSettings {
   verbosity?: string;
   reasoningSummary?: string;
   responseFormat?: string;
+  store?: boolean;
+  mediaResolution?: string;
+  topLogprobs?: number;
+  responseLogprobs?: boolean;
+  logprobs?: number;
 }
 
 // ─── Worker Generation Progress ─────────────────────────────
