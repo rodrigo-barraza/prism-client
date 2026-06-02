@@ -122,6 +122,12 @@ export interface ParameterDescriptor {
   requiresThinking?: boolean;
   requiresResponsesAPI?: boolean;
   hideWhenReasoning?: boolean;
+  providerOverrides?: Record<string, {
+    max?: number;
+    min?: number;
+    locked?: boolean;
+    lockedReason?: string;
+  }>;
 }
 
 export interface PrismConfig {
@@ -162,6 +168,15 @@ export interface GenerationSettings {
   thinkingBudget?: string | number;
   webSearchEnabled?: boolean;
   thinkingEnabled?: boolean;
+  parallelToolCalls?: boolean;
+  candidateCount?: number;
+  responseMimeType?: string;
+  serviceTier?: string;
+  seed?: number | string;
+  stopSequences?: string[];
+  verbosity?: string;
+  reasoningSummary?: string;
+  responseFormat?: string;
 }
 
 // ─── Worker Generation Progress ─────────────────────────────

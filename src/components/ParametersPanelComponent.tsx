@@ -90,14 +90,10 @@ export default function ParametersPanelComponent({
   const descriptors = config?.parameterDescriptors || [];
   const currentProvider = settings.provider || "";
 
-  // Anthropic thinking models lock temperature to 1
-  const isAnthropicThinkingLocked =
-    isReasoningModel &&
-    settings.thinkingEnabled &&
-    currentProvider === "anthropic";
-
-  // Anthropic max temperature cap
-  const anthropicMaxTemperature = currentProvider === "anthropic" ? 1 : 2;
+  // Resolve per-provider overrides for any descriptor
+  const getProviderOverride = (descriptor: ParameterDescriptor) => {
+    return descriptor.providerOverrides?.[currentProvider];
+  };
 
   const handleParameterChange = (key: string, value: unknown) => {
     onChange?.({ [key]: value } as Partial<PrismSettings>);
@@ -172,29 +168,25 @@ export default function ParametersPanelComponent({
 
   const renderControl = (descriptor: ParameterDescriptor) => {
     const currentValue = resolveCurrentValue(descriptor);
+    const providerOverride = getProviderOverride(descriptor);
 
-    // Special handling for temperature when Anthropic thinking is locked
-    if (descriptor.key === "temperature" && isAnthropicThinkingLocked) {
-      return (
-        <div className={styles.formGroup} key={descriptor.key}>
-          <label>{descriptor.label} (1 — Locked by Thinking)</label>
-          {!readOnly && (
-            <SliderComponent
-              min={descriptor.min ?? 0}
-              max={anthropicMaxTemperature}
-              step={descriptor.step ?? 0.1}
-              value={1}
-              onChange={() => {}}
-              disabled={true}
-            />
-          )}
-        </div>
-      );
-    }
+    // Check if this parameter is locked by provider override or model constraint
+    const isProviderLocked = providerOverride?.locked === true;
+    const isAnthropicThinkingLocked =
+      descriptor.key === "temperature" &&
+      isReasoningModel &&
+      settings.thinkingEnabled &&
+      currentProvider === "anthropic";
+    const isLocked = isProviderLocked || isAnthropicThinkingLocked;
+    const lockedReason = isProviderLocked
+      ? providerOverride?.lockedReason || "Locked by provider"
+      : isAnthropicThinkingLocked
+        ? "Locked by Thinking (= 1)"
+        : undefined;
 
-    // Special handling for temperature max on Anthropic
-    const effectiveMax =
-      descriptor.key === "temperature" ? anthropicMaxTemperature : descriptor.max;
+    // Apply provider-specific max/min overrides
+    const effectiveMax = providerOverride?.max ?? descriptor.max;
+    const effectiveMin = providerOverride?.min ?? descriptor.min;
 
     // Special handling for maxTokens — use model's actual max
     const effectiveMaxTokens =
@@ -217,23 +209,16 @@ export default function ParametersPanelComponent({
             value: level,
             label: level.charAt(0).toUpperCase() + level.slice(1),
           }))
-        : descriptor.options;
+        : descriptor.key === "reasoningEffort" && selectedModelDefinition?.thinkingLevels
+          ? descriptor.options?.filter((option) =>
+              option.value === "none" || selectedModelDefinition.thinkingLevels?.includes(option.value)
+            )
+          : descriptor.options;
 
-    // Service tier: OpenAI and Anthropic have different options
+    // Service tier: provider-specific options
     const effectiveServiceTierOptions =
       descriptor.key === "serviceTier"
-        ? [
-            { value: "", label: "Default" },
-            { value: "auto", label: "Auto" },
-            ...(currentProvider === "openai"
-              ? [
-                  { value: "default", label: "Standard" },
-                  { value: "priority", label: "Priority" },
-                ]
-              : currentProvider === "anthropic"
-                ? [{ value: "standard_only", label: "Standard Only" }]
-                : []),
-          ]
+        ? descriptor.options
         : effectiveOptions;
 
     switch (descriptor.controlType) {
@@ -247,14 +232,20 @@ export default function ParametersPanelComponent({
           <div className={styles.formGroup} key={descriptor.key}>
             <label>
               {descriptor.label} ({clampedValue})
+              {isLocked && (
+                <span style={{ fontSize: 10, color: "var(--text-tertiary)", marginInlineStart: 4 }}>
+                  — {lockedReason}
+                </span>
+              )}
             </label>
             {!readOnly && (
               <SliderComponent
-                min={descriptor.min ?? 0}
+                min={effectiveMin ?? 0}
                 max={sliderMax ?? 1}
                 step={effectiveStep ?? 0.1}
-                value={clampedValue}
+                value={isLocked ? (isAnthropicThinkingLocked ? 1 : clampedValue) : clampedValue}
                 onChange={(value: number) => handleParameterChange(descriptor.key, value)}
+                disabled={isLocked}
               />
             )}
           </div>
@@ -269,7 +260,14 @@ export default function ParametersPanelComponent({
 
         return (
           <div className={styles.formGroup} key={descriptor.key}>
-            <label>{descriptor.label}</label>
+            <label>
+              {descriptor.label}
+              {isLocked && (
+                <span style={{ fontSize: 10, color: "var(--text-tertiary)", marginInlineStart: 4 }}>
+                  — {lockedReason}
+                </span>
+              )}
+            </label>
             {readOnly ? (
               <div className={styles.readOnlyValue}>
                 {String(currentValue) ||
@@ -281,6 +279,7 @@ export default function ParametersPanelComponent({
                 value={String(currentValue || "")}
                 options={selectOptions || []}
                 onChange={(value: string) => handleParameterChange(descriptor.key, value)}
+                disabled={isLocked}
               />
             )}
           </div>
@@ -317,8 +316,36 @@ export default function ParametersPanelComponent({
                     handleParameterChange(descriptor.key, inputValue);
                   }
                 }}
+                disabled={isLocked}
               />
             )}
+          </div>
+        );
+      }
+
+      case "toggle": {
+        const isChecked = currentValue === true || currentValue === "true";
+        return (
+          <div className={styles.formGroup} key={descriptor.key}>
+            <label
+              style={{ display: "flex", alignItems: "center", gap: 8, cursor: readOnly || isLocked ? "default" : "pointer" }}
+            >
+              {!readOnly && (
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={(event) => handleParameterChange(descriptor.key, event.target.checked)}
+                  disabled={isLocked}
+                  style={{ accentColor: "var(--accent-primary)", cursor: isLocked ? "default" : "pointer" }}
+                />
+              )}
+              {descriptor.label}
+              {isLocked && (
+                <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>
+                  — {lockedReason}
+                </span>
+              )}
+            </label>
           </div>
         );
       }
