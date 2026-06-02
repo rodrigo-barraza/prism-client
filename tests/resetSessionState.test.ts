@@ -38,9 +38,9 @@ describe("resetSessionState model parameter resetting", () => {
       let defaultTemperature = 1.0;
       if (mockConfig && settings.provider && settings.model) {
         const providerModels =
-          mockConfig.textToText?.models?.[settings.provider] || [];
+          (mockConfig.textToText?.models as Record<string, any>)?.[settings.provider] || [];
         const modelDefinition = providerModels.find(
-          (model) => model.name === settings.model,
+          (model: { name: string; defaultTemperature?: number }) => model.name === settings.model,
         );
         if (
           modelDefinition &&

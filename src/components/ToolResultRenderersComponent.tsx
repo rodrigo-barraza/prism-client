@@ -1534,6 +1534,49 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
   );
 }
 
+// -- 13.5 3D Mesh Rendering --------------------------------------------------
+
+function ThreeMeshRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result) as any;
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const vertexCount = parsed.vertexCount || (args as any)?.vertices?.length || 0;
+  const faceCount = parsed.faceCount || (args as any)?.faces?.length || 0;
+  const totalVertices = parsed.totalVertices || vertexCount;
+  const totalFaces = parsed.totalFaces || faceCount;
+  const isAppend = !!parsed.isAppend;
+  const embedUrl = parsed.sceneEmbedUrl || parsed.embedUrl || "";
+
+  return (
+    <div className={styles.rendererBlock}>
+      <div className={styles.rendererHeader}>
+        <span style={{ fontSize: 13 }}>🔺</span>
+        <span className={styles.rendererTitle}>
+          3D Mesh — {isAppend ? `Added ${vertexCount} vertices, ${faceCount} faces` : `Created ${vertexCount} vertices, ${faceCount} faces`}
+          {isAppend && ` (Total: ${totalVertices} vertices, ${totalFaces} faces)`}
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Interactive 3D"}
+        />
+      </div>
+      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <div className={styles["three-dimensional-mesh-embed-wrapper"]}>
+          <iframe
+            src={embedUrl}
+            className={styles["three-dimensional-mesh-embed-frame"]}
+            title="3D Mesh Renderer"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AsciiImageRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
@@ -2138,6 +2181,9 @@ const TOOL_RESULT_REGISTRY = {
 
   // Turtle Graphics
   draw_turtle: { Renderer: TurtleDrawRenderer },
+
+  // 3D Mesh
+  create_3d_mesh: { Renderer: ThreeMeshRenderer },
 
   // Image to ASCII Art
   convert_image_to_ascii: { Renderer: AsciiImageRenderer },
