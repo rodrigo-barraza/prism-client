@@ -1161,13 +1161,6 @@ export default function ToolsPageComponent() {
 
       {/* Filter bar */}
       <div className={styles.filterBar}>
-        <SearchInputComponent
-          value={search}
-          onChange={setSearch}
-          placeholder="Search tools by name, description, or label…"
-          className={styles.toolsSearch}
-        />
-
         <SelectComponent
           value={domainFilter}
           multiple
@@ -1225,6 +1218,13 @@ export default function ToolsPageComponent() {
           </button>
         </div>
       </div>
+
+      <SearchInputComponent
+        value={search}
+        onChange={setSearch}
+        placeholder="Search tools by name, description, or label…"
+        className={styles["tools-search"]}
+      />
 
       {/* Tools display */}
       {filtered.length === 0 ? (

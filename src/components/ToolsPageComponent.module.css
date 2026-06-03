@@ -132,10 +132,8 @@
   min-width: 160px;
 }
 
-.toolsSearch {
-  flex: 1.5 1 calc(25% - 12px);
-  max-width: 100%;
-  min-width: 200px;
+.tools-search {
+  width: 100%;
 }
 
 .domainFilter {
