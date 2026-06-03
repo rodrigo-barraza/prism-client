@@ -29,6 +29,10 @@ import {
   BarChart3,
   ScrollText,
   ShieldCheck,
+  FileText,
+  FileSpreadsheet,
+  Volume2,
+  Video,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, {
@@ -625,6 +629,9 @@ export default function ChatSessionComponent({
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<
+    { name: string; mimeType: string; dataUrl: string; modality: string }[]
+  >([]);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef<number>(0);
@@ -859,16 +866,57 @@ export default function ChatSessionComponent({
     } as PrismConfig;
   }, [config, isNoAgent]);
 
-  // -- Model capability detection ------------------------------
-  const supportsImageInput = useMemo(() => {
-    if (!filteredConfig) return false;
-    const models =
-      filteredConfig.textToText?.models?.[settings.provider ?? ""] || [];
-    const modelDef = models.find(
-      (m: ModelOption) => m.name === settings.model,
-    ) as (ModelOption & { inputTypes?: string[] }) | undefined;
-    return modelDef?.inputTypes?.includes("image") ?? false;
-  }, [filteredConfig, settings.provider, settings.model]);
+  // -- Model + tool capability detection -------------------------
+  const supportedInputModalities = useMemo(() => {
+    const modalities = new Set<string>();
+    // Model-level image support (vision models)
+    if (filteredConfig) {
+      const models =
+        filteredConfig.textToText?.models?.[settings.provider ?? ""] || [];
+      const modelDef = models.find(
+        (m: ModelOption) => m.name === settings.model,
+      ) as (ModelOption & { inputTypes?: string[] }) | undefined;
+      if (modelDef?.inputTypes?.includes("image")) modalities.add("image");
+    }
+    // Tool-level modality support (from enabled tools)
+    for (const tool of builtInTools) {
+      if (disabledTools.has(tool.name)) continue;
+      for (const modality of tool.inputModalities || []) {
+        modalities.add(modality);
+      }
+    }
+    return modalities;
+  }, [filteredConfig, settings.provider, settings.model, builtInTools, disabledTools]);
+
+  const supportsImageInput = supportedInputModalities.has("image");
+  const supportsAnyFileInput = supportedInputModalities.size > 0;
+
+  const activeUploadTypes = useMemo(() => {
+    const modalityToUploadType: Record<string, string> = {
+      image: "image",
+      audio: "audio",
+      video: "video",
+      pdf: "pdf",
+      document: "document",
+    };
+    return [...supportedInputModalities]
+      .map((modality) => modalityToUploadType[modality])
+      .filter(Boolean);
+  }, [supportedInputModalities]);
+
+  const acceptFilter = useMemo(() => {
+    const filters: string[] = [];
+    if (supportedInputModalities.has("image")) filters.push("image/*");
+    if (supportedInputModalities.has("audio")) filters.push("audio/*");
+    if (supportedInputModalities.has("video")) filters.push("video/*");
+    if (supportedInputModalities.has("pdf"))
+      filters.push(".pdf,application/pdf");
+    if (supportedInputModalities.has("document"))
+      filters.push(
+        ".docx,.doc,.xlsx,.xls,.csv,.tsv,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv",
+      );
+    return filters.join(",");
+  }, [supportedInputModalities]);
 
   // -- Session binding: lock model/agent when a conversation is active --
   // Once a session has messages, the user should not switch model or agent
@@ -1772,30 +1820,71 @@ export default function ChatSessionComponent({
     [createMentionBadge],
   );
 
-  // -- Image handlers ------------------------------------------
-  const handleImageSelect = useCallback(
+  // -- File/image handlers --------------------------------------
+  const classifyFileModality = useCallback(
+    (mimeType: string): string | null => {
+      if (mimeType.startsWith("image/") && supportedInputModalities.has("image")) return "image";
+      if (mimeType.startsWith("audio/") && supportedInputModalities.has("audio")) return "audio";
+      if (mimeType.startsWith("video/") && supportedInputModalities.has("video")) return "video";
+      if (mimeType === "application/pdf" && supportedInputModalities.has("pdf")) return "pdf";
+      const documentMimeTypes = [
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+        "text/csv",
+        "text/tab-separated-values",
+      ];
+      if (documentMimeTypes.includes(mimeType) && supportedInputModalities.has("document")) return "document";
+      return null;
+    },
+    [supportedInputModalities],
+  );
+
+  const routeFileToState = useCallback(
+    (file: globalThis.File) => {
+      const modality = classifyFileModality(file.type);
+      if (!modality) return;
+
+      const reader = new FileReader();
+      reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
+        if (!readerEvent.target?.result) return;
+        const dataUrl = readerEvent.target.result as string;
+
+        if (modality === "image") {
+          setPendingImages((previous) => [...previous, dataUrl]);
+        } else {
+          setPendingFiles((previous) => [
+            ...previous,
+            { name: file.name, mimeType: file.type, dataUrl, modality },
+          ]);
+        }
+      };
+      reader.readAsDataURL(file);
+    },
+    [classifyFileModality],
+  );
+
+  const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
       for (const file of files) {
-        const reader = new FileReader();
-        reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
-          if (readerEvent.target?.result) {
-            setPendingImages((previousPixelSize) => [
-              ...previousPixelSize,
-              readerEvent.target?.result as string,
-            ]);
-          }
-        };
-        reader.readAsDataURL(file);
+        routeFileToState(file);
       }
       e.target.value = "";
     },
-    [],
+    [routeFileToState],
   );
 
   const removeImage = useCallback((index: number) => {
-    setPendingImages((previousPixelSize) =>
-      previousPixelSize.filter((_, i) => i !== index),
+    setPendingImages((previous) =>
+      previous.filter((_, i) => i !== index),
+    );
+  }, []);
+
+  const removeFile = useCallback((index: number) => {
+    setPendingFiles((previous) =>
+      previous.filter((_, i) => i !== index),
     );
   }, []);
 
@@ -1804,11 +1893,11 @@ export default function ChatSessionComponent({
       e.preventDefault();
       e.stopPropagation();
       dragCounter.current++;
-      if (supportsImageInput && e.dataTransfer?.items?.length > 0) {
+      if (supportsAnyFileInput && e.dataTransfer?.items?.length > 0) {
         setIsDragging(true);
       }
     },
-    [supportsImageInput],
+    [supportsAnyFileInput],
   );
 
   const handleDragLeave = useCallback((e: React.DragEvent<HTMLElement>) => {
@@ -1831,51 +1920,33 @@ export default function ChatSessionComponent({
       e.stopPropagation();
       setIsDragging(false);
       dragCounter.current = 0;
-      if (!supportsImageInput) return;
+      if (!supportsAnyFileInput) return;
       const files = Array.from(e.dataTransfer?.files || []);
-      const images = files.filter((f) => f.type.startsWith("image/"));
-      for (const file of images) {
-        const reader = new FileReader();
-        reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
-          if (readerEvent.target?.result) {
-            setPendingImages((previousPixelSize) => [
-              ...previousPixelSize,
-              readerEvent.target?.result as string,
-            ]);
-          }
-        };
-        reader.readAsDataURL(file);
+      for (const file of files) {
+        routeFileToState(file);
       }
     },
-    [supportsImageInput],
+    [supportsAnyFileInput, routeFileToState],
   );
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLElement>) => {
-      if (!supportsImageInput) return;
+      if (!supportsAnyFileInput) return;
       const items = Array.from(e.clipboardData?.items || []);
       const files = items
-        .filter(
-          (item) => item.kind === "file" && item.type.startsWith("image/"),
-        )
+        .filter((item) => {
+          if (item.kind !== "file") return false;
+          return classifyFileModality(item.type) !== null;
+        })
         .map((item) => item.getAsFile())
-        .filter((file): file is File => file !== null);
+        .filter((file): file is globalThis.File => file !== null);
       if (files.length === 0) return;
       e.preventDefault();
       for (const file of files) {
-        const reader = new FileReader();
-        reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
-          if (readerEvent.target?.result) {
-            setPendingImages((previousPixelSize) => [
-              ...previousPixelSize,
-              readerEvent.target?.result as string,
-            ]);
-          }
-        };
-        reader.readAsDataURL(file);
+        routeFileToState(file);
       }
     },
-    [supportsImageInput],
+    [supportsAnyFileInput, classifyFileModality, routeFileToState],
   );
 
   // -- Orchestration loop ---------------------------------------
@@ -3186,6 +3257,8 @@ export default function ChatSessionComponent({
   // handleSend on every keystroke (the main cause of input lag).
   const pendingImagesRef = useRef<string[]>(pendingImages);
   pendingImagesRef.current = pendingImages;
+  const pendingFilesRef = useRef<typeof pendingFiles>(pendingFiles);
+  pendingFilesRef.current = pendingFiles;
   const messagesRef = useRef<ClientMessage[]>(messages);
   messagesRef.current = messages;
   const titleRef = useRef<string>(title);
@@ -3214,19 +3287,22 @@ export default function ChatSessionComponent({
       const currentImages = overridePayload
         ? overridePayload.images
         : [...pendingImagesRef.current];
+      const currentFiles = overridePayload ? [] : [...pendingFilesRef.current];
 
-      if (!text && currentImages.length === 0) return;
+      if (!text && currentImages.length === 0 && currentFiles.length === 0) return;
 
       if (isQueueing) {
         setQueuedNextTurn({ text, images: currentImages });
         setTextareaValue("");
         setPendingImages([]);
+        setPendingFiles([]);
         return;
       }
 
       if (!overridePayload) {
         setTextareaValue("");
         setPendingImages([]);
+        setPendingFiles([]);
       }
 
       setIsGenerating(true);
@@ -3298,13 +3374,34 @@ export default function ChatSessionComponent({
         }
       }
 
+      // Upload non-image files to MinIO and collect their URLs
+      let uploadedFileUrls: { url: string; name: string; mimeType: string; modality: string }[] = [];
+      if (currentFiles.length > 0) {
+        try {
+          const uploadResults = await Promise.all(
+            currentFiles.map(async (pendingFile) => {
+              const result = await PrismService.uploadFile(pendingFile.dataUrl);
+              return {
+                url: result.url,
+                name: pendingFile.name,
+                mimeType: pendingFile.mimeType,
+                modality: pendingFile.modality,
+              };
+            }),
+          );
+          uploadedFileUrls = uploadResults;
+        } catch (uploadError) {
+          console.error("[handleSend] File upload to MinIO failed:", uploadError);
+        }
+      }
+
       const userMessage = {
         role: "user" as const,
         content: finalMessageContent,
-        // Preserve the raw text without rules for display purposes
         rawContent: text,
         timestamp: new Date().toISOString(),
         ...(currentImages.length > 0 ? { images: currentImages } : {}),
+        ...(uploadedFileUrls.length > 0 ? { files: uploadedFileUrls } : {}),
       };
       const updatedMessages = [...currentMessages, userMessage];
       // Insert placeholder assistant message so the aiNode
@@ -5310,13 +5407,15 @@ export default function ChatSessionComponent({
           {isDragging && (
             <div className={chatStyles.dragOverlay}>
               <Paperclip size={20} />
-              <span>Drop images here</span>
+              <span>
+                Drop {[...supportedInputModalities].join(", ")} files here
+              </span>
             </div>
           )}
-          {pendingImages.length > 0 && (
+          {(pendingImages.length > 0 || pendingFiles.length > 0) && (
             <div className={chatStyles.pendingImages}>
               {pendingImages.map((dataUrl, i) => (
-                <div key={i} className={chatStyles.pendingAttachmentWrap}>
+                <div key={`img-${i}`} className={chatStyles.pendingAttachmentWrap}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={dataUrl}
@@ -5333,24 +5432,56 @@ export default function ChatSessionComponent({
                   </button>
                 </div>
               ))}
+              {pendingFiles.map((pendingFile, i) => {
+                const FileIcon =
+                  pendingFile.modality === "audio" ? Volume2
+                  : pendingFile.modality === "video" ? Video
+                  : pendingFile.modality === "pdf" ? FileText
+                  : pendingFile.modality === "document" ? FileSpreadsheet
+                  : File;
+                return (
+                  <div key={`file-${i}`} className={chatStyles.pendingAttachmentWrap}>
+                    <div className={chatStyles.pendingFileThumb}>
+                      <FileIcon size={20} />
+                      <span style={{ fontSize: "0.5625rem", textOverflow: "ellipsis", overflow: "hidden", maxWidth: 56, whiteSpace: "nowrap" }}>
+                        {pendingFile.name.length > 10
+                          ? pendingFile.name.slice(0, 7) + "..."
+                          : pendingFile.name}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      className={chatStyles.removeAttachment}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
           {/* Active rule badges are now inline in the contentEditable */}
           <div className={chatStyles.inputRow}>
-            {supportsImageInput && (
+            {supportsAnyFileInput && (
               <>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={acceptFilter}
                   multiple
                   hidden
-                  onChange={handleImageSelect}
+                  onChange={handleFileSelect}
                 />
                 <ChatInputButton
                   onClick={() => fileInputRef.current?.click()}
-                  label="Attach image"
+                  label={`Attach files (${[...supportedInputModalities].join(", ")})`}
                   icon="paperclip"
+                  uploadTypes={
+                    activeUploadTypes.length > 1
+                      ? (activeUploadTypes as ("image" | "audio" | "video" | "pdf" | "document")[])
+                      : undefined
+                  }
                 />
               </>
             )}
@@ -5480,7 +5611,7 @@ export default function ChatSessionComponent({
               <ChatInputButton
                 variant="button"
                 onClick={() => handleSend(null, { isQueueing: true })}
-                disabled={!hasInput && pendingImages.length === 0}
+                disabled={!hasInput && pendingImages.length === 0 && pendingFiles.length === 0}
                 label="Queue message for next turn"
                 icon={<CornerDownLeft size={18} />}
               />
@@ -5490,7 +5621,9 @@ export default function ChatSessionComponent({
               icon={isGenerating ? Square : Send}
               isGenerating={isGenerating}
               disabled={
-                isGenerating ? false : !hasInput && pendingImages.length === 0
+                isGenerating
+                  ? false
+                  : !hasInput && pendingImages.length === 0 && pendingFiles.length === 0
               }
               aria-label={isGenerating ? "Stop" : "Send"}
             />

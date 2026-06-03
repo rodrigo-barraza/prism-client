@@ -108,6 +108,27 @@ export default class PrismService {
     return resolveFileRef(ref);
   }
 
+  /**
+   * Upload a base64 data URL to MinIO file storage.
+   * Returns the MinIO ref, a resolved URL for tool consumption,
+   * file size in bytes, and the detected content type.
+   */
+  static async uploadFile(
+    dataUrl: string,
+  ): Promise<{ ref: string; url: string; size: number; contentType: string }> {
+    const result = await PrismService._request<{
+      ref: string;
+      size: number;
+      contentType: string;
+    }>("/files/upload", {
+      body: { data: dataUrl },
+    });
+    return {
+      ...result,
+      url: resolveFileRef(result.ref),
+    };
+  }
+
   // ---------------------------------------------------------------------------
   // Config
   // ---------------------------------------------------------------------------

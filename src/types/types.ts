@@ -984,6 +984,7 @@ export interface ToolSchema {
   labels?: string[];
   system?: boolean;
   intelligenceTier?: "low" | "medium" | "high" | "frontier";
+  inputModalities?: string[];
   parameters?: JsonSchemaObject;
   function?: {
     name: string;

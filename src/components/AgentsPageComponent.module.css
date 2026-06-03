@@ -1,27 +1,4 @@
-/* ── AgentsPageComponent Layout ──────────────────────────────────── */
-
-.agents-sidebar-panel {
-  inline-size: 280px;
-  min-inline-size: 280px;
-  block-size: 100%;
-  border-inline-end: 1px solid var(--calculated-border-color);
-  background: var(--background-surface);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition:
-    inline-size 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    min-inline-size 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.is-sidebar-hidden {
-  inline-size: 0 !important;
-  min-inline-size: 0 !important;
-  opacity: 0;
-  border-inline-end-width: 0 !important;
-  pointer-events: none;
-}
+/* ── AgentsPageComponent Content Styles ──────────────────────────── */
 
 .page-content-area {
   flex: 1;

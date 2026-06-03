@@ -9,6 +9,7 @@ import {
   Volume2,
   Video,
   FileText,
+  FileSpreadsheet,
   Send,
   Square,
 } from "lucide-react";
@@ -25,6 +26,7 @@ const TYPE_ICON_MAP = {
   audio: Volume2,
   video: Video,
   pdf: FileText,
+  document: FileSpreadsheet,
 };
 
 interface RotatingUploadIconProps {
