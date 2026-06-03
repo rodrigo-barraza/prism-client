@@ -879,59 +879,61 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
             {/* Header */}
             <header className={styles.header}>
-              <div className={styles.headerTitleRow}>
-                <Clock className={styles.headerIcon} />
-                <h1 className={styles.headerTitle}>Cron Jobs</h1>
-                <span className={styles.badge}>
-                  {filteredTasks.length} total
-                </span>
+              <div className={styles.headerTopRow}>
+                <div className={styles.headerTitleRow}>
+                  <Clock className={styles.headerIcon} />
+                  <h1 className={styles.headerTitle}>Cron Jobs</h1>
+                  <span className={styles.badge}>
+                    {filteredTasks.length} total
+                  </span>
+                </div>
+
+                <div className={styles.headerActions}>
+                  <SelectComponent
+                    multiple
+                    label="Sort"
+                    icon={<ArrowUpDown size={12} />}
+                    value={activeSortKeys}
+                    options={sortOptions}
+                    onChange={setActiveSortKeys}
+                    allLabel="Default"
+                    compact
+                  />
+
+                  <ViewModeToggleComponent
+                    mode={viewMode}
+                    onChange={setViewMode}
+                    modes={[
+                      { key: "card", icon: LayoutGrid, title: "Card view" },
+                      { key: "table", icon: List, title: "Table view" },
+                      {
+                        key: "calendar",
+                        icon: CalendarDays,
+                        title: "Calendar view",
+                      },
+                    ]}
+                  />
+
+                  <button
+                    onClick={() => {
+                      resetFormFields();
+                      setShowNewModal(true);
+                    }}
+                    className={styles.newButton}
+                    title="Create Cron Job"
+                  >
+                    <Plus size={16} />
+                    <span>New</span>
+                  </button>
+                </div>
               </div>
 
-              <div className={styles.headerActions}>
-                <SearchInputComponent
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Search tasks…"
-                  className={styles.tasksSearch}
-                />
-
-                <SelectComponent
-                  multiple
-                  label="Sort"
-                  icon={<ArrowUpDown size={12} />}
-                  value={activeSortKeys}
-                  options={sortOptions}
-                  onChange={setActiveSortKeys}
-                  allLabel="Default"
-                  compact
-                />
-
-                <ViewModeToggleComponent
-                  mode={viewMode}
-                  onChange={setViewMode}
-                  modes={[
-                    { key: "card", icon: LayoutGrid, title: "Card view" },
-                    { key: "table", icon: List, title: "Table view" },
-                    {
-                      key: "calendar",
-                      icon: CalendarDays,
-                      title: "Calendar view",
-                    },
-                  ]}
-                />
-
-                <button
-                  onClick={() => {
-                    resetFormFields();
-                    setShowNewModal(true);
-                  }}
-                  className={styles.newButton}
-                  title="Create Cron Job"
-                >
-                  <Plus size={16} />
-                  <span>New</span>
-                </button>
-              </div>
+              <SearchInputComponent
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search tasks…"
+                className={styles.tasksSearch}
+              />
             </header>
 
             {/* Task Content */}

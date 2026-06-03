@@ -299,6 +299,9 @@
   --calculated-accent-primary-contrast: oklch(0.0% 0.0 0.0 / 0.87);
   --calculated-shadow-glow: 0 0 20px oklch(65.0% 0.0 0.0 / 0.1);
 
+  /* Near-black surface for sidebar/header containers */
+  --calculated-accent-surface: oklch(22.0% 0.0 0.0);
+
   --accent-secondary: oklch(55.0% 0.0 0.0);
   --calculated-accent-secondary-hover: oklch(65.0% 0.0 0.0);
   --calculated-accent-secondary-glow: oklch(55.0% 0.0 0.0 / 0.2);
