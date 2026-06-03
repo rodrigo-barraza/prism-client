@@ -38,6 +38,7 @@ export interface ThreePanelLayoutProps {
   rightPanel?: React.ReactNode;
   rightTitle?: string;
   sessionType?: string;
+  title?: string;
 
   headerMeta?: React.ReactNode;
   headerControls?: React.ReactNode;
@@ -58,6 +59,7 @@ export default function ThreePanelLayout({
   rightPanel,
   rightTitle,
   sessionType = "conversation",
+  title,
 
   headerMeta = null,
   headerControls = null,
@@ -312,7 +314,7 @@ export default function ThreePanelLayout({
       <div className={styles["layout-page-column"]}>
         {/* Full-width header */}
         <LayoutHeaderComponent
-
+          title={title}
           isMobile={isMobile}
           metaContent={headerMeta}
           centerContent={headerCenter}
