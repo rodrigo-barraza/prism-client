@@ -89,70 +89,10 @@
 
 /* ── Sidebar Search Bar ──────────────────────────────────────── */
 
-.sidebar-search-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.sidebar-search-wrapper {
   margin-block: 8px;
   margin-inline: 12px;
-  padding-block: 6px;
-  padding-inline: 10px;
-  background: var(--background-elevated);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
   flex-shrink: 0;
-
-  &:focus-within {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 15%, transparent);
-  }
-}
-
-.sidebar-search-icon {
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-
-.sidebar-search-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  min-inline-size: 0;
-  line-height: 1.5;
-
-  &::placeholder {
-    color: var(--text-muted, var(--text-tertiary));
-    font-weight: 400;
-  }
-}
-
-.sidebar-search-clear-button {
-  all: unset;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 18px;
-  block-size: 18px;
-  border-radius: 50%;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition:
-    color 0.15s ease,
-    background 0.15s ease;
-
-  &:hover {
-    color: var(--text-primary);
-    background: color-mix(in srgb, var(--text-primary) 10%, transparent);
-  }
 }
 
 /* ── Sidebar Elements ────────────────────────────────────────── */
@@ -196,37 +136,10 @@
 
 /* ── Inline Create Agent Button ──────────────────────────────── */
 
-.create-agent-inline-button {
-  all: unset;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  inline-size: calc(100% - 24px);
+.create-agent-button-wrapper {
   margin-inline: 12px;
-  margin-block-end: 4px;
-  padding-block: 8px;
-  padding-inline: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent-primary);
-  cursor: pointer;
-  border-radius: var(--border-radius-sm);
-  border: 1px dashed color-mix(in srgb, var(--accent-primary) 30%, transparent);
-  background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.15s ease;
-}
-
-.create-agent-inline-button:hover {
-  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
-  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
-  transform: translateY(-1px);
-}
-
-.create-agent-inline-button:active {
-  transform: translateY(0);
+  margin-block-end: 8px;
+  display: flex;
 }
 
 .sidebar-scroll-container {
@@ -653,3 +566,11 @@
   color: var(--accent-primary);
   opacity: 0.5;
 }
+
+.custom-icon-preview {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+

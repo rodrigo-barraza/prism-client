@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   Plus,
   Trash2,
@@ -69,7 +69,9 @@ import {
   Cpu,
   Sparkles,
   Heart,
+  Upload,
 } from "lucide-react";
+import ImageCropperComponent from "./ImageCropperComponent";
 import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
@@ -246,6 +248,31 @@ export default function CustomAgentsPanel({
 
   const [error, setError] = useState<string | null>(null);
 
+  const fileInputReference = useRef<HTMLInputElement | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setPendingImageFile(file);
+    }
+  };
+
+  const handleCropComplete = (croppedDataUrl: string) => {
+    updateField("icon", croppedDataUrl);
+    setPendingImageFile(null);
+    if (fileInputReference.current) {
+      fileInputReference.current.value = "";
+    }
+  };
+
+  const handleCropCancel = () => {
+    setPendingImageFile(null);
+    if (fileInputReference.current) {
+      fileInputReference.current.value = "";
+    }
+  };
+
   // -- CRUD -----------------------------------------------------
 
   const handleCreate = useCallback(() => {
@@ -388,6 +415,42 @@ export default function CustomAgentsPanel({
           <div className={styles.formGroup}>
             <label>Icon</label>
             <div className={styles.iconGrid}>
+              {/* Custom Image Upload Button */}
+              <button
+                type="button"
+                className={styles.iconOption}
+                onClick={() => fileInputReference.current?.click()}
+                title="Upload Custom Image"
+              >
+                <Upload size={16} />
+                <input
+                  ref={fileInputReference}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+              </button>
+
+              {/* Custom Image Preview Option */}
+              {editingAgent.icon &&
+                (editingAgent.icon.startsWith("data:") ||
+                  editingAgent.icon.startsWith("http")) && (
+                  <button
+                    type="button"
+                    className={styles.iconOption}
+                    data-is-selected={true}
+                    onClick={() => updateField("icon", editingAgent.icon)}
+                    title="Custom Avatar Image"
+                  >
+                    <img
+                      src={editingAgent.icon}
+                      alt="Custom Avatar"
+                      className={styles.customIconPreview}
+                    />
+                  </button>
+                )}
+
               {ICON_OPTIONS.map(({ name, icon: IconComp }: IconOption) => (
                 <button
                   key={name}
@@ -410,10 +473,21 @@ export default function CustomAgentsPanel({
             </div>
             <span className={styles.hint}>
               {editingAgent.icon
-                ? `Selected: ${editingAgent.icon}`
+                ? editingAgent.icon.startsWith("data:")
+                  ? "Custom image uploaded"
+                  : `Selected: ${editingAgent.icon}`
                 : "Click an icon — defaults to Bot"}
             </span>
           </div>
+
+          {/* Crop modal overlay */}
+          {pendingImageFile && (
+            <ImageCropperComponent
+              imageFile={pendingImageFile}
+              onCrop={handleCropComplete}
+              onCancel={handleCropCancel}
+            />
+          )}
 
           {/* Color Picker */}
           <div className={styles.formGroup}>

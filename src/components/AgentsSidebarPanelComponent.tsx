@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
-import { Plus, Wrench, Search, X } from "lucide-react";
+import { Plus, Wrench } from "lucide-react";
 import type { AgentPersona } from "../types/types";
 import BadgeComponent from "./BadgeComponent";
+import { SearchInputComponent, ButtonComponent } from "@rodrigo-barraza/components-library";
 import styles from "./AgentsPageComponent.module.css";
 
 type AgentSidebarTab = "custom" | "built-in";
@@ -35,10 +36,6 @@ export default function AgentsSidebarPanelComponent({
 }: AgentsSidebarPanelComponentProps) {
   const [activeTab, setActiveTab] = useState<AgentSidebarTab>("custom");
   const [searchQuery, setSearchQuery] = useState("");
-
-  const handleClearSearch = useCallback(() => {
-    setSearchQuery("");
-  }, []);
 
   const filteredCustomAgents = useMemo(() => {
     if (!searchQuery.trim()) return customAgents;
@@ -85,28 +82,14 @@ export default function AgentsSidebarPanelComponent({
       </div>
 
       {/* Search Bar */}
-      <div className={styles["sidebar-search-container"]}>
-        <Search size={13} className={styles["sidebar-search-icon"]} />
-        <input
+      <div className={styles["sidebar-search-wrapper"]}>
+        <SearchInputComponent
           id="input-agents-sidebar-search"
-          type="text"
-          className={styles["sidebar-search-input"]}
-          placeholder={`Search ${activeTab === "custom" ? "custom" : "built-in"} agents...`}
           value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          autoComplete="off"
-          spellCheck={false}
+          onChange={setSearchQuery}
+          placeholder={`Search ${activeTab === "custom" ? "custom" : "built-in"} agents...`}
+          compact
         />
-        {searchQuery && (
-          <button
-            className={styles["sidebar-search-clear-button"]}
-            onClick={handleClearSearch}
-            type="button"
-            aria-label="Clear search"
-          >
-            <X size={12} />
-          </button>
-        )}
       </div>
 
       {/* Agent List */}
@@ -114,15 +97,17 @@ export default function AgentsSidebarPanelComponent({
         {activeTab === "custom" && (
           <div>
             {/* Create button inline in the custom tab */}
-            <button
-              id="button-create-new-agent-inline"
-              className={styles["create-agent-inline-button"]}
-              onClick={onCreateNewAgent}
-              type="button"
-            >
-              <Plus size={14} />
-              <span>Create New Agent</span>
-            </button>
+            <div className={styles["create-agent-button-wrapper"]}>
+              <ButtonComponent
+                id="button-create-new-agent-inline"
+                variant="outlined"
+                icon={Plus}
+                onClick={onCreateNewAgent}
+                fullWidth
+              >
+                Create New Agent
+              </ButtonComponent>
+            </div>
 
             {filteredCustomAgents.length === 0 ? (
               <div className={styles["empty-state-view"]} style={{ paddingBlock: 24 }}>

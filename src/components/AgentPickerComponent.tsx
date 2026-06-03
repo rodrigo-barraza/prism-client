@@ -58,8 +58,24 @@ export function renderAgentIcon(agent: any, size = 15) {
       />
     );
   }
-  // Custom agents store an icon name string
+  // Custom agents store an icon name string or a custom image URI/DataURL
   if (typeof agent?.icon === "string" && agent.icon) {
+    if (
+      agent.icon.startsWith("data:") ||
+      agent.icon.startsWith("http://") ||
+      agent.icon.startsWith("https://") ||
+      agent.icon.startsWith("/")
+    ) {
+      return (
+        <img
+          src={agent.icon}
+          alt={agent?.name || agent?.id}
+          width={size}
+          height={size}
+          style={{ objectFit: "cover", borderRadius: "50%" }}
+        />
+      );
+    }
     const Resolved = resolveIconComponent(agent.icon) as any;
     return <Resolved size={size} />;
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import {
   Bot,
   Wrench,
@@ -8,13 +8,16 @@ import {
   AlertCircle,
   PlusCircle,
   Copy,
+  Upload,
 } from "lucide-react";
+import ImageCropperComponent from "./ImageCropperComponent";
 import {
   ButtonComponent,
   ToggleComponent,
   InputComponent,
   TextAreaComponent,
   SelectComponent,
+  IconButtonComponent,
 } from "@rodrigo-barraza/components-library";
 import type { AgentPersona, SerializedPolicy, ToolSchema } from "../types/types";
 import type { EditableAgent } from "./AgentsPageComponent";
@@ -210,6 +213,31 @@ export default function AgentsDetailPanelComponent({
 }: AgentsDetailPanelComponentProps) {
   const currentAccentColor = editingAgent?.color || selectedBuiltInAgent?.color || "#6366f1";
 
+  const fileInputReference = useRef<HTMLInputElement | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setPendingImageFile(file);
+    }
+  };
+
+  const handleCropComplete = (croppedDataUrl: string) => {
+    onUpdateField("icon", croppedDataUrl);
+    setPendingImageFile(null);
+    if (fileInputReference.current) {
+      fileInputReference.current.value = "";
+    }
+  };
+
+  const handleCropCancel = () => {
+    setPendingImageFile(null);
+    if (fileInputReference.current) {
+      fileInputReference.current.value = "";
+    }
+  };
+
   return (
     <div className={styles["page-content-area"]}>
       {/* -- Hero Profile Banner -- */}
@@ -312,8 +340,44 @@ export default function AgentsDetailPanelComponent({
 
           {/* Icon Picker */}
           <div className={styles["form-group-container"]}>
-            <label>Avatar Icon</label>
+            <label>Icon</label>
             <div className={styles["icon-grid-layout"]}>
+              {/* Custom Image Upload Button */}
+              <button
+                type="button"
+                className={styles["icon-option-button"]}
+                onClick={() => fileInputReference.current?.click()}
+                title="Upload Custom Image"
+              >
+                <Upload size={16} />
+                <input
+                  ref={fileInputReference}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+              </button>
+
+              {/* Custom Image Preview Option */}
+              {editingAgent.icon &&
+                (editingAgent.icon.startsWith("data:") ||
+                  editingAgent.icon.startsWith("http")) && (
+                  <button
+                    type="button"
+                    className={styles["icon-option-button"]}
+                    data-is-selected={true}
+                    onClick={() => onUpdateField("icon", editingAgent.icon)}
+                    title="Custom Avatar Image"
+                  >
+                    <img
+                      src={editingAgent.icon}
+                      alt="Custom Avatar"
+                      className={styles["custom-icon-preview"]}
+                    />
+                  </button>
+                )}
+
               {curatedIconOptions.map((iconOption) => {
                 const IconComp = iconOption.icon;
                 const isSelected = editingAgent.icon === iconOption.name;
@@ -339,6 +403,15 @@ export default function AgentsDetailPanelComponent({
               })}
             </div>
           </div>
+
+          {/* Crop modal overlay */}
+          {pendingImageFile && (
+            <ImageCropperComponent
+              imageFile={pendingImageFile}
+              onCrop={handleCropComplete}
+              onCancel={handleCropCancel}
+            />
+          )}
 
           {/* Accent Color picker */}
           <div className={styles["form-group-container"]}>
@@ -507,25 +580,23 @@ export default function AgentsDetailPanelComponent({
                     onUpdateField("policies", updatedPolicies);
                   }}
                 />
-                <button
-                  type="button"
-                  className={styles["create-button-element"]}
+                <IconButtonComponent
+                  icon={<X size={13} />}
                   onClick={() => {
                     const updatedPolicies = (editingAgent.policies || []).filter(
                       (_, policyIndex) => policyIndex !== index,
                     );
                     onUpdateField("policies", updatedPolicies);
                   }}
-                  title="Delete Policy Row"
-                >
-                  <X size={13} />
-                </button>
+                  tooltip="Delete Policy Row"
+                />
               </div>
             ))}
 
-            <button
-              type="button"
-              className={styles["policy-button-add"]}
+            <ButtonComponent
+              variant="outlined"
+              size="small"
+              icon={PlusCircle}
               onClick={() => {
                 const newPolicy: SerializedPolicy = {
                   tool: "*",
@@ -534,9 +605,8 @@ export default function AgentsDetailPanelComponent({
                 onUpdateField("policies", [...(editingAgent.policies || []), newPolicy]);
               }}
             >
-              <PlusCircle size={12} style={{ marginRight: 4 }} />
               Add Policy Guardrail
-            </button>
+            </ButtonComponent>
           </div>
 
           {/* Error notifications */}
