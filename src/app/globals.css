@@ -285,6 +285,25 @@
   --accent-tertiary: oklch(75.3% 0.1391 232.7);
 }
 
+/* ── Twilight Mode ───────────────────────────────────────── */
+/* Dark-mode sibling of Daylight — achromatic dark-gray accents
+   over cool dark surfaces, yielding a dark sidebar aesthetic. */
+
+[data-theme="twilight"] {
+  --accent-primary: oklch(22.0% 0.0 0.0);
+  --calculated-accent-primary-hover: oklch(16.0% 0.0 0.0);
+  --calculated-accent-primary-glow: oklch(22.0% 0.0 0.0 / 0.15);
+  --calculated-accent-primary-subtle: oklch(22.0% 0.0 0.0 / 0.05);
+  --calculated-accent-primary-contrast: oklch(100.0% 0.0001 263.3 / 0.92);
+  --calculated-shadow-glow: 0 0 20px oklch(22.0% 0.0 0.0 / 0.06);
+
+  --accent-secondary: oklch(38.0% 0.0 0.0);
+  --calculated-accent-secondary-hover: oklch(30.0% 0.0 0.0);
+  --calculated-accent-secondary-glow: oklch(38.0% 0.0 0.0 / 0.15);
+  --calculated-accent-secondary-subtle: oklch(38.0% 0.0 0.0 / 0.05);
+  --accent-tertiary: oklch(50.0% 0.0 0.0);
+}
+
 /* ── Body Overrides ────────────────────────────────────────── */
 
 body {

@@ -76,6 +76,7 @@ const TOKEN_GROUPS: { title: string; fields: TokenField[] }[] = [
 const CLONE_BASES = [
   { id: "dark", label: "Dark" },
   { id: "light", label: "Daylight" },
+  { id: "twilight", label: "Twilight" },
   { id: "tropical", label: "Tropical" },
   { id: "oceanic", label: "Oceanic" },
   { id: "punk", label: "Punk" },
