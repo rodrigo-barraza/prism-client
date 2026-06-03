@@ -1,0 +1,79 @@
+/* ── InfoBannerComponent ─────────────────────────────────────────── */
+
+.info-banner-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-block: 14px;
+  padding-inline: 18px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid color-mix(in srgb, var(--banner-accent-color, var(--accent-primary)) 20%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--banner-accent-color, var(--accent-primary)) 5%,
+    var(--background-surface)
+  );
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  animation: info-banner-slide-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-banner-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 8px;
+  background: color-mix(
+    in srgb,
+    var(--banner-accent-color, var(--accent-primary)) 12%,
+    transparent
+  );
+  color: var(--banner-accent-color, var(--accent-primary));
+  margin-block-start: 1px;
+}
+
+.info-banner-text-content {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+/* ── Variant: warning ────────────────────────────────────────────── */
+
+.info-banner-container.is-variant-warning {
+  --banner-accent-color: var(--color-warning);
+}
+
+/* ── Variant: danger ─────────────────────────────────────────────── */
+
+.info-banner-container.is-variant-danger {
+  --banner-accent-color: var(--color-danger);
+}
+
+/* ── Variant: success ────────────────────────────────────────────── */
+
+.info-banner-container.is-variant-success {
+  --banner-accent-color: var(--color-success);
+}
+
+/* ── Variant: info (default) ─────────────────────────────────────── */
+
+.info-banner-container.is-variant-info {
+  --banner-accent-color: var(--accent-primary);
+}
+
+/* ── Entrance Animation ──────────────────────────────────────────── */
+
+@keyframes info-banner-slide-in {
+  from {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}

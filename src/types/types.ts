@@ -1580,3 +1580,12 @@ export interface IrisAgentStat {
   successCount?: number;
   errorCount?: number;
 }
+
+export interface IrisUserStat {
+  username: string;
+  totalRequests: number;
+  totalTokens?: number;
+  totalCost?: number;
+  avgLatency?: number;
+  lastRequest?: string;
+}

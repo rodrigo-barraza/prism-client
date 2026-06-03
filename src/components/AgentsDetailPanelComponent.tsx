@@ -8,7 +8,6 @@ import {
   AlertCircle,
   PlusCircle,
   Copy,
-  Info,
 } from "lucide-react";
 import {
   ButtonComponent,
@@ -22,6 +21,7 @@ import type { EditableAgent } from "./AgentsPageComponent";
 import styles from "./AgentsPageComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
+import InfoBannerComponent from "./InfoBannerComponent";
 
 interface CuratedColorOption {
   hex: string;
@@ -623,13 +623,10 @@ export default function AgentsDetailPanelComponent({
       ) : selectedBuiltInAgent ? (
         /* -- Built-In Profile Presentation (Info panel) -- */
         <div className={styles["form-layout-container"]}>
-          <div className={styles["read-only-alert-message"]}>
-            <Info size={14} />
-            <span>
-              This is a built-in system agent persona. To customize it, click the duplicate button
-              below to clone its toolset configuration into a new custom persona.
-            </span>
-          </div>
+          <InfoBannerComponent variant="info">
+            This is a built-in system agent persona. To customize it, click the duplicate button
+            below to clone its toolset configuration into a new custom persona.
+          </InfoBannerComponent>
 
           {/* Specs detail metadata */}
           <div className={styles["form-group-container"]}>

@@ -1087,3 +1087,26 @@
     transform: none;
   }
 }
+
+/* ── Message Images ─────────────────────────────────────────── */
+.chatMessageImages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chatMessageImage {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.15);
+  }
+}

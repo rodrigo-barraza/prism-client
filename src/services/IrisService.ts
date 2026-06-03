@@ -16,6 +16,7 @@ import type {
   IrisProjectStat,
   IrisModelStat,
   IrisAgentStat,
+  IrisUserStat,
   IrisTimelineEntry,
 } from "../types/types";
 
@@ -224,6 +225,15 @@ export default class IrisService {
     const query = toSearchParams(params);
     return fetchJSON<IrisAgentStat[]>(
       `/stats/agents${query ? `?${query}` : ""}`,
+    );
+  }
+
+  static async getUserStats(
+    params: QueryParams = {},
+  ): Promise<IrisUserStat[]> {
+    const query = toSearchParams(params);
+    return fetchJSON<IrisUserStat[]>(
+      `/stats/users${query ? `?${query}` : ""}`,
     );
   }
 

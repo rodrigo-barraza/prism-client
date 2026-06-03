@@ -37,6 +37,8 @@ import {
   CircleUser,
   LogOut,
   Bot,
+  Users,
+  BookText,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -93,8 +95,8 @@ const USER_NAV_SECTIONS: NavigationSection[] = [
         alsoMatches: ["/coding-agent"],
       },
       {
-        href: "/cron-jobs",
-        label: "Cron Jobs",
+        href: "/scheduled-tasks",
+        label: "Scheduled Tasks",
         icon: Clock,
       },
       { href: "/settings", label: "Settings", icon: Settings },
@@ -117,6 +119,7 @@ const USER_NAV_SECTIONS: NavigationSection[] = [
     items: [
       { href: "/media", label: "Media", icon: ImageIcon },
       { href: "/text", label: "Text", icon: Type },
+      { href: "/prompts", label: "Prompts", icon: BookText },
       { href: "/vision", label: "Vision", icon: Eye },
     ],
   },
@@ -163,7 +166,8 @@ const ADMIN_NAV_SECTIONS: NavigationSection[] = [
       },
       { href: "/admin/providers", label: "Providers", icon: Layers },
       { href: "/admin/models", label: "Models", icon: Server },
-      { href: "/admin/cron-jobs", label: "Cron Jobs", icon: Clock },
+      { href: "/admin/scheduled-tasks", label: "Scheduled Tasks", icon: Clock },
+      { href: "/admin/users", label: "Users", icon: Users },
     ],
   },
   {
@@ -246,7 +250,7 @@ export default function NavigationSidebarComponent({
 
   useEffect(() => {
     const storedCount = parseInt(localStorage.getItem("cron-job-notifications-count") || "0", 10);
-    if (pathname.startsWith("/cron-jobs")) {
+    if (pathname.startsWith("/scheduled-tasks")) {
       if (storedCount > 0) {
         clearCronJobNotifications();
       }
@@ -771,7 +775,7 @@ export default function NavigationSidebarComponent({
                                 // Pre-close ThreePanelLayout sidebars so the next page mounts clean
                                 localStorage.setItem(LS_PANEL_LEFT, "false");
                                 localStorage.setItem(LS_PANEL_RIGHT, "false");
-                                if (item.href === "/cron-jobs") {
+                                if (item.href === "/scheduled-tasks") {
                                   clearCronJobNotifications();
                                 }
                               }}
@@ -790,7 +794,7 @@ export default function NavigationSidebarComponent({
                                       <AlertCircle size={13} />
                                     </span>
                                   )}
-                                {item.href === "/cron-jobs" &&
+                                {item.href === "/scheduled-tasks" &&
                                   cronJobNotificationsCount > 0 && (
                                     <span
                                       className={styles["cron-job-notification-badge"]}
@@ -860,7 +864,7 @@ export default function NavigationSidebarComponent({
                     <span className={styles.activeStateLayer}>
                       <ShieldCheck className={styles.navigationIcon} />
                       <span className={styles.navigationLabel}>
-                        User
+                        User Side
                       </span>
                     </span>
                   </Link>
@@ -872,7 +876,7 @@ export default function NavigationSidebarComponent({
                   >
                     <span className={styles.activeStateLayer}>
                       <Settings className={styles.navigationIcon} />
-                      <span className={styles.navigationLabel}>Admin</span>
+                      <span className={styles.navigationLabel}>Admin Side</span>
                     </span>
                   </Link>
                 ) : null}
@@ -963,7 +967,7 @@ export default function NavigationSidebarComponent({
                         onClick={(clickEvent: React.MouseEvent) => {
                           SoundService.playClick({ event: clickEvent.nativeEvent });
                           onNavClick?.(item.href);
-                          if (item.href === "/cron-jobs") {
+                          if (item.href === "/scheduled-tasks") {
                             clearCronJobNotifications();
                           }
                         }}
@@ -981,7 +985,7 @@ export default function NavigationSidebarComponent({
                               <AlertCircle size={13} />
                             </span>
                           )}
-                          {item.href === "/cron-jobs" && cronJobNotificationsCount > 0 && (
+                          {item.href === "/scheduled-tasks" && cronJobNotificationsCount > 0 && (
                             <span
                               className={styles["cron-job-notification-badge"]}
                             >
@@ -1072,7 +1076,7 @@ export default function NavigationSidebarComponent({
           ) : null}
           {isAdmin ? (
             <TooltipComponent
-              label="User"
+              label="User Side"
               position="right"
               delay={200}
               disabled={showNav}
@@ -1090,13 +1094,13 @@ export default function NavigationSidebarComponent({
               >
                 <span className={styles.activeStateLayer}>
                   <ShieldCheck className={styles.navigationIcon} />
-                  <span className={styles.navigationLabel}>User</span>
+                  <span className={styles.navigationLabel}>User Side</span>
                 </span>
               </Link>
             </TooltipComponent>
           ) : isLocal ? (
             <TooltipComponent
-              label="Admin"
+              label="Admin Side"
               position="right"
               delay={200}
               disabled={showNav}
@@ -1114,7 +1118,7 @@ export default function NavigationSidebarComponent({
               >
                 <span className={styles.activeStateLayer}>
                   <Settings className={styles.navigationIcon} />
-                  <span className={styles.navigationLabel}>Admin</span>
+                  <span className={styles.navigationLabel}>Admin Side</span>
                 </span>
               </Link>
             </TooltipComponent>

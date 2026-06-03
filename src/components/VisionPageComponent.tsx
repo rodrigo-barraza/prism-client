@@ -124,6 +124,32 @@ export default function VisionPageComponent() {
       .catch(() => {});
   }, []);
 
+  const syncConversation = useCallback(async () => {
+    try {
+      const conversation = await PrismService.getConversation(conversationId);
+      if (conversation?.messages) {
+        const formatted = conversation.messages.map((message: any) => ({
+          id: message.id || `msg-${Math.random()}`,
+          role: message.role,
+          content: message.content || "",
+          thinking: message.thinking || "",
+          images: message.images || [],
+          toolCalls: message.toolCalls || [],
+          timestamp: new Date(message.timestamp || Date.now()),
+        }));
+        setChatMessages(formatted);
+      }
+    } catch (error) {
+      console.warn("[VisionAgent] Conversation sync failed (might not exist yet):", error);
+    }
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (mode === "agent") {
+      syncConversation();
+    }
+  }, [mode, syncConversation]);
+
   // Filter config to only vision-capable models (have image input)
   const visionConfig = useMemo(() => {
     if (!config) return null;
@@ -521,7 +547,14 @@ export default function VisionPageComponent() {
 
     const messagesPayload = newMessages.map((message) => ({
       role: message.role,
-      content: message.content,
+      content: message.content || "",
+      images: message.images || [],
+      toolCalls: (message.toolCalls || []).map((toolCall: any) => ({
+        id: toolCall.id,
+        name: toolCall.name,
+        args: toolCall.args || {},
+      })),
+      thinking: message.thinking || "",
     }));
 
     try {
@@ -586,6 +619,7 @@ export default function VisionPageComponent() {
             );
             setIsAgentStreaming(false);
             setActiveMessageId(null);
+            syncConversation();
           },
           onError: (error: Error) => {
             setChatMessages((previousMessages) =>
@@ -1062,6 +1096,20 @@ export default function VisionPageComponent() {
                           {message.content && (
                             <div className={styles.messageText}>
                               {message.content}
+                            </div>
+                          )}
+
+                          {/* Message Images */}
+                          {message.images && message.images.length > 0 && (
+                            <div className={styles.chatMessageImages}>
+                              {message.images.map((imgUrl: string, idx: number) => (
+                                <img
+                                  key={idx}
+                                  src={PrismService.getFileUrl(imgUrl)}
+                                  alt="Analyzed frame"
+                                  className={styles.chatMessageImage}
+                                />
+                              ))}
                             </div>
                           )}
 

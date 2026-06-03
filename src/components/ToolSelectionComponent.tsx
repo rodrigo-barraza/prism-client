@@ -93,7 +93,7 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
   "Agent Management": Bot,
   "Model Context Protocol": Network,
   Meta: Search,
-  "Cron Jobs": CalendarDays,
+  "Scheduled Tasks": CalendarDays,
   Timers: CalendarDays,
   Skills: Layers,
   "Control Flow": Cpu,
@@ -118,7 +118,7 @@ const DOMAIN_LABELS: Record<string, string> = {
   "Agent Management": "Agent Management",
   "Model Context Protocol": "Model Context Protocol",
   Meta: "Tool Discovery",
-  "Cron Jobs": "Cron Jobs",
+  "Scheduled Tasks": "Scheduled Tasks",
   Timers: "Timers",
   Skills: "Skills",
   "Control Flow": "Control Flow",
@@ -135,7 +135,7 @@ const DOMAIN_ORDER = [
   "Agent Management",
   "Model Context Protocol",
   "Meta",
-  "Cron Jobs",
+  "Scheduled Tasks",
   "Timers",
   "Skills",
   "Control Flow",
@@ -418,6 +418,27 @@ export default function ToolSelectionComponent({
     return filteredTools.filter((tool) => resolvedEnabledSet.has(tool.name));
   }, [filteredTools, resolvedEnabledSet]);
 
+  const selectedGroupedByDomain = useMemo(() => {
+    const allSelectedTools = [
+      ...filteredCoreTools.filter((tool) => coreToolsLocked || resolvedEnabledSet.has(tool.name)),
+      ...filteredTools.filter((tool) => resolvedEnabledSet.has(tool.name)),
+    ];
+    const groups = new Map<string, ToolSchema[]>();
+    for (const tool of allSelectedTools) {
+      const domain = tool.system ? "Core Tools" : (tool.domain || "Other");
+      if (!groups.has(domain)) groups.set(domain, []);
+      groups.get(domain)!.push(tool);
+    }
+    const sorted: [string, ToolSchema[]][] = [];
+    for (const domain of DOMAIN_ORDER) {
+      if (groups.has(domain)) sorted.push([domain, groups.get(domain)!]);
+    }
+    for (const [domain, tools] of groups) {
+      if (!DOMAIN_ORDER.includes(domain)) sorted.push([domain, tools]);
+    }
+    return sorted;
+  }, [filteredCoreTools, filteredTools, coreToolsLocked, resolvedEnabledSet]);
+
   // -- Group by domain ------------------------------------------
   const groupedTools = useMemo(() => {
     const groups = new Map<string, ToolSchema[]>();
@@ -518,6 +539,8 @@ export default function ToolSelectionComponent({
       const selectableGroupNames = selectableGroupTools.map((tool) => tool.name);
       const allSelectableEnabled = selectableGroupNames.every((name) => resolved.has(name));
 
+      const hasActiveSearch = query.length > 0;
+
       if (groupKey === "core") {
         if (allSelectableEnabled) {
           onEnabledToolsChange(
@@ -537,10 +560,14 @@ export default function ToolSelectionComponent({
         );
       } else {
         const cleaned = currentTools.filter((enabledToolEntry) => !selectableGroupNames.includes(enabledToolEntry));
-        onEnabledToolsChange([...cleaned, prefix]);
+        if (hasActiveSearch) {
+          onEnabledToolsChange([...cleaned, ...selectableGroupNames]);
+        } else {
+          onEnabledToolsChange([...cleaned, prefix]);
+        }
       }
     },
-    [enabledTools, groupMode, resolveEnabledTools, onEnabledToolsChange, lockedOffTools],
+    [enabledTools, groupMode, query, resolveEnabledTools, onEnabledToolsChange, lockedOffTools],
   );
 
   // -- Render ---------------------------------------------------
@@ -680,7 +707,7 @@ export default function ToolSelectionComponent({
         {/* Group rendering — domain, label, tier, or selected mode */}
         {groupMode === "selected" ? (
           <div className={styles.selectedTabContent}>
-            {selectedCoreTools.length === 0 && selectedConfigurableTools.length === 0 ? (
+            {selectedGroupedByDomain.length === 0 ? (
               <div className={styles.noSelectedToolsContainer}>
                 <Layers size={24} className={styles.noSelectedToolsIcon} />
                 <span className={styles.noSelectedToolsMessage}>No tools currently selected</span>
@@ -689,123 +716,127 @@ export default function ToolSelectionComponent({
                 </span>
               </div>
             ) : (
-              <>
-                {selectedCoreTools.length > 0 && (
-                  <div className={styles.selectedCategorySection}>
-                    <div className={styles.selectedCategoryHeader}>
-                      <span className={styles.selectedCategoryIcon}>
-                        <Bot size={12} />
-                      </span>
-                      <span className={styles.selectedCategoryTitle}>Core Tools</span>
-                      <span className={styles.selectedCategoryCount}>
-                        ({selectedCoreTools.length})
-                      </span>
-                    </div>
-                    <div className={styles.toolsGrid}>
-                      {selectedCoreTools.map((tool) => (
-                        <TooltipComponent
-                          key={tool.name}
-                          label={tool.description || "Core capability"}
-                          position="right"
-                          delay={400}
-                        >
-                          {coreToolsLocked ? (
-                            <div className={`${styles.toolRow} ${styles.coreToolRow}`}>
-                              <CheckboxComponent
-                                size="compact"
-                                className={styles.toolCheckbox}
-                                checked={true}
-                                disabled={true}
-                                onChange={() => {}}
-                                label={
-                                  <span className={`${styles.toolName} ${styles.coreToolName}`}>
-                                    {renderToolName(tool.name)}
-                                  </span>
-                                }
-                              />
-                              <Lock size={10} className={styles.lockIcon} />
-                            </div>
-                          ) : (
-                            <div className={styles.toolRow}>
-                              <CheckboxComponent
-                                size="compact"
-                                className={styles.toolCheckbox}
-                                checked={resolvedEnabledSet.has(tool.name)}
-                                onChange={() => toggleTool(tool.name)}
-                                label={
-                                  <span className={styles.toolName}>
-                                    {renderToolName(tool.name)}
-                                  </span>
-                                }
-                              />
-                            </div>
-                          )}
-                        </TooltipComponent>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              selectedGroupedByDomain.map(([groupKey, tools]) => {
+                const isCoreDomain = groupKey === "Core Tools";
+                const isMcp = groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol";
+                const GroupIcon: LucideIcon = isMcp
+                  ? Network
+                  : DOMAIN_ICONS[groupKey] || Layers;
+                const label = isMcp
+                  ? groupKey.replace("Model Context Protocol: ", "MCP: ")
+                  : DOMAIN_LABELS[groupKey] || groupKey;
+                const collapsed = collapsedDomains.has(`selected:${groupKey}`);
+                const selectableGroupTools = tools.filter((tool) => !lockedOffTools.has(tool.name));
+                const groupEnabled = selectableGroupTools.filter((tool) =>
+                  resolvedEnabledSet.has(tool.name),
+                ).length;
 
-                {selectedConfigurableTools.length > 0 && (
-                  <div className={styles.selectedCategorySection}>
-                    <div className={styles.selectedCategoryHeader}>
-                      <span className={styles.selectedCategoryIcon}>
-                        <Wrench size={12} />
+                return (
+                  <div key={groupKey} className={isCoreDomain ? styles.coreGroup : styles.domainGroup}>
+                    <div
+                      className={isCoreDomain ? styles.coreHeader : styles.domainHeader}
+                      onClick={() => toggleDomain(`selected:${groupKey}`)}
+                    >
+                      {collapsed ? (
+                        <ChevronRight size={12} />
+                      ) : (
+                        <ChevronDown size={12} />
+                      )}
+                      <span className={isCoreDomain ? styles.coreIcon : styles.domainIcon}>
+                        <GroupIcon size={12} />
                       </span>
-                      <span className={styles.selectedCategoryTitle}>Configurable Tools</span>
-                      <span className={styles.selectedCategoryCount}>
-                        ({selectedConfigurableTools.length})
-                      </span>
+                      {isCoreDomain ? (
+                        <span className={styles.coreLabel}>{label}</span>
+                      ) : (
+                        label
+                      )}
+                      {isCoreDomain && coreToolsLocked ? (
+                        <span className={styles.coreBadge}>Locked On</span>
+                      ) : (
+                        <>
+                          <span className={styles.domainCount}>
+                            {groupEnabled}/{tools.length}
+                          </span>
+                          <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
+                            <CheckboxComponent
+                              size="compact"
+                              checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length}
+                              indeterminate={groupEnabled > 0 && groupEnabled < selectableGroupTools.length}
+                              onChange={() => toggleGroupTools(isCoreDomain ? "core" : groupKey, tools)}
+                            />
+                          </span>
+                        </>
+                      )}
                     </div>
-                    <div className={styles.toolsGrid}>
-                      {selectedConfigurableTools.map((tool) => {
-                        const isLocked = lockedOffTools.has(tool.name);
-                        const lockReason = lockedOffTools.get(tool.name);
-                        return (
-                          <TooltipComponent
-                            key={tool.name}
-                            label={isLocked ? lockReason! : (tool.description || "")}
-                            position="right"
-                            delay={isLocked ? 0 : 400}
-                          >
-                            {isLocked ? (
-                              <div className={`${styles.toolRow} ${styles.lockedToolRow}`}>
-                                <CheckboxComponent
-                                  size="compact"
-                                  className={styles.toolCheckbox}
-                                  checked={false}
-                                  disabled={true}
-                                  onChange={() => {}}
-                                  label={
-                                    <span className={`${styles.toolName} ${styles.lockedToolName}`}>
-                                      {renderToolName(tool.name)}
-                                    </span>
-                                  }
-                                />
-                                <Lock size={10} className={styles.lockIcon} />
-                              </div>
-                            ) : (
-                              <div className={styles.toolRow}>
-                                <CheckboxComponent
-                                  size="compact"
-                                  className={styles.toolCheckbox}
-                                  checked={resolvedEnabledSet.has(tool.name)}
-                                  onChange={() => toggleTool(tool.name)}
-                                  label={
-                                    <span className={styles.toolName}>
-                                      {renderToolName(tool.name)}
-                                    </span>
-                                  }
-                                />
-                              </div>
-                            )}
-                          </TooltipComponent>
-                        );
-                      })}
-                    </div>
+
+                    {!collapsed && (
+                      <div className={isCoreDomain ? styles.coreToolsList : styles.toolsGrid}>
+                        {tools.map((tool) => {
+                          const isLocked = lockedOffTools.has(tool.name);
+                          const lockReason = lockedOffTools.get(tool.name);
+                          const isCoreLockedTool = isCoreDomain && coreToolsLocked;
+                          return (
+                            <TooltipComponent
+                              key={tool.name}
+                              label={isLocked ? lockReason! : (tool.description || (isCoreDomain ? "Core capability" : ""))}
+                              position="right"
+                              delay={isLocked ? 0 : 400}
+                            >
+                              {isCoreLockedTool ? (
+                                <div className={`${styles.toolRow} ${styles.coreToolRow}`}>
+                                  <CheckboxComponent
+                                    size="compact"
+                                    className={styles.toolCheckbox}
+                                    checked={true}
+                                    disabled={true}
+                                    onChange={() => {}}
+                                    label={
+                                      <span className={`${styles.toolName} ${styles.coreToolName}`}>
+                                        {renderToolName(tool.name)}
+                                      </span>
+                                    }
+                                  />
+                                  <Lock size={10} className={styles.lockIcon} />
+                                </div>
+                              ) : isLocked ? (
+                                <div className={`${styles.toolRow} ${styles.lockedToolRow}`}>
+                                  <CheckboxComponent
+                                    size="compact"
+                                    className={styles.toolCheckbox}
+                                    checked={false}
+                                    disabled={true}
+                                    onChange={() => {}}
+                                    label={
+                                      <span className={`${styles.toolName} ${styles.lockedToolName}`}>
+                                        {renderToolName(tool.name)}
+                                      </span>
+                                    }
+                                  />
+                                  <Lock size={10} className={styles.lockIcon} />
+                                </div>
+                              ) : (
+                                <div className={styles.toolRow}>
+                                  <CheckboxComponent
+                                    size="compact"
+                                    className={styles.toolCheckbox}
+                                    checked={resolvedEnabledSet.has(tool.name)}
+                                    onChange={() => toggleTool(tool.name)}
+                                    label={
+                                      <span className={styles.toolName}>
+                                        {renderToolName(tool.name)}
+                                      </span>
+                                    }
+                                  />
+                                </div>
+                              )}
+                            </TooltipComponent>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </>
+                );
+              })
             )}
           </div>
         ) : (

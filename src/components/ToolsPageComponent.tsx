@@ -178,7 +178,7 @@ const DOMAIN_ICONS = {
   "Agent Management": Bot,
   "Model Context Protocol": Cpu,
   Meta: Cog,
-  "Cron Jobs": Clock,
+  "Scheduled Tasks": Clock,
   Timers: Clock,
   Skills: Zap,
   "Control Flow": Shield,

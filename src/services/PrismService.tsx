@@ -95,7 +95,7 @@ export default class PrismService {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `Prism API error: ${response.status}`);
+      throw new Error(error.error || error.message || `Prism API error: ${response.status}`);
     }
 
     return response.json();
@@ -2063,5 +2063,52 @@ export default class PrismService {
       `/vram-benchmarks/contexts${query ? `?${query}` : ""}`,
       { method: "GET" },
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Prompts
+  // ---------------------------------------------------------------------------
+
+  static async getPrompts(
+    params: Record<string, string | number | boolean> = {},
+  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
+    const stringParams: Record<string, string> = {};
+    for (const [key, value] of Object.entries(params)) stringParams[key] = String(value);
+    const query = new URLSearchParams(stringParams).toString();
+    return PrismService._request<{ data: any[]; total: number; page: number; limit: number }>(
+      `/prompts${query ? `?${query}` : ""}`,
+      { method: "GET" },
+    );
+  }
+
+  static async getPrompt(id: string): Promise<any> {
+    return PrismService._request<any>(`/prompts/${id}`, { method: "GET" });
+  }
+
+  static async createPrompt(data: {
+    title: string;
+    content: string;
+    tags?: string[];
+  }): Promise<any> {
+    return PrismService._request<any>("/prompts", {
+      method: "POST",
+      body: data,
+    });
+  }
+
+  static async updatePrompt(
+    id: string,
+    updates: Partial<{ title: string; content: string; tags: string[] }>,
+  ): Promise<any> {
+    return PrismService._request<any>(`/prompts/${id}`, {
+      method: "PATCH",
+      body: updates,
+    });
+  }
+
+  static async deletePrompt(id: string): Promise<{ success: boolean }> {
+    return PrismService._request<{ success: boolean }>(`/prompts/${id}`, {
+      method: "DELETE",
+    });
   }
 }

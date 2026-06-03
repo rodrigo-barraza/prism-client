@@ -189,26 +189,26 @@ function CronJobDetailPanel({
                   onEdit(task);
                   onClose();
                 }}
-                title="Edit cron job"
+                title="Edit scheduled task"
               >
                 <Pencil size={14} /> Edit
               </button>
               <button
                 className={`${styles.detailActionButton} ${styles.detailTriggerButton}`}
                 onClick={() => onTrigger(task)}
-                title="Run cron job now"
+                title="Run scheduled task now"
               >
                 <Play size={14} /> Run Now
               </button>
               <button
                 className={`${styles.detailActionButton} ${styles.detailDeleteButton}`}
                 onClick={() => {
-                  if (confirm("Are you sure you want to delete this Cron Job?")) {
+                  if (confirm("Are you sure you want to delete this Scheduled Task?")) {
                     onDelete(task);
                     onClose();
                   }
                 }}
-                title="Delete cron job"
+                title="Delete scheduled task"
               >
                 <Trash2 size={14} /> Delete
               </button>
@@ -654,11 +654,11 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
         setTasks((previousTasks) =>
           previousTasks.map((task) => (task.id === editingTask.id ? { ...task, ...updatedTask } : task)),
         );
-        showToast(`Cron Job "${formName}" updated successfully!`);
+        showToast(`Scheduled Task "${formName}" updated successfully!`);
       } else {
         const createdTask = await PrismService.createCronJob(taskPayload);
         setTasks((previousTasks) => [createdTask, ...previousTasks]);
-        showToast(`Cron Job "${formName}" created successfully!`);
+        showToast(`Scheduled Task "${formName}" created successfully!`);
         const currentNotificationCount = parseInt(localStorage.getItem("cron-job-notifications-count") || "0", 10);
         localStorage.setItem("cron-job-notifications-count", String(currentNotificationCount + 1));
         window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
@@ -882,7 +882,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
               <div className={styles.headerTopRow}>
                 <div className={styles.headerTitleRow}>
                   <Clock className={styles.headerIcon} />
-                  <h1 className={styles.headerTitle}>Cron Jobs</h1>
+                  <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
                   <span className={styles.badge}>
                     {filteredTasks.length} total
                   </span>
@@ -891,7 +891,6 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                 <div className={styles.headerActions}>
                   <SelectComponent
                     multiple
-                    label="Sort"
                     icon={<ArrowUpDown size={12} />}
                     value={activeSortKeys}
                     options={sortOptions}
@@ -920,7 +919,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                       setShowNewModal(true);
                     }}
                     className={styles.newButton}
-                    title="Create Cron Job"
+                    title="Create Scheduled Task"
                   >
                     <Plus size={16} />
                     <span>New</span>
@@ -931,7 +930,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
               <SearchInputComponent
                 value={searchQuery}
                 onChange={setSearchQuery}
-                placeholder="Search tasks…"
+                placeholder="Search scheduled tasks…"
                 className={styles.tasksSearch}
               />
             </header>
@@ -945,7 +944,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
               ) : filteredTasks.length === 0 ? (
                 <div className={styles.emptyState}>
                   <Clock size={48} className={styles.emptyIcon} />
-                  <h2>No Cron Jobs found</h2>
+                  <h2>No Scheduled Tasks found</h2>
                   <p>
                     Create a background agent automation task to get started.
                   </p>
@@ -1161,7 +1160,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   ]}
                   data={filteredTasks}
                   getRowKey={(task: Task) => task.id}
-                  emptyText="No Cron Jobs found"
+                  emptyText="No Scheduled Tasks found"
                   storageKey="scheduled-tasks"
                 />
               ) : (
@@ -1895,7 +1894,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
       <NavigationSidebarComponent mode="user" />
 
       <div className={styles["layout-page-column"]}>
-        <LayoutHeaderComponent title="Cron Jobs" />
+        <LayoutHeaderComponent title="Scheduled Tasks" />
         <div className={styles["page-content-area"]}>
           {contentBlock}
         </div>
