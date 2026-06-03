@@ -203,6 +203,9 @@ export interface ParsedToolResult {
   audioRef?: string;
   duration?: number;
   sampleCount?: number;
+  layerCount?: number;
+  totalKeyframes?: number;
+  isAppend?: boolean;
 }
 
 export interface RendererProps {
@@ -1534,6 +1537,54 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
   );
 }
 
+// -- 13.25 Vector Animation Player -------------------------------------------
+
+function VectorAnimationEmbed({ src, title }: { src: string; title: string }) {
+  return (
+    <div className={styles.turtleEmbedWrapper}>
+      <iframe
+        src={src}
+        className={styles.turtleEmbedFrame}
+        title={title}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    </div>
+  );
+}
+
+function VectorAnimationRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const layerCount = parsed.layerCount || (args?.animation as any)?.layers?.length || 0;
+  const totalKeyframes = parsed.totalKeyframes || 0;
+  const duration = parsed.duration || (args?.animation as any)?.duration || 0;
+  const canvasSize = parsed.canvasSize || "800x600";
+  const embedUrl = parsed.embedUrl || "";
+  const isAppend = !!parsed.isAppend;
+
+  return (
+    <div className={styles.rendererBlock}>
+      <div className={styles.rendererHeader}>
+        <span style={{ fontSize: 13 }}>🎬</span>
+        <span className={styles.rendererTitle}>
+          Vector Animation — {isAppend ? "Updated" : "Created"} {layerCount} layer{layerCount !== 1 ? "s" : ""}{totalKeyframes > 0 ? ` (${totalKeyframes} total keyframes)` : ""} ({duration.toFixed(1)}s)
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : canvasSize}
+        />
+      </div>
+      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <VectorAnimationEmbed src={embedUrl} title="Vector Animation Player" />
+      )}
+    </div>
+  );
+}
+
 // -- 13.5 3D Mesh Rendering --------------------------------------------------
 
 function ThreeMeshRenderer({ result, args }: RendererProps) {
@@ -2181,6 +2232,7 @@ const TOOL_RESULT_REGISTRY = {
 
   // Turtle Graphics
   draw_turtle: { Renderer: TurtleDrawRenderer },
+  create_vector_animation: { Renderer: VectorAnimationRenderer },
 
   // 3D Mesh
   create_3d_mesh: { Renderer: ThreeMeshRenderer },
