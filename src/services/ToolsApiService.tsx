@@ -143,14 +143,14 @@ export default class ToolsApiService {
    */
   static async getAllAgenticTasks({
     status,
-    agentSessionId,
+    conversationId,
   }: {
     status?: string;
-    agentSessionId?: string;
+    conversationId?: string;
   } = {}): Promise<AgenticTaskListResponse> {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
-    if (agentSessionId) params.set("agentSessionId", agentSessionId);
+    if (conversationId) params.set("conversationId", conversationId);
     const query = params.toString();
     return ToolsApiService._fetch<AgenticTaskListResponse>(
       `/agentic/task/list-all${query ? `?${query}` : ""}`,

@@ -70,7 +70,7 @@ export default function AdminAgentViewerComponent() {
 
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState<Message[]>([]);
-  const [agentSessionId, setAgentSessionId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<Conversation[]>([]);
   const [total, setTotal] = useState(0);
   const [page, _setPage] = useState(1);
@@ -245,7 +245,7 @@ export default function AdminAgentViewerComponent() {
         const full = await IrisService.getAgentSession(cId);
         const displayMessages = prepareDisplayMessages(full.messages || []);
         setMessages(displayMessages);
-        setAgentSessionId(cId || null);
+        setConversationId(cId || null);
         setActiveId(cId || null);
         setTitle(full.title || "Agent Session");
 
@@ -274,7 +274,7 @@ export default function AdminAgentViewerComponent() {
         fetchSessionStats(cId);
 
         // Fetch tasks count for this session
-        ToolsApiService.getAllAgenticTasks({ agentSessionId: cId })
+        ToolsApiService.getAllAgenticTasks({ conversationId: cId })
           .then((r: { summary?: { total?: number }; tasks?: unknown[] }) =>
             setTasksCount(r.summary?.total || (r.tasks || []).length),
           )
@@ -442,11 +442,11 @@ export default function AdminAgentViewerComponent() {
         />
       )}
 
-      {leftTab === "tasks" && agentSessionId && (
+      {leftTab === "tasks" && conversationId && (
         <TasksPanel
           project={PROJECT_AGENT}
           refreshKey={0}
-          agentSessionId={agentSessionId}
+          conversationId={conversationId}
           onCountChange={setTasksCount}
         />
       )}
@@ -460,9 +460,9 @@ export default function AdminAgentViewerComponent() {
         />
       )}
 
-      {leftTab === "workers" && agentSessionId && (
+      {leftTab === "workers" && conversationId && (
         <WorkersPanel
-          agentSessionId={agentSessionId}
+          conversationId={conversationId}
           refreshKey={0}
           onCountChange={setWorkersCount}
           workerToolActivity={{}}

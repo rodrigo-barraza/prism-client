@@ -437,7 +437,6 @@ export interface SSEToolOutputEvent {
 
 export interface SSEApprovalRequiredEvent {
   type: "approval_required";
-  agentSessionId: string;
   toolCalls: Array<{ id: string; name: string; args: Record<string, unknown> }>;
 }
 
@@ -448,7 +447,6 @@ export interface SSEPlanProposalEvent {
 
 export interface SSEUserQuestionEvent {
   type: "user_question";
-  agentSessionId: string;
   questions: Array<{
     question: string;
     type?: "text" | "single_select" | "multi_select";

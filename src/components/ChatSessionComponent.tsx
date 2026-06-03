@@ -416,7 +416,7 @@ export default function ChatSessionComponent({
   const [streamingOutputs, setStreamingOutputs] = useState<Map<string, string>>(
     new Map(),
   );
-  const [agentSessionId, setAgentSessionId] = useState(() => generateUUID());
+  const [conversationId, setConversationId] = useState(() => generateUUID());
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
   const [sessions, setSessions] = useState<Array<AgentSession | Conversation>>(
     [],
@@ -741,8 +741,8 @@ export default function ChatSessionComponent({
   const isUserNearBottomRef = useRef<boolean>(true);
   const SCROLL_BOTTOM_THRESHOLD = 150;
 
-  const agentSessionIdRef = useRef<string>(agentSessionId);
-  agentSessionIdRef.current = agentSessionId;
+  const conversationIdRef = useRef<string>(conversationId);
+  conversationIdRef.current = conversationId;
   const isGeneratingRef = useRef<boolean>(isGenerating);
   isGeneratingRef.current = isGenerating;
   // Distinguish client-initiated generation (active SSE via handleSend)
@@ -815,7 +815,7 @@ export default function ChatSessionComponent({
     // alongside the backend SSE disconnect handler
     // Direct Chat (NONE) has no workers — skip.
     if (!isNoAgent) {
-      PrismService.stopCoordinatorWorkers(agentSessionIdRef.current).catch(
+      PrismService.stopCoordinatorWorkers(conversationIdRef.current).catch(
         () => {},
       );
     }
@@ -1120,7 +1120,7 @@ export default function ChatSessionComponent({
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
         setMessages(displayMessages);
-        setAgentSessionId(full.id || generateUUID());
+        setConversationId(full.id || generateUUID());
         setTraceId(full.traceId || null);
         setActiveId(full.id || null);
         setTitle(full.title || (isNoAgent ? "Agentless Chat" : "Agent"));
@@ -1308,16 +1308,16 @@ export default function ChatSessionComponent({
   }, [agentProject, agentId]);
 
   useEffect(() => {
-    ToolsApiService.getAllAgenticTasks({ agentSessionId })
+    ToolsApiService.getAllAgenticTasks({ conversationId })
       .then((r) => setTasksCount(r.summary?.total || (r.tasks || []).length))
       .catch(() => {});
-  }, [agentSessionId, tasksRefreshKey]);
+  }, [conversationId, tasksRefreshKey]);
 
   useEffect(() => {
-    PrismService.getCoordinatorWorkers(agentSessionId)
+    PrismService.getCoordinatorWorkers(conversationId)
       .then((r) => setWorkersCount((r.workers || []).length))
       .catch(() => {});
-  }, [agentSessionId, tasksRefreshKey]);
+  }, [conversationId, tasksRefreshKey]);
 
   // System prompt is fully assembled server-side by SystemPromptAssembler.
   // The client sends a placeholder system message that gets replaced.
@@ -1955,7 +1955,7 @@ export default function ChatSessionComponent({
       const currentMessages = [...sessionMessages];
       // Capture which session this generation belongs to — if the user
       // switches sessions, streaming callbacks will skip UI updates.
-      const genSessionId = agentSessionIdRef.current;
+      const genSessionId = conversationIdRef.current;
 
       await new Promise<void>((resolve, reject) => {
         // -- Build payload: Direct Chat (/chat) vs Agent (/agent) --
@@ -1998,10 +1998,7 @@ export default function ChatSessionComponent({
               ...(settings.webSearchEnabled ? { webSearch: true } : {}),
               ...(settings.codeExecutionEnabled ? { codeExecution: true } : {}),
               ...(settings.urlContextEnabled ? { urlContext: true } : {}),
-              // Persistence — use agentSessionId as conversationId for /chat
-              conversationId: agentSessionId,
-              // Also pass agentSessionId so request logs are queryable by session
-              agentSessionId,
+              conversationId,
               conversationMeta: {
                 title: resolvedTitle,
                 ...(settings.systemPrompt
@@ -2040,7 +2037,7 @@ export default function ChatSessionComponent({
               // Local models need enough context for MCP tool schemas + session
               minContextLength: 65_000,
               project: agentProject,
-              agentSessionId,
+              conversationId,
               conversationMeta: { title: resolvedTitle },
               traceId,
               agent: agentId,
@@ -2083,7 +2080,7 @@ export default function ChatSessionComponent({
 
         // Guard: returns true when the user switched sessions — skip all UI updates
         // but let the stream continue (the backend saves independently).
-        const isStale = () => agentSessionIdRef.current !== genSessionId;
+        const isStale = () => conversationIdRef.current !== genSessionId;
 
         // Direct Chat → streamText (/chat); Agents → streamAgentText (/agent)
         const streamFn = isNoAgent
@@ -3180,7 +3177,7 @@ export default function ChatSessionComponent({
               });
               setCurrentTurnStart(null);
               setPendingUserQuestion(null);
-              fetchSessionStats(agentSessionId);
+              fetchSessionStats(conversationId);
             }
             // SessionSummarizer runs async after SSE stream closes —
             // poll every 2s for up to 20s until new memories are detected
@@ -3235,7 +3232,7 @@ export default function ChatSessionComponent({
       settings.webSearchEnabled,
       settings.codeExecutionEnabled,
       settings.urlContextEnabled,
-      agentSessionId,
+      conversationId,
       traceId,
       disabledTools,
       autoApprove,
@@ -3311,7 +3308,7 @@ export default function ChatSessionComponent({
       // Re-engage sticky scroll when the user sends a message
       isUserNearBottomRef.current = true;
       // Track this session as generating (for history indicator even after switching away)
-      const genId = agentSessionIdRef.current;
+      const genId = conversationIdRef.current;
       console.debug(
         `[handleSend] starting generation, sessionId=${genId}, currentMessages=${messagesRef.current.length}`,
       );
@@ -3338,15 +3335,15 @@ export default function ChatSessionComponent({
         setTitle(resolvedTitle);
         // Optimistic: add the session to the history list immediately
         const now = new Date().toISOString();
-        setActiveId(agentSessionId);
+        setActiveId(conversationId);
         window.dispatchEvent(
           new CustomEvent("conversation:change", {
-            detail: { conversationId: agentSessionId },
+            detail: { conversationId: conversationId },
           }),
         );
         setSessions((previousPixelSize) => [
           {
-            id: agentSessionId,
+            id: conversationId,
             title: resolvedTitle,
             updatedAt: now,
             createdAt: now,
@@ -3438,16 +3435,16 @@ export default function ChatSessionComponent({
         const attemptPostStreamRefresh = async (attempt = 1) => {
           try {
             const full = isNoAgent
-              ? await PrismService.getConversation(agentSessionId)
+              ? await PrismService.getConversation(conversationId)
               : await PrismService.getAgentSession(
-                  agentSessionId,
+                  conversationId,
                   agentProject!,
                 );
             console.debug(
               `[PostStream refresh] attempt=${attempt} full?.messages?.length=${full?.messages?.length},`,
-              `sessionMatch=${agentSessionIdRef.current === genId}`,
+              `sessionMatch=${conversationIdRef.current === genId}`,
             );
-            if (full && full.messages && agentSessionIdRef.current === genId) {
+            if (full && full.messages && conversationIdRef.current === genId) {
               const displayMessages = prepareDisplayMessages(full.messages);
               const currentCount = messagesRef.current.length;
               console.debug(
@@ -3527,7 +3524,7 @@ export default function ChatSessionComponent({
         ]);
       } finally {
         console.debug(
-          `[handleSend finally] genId=${genId}, currentSessionId=${agentSessionIdRef.current}, match=${agentSessionIdRef.current === genId}`,
+          `[handleSend finally] genId=${genId}, currentSessionId=${conversationIdRef.current}, match=${conversationIdRef.current === genId}`,
         );
         // Remove this session from the generating set
         setGeneratingSessionIds((previousPixelSize) => {
@@ -3538,7 +3535,7 @@ export default function ChatSessionComponent({
         // Clean up the background snapshot — session is now persisted to backend
         backgroundSessionsRef.current.delete(genId);
         // Only update local UI state if this session is still displayed
-        if (agentSessionIdRef.current === genId) {
+        if (conversationIdRef.current === genId) {
           setIsGenerating(false);
           SoundService.playGenerationEnd();
           isClientDrivenGenerationRef.current = false;
@@ -3683,7 +3680,7 @@ export default function ChatSessionComponent({
     setInjectedSkills([]);
     setContextTruncated(null);
     setIsGenerating(false);
-    setAgentSessionId(generateUUID());
+    setConversationId(generateUUID());
     setTraceId(null);
     setActiveId(null);
     setTitle(isNoAgent ? "Agentless Chat" : "Agent");
@@ -3744,7 +3741,7 @@ export default function ChatSessionComponent({
   const handleNewChat = useCallback(() => {
     // If generating, snapshot the current session so user can switch back to it
     if (isGenerating) {
-      const currentId = agentSessionIdRef.current;
+      const currentId = conversationIdRef.current;
       backgroundSessionsRef.current.set(currentId, {
         messages,
         title,
@@ -3873,7 +3870,7 @@ export default function ChatSessionComponent({
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
         setMessages(snap.messages as ClientMessage[]);
-        setAgentSessionId(full.id || generateUUID());
+        setConversationId(full.id || generateUUID());
         setActiveId(full.id || null);
         window.dispatchEvent(
           new CustomEvent("conversation:change", {
@@ -3896,7 +3893,7 @@ export default function ChatSessionComponent({
         // Re-attach: mark as generating so the UI shows the active state
         setIsGenerating(true);
         // Remove the snapshot — the SSE callbacks will resume updating React state
-        // now that agentSessionIdRef matches again (isStale() → false)
+        // now that conversationIdRef matches again (isStale() → false)
         backgroundSessionsRef.current.delete(full.id || "");
       } else {
         // Normal backend-loaded session
@@ -3907,7 +3904,7 @@ export default function ChatSessionComponent({
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
         setMessages(displayMessages);
-        setAgentSessionId(full.id || generateUUID());
+        setConversationId(full.id || generateUUID());
         setTraceId(full.traceId || null);
         setActiveId(full.id ?? null);
         setIsGenerating(!!full.isGenerating);
@@ -4035,7 +4032,7 @@ export default function ChatSessionComponent({
     async (conversation: AgentSession | Conversation) => {
       // If generating, snapshot the current session so user can switch back to it
       if (isGenerating) {
-        const currentId = agentSessionIdRef.current;
+        const currentId = conversationIdRef.current;
         backgroundSessionsRef.current.set(currentId, {
           messages,
           title,
@@ -4131,7 +4128,7 @@ export default function ChatSessionComponent({
   // -- Real-Time Background Synchronization (Change Streams) -----
   const refreshActiveSession = useCallback(
     async (sessionId: string) => {
-      if (!sessionId || sessionId !== agentSessionIdRef.current) return;
+      if (!sessionId || sessionId !== conversationIdRef.current) return;
       // Skip change-stream refresh while actively generating — the SSE
       // streaming callbacks are the source of truth for message state.
       // Without this guard, a MongoDB change event (triggered when the
@@ -4151,7 +4148,7 @@ export default function ChatSessionComponent({
         const full = isNoAgent
           ? await PrismService.getConversation(sessionId)
           : await PrismService.getAgentSession(sessionId, agentProject!);
-        if (full && full.id === agentSessionIdRef.current) {
+        if (full && full.id === conversationIdRef.current) {
           applySessionData(full);
         }
       } catch (error) {
@@ -4183,7 +4180,7 @@ export default function ChatSessionComponent({
       }
 
       // Active session update → refresh its messages in-place
-      if (event.id && event.id === agentSessionIdRef.current) {
+      if (event.id && event.id === conversationIdRef.current) {
         refreshActiveSession(event.id);
       }
 
@@ -4193,7 +4190,7 @@ export default function ChatSessionComponent({
       // also need to propagate to the sidebar.
       if (
         event.operationType === "insert" ||
-        (event.id && event.id !== agentSessionIdRef.current)
+        (event.id && event.id !== conversationIdRef.current)
       ) {
         debouncedListRefresh();
       }
@@ -4862,7 +4859,7 @@ export default function ChatSessionComponent({
         <>
           <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} actions={workersHeaderActions} />
           <WorkersPanel
-            agentSessionId={agentSessionId}
+            conversationId={conversationId}
             refreshKey={tasksRefreshKey}
             onCountChange={setWorkersCount}
             onActionsChange={setWorkersHeaderActions}
@@ -4875,7 +4872,7 @@ export default function ChatSessionComponent({
         <>
           <SidebarTabHeaderComponent icon={BarChart3} title="Requests" count={backendSessionStats?.requestCount || 0} />
           <SessionRequestsListComponent
-            agentSessionId={agentSessionId}
+            conversationId={conversationId}
             refreshKey={requestsRefreshKey}
           />
         </>
@@ -5024,7 +5021,7 @@ export default function ChatSessionComponent({
           <TasksPanel
             project={agentProject}
             refreshKey={tasksRefreshKey}
-            agentSessionId={agentSessionId}
+            conversationId={conversationId}
             onCountChange={setTasksCount}
             onActionsChange={setTasksHeaderActions}
           />
@@ -5136,13 +5133,13 @@ export default function ChatSessionComponent({
           planProposal={planProposal}
           onPlanApprove={() => {
             setPlanProposal((p) => (p ? { ...p, status: "approved" } : null));
-            PrismService.sendApprovalResponse(agentSessionId, true).catch(
+            PrismService.sendApprovalResponse(conversationId, true).catch(
               console.error,
             );
           }}
           onPlanReject={() => {
             setPlanProposal((p) => (p ? { ...p, status: "rejected" } : null));
-            PrismService.sendApprovalResponse(agentSessionId, false).catch(
+            PrismService.sendApprovalResponse(conversationId, false).catch(
               console.error,
             );
           }}
@@ -5163,7 +5160,7 @@ export default function ChatSessionComponent({
                     approvalItem.id === approval.id ? { ...approvalItem, status: "approved" } : approvalItem,
                   ),
                 );
-                PrismService.sendApprovalResponse(agentSessionId, true).catch(
+                PrismService.sendApprovalResponse(conversationId, true).catch(
                   console.error,
                 );
               }}
@@ -5173,7 +5170,7 @@ export default function ChatSessionComponent({
                     approvalItem.id === approval.id ? { ...approvalItem, status: "rejected" } : approvalItem,
                   ),
                 );
-                PrismService.sendApprovalResponse(agentSessionId, false).catch(
+                PrismService.sendApprovalResponse(conversationId, false).catch(
                   console.error,
                 );
               }}
@@ -5184,7 +5181,7 @@ export default function ChatSessionComponent({
                   ),
                 );
                 setAutoApprove(true);
-                PrismService.sendApprovalResponse(agentSessionId, true, {
+                PrismService.sendApprovalResponse(conversationId, true, {
                   approveAll: true,
                 }).catch(console.error);
               }}
@@ -5206,7 +5203,7 @@ export default function ChatSessionComponent({
             ) => {
               setPendingUserQuestion(null);
               PrismService.sendUserQuestionAnswer(
-                agentSessionId,
+                conversationId,
                 answers,
               ).catch(console.error);
             }}

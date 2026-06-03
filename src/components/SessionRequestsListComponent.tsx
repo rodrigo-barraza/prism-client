@@ -15,7 +15,7 @@ import styles from "./SessionRequestsListComponent.module.css";
  * and its associated worker sessions as a flat chronological timeline (newest first).
  */
 export default function SessionRequestsListComponent({
-  agentSessionId,
+  conversationId,
   refreshKey = 0,
 }: any) {
   const [data, setData] = useState<any>(null);
@@ -23,11 +23,11 @@ export default function SessionRequestsListComponent({
   const [error, setError] = useState<string | null>(null);
 
   const fetchRequests = useCallback(async () => {
-    if (!agentSessionId) return;
+    if (!conversationId) return;
     setLoading(true);
     setError(null);
     try {
-      const result = await IrisService.getSessionRequests(agentSessionId);
+      const result = await IrisService.getSessionRequests(conversationId);
       setData(result);
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
@@ -39,13 +39,13 @@ export default function SessionRequestsListComponent({
     } finally {
       setLoading(false);
     }
-  }, [agentSessionId]);
+  }, [conversationId]);
 
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests, refreshKey]);
 
-  if (!agentSessionId || loading || error || !(data as any)?.requests?.length) {
+  if (!conversationId || loading || error || !(data as any)?.requests?.length) {
     if (error) {
       return (
         <div className={styles.container}>

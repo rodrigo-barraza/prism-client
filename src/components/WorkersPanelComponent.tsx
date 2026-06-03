@@ -55,18 +55,18 @@ function getAgentNumber(agentId: string | undefined) {
 /**
  * WorkersPanel — displays coordinator workers spawned during this agent session.
  *
- * Polls the coordinator /workers endpoint filtered by the current agentSessionId.
+ * Polls the coordinator /workers endpoint filtered by the current conversationId.
  * Workers represent parallel sub-agents spawned via the `team_create` tool
  * during agentic coding sessions.
  */
 export default function WorkersPanel({
-  agentSessionId,
+  conversationId,
   refreshKey,
   onCountChange,
   onActionsChange,
   workerToolActivity = {},
 }: {
-  agentSessionId: string;
+  conversationId: string;
   refreshKey?: number;
   onCountChange?: (count: number) => void;
   onActionsChange?: (actions: ReactNode) => void;
@@ -84,7 +84,7 @@ export default function WorkersPanel({
     if (!hasData.current) setLoading(true);
     setError(null);
     try {
-      const result = await PrismService.getCoordinatorWorkers(agentSessionId);
+      const result = await PrismService.getCoordinatorWorkers(conversationId);
       const list = result.workers || [];
       setWorkers(list);
       onCountChange?.(list.length);
@@ -95,13 +95,13 @@ export default function WorkersPanel({
     } finally {
       setLoading(false);
     }
-  }, [agentSessionId, onCountChange]);
+  }, [conversationId, onCountChange]);
 
   // Reset on session change
   useEffect(() => {
     hasData.current = false;
     setWorkers([]);
-  }, [agentSessionId]);
+  }, [conversationId]);
 
   // Initial load + external refresh
   useEffect(() => {

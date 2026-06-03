@@ -57,7 +57,7 @@ interface TaskSummary {
 interface TasksPanelProps {
   project?: string;
   refreshKey?: number;
-  agentSessionId?: string;
+  conversationId?: string;
   onCountChange?: (count: number) => void;
   onActionsChange?: (actions: ReactNode) => void;
 }
@@ -72,7 +72,7 @@ interface TasksPanelProps {
 export default function TasksPanel({
   project,
   refreshKey,
-  agentSessionId,
+  conversationId,
   onCountChange,
   onActionsChange,
 }: TasksPanelProps) {
@@ -103,7 +103,7 @@ export default function TasksPanel({
     try {
       const result = await ToolsApiService.getAllAgenticTasks({
         status: statusFilter || undefined,
-        agentSessionId: agentSessionId || undefined,
+        conversationId: conversationId || undefined,
       });
       setTasks((result.tasks || []) as AgenticTask[]);
       setSummary((result.summary || null) as TaskSummary | null);
@@ -115,14 +115,14 @@ export default function TasksPanel({
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, agentSessionId, onCountChange]);
+  }, [statusFilter, conversationId, onCountChange]);
 
   // Reset on session change (new conversation = clean slate)
   useEffect(() => {
     hasData.current = false;
     setTasks([]);
     setSummary(null);
-  }, [agentSessionId]);
+  }, [conversationId]);
 
   // Single effect — fires on mount, refreshKey changes, and statusFilter/session changes
   useEffect(() => {

@@ -313,7 +313,7 @@ export default function AdminChatViewerComponent({
     if (!selectedId || selectedSource !== "agent_session") return;
 
     let cancelled = false;
-    IrisService.getRequests({ agentSessionId: selectedId, limit: 1 })
+    IrisService.getRequests({ conversationId: selectedId, limit: 1 })
       .then((res) => {
         if (cancelled) return;
         const firstReq = res.data?.[0] as TransformedRequestItem | undefined;
@@ -626,7 +626,7 @@ export default function AdminChatViewerComponent({
         .then((stats) => setBackendSessionStats(stats))
         .catch(() => setBackendSessionStats(null));
 
-      ToolsApiService.getAllAgenticTasks({ agentSessionId: selectedId })
+      ToolsApiService.getAllAgenticTasks({ conversationId: selectedId })
         .then((result) => setTasksCount(result.summary?.total || (result.tasks || []).length))
         .catch(() => setTasksCount(0));
 
@@ -1077,7 +1077,7 @@ export default function AdminChatViewerComponent({
                   <>
                     <SidebarTabHeaderComponent icon={BotMessageSquare} title="Workers" count={workersCount} />
                     <WorkersPanel
-                      agentSessionId={selectedId || ""}
+                      conversationId={selectedId || ""}
                       refreshKey={0}
                       onCountChange={setWorkersCount}
                       workerToolActivity={{}}
@@ -1088,7 +1088,7 @@ export default function AdminChatViewerComponent({
                   <>
                     <SidebarTabHeaderComponent icon={Activity} title="Requests" count={backendSessionStats?.requestCount || 0} />
                     <SessionRequestsListComponent
-                      agentSessionId={selectedId}
+                      conversationId={selectedId}
                       refreshKey={0}
                     />
                   </>
@@ -1174,7 +1174,7 @@ export default function AdminChatViewerComponent({
                     <TasksPanel
                       project={targetProject || PROJECT_AGENT}
                       refreshKey={0}
-                      agentSessionId={selectedId}
+                      conversationId={selectedId}
                       onCountChange={setTasksCount}
                     />
                   </>

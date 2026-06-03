@@ -944,10 +944,10 @@ export default class PrismService {
 
    */
   static async getCoordinatorWorkers(
-    agentSessionId?: string,
+    conversationId?: string,
   ): Promise<{ workers: CoordinatorWorker[] }> {
-    const queryString = agentSessionId
-      ? `?agentSessionId=${encodeURIComponent(agentSessionId)}`
+    const queryString = conversationId
+      ? `?conversationId=${encodeURIComponent(conversationId)}`
       : "";
     return PrismService._request<{ workers: CoordinatorWorker[] }>(
       `/coordinator/workers${queryString}`,
@@ -962,13 +962,13 @@ export default class PrismService {
 
    */
   static async stopCoordinatorWorkers(
-    agentSessionId: string,
+    conversationId: string,
   ): Promise<{ stopped: string[]; alreadyStopped: string[] }> {
     return PrismService._request<{
       stopped: string[];
       alreadyStopped: string[];
     }>("/coordinator/workers/stop", {
-      body: { agentSessionId },
+      body: { conversationId },
     });
   }
 
@@ -1074,12 +1074,12 @@ export default class PrismService {
 
    */
   static async sendApprovalResponse(
-    agentSessionId: string,
+    conversationId: string,
     approved: boolean,
     { approveAll }: { approveAll?: boolean } = {},
   ): Promise<ApprovalResponse> {
     return PrismService._request<ApprovalResponse>("/agent/approve", {
-      body: { agentSessionId, approved, ...(approveAll ? { approveAll } : {}) },
+      body: { conversationId, approved, ...(approveAll ? { approveAll } : {}) },
     });
   }
 
@@ -1088,17 +1088,17 @@ export default class PrismService {
 
    */
   static async sendUserQuestionAnswer(
-    agentSessionId: string,
+    conversationId: string,
     answerOrAnswers:
       | string
       | Array<{ answer: string | string[]; annotations?: string }>,
   ): Promise<{ ok: boolean }> {
     // Normalize: structured array vs simple string
     const body: {
-      agentSessionId: string;
+      conversationId: string;
       answer?: string;
       answers?: Array<{ answer: string | string[]; annotations?: string }>;
-    } = { agentSessionId };
+    } = { conversationId };
     if (Array.isArray(answerOrAnswers)) {
       body.answers = answerOrAnswers;
     } else {
@@ -1111,11 +1111,11 @@ export default class PrismService {
    * Upload a video/webcam frame for the active agentic session.
    */
   static async uploadVisionFrame(
-    agentSessionId: string,
+    conversationId: string,
     frameDataUrl: string,
   ): Promise<{ ok: boolean }> {
     return PrismService._request<{ ok: boolean }>(
-      `/agent/session/${agentSessionId}/frame`,
+      `/agent/session/${conversationId}/frame`,
       {
         method: "POST",
         body: { frameDataUrl },

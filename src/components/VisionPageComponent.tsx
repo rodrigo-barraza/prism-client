@@ -71,7 +71,7 @@ export default function VisionPageComponent() {
 
   // ── Agent mode state ────────────────────────────────────────────
   const [mode, setMode] = useState<"analysis" | "agent">("analysis");
-  const [agentSessionId] = useState(
+  const [conversationId] = useState(
     () => "vision-agent-" + Math.random().toString(36).substring(2, 15),
   );
   const [chatMessages, setChatMessages] = useState<any[]>([]);
@@ -467,14 +467,14 @@ export default function VisionPageComponent() {
       if (!frameDataUrl) return;
 
       try {
-        await PrismService.uploadVisionFrame(agentSessionId, frameDataUrl);
+        await PrismService.uploadVisionFrame(conversationId, frameDataUrl);
       } catch (error: unknown) {
         console.warn("[VisionAgent] Live frame upload failed:", error);
       }
     }, 2000);
 
     return () => clearInterval(uploadInterval);
-  }, [mode, isStreaming, agentSessionId, captureFrame]);
+  }, [mode, isStreaming, conversationId, captureFrame]);
 
   // Auto-scroll chat area when messages update
   useEffect(() => {
@@ -531,7 +531,7 @@ export default function VisionPageComponent() {
           model: settings.model,
           messages: messagesPayload,
           harness: "vision_language",
-          agentSessionId,
+          conversationId,
           temperature: 0.5,
           maxTokens: 2048,
         } as any,
@@ -621,7 +621,7 @@ export default function VisionPageComponent() {
       setIsAgentStreaming(false);
       setActiveMessageId(null);
     }
-  }, [chatInput, chatMessages, settings, agentSessionId]);
+  }, [chatInput, chatMessages, settings, conversationId]);
 
   // ── Model selection ────────────────────────────────────────────
 
