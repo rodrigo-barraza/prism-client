@@ -93,11 +93,6 @@ const USER_NAV_SECTIONS: NavigationSection[] = [
         alsoMatches: ["/coding-agent"],
       },
       {
-        href: "/agents",
-        label: "Agents",
-        icon: Bot,
-      },
-      {
         href: "/cron-jobs",
         label: "Cron Jobs",
         icon: Clock,
@@ -108,6 +103,11 @@ const USER_NAV_SECTIONS: NavigationSection[] = [
   {
     label: "Information",
     items: [
+      {
+        href: "/agents",
+        label: "Agents",
+        icon: Bot,
+      },
       { href: "/models", label: "Models", icon: Server },
       { href: "/tools", label: "Tools", icon: Wrench },
     ],

@@ -945,9 +945,16 @@ export default function AgentsPageComponent({
 
             {/* Allowed tools list */}
             <div className={styles["form-group-container"]}>
-              <label>Enabled System Tools ({selectedBuiltInAgent.enabledToolNames?.length || 0})</label>
+              <label>Enabled System Tools ({
+                selectedBuiltInAgent.enabledToolNames?.includes("*")
+                  ? availableTools.length
+                  : (selectedBuiltInAgent.enabledToolNames?.length || 0)
+              })</label>
               <div className={styles["tool-grid-layout"]}>
-                {selectedBuiltInAgent.enabledToolNames?.map((toolName) => (
+                {(selectedBuiltInAgent.enabledToolNames?.includes("*")
+                  ? availableTools.map((tool) => tool.name)
+                  : (selectedBuiltInAgent.enabledToolNames || [])
+                ).map((toolName) => (
                   <div key={toolName} className={styles["tool-badge-item"]}>
                     <Wrench size={10} style={{ opacity: 0.6 }} />
                     <span>{toolName}</span>
