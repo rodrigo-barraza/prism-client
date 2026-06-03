@@ -286,22 +286,24 @@
 }
 
 /* ── Twilight Mode ───────────────────────────────────────── */
-/* Dark-mode sibling of Daylight — achromatic dark-gray accents
-   over cool dark surfaces, yielding a dark sidebar aesthetic. */
+/* Dark-mode sibling of Daylight — achromatic silver-gray accents
+   over cool dark surfaces, yielding a muted, desaturated aesthetic.
+   Accent lightness is set high enough (~65%) for foreground contrast
+   against the dark surfaces while remaining visually neutral. */
 
 [data-theme="twilight"] {
-  --accent-primary: oklch(22.0% 0.0 0.0);
-  --calculated-accent-primary-hover: oklch(16.0% 0.0 0.0);
-  --calculated-accent-primary-glow: oklch(22.0% 0.0 0.0 / 0.15);
-  --calculated-accent-primary-subtle: oklch(22.0% 0.0 0.0 / 0.05);
-  --calculated-accent-primary-contrast: oklch(100.0% 0.0001 263.3 / 0.92);
-  --calculated-shadow-glow: 0 0 20px oklch(22.0% 0.0 0.0 / 0.06);
+  --accent-primary: oklch(65.0% 0.0 0.0);
+  --calculated-accent-primary-hover: oklch(75.0% 0.0 0.0);
+  --calculated-accent-primary-glow: oklch(65.0% 0.0 0.0 / 0.2);
+  --calculated-accent-primary-subtle: oklch(65.0% 0.0 0.0 / 0.08);
+  --calculated-accent-primary-contrast: oklch(0.0% 0.0 0.0 / 0.87);
+  --calculated-shadow-glow: 0 0 20px oklch(65.0% 0.0 0.0 / 0.1);
 
-  --accent-secondary: oklch(38.0% 0.0 0.0);
-  --calculated-accent-secondary-hover: oklch(30.0% 0.0 0.0);
-  --calculated-accent-secondary-glow: oklch(38.0% 0.0 0.0 / 0.15);
-  --calculated-accent-secondary-subtle: oklch(38.0% 0.0 0.0 / 0.05);
-  --accent-tertiary: oklch(50.0% 0.0 0.0);
+  --accent-secondary: oklch(55.0% 0.0 0.0);
+  --calculated-accent-secondary-hover: oklch(65.0% 0.0 0.0);
+  --calculated-accent-secondary-glow: oklch(55.0% 0.0 0.0 / 0.2);
+  --calculated-accent-secondary-subtle: oklch(55.0% 0.0 0.0 / 0.08);
+  --accent-tertiary: oklch(45.0% 0.0 0.0);
 }
 
 /* ── Body Overrides ────────────────────────────────────────── */
