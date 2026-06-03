@@ -1,0 +1,108 @@
+/* ── ToolsSidebarNavigationComponent ───────────────────────────── */
+
+.tools-sidebar-navigation {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  padding-block: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ── Header ──────────────────────────────────────────────────────── */
+
+.navigation-header {
+  padding-block: 16px 12px;
+  padding-inline: 20px;
+  border-block-end: 1px solid var(--calculated-border-subtle);
+}
+
+.navigation-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+/* ── Navigation list ─────────────────────────────────────────────── */
+
+.navigation-list {
+  list-style: none;
+  margin: 0;
+  padding-block: 8px 16px;
+  padding-inline: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Navigation item ─────────────────────────────────────────────── */
+
+.navigation-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  padding-block: 9px;
+  padding-inline: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: start;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--accent-primary) 5%, transparent);
+    color: var(--text-secondary);
+  }
+
+  &.is-active-state {
+    background-color: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+    color: var(--text-primary);
+
+    & svg {
+      color: var(--accent-primary);
+    }
+  }
+}
+
+/* ── Active indicator bar ────────────────────────────────────────── */
+
+.active-indicator {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  inline-size: 3px;
+  block-size: 18px;
+  border-radius: 0 3px 3px 0;
+  background-color: var(--accent-primary);
+  animation: indicator-slide-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes indicator-slide-in {
+  from {
+    opacity: 0;
+    scale: 1 0.4;
+  }
+  to {
+    opacity: 1;
+    scale: 1 1;
+  }
+}
+
+/* ── Label ───────────────────────────────────────────────────────── */
+
+.navigation-item-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

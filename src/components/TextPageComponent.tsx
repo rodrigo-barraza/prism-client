@@ -147,19 +147,19 @@ export default function TextPageComponent({
           </div>
 
           <div className={styles.page}>
+            <SearchInputComponent
+              value={searchInput}
+              onChange={(value: any) => {
+                setSearchInput(value);
+                setSearch(value);
+                setPage(1);
+              }}
+              placeholder="Search text…"
+              className={styles["search-input-container"]}
+            />
+
             {/* Filters */}
             <FilterBarComponent>
-              <SearchInputComponent
-                value={searchInput}
-                onChange={(value: any) => {
-                  setSearchInput(value);
-                  setSearch(value);
-                  setPage(1);
-                }}
-                placeholder="Search text…"
-                compact
-                className={styles.searchWrapper}
-              />
 
               <FilterDropdownComponent
                 groups={[
@@ -318,19 +318,19 @@ export default function TextPageComponent({
         </div>
       ) : (
         <div className={styles.adminPage}>
+          <SearchInputComponent
+            value={searchInput}
+            onChange={(value: any) => {
+              setSearchInput(value);
+              setSearch(value);
+              setPage(1);
+            }}
+            placeholder="Search text…"
+            className={styles["search-input-container"]}
+          />
+
           {/* Filters */}
           <FilterBarComponent>
-            <SearchInputComponent
-              value={searchInput}
-              onChange={(value: any) => {
-                setSearchInput(value);
-                setSearch(value);
-                setPage(1);
-              }}
-              placeholder="Search text…"
-              compact
-              className={styles.searchWrapper}
-            />
 
             <FilterDropdownComponent
               groups={[

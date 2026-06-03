@@ -1518,8 +1518,8 @@ function ModelsTableInner({
 
   return (
     <div className={styles.container}>
-      <FilterBarComponent className={styles.toolbar}>
-        {showSearch && (
+      {showSearch && (
+        <FilterBarComponent className={styles.toolbar}>
           <SearchInputComponent
             value={searchQuery}
             onChange={setSearchQuery}
@@ -1527,107 +1527,108 @@ function ModelsTableInner({
             compact
             className={styles.searchWrapper}
           />
-        )}
-        <FilterDropdownComponent
-          groups={[
-            ...(onToggleFavorite && favorites.length > 0
-              ? [
-                  {
-                    label: "Favorites",
-                    items: [
-                      {
-                        key: "favorites",
-                        icon: Star,
-                        title: "Favorites Only",
-                        color: "#f59e0b",
-                      },
-                    ],
-                    activeKeys: showFavoritesOnly ? "favorites" : null,
-                    isSingleSelect: true,
-                    onToggle: () =>
-                      setShowFavoritesOnly((previousFavoritesOnly: boolean) => !previousFavoritesOnly),
-                  },
-                ]
-              : []),
-            ...(allModalities.length >= 2
-              ? [
-                  {
-                    label: "Modality",
-                    items: allModalities
-                      .map((modality: string) => {
-                        const modalityEntry = (
-                          MODALITY_ICONS as Record<
-                            string,
-                            { icon: React.ElementType; label: string }
-                          >
-                        )[modality];
-                        return modalityEntry
-                          ? {
-                              key: modality,
-                              icon: modalityEntry.icon as React.ComponentType<any>,
-                              color: (
-                                MODALITY_COLORS as Record<string, string>
-                              )[modality],
-                              title: modalityEntry.label,
-                            }
-                          : null;
-                      })
-                      .filter(
-                        (item): item is NonNullable<typeof item> =>
-                          item !== null,
-                      ),
-                    activeKeys: activeModality,
-                    isSingleSelect: true,
-                    onToggle: setActiveModality,
-                  },
-                ]
-              : []),
-            ...(allTools.length >= 2
-              ? [
-                  {
-                    label: "Tools",
-                    items: allTools
-                      .map((toolName: string) => {
-                        const Icon = (
-                          TOOL_ICONS as Record<string, React.ElementType>
-                        )[toolName];
-                        return Icon
-                          ? {
-                              key: toolName,
-                              icon: Icon as React.ComponentType<any>,
-                              color: (TOOL_COLORS as Record<string, string>)[toolName],
-                              title: toolName,
-                            }
-                          : null;
-                      })
-                      .filter(
-                        (item): item is NonNullable<typeof item> =>
-                          item !== null,
-                      ),
-                    activeKeys: activeTool,
-                    isSingleSelect: true,
-                    onToggle: setActiveTool,
-                  },
-                ]
-              : []),
-            ...(showProviderFilter && allProviders.length >= 2
-              ? [
-                  {
-                    label: "Providers",
-                    items: allProviders.map((provider: string) => ({
-                      key: provider,
-                      icon: () => <ProviderLogo provider={provider} size={13} />,
-                      title: resolveProviderLabel(provider),
-                    })),
-                    activeKeys: activeProvider,
-                    isSingleSelect: true,
-                    onToggle: setActiveProvider,
-                  },
-                ]
-              : []),
-          ]}
-        />
-      </FilterBarComponent>
+        </FilterBarComponent>
+      )}
+
+      <FilterDropdownComponent
+        groups={[
+          ...(onToggleFavorite && favorites.length > 0
+            ? [
+                {
+                  label: "Favorites",
+                  items: [
+                    {
+                      key: "favorites",
+                      icon: Star,
+                      title: "Favorites Only",
+                      color: "#f59e0b",
+                    },
+                  ],
+                  activeKeys: showFavoritesOnly ? "favorites" : null,
+                  isSingleSelect: true,
+                  onToggle: () =>
+                    setShowFavoritesOnly((previousFavoritesOnly: boolean) => !previousFavoritesOnly),
+                },
+              ]
+            : []),
+          ...(allModalities.length >= 2
+            ? [
+                {
+                  label: "Modality",
+                  items: allModalities
+                    .map((modality: string) => {
+                      const modalityEntry = (
+                        MODALITY_ICONS as Record<
+                          string,
+                          { icon: React.ElementType; label: string }
+                        >
+                      )[modality];
+                      return modalityEntry
+                        ? {
+                            key: modality,
+                            icon: modalityEntry.icon as React.ComponentType<any>,
+                            color: (
+                              MODALITY_COLORS as Record<string, string>
+                            )[modality],
+                            title: modalityEntry.label,
+                          }
+                        : null;
+                    })
+                    .filter(
+                      (item): item is NonNullable<typeof item> =>
+                        item !== null,
+                    ),
+                  activeKeys: activeModality,
+                  isSingleSelect: true,
+                  onToggle: setActiveModality,
+                },
+              ]
+            : []),
+          ...(allTools.length >= 2
+            ? [
+                {
+                  label: "Tools",
+                  items: allTools
+                    .map((toolName: string) => {
+                      const Icon = (
+                        TOOL_ICONS as Record<string, React.ElementType>
+                      )[toolName];
+                      return Icon
+                        ? {
+                            key: toolName,
+                            icon: Icon as React.ComponentType<any>,
+                            color: (TOOL_COLORS as Record<string, string>)[toolName],
+                            title: toolName,
+                          }
+                        : null;
+                    })
+                    .filter(
+                      (item): item is NonNullable<typeof item> =>
+                        item !== null,
+                    ),
+                  activeKeys: activeTool,
+                  isSingleSelect: true,
+                  onToggle: setActiveTool,
+                },
+              ]
+            : []),
+          ...(showProviderFilter && allProviders.length >= 2
+            ? [
+                {
+                  label: "Providers",
+                  items: allProviders.map((provider: string) => ({
+                    key: provider,
+                    icon: () => <ProviderLogo provider={provider} size={13} />,
+                    title: resolveProviderLabel(provider),
+                  })),
+                  activeKeys: activeProvider,
+                  isSingleSelect: true,
+                  onToggle: setActiveProvider,
+                },
+              ]
+            : []),
+        ]}
+      />
 
       <TableComponent
         title={title}

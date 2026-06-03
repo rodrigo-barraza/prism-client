@@ -15,9 +15,11 @@
   animation: fadeIn var(--transition-normal) ease-out;
 }
 
-.searchWrapper {
-  flex: 1;
+.search-input-container {
+  width: 100%;
+  margin-bottom: 16px;
 }
+
 
 /* ── Header ────────────────────────────────────────────────── */
 

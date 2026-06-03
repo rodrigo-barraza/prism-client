@@ -8,7 +8,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
@@ -104,6 +104,9 @@ import {
 } from "lucide-react";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./ToolsPageComponent.module.css";
+import ThreePanelLayout from "./ThreePanelLayoutComponent";
+import NavigationSidebarComponent from "./NavigationSidebarComponent";
+import ToolsSidebarNavigationComponent from "./ToolsSidebarNavigationComponent";
 import { humanizeToolName, formatCostAdaptive, formatCompact, formatLatencyMs, timeAgo as formatTimeAgo } from "@rodrigo-barraza/utilities-library";
 // -- Agent color mapping (stable hues per built-in agent) -------
 const AGENT_COLORS = {
@@ -737,6 +740,7 @@ function ToolRow({
 // -- Main Component -----------------------------------------------
 
 export default function ToolsPageComponent() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [tools, setTools] = useState<ClientToolSchema[]>([]);
   const [agents, setAgents] = useState<AgentMinimal[]>([]);
   const [toolStats, setToolStats] = useState<Record<string, ExtendedToolStats>>(
@@ -1100,64 +1104,79 @@ export default function ToolsPageComponent() {
 
   if (loading) {
     return (
-      <div className={styles.container}>
-        <div className={styles.isLoadingState}>
-          <PanelLoadingSpinner size="large" />
-          <span className={styles.loadingText}>Loading tools from Prism…</span>
+      <ThreePanelLayout
+        navSidebar={<NavigationSidebarComponent mode="user" />}
+        leftPanel={null}
+        leftTitle="Domains"
+        title="Tools"
+      >
+        <div className={styles.container}>
+          <div className={styles.isLoadingState}>
+            <PanelLoadingSpinner size="large" />
+            <span className={styles.loadingText}>Loading tools from Prism…</span>
+          </div>
         </div>
-      </div>
+      </ThreePanelLayout>
     );
   }
 
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.title}>
-            <Wrench className={styles.titleIcon} size={22} />
-            Tools
-          </h1>
-          <p className={styles.subtitle}>
-            All available tool schemas from the Tools API — used for agentic
-            function calling.
-          </p>
-        </div>
-
-        <div className={styles.headerRight}>
-          {/* Stats */}
-          <div className={styles.statsBadges}>
-            <div className={styles.statBadge}>
-              <span className={styles.statValue}>{tools.length}</span> tools
-            </div>
-            <div className={styles.statBadge}>
-              <span className={styles.statValue}>{allDomains.length}</span>{" "}
-              domains
-            </div>
-            <div className={styles.statBadge}>
-              <span className={styles.statValue}>{allLabels.length}</span>{" "}
-              labels
-            </div>
+    <ThreePanelLayout
+      navSidebar={<NavigationSidebarComponent mode="user" />}
+      leftPanel={
+        <ToolsSidebarNavigationComponent
+          domains={allDomains}
+          scrollContainerRef={scrollContainerRef}
+        />
+      }
+      leftTitle="Domains"
+      title="Tools"
+      headerMeta={
+        <div className={styles.statsBadges}>
+          <div className={styles.statBadge}>
+            <span className={styles.statValue}>{tools.length}</span> tools
           </div>
-
-          <button
-            className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
-            onClick={handleRefresh}
-            disabled={refreshing}
-            title="Re-fetch schemas from tools-api"
-          >
-            <RefreshCw /> Refresh
-          </button>
+          <div className={styles.statBadge}>
+            <span className={styles.statValue}>{allDomains.length}</span>{" "}
+            domains
+          </div>
+          <div className={styles.statBadge}>
+            <span className={styles.statValue}>{allLabels.length}</span>{" "}
+            labels
+          </div>
         </div>
-      </div>
+      }
+      headerControls={
+        <button
+          className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
+          onClick={handleRefresh}
+          disabled={refreshing}
+          title="Re-fetch schemas from tools-api"
+        >
+          <RefreshCw /> Refresh
+        </button>
+      }
+    >
+      <div className={styles.container} ref={scrollContainerRef}>
+        <p className={styles.subtitle}>
+          All available tool schemas from the Tools API — used for agentic
+          function calling.
+        </p>
 
-      {/* Error */}
-      {error && (
-        <div className={styles.error}>
-          <AlertCircle />
-          {error}
-        </div>
-      )}
+        {/* Error */}
+        {error && (
+          <div className={styles.error}>
+            <AlertCircle />
+            {error}
+          </div>
+        )}
+
+      <SearchInputComponent
+        value={search}
+        onChange={setSearch}
+        placeholder="Search tools by name, description, or label…"
+        className={styles["tools-search"]}
+      />
 
       {/* Filter bar */}
       <div className={styles.filterBar}>
@@ -1219,13 +1238,6 @@ export default function ToolsPageComponent() {
         </div>
       </div>
 
-      <SearchInputComponent
-        value={search}
-        onChange={setSearch}
-        placeholder="Search tools by name, description, or label…"
-        className={styles["tools-search"]}
-      />
-
       {/* Tools display */}
       {filtered.length === 0 ? (
         <div className={styles.emptyState}>
@@ -1248,7 +1260,11 @@ export default function ToolsPageComponent() {
           ([domain, domainTools]: [string, ClientToolSchema[]]) => {
             const DomainIcon = getDomainIcon(domain);
             return (
-              <div key={domain} className={styles.domainSection}>
+              <div
+                key={domain}
+                className={styles.domainSection}
+                data-domain-section={domain}
+              >
                 <div className={styles.domainHeader}>
                   <DomainIcon className={styles.domainIcon} />
                   <h2>{domain}</h2>
@@ -1327,5 +1343,6 @@ export default function ToolsPageComponent() {
         />
       )}
     </div>
+    </ThreePanelLayout>
   );
 }

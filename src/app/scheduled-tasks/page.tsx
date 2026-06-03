@@ -887,44 +887,6 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     {filteredTasks.length} total
                   </span>
                 </div>
-
-                <div className={styles.headerActions}>
-                  <SelectComponent
-                    multiple
-                    icon={<ArrowUpDown size={12} />}
-                    value={activeSortKeys}
-                    options={sortOptions}
-                    onChange={setActiveSortKeys}
-                    allLabel="Default"
-                    compact
-                  />
-
-                  <ViewModeToggleComponent
-                    mode={viewMode}
-                    onChange={setViewMode}
-                    modes={[
-                      { key: "card", icon: LayoutGrid, title: "Card view" },
-                      { key: "table", icon: List, title: "Table view" },
-                      {
-                        key: "calendar",
-                        icon: CalendarDays,
-                        title: "Calendar view",
-                      },
-                    ]}
-                  />
-
-                  <button
-                    onClick={() => {
-                      resetFormFields();
-                      setShowNewModal(true);
-                    }}
-                    className={styles.newButton}
-                    title="Create Scheduled Task"
-                  >
-                    <Plus size={16} />
-                    <span>New</span>
-                  </button>
-                </div>
               </div>
 
               <SearchInputComponent
@@ -933,6 +895,44 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                 placeholder="Search scheduled tasks…"
                 className={styles.tasksSearch}
               />
+
+              <div className={styles.headerActions}>
+                <SelectComponent
+                  multiple
+                  icon={<ArrowUpDown size={12} />}
+                  value={activeSortKeys}
+                  options={sortOptions}
+                  onChange={setActiveSortKeys}
+                  allLabel="Default"
+                  compact
+                />
+
+                <ViewModeToggleComponent
+                  mode={viewMode}
+                  onChange={setViewMode}
+                  modes={[
+                    { key: "card", icon: LayoutGrid, title: "Card view" },
+                    { key: "table", icon: List, title: "Table view" },
+                    {
+                      key: "calendar",
+                      icon: CalendarDays,
+                      title: "Calendar view",
+                    },
+                  ]}
+                />
+
+                <button
+                  onClick={() => {
+                    resetFormFields();
+                    setShowNewModal(true);
+                  }}
+                  className={styles.newButton}
+                  title="Create Scheduled Task"
+                >
+                  <Plus size={16} />
+                  <span>New</span>
+                </button>
+              </div>
             </header>
 
             {/* Task Content */}
