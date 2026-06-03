@@ -37,7 +37,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import ToolIconComponent from "./ToolIconComponent";
 import FilterDropdownComponent from "./FilterDropdownComponent";
-import { FilterBarComponent } from "./FilterBarComponent";
+
 import ProportionBarComponent from "./ProportionBarComponent";
 import BadgeComponent from "./BadgeComponent";
 import { formatFileSize, formatContextTokens, formatNumber, formatTokenCount, formatLatency, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
@@ -1519,15 +1519,13 @@ function ModelsTableInner({
   return (
     <div className={styles.container}>
       {showSearch && (
-        <FilterBarComponent className={styles.toolbar}>
-          <SearchInputComponent
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search models…"
-            compact
-            className={styles.searchWrapper}
-          />
-        </FilterBarComponent>
+        <SearchInputComponent
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search models…"
+          compact
+          className={styles.searchWrapper}
+        />
       )}
 
       <FilterDropdownComponent

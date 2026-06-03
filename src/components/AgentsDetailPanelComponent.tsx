@@ -224,7 +224,7 @@ export default function AgentsDetailPanelComponent({
   };
 
   const handleCropComplete = (croppedDataUrl: string) => {
-    onUpdateField("icon", croppedDataUrl);
+    onUpdateField("avatar", croppedDataUrl);
     setPendingImageFile(null);
     if (fileInputReference.current) {
       fileInputReference.current.value = "";
@@ -256,6 +256,7 @@ export default function AgentsDetailPanelComponent({
               agent={{
                 id: editingAgent?.agentId || selectedBuiltInAgent?.id || "NEW",
                 icon: editingAgent?.icon || selectedBuiltInAgent?.icon || "Bot",
+                avatar: editingAgent?.avatar || selectedBuiltInAgent?.avatar || "",
                 color: currentAccentColor,
               }}
               size={64}
@@ -360,18 +361,18 @@ export default function AgentsDetailPanelComponent({
               </button>
 
               {/* Custom Image Preview Option */}
-              {editingAgent.icon &&
-                (editingAgent.icon.startsWith("data:") ||
-                  editingAgent.icon.startsWith("http")) && (
+              {editingAgent.avatar &&
+                (editingAgent.avatar.startsWith("data:") ||
+                  editingAgent.avatar.startsWith("http")) && (
                   <button
                     type="button"
                     className={styles["icon-option-button"]}
                     data-is-selected={true}
-                    onClick={() => onUpdateField("icon", editingAgent.icon)}
+                    onClick={() => onUpdateField("avatar", editingAgent.avatar)}
                     title="Custom Avatar Image"
                   >
                     <img
-                      src={editingAgent.icon}
+                      src={editingAgent.avatar}
                       alt="Custom Avatar"
                       className={styles["custom-icon-preview"]}
                     />

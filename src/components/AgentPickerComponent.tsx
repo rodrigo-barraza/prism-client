@@ -43,7 +43,7 @@ const AGENT_ICONS: Record<string, any> = {
   IMAGE: Palette,
 };
 
-/** Render the correct icon for an agent — image logo > custom icon field > built-in map. */
+/** Render the correct icon for an agent — image logo > avatar > icon > built-in map. */
 export function renderAgentIcon(agent: any, size = 15) {
   // Image-based agent logos (e.g. OMNI)
   const imageSrc = AGENT_IMAGES[agent?.id];
@@ -58,24 +58,20 @@ export function renderAgentIcon(agent: any, size = 15) {
       />
     );
   }
-  // Custom agents store an icon name string or a custom image URI/DataURL
+  // Avatar field — image URL or data URL for custom avatar images
+  if (typeof agent?.avatar === "string" && agent.avatar) {
+    return (
+      <img
+        src={agent.avatar}
+        alt={agent?.name || agent?.id}
+        width={size}
+        height={size}
+        style={{ objectFit: "cover", borderRadius: "50%" }}
+      />
+    );
+  }
+  // Icon field — Lucide icon name string (e.g. "Bot", "Skull", "Palette")
   if (typeof agent?.icon === "string" && agent.icon) {
-    if (
-      agent.icon.startsWith("data:") ||
-      agent.icon.startsWith("http://") ||
-      agent.icon.startsWith("https://") ||
-      agent.icon.startsWith("/")
-    ) {
-      return (
-        <img
-          src={agent.icon}
-          alt={agent?.name || agent?.id}
-          width={size}
-          height={size}
-          style={{ objectFit: "cover", borderRadius: "50%" }}
-        />
-      );
-    }
     const Resolved = resolveIconComponent(agent.icon) as any;
     return <Resolved size={size} />;
   }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { SearchInputComponent } from "@rodrigo-barraza/components-library";
 import {
   Wrench,
   Cloud,
@@ -78,8 +79,17 @@ export default function ToolsSidebarNavigationComponent({
   scrollContainerRef,
 }: ToolsSidebarNavigationProps) {
   const [activeDomainId, setActiveDomainId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isUserScrolling = useRef(true);
+
+  const filteredDomains = useMemo(() => {
+    if (!searchQuery.trim()) return domains;
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+    return domains.filter((domain) =>
+      domain.toLowerCase().includes(normalizedQuery),
+    );
+  }, [domains, searchQuery]);
 
   useEffect(() => {
     if (domains.length > 0 && !activeDomainId) {
@@ -161,31 +171,43 @@ export default function ToolsSidebarNavigationComponent({
       className={styles["tools-sidebar-navigation"]}
       aria-label="Tools domains"
     >
-      <div className={styles["navigation-header"]}>
-        <span className={styles["navigation-title"]}>Domains</span>
+      <div className={styles["sidebar-search-wrapper"]}>
+        <SearchInputComponent
+          id="input-tools-sidebar-domain-search"
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search domains…"
+          compact
+        />
       </div>
       <ul className={styles["navigation-list"]}>
-        {domains.map((domain) => {
-          const IconComponent = getDomainIcon(domain);
-          const isActive = activeDomainId === domain;
-          return (
-            <li key={domain}>
-              <button
-                className={`${styles["navigation-item"]} ${isActive ? styles["is-active-state"] : ""}`}
-                onClick={() => handleDomainClick(domain)}
-                aria-current={isActive ? "true" : undefined}
-              >
-                <IconComponent size={15} />
-                <span className={styles["navigation-item-label"]}>
-                  {domain}
-                </span>
-                {isActive && (
-                  <span className={styles["active-indicator"]} />
-                )}
-              </button>
-            </li>
-          );
-        })}
+        {filteredDomains.length === 0 ? (
+          <li className={styles["empty-search-message"]}>
+            No domains match your search.
+          </li>
+        ) : (
+          filteredDomains.map((domain) => {
+            const IconComponent = getDomainIcon(domain);
+            const isActive = activeDomainId === domain;
+            return (
+              <li key={domain}>
+                <button
+                  className={`${styles["navigation-item"]} ${isActive ? styles["is-active-state"] : ""}`}
+                  onClick={() => handleDomainClick(domain)}
+                  aria-current={isActive ? "true" : undefined}
+                >
+                  <IconComponent size={15} />
+                  <span className={styles["navigation-item-label"]}>
+                    {domain}
+                  </span>
+                  {isActive && (
+                    <span className={styles["active-indicator"]} />
+                  )}
+                </button>
+              </li>
+            );
+          })
+        )}
       </ul>
     </nav>
   );

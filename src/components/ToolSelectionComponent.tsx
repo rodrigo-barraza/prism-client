@@ -37,7 +37,6 @@ import {
   FlaskConical,
   Lock,
   Brain,
-  CheckSquare,
 } from "lucide-react";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import {
@@ -588,10 +587,10 @@ export default function ToolSelectionComponent({
           compact
           fullWidth
           segments={[
-            { value: "domain", label: "Domain", icon: <FolderOpen size={11} /> },
-            { value: "label", label: "Label", icon: <Tag size={11} /> },
-            { value: "tier", label: "Tier", icon: <Brain size={11} /> },
-            { value: "selected", label: "Selected", icon: <CheckSquare size={11} /> },
+            { value: "domain", label: "Domain" },
+            { value: "label", label: "Label" },
+            { value: "tier", label: "Tier" },
+            { value: "selected", label: "Selected" },
           ] satisfies SegmentDefinition[]}
         />
       </div>

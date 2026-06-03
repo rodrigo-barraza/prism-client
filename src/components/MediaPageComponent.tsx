@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { usePersistedState } from "../hooks/usePersistedState";
 import {
   Image as ImageIcon,
   Music,
@@ -141,7 +142,10 @@ export default function MediaPageComponent({
   const [model, setModel] = useState("");
   const [providers, setProviders] = useState<string[]>([]);
   const [models, setModels] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = usePersistedState(
+    `media-page:view-mode:${mode}`,
+    "grid",
+  );
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
@@ -377,23 +381,23 @@ export default function MediaPageComponent({
           </div>
 
           <div className={styles.content}>
+            <SearchInputComponent
+              value={searchInput}
+              onChange={(v: any) => {
+                setSearchInput(v);
+                clearTimeout(searchTimerRef.current);
+                searchTimerRef.current = setTimeout(() => {
+                  setSearch(v);
+                  setPage(1);
+                }, 300);
+              }}
+              placeholder="Search titles & conversations…"
+              compact
+              className={styles.searchWrapper}
+            />
+
             {/* Filters */}
             <FilterBarComponent>
-              <SearchInputComponent
-                value={searchInput}
-                onChange={(v: any) => {
-                  setSearchInput(v);
-                  clearTimeout(searchTimerRef.current);
-                  searchTimerRef.current = setTimeout(() => {
-                    setSearch(v);
-                    setPage(1);
-                  }, 300);
-                }}
-                placeholder="Search titles & conversations…"
-                compact
-                className={styles.searchWrapper}
-              />
-
               <FilterDropdownComponent
                 groups={[
                   {
@@ -570,23 +574,23 @@ export default function MediaPageComponent({
         </div>
       ) : (
         <div className={styles.adminContent}>
+          <SearchInputComponent
+            value={searchInput}
+            onChange={(v: any) => {
+              setSearchInput(v);
+              clearTimeout(searchTimerRef.current);
+              searchTimerRef.current = setTimeout(() => {
+                setSearch(v);
+                setPage(1);
+              }, 300);
+            }}
+            placeholder="Search titles & conversations…"
+            compact
+            className={styles.searchWrapper}
+          />
+
           {/* Filters */}
           <FilterBarComponent>
-            <SearchInputComponent
-              value={searchInput}
-              onChange={(v: any) => {
-                setSearchInput(v);
-                clearTimeout(searchTimerRef.current);
-                searchTimerRef.current = setTimeout(() => {
-                  setSearch(v);
-                  setPage(1);
-                }, 300);
-              }}
-              placeholder="Search titles & conversations…"
-              compact
-              className={styles.searchWrapper}
-            />
-
             <FilterDropdownComponent
               groups={[
                 {

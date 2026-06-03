@@ -15,6 +15,7 @@ interface EditableAgentSummary {
   name: string;
   description?: string;
   icon?: string;
+  avatar?: string;
   color?: string;
   enabledTools?: string[];
 }
@@ -133,6 +134,7 @@ export default function AgentsSidebarPanelComponent({
                       agent={{
                         id: agent.agentId,
                         icon: agent.icon,
+                        avatar: agent.avatar,
                         color: agent.color,
                       }}
                       size={28}
@@ -176,6 +178,7 @@ export default function AgentsSidebarPanelComponent({
                       agent={{
                         id: agent.id,
                         icon: agent.icon,
+                        avatar: agent.avatar,
                         color: agent.color,
                       }}
                       size={28}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import { Plus, Trash2, Edit3, Save, X, BookOpen, Sparkles } from "lucide-react";
 import PrismService from "../services/PrismService";
@@ -9,6 +9,7 @@ import {
   ToggleComponent,
   InputComponent,
   TextAreaComponent,
+  SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./SkillsPanelComponent.module.css";
 import type { Skill } from "@/types/types";
@@ -43,6 +44,22 @@ export default function SkillsPanel({
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
     null,
   );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredSkills = useMemo(() => {
+    if (!searchQuery.trim()) return skills;
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    return skills.filter((skill: Skill) => {
+      const name = (skill.name || "").toLowerCase();
+      const description = (skill.description || "").toLowerCase();
+      const content = (skill.content || "").toLowerCase();
+      return (
+        name.includes(normalizedQuery) ||
+        description.includes(normalizedQuery) ||
+        content.includes(normalizedQuery)
+      );
+    });
+  }, [skills, searchQuery]);
 
   // -- CRUD -----------------------------------------------------
 
@@ -278,6 +295,15 @@ export default function SkillsPanel({
 
   return (
     <div className={styles.container}>
+      {skills.length > 0 && (
+        <SearchInputComponent
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search skills…"
+          compact
+        />
+      )}
+
       {skills.length === 0 && (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>
@@ -299,7 +325,16 @@ export default function SkillsPanel({
         </div>
       )}
 
-      {skills.map((skill: Skill) => {
+      {skills.length > 0 && filteredSkills.length === 0 && (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyTitle}>No matching skills</div>
+          <div className={styles.emptySubtitle}>
+            Try adjusting your search query.
+          </div>
+        </div>
+      )}
+
+      {filteredSkills.map((skill: Skill) => {
         const skillId = skill.id || skill._id?.toString() || "";
         const isConfirming = confirmingDeleteId === skillId;
 

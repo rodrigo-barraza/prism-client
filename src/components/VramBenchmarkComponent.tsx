@@ -8,6 +8,7 @@ import {
   useMemo,
   Fragment,
 } from "react";
+import { usePersistedState } from "../hooks/usePersistedState";
 
 import {
   Cpu,
@@ -728,22 +729,22 @@ export default function VramBenchmarkComponent() {
   const [error, setError] = useState<string | null>(null);
 
   // Filters
-  const [machineFilter, setMachineFilter] = useState("all");
-  const [providerFilter, setProviderFilter] = useState("all");
-  const [settingsFilter, setSettingsFilter] = useState("all");
+  const [machineFilter, setMachineFilter] = usePersistedState("vram-benchmark:machine-filter", "all");
+  const [providerFilter, setProviderFilter] = usePersistedState("vram-benchmark:provider-filter", "all");
+  const [settingsFilter, setSettingsFilter] = usePersistedState("vram-benchmark:settings-filter", "all");
   const [parallelFilter, setParallelFilter] = useState("all");
   const [batchFilter, setBatchFilter] = useState("all");
   const [ctxMin, setCtxMin] = useState("");
   const [ctxMax, setCtxMax] = useState("");
-  const [sortBy, setSortBy] = useState("vram");
-  const [scatterMode, setScatterMode] = useState("vram_vs_speed");
+  const [sortBy, setSortBy] = usePersistedState("vram-benchmark:sort-by", "vram");
+  const [scatterMode, setScatterMode] = usePersistedState("vram-benchmark:scatter-mode", "vram_vs_speed");
   const [vramClipMin, setVramClipMin] = useState("");
   const [vramClipMax, setVramClipMax] = useState("");
   const [tpsClipMin, setTpsClipMin] = useState("");
   const [tpsClipMax, setTpsClipMax] = useState("");
   const [scatterClipXMin, setScatterClipXMin] = useState("");
   const [scatterClipXMax, setScatterClipXMax] = useState("");
-  const [activeView, setActiveView] = useState<ChartViewKey>("scatter");
+  const [activeView, setActiveView] = usePersistedState<ChartViewKey>("vram-benchmark:active-view", "scatter");
   const [chartSearch, setChartSearch] = useState("");
 
   // Parsed clip values — undefined means "auto" (Chart.js default)

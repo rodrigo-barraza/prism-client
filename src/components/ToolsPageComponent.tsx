@@ -219,41 +219,21 @@ function extractLabels(tools: ClientToolSchema[]): string[] {
   return [...set].sort() as string[];
 }
 
-/** Group tools by domain */
+/** Group tools by domain, sorted alphabetically */
 function groupByDomain(
   tools: ClientToolSchema[],
 ): Record<string, ClientToolSchema[]> {
-  const groups = {};
+  const groups: Record<string, ClientToolSchema[]> = {};
   for (const tool of tools) {
     const domain = tool.domain || "Uncategorized";
-    if (!(groups as Record<string, ClientToolSchema[]>)[domain])
-      (groups as Record<string, ClientToolSchema[]>)[domain] = [];
-    (groups as Record<string, ClientToolSchema[]>)[domain].push(tool);
+    if (!groups[domain]) groups[domain] = [];
+    groups[domain].push(tool);
   }
-  const agenticDomains = new Set([
-    "Workspace",
-    "Web",
-    "Browser",
-    "Task Management",
-    "Memory",
-    "Agent Management",
-    "Model Context Protocol",
-    "Meta",
-    "Skills",
-    "Control Flow",
-    "Structured Output"
-  ]);
-  const sortKey = (domain: string) => {
-    if (agenticDomains.has(domain)) return `2_${domain}`;
-    if (domain === "Coordinator") return "3_Coordinator";
-    if (domain === "Reasoning") return "3_Reasoning";
-    return `0_${domain}`;
-  };
   return Object.fromEntries(
-    Object.entries(groups).sort((a, b) =>
-      sortKey(a[0]).localeCompare(sortKey(b[0])),
+    Object.entries(groups).sort(([domainA], [domainB]) =>
+      domainA.localeCompare(domainB),
     ),
-  ) as Record<string, ClientToolSchema[]>;
+  );
 }
 
 /** Extract output fields from the `fields` parameter enum, if present */
@@ -1158,10 +1138,17 @@ export default function ToolsPageComponent() {
       }
     >
       <div className={styles.container} ref={scrollContainerRef}>
-        <p className={styles.subtitle}>
-          All available tool schemas from the Tools API — used for agentic
-          function calling.
-        </p>
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <h2 className={styles.title}>
+              <Wrench className={styles.titleIcon} size={20} />
+              Tools
+            </h2>
+            <p className={styles.subtitle}>
+              All available tool schemas from the Tools API — used for agentic function calling.
+            </p>
+          </div>
+        </div>
 
         {/* Error */}
         {error && (
@@ -1292,34 +1279,15 @@ export default function ToolsPageComponent() {
                     ))}
                   </div>
                 ) : (
-                  <div className={styles.toolList}>
-                    <div className={`${styles.toolRow} ${styles["list-header"]}`}>
-                      <span className={styles.toolRowEmoji} />
-                      <span className={styles.toolRowName}>Tool Name</span>
-                      <span className={styles["statistic-cell-header"]}>Calls</span>
-                      <span className={styles["statistic-cell-header"]}>Avg Latency</span>
-                      <span className={styles["statistic-cell-header"]}>Min</span>
-                      <span className={styles["statistic-cell-header"]}>Max</span>
-                      <span className={styles["statistic-cell-header"]}>Error %</span>
-                      <span className={styles["statistic-cell-header"]}>Transfer</span>
-                      <span className={styles["tool-row-metadata-header"]}>Meta</span>
-                    </div>
-                    {domainTools.map((tool: ClientToolSchema) => (
-                      <ToolRow
-                        key={tool.name}
-                        tool={tool}
-                        statistics={(toolStats as Record<string, ExtendedToolStats>)[tool.name]}
-                        agents={
-                          (
-                            toolAgentMap as Record<
-                              string,
-                              { id: string; name: string }[]
-                            >
-                          )[tool.name] || []
-                        }
-                        onClick={() => setSelectedTool(tool)}
-                      />
-                    ))}
+                  <div className={styles.tableWrapper}>
+                    <TableComponent
+                      columns={tableColumns as any}
+                      data={domainTools}
+                      getRowKey={(tool: ClientToolSchema) => tool.name}
+                      emptyText="No tools in this domain."
+                      onRowClick={(tool: ClientToolSchema) => setSelectedTool(tool)}
+                      storageKey={`tools-list-${domain}`}
+                    />
                   </div>
                 )}
               </div>

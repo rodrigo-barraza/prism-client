@@ -10,7 +10,10 @@ import {
   Palette,
   Volume2,
   Lock,
+  AlertTriangle,
 } from "lucide-react";
+import PrismService from "../services/PrismService";
+import type { PrismSettings } from "../types/types";
 import styles from "./SettingsSidebarNavigationComponent.module.css";
 
 interface SettingsSection {
@@ -37,6 +40,52 @@ interface SettingsSidebarNavigationProps {
   onActiveSectionChange?: (sectionId: string) => void;
 }
 
+function computeSectionWarnings(settings: PrismSettings | null): Set<string> {
+  const warnings = new Set<string>();
+  if (!settings) return warnings;
+
+  const memoryConfig = settings.memory || {};
+  const isMemoryComplete =
+    !!memoryConfig.extractionProvider &&
+    !!memoryConfig.extractionModel &&
+    !!memoryConfig.consolidationProvider &&
+    !!memoryConfig.consolidationModel &&
+    !!memoryConfig.embeddingProvider &&
+    !!memoryConfig.embeddingModel;
+  const hasAnyMemoryModel =
+    !!memoryConfig.extractionModel ||
+    !!memoryConfig.consolidationModel ||
+    !!memoryConfig.embeddingModel;
+  if (!isMemoryComplete && hasAnyMemoryModel) {
+    warnings.add("memory-models");
+  }
+
+  const creativeConfig = settings.creative || {};
+  const isCreativeComplete =
+    !!creativeConfig.imageProvider &&
+    !!creativeConfig.imageModel &&
+    !!creativeConfig.visionProvider &&
+    !!creativeConfig.visionModel;
+  const hasAnyCreativeModel =
+    !!creativeConfig.imageModel || !!creativeConfig.visionModel;
+  if (!isCreativeComplete && hasAnyCreativeModel) {
+    warnings.add("creative-tools");
+  }
+
+  const isAudioComplete =
+    !!creativeConfig.textToSpeechProvider &&
+    !!creativeConfig.textToSpeechModel &&
+    !!creativeConfig.speechToTextProvider &&
+    !!creativeConfig.speechToTextModel;
+  const hasAnyAudioModel =
+    !!creativeConfig.textToSpeechModel || !!creativeConfig.speechToTextModel;
+  if (!isAudioComplete && hasAnyAudioModel) {
+    warnings.add("audio-tools");
+  }
+
+  return warnings;
+}
+
 export default function SettingsSidebarNavigationComponent({
   scrollContainerRef,
   initialSectionId,
@@ -51,8 +100,19 @@ export default function SettingsSidebarNavigationComponent({
   const [activeSectionId, setActiveSectionId] = useState<string>(
     resolvedInitialSection,
   );
+  const [sectionWarnings, setSectionWarnings] = useState<Set<string>>(
+    new Set(),
+  );
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isUserScrolling = useRef(true);
+
+  useEffect(() => {
+    PrismService.getSettings()
+      .then((loadedSettings: PrismSettings) => {
+        setSectionWarnings(computeSectionWarnings(loadedSettings));
+      })
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -163,6 +223,7 @@ export default function SettingsSidebarNavigationComponent({
         {SETTINGS_SECTIONS.map((section) => {
           const IconComponent = section.icon;
           const isActive = activeSectionId === section.id;
+          const hasWarning = sectionWarnings.has(section.id);
           return (
             <li key={section.id}>
               <button
@@ -174,6 +235,14 @@ export default function SettingsSidebarNavigationComponent({
                 <span className={styles["navigation-item-label"]}>
                   {section.label}
                 </span>
+                {hasWarning && (
+                  <span
+                    className={styles["incomplete-warning-badge"]}
+                    title="Not all models are configured"
+                  >
+                    <AlertTriangle size={10} />
+                  </span>
+                )}
                 {isActive && (
                   <span className={styles["active-indicator"]} />
                 )}

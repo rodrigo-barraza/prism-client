@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { usePersistedState } from "../../../hooks/usePersistedState";
 import { Download } from "lucide-react";
 import ToolsApiService from "../../../services/ToolsApiService";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
@@ -57,10 +58,12 @@ export default function ToolRequestsPage() {
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
   const [selectedCall, setSelectedCall] = useState<ToolCallRecord | null>(null);
+  const [filterDomain, setFilterDomain] = usePersistedState("tool-requests:filter-domain", "");
+  const [filterSuccess, setFilterSuccess] = usePersistedState("tool-requests:filter-success", "");
   const [filters, setFilters] = useState({
     toolName: "",
-    domain: "",
-    success: "",
+    domain: filterDomain,
+    success: filterSuccess,
     callerAgent: "",
   });
 
@@ -108,9 +111,11 @@ export default function ToolRequestsPage() {
   }
 
   const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setFilters((previous) => ({ ...previous, [key]: value }));
+    if (key === "domain") setFilterDomain(value);
+    if (key === "success") setFilterSuccess(value);
     setPage(1);
-  }, []);
+  }, [setFilterDomain, setFilterSuccess]);
 
   function clearFilters() {
     setFilters({
@@ -119,6 +124,8 @@ export default function ToolRequestsPage() {
       success: "",
       callerAgent: "",
     });
+    setFilterDomain("");
+    setFilterSuccess("");
     setPage(1);
   }
 

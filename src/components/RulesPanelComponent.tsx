@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import {
   Plus,
@@ -17,6 +17,7 @@ import {
   ToggleComponent,
   InputComponent,
   TextAreaComponent,
+  SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./RulesPanelComponent.module.css";
 import type { Rule } from "@/types/types";
@@ -50,6 +51,22 @@ export default function RulesPanel({
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
     null,
   );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredRules = useMemo(() => {
+    if (!searchQuery.trim()) return rules;
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    return rules.filter((rule: Rule) => {
+      const name = (rule.name || "").toLowerCase();
+      const description = (rule.description || "").toLowerCase();
+      const content = (rule.content || "").toLowerCase();
+      return (
+        name.includes(normalizedQuery) ||
+        description.includes(normalizedQuery) ||
+        content.includes(normalizedQuery)
+      );
+    });
+  }, [rules, searchQuery]);
 
   const handleCreate = useCallback(() => {
     setEditingRule({
@@ -289,6 +306,15 @@ export default function RulesPanel({
 
   return (
     <div className={styles.container}>
+      {rules.length > 0 && (
+        <SearchInputComponent
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search rules…"
+          compact
+        />
+      )}
+
       {rules.length === 0 && (
         <div className={styles["empty-state"]}>
           <div className={styles["empty-icon"]}>
@@ -312,7 +338,16 @@ export default function RulesPanel({
         </div>
       )}
 
-      {rules.map((rule: Rule) => {
+      {rules.length > 0 && filteredRules.length === 0 && (
+        <div className={styles["empty-state"]}>
+          <div className={styles["empty-title"]}>No matching rules</div>
+          <div className={styles["empty-subtitle"]}>
+            Try adjusting your search query.
+          </div>
+        </div>
+      )}
+
+      {filteredRules.map((rule: Rule) => {
         const ruleId = rule.id || rule._id?.toString() || "";
         const isConfirming = confirmingDeleteId === ruleId;
 

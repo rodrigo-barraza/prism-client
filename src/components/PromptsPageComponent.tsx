@@ -16,7 +16,7 @@ import {
   PaginationComponent,
   SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
-import { FilterBarComponent } from "./FilterBarComponent";
+
 import { LoadingMessage } from "./StateMessageComponent";
 import styles from "./PromptsPageComponent.module.css";
 
@@ -238,20 +238,17 @@ export default function PromptsPageComponent() {
       </div>
 
       <div className={styles.page}>
-        {/* Filters */}
-        <FilterBarComponent>
-          <SearchInputComponent
-            value={searchInput}
-            onChange={(value: any) => {
-              setSearchInput(value);
-              setSearch(value);
-              setPage(1);
-            }}
-            placeholder="Search prompts…"
-            compact
-            className={styles["search-wrapper"]}
-          />
-        </FilterBarComponent>
+        <SearchInputComponent
+          value={searchInput}
+          onChange={(value: any) => {
+            setSearchInput(value);
+            setSearch(value);
+            setPage(1);
+          }}
+          placeholder="Search prompts…"
+          compact
+          className={styles["search-wrapper"]}
+        />
 
         {/* Create Form */}
         {isCreating && renderForm("create")}

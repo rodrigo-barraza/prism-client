@@ -736,6 +736,7 @@ export interface CustomAgent {
   description?: string;
   systemPrompt?: string;
   icon?: string;
+  avatar?: string;
   color?: string;
   backgroundImage?: string;
   project?: string;
@@ -755,6 +756,7 @@ export interface AgentPersona {
   description: string;
   custom: boolean;
   icon: string;
+  avatar: string;
   color: string;
   backgroundImage: string;
   project?: string;

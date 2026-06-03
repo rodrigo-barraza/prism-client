@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { usePersistedState } from "../../hooks/usePersistedState";
 
 import {
   ArrowUpDown,
@@ -111,6 +112,7 @@ const NONE_AGENT: AgentPersona = {
   toolCount: -1,
   custom: false,
   icon: "",
+  avatar: "",
   color: "",
   backgroundImage: "",
   enabledToolNames: [],
@@ -311,7 +313,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [triggeringId, setTriggeringId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [viewMode, setViewMode] = useState("card");
+  const [viewMode, setViewMode] = usePersistedState("scheduled-tasks:view-mode", "card");
   const [activeSortKeys, setActiveSortKeys] = useState<string[]>(["createdAt"]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);

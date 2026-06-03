@@ -96,6 +96,37 @@
   }
 }
 
+/* ── Incomplete warning badge ────────────────────────────────── */
+
+.incomplete-warning-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: auto;
+  flex-shrink: 0;
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 50%;
+  background: oklch(0.82 0.17 85);
+  color: oklch(0.25 0.05 60);
+  animation: warning-badge-enter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.navigation-item:hover .incomplete-warning-badge {
+  background: oklch(0.78 0.18 85);
+}
+
+@keyframes warning-badge-enter {
+  from {
+    opacity: 0;
+    scale: 0;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
 /* ── Label ───────────────────────────────────────────────────────── */
 
 .navigation-item-label {

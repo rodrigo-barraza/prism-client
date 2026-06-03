@@ -62,6 +62,7 @@ export interface ClientAgent {
   project?: string;
   color?: string;
   icon?: string;
+  avatar?: string;
 }
 
 export type BadgeProps =
@@ -333,7 +334,7 @@ const AGENT_GRADIENTS: Record<string, string[]> = {
   NONE: ["#64748b", "#94a3b8"],
   CODING: ["#6366f1", "#818cf8"],
   OMNI: ["#b91c1c", "#dc2626"],
-  LUPOS: ["#ef4444", "#f97316"],
+  LUPOS: ["#7c3aed", "#a855f7"],
   STICKERS: ["#10b981", "#34d399"],
   DIGEST: ["#f59e0b", "#ef4444"],
   LIGHTS: ["#eab308", "#f59e0b"],
