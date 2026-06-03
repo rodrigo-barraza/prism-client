@@ -176,14 +176,14 @@ export default function WorkflowInspector({
   const incoming = useMemo(
     () =>
       (connections || []).filter(
-        (c: WorkflowEdge) => node && c.targetNodeId === node.id,
+        (edge: WorkflowEdge) => node && edge.targetNodeId === node.id,
       ),
     [connections, node],
   );
   const outgoing = useMemo(
     () =>
       (connections || []).filter(
-        (c: WorkflowEdge) => node && c.sourceNodeId === node.id,
+        (edge: WorkflowEdge) => node && edge.sourceNodeId === node.id,
       ),
     [connections, node],
   );
@@ -191,27 +191,27 @@ export default function WorkflowInspector({
   // Compute compatible models based on connections
   const compatibleModels = useMemo(() => {
     if (!isModel) return [];
-    const requiredInputs = incoming.map((c: WorkflowEdge) => c.targetModality);
-    const requiredOutputs = outgoing.map((c: WorkflowEdge) => c.sourceModality);
+    const requiredInputs = incoming.map((edge: WorkflowEdge) => edge.targetModality);
+    const requiredOutputs = outgoing.map((edge: WorkflowEdge) => edge.sourceModality);
 
-    return allModels.filter((m: ModelOption) => {
-      const mInputs = m.inputTypes || [];
-      const mOutputs = m.outputTypes || [];
+    return allModels.filter((modelOption: ModelOption) => {
+      const mInputs = modelOption.inputTypes || [];
+      const mOutputs = modelOption.outputTypes || [];
       // Check input compatibility: conversation-type models accept "conversation" edges
       // Tools connections are always compatible with FC-capable models
       if (requiredInputs.length > 0) {
         const inputsOk = requiredInputs.every(
-          (mod: string | undefined) =>
-            mod === "tools" ||
-            mInputs.includes(mod || "") ||
-            (mod === "conversation" && m.modelType === "conversation"),
+          (modality: string | undefined) =>
+            modality === "tools" ||
+            mInputs.includes(modality || "") ||
+            (modality === "conversation" && modelOption.modelType === "conversation"),
         );
         if (!inputsOk) return false;
       }
       if (
         requiredOutputs.length > 0 &&
-        !requiredOutputs.every((mod: string | undefined) =>
-          mOutputs.includes(mod || ""),
+        !requiredOutputs.every((modality: string | undefined) =>
+          mOutputs.includes(modality || ""),
         )
       )
         return false;
@@ -223,9 +223,9 @@ export default function WorkflowInspector({
   const filteredModels = useMemo(() => {
     if (!modelSearch.trim()) return compatibleModels;
     const normalizedSearch = modelSearch.trim().toLowerCase();
-    return compatibleModels.filter((m: ModelOption) => {
-      const name = m.display_name || m.label || m.name || "";
-      const provider = m.provider || "";
+    return compatibleModels.filter((modelOption: ModelOption) => {
+      const name = modelOption.display_name || modelOption.label || modelOption.name || "";
+      const provider = modelOption.provider || "";
       return (
         name.toLowerCase().includes(normalizedSearch) ||
         provider.toLowerCase().includes(normalizedSearch)
@@ -383,7 +383,7 @@ export default function WorkflowInspector({
             <div className={styles.modelSelector}>
               <button
                 className={`${styles.modelSelectorTrigger} ${modelDropdownOpen ? styles.modelSelectorTriggerOpen : ""}`}
-                onClick={() => setModelDropdownOpen((prev) => !prev)}
+                onClick={() => setModelDropdownOpen((previousOpenState) => !previousOpenState)}
               >
                 <span className={styles.modelSelectorContent}>
                   <ProviderLogo provider={node.provider || ""} size={14} />
@@ -429,39 +429,39 @@ export default function WorkflowInspector({
                         No compatible models found
                       </div>
                     ) : (
-                      filteredModels.map((m: ModelOption) => {
-                        const key = `${m.provider}:${m.name}`;
+                      filteredModels.map((modelOption: ModelOption) => {
+                        const key = `${modelOption.provider}:${modelOption.name}`;
                         const isCurrent =
-                          m.name === node.modelName &&
-                          m.provider === node.provider;
+                          modelOption.name === node.modelName &&
+                          modelOption.provider === node.provider;
                         return (
                           <button
                             key={key}
                             className={`${styles.modelDropdownItem} ${isCurrent ? styles.modelDropdownItemActive : ""}`}
                             onClick={() => {
-                              onChangeModel?.(node.id, m);
+                              onChangeModel?.(node.id, modelOption);
                               setModelDropdownOpen(false);
                               setModelSearch("");
                             }}
                           >
                             <ProviderLogo
-                              provider={m.provider || ""}
+                              provider={modelOption.provider || ""}
                               size={13}
                             />
                             <span className={styles.modelDropdownItemName}>
-                              {m.display_name || m.label || m.name}
+                              {modelOption.display_name || modelOption.label || modelOption.name}
                             </span>
                             <span
                               className={styles.modelDropdownItemModalities}
                             >
-                              {(m.rawInputTypes || m.inputTypes || []).map(
-                                (t: string) => {
-                                  const modalityIcon = getModalityIcon(t);
+                              {(modelOption.rawInputTypes || modelOption.inputTypes || []).map(
+                                (modalityType: string) => {
+                                  const modalityIcon = getModalityIcon(modalityType);
                                   if (!modalityIcon) return null;
                                   const Icon = modalityIcon.icon;
                                   return (
                                     <Icon
-                                      key={`in-${t}`}
+                                      key={`in-${modalityType}`}
                                       size={9}
                                       style={{ color: modalityIcon.color }}
                                     />
@@ -471,13 +471,13 @@ export default function WorkflowInspector({
                               <span className={styles.modelDropdownItemArrow}>
                                 →
                               </span>
-                              {(m.outputTypes || []).map((t: string) => {
-                                const modalityIcon = getModalityIcon(t);
+                              {(modelOption.outputTypes || []).map((modalityType: string) => {
+                                const modalityIcon = getModalityIcon(modalityType);
                                 if (!modalityIcon) return null;
                                 const Icon = modalityIcon.icon;
                                 return (
                                   <Icon
-                                    key={`out-${t}`}
+                                    key={`out-${modalityType}`}
                                     size={9}
                                     style={{ color: modalityIcon.color }}
                                   />
@@ -518,31 +518,31 @@ export default function WorkflowInspector({
           <section className={styles.section}>
             <label className={styles.sectionLabel}>Input Ports</label>
             <div className={styles.connectionList}>
-              {incoming.map((c: WorkflowEdge) => (
+              {incoming.map((edge: WorkflowEdge) => (
                 <div
-                  key={c.id}
+                  key={edge.id}
                   className={`${styles.connectionItem} ${styles.connectionItemClickable}`}
                   role="button"
                   tabIndex={0}
-                  onClick={() => onSelectNode?.(c.sourceNodeId || "")}
+                  onClick={() => onSelectNode?.(edge.sourceNodeId || "")}
                   onKeyDown={(e: React.KeyboardEvent) => {
                     if (e.key === "Enter" || e.key === " ")
-                      onSelectNode?.(c.sourceNodeId || "");
+                      onSelectNode?.(edge.sourceNodeId || "");
                   }}
                 >
                   <span
                     className={styles.connectionDot}
                     style={{
                       background:
-                        getModalityIcon(c.targetModality)?.color || "#888",
+                        getModalityIcon(edge.targetModality)?.color || "#888",
                     }}
                   />
                   <span className={styles.connectionFrom}>
-                    {getNodeLabel(c.sourceNodeId || "")}
+                    {getNodeLabel(edge.sourceNodeId || "")}
                   </span>
                   <span className={styles.connectionArrow}>→</span>
                   <span className={styles.connectionModality}>
-                    {c.targetModality}
+                    {edge.targetModality}
                   </span>
                 </div>
               ))}
@@ -555,30 +555,30 @@ export default function WorkflowInspector({
           <section className={styles.section}>
             <label className={styles.sectionLabel}>Output Ports</label>
             <div className={styles.connectionList}>
-              {outgoing.map((c: WorkflowEdge) => (
+              {outgoing.map((edge: WorkflowEdge) => (
                 <div
-                  key={c.id}
+                  key={edge.id}
                   className={`${styles.connectionItem} ${styles.connectionItemClickable}`}
                   role="button"
                   tabIndex={0}
-                  onClick={() => onSelectNode?.(c.targetNodeId || "")}
+                  onClick={() => onSelectNode?.(edge.targetNodeId || "")}
                   onKeyDown={(e: React.KeyboardEvent) => {
                     if (e.key === "Enter" || e.key === " ")
-                      onSelectNode?.(c.targetNodeId || "");
+                      onSelectNode?.(edge.targetNodeId || "");
                   }}
                 >
                   <span className={styles.connectionModality}>
-                    {c.sourceModality}
+                    {edge.sourceModality}
                   </span>
                   <span className={styles.connectionArrow}>→</span>
                   <span className={styles.connectionTo}>
-                    {getNodeLabel(c.targetNodeId || "")}
+                    {getNodeLabel(edge.targetNodeId || "")}
                   </span>
                   <span
                     className={styles.connectionDot}
                     style={{
                       background:
-                        getModalityIcon(c.sourceModality)?.color || "#888",
+                        getModalityIcon(edge.sourceModality)?.color || "#888",
                     }}
                   />
                 </div>
@@ -622,7 +622,7 @@ export default function WorkflowInspector({
                     />
                   ) : node.modality === "audio" ? (
                     <AudioPlayerRecorderComponent
-                      src={PrismService.getFileUrl(node.content as string)}
+                      sourceUrl={PrismService.getFileUrl(node.content as string)}
                       compact
                     />
                   ) : node.modality === "video" ? (
@@ -671,18 +671,18 @@ export default function WorkflowInspector({
             // Build resolved messages by merging static template with connected input content
             const resolved = structuredClone(node.messages || []);
             for (const conn of incoming) {
-              const dotIdx = conn.targetModality?.indexOf(".") ?? -1;
-              if (dotIdx === -1) continue;
-              const msgIdx = parseInt(
-                conn.targetModality!.substring(0, dotIdx),
+              const dotIndex = conn.targetModality?.indexOf(".") ?? -1;
+              if (dotIndex === -1) continue;
+              const messageIndex = parseInt(
+                conn.targetModality!.substring(0, dotIndex),
               );
-              const modality = conn.targetModality!.substring(dotIdx + 1);
-              if (msgIdx < 0 || msgIdx >= resolved.length) continue;
+              const modality = conn.targetModality!.substring(dotIndex + 1);
+              if (messageIndex < 0 || messageIndex >= resolved.length) continue;
               const sourceNode = (nodes || []).find(
-                (n: WorkflowNode) => n.id === conn.sourceNodeId,
+                (nodeItem: WorkflowNode) => nodeItem.id === conn.sourceNodeId,
               );
               if (!sourceNode?.content) continue;
-              const message = resolved[msgIdx];
+              const message = resolved[messageIndex];
               if (modality === "text") {
                 message.content = message.content
                   ? `${message.content}\n\n${sourceNode.content as string}`
@@ -694,28 +694,28 @@ export default function WorkflowInspector({
                 ];
               } else if (modality === "audio") {
                 const existing = message.audio;
-                const audioArr = Array.isArray(existing)
+                const audioArray = Array.isArray(existing)
                   ? existing
                   : existing
                     ? [existing]
                     : [];
-                message.audio = [...audioArr, "[audio attached]"];
+                message.audio = [...audioArray, "[audio attached]"];
               } else if (modality === "video") {
                 const existing = message.video;
-                const videoArr = Array.isArray(existing)
+                const videoArray = Array.isArray(existing)
                   ? existing
                   : existing
                     ? [existing]
                     : [];
-                message.video = [...videoArr, "[video attached]"];
+                message.video = [...videoArray, "[video attached]"];
               } else if (modality === "pdf") {
                 const existing = message.pdf;
-                const pdfArr = Array.isArray(existing)
+                const pdfArray = Array.isArray(existing)
                   ? existing
                   : existing
                     ? [existing]
                     : [];
-                message.pdf = [...pdfArr, "[pdf attached]"];
+                message.pdf = [...pdfArray, "[pdf attached]"];
               }
             }
             const resolveRef = (
@@ -985,7 +985,7 @@ export default function WorkflowInspector({
               <div className={styles.resultBlock}>
                 <span className={styles.resultType}>Audio</span>
                 <AudioPlayerRecorderComponent
-                  src={PrismService.getFileUrl(results.audio)}
+                  sourceUrl={PrismService.getFileUrl(results.audio)}
                   compact
                 />
               </div>
@@ -1069,7 +1069,7 @@ export default function WorkflowInspector({
                 <div className={styles.resultBlock}>
                   <span className={styles.resultType}>Audio Content</span>
                   <AudioPlayerRecorderComponent
-                    src={PrismService.getFileUrl(receivedOutputs.audio)}
+                    sourceUrl={PrismService.getFileUrl(receivedOutputs.audio)}
                     compact
                   />
                 </div>

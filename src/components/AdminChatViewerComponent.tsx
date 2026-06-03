@@ -274,10 +274,10 @@ export default function AdminChatViewerComponent({
   const handleToggleFavorite = useCallback(
     async (key: string) => {
       if (favoriteKeys.includes(key)) {
-        setFavoriteKeys((prev) => prev.filter((favoriteKey: string) => favoriteKey !== key));
+        setFavoriteKeys((previousFavoriteKeys) => previousFavoriteKeys.filter((favoriteKey: string) => favoriteKey !== key));
         PrismService.removeFavorite("model", key).catch(() => {});
       } else {
-        setFavoriteKeys((prev) => [...prev, key]);
+        setFavoriteKeys((previousFavoriteKeys) => [...previousFavoriteKeys, key]);
         const [provider, ...rest] = key.split(":");
         PrismService.addFavorite("model", key, {
           provider,
@@ -320,11 +320,11 @@ export default function AdminChatViewerComponent({
         const payload = firstReq?.requestPayload as
           | { messages?: Message[] }
           | undefined;
-        const sysMsg = payload?.messages?.find(
+        const systemMessage = payload?.messages?.find(
           (message: Message) => message.role === "system",
         );
-        if (sysMsg?.content) {
-          setSessionSystemPrompt(sysMsg.content as string);
+        if (systemMessage?.content) {
+          setSessionSystemPrompt(systemMessage.content as string);
         }
       })
       .catch(console.error);
@@ -398,8 +398,8 @@ export default function AdminChatViewerComponent({
           if (!knownIdsRef.current.has(id)) freshIds.add(id);
         }
         if (freshIds.size > 0) {
-          setNewIds((prev) => {
-            const merged = new Set(prev);
+          setNewIds((previousNewIds) => {
+            const merged = new Set(previousNewIds);
             for (const id of freshIds) merged.add(id);
             return merged;
           });
@@ -413,7 +413,7 @@ export default function AdminChatViewerComponent({
         selectEntry(list[0].id || "", list[0]._source || "conversation");
       }
 
-      setError((prev) => (prev !== null ? null : prev));
+      setError((previousError) => (previousError !== null ? null : previousError));
     } catch (error) {
       setError(getErrorMessage(error));
     }
@@ -467,7 +467,7 @@ export default function AdminChatViewerComponent({
       );
 
       entriesPageRef.current = nextPage;
-      setEntries((prev) => [...prev, ...newItems]);
+      setEntries((previousEntries) => [...previousEntries, ...newItems]);
       setEntriesHasMore(
         entries.length + newItems.length < entriesTotalRef.current,
       );
@@ -515,18 +515,18 @@ export default function AdminChatViewerComponent({
           source === "agent_session"
             ? ((await IrisService.getAgentSession(id)) as UnifiedEntry)
             : ((await IrisService.getConversation(id)) as UnifiedEntry);
-        setSelectedEntry((prev) => {
-          const oldMsgs = prev?.messages || [];
+        setSelectedEntry((previousEntry) => {
+          const oldMsgs = previousEntry?.messages || [];
           const newMsgs = full?.messages || [];
           if (oldMsgs.length !== newMsgs.length) return full;
           const oldLast = oldMsgs[oldMsgs.length - 1];
           const newLast = newMsgs[newMsgs.length - 1];
           if (oldLast?.content?.length !== newLast?.content?.length)
             return full;
-          const prevGen = (prev as Conversation | null)?.isGenerating;
+          const previousGeneratingState = (previousEntry as Conversation | null)?.isGenerating;
           const fullGen = (full as Conversation | null)?.isGenerating;
-          if (prevGen !== fullGen) return full;
-          return prev;
+          if (previousGeneratingState !== fullGen) return full;
+          return previousEntry;
         });
       } catch (error: unknown) {
         console.error("Failed to refresh selected entry:", error);
@@ -676,9 +676,9 @@ export default function AdminChatViewerComponent({
     );
 
     // Remove NEW badge
-    setNewIds((prev) => {
-      if (!prev.has(id)) return prev;
-      const next = new Set(prev);
+    setNewIds((previousNewIds) => {
+      if (!previousNewIds.has(id)) return previousNewIds;
+      const next = new Set(previousNewIds);
       next.delete(id);
       return next;
     });
@@ -1233,7 +1233,7 @@ export default function AdminChatViewerComponent({
                   <BadgeComponent
                     type="agent"
                     agent={
-                      agents.find((a) => a.id === selectedEntry.agent) as
+                      agents.find((agent) => agent.id === selectedEntry.agent) as
                         | AgentPersona
                         | undefined
                     }
@@ -1327,7 +1327,7 @@ export default function AdminChatViewerComponent({
                     sessionSystemPrompt ||
                     (selectedEntry as Conversation)?.settings?.systemPrompt ||
                     selectedEntry?.messages?.find(
-                      (m) => m.role === "system" && !m.deleted,
+                      (message) => message.role === "system" && !message.deleted,
                     )?.content
                   }
                 />

@@ -48,7 +48,7 @@ const CARD_CLASS: Record<string, string> = {
  */
 function getAgentNumber(agentId: string | undefined) {
   const match =
-    typeof agentId === "string" ? agentId.match(/agent-(\w+)/) : null;
+    typeof agentId === "string" ? agentId.match(/agent-([a-zA-Z0-9_]+)/) : null;
   return match ? match[1].toUpperCase() : agentId;
 }
 
@@ -110,7 +110,7 @@ export default function WorkersPanel({
 
   // Auto-poll while any worker is running (every 3s)
   useEffect(() => {
-    const hasRunning = workers.some((w) => w.status === "running");
+    const hasRunning = workers.some((workerItem) => workerItem.status === "running");
 
     if (hasRunning) {
       pollRef.current = setInterval(loadWorkers, POLL_FAST);
@@ -290,8 +290,8 @@ export default function WorkersPanel({
             {/* Files */}
             {worker.files?.length > 0 && (
               <div className={styles.workerFiles}>
-                {worker.files.map((f: string, i: number) => (
-                  <span key={i} className={styles.workerFile} title={f}>
+                {worker.files.map((filePath: string, fileIndex: number) => (
+                  <span key={fileIndex} className={styles.workerFile} title={filePath}>
                     <FileCode
                       size={9}
                       style={{
@@ -300,7 +300,7 @@ export default function WorkersPanel({
                         marginRight: 2,
                       }}
                     />
-                    {f.split("/").pop()}
+                    {filePath.split("/").pop()}
                   </span>
                 ))}
               </div>

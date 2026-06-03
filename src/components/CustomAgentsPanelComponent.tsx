@@ -225,7 +225,7 @@ const ICON_OPTIONS = [
 /** Resolve an icon name string to its lucide component. */
 export function resolveIconComponent(name: string): LucideIcon {
   if (!name) return Bot;
-  const found = ICON_OPTIONS.find((o: IconOption) => o.name === name);
+  const found = ICON_OPTIONS.find((option: IconOption) => option.name === name);
   return found?.icon || Bot;
 }
 
@@ -289,8 +289,8 @@ export default function CustomAgentsPanel({
       setEditingAgent(null);
       setIsNew(false);
       onAgentsChange?.();
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
+    } catch (error: unknown) {
+      setError(getErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -306,8 +306,8 @@ export default function CustomAgentsPanel({
         await PrismService.deleteCustomAgent(id);
         setConfirmingDeleteId(null);
         onAgentsChange?.();
-      } catch (err: unknown) {
-        console.error("Failed to delete agent:", getErrorMessage(err));
+      } catch (error: unknown) {
+        console.error("Failed to delete agent:", getErrorMessage(error));
       }
     },
     [onAgentsChange],
@@ -317,7 +317,7 @@ export default function CustomAgentsPanel({
 
   const updateField = useCallback(
     <K extends keyof EditableAgent>(field: K, value: EditableAgent[K]) => {
-      setEditingAgent((a) => (a ? { ...a, [field]: value } : a));
+      setEditingAgent((agent) => (agent ? { ...agent, [field]: value } : agent));
     },
     [],
   );
@@ -447,7 +447,7 @@ export default function CustomAgentsPanel({
                     className={styles.colorPreviewDot}
                     style={{ background: editingAgent.color }}
                   />{" "}
-                  {COLOR_PALETTE.find((c) => c.hex === editingAgent.color)
+                  {COLOR_PALETTE.find((color) => color.hex === editingAgent.color)
                     ?.name || editingAgent.color}
                 </>
               ) : (

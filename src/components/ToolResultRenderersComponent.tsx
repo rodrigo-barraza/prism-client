@@ -355,7 +355,7 @@ function RawResultToggle({ result }: { result: unknown }) {
     <div className={styles.rawToggle}>
       <button
         className={styles.rawToggleButton}
-        onClick={() => setShow((v) => !v)}
+        onClick={() => setShow((previousState) => !previousState)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
         <span>Raw Response</span>
@@ -379,7 +379,7 @@ function InputArgsToggle({ args }: { args?: ToolArgs }) {
   const entries = useMemo(() => {
     if (!args || typeof args !== "object") return [];
     return Object.entries(args).filter(
-      ([, v]) => v !== undefined && v !== null,
+      ([, value]) => value !== undefined && value !== null,
     );
   }, [args]);
 
@@ -389,7 +389,7 @@ function InputArgsToggle({ args }: { args?: ToolArgs }) {
     <div className={styles.inputArgsToggle}>
       <button
         className={styles.rawToggleButton}
-        onClick={() => setShow((v) => !v)}
+        onClick={() => setShow((previousState) => !previousState)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
         <span>Input</span>
@@ -466,7 +466,7 @@ function OutputResultToggle({ result }: { result: unknown }) {
     <div className={styles.outputResultToggle}>
       <button
         className={styles.rawToggleButton}
-        onClick={() => setShow((v) => !v)}
+        onClick={() => setShow((previousState) => !previousState)}
       >
         <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
         <span>Output</span>
@@ -478,13 +478,13 @@ function OutputResultToggle({ result }: { result: unknown }) {
         <div className={styles.outputResultContent}>
           {display.type === "object" && !Array.isArray(display.data) ? (
             Object.entries(display.data)
-              .filter(([, v]) => v !== undefined && v !== null)
+              .filter(([, value]) => value !== undefined && value !== null)
               .map(([key, value]) => {
                 const isComplex = typeof value === "object" && value !== null;
-                const valStr = isComplex
+                const valueString = isComplex
                   ? JSON.stringify(value, null, 2)
                   : String(value);
-                const isLong = valStr.length > 80;
+                const isLong = valueString.length > 80;
 
                 return (
                   <div key={key} className={styles.outputArgRow}>
@@ -492,7 +492,7 @@ function OutputResultToggle({ result }: { result: unknown }) {
                     <span
                       className={`${styles.outputArgValue} ${isLong ? styles.outputArgValueLong : ""}`}
                     >
-                      {valStr}
+                      {valueString}
                     </span>
                   </div>
                 );
@@ -662,10 +662,10 @@ function GrepSearchRenderer({ result, args }: RendererProps) {
       match?: string;
     }>
   > = {};
-  for (const m of matches.slice(0, 30)) {
-    const file = m.file || m.path || "unknown";
+  for (const matchItem of matches.slice(0, 30)) {
+    const file = matchItem.file || matchItem.path || "unknown";
     if (!grouped[file]) grouped[file] = [];
-    grouped[file].push(m);
+    grouped[file].push(matchItem);
   }
 
   return (
@@ -681,13 +681,13 @@ function GrepSearchRenderer({ result, args }: RendererProps) {
         {Object.entries(grouped).map(([file, fileMatches]) => (
           <div key={file} className={styles.grepFile}>
             <span className={styles.grepFilePath}>{file}</span>
-            {fileMatches.map((m, i) => (
+            {fileMatches.map((matchItem, i) => (
               <div key={i} className={styles.grepLine}>
-                {m.line != null && (
-                  <span className={styles.grepLineNum}>{m.line}</span>
+                {matchItem.line != null && (
+                  <span className={styles.grepLineNum}>{matchItem.line}</span>
                 )}
                 <span className={styles.grepLineContent}>
-                  {m.content || m.text || m.match || ""}
+                  {matchItem.content || matchItem.text || matchItem.match || ""}
                 </span>
               </div>
             ))}
@@ -764,8 +764,8 @@ function GlobFilesRenderer({ result, args }: RendererProps) {
         </span>
       </div>
       <div className={styles.directoryList}>
-        {files.slice(0, 40).map((f, i) => {
-          const path = typeof f === "string" ? f : f.path || f.name || "";
+        {files.slice(0, 40).map((fileEntry, i) => {
+          const path = typeof fileEntry === "string" ? fileEntry : fileEntry.path || fileEntry.name || "";
           return (
             <div key={i} className={styles.directoryEntry}>
               <File size={11} className={styles.fileIcon} />
@@ -890,7 +890,7 @@ function AudioGeneratorRenderer({ result, args }: RendererProps) {
         />
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
-      {audioSource && <AudioPlayerRecorderComponent src={audioSource} />}
+      {audioSource && <AudioPlayerRecorderComponent sourceUrl={audioSource} />}
     </div>
   );
 }
@@ -948,17 +948,17 @@ const ANSI_BRIGHT_COLORS = [
   "#ffffff", // 7 – bright white
 ];
 
-function ansi256ToHex(n: number): string | null | undefined {
-  if (n < 8) return ANSI_COLORS[n];
-  if (n < 16) return ANSI_BRIGHT_COLORS[n - 8];
-  if (n < 232) {
-    const index = n - 16;
+function ansi256ToHex(colorCode: number): string | null | undefined {
+  if (colorCode < 8) return ANSI_COLORS[colorCode];
+  if (colorCode < 16) return ANSI_BRIGHT_COLORS[colorCode - 8];
+  if (colorCode < 232) {
+    const index = colorCode - 16;
     const r = Math.floor(index / 36) * 51;
     const g = (Math.floor(index / 6) % 6) * 51;
     const b = (index % 6) * 51;
     return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }
-  const grayscaleValue = (n - 232) * 10 + 8;
+  const grayscaleValue = (colorCode - 232) * 10 + 8;
   return `#${grayscaleValue.toString(16).padStart(2, "0")}${grayscaleValue.toString(16).padStart(2, "0")}${grayscaleValue.toString(16).padStart(2, "0")}`;
 }
 
@@ -1184,13 +1184,13 @@ function TerminalRenderer({
         {/* Output lines */}
         {outputLines.map((line: string, i: number) => {
           const level = detectTerminalLevel(line);
-          const lineNum = inputLines.length + i + 1;
+          const lineNumber = inputLines.length + i + 1;
           return (
             <div
               key={`out-${i}`}
               className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as Record<string, string>)[level] || "" : ""}`}
             >
-              <span className={styles.termLineNum}>{lineNum}</span>
+              <span className={styles.termLineNum}>{lineNumber}</span>
               <span
                 className={`${styles.termLineContent} ${level ? (TERM_CONTENT_LEVEL_CLASS as Record<string, string>)[level] || "" : ""}`}
               >
@@ -1258,11 +1258,11 @@ function GitStatusRenderer({ result }: RendererProps) {
       </div>
       {!clean && (
         <div className={styles.directoryList}>
-          {files.slice(0, 30).map((f, i) => {
-            const name = typeof f === "string" ? f : f.path || f.file || "";
+          {files.slice(0, 30).map((fileEntry, i) => {
+            const name = typeof fileEntry === "string" ? fileEntry : fileEntry.path || fileEntry.file || "";
             const status =
-              typeof f === "object" && f !== null
-                ? f.status || f.state || ""
+              typeof fileEntry === "object" && fileEntry !== null
+                ? fileEntry.status || fileEntry.state || ""
                 : "";
             return (
               <div key={i} className={styles.directoryEntry}>
@@ -1338,15 +1338,15 @@ function GitLogRenderer({ result }: RendererProps) {
         </span>
       </div>
       <div className={styles.gitLog}>
-        {commits.slice(0, 15).map((c, i) => (
+        {commits.slice(0, 15).map((commitEntry, i) => (
           <div key={i} className={styles.gitCommit}>
             <span className={styles.gitHash}>
-              {(c.hash || c.sha || "").slice(0, 7)}
+              {(commitEntry.hash || commitEntry.sha || "").slice(0, 7)}
             </span>
             <span className={styles.gitMsg}>
-              {c.message || c.subject || ""}
+              {commitEntry.message || commitEntry.subject || ""}
             </span>
-            {c.author && <span className={styles.gitAuthor}>{c.author}</span>}
+            {commitEntry.author && <span className={styles.gitAuthor}>{commitEntry.author}</span>}
           </div>
         ))}
       </div>
@@ -1420,11 +1420,11 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
   const hasError = !!parsed.error;
 
   // Resolve screenshot ref (minio:// or base64 fallback)
-  let screenshotSrc = null;
+  let screenshotSource = null;
   if (parsed.screenshotRef) {
-    screenshotSrc = PrismService.getFileUrl(parsed.screenshotRef);
+    screenshotSource = PrismService.getFileUrl(parsed.screenshotRef);
   } else if (parsed.screenshot) {
-    screenshotSrc = `data:${parsed.mimeType || "image/png"};base64,${parsed.screenshot}`;
+    screenshotSource = `data:${parsed.mimeType || "image/png"};base64,${parsed.screenshot}`;
   }
 
   return (
@@ -1448,11 +1448,11 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
 
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
 
-      {screenshotSrc && (
+      {screenshotSource && (
         <div className={styles.browserScreenshot}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={screenshotSrc}
+            src={screenshotSource}
             alt={`Screenshot of ${parsed.url || "page"}`}
             className={styles.browserScreenshotImg}
           />
@@ -1494,11 +1494,11 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
 
 // -- 13. Turtle Graphics -----------------------------------------------------
 
-function TurtleDrawEmbed({ src, title }: { src: string; title: string }) {
+function TurtleDrawEmbed({ sourceUrl, title }: { sourceUrl: string; title: string }) {
   return (
     <div className={styles.turtleEmbedWrapper}>
       <iframe
-        src={src}
+        src={sourceUrl}
         className={styles.turtleEmbedFrame}
         title={title}
         loading="lazy"
@@ -1531,7 +1531,7 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
       {!hasError && embedUrl && (
-        <TurtleDrawEmbed src={embedUrl} title="Turtle Drawing" />
+        <TurtleDrawEmbed sourceUrl={embedUrl} title="Turtle Drawing" />
       )}
     </div>
   );
@@ -1539,11 +1539,11 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
 
 // -- 13.25 Vector Animation Player -------------------------------------------
 
-function VectorAnimationEmbed({ src, title }: { src: string; title: string }) {
+function VectorAnimationEmbed({ sourceUrl, title }: { sourceUrl: string; title: string }) {
   return (
     <div className={styles.turtleEmbedWrapper}>
       <iframe
-        src={src}
+        src={sourceUrl}
         className={styles.turtleEmbedFrame}
         title={title}
         loading="lazy"
@@ -1579,7 +1579,7 @@ function VectorAnimationRenderer({ result, args }: RendererProps) {
       </div>
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
       {!hasError && embedUrl && (
-        <VectorAnimationEmbed src={embedUrl} title="Vector Animation Player" />
+        <VectorAnimationEmbed sourceUrl={embedUrl} title="Vector Animation" />
       )}
     </div>
   );
@@ -1658,7 +1658,7 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
         </div>
       ) : (
         !hasError &&
-        embedUrl && <TurtleDrawEmbed src={embedUrl} title="ASCII Art" />
+        embedUrl && <TurtleDrawEmbed sourceUrl={embedUrl} title="ASCII Art" />
       )}
     </div>
   );

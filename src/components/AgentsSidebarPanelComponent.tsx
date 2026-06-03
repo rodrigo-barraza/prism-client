@@ -1,10 +1,12 @@
 "use client";
 
-import React from "react";
-import { Plus, Wrench } from "lucide-react";
+import React, { useState, useMemo, useCallback } from "react";
+import { Plus, Wrench, Search, X } from "lucide-react";
 import type { AgentPersona } from "../types/types";
 import BadgeComponent from "./BadgeComponent";
 import styles from "./AgentsPageComponent.module.css";
+
+type AgentSidebarTab = "custom" | "built-in";
 
 interface EditableAgentSummary {
   _id?: unknown;
@@ -31,90 +33,178 @@ export default function AgentsSidebarPanelComponent({
   onSelectAgent,
   onCreateNewAgent,
 }: AgentsSidebarPanelComponentProps) {
+  const [activeTab, setActiveTab] = useState<AgentSidebarTab>("custom");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+  }, []);
+
+  const filteredCustomAgents = useMemo(() => {
+    if (!searchQuery.trim()) return customAgents;
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+    return customAgents.filter(
+      (agent) =>
+        agent.name.toLowerCase().includes(normalizedQuery) ||
+        (agent.description && agent.description.toLowerCase().includes(normalizedQuery)),
+    );
+  }, [customAgents, searchQuery]);
+
+  const filteredBuiltInAgents = useMemo(() => {
+    if (!searchQuery.trim()) return builtInAgents;
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+    return builtInAgents.filter(
+      (agent) =>
+        agent.name.toLowerCase().includes(normalizedQuery) ||
+        agent.description.toLowerCase().includes(normalizedQuery),
+    );
+  }, [builtInAgents, searchQuery]);
+
   return (
     <>
-      <div className={styles["sidebar-header-section"]}>
-        <span className={styles["sidebar-title-text"]}>All Personas</span>
+      {/* Tab Navigation */}
+      <div className={styles["sidebar-tab-navigation"]}>
         <button
-          id="button-create-new-agent"
-          className={styles["create-button-element"]}
-          onClick={onCreateNewAgent}
-          title="Create Custom Agent"
+          className={`${styles["sidebar-tab-button"]} ${activeTab === "custom" ? styles["is-active-tab"] : ""}`}
+          onClick={() => setActiveTab("custom")}
+          type="button"
         >
-          <Plus size={15} />
+          Custom
+          {customAgents.length > 0 && (
+            <span className={styles["tab-count-badge"]}>{customAgents.length}</span>
+          )}
+        </button>
+        <button
+          className={`${styles["sidebar-tab-button"]} ${activeTab === "built-in" ? styles["is-active-tab"] : ""}`}
+          onClick={() => setActiveTab("built-in")}
+          type="button"
+        >
+          Built-in
+          <span className={styles["tab-count-badge"]}>{builtInAgents.length}</span>
         </button>
       </div>
 
-      <div className={styles["sidebar-scroll-container"]}>
-        {/* Built-In section */}
-        <div>
-          <div className={styles["agent-group-header"]}>Built-In Agents</div>
-          {builtInAgents.map((agent) => {
-            const isSelected = selectedAgentId === agent.id;
-            return (
-              <button
-                key={agent.id}
-                className={`${styles["agent-card-item"]} ${isSelected ? styles["is-selected-state"] : ""}`}
-                onClick={() => onSelectAgent(agent.id, false)}
-                data-panel-close-trigger
-              >
-                <BadgeComponent
-                  type="agent"
-                  agent={{
-                    id: agent.id,
-                    icon: agent.icon,
-                    color: agent.color,
-                  }}
-                  size={28}
-                />
-                <div className={styles["agent-info-container"]}>
-                  <span className={styles["agent-name-text"]}>{agent.name}</span>
-                  <span className={styles["agent-description-text"]}>{agent.description}</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+      {/* Search Bar */}
+      <div className={styles["sidebar-search-container"]}>
+        <Search size={13} className={styles["sidebar-search-icon"]} />
+        <input
+          id="input-agents-sidebar-search"
+          type="text"
+          className={styles["sidebar-search-input"]}
+          placeholder={`Search ${activeTab === "custom" ? "custom" : "built-in"} agents...`}
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+        />
+        {searchQuery && (
+          <button
+            className={styles["sidebar-search-clear-button"]}
+            onClick={handleClearSearch}
+            type="button"
+            aria-label="Clear search"
+          >
+            <X size={12} />
+          </button>
+        )}
+      </div>
 
-        {/* Custom Personas section */}
-        <div>
-          <div className={styles["agent-group-header"]}>Custom Personas</div>
-          {customAgents.length === 0 ? (
-            <div className={styles["empty-state-view"]} style={{ paddingBlock: 12 }}>
-              <span className={styles["agent-description-text"]}>No custom agents created.</span>
-            </div>
-          ) : (
-            customAgents.map((agent) => {
-              const isSelected = selectedAgentId === String(agent._id);
-              return (
-                <button
-                  key={String(agent._id)}
-                  className={`${styles["agent-card-item"]} ${isSelected ? styles["is-selected-state"] : ""}`}
-                  onClick={() => onSelectAgent(String(agent._id), true)}
-                  data-panel-close-trigger
-                >
-                  <BadgeComponent
-                    type="agent"
-                    agent={{
-                      id: agent.agentId,
-                      icon: agent.icon,
-                      color: agent.color,
-                    }}
-                    size={28}
-                  />
-                  <div className={styles["agent-info-container"]}>
-                    <span className={styles["agent-name-text"]}>{agent.name}</span>
-                    <span className={styles["agent-description-text"]}>{agent.description}</span>
-                    <span className={styles["agent-badge-tag"]}>
-                      <Wrench size={8} style={{ marginRight: 2 }} />
-                      {agent.enabledTools?.length || 0} tools
-                    </span>
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
+      {/* Agent List */}
+      <div className={styles["sidebar-scroll-container"]}>
+        {activeTab === "custom" && (
+          <div>
+            {/* Create button inline in the custom tab */}
+            <button
+              id="button-create-new-agent-inline"
+              className={styles["create-agent-inline-button"]}
+              onClick={onCreateNewAgent}
+              type="button"
+            >
+              <Plus size={14} />
+              <span>Create New Agent</span>
+            </button>
+
+            {filteredCustomAgents.length === 0 ? (
+              <div className={styles["empty-state-view"]} style={{ paddingBlock: 24 }}>
+                <span className={styles["agent-description-text"]}>
+                  {searchQuery
+                    ? "No custom agents match your search."
+                    : "No custom agents created yet."}
+                </span>
+              </div>
+            ) : (
+              filteredCustomAgents.map((agent) => {
+                const isSelected = selectedAgentId === String(agent._id);
+                return (
+                  <button
+                    key={String(agent._id)}
+                    className={`${styles["agent-card-item"]} ${isSelected ? styles["is-selected-state"] : ""}`}
+                    onClick={() => onSelectAgent(String(agent._id), true)}
+                    data-panel-close-trigger
+                    type="button"
+                  >
+                    <BadgeComponent
+                      type="agent"
+                      agent={{
+                        id: agent.agentId,
+                        icon: agent.icon,
+                        color: agent.color,
+                      }}
+                      size={28}
+                    />
+                    <div className={styles["agent-info-container"]}>
+                      <span className={styles["agent-name-text"]}>{agent.name}</span>
+                      <span className={styles["agent-description-text"]}>{agent.description}</span>
+                      <span className={styles["agent-badge-tag"]}>
+                        <Wrench size={8} style={{ marginRight: 2 }} />
+                        {agent.enabledTools?.length || 0} tools
+                      </span>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {activeTab === "built-in" && (
+          <div>
+            {filteredBuiltInAgents.length === 0 ? (
+              <div className={styles["empty-state-view"]} style={{ paddingBlock: 24 }}>
+                <span className={styles["agent-description-text"]}>
+                  No built-in agents match your search.
+                </span>
+              </div>
+            ) : (
+              filteredBuiltInAgents.map((agent) => {
+                const isSelected = selectedAgentId === agent.id;
+                return (
+                  <button
+                    key={agent.id}
+                    className={`${styles["agent-card-item"]} ${isSelected ? styles["is-selected-state"] : ""}`}
+                    onClick={() => onSelectAgent(agent.id, false)}
+                    data-panel-close-trigger
+                    type="button"
+                  >
+                    <BadgeComponent
+                      type="agent"
+                      agent={{
+                        id: agent.id,
+                        icon: agent.icon,
+                        color: agent.color,
+                      }}
+                      size={28}
+                    />
+                    <div className={styles["agent-info-container"]}>
+                      <span className={styles["agent-name-text"]}>{agent.name}</span>
+                      <span className={styles["agent-description-text"]}>{agent.description}</span>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
       </div>
     </>
   );

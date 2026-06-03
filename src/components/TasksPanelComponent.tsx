@@ -165,11 +165,11 @@ export default function TasksPanel({
           status: nextStatus,
         });
         // Optimistic
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.project === task.project && t.taskId === task.taskId
-              ? { ...t, status: nextStatus }
-              : t,
+        setTasks((previousTasks) =>
+          previousTasks.map((taskItem) =>
+            taskItem.project === task.project && taskItem.taskId === task.taskId
+              ? { ...taskItem, status: nextStatus }
+              : taskItem,
           ),
         );
         // Refresh summary
@@ -187,9 +187,9 @@ export default function TasksPanel({
     async (task: AgenticTask) => {
       try {
         await ToolsApiService.deleteAgenticTask(task.project, task.taskId);
-        setTasks((prev) =>
-          prev.filter(
-            (t) => !(t.project === task.project && t.taskId === task.taskId),
+        setTasks((previousTasks) =>
+          previousTasks.filter(
+            (taskItem) => !(taskItem.project === task.project && taskItem.taskId === task.taskId),
           ),
         );
         setConfirmingDeleteId(null);
@@ -231,7 +231,7 @@ export default function TasksPanel({
       <>
         <button
           className={styles.headerButton}
-          onClick={() => setShowNewForm((previous) => !previous)}
+          onClick={() => setShowNewForm((previousState) => !previousState)}
           title="Create task"
         >
           {showNewForm ? <X size={11} /> : <Plus size={11} />}
@@ -474,10 +474,10 @@ export default function TasksPanel({
                 <div className={styles.taskDescription}>{task.description}</div>
                 {task.metadata && Object.keys(task.metadata).length > 0 && (
                   <div className={styles.taskMetadata}>
-                    {Object.entries(task.metadata).map(([k, v]) => (
-                      <span key={k} className={styles.metaTag}>
-                        <span className={styles.metaKey}>{k}</span>
-                        <span className={styles.metaValue}>{String(v)}</span>
+                    {Object.entries(task.metadata).map(([key, value]) => (
+                      <span key={key} className={styles.metaTag}>
+                        <span className={styles.metaKey}>{key}</span>
+                        <span className={styles.metaValue}>{String(value)}</span>
                       </span>
                     ))}
                   </div>

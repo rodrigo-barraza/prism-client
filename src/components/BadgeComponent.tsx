@@ -267,14 +267,14 @@ export function cleanModelName(raw: string): string {
   if (!raw) return "";
   const name = raw.trim();
 
-  const getBaseName = (str: string) => {
-    let s = str;
-    if (s.includes(":")) {
-      s = s.split(":").slice(1).join(":");
+  const getBaseName = (modelString: string) => {
+    let extractedBaseName = modelString;
+    if (extractedBaseName.includes(":")) {
+      extractedBaseName = extractedBaseName.split(":").slice(1).join(":");
     }
-    s = (s.includes("/") ? s.split("/").pop() : s) || "";
-    s = (s.includes("\\") ? s.split("\\").pop() : s) || "";
-    return s.trim();
+    extractedBaseName = (extractedBaseName.includes("/") ? extractedBaseName.split("/").pop() : extractedBaseName) || "";
+    extractedBaseName = (extractedBaseName.includes("\\") ? extractedBaseName.split("\\").pop() : extractedBaseName) || "";
+    return extractedBaseName.trim();
   };
 
   const base = getBaseName(name);
@@ -293,12 +293,12 @@ export function cleanModelName(raw: string): string {
   cleaned = cleaned.replace(/\.(gguf|bin|ckpt|pt)$/i, "");
   cleaned = cleaned.replace(/@[\w.]+$/, "");
   cleaned = cleaned.replace(/[-_]/g, " ");
-  cleaned = cleaned.replace(/\b([a-z])/g, (_: string, c: string) =>
-    c.toUpperCase(),
+  cleaned = cleaned.replace(/\b([a-z])/g, (_: string, matchChar: string) =>
+    matchChar.toUpperCase(),
   );
   cleaned = cleaned.replace(
     /(\d+(?:\.\d+)?)\s*b\b/gi,
-    (_: string, n: string) => `${n}B`,
+    (_: string, numberMatch: string) => `${numberMatch}B`,
   );
 
   const acronyms: Record<string, string> = {

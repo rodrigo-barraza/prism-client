@@ -115,7 +115,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           for (const id of currentIds) {
             if (!knownSessionsRef.current.has(id as string)) newOnes++;
           }
-          if (newOnes > 0) setNewTracesCount((prev) => prev + newOnes);
+          if (newOnes > 0) setNewTracesCount((previousCount) => previousCount + newOnes);
           knownSessionsRef.current = currentIds;
         } else {
           knownSessionsRef.current = currentIds;
@@ -135,24 +135,24 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         });
         const list = data.data || [];
         const currentMap = new Map();
-        for (const c of list) {
-          currentMap.set(c.id, c.messages?.length || c.messageCount || 0);
+        for (const conversation of list) {
+          currentMap.set(conversation.id, conversation.messages?.length || conversation.messageCount || 0);
         }
 
         if (knownConvsRef.current === null) {
           knownConvsRef.current = currentMap;
         } else if (!isOnConversationsRef.current) {
           let changes = 0;
-          for (const [id, msgCount] of currentMap) {
+          for (const [id, messageCount] of currentMap) {
             const known = knownConvsRef.current.get(id);
             if (known === undefined) {
               changes++;
-            } else if (msgCount > known) {
+            } else if (messageCount > known) {
               changes++;
             }
           }
           if (changes > 0) {
-            setNewCount((prev) => prev + changes);
+            setNewCount((previousCount) => previousCount + changes);
           }
           knownConvsRef.current = currentMap;
         } else {
@@ -189,7 +189,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           for (const id of currentIds) {
             if (!knownRequestsRef.current.has(id as string)) newOnes++;
           }
-          if (newOnes > 0) setNewRequestsCount((prev) => prev + newOnes);
+          if (newOnes > 0) setNewRequestsCount((previousCount) => previousCount + newOnes);
           knownRequestsRef.current = currentIds;
         } else {
           knownRequestsRef.current = currentIds;
@@ -208,7 +208,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           knownMediaRef.current = total;
         } else if (!isOnMediaRef.current && total > knownMediaRef.current) {
           setNewMediaCount(
-            (prev) => prev + (total - (knownMediaRef.current ?? 0)),
+            (previousCount) => previousCount + (total - (knownMediaRef.current ?? 0)),
           );
           knownMediaRef.current = total;
         } else {
@@ -228,7 +228,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           knownTextRef.current = total;
         } else if (!isOnTextRef.current && total > knownTextRef.current) {
           setNewTextCount(
-            (prev) => prev + (total - (knownTextRef.current ?? 0)),
+            (previousCount) => previousCount + (total - (knownTextRef.current ?? 0)),
           );
           knownTextRef.current = total;
         } else {
@@ -310,7 +310,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
     // Convert "tool-requests" -> "Tool Requests"
     return first
       .split("-")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
   })();
 

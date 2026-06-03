@@ -264,11 +264,11 @@ export default function ToolSelectionComponent({
   const { coreTools, configurableTools } = useMemo(() => {
     const core: ToolSchema[] = [];
     const config: ToolSchema[] = [];
-    for (const t of availableTools || []) {
-      if (t.system === true) {
-        core.push(t);
+    for (const tool of availableTools || []) {
+      if (tool.system === true) {
+        core.push(tool);
       } else {
-        config.push(t);
+        config.push(tool);
       }
     }
     return { coreTools: core, configurableTools: config };
@@ -393,20 +393,20 @@ export default function ToolSelectionComponent({
   const filteredCoreTools = useMemo(() => {
     if (!query) return coreTools;
     return coreTools.filter(
-      (t) =>
-        t.name?.toLowerCase().includes(query) ||
-        renderToolName(t.name)?.toLowerCase().includes(query) ||
-        t.description?.toLowerCase().includes(query),
+      (tool) =>
+        tool.name?.toLowerCase().includes(query) ||
+        renderToolName(tool.name)?.toLowerCase().includes(query) ||
+        tool.description?.toLowerCase().includes(query),
     );
   }, [coreTools, query]);
 
   const filteredTools = useMemo(() => {
     if (!query) return configurableTools;
     return configurableTools.filter(
-      (t) =>
-        t.name?.toLowerCase().includes(query) ||
-        renderToolName(t.name)?.toLowerCase().includes(query) ||
-        t.description?.toLowerCase().includes(query),
+      (tool) =>
+        tool.name?.toLowerCase().includes(query) ||
+        renderToolName(tool.name)?.toLowerCase().includes(query) ||
+        tool.description?.toLowerCase().includes(query),
     );
   }, [configurableTools, query]);
 
@@ -493,8 +493,8 @@ export default function ToolSelectionComponent({
 
   // -- Collapse toggling ----------------------------------------
   const toggleDomain = useCallback((domain: string) => {
-    setCollapsedDomains((prev) => {
-      const next = new Set(prev);
+    setCollapsedDomains((previousCollapsedDomains) => {
+      const next = new Set(previousCollapsedDomains);
       if (next.has(domain)) next.delete(domain);
       else next.add(domain);
       return next;

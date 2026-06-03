@@ -327,8 +327,8 @@ export default function NavigationSidebarComponent({
   }, []);
 
   const toggleNav = useCallback(() => {
-    setShowNav((prev) => {
-      const next = !prev;
+    setShowNav((previousShowNav) => {
+      const next = !previousShowNav;
       localStorage.setItem(LS_PANEL_NAV, String(next));
       globalShowNav = next;
       if (next) {
@@ -370,7 +370,7 @@ export default function NavigationSidebarComponent({
   const catStateRef = useRef<Map<string, CatState>>(new Map());
   const catElsRef = useRef<Map<string, HTMLImageElement>>(new Map());
   const isGenRef = useRef<boolean>(isGenerating);
-  const prevIsGenRef = useRef<boolean>(false);
+  const previousIsGeneratingRef = useRef<boolean>(false);
   const miniCatsRef = useRef<MiniCat[]>([]);
   const [miniCats, setMiniCats] = useState<MiniCat[]>([]);
 
@@ -385,14 +385,14 @@ export default function NavigationSidebarComponent({
   // Add cats when workers spawn, retire cats when workers finish
   useEffect(() => {
     const needed = Math.max(0, (activeApiCount || 0) - 1);
-    setMiniCats((prev) => {
-      const activeCount = prev.filter((c: MiniCat) => !c.retired).length;
-      if (needed === activeCount) return prev;
+    setMiniCats((previousMiniCats) => {
+      const activeCount = previousMiniCats.filter((miniCat: MiniCat) => !miniCat.retired).length;
+      if (needed === activeCount) return previousMiniCats;
 
       if (needed < activeCount) {
         // Retire excess active cats (last ones first)
         let toRetire = activeCount - needed;
-        const next = [...prev];
+        const next = [...previousMiniCats];
         for (let i = next.length - 1; i >= 0 && toRetire > 0; i--) {
           if (!next[i].retired) {
             next[i] = { ...next[i], retired: true };
@@ -403,7 +403,7 @@ export default function NavigationSidebarComponent({
       }
 
       // Spawn new cats
-      const next = [...prev];
+      const next = [...previousMiniCats];
       const toAdd = needed - activeCount;
       for (let j = 0; j < toAdd; j++) {
         const angle = Math.random() * Math.PI * 2;
@@ -429,7 +429,7 @@ export default function NavigationSidebarComponent({
       const cats = miniCatsRef.current;
       if (cats.length === 0) {
         lastTime = 0;
-        prevIsGenRef.current = isGenRef.current;
+        previousIsGeneratingRef.current = isGenRef.current;
         rafId = requestAnimationFrame(tick);
         return;
       }
@@ -452,22 +452,22 @@ export default function NavigationSidebarComponent({
       const isGen = isGenRef.current;
 
       // Detect primary cat stop: isGenerating true → false → fade ALL cats
-      if (prevIsGenRef.current && !isGen) {
-        for (const [, p] of catStateRef.current) {
-          if (p.phase !== "fading") {
-            p.phase = "fading";
-            p.fadeStart = now;
+      if (previousIsGeneratingRef.current && !isGen) {
+        for (const [, catState] of catStateRef.current) {
+          if (catState.phase !== "fading") {
+            catState.phase = "fading";
+            catState.fadeStart = now;
           }
         }
       }
-      prevIsGenRef.current = isGen;
+      previousIsGeneratingRef.current = isGen;
 
       const toRemove = [];
 
       for (const cat of cats) {
-        let p = catStateRef.current.get(cat.id);
-        if (!p) {
-          p = {
+        let catState = catStateRef.current.get(cat.id);
+        if (!catState) {
+          catState = {
             x: bw / 2,
             y: bh / 2,
             vx: cat.initVx,
@@ -476,39 +476,39 @@ export default function NavigationSidebarComponent({
             phase: "active",
             fadeStart: null,
           };
-          catStateRef.current.set(cat.id, p);
+          catStateRef.current.set(cat.id, catState);
         }
 
         const element = catElsRef.current.get(cat.id);
         if (!element) continue;
 
         // Phase transition: worker finished → start winding down
-        if (cat.retired && p.phase === "active") {
-          p.phase = "windingDown";
+        if (cat.retired && catState.phase === "active") {
+          catState.phase = "windingDown";
         }
 
         // Bounce helper (specular reflection)
         const hs = cat.size / 2;
         const bounce = () => {
-          if (p.x < hs) {
-            p.x = hs;
-            p.vx = Math.abs(p.vx);
-          } else if (p.x > bw - hs) {
-            p.x = bw - hs;
-            p.vx = -Math.abs(p.vx);
+          if (catState.x < hs) {
+            catState.x = hs;
+            catState.vx = Math.abs(catState.vx);
+          } else if (catState.x > bw - hs) {
+            catState.x = bw - hs;
+            catState.vx = -Math.abs(catState.vx);
           }
-          if (p.y < hs) {
-            p.y = hs;
-            p.vy = Math.abs(p.vy);
-          } else if (p.y > bh - hs) {
-            p.y = bh - hs;
-            p.vy = -Math.abs(p.vy);
+          if (catState.y < hs) {
+            catState.y = hs;
+            catState.vy = Math.abs(catState.vy);
+          } else if (catState.y > bh - hs) {
+            catState.y = bh - hs;
+            catState.vy = -Math.abs(catState.vy);
           }
         };
 
         // FX helper (SpinningCat-style quadratic ramp)
         const computeFx = () => {
-          const sm = 0.2 + 0.08 * p.accelTime * p.accelTime;
+          const sm = 0.2 + 0.08 * catState.accelTime * catState.accelTime;
           const interpolation = Math.min((sm - 0.2) / 4.8, 1);
           return {
             scale: 1 + interpolation * 0.5,
@@ -518,77 +518,77 @@ export default function NavigationSidebarComponent({
           };
         };
 
-        if (p.phase === "active") {
+        if (catState.phase === "active") {
           // --- Active: bouncing, FX ramping up ---
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
-          p.accelTime += dt;
+          catState.x += catState.vx * dt;
+          catState.y += catState.vy * dt;
+          catState.accelTime += dt;
           bounce();
 
           const fx = computeFx();
-          element.style.left = `${p.x}px`;
-          element.style.top = `${p.y}px`;
+          element.style.left = `${catState.x}px`;
+          element.style.top = `${catState.y}px`;
           element.style.transform = `translate(-50%, -50%) scale(${fx.scale})`;
           element.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
           element.style.opacity = "0.85";
           if (!element.src.endsWith("cat-spinning.gif"))
             element.src = "/cat-spinning.gif";
-        } else if (p.phase === "windingDown") {
+        } else if (catState.phase === "windingDown") {
           // --- Winding down: decelerating, FX reversing ---
           const smoothing = Math.pow(0.97, dt * 60);
-          p.vx *= smoothing;
-          p.vy *= smoothing;
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
+          catState.vx *= smoothing;
+          catState.vy *= smoothing;
+          catState.x += catState.vx * dt;
+          catState.y += catState.vy * dt;
           bounce();
 
           // Reverse FX (wind down twice as fast as ramp up)
-          p.accelTime = Math.max(0, p.accelTime - dt * 2);
+          catState.accelTime = Math.max(0, catState.accelTime - dt * 2);
           const fx = computeFx();
-          element.style.left = `${p.x}px`;
-          element.style.top = `${p.y}px`;
+          element.style.left = `${catState.x}px`;
+          element.style.top = `${catState.y}px`;
           element.style.transform = `translate(-50%, -50%) scale(${fx.scale})`;
           element.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
 
           // Stopped → transition to idle, switch to static cat
-          if (Math.sqrt(p.vx * p.vx + p.vy * p.vy) < 2) {
-            p.vx = 0;
-            p.vy = 0;
-            p.phase = "idle";
+          if (Math.sqrt(catState.vx * catState.vx + catState.vy * catState.vy) < 2) {
+            catState.vx = 0;
+            catState.vy = 0;
+            catState.phase = "idle";
             element.src = "/cat.gif";
           }
-        } else if (p.phase === "idle") {
+        } else if (catState.phase === "idle") {
           // --- Idle: sitting still, static sprite, waiting ---
           element.style.transform = "translate(-50%, -50%)";
           element.style.filter = "drop-shadow(0 1px 4px rgba(0,0,0,0.45))";
           element.style.opacity = "0.85";
-        } else if (p.phase === "fading") {
+        } else if (catState.phase === "fading") {
           // --- Fading: decelerating + fade/shrink over 3 seconds ---
           const smoothing = Math.pow(0.95, dt * 60);
-          p.vx *= smoothing;
-          p.vy *= smoothing;
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
+          catState.vx *= smoothing;
+          catState.vy *= smoothing;
+          catState.x += catState.vx * dt;
+          catState.y += catState.vy * dt;
           bounce();
 
           // Wind down remaining FX
-          p.accelTime = Math.max(0, p.accelTime - dt * 3);
+          catState.accelTime = Math.max(0, catState.accelTime - dt * 3);
           const fx = computeFx();
 
-          const elapsed = (now - (p.fadeStart ?? now)) / 1000;
+          const elapsed = (now - (catState.fadeStart ?? now)) / 1000;
           const progress = Math.min(elapsed / 3, 1);
           const opacity = 0.85 * (1 - progress);
           const scale = 1 - progress * 0.3;
 
-          element.style.left = `${p.x}px`;
-          element.style.top = `${p.y}px`;
+          element.style.left = `${catState.x}px`;
+          element.style.top = `${catState.y}px`;
           element.style.transform = `translate(-50%, -50%) scale(${scale})`;
           element.style.filter = `brightness(${fx.brightness}) drop-shadow(0 0 ${fx.glowR}px rgba(255,255,255,${fx.glowO}))`;
           element.style.opacity = `${opacity}`;
 
           // Switch to static cat once slowed enough
           if (
-            Math.sqrt(p.vx * p.vx + p.vy * p.vy) < 2 &&
+            Math.sqrt(catState.vx * catState.vx + catState.vy * catState.vy) < 2 &&
             element.src.endsWith("cat-spinning.gif")
           ) {
             element.src = "/cat.gif";
@@ -605,8 +605,8 @@ export default function NavigationSidebarComponent({
           catStateRef.current.delete(id);
           catElsRef.current.delete(id);
         }
-        setMiniCats((prev) =>
-          prev.filter((c: MiniCat) => !removeSet.has(c.id)),
+        setMiniCats((previousMiniCats) =>
+          previousMiniCats.filter((miniCat: MiniCat) => !removeSet.has(miniCat.id)),
         );
       }
 
@@ -697,7 +697,7 @@ export default function NavigationSidebarComponent({
         {/* Floating triangle trigger */}
         <button
           className={styles.mobileHamburger}
-          onClick={() => setMobileOpen((v) => !v)}
+          onClick={() => setMobileOpen((isOpenState) => !isOpenState)}
           title={mobileOpen ? "Close navigation" : "Open navigation"}
         >
           {/* Spinning circle with rainbow ring */}
@@ -732,9 +732,9 @@ export default function NavigationSidebarComponent({
                 {navSections.map(
                   (
                     section: NavigationSection,
-                    sectionIdx: number,
+                    sectionIndex: number,
                   ) => (
-                    <React.Fragment key={section.label || sectionIdx}>
+                    <React.Fragment key={section.label || sectionIndex}>
                       {/* Section divider */}
                       {section.label && (
                         <div className={styles.navigationDivider}>
@@ -750,8 +750,8 @@ export default function NavigationSidebarComponent({
                             (item.exact
                               ? pathname === item.href
                               : pathname.startsWith(item.href)) ||
-                            item.alsoMatches?.some((p: string) =>
-                              pathname.startsWith(p),
+                            item.alsoMatches?.some((pathPattern: string) =>
+                              pathname.startsWith(pathPattern),
                             );
 
                           return (
@@ -930,9 +930,9 @@ export default function NavigationSidebarComponent({
           {navSections.map(
             (
               section: NavigationSection,
-              sectionIdx: number,
+              sectionIndex: number,
             ) => (
-              <React.Fragment key={section.label || sectionIdx}>
+              <React.Fragment key={section.label || sectionIndex}>
                 {/* Section divider */}
                 {section.label && (
                   <div className={styles.navigationDivider}>
@@ -948,8 +948,8 @@ export default function NavigationSidebarComponent({
                       (item.exact
                         ? pathname === item.href
                         : pathname.startsWith(item.href)) ||
-                      item.alsoMatches?.some((p: string) =>
-                        pathname.startsWith(p),
+                      item.alsoMatches?.some((pathPattern: string) =>
+                        pathname.startsWith(pathPattern),
                       );
 
                     const link = (

@@ -150,39 +150,39 @@ export default function SettingsPanel({
     ...Object.keys(ttsModelsMap),
   ]);
   const modelsMap: Record<string, ExtendedModelOption[]> = {};
-  for (const p of allProviderKeys) {
-    const textModels = (textModelsMap[p] || []) as ExtendedModelOption[];
-    const imgModels = ((imageModelsMap[p] || []) as ExtendedModelOption[]).map(
-      (m) => ({
-        ...m,
-        label: `${m.label} (Image)`,
+  for (const providerKey of allProviderKeys) {
+    const textModels = (textModelsMap[providerKey] || []) as ExtendedModelOption[];
+    const imgModels = ((imageModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
+      (modelOption) => ({
+        ...modelOption,
+        label: `${modelOption.label} (Image)`,
         _isImageGen: true,
       }),
     );
     const sttModels = (
-      (audioToTextModelsMap[p] || []) as ExtendedModelOption[]
-    ).map((m) => ({
-      ...m,
-      label: `${m.label} (Transcribe)`,
+      (audioToTextModelsMap[providerKey] || []) as ExtendedModelOption[]
+    ).map((modelOption) => ({
+      ...modelOption,
+      label: `${modelOption.label} (Transcribe)`,
       _isTranscription: true,
     }));
-    const ttsModels = ((ttsModelsMap[p] || []) as ExtendedModelOption[]).map(
-      (m) => ({
-        ...m,
-        label: `${m.label} (TTS)`,
+    const ttsModels = ((ttsModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
+      (modelOption) => ({
+        ...modelOption,
+        label: `${modelOption.label} (TTS)`,
         _isTTS: true,
       }),
     );
     // Merge text models first, then image, then transcription, then TTS — deduplicated by name
     const seen = new Set<string>();
     const merged: ExtendedModelOption[] = [];
-    for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
-      if (!seen.has(m.name)) {
-        seen.add(m.name);
-        merged.push(m);
+    for (const modelOption of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
+      if (!seen.has(modelOption.name)) {
+        seen.add(modelOption.name);
+        merged.push(modelOption);
       }
     }
-    modelsMap[p] = merged;
+    modelsMap[providerKey] = merged;
   }
 
   const _handleSystemPromptChange = (
@@ -191,7 +191,7 @@ export default function SettingsPanel({
 
   const currentProviderModels = modelsMap[settings.provider || ""] || [];
   const selectedModelDef = currentProviderModels.find(
-    (m) => m.name === settings.model,
+    (modelOption) => modelOption.name === settings.model,
   );
 
   const isTranscription = selectedModelDef?._isTranscription === true;
@@ -234,7 +234,7 @@ export default function SettingsPanel({
       : activeStats?.completedElapsedTime || 0;
 
   const renderStatsBadges = (stats: SessionStats, showFull: boolean) => {
-    const ttftVal =
+    const timeToFirstTokenValue =
       stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
 
     const estimatedLiveCost = calculateEstimatedLiveCost(
@@ -354,9 +354,9 @@ export default function SettingsPanel({
             ⏱ {liveTtft.toFixed(isLiveTtft ? 1 : 2)}s TTFT
           </span>
         ) : (
-          ttftVal != null && (
+          timeToFirstTokenValue != null && (
             <span className={`${styles.statBadge} ${styles.ttftBadge}`}>
-              ⏱ {ttftVal.toFixed(2)}s TTFT
+              ⏱ {timeToFirstTokenValue.toFixed(2)}s TTFT
             </span>
           )
         )}
@@ -430,16 +430,16 @@ export default function SettingsPanel({
             // Convert back to array and sort by count
             return Array.from(toolMap.entries())
               .map(([name, count]: [string, number]) => ({ name, count }))
-              .sort((a, b) => b.count - a.count);
+              .sort((firstTool, secondTool) => secondTool.count - firstTool.count);
           })();
 
           if (!displayTools?.length) return null;
 
-          const capabilities = displayTools.filter((t) =>
-            CAPABILITY_TOOL_NAMES.has(t.name),
+          const capabilities = displayTools.filter((tool) =>
+            CAPABILITY_TOOL_NAMES.has(tool.name),
           );
           const toolCalls = displayTools.filter(
-            (t) => !CAPABILITY_TOOL_NAMES.has(t.name),
+            (tool) => !CAPABILITY_TOOL_NAMES.has(tool.name),
           );
           return (
             <>
@@ -585,10 +585,10 @@ export default function SettingsPanel({
               ) : null;
             }
             const voiceOptions = providerVoices.map(
-              (v: string | VoiceOption) => {
-                const id = typeof v === "string" ? v : v.id || v.name || "";
-                const label = typeof v === "string" ? v : v.name || v.id || "";
-                const gender = typeof v === "string" ? undefined : v.gender;
+              (voice: string | VoiceOption) => {
+                const id = typeof voice === "string" ? voice : voice.id || voice.name || "";
+                const label = typeof voice === "string" ? voice : voice.name || voice.id || "";
+                const gender = typeof voice === "string" ? undefined : voice.gender;
                 return {
                   value: id,
                   label: `${label}${gender ? ` (${gender})` : ""}`,
@@ -655,9 +655,9 @@ export default function SettingsPanel({
             const googleVoices: VoiceOption[] =
               config?.textToSpeech?.voices?.google || [];
             const currentLiveVoice = settings.liveVoice || "Puck";
-            const voiceOptions = googleVoices.map((v) => ({
-              value: v.name,
-              label: `${v.name} (${v.gender})`,
+            const voiceOptions = googleVoices.map((voice) => ({
+              value: voice.name,
+              label: `${voice.name} (${voice.gender})`,
               icon: <AudioLines size={18} />,
             }));
             return voiceOptions.length > 0 ? (
@@ -807,7 +807,7 @@ export default function SettingsPanel({
                 ) : (
                   <ToggleSwitch
                     checked={toggle.checked}
-                    onChange={(val: boolean) => toggle.onChange?.(val)}
+                    onChange={(value: boolean) => toggle.onChange?.(value)}
                     size="mini"
                   />
                 )}
@@ -852,7 +852,7 @@ export default function SettingsPanel({
                     "deepseek-v3",
                     "gpt-oss",
                     "gemma-4",
-                  ].some((p) => modelName.includes(p));
+                  ].some((pattern) => modelName.includes(pattern));
                   const lmCanToggle =
                     isLmStudio &&
                     (selectedModelDef?.thinking || nameBasedThinking);
@@ -1008,7 +1008,7 @@ export default function SettingsPanel({
             <button
               className={`${styles.systemPromptButton} ${settings.systemPrompt ? styles.systemPromptActive : ""}`}
               onClick={() => {
-                setIsSystemPromptOpen((prev) => !prev);
+                setIsSystemPromptOpen((previousOpenState) => !previousOpenState);
                 onSystemPromptClick?.();
               }}
             >

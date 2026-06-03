@@ -72,9 +72,9 @@ export function extractMediaAssets(
         }
       }
     } else if (Array.isArray(node)) {
-      node.forEach((n: any) => search(n, origin));
+      node.forEach((childNode: any) => search(childNode, origin));
     } else if (typeof node === "object") {
-      Object.values(node).forEach((n: any) => search(n, origin));
+      Object.values(node).forEach((childNode: any) => search(childNode, origin));
     }
   };
   search(object?.requestPayload, "user");
@@ -468,7 +468,7 @@ export function reconstructChatMessages(
 
   // Append the assistant response
   if (resPayload) {
-    const assistantMsg: Message = {
+    const assistantMessage: Message = {
       role: "assistant",
       content: "",
       model: selectedRequest.model,
@@ -477,20 +477,20 @@ export function reconstructChatMessages(
 
     // Handle different response formats
     if (typeof resPayload === "string") {
-      assistantMsg.content = resPayload;
+      assistantMessage.content = resPayload;
     } else if (resPayload.text) {
       // Prism standardized format
-      assistantMsg.content = resPayload.text;
+      assistantMessage.content = resPayload.text;
     } else if (resPayload.content) {
-      assistantMsg.content = resPayload.content;
+      assistantMessage.content = resPayload.content;
     } else if (Array.isArray(resPayload.candidates?.[0]?.content?.parts)) {
       // Google format
-      assistantMsg.content = resPayload.candidates[0].content.parts
-        .map((p: { text?: string }) => p.text || "")
+      assistantMessage.content = resPayload.candidates[0].content.parts
+        .map((part: { text?: string }) => part.text || "")
         .join("");
     } else if (resPayload.choices?.[0]?.message?.content) {
       // OpenAI format
-      assistantMsg.content = resPayload.choices[0].message.content as string;
+      assistantMessage.content = resPayload.choices[0].message.content as string;
     }
 
     // Extract tool calls if present
@@ -499,7 +499,7 @@ export function reconstructChatMessages(
         ? resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls
         : undefined;
     if (Array.isArray(toolCalls) && toolCalls.length) {
-      assistantMsg.toolCalls = toolCalls.map(
+      assistantMessage.toolCalls = toolCalls.map(
         (toolCall: {
           id: string;
           name?: string;
@@ -530,7 +530,7 @@ export function reconstructChatMessages(
       Array.isArray(resPayload.images) &&
       resPayload.images.length
     ) {
-      assistantMsg.images = resPayload.images;
+      assistantMessage.images = resPayload.images;
     }
 
     // Extract thinking content
@@ -539,21 +539,21 @@ export function reconstructChatMessages(
       resPayload &&
       typeof resPayload.thinking === "string"
     ) {
-      assistantMsg.thinking = resPayload.thinking;
+      assistantMessage.thinking = resPayload.thinking;
     }
 
     if (
-      assistantMsg.content ||
-      assistantMsg.toolCalls?.length ||
-      assistantMsg.images?.length
+      assistantMessage.content ||
+      assistantMessage.toolCalls?.length ||
+      assistantMessage.images?.length
     ) {
-      chatMessages.push(assistantMsg);
+      chatMessages.push(assistantMessage);
     }
   }
 
   const messages = prepareDisplayMessages(chatMessages);
   const systemPrompt = chatMessages.find(
-    (m: Message) => m.role === "system",
+    (message: Message) => message.role === "system",
   )?.content;
   if (!messages.length) return null;
 

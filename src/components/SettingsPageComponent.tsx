@@ -107,9 +107,9 @@ export default function SettingsPageComponent() {
   const wsValidateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /** Detect Windows-style path for instant client-side preview */
-  const isWindowsPath = (p: string) => /^[A-Za-z]:[/\\]/.test(p);
-  const windowsToWslPreview = (p: string) => {
-    const pathMatch = p.match(/^([A-Za-z]):[/\\](.*)/);
+  const isWindowsPath = (pathString: string) => /^[A-Za-z]:[/\\]/.test(pathString);
+  const windowsToWslPreview = (pathString: string) => {
+    const pathMatch = pathString.match(/^([A-Za-z]):[/\\](.*)/);
     if (!pathMatch) return null;
     return `/mnt/${pathMatch[1].toLowerCase()}/${pathMatch[2].replace(/\\/g, "/")}`;
   };
@@ -324,8 +324,8 @@ export default function SettingsPageComponent() {
     setWsAdding(true);
     try {
       const currentUserRoots = wsWorkspaces
-        .filter((w: LocalWorkspace) => !w.isPinned)
-        .map((w: LocalWorkspace) => w.path);
+        .filter((workspace: LocalWorkspace) => !workspace.isPinned)
+        .map((workspace: LocalWorkspace) => workspace.path);
       // Resolve the new path — if Windows, the backend will translate
       const newPath = wsAddPath.trim();
       await WorkspaceService.update([...currentUserRoots, newPath]);
@@ -357,8 +357,8 @@ export default function SettingsPageComponent() {
     async (pathToRemove: string) => {
       try {
         const remainingUserRoots = wsWorkspaces
-          .filter((w: LocalWorkspace) => !w.isPinned && w.path !== pathToRemove)
-          .map((w: LocalWorkspace) => w.path);
+          .filter((workspace: LocalWorkspace) => !workspace.isPinned && workspace.path !== pathToRemove)
+          .map((workspace: LocalWorkspace) => workspace.path);
         await WorkspaceService.update(remainingUserRoots);
         const { workspaces, agents } = await WorkspaceService.listFull();
         setWsWorkspaces(workspaces || []);
@@ -514,10 +514,10 @@ export default function SettingsPageComponent() {
 
   // -- Derived workspace data -----------------------------------------
   const localStaticRoots = wsWorkspaces.filter(
-    (w: LocalWorkspace) => w.isPinned && !w.isAgentServed,
+    (workspace: LocalWorkspace) => workspace.isPinned && !workspace.isAgentServed,
   );
   const userRoots = wsWorkspaces.filter(
-    (w: LocalWorkspace) => !w.isPinned && !w.isAgentServed,
+    (workspace: LocalWorkspace) => !workspace.isPinned && !workspace.isAgentServed,
   );
 
   // -- Loading state --------------------------------------------------

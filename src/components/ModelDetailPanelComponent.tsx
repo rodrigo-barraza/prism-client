@@ -173,7 +173,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
   // Determine the biggest context for the bar (1M is the max reference)
   const MAX_CONTEXT_REF = 1_048_576;
-  const contextPct = modelDetail.contextLength
+  const contextPercentage = modelDetail.contextLength
     ? Math.min((modelDetail.contextLength / MAX_CONTEXT_REF) * 100, 100)
     : 0;
 
@@ -338,7 +338,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                           <div className={styles.contextBarTrack}>
                             <div
                               className={styles.contextBarFill}
-                              style={{ width: `${contextPct}%` }}
+                              style={{ width: `${contextPercentage}%` }}
                             />
                           </div>
                           <span className={styles.contextBarLabel}>
@@ -416,15 +416,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   Modalities
                 </div>
                 <div className={styles.modalitiesRow}>
-                  {modelDetail.inputTypes.map((t: string) => {
-                    const meta = (MODALITY_ICONS as any)[t];
+                  {modelDetail.inputTypes.map((inputType: string) => {
+                    const meta = (MODALITY_ICONS as any)[inputType];
                     if (!meta) return null;
                     const Icon = meta.icon;
                     return (
                       <span
-                        key={`in-${t}`}
+                        key={`in-${inputType}`}
                         className={styles.modalityChip}
-                        style={{ color: (MODALITY_COLORS as any)[t] }}
+                        style={{ color: (MODALITY_COLORS as any)[inputType] }}
                       >
                         <Icon size={12} />
                         {meta.label}
@@ -435,15 +435,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                     modelDetail.outputTypes.length > 0 && (
                       <ArrowRight size={14} className={styles.modalityArrow} />
                     )}
-                  {modelDetail.outputTypes.map((t: string) => {
-                    const meta = (MODALITY_ICONS as any)[t];
+                  {modelDetail.outputTypes.map((outputType: string) => {
+                    const meta = (MODALITY_ICONS as any)[outputType];
                     if (!meta) return null;
                     const Icon = meta.icon;
                     return (
                       <span
-                        key={`out-${t}`}
+                        key={`out-${outputType}`}
                         className={styles.modalityChip}
-                        style={{ color: (MODALITY_COLORS as any)[t] }}
+                        style={{ color: (MODALITY_COLORS as any)[outputType] }}
                       >
                         <Icon size={12} />
                         {meta.label}

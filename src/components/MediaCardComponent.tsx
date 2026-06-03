@@ -151,7 +151,7 @@ export default function MediaCardComponent({
             className={styles.previewAudio}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
-            <AudioPlayerRecorderComponent src={resolvedUrl} square />
+            <AudioPlayerRecorderComponent sourceUrl={resolvedUrl} square />
           </div>
         ) : mediaItem.mediaType === "pdf" && resolvedUrl ? (
           <iframe

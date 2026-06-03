@@ -428,9 +428,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const showToast = useCallback(
     (message: string, type: Toast["type"] = "success") => {
       const id = Math.random().toString(36).substring(2, 9);
-      setToasts((prev) => [...prev, { id, message, type }]);
+      setToasts((previousToasts) => [...previousToasts, { id, message, type }]);
       setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
+        setToasts((previousToasts) => previousToasts.filter((toastItem) => toastItem.id !== id));
       }, 4000);
     },
     [],
@@ -473,10 +473,10 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
         textModelsMap,
       ) as [string, ModelOption[]][]) {
         if (modelOpts.length > 0) {
-          cleanModelsMap[provider] = modelOpts.map((m) => ({
-            name: m.name,
-            displayName: m.display_name || m.label || m.name,
-            tools: m.tools || [],
+          cleanModelsMap[provider] = modelOpts.map((modelOption) => ({
+            name: modelOption.name,
+            displayName: modelOption.display_name || modelOption.label || modelOption.name,
+            tools: modelOption.tools || [],
           }));
           activeProviders.push(provider);
         }
@@ -495,12 +495,12 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
       // 5. Fetch favorites
       try {
         const favs = await PrismService.getFavorites("model");
-        setFavoriteKeys(favs.map((f) => f.key as string));
-      } catch (err) {
-        console.error("Failed to load favorite models", err);
+        setFavoriteKeys(favs.map((favorite) => favorite.key as string));
+      } catch (error) {
+        console.error("Failed to load favorite models", error);
       }
-    } catch (err: unknown) {
-      console.error(err);
+    } catch (error: unknown) {
+      console.error(error);
       showToast("Failed to load initial data", "error");
     } finally {
       setLoading(false);
@@ -522,12 +522,12 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const handleToggleFavorite = useCallback(
     async (key: string) => {
       if (favoriteKeys.includes(key)) {
-        setFavoriteKeys((prev) => prev.filter((k) => k !== key));
+        setFavoriteKeys((previousFavoriteKeys) => previousFavoriteKeys.filter((k) => k !== key));
         try {
           await PrismService.removeFavorite("model", key);
         } catch {}
       } else {
-        setFavoriteKeys((prev) => [...prev, key]);
+        setFavoriteKeys((previousFavoriteKeys) => [...previousFavoriteKeys, key]);
         try {
           await PrismService.addFavorite("model", key, { type: "model" });
         } catch {}
@@ -538,21 +538,21 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
   // -- Handle task toggle enablement --
   const handleToggleTask = async (task: Task) => {
-    const nextVal = !task.enabled;
+    const nextEnabledValue = !task.enabled;
     try {
       const updated = await PrismService.updateCronJob(task.id, {
-        enabled: nextVal,
+        enabled: nextEnabledValue,
       });
-      setTasks((prev) =>
-        prev.map((t) =>
-          t.id === task.id ? { ...t, enabled: updated.enabled } : t,
+      setTasks((previousTasks) =>
+        previousTasks.map((taskItem) =>
+          taskItem.id === task.id ? { ...taskItem, enabled: updated.enabled } : taskItem,
         ),
       );
       showToast(
-        `Task "${task.name}" is now ${nextVal ? "enabled" : "disabled"}`,
+        `Task "${task.name}" is now ${nextEnabledValue ? "enabled" : "disabled"}`,
       );
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       showToast("Failed to toggle task state", "error");
     }
   };
@@ -566,9 +566,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
       showToast(
         `Task successfully triggered. Session ID: ${triggerResponse.agentSessionId.slice(0, 8)}…`,
       );
-    } catch (err: unknown) {
-      console.error(err);
-      showToast(getErrorMessage(err) || "Failed to trigger task", "error");
+    } catch (error: unknown) {
+      console.error(error);
+      showToast(getErrorMessage(error) || "Failed to trigger task", "error");
     } finally {
       setTriggeringId(null);
     }
@@ -578,11 +578,11 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const handleDeleteTask = async (task: Task) => {
     try {
       await PrismService.deleteCronJob(task.id);
-      setTasks((prev) => prev.filter((t) => t.id !== task.id));
+      setTasks((previousTasks) => previousTasks.filter((taskItem) => taskItem.id !== task.id));
       showToast(`Deleted task "${task.name}"`);
       setConfirmDeleteId(null);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       showToast("Failed to delete task", "error");
     }
   };
@@ -651,13 +651,13 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
     try {
       if (editingTask) {
         const updatedTask = await PrismService.updateCronJob(editingTask.id, taskPayload);
-        setTasks((prev) =>
-          prev.map((task) => (task.id === editingTask.id ? { ...task, ...updatedTask } : task)),
+        setTasks((previousTasks) =>
+          previousTasks.map((task) => (task.id === editingTask.id ? { ...task, ...updatedTask } : task)),
         );
         showToast(`Cron Job "${formName}" updated successfully!`);
       } else {
         const createdTask = await PrismService.createCronJob(taskPayload);
-        setTasks((prev) => [createdTask, ...prev]);
+        setTasks((previousTasks) => [createdTask, ...previousTasks]);
         showToast(`Cron Job "${formName}" created successfully!`);
         const currentNotificationCount = parseInt(localStorage.getItem("cron-job-notifications-count") || "0", 10);
         localStorage.setItem("cron-job-notifications-count", String(currentNotificationCount + 1));
@@ -666,9 +666,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
       setShowNewModal(false);
       resetFormFields();
-    } catch (err: unknown) {
-      console.error(err);
-      showToast(getErrorMessage(err) || `Failed to ${editingTask ? "update" : "create"} task`, "error");
+    } catch (error: unknown) {
+      console.error(error);
+      showToast(getErrorMessage(error) || `Failed to ${editingTask ? "update" : "create"} task`, "error");
     } finally {
       setFormSubmitting(false);
     }
@@ -680,10 +680,10 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
     const formatTime = (timeValue?: string) => {
       if (!timeValue) return "";
-      const [h, m] = timeValue.split(":").map(Number);
-      const ampm = h >= 12 ? "PM" : "AM";
-      const displayHour = h % 12 || 12;
-      const displayMin = String(m).padStart(2, "0");
+      const [hours, minutes] = timeValue.split(":").map(Number);
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const displayHour = hours % 12 || 12;
+      const displayMin = String(minutes).padStart(2, "0");
       return `${displayHour}:${displayMin} ${ampm}`;
     };
 
@@ -720,25 +720,25 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
     if (task.scheduleType === "custom" && task.recurrenceRule) {
       const rule = task.recurrenceRule;
       const freq = rule.frequency;
-      const intervalStr = rule.interval > 1
+      const intervalString = rule.interval > 1
         ? `every ${rule.interval} ${freq === "daily" ? "days" : freq === "weekly" ? "weeks" : freq === "monthly" ? "months" : "years"}`
         : `every ${freq === "daily" ? "day" : freq === "weekly" ? "week" : freq === "monthly" ? "month" : "year"}`;
       
-      const timeStr = formatTime(task.scheduleTime);
-      const timeSuffix = timeStr ? ` around ${timeStr}` : "";
+      const timeString = formatTime(task.scheduleTime);
+      const timeSuffix = timeString ? ` around ${timeString}` : "";
 
       const daysOfWeekLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       const monthLabels = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
       if (freq === "daily") {
-        return `Custom: Repeat ${intervalStr}${timeSuffix}`;
+        return `Custom: Repeat ${intervalString}${timeSuffix}`;
       }
 
       if (freq === "weekly") {
         const weekdaysNames = rule.weekdays && rule.weekdays.length > 0
-          ? rule.weekdays.map(d => daysOfWeekLabels[d]).join(", ")
+          ? rule.weekdays.map(dayIndex => daysOfWeekLabels[dayIndex]).join(", ")
           : daysOfWeekLabels[task.scheduleDay ?? 1];
-        return `Custom: Repeat ${intervalStr} on ${weekdaysNames}${timeSuffix}`;
+        return `Custom: Repeat ${intervalString} on ${weekdaysNames}${timeSuffix}`;
       }
 
       if (freq === "monthly") {
@@ -746,27 +746,27 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
           const occ = rule.nthDayOfWeek.occurrence;
           const occName = occ === 1 ? "first" : occ === 2 ? "second" : occ === 3 ? "third" : occ === 4 ? "fourth" : "last";
           const dayName = daysOfWeekLabels[rule.nthDayOfWeek.dayOfWeek];
-          return `Custom: Repeat ${intervalStr} on the ${occName} ${dayName}${timeSuffix}`;
+          return `Custom: Repeat ${intervalString} on the ${occName} ${dayName}${timeSuffix}`;
         }
         const dom = rule.dayOfMonth ?? 1;
         const domName = dom === -1 ? "last day" : `${dom}${dom === 1 ? "st" : dom === 2 ? "nd" : dom === 3 ? "rd" : "th"}`;
-        return `Custom: Repeat ${intervalStr} on the ${domName} of the month${timeSuffix}`;
+        return `Custom: Repeat ${intervalString} on the ${domName} of the month${timeSuffix}`;
       }
 
       if (freq === "yearly") {
         const monthNames = rule.months && rule.months.length > 0
-          ? rule.months.map(m => monthLabels[m - 1]).join(", ")
+          ? rule.months.map(monthIndex => monthLabels[monthIndex - 1]).join(", ")
           : monthLabels[5 - 1];
 
         if (rule.yearlyType === "nthDayOfWeek" && rule.nthDayOfWeek) {
           const occ = rule.nthDayOfWeek.occurrence;
           const occName = occ === 1 ? "first" : occ === 2 ? "second" : occ === 3 ? "third" : occ === 4 ? "fourth" : "last";
           const dayName = daysOfWeekLabels[rule.nthDayOfWeek.dayOfWeek];
-          return `Custom: Repeat ${intervalStr} in ${monthNames} on the ${occName} ${dayName}${timeSuffix}`;
+          return `Custom: Repeat ${intervalString} in ${monthNames} on the ${occName} ${dayName}${timeSuffix}`;
         }
         const dom = rule.dayOfMonth ?? 1;
         const domName = dom === -1 ? "last day" : `${dom}${dom === 1 ? "st" : dom === 2 ? "nd" : dom === 3 ? "rd" : "th"}`;
-        return `Custom: Repeat ${intervalStr} in ${monthNames} on the ${domName}${timeSuffix}`;
+        return `Custom: Repeat ${intervalString} in ${monthNames} on the ${domName}${timeSuffix}`;
       }
     }
 
@@ -959,7 +959,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                 <ScheduledTaskCalendarComponent
                   tasks={filteredTasks}
                   onEventClick={(taskId: string) => {
-                    const task = tasks.find((t) => t.id === taskId);
+                    const task = tasks.find((taskItem) => taskItem.id === taskId);
                     if (task) setSelectedTask(task);
                   }}
                 />
@@ -996,7 +996,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                       sortable: false,
                       render: (row: Task) => {
                         const taskAgent = agents.find(
-                          (a) => a.id === row.agent,
+                          (agentOption) => agentOption.id === row.agent,
                         );
                         return (
                           <BadgeComponent variant="info" mini>
@@ -1158,7 +1158,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     },
                   ]}
                   data={filteredTasks}
-                  getRowKey={(t: Task) => t.id}
+                  getRowKey={(task: Task) => task.id}
                   emptyText="No Cron Jobs found"
                   storageKey="scheduled-tasks"
                 />
@@ -1169,7 +1169,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     const isMenuOpen = activeMenuId === task.id;
                     const isConfirming = confirmDeleteId === task.id;
                     const isTriggering = triggeringId === task.id;
-                    const taskAgent = agents.find((a) => a.id === task.agent);
+                    const taskAgent = agents.find((agent) => agent.id === task.agent);
 
                     return (
                       <div
@@ -1388,7 +1388,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   {/* Task Name */}
                   <FormGroupComponent label="Name">
                     <InputComponent
-                      id="taskName"
+                      id="task-name"
                       required
                       placeholder="Enter task name"
                       value={formName}
@@ -1403,10 +1403,10 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     <FormGroupComponent label="Project">
                       <SelectComponent
                         value={formProject}
-                        onChange={(val: string) => setFormProject(val)}
-                        options={workspaces.map((w) => ({
-                          value: w.name,
-                          label: w.name,
+                        onChange={(value: string) => setFormProject(value)}
+                        options={workspaces.map((workspace) => ({
+                          value: workspace.name,
+                          label: workspace.name,
                         }))}
                         placeholder="Select project"
                       />
@@ -1439,7 +1439,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   {/* Prompt */}
                   <FormGroupComponent label="Prompt">
                     <TextAreaComponent
-                      id="taskPrompt"
+                      id="task-prompt"
                       required
                       placeholder="Enter a prompt for the agent..."
                       value={formPrompt}
@@ -1456,8 +1456,8 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     <FormGroupComponent label="Schedule">
                       <SelectComponent
                         value={formScheduleType}
-                        onChange={(val: string) =>
-                          setFormScheduleType(val as typeof formScheduleType)
+                        onChange={(value: string) =>
+                          setFormScheduleType(value as typeof formScheduleType)
                         }
                         options={[
                           { value: "once", label: "One-time" },
@@ -1480,7 +1480,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         <span className={styles.pickerLabel}>around</span>
                         <SelectComponent
                           value={formTimeHour}
-                          onChange={(val: string) => setFormTimeHour(val)}
+                          onChange={(value: string) => setFormTimeHour(value)}
                           options={Array.from({ length: 12 }, (_, i) => {
                             const formattedHour = String(
                               i === 0 ? 12 : i,
@@ -1494,15 +1494,15 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         <span className={styles.timeColon}>:</span>
                         <SelectComponent
                           value={formTimeMinute}
-                          onChange={(val: string) => setFormTimeMinute(val)}
-                          options={["00", "15", "30", "45"].map((m) => ({
-                            value: m,
-                            label: m,
+                          onChange={(value: string) => setFormTimeMinute(value)}
+                          options={["00", "15", "30", "45"].map((minuteOption) => ({
+                            value: minuteOption,
+                            label: minuteOption,
                           }))}
                         />
                         <SelectComponent
                           value={formTimeAmpm}
-                          onChange={(val: string) => setFormTimeAmpm(val)}
+                          onChange={(value: string) => setFormTimeAmpm(value)}
                           options={[
                             { value: "AM", label: "AM" },
                             { value: "PM", label: "PM" },
@@ -1516,8 +1516,8 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                       <div className={styles.weeklyPickerRow}>
                         <SelectComponent
                           value={String(formWeeklyDay)}
-                          onChange={(val: string) =>
-                            setFormWeeklyDay(Number(val))
+                          onChange={(value: string) =>
+                            setFormWeeklyDay(Number(value))
                           }
                           options={[
                             { value: "0", label: "Sunday" },
@@ -1532,7 +1532,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         <span className={styles.pickerLabel}>around</span>
                         <SelectComponent
                           value={formTimeHour}
-                          onChange={(val: string) => setFormTimeHour(val)}
+                          onChange={(value: string) => setFormTimeHour(value)}
                           options={Array.from({ length: 12 }, (_, i) => {
                             const formattedHour = String(
                               i === 0 ? 12 : i,
@@ -1546,15 +1546,15 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         <span className={styles.timeColon}>:</span>
                         <SelectComponent
                           value={formTimeMinute}
-                          onChange={(val: string) => setFormTimeMinute(val)}
-                          options={["00", "15", "30", "45"].map((m) => ({
-                            value: m,
-                            label: m,
+                          onChange={(value: string) => setFormTimeMinute(value)}
+                          options={["00", "15", "30", "45"].map((minuteOption) => ({
+                            value: minuteOption,
+                            label: minuteOption,
                           }))}
                         />
                         <SelectComponent
                           value={formTimeAmpm}
-                          onChange={(val: string) => setFormTimeAmpm(val)}
+                          onChange={(value: string) => setFormTimeAmpm(value)}
                           options={[
                             { value: "AM", label: "AM" },
                             { value: "PM", label: "PM" },
@@ -1576,7 +1576,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         <span className={styles.pickerLabel}>around</span>
                         <SelectComponent
                           value={formTimeHour}
-                          onChange={(val: string) => setFormTimeHour(val)}
+                          onChange={(value: string) => setFormTimeHour(value)}
                           options={Array.from({ length: 12 }, (_, i) => {
                             const formattedHour = String(
                               i === 0 ? 12 : i,
@@ -1590,15 +1590,15 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         <span className={styles.timeColon}>:</span>
                         <SelectComponent
                           value={formTimeMinute}
-                          onChange={(val: string) => setFormTimeMinute(val)}
-                          options={["00", "15", "30", "45"].map((m) => ({
-                            value: m,
-                            label: m,
+                          onChange={(value: string) => setFormTimeMinute(value)}
+                          options={["00", "15", "30", "45"].map((minuteOption) => ({
+                            value: minuteOption,
+                            label: minuteOption,
                           }))}
                         />
                         <SelectComponent
                           value={formTimeAmpm}
-                          onChange={(val: string) => setFormTimeAmpm(val)}
+                          onChange={(value: string) => setFormTimeAmpm(value)}
                           options={[
                             { value: "AM", label: "AM" },
                             { value: "PM", label: "PM" },
@@ -1611,7 +1611,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     {formScheduleType === "cron" && (
                       <FormGroupComponent label="Cron Expression">
                         <InputComponent
-                          id="taskCron"
+                          id="task-cron"
                           required
                           placeholder="* * * * *"
                           value={formCron}
@@ -1636,7 +1636,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                           />
                           <SelectComponent
                             value={formCustomFrequency}
-                            onChange={(val: string) => setFormCustomFrequency(val as "daily" | "weekly" | "monthly" | "yearly")}
+                            onChange={(value: string) => setFormCustomFrequency(value as "daily" | "weekly" | "monthly" | "yearly")}
                             options={[
                               { value: "daily", label: "Day(s)" },
                               { value: "weekly", label: "Week(s)" },
@@ -1647,7 +1647,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                           <span className={styles.recurrenceText}>around</span>
                           <SelectComponent
                             value={formTimeHour}
-                            onChange={(val: string) => setFormTimeHour(val)}
+                            onChange={(value: string) => setFormTimeHour(value)}
                             options={Array.from({ length: 12 }, (_, i) => {
                               const formattedHour = String(i === 0 ? 12 : i).padStart(2, "0");
                               return { value: formattedHour, label: formattedHour };
@@ -1656,12 +1656,12 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                           <span className={styles.timeColon}>:</span>
                           <SelectComponent
                             value={formTimeMinute}
-                            onChange={(val: string) => setFormTimeMinute(val)}
-                            options={["00", "15", "30", "45"].map((m) => ({ value: m, label: m }))}
+                            onChange={(value: string) => setFormTimeMinute(value)}
+                            options={["00", "15", "30", "45"].map((minuteOption) => ({ value: minuteOption, label: minuteOption }))}
                           />
                           <SelectComponent
                             value={formTimeAmpm}
-                            onChange={(val: string) => setFormTimeAmpm(val)}
+                            onChange={(value: string) => setFormTimeAmpm(value)}
                             options={[
                               { value: "AM", label: "AM" },
                               { value: "PM", label: "PM" },
@@ -1681,9 +1681,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                     type="button"
                                     onClick={() => {
                                       if (isSelected) {
-                                        setFormCustomWeekdays(prev => prev.filter(d => d !== dayIndex));
+                                        setFormCustomWeekdays(previousWeekdays => previousWeekdays.filter(dayItem => dayItem !== dayIndex));
                                       } else {
-                                        setFormCustomWeekdays(prev => [...prev, dayIndex].sort());
+                                        setFormCustomWeekdays(previousWeekdays => [...previousWeekdays, dayIndex].sort());
                                       }
                                     }}
                                     className={`${styles.weekdayBadgeButton} ${isSelected ? styles.weekdayBadgeActive : ""}`}
@@ -1701,16 +1701,16 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             <div className={styles.recurrenceSubrow}>
                               <input
                                 type="radio"
-                                id="monthlyTypeDay"
-                                name="monthlyType"
+                                id="monthly-type-day"
+                                name="monthly-type"
                                 checked={formCustomMonthlyType === "dayOfMonth"}
                                 onChange={() => setFormCustomMonthlyType("dayOfMonth")}
                               />
-                              <label htmlFor="monthlyTypeDay" className={styles.radioLabel}>
+                              <label htmlFor="monthly-type-day" className={styles.radioLabel}>
                                 On the
                                 <SelectComponent
                                   value={String(formCustomDayOfMonth)}
-                                  onChange={(val: string) => setFormCustomDayOfMonth(Number(val))}
+                                  onChange={(value: string) => setFormCustomDayOfMonth(Number(value))}
                                   options={[
                                     { value: "-1", label: "last day" },
                                     ...Array.from({ length: 31 }, (_, i) => ({
@@ -1727,16 +1727,16 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             <div className={styles.recurrenceSubrow}>
                               <input
                                 type="radio"
-                                id="monthlyTypeNth"
-                                name="monthlyType"
+                                id="monthly-type-nth"
+                                name="monthly-type"
                                 checked={formCustomMonthlyType === "nthDayOfWeek"}
                                 onChange={() => setFormCustomMonthlyType("nthDayOfWeek")}
                               />
-                              <label htmlFor="monthlyTypeNth" className={styles.radioLabel}>
+                              <label htmlFor="monthly-type-nth" className={styles.radioLabel}>
                                 On the
                                 <SelectComponent
                                   value={String(formCustomNthDayOccurrence)}
-                                  onChange={(val: string) => setFormCustomNthDayOccurrence(Number(val) as 1 | 2 | 3 | 4 | -1)}
+                                  onChange={(value: string) => setFormCustomNthDayOccurrence(Number(value) as 1 | 2 | 3 | 4 | -1)}
                                   options={[
                                     { value: "1", label: "first" },
                                     { value: "2", label: "second" },
@@ -1748,7 +1748,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                 />
                                 <SelectComponent
                                   value={String(formCustomNthDayOfWeek)}
-                                  onChange={(val: string) => setFormCustomNthDayOfWeek(Number(val))}
+                                  onChange={(value: string) => setFormCustomNthDayOfWeek(Number(value))}
                                   options={[
                                     { value: "0", label: "Sunday" },
                                     { value: "1", label: "Monday" },
@@ -1779,9 +1779,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                     type="button"
                                     onClick={() => {
                                       if (isSelected) {
-                                        setFormCustomMonths(prev => prev.filter(m => m !== monthOneIndexed));
+                                        setFormCustomMonths(previousMonths => previousMonths.filter(monthItem => monthItem !== monthOneIndexed));
                                       } else {
-                                        setFormCustomMonths(prev => [...prev, monthOneIndexed].sort());
+                                        setFormCustomMonths(previousMonths => [...previousMonths, monthOneIndexed].sort());
                                       }
                                     }}
                                     className={`${styles.monthBadgeButton} ${isSelected ? styles.monthBadgeActive : ""}`}
@@ -1795,16 +1795,16 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             <div className={styles.recurrenceSubrow}>
                               <input
                                 type="radio"
-                                id="yearlyTypeDay"
-                                name="yearlyType"
+                                id="yearly-type-day"
+                                name="yearly-type"
                                 checked={formCustomYearlyType === "specificDate"}
                                 onChange={() => setFormCustomYearlyType("specificDate")}
                               />
-                              <label htmlFor="yearlyTypeDay" className={styles.radioLabel}>
+                              <label htmlFor="yearly-type-day" className={styles.radioLabel}>
                                 On the
                                 <SelectComponent
                                   value={String(formCustomDayOfMonth)}
-                                  onChange={(val: string) => setFormCustomDayOfMonth(Number(val))}
+                                  onChange={(value: string) => setFormCustomDayOfMonth(Number(value))}
                                   options={[
                                     { value: "-1", label: "last day" },
                                     ...Array.from({ length: 31 }, (_, i) => ({
@@ -1821,16 +1821,16 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             <div className={styles.recurrenceSubrow}>
                               <input
                                 type="radio"
-                                id="yearlyTypeNth"
-                                name="yearlyType"
+                                id="yearly-type-nth"
+                                name="yearly-type"
                                 checked={formCustomYearlyType === "nthDayOfWeek"}
                                 onChange={() => setFormCustomYearlyType("nthDayOfWeek")}
                               />
-                              <label htmlFor="yearlyTypeNth" className={styles.radioLabel}>
+                              <label htmlFor="yearly-type-nth" className={styles.radioLabel}>
                                 On the
                                 <SelectComponent
                                   value={String(formCustomNthDayOccurrence)}
-                                  onChange={(val: string) => setFormCustomNthDayOccurrence(Number(val) as 1 | 2 | 3 | 4 | -1)}
+                                  onChange={(value: string) => setFormCustomNthDayOccurrence(Number(value) as 1 | 2 | 3 | 4 | -1)}
                                   options={[
                                     { value: "1", label: "first" },
                                     { value: "2", label: "second" },
@@ -1842,7 +1842,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                 />
                                 <SelectComponent
                                   value={String(formCustomNthDayOfWeek)}
-                                  onChange={(val: string) => setFormCustomNthDayOfWeek(Number(val))}
+                                  onChange={(value: string) => setFormCustomNthDayOfWeek(Number(value))}
                                   options={[
                                     { value: "0", label: "Sunday" },
                                     { value: "1", label: "Monday" },

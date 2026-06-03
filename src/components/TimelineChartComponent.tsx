@@ -159,7 +159,7 @@ export default function TimelineChartComponent({
   onGranularityChange,
 }: TimelineChartProps) {
   const [activeTab, setActiveTab] = useState("requests");
-  const tab = TABS.find((t) => t.key === activeTab) || TABS[0];
+  const tab = TABS.find((tabOption) => tabOption.key === activeTab) || TABS[0];
 
   const gradientId = `timelineGrad_${tab.key}`;
 

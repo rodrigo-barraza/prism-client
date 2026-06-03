@@ -302,16 +302,16 @@ export default function TracesPage() {
                     {(associations?.conversations?.length ?? 0) > 0 ? (
                       <div className={styles.associationList}>
                         {associations?.conversations?.map(
-                          (c: TraceConversation) => (
+                          (conversation: TraceConversation) => (
                             <HistoryItemComponent
-                              key={c.id}
+                              key={conversation.id}
                               item={{
-                                id: c.id,
-                                title: c.title || "Untitled",
-                                tags: c.project
+                                id: conversation.id,
+                                title: conversation.title || "Untitled",
+                                tags: conversation.project
                                   ? [
                                       {
-                                        label: c.project,
+                                        label: conversation.project,
                                         style: {
                                           background:
                                             "var(--accent-primary-subtle)",
@@ -320,17 +320,17 @@ export default function TracesPage() {
                                       },
                                     ]
                                   : [],
-                                updatedAt: c.updatedAt || c.createdAt,
-                                createdAt: c.createdAt,
-                                totalCost: c.totalCost || 0,
-                                modalities: c.modalities || {},
-                                modelName: c.model || null,
-                                username: c.username,
-                                agent: c.agent,
+                                updatedAt: conversation.updatedAt || conversation.createdAt,
+                                createdAt: conversation.createdAt,
+                                totalCost: conversation.totalCost || 0,
+                                modalities: conversation.modalities || {},
+                                modelName: conversation.model || null,
+                                username: conversation.username,
+                                agent: conversation.agent,
                               }}
                               icon={MessageSquare}
                               admin
-                              onClick={() => router.push(`/admin/chat/${c.id}`)}
+                              onClick={() => router.push(`/admin/chat/${conversation.id}`)}
                             />
                           ),
                         )}
@@ -345,26 +345,26 @@ export default function TracesPage() {
                     </span>
                     {(associations?.workflows?.length ?? 0) > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.workflows?.map((w: TraceWorkflow) => (
+                        {associations?.workflows?.map((workflow: TraceWorkflow) => (
                           <HistoryItemComponent
-                            key={w.id}
+                            key={workflow.id}
                             item={{
-                              id: w.id,
-                              title: w.name || "Untitled",
+                              id: workflow.id,
+                              title: workflow.name || "Untitled",
                               tags: [
                                 {
-                                  label: `${w.nodeCount} nodes · ${w.edgeCount} edges`,
+                                  label: `${workflow.nodeCount} nodes · ${workflow.edgeCount} edges`,
                                   style: {
                                     background: "var(--background-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },
                               ],
-                              updatedAt: w.updatedAt || w.createdAt,
+                              updatedAt: workflow.updatedAt || workflow.createdAt,
                             }}
                             icon={GitBranch}
                             onClick={() =>
-                              router.push(`/admin/workflows/${w.id}`)
+                              router.push(`/admin/workflows/${workflow.id}`)
                             }
                           />
                         ))}

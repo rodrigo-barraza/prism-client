@@ -186,12 +186,12 @@ export default function CustomThemeEditorComponent({
   const handleCancel = useCallback(() => {
     if (isNew && editing) {
       // Remove the temporary injected style for a never-saved theme
-      const styleEl = document.getElementById(`custom-theme-${editing.id}`);
-      if (styleEl) styleEl.remove();
+      const styleElement = document.getElementById(`custom-theme-${editing.id}`);
+      if (styleElement) styleElement.remove();
     } else if (editing) {
       // Re-inject the original saved version
       const original = CustomThemeService.getAll().find(
-        (t) => t.id === editing.id,
+        (theme) => theme.id === editing.id,
       );
       if (original) CustomThemeService.injectThemeStyle(original);
     }
@@ -236,14 +236,14 @@ export default function CustomThemeEditorComponent({
 
   const handleTokenChange = useCallback(
     (key: keyof CustomThemeTokens, value: string) => {
-      setEditTokens((prev) => (prev ? { ...prev, [key]: value } : prev));
+      setEditTokens((previousTokens) => (previousTokens ? { ...previousTokens, [key]: value } : previousTokens));
     },
     [],
   );
 
   const toggleGroup = useCallback((title: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
+    setExpandedGroups((previousGroups) => {
+      const next = new Set(previousGroups);
       if (next.has(title)) next.delete(title);
       else next.add(title);
       return next;

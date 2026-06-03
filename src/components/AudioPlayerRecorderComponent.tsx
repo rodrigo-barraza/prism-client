@@ -47,8 +47,8 @@ function drawBars(
   const mid = canvasHeight / 2;
 
   for (let i = 0; i < totalBars; i++) {
-    const peakIdx = Math.floor((i / totalBars) * peaks.length);
-    const amp = peaks[peakIdx] ?? 0;
+    const peakIndex = Math.floor((i / totalBars) * peaks.length);
+    const amp = peaks[peakIndex] ?? 0;
     const barH = Math.max(2, amp * (canvasHeight * 0.8));
 
     context.fillStyle = i / totalBars <= progress ? playedColor : unplayedColor;
@@ -63,25 +63,25 @@ function drawBars(
 
 /* -- Decode audio src into peaks + true duration -- */
 async function decodePeaks(
-  src: string,
-  numPeaks = 200,
+  sourceUrl: string,
+  numberOfPeaks = 200,
 ): Promise<{ peaks: number[]; duration: number | null }> {
   try {
-    const response = await fetch(src);
+    const response = await fetch(sourceUrl);
     const buffer = await response.arrayBuffer();
     const AudioContextClass =
       window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext })
         .webkitAudioContext;
-    const audioCtx = new AudioContextClass();
-    const decoded = await audioCtx.decodeAudioData(buffer);
-    await audioCtx.close();
+    const audioContext = new AudioContextClass();
+    const decoded = await audioContext.decodeAudioData(buffer);
+    await audioContext.close();
 
     const trueDuration = decoded.duration;
     const raw = decoded.getChannelData(0);
-    const blockSize = Math.floor(raw.length / numPeaks);
+    const blockSize = Math.floor(raw.length / numberOfPeaks);
     const peaks = [];
-    for (let i = 0; i < numPeaks; i++) {
+    for (let i = 0; i < numberOfPeaks; i++) {
       let sum = 0;
       for (let j = 0; j < blockSize; j++) {
         sum += Math.abs(raw[i * blockSize + j]);
@@ -89,9 +89,9 @@ async function decodePeaks(
       peaks.push(sum / blockSize);
     }
     const max = Math.max(...peaks, 0.01);
-    return { peaks: peaks.map((p) => p / max), duration: trueDuration };
+    return { peaks: peaks.map((peak) => peak / max), duration: trueDuration };
   } catch {
-    return { peaks: new Array(numPeaks).fill(0.15), duration: null };
+    return { peaks: new Array(numberOfPeaks).fill(0.15), duration: null };
   }
 }
 
@@ -101,7 +101,7 @@ async function decodePeaks(
  * - Recorder: pass `onRecordingComplete` → mic button / recording UI
  */
 export interface AudioPlayerRecorderProps {
-  src?: string | null;
+  sourceUrl?: string | null;
   onRecordingComplete?: (data: string | ArrayBuffer | null) => void;
   onRemove?: () => void;
   compact?: boolean;
@@ -110,7 +110,7 @@ export interface AudioPlayerRecorderProps {
 }
 
 export default function AudioPlayerRecorderComponent({
-  src,
+  sourceUrl,
   onRecordingComplete,
   onRemove,
   compact = false,
@@ -124,7 +124,7 @@ export default function AudioPlayerRecorderComponent({
   const audioChunksRef = useRef<Blob[]>([]);
   const recTimerRef = useRef<NodeJS.Timeout | number | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const recCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const recPeaksRef = useRef<number[]>([]);
@@ -139,12 +139,12 @@ export default function AudioPlayerRecorderComponent({
   const [muted, setMuted] = useState(false);
   const [peaks, setPeaks] = useState<number[] | null>(null);
   const playAnimRef = useRef<number | null>(null);
-  const prevSrcRef = useRef<string | null | undefined>(src);
+  const previousSourceUrlRef = useRef<string | null | undefined>(sourceUrl);
 
   // -- Reset player state when src changes (prevents stale audio across conversations) --
   useEffect(() => {
-    if (prevSrcRef.current !== src) {
-      prevSrcRef.current = src;
+    if (previousSourceUrlRef.current !== sourceUrl) {
+      previousSourceUrlRef.current = sourceUrl;
       // Fully reset player state
       setIsPlaying(false);
       setCurrentTime(0);
@@ -159,7 +159,7 @@ export default function AudioPlayerRecorderComponent({
         audio.load();
       }
     }
-  }, [src]);
+  }, [sourceUrl]);
 
   // -- Cleanup on unmount — stop any playing audio --
   useEffect(() => {
@@ -176,18 +176,18 @@ export default function AudioPlayerRecorderComponent({
 
   // -- Decode audio for playback waveform + true duration --
   useEffect(() => {
-    if (!src) return;
+    if (!sourceUrl) return;
     let cancelled = false;
-    decodePeaks(src).then(({ peaks: p, duration: d }) => {
+    decodePeaks(sourceUrl).then(({ peaks: decodedPeaks, duration: decodedDuration }) => {
       if (cancelled) return;
-      setPeaks(p);
+      setPeaks(decodedPeaks);
       // Use decoded duration as source of truth (WebM metadata often reports Infinity)
-      if (d != null && Number.isFinite(d) && d > 0) setDuration(d);
+      if (decodedDuration != null && Number.isFinite(decodedDuration) && decodedDuration > 0) setDuration(decodedDuration);
     });
     return () => {
       cancelled = true;
     };
-  }, [src]);
+  }, [sourceUrl]);
 
   // -- Draw / redraw player waveform --
   const redrawPlayer = useCallback(() => {
@@ -223,9 +223,9 @@ export default function AudioPlayerRecorderComponent({
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
-    if (audioCtxRef.current) {
-      audioCtxRef.current.close().catch(() => {});
-      audioCtxRef.current = null;
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
     }
     analyserRef.current = null;
   }, []);
@@ -269,11 +269,11 @@ export default function AudioPlayerRecorderComponent({
       const canvasHeight = canvas.height;
       context.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      const curPeaks = recPeaksRef.current;
+      const currentPeaks = recPeaksRef.current;
       const mid = canvasHeight / 2;
-      const startX = mid - curPeaks.length * (BAR_WIDTH + BAR_GAP);
-      for (let i = 0; i < curPeaks.length; i++) {
-        const amp = curPeaks[i];
+      const startX = mid - currentPeaks.length * (BAR_WIDTH + BAR_GAP);
+      for (let i = 0; i < currentPeaks.length; i++) {
+        const amp = currentPeaks[i];
         const barH = Math.max(2, amp * (canvasHeight * 0.85));
         context.fillStyle = "#ef4444";
         context.fillRect(
@@ -317,12 +317,12 @@ export default function AudioPlayerRecorderComponent({
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext })
           .webkitAudioContext;
-      const audioCtx = new AudioContextClass();
-      const source = audioCtx.createMediaStreamSource(stream);
-      const analyser = audioCtx.createAnalyser();
+      const audioContext = new AudioContextClass();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
       analyser.fftSize = 256;
       source.connect(analyser);
-      audioCtxRef.current = audioCtx;
+      audioContextRef.current = audioContext;
       analyserRef.current = analyser;
 
       const recorder = new MediaRecorder(stream);
@@ -339,7 +339,7 @@ export default function AudioPlayerRecorderComponent({
           );
         };
         reader.readAsDataURL(blob);
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
       mediaRecorderRef.current = recorder;
       recorder.start();
@@ -383,9 +383,9 @@ export default function AudioPlayerRecorderComponent({
   };
 
   const handleDownload = () => {
-    if (!src) return;
+    if (!sourceUrl) return;
     const downloadAnchor = document.createElement("a");
-    downloadAnchor.href = src;
+    downloadAnchor.href = sourceUrl;
     downloadAnchor.download = "audio.webm";
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
@@ -395,7 +395,7 @@ export default function AudioPlayerRecorderComponent({
   // -------------------------------------------
   // MODE: Streaming (live audio indicator)
   // -------------------------------------------
-  if (streaming && !src) {
+  if (streaming && !sourceUrl) {
     return (
       <div
         className={`${styles.audioThumb} ${styles.audioStreaming} ${compact ? styles.audioCompact : ""}`}
@@ -425,7 +425,7 @@ export default function AudioPlayerRecorderComponent({
   // -------------------------------------------
   // MODE: Playback
   // -------------------------------------------
-  if (src) {
+  if (sourceUrl) {
     if (square) {
       return (
         <div
@@ -434,7 +434,7 @@ export default function AudioPlayerRecorderComponent({
         >
           <audio
             ref={audioRef}
-            src={src}
+            src={sourceUrl || ""}
             preload="metadata"
             onLoadedMetadata={(e: React.SyntheticEvent<HTMLAudioElement>) => {
               const audioDuration = e.currentTarget.duration;
@@ -492,7 +492,7 @@ export default function AudioPlayerRecorderComponent({
       >
         <audio
           ref={audioRef}
-          src={src}
+          src={sourceUrl || ""}
           preload="metadata"
           onLoadedMetadata={(e: React.SyntheticEvent<HTMLAudioElement>) => {
             const audioDuration = e.currentTarget.duration;

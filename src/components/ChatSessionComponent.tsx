@@ -214,9 +214,9 @@ const ZALGO = [
 ];
 const GLITCH_POOL = SYMBOLS + "ΣΩΨΞΘΔΛΠΦψξθδλπφ¿¡«»░▒▓█▄▀■□▪▫▬▲▼◆●○◎◇";
 
-function glitchText(len = 6) {
+function glitchText(length = 6) {
   let result = "";
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < length; i++) {
     result += GLITCH_POOL[Math.floor(Math.random() * GLITCH_POOL.length)];
     const marks = 1 + Math.floor(Math.random() * 2);
     for (let j = 0; j < marks; j++) {
@@ -553,17 +553,17 @@ export default function ChatSessionComponent({
     (targetTab: string, delayMs = 5000) => {
       const isBottomTab = BOTTOM_PANEL_TABS.has(targetTab);
       const currentRef = isBottomTab ? leftTabBottomRef : leftTabRef;
-      const setTabFn = isBottomTab ? setLeftTabBottom : setLeftTab;
+      const updateTabState = isBottomTab ? setLeftTabBottom : setLeftTab;
       const previousTab = currentRef.current;
       if (previousTab === targetTab) return;
       // Cancel any pending revert from a previous ephemeral switch
       if (tabRevertTimerRef.current) clearTimeout(tabRevertTimerRef.current);
-      setTabFn(targetTab);
+      updateTabState(targetTab);
       tabRevertTimerRef.current = setTimeout(() => {
         tabRevertTimerRef.current = null;
         // Only revert if the user hasn't manually navigated away
         if (currentRef.current === targetTab) {
-          setTabFn(previousTab);
+          updateTabState(previousTab);
         }
       }, delayMs);
     },
@@ -573,8 +573,8 @@ export default function ChatSessionComponent({
   // Count concurrent API calls: main generation + active worker agents
   const activeApiCount = useMemo(() => {
     const activeWorkers = Object.values(workerToolActivity).filter(
-      (w: WorkerActivityEntry) =>
-        w.currentTool || w.phase === "generating" || w.phase === "thinking",
+      (worker: WorkerActivityEntry) =>
+        worker.currentTool || worker.phase === "generating" || worker.phase === "thinking",
     ).length;
     return (isGenerating ? 1 : 0) + activeWorkers;
   }, [isGenerating, workerToolActivity]);
@@ -632,7 +632,7 @@ export default function ChatSessionComponent({
   const [pendingFiles, setPendingFiles] = useState<
     { name: string; mimeType: string; dataUrl: string; modality: string }[]
   >([]);
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxSourceUrl, setLightboxSourceUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef<number>(0);
 
@@ -797,16 +797,16 @@ export default function ChatSessionComponent({
     // could arrive, leaving activity entries stuck in active phases.
     setWorkerToolActivity((previousPixelSize) => {
       const hasActive = Object.values(previousPixelSize).some(
-        (w: WorkerActivityEntry) =>
-          w.phase && w.phase !== "complete" && w.phase !== "failed",
+        (worker: WorkerActivityEntry) =>
+          worker.phase && worker.phase !== "complete" && worker.phase !== "failed",
       );
       if (!hasActive) return previousPixelSize;
       const next: Record<string, WorkerActivityEntry> = {};
-      for (const [id, w] of Object.entries(previousPixelSize)) {
+      for (const [id, worker] of Object.entries(previousPixelSize)) {
         next[id] =
-          w.phase && w.phase !== "complete" && w.phase !== "failed"
-            ? { ...w, phase: "complete", currentTool: null }
-            : w;
+          worker.phase && worker.phase !== "complete" && worker.phase !== "failed"
+            ? { ...worker, phase: "complete", currentTool: null }
+            : worker;
       }
       return next;
     });
@@ -842,14 +842,14 @@ export default function ChatSessionComponent({
     for (const [provider, models] of Object.entries(
       textModelsMap as Record<string, ModelOption[]>,
     )) {
-      const fcModels = models.filter((m: ModelOption) =>
-        m.tools?.includes("Tool Calling"),
+      const fcModels = models.filter((model: ModelOption) =>
+        model.tools?.includes("Tool Calling"),
       );
       if (fcModels.length > 0) filteredTextModels[provider] = fcModels;
     }
 
     const filteredProviderList = (config.providerList || []).filter(
-      (p) => filteredTextModels[p],
+      (provider) => filteredTextModels[provider],
     );
 
     return {
@@ -874,7 +874,7 @@ export default function ChatSessionComponent({
       const models =
         filteredConfig.textToText?.models?.[settings.provider ?? ""] || [];
       const modelDef = models.find(
-        (m: ModelOption) => m.name === settings.model,
+        (model: ModelOption) => model.name === settings.model,
       ) as (ModelOption & { inputTypes?: string[] }) | undefined;
       if (modelDef?.inputTypes?.includes("image")) modalities.add("image");
     }
@@ -978,7 +978,7 @@ export default function ChatSessionComponent({
       const urlModelName = rest.join(":"); // handles model names with colons
       if (!urlProvider || !urlModelName) return false;
       const providerModels = config.textToText?.models?.[urlProvider] || [];
-      const modelDef = providerModels.find((m) => m.name === urlModelName);
+      const modelDef = providerModels.find((model) => model.name === urlModelName);
       if (!modelDef) return false; // model not (yet) in config — may arrive with local merge
       // FC gate for agent mode
       if (!isNoAgent && !modelDef.tools?.includes("Tool Calling")) return false;
@@ -1035,7 +1035,7 @@ export default function ChatSessionComponent({
   useEffect(() => {
     if (!config || !settings.provider || !settings.model) return;
     const providerModels = config.textToText?.models?.[settings.provider] || [];
-    const modelDef = providerModels.find((m) => m.name === settings.model);
+    const modelDef = providerModels.find((model) => model.name === settings.model);
     if (!modelDef) return;
 
     // Check if the model is an always-on thinking model (e.g. Gemini 3.5 Flash)
@@ -1129,7 +1129,7 @@ export default function ChatSessionComponent({
 
         const lastAssistant = [...(full.messages || [])]
           .reverse()
-          .find((m) => m.role === "assistant" && m.provider);
+          .find((message) => message.role === "assistant" && message.provider);
         if (lastAssistant) {
           const gs = (lastAssistant.generationSettings || {}) as Record<
             string,
@@ -1499,18 +1499,18 @@ export default function ChatSessionComponent({
 
   // -- Memoize filtered messages for MessageList to prevent ref churn --
   const filteredMessages = useMemo(
-    () => messages.filter((m) => m.role === "user" || m.role === "assistant"),
+    () => messages.filter((message) => message.role === "user" || message.role === "assistant"),
     [messages],
   );
 
   const hasSystemContextMessage = useMemo(() => {
     return messages.some(
-      (m) =>
-        m.role === "user" &&
-        (m.content?.startsWith("[System Context]") ||
-          m.rawContent?.startsWith("[System Context]") ||
-          m.content?.startsWith("[System Context - Local Time:") ||
-          m.rawContent?.startsWith("[System Context - Local Time:")),
+      (message) =>
+        message.role === "user" &&
+        (message.content?.startsWith("[System Context]") ||
+          message.rawContent?.startsWith("[System Context]") ||
+          message.content?.startsWith("[System Context - Local Time:") ||
+          message.rawContent?.startsWith("[System Context - Local Time:")),
     );
   }, [messages]);
 
@@ -1719,8 +1719,8 @@ export default function ChatSessionComponent({
         mentionCacheRef.current = flat;
         setKnownPaths(
           flat
-            .map((e) => e.path)
-            .filter((p): p is string => typeof p === "string"),
+            .map((entry) => entry.path)
+            .filter((filePath): filePath is string => typeof filePath === "string"),
         );
       }
     } catch {
@@ -3849,7 +3849,7 @@ export default function ChatSessionComponent({
       // Agent sessions record which workspace they were started with;
       // switch to it so the workspace tree and tool routing match.
       if (full.workspaceRoot) {
-        const match = workspaces.find((w) => w.path === full.workspaceRoot);
+        const match = workspaces.find((workspace) => workspace.path === full.workspaceRoot);
         if (match) {
           if (match.path !== currentWorkspace?.path) {
             setCurrentWorkspace(match);
@@ -3980,7 +3980,7 @@ export default function ChatSessionComponent({
 
         const lastAssistant = [...(full.messages || [])]
           .reverse()
-          .find((m) => m.role === "assistant" && m.provider);
+          .find((message) => message.role === "assistant" && message.provider);
         if (lastAssistant) {
           const gs = lastAssistant.generationSettings || {};
           // Session-level settings (from patchConversation) represent the
@@ -4405,10 +4405,10 @@ export default function ChatSessionComponent({
                   icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
                   ...badgeProps(workersCount, "workers"),
                   badgeRainbow: Object.values(workerToolActivity).some(
-                    (w: WorkerActivityEntry) =>
-                      w.currentTool ||
-                      w.phase === "generating" ||
-                      w.phase === "thinking",
+                    (worker: WorkerActivityEntry) =>
+                      worker.currentTool ||
+                      worker.phase === "generating" ||
+                      worker.phase === "thinking",
                   ),
                   tooltip: "Workers",
                 },
@@ -5132,13 +5132,13 @@ export default function ChatSessionComponent({
           }}
           planProposal={planProposal}
           onPlanApprove={() => {
-            setPlanProposal((p) => (p ? { ...p, status: "approved" } : null));
+            setPlanProposal((previousPlan) => (previousPlan ? { ...previousPlan, status: "approved" } : null));
             PrismService.sendApprovalResponse(conversationId, true).catch(
               console.error,
             );
           }}
           onPlanReject={() => {
-            setPlanProposal((p) => (p ? { ...p, status: "rejected" } : null));
+            setPlanProposal((previousPlan) => (previousPlan ? { ...previousPlan, status: "rejected" } : null));
             PrismService.sendApprovalResponse(conversationId, false).catch(
               console.error,
             );
@@ -5260,11 +5260,11 @@ export default function ChatSessionComponent({
         if (hasActiveTools && Object.keys(workerToolActivity).length > 0) {
           const workers = Object.values(workerToolActivity);
           const activeWorkers = workers.filter(
-            (w: WorkerActivityEntry) =>
-              w.phase &&
-              w.phase !== "complete" &&
-              w.phase !== "failed" &&
-              w.phase !== "spawned",
+            (worker: WorkerActivityEntry) =>
+              worker.phase &&
+              worker.phase !== "complete" &&
+              worker.phase !== "failed" &&
+              worker.phase !== "spawned",
           );
           if (activeWorkers.length > 0) {
             // Priority: generating > thinking > processing > loading > starting
@@ -5275,17 +5275,17 @@ export default function ChatSessionComponent({
               "loading",
               "starting",
             ];
-            for (const p of phasePriority) {
+            for (const phase of phasePriority) {
               const count = activeWorkers.filter(
-                (w: WorkerActivityEntry) => w.phase === p,
+                (worker: WorkerActivityEntry) => worker.phase === phase,
               ).length;
               if (count > 0) {
-                workerDerivedPhase = p;
+                workerDerivedPhase = phase;
                 const total = activeWorkers.length;
                 // Multiple workers — show aggregate count; single worker uses default phase label (null)
                 workerDerivedLabel =
                   total > 1
-                    ? `${count}/${total} worker${total !== 1 ? "s" : ""} ${p}…`
+                    ? `${count}/${total} worker${total !== 1 ? "s" : ""} ${phase}…`
                     : null;
                 break;
               }
@@ -5418,7 +5418,7 @@ export default function ChatSessionComponent({
                     src={dataUrl}
                     alt="Attached"
                     className={chatStyles.pendingImg}
-                    onClick={() => setLightboxSrc(dataUrl)}
+                    onClick={() => setLightboxSourceUrl(dataUrl)}
                   />
                   <button
                     type="button"
@@ -5627,16 +5627,16 @@ export default function ChatSessionComponent({
           </div>
         </form>
       </div>
-      {lightboxSrc && (
+      {lightboxSourceUrl && (
         <ImagePreviewComponent
-          src={lightboxSrc}
-          onClose={() => setLightboxSrc(null)}
+          src={lightboxSourceUrl}
+          onClose={() => setLightboxSourceUrl(null)}
           onUseAnnotated={(dataUrl: string) => {
             setPendingImages((previousPixelSize) => [
               ...previousPixelSize,
               dataUrl,
             ]);
-            setLightboxSrc(null);
+            setLightboxSourceUrl(null);
           }}
         />
       )}
@@ -5698,9 +5698,9 @@ export default function ChatSessionComponent({
               }}
               isOpen={viewerOpenFiles.length > 0}
               width={viewerWidth}
-              onWidthChange={(w: number) => {
-                setViewerWidth(w);
-                localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(w));
+              onWidthChange={(width: number) => {
+                setViewerWidth(width);
+                localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(width));
               }}
               refreshKey={viewerRefreshKey}
               onMentionLines={handleMentionLines}
@@ -5752,7 +5752,7 @@ export default function ChatSessionComponent({
               onSelectModel={(provider: string, modelName: string) => {
                 const modelDef = (
                   filteredConfig?.textToText?.models?.[provider] || []
-                ).find((m: ModelOption) => m.name === modelName);
+                ).find((model: ModelOption) => model.name === modelName);
                 const temp = modelDef?.defaultTemperature ?? 1.0;
                 setSettings((s) => ({
                   ...s,

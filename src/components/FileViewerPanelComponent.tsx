@@ -384,7 +384,7 @@ export default function FileViewerPanelComponent({
   const tabBarRef = useRef<HTMLDivElement | null>(null);
   const resizeRef = useRef<HTMLDivElement | null>(null);
 
-  const activeFile = openFiles.find((f) => f.id === activeFileId) || null;
+  const activeFile = openFiles.find((file) => file.id === activeFileId) || null;
   const cached = activeFile ? fileContents[activeFile.id] : null;
 
   // Track in-flight fetches outside of React state to avoid cascading renders
@@ -397,16 +397,16 @@ export default function FileViewerPanelComponent({
       inflightRef.current.add(id);
 
       // Set loading state immediately
-      setFileContents((prev) => ({
-        ...prev,
+      setFileContents((previousContents) => ({
+        ...previousContents,
         [id]: {
           loading: true,
-          content: prev[id]?.content ?? null,
-          totalLines: prev[id]?.totalLines ?? 0,
-          language: prev[id]?.language ?? null,
-          languageLabel: prev[id]?.languageLabel ?? null,
+          content: previousContents[id]?.content ?? null,
+          totalLines: previousContents[id]?.totalLines ?? 0,
+          language: previousContents[id]?.language ?? null,
+          languageLabel: previousContents[id]?.languageLabel ?? null,
           error: null,
-          isBinary: prev[id]?.isBinary ?? false,
+          isBinary: previousContents[id]?.isBinary ?? false,
         },
       }));
 
@@ -422,8 +422,8 @@ export default function FileViewerPanelComponent({
             if (isNotFound) {
               onFileNotFound?.(id, path);
             }
-            setFileContents((prev) => ({
-              ...prev,
+            setFileContents((previousContents) => ({
+              ...previousContents,
               [id]: {
                 loading: false,
                 content: null,
@@ -449,8 +449,8 @@ export default function FileViewerPanelComponent({
               (EXT_TO_MIME as Record<string, string>)[fileExtension]
                 ? `data:${(EXT_TO_MIME as Record<string, string>)[fileExtension]};base64,${result.contentBase64}`
                 : null;
-            setFileContents((prev) => ({
-              ...prev,
+            setFileContents((previousContents) => ({
+              ...previousContents,
               [id]: {
                 loading: false,
                 content: null,
@@ -477,8 +477,8 @@ export default function FileViewerPanelComponent({
           const fileExtension = getFileExt(path);
           const isSvg = fileExtension === SVG_EXTENSION;
 
-          setFileContents((prev) => ({
-            ...prev,
+          setFileContents((previousContents) => ({
+            ...previousContents,
             [id]: {
               loading: false,
               content: cleanContent,
@@ -493,8 +493,8 @@ export default function FileViewerPanelComponent({
 
           // Default SVG view mode to preview
           if (isSvg) {
-            setSvgViewMode((prev) =>
-              prev[id] ? prev : { ...prev, [id]: "preview" },
+            setSvgViewMode((previousState) =>
+              previousState[id] ? previousState : { ...previousState, [id]: "preview" },
             );
           }
         })
@@ -506,8 +506,8 @@ export default function FileViewerPanelComponent({
           if (isNotFound) {
             onFileNotFound?.(id, path);
           }
-          setFileContents((prev) => ({
-            ...prev,
+          setFileContents((previousContents) => ({
+            ...previousContents,
             [id]: {
               loading: false,
               content: null,
@@ -539,10 +539,10 @@ export default function FileViewerPanelComponent({
   }, [activeFile, fileContents, fetchFileContent]);
 
   // ── Live refresh: re-fetch all open files when refreshKey changes ─
-  const prevRefreshKeyRef = useRef<number>(refreshKey);
+  const previousRefreshKeyRef = useRef<number>(refreshKey);
   useEffect(() => {
-    if (refreshKey === prevRefreshKeyRef.current) return;
-    prevRefreshKeyRef.current = refreshKey;
+    if (refreshKey === previousRefreshKeyRef.current) return;
+    previousRefreshKeyRef.current = refreshKey;
     // Clear all inflight tracking so re-fetches are not blocked
     inflightRef.current.clear();
     // Re-fetch every open file
@@ -552,18 +552,18 @@ export default function FileViewerPanelComponent({
   }, [refreshKey, openFiles, fetchFileContent]);
 
   // Clean up cache for closed files — use a ref to diff against previous openFiles
-  const prevOpenIdsRef = useRef<Set<string>>(new Set());
+  const previousOpenIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
-    const currentIds = new Set(openFiles.map((f) => f.id));
-    const prevIds = prevOpenIdsRef.current;
-    prevOpenIdsRef.current = currentIds;
+    const currentIds = new Set(openFiles.map((file) => file.id));
+    const previousFileIds = previousOpenIdsRef.current;
+    previousOpenIdsRef.current = currentIds;
 
     // Find removed IDs
-    const removed = [...prevIds].filter((id) => !currentIds.has(id));
+    const removed = [...previousFileIds].filter((id) => !currentIds.has(id));
     if (removed.length === 0) return;
 
-    setFileContents((prev) => {
-      const next = { ...prev };
+    setFileContents((previousContents) => {
+      const next = { ...previousContents };
       removed.forEach((k) => delete next[k]);
       return next;
     });
@@ -647,7 +647,7 @@ export default function FileViewerPanelComponent({
   // Derived range from selection
   const selectionRange = useMemo(() => {
     if (selectedLines.size === 0) return null;
-    const sorted = [...selectedLines].sort((a, b) => a - b);
+    const sorted = [...selectedLines].sort((firstLine, secondLine) => firstLine - secondLine);
     return { start: sorted[0], end: sorted[sorted.length - 1] };
   }, [selectedLines]);
 
@@ -689,17 +689,17 @@ export default function FileViewerPanelComponent({
       const mentionButton = target.closest(`.${styles.lineMentionButton}`);
       if (mentionButton) {
         e.stopPropagation();
-        const lineEl = mentionButton.closest(
+        const lineElement = mentionButton.closest(
           "[data-line-number]",
         ) as HTMLElement | null;
-        if (lineEl && activeFile && onMentionLines) {
-          const lineNum = parseInt(lineEl.dataset.lineNumber || "", 10);
-          if (!isNaN(lineNum)) {
+        if (lineElement && activeFile && onMentionLines) {
+          const lineNumber = parseInt(lineElement.dataset.lineNumber || "", 10);
+          if (!isNaN(lineNumber)) {
             // If lines are selected, mention the full range; otherwise mention the hovered line
             if (selectedLines.size > 0) {
               handleMentionSelection();
             } else {
-              onMentionLines(activeFile.path, lineNum, lineNum);
+              onMentionLines(activeFile.path, lineNumber, lineNumber);
             }
           }
         }
@@ -707,35 +707,35 @@ export default function FileViewerPanelComponent({
       }
 
       // Detect click on a line number span (react-syntax-highlighter uses this class)
-      const lineNumEl = target.closest(".react-syntax-highlighter-line-number");
-      if (lineNumEl) {
-        const lineEl = lineNumEl.closest(
+      const lineNumberElement = target.closest(".react-syntax-highlighter-line-number");
+      if (lineNumberElement) {
+        const lineElement = lineNumberElement.closest(
           "[data-line-number]",
         ) as HTMLElement | null;
-        if (!lineEl) return;
-        const lineNum = parseInt(lineEl.dataset.lineNumber || "", 10);
-        if (isNaN(lineNum)) return;
+        if (!lineElement) return;
+        const lineNumber = parseInt(lineElement.dataset.lineNumber || "", 10);
+        if (isNaN(lineNumber)) return;
 
         if (e.shiftKey && lastClickedLineRef.current != null) {
           // Shift+click: select range
-          const from = Math.min(lastClickedLineRef.current, lineNum);
-          const to = Math.max(lastClickedLineRef.current, lineNum);
+          const from = Math.min(lastClickedLineRef.current, lineNumber);
+          const to = Math.max(lastClickedLineRef.current, lineNumber);
           const newSet = new Set<number>();
           for (let i = from; i <= to; i++) newSet.add(i);
           setSelectedLines(newSet);
         } else if (e.altKey && onMentionLines && activeFile) {
           // Alt+click line number: instant single-line @ mention
           e.stopPropagation();
-          onMentionLines(activeFile.path, lineNum, lineNum);
+          onMentionLines(activeFile.path, lineNumber, lineNumber);
         } else {
           // Regular click: toggle single line
-          setSelectedLines((prev) => {
-            const next = new Set(prev);
-            if (next.has(lineNum)) next.delete(lineNum);
-            else next.add(lineNum);
+          setSelectedLines((previousState) => {
+            const next = new Set(previousState);
+            if (next.has(lineNumber)) next.delete(lineNumber);
+            else next.add(lineNumber);
             return next;
           });
-          lastClickedLineRef.current = lineNum;
+          lastClickedLineRef.current = lineNumber;
         }
         return;
       }
@@ -793,10 +793,10 @@ export default function FileViewerPanelComponent({
               type="button"
               className={`${styles.titleBarButton} ${styles.titleBarBtnActive}`}
               onClick={() => {
-                setSvgViewMode((prev) => ({
-                  ...prev,
+                setSvgViewMode((previousState) => ({
+                  ...previousState,
                   [activeFileId]:
-                    prev[activeFileId] === "preview" ? "source" : "preview",
+                    previousState[activeFileId] === "preview" ? "source" : "preview",
                 }));
               }}
               title={
@@ -815,7 +815,7 @@ export default function FileViewerPanelComponent({
           <button
             type="button"
             className={`${styles.titleBarButton} ${wordWrap ? styles.titleBarBtnActive : ""}`}
-            onClick={() => setWordWrap((v) => !v)}
+            onClick={() => setWordWrap((previousWordWrap) => !previousWordWrap)}
             title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
           >
             <WrapText size={14} />
@@ -898,7 +898,7 @@ export default function FileViewerPanelComponent({
             {cached.mediaType === "audio" && (
               <div className={styles.mediaAudioWrap}>
                 <Music size={48} className={styles.mediaAudioIcon} />
-                <AudioPlayerRecorderComponent src={cached.rawUrl} />
+                <AudioPlayerRecorderComponent sourceUrl={cached.rawUrl} />
               </div>
             )}
             {cached.mediaType === "video" && (

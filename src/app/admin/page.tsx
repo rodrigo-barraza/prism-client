@@ -309,7 +309,7 @@ export default function DashboardPage() {
       avgLatency: providerAggItem.totalRequests > 0 ? providerAggItem.latencySum / providerAggItem.totalRequests : 0,
       avgTokensPerSec: providerAggItem.tpsCount > 0 ? providerAggItem.tpsSum / providerAggItem.tpsCount : null,
     }))
-    .sort((a, b) => b.totalRequests - a.totalRequests);
+    .sort((providerA, providerB) => providerB.totalRequests - providerA.totalRequests);
   const totalProviderRequests =
     providerData.reduce((sum, provider) => sum + provider.totalRequests, 0) || 1;
   const totalProviderCost =
@@ -317,7 +317,7 @@ export default function DashboardPage() {
 
   // Top 10 models
   const topModels = [...modelStats].sort(
-    (a, b) => b.totalRequests - a.totalRequests,
+    (modelA, modelB) => modelB.totalRequests - modelA.totalRequests,
   );
 
   const totalModelRequests =
@@ -363,8 +363,8 @@ export default function DashboardPage() {
             const localSeconds = String(date.getSeconds()).padStart(2, "0");
             label = `${localHours}:${localMinutes}:${localSeconds}`;
             // Tick label every 30 seconds for readability at high density
-            const secNum = parseInt(localSeconds, 10);
-            tickLabel = secNum % 30 === 0 ? `${localHours}:${localMinutes}:${localSeconds}` : "";
+            const secondsNumber = parseInt(localSeconds, 10);
+            tickLabel = secondsNumber % 30 === 0 ? `${localHours}:${localMinutes}:${localSeconds}` : "";
           } else if (colonCount === 1) {
             // Has minutes: 1min, 5min, or 15min bins — "22:05", "14:0"
             const [, minutesString] = timePart.split(":");
@@ -374,13 +374,13 @@ export default function DashboardPage() {
             const localMinutes = String(date.getMinutes()).padStart(2, "0");
             label = `${localHours}:${localMinutes}`;
             // Tick on hour marks or every 15 minutes
-            const minNum = parseInt(localMinutes, 10);
+            const minutesNumber = parseInt(localMinutes, 10);
             tickLabel =
-              minNum === 0 ? `${localHours}h` : minNum % 15 === 0 ? `${localHours}:${localMinutes}` : "";
+              minutesNumber === 0 ? `${localHours}h` : minutesNumber % 15 === 0 ? `${localHours}:${localMinutes}` : "";
           } else {
             // Hourly or 4-hour bin: "14", "06"
-            const hourStr = timePart.padStart(2, "0");
-            const date = new Date(`${key.slice(0, 10)}T${hourStr}:00:00Z`);
+            const hourString = timePart.padStart(2, "0");
+            const date = new Date(`${key.slice(0, 10)}T${hourString}:00:00Z`);
             const localHours = String(date.getHours()).padStart(2, "0");
             const dayLabel = date.toLocaleDateString("en-US", {
               month: "short",

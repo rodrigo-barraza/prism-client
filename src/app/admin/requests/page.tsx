@@ -117,7 +117,7 @@ export default function RequestsPage() {
   const searchParams = useSearchParams();
 
   // "Just now" row highlighting — track fresh rows and fade-outs
-  const prevJustNowIds = useRef<Set<string>>(new Set());
+  const previousJustNowIdsRef = useRef<Set<string>>(new Set());
   const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
   const fadingTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const [justNowTick, setJustNowTick] = useState(0);
@@ -138,13 +138,13 @@ export default function RequestsPage() {
   // Tick every 1s while there are "just now" rows so they age out naturally
   useEffect(() => {
     if (justNowIds.size === 0) return;
-    const timer = setInterval(() => setJustNowTick((t: number) => t + 1), 1000);
+    const timer = setInterval(() => setJustNowTick((previousTick: number) => previousTick + 1), 1000);
     return () => clearInterval(timer);
   }, [justNowIds.size]);
 
   // Detect transitions: was "just now" → no longer → trigger fade
   useEffect(() => {
-    const previousJustNowIds = prevJustNowIds.current;
+    const previousJustNowIds = previousJustNowIdsRef.current;
     for (const id of previousJustNowIds) {
       if (!justNowIds.has(id) && !fadingTimers.current.has(id)) {
         setFadingIds((s: Set<string>) => {
@@ -163,7 +163,7 @@ export default function RequestsPage() {
         fadingTimers.current.set(id, timer);
       }
     }
-    prevJustNowIds.current = justNowIds;
+    previousJustNowIdsRef.current = justNowIds;
   }, [justNowIds]);
 
   // Cleanup timers on unmount
@@ -580,16 +580,16 @@ export default function RequestsPage() {
                     {associations?.conversations &&
                     associations.conversations.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.conversations?.map((c) => (
+                        {associations?.conversations?.map((conversation) => (
                           <HistoryItemComponent
-                            key={c.id}
+                            key={conversation.id}
                             item={{
-                              id: c.id,
-                              title: c.title || "Untitled",
-                              tags: c.project
+                              id: conversation.id,
+                              title: conversation.title || "Untitled",
+                              tags: conversation.project
                                 ? [
                                     {
-                                      label: c.project,
+                                      label: conversation.project,
                                       style: {
                                         background:
                                           "var(--accent-primary-subtle)",
@@ -598,17 +598,17 @@ export default function RequestsPage() {
                                     },
                                   ]
                                 : [],
-                              updatedAt: c.updatedAt || c.createdAt,
-                              createdAt: c.createdAt,
-                              totalCost: c.totalCost || 0,
-                              modalities: c.modalities || {},
-                              modelName: c.model || null,
-                              username: c.username,
-                              agent: c.agent,
+                              updatedAt: conversation.updatedAt || conversation.createdAt,
+                              createdAt: conversation.createdAt,
+                              totalCost: conversation.totalCost || 0,
+                              modalities: conversation.modalities || {},
+                              modelName: conversation.model || null,
+                              username: conversation.username,
+                              agent: conversation.agent,
                             }}
                             icon={MessageSquare}
                             admin
-                            onClick={() => router.push(`/admin/chat/${c.id}`)}
+                            onClick={() => router.push(`/admin/chat/${conversation.id}`)}
                           />
                         ))}
                       </div>
@@ -623,26 +623,26 @@ export default function RequestsPage() {
                     {associations?.workflows &&
                     associations.workflows.length > 0 ? (
                       <div className={styles.associationList}>
-                        {associations?.workflows?.map((w) => (
+                        {associations?.workflows?.map((workflow) => (
                           <HistoryItemComponent
-                            key={w.id}
+                            key={workflow.id}
                             item={{
-                              id: w.id,
-                              title: w.name || "Untitled",
+                              id: workflow.id,
+                              title: workflow.name || "Untitled",
                               tags: [
                                 {
-                                  label: `${w.nodeCount} nodes · ${w.edgeCount} edges`,
+                                  label: `${workflow.nodeCount} nodes · ${workflow.edgeCount} edges`,
                                   style: {
                                     background: "var(--background-elevated)",
                                     color: "var(--text-muted)",
                                   },
                                 },
                               ],
-                              updatedAt: w.updatedAt || w.createdAt,
+                              updatedAt: workflow.updatedAt || workflow.createdAt,
                             }}
                             icon={GitBranch}
                             onClick={() =>
-                              router.push(`/admin/workflows/${w.id}`)
+                              router.push(`/admin/workflows/${workflow.id}`)
                             }
                           />
                         ))}

@@ -143,7 +143,7 @@ export interface RateLimitData {
 type QueryParams = Record<string, string | number | boolean>;
 
 function toSearchParams(params: QueryParams): string {
-  const entries = Object.entries(params).map(([k, v]) => [k, String(v)]);
+  const entries = Object.entries(params).map(([key, value]) => [key, String(value)]);
   return new URLSearchParams(entries).toString();
 }
 

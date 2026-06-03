@@ -75,7 +75,7 @@ export function AdminHeaderProvider({
       // ignore
     }
   }, []);
-  const [prevPathname, setPrevPathname] = useState(pathname);
+  const [previousPathname, setPreviousPathname] = useState(pathname);
 
   // Render-phase derived state: clear stale controls and badge on route change.
   // React re-renders this provider immediately (before rendering children) when
@@ -85,15 +85,15 @@ export function AdminHeaderProvider({
   // (e.g. /admin/chat → /admin/chat/[id]) don't wipe the badge.
   const routeSegment =
     pathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
-  const prevRouteSegment =
-    prevPathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
-  if (prevRouteSegment !== routeSegment) {
-    setPrevPathname(pathname);
+  const previousRouteSegment =
+    previousPathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
+  if (previousRouteSegment !== routeSegment) {
+    setPreviousPathname(pathname);
     if (controls !== null) setControlsState(null);
     if (titleBadge !== null) setTitleBadgeState(null);
     if (sessionFilter !== null) setSessionFilterState(null);
-  } else if (prevPathname !== pathname) {
-    setPrevPathname(pathname);
+  } else if (previousPathname !== pathname) {
+    setPreviousPathname(pathname);
   }
 
   // Persist to localStorage on change

@@ -11,6 +11,150 @@
   flex-direction: column;
 }
 
+/* ── Sidebar Tab Navigation ──────────────────────────────────── */
+
+.sidebar-tab-navigation {
+  display: flex;
+  align-items: stretch;
+  border-block-end: 1px solid var(--calculated-border-color);
+  flex-shrink: 0;
+}
+
+.sidebar-tab-button {
+  all: unset;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-block: 11px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  position: relative;
+  transition:
+    color 0.25s ease,
+    background 0.25s ease;
+  user-select: none;
+}
+
+.sidebar-tab-button::after {
+  content: "";
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline: 20%;
+  block-size: 2px;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+  transition:
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    inset-inline 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-tab-button:hover {
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
+}
+
+.sidebar-tab-button.is-active-tab {
+  color: var(--accent-primary);
+}
+
+.sidebar-tab-button.is-active-tab::after {
+  inset-inline: 16%;
+  background: var(--accent-primary);
+}
+
+.tab-count-badge {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: var(--background-elevated);
+  padding-block: 1px;
+  padding-inline: 5px;
+  border-radius: 8px;
+  min-inline-size: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.sidebar-tab-button.is-active-tab .tab-count-badge {
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
+/* ── Sidebar Search Bar ──────────────────────────────────────── */
+
+.sidebar-search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block: 8px;
+  margin-inline: 12px;
+  padding-block: 6px;
+  padding-inline: 10px;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  flex-shrink: 0;
+
+  &:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  }
+}
+
+.sidebar-search-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.sidebar-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-inline-size: 0;
+  line-height: 1.5;
+
+  &::placeholder {
+    color: var(--text-muted, var(--text-tertiary));
+    font-weight: 400;
+  }
+}
+
+.sidebar-search-clear-button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  }
+}
+
 /* ── Sidebar Elements ────────────────────────────────────────── */
 
 .sidebar-header-section {
@@ -50,13 +194,48 @@
   transform: scale(1.05);
 }
 
+/* ── Inline Create Agent Button ──────────────────────────────── */
+
+.create-agent-inline-button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: calc(100% - 24px);
+  margin-inline: 12px;
+  margin-block-end: 4px;
+  padding-block: 8px;
+  padding-inline: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  border: 1px dashed color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.create-agent-inline-button:hover {
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
+  transform: translateY(-1px);
+}
+
+.create-agent-inline-button:active {
+  transform: translateY(0);
+}
+
 .sidebar-scroll-container {
   flex: 1;
   overflow-y: auto;
-  padding-block: 12px;
+  padding-block: 8px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 2px;
 }
 
 .agent-group-header {
@@ -76,18 +255,43 @@
   padding-block: 10px;
   padding-inline: 20px;
   background: transparent;
+  border: none;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
   position: relative;
   text-align: start;
+  inline-size: 100%;
+}
+
+.agent-card-item::after {
+  content: "";
+  position: absolute;
+  inset-block: 4px;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  border-radius: 0 2px 2px 0;
+  background: transparent;
+  transition:
+    background 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    inset-block 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .agent-card-item:hover {
   background: color-mix(
     in srgb,
-    var(--accent-primary) 4%,
+    var(--accent-primary) 5%,
     var(--background-surface)
   );
+}
+
+.agent-card-item:hover .agent-name-text {
+  color: var(--text-primary);
+}
+
+.agent-card-item:hover .agent-description-text {
+  color: var(--text-secondary);
 }
 
 .agent-card-item.is-selected-state {
@@ -96,15 +300,16 @@
     var(--accent-primary) 8%,
     var(--background-surface)
   );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
 .agent-card-item.is-selected-state::after {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  width: 3px;
+  inset-block: 6px;
   background: var(--accent-primary);
+}
+
+.agent-card-item.is-selected-state .agent-name-text {
+  color: var(--accent-primary);
 }
 
 .agent-info-container {
@@ -122,6 +327,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.2s ease;
 }
 
 .agent-description-text {
@@ -131,6 +337,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.2s ease;
 }
 
 .agent-badge-tag {

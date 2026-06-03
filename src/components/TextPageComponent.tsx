@@ -97,25 +97,25 @@ export default function TextPageComponent({
   useEffect(() => {
     PrismService.getFavorites("text")
       .then((favs: Array<{ key: string }>) =>
-        setFavoriteKeys(favs.map((f) => f.key)),
+        setFavoriteKeys(favs.map((favorite) => favorite.key)),
       )
       .catch(() => {});
   }, []);
 
   const toggleFavorite = async (textKey: any) => {
     if (favoriteKeys.includes(textKey)) {
-      setFavoriteKeys((prev) => prev.filter((k) => k !== textKey));
+      setFavoriteKeys((previousKeys) => previousKeys.filter((key) => key !== textKey));
       PrismService.removeFavorite("text", textKey).catch(() => {});
     } else {
-      setFavoriteKeys((prev) => [...prev, textKey]);
+      setFavoriteKeys((previousKeys) => [...previousKeys, textKey]);
       PrismService.addFavorite("text", textKey).catch(() => {});
     }
   };
 
-  const getTextKey = (t: any, i: any) => `${t.convId}-${t.origin}-${i}`;
+  const getTextKey = (textItem: any, index: any) => `${textItem.convId}-${textItem.origin}-${index}`;
 
   const displayTexts = showFavoritesOnly
-    ? texts.filter((t, i) => favoriteKeys.includes(getTextKey(t, i)))
+    ? texts.filter((textItem, index) => favoriteKeys.includes(getTextKey(textItem, index)))
     : texts;
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -151,9 +151,9 @@ export default function TextPageComponent({
             <FilterBarComponent>
               <SearchInputComponent
                 value={searchInput}
-                onChange={(v: any) => {
-                  setSearchInput(v);
-                  setSearch(v);
+                onChange={(value: any) => {
+                  setSearchInput(value);
+                  setSearch(value);
                   setPage(1);
                 }}
                 placeholder="Search text…"
@@ -165,15 +165,15 @@ export default function TextPageComponent({
                 groups={[
                   {
                     label: "Source",
-                    items: ORIGIN_FILTERS.map((f) => ({
-                      key: f.key,
-                      icon: f.icon,
-                      title: f.label,
+                    items: ORIGIN_FILTERS.map((filterOption) => ({
+                      key: filterOption.key,
+                      icon: filterOption.icon,
+                      title: filterOption.label,
                     })),
                     activeKeys: origin === "all" ? null : origin,
                     isSingleSelect: true,
-                    onToggle: (v) => {
-                      setOrigin(v || "all");
+                    onToggle: (value) => {
+                      setOrigin(value || "all");
                       setPage(1);
                     },
                   },
@@ -184,14 +184,14 @@ export default function TextPageComponent({
                     ],
                     activeKeys: showFavoritesOnly ? "favorites" : null,
                     isSingleSelect: true,
-                    onToggle: (v) => setShowFavoritesOnly(v === "favorites"),
+                    onToggle: (value) => setShowFavoritesOnly(value === "favorites"),
                   },
                 ]}
                 dateRange={!externalDateRange ? dateRange : undefined}
                 onDateChange={
                   !externalDateRange
-                    ? (v) => {
-                        setInternalDateRange(v);
+                    ? (value) => {
+                        setInternalDateRange(value);
                         setPage(1);
                       }
                     : undefined
@@ -202,8 +202,8 @@ export default function TextPageComponent({
               <SearchFilterComponent
                 options={providers}
                 value={provider}
-                onChange={(v) => {
-                  setProvider(v);
+                onChange={(value) => {
+                  setProvider(value);
                   setModel("");
                   setPage(1);
                 }}
@@ -214,12 +214,12 @@ export default function TextPageComponent({
               <SearchFilterComponent
                 options={
                   provider
-                    ? models.filter((m) => m.startsWith(provider + "/"))
+                    ? models.filter((modelName) => modelName.startsWith(provider + "/"))
                     : models
                 }
                 value={model}
-                onChange={(v) => {
-                  setModel(v);
+                onChange={(value) => {
+                  setModel(value);
                   setPage(1);
                 }}
                 placeholder="All Models"
@@ -232,11 +232,11 @@ export default function TextPageComponent({
             {/* Text List */}
             {!loading && (
               <div className={styles.textList}>
-                {displayTexts.map((t, i) => {
-                  const textKey = getTextKey(t, i);
+                {displayTexts.map((textItem, index) => {
+                  const textKey = getTextKey(textItem, index);
                   const isFav = favoriteKeys.includes(textKey);
                   return (
-                    <div key={`${t.convId}-${i}`} className={styles.textCard}>
+                    <div key={`${textItem.convId}-${index}`} className={styles.textCard}>
                       <div className={styles.textHeader}>
                         <button
                           className={`${styles.favoriteButton} ${isFav ? styles.favoriteButtonActive : ""}`}
@@ -248,9 +248,9 @@ export default function TextPageComponent({
                           <Star size={11} fill={isFav ? "currentColor" : "none"} />
                         </button>
                         <span
-                          className={`${styles.roleBadge} ${t.origin === "ai" ? styles.roleAi : styles.roleUser}`}
+                          className={`${styles.roleBadge} ${textItem.origin === "ai" ? styles.roleAi : styles.roleUser}`}
                         >
-                          {t.origin === "ai" ? (
+                          {textItem.origin === "ai" ? (
                             <>
                               <Sparkles size={10} /> Response
                             </>
@@ -261,36 +261,36 @@ export default function TextPageComponent({
                           )}
                         </span>
                         <Link
-                          href={`${convBasePath}/${t.convId}`}
+                          href={`${convBasePath}/${textItem.convId}`}
                           className={styles.conversationLink}
-                          title={t.convTitle}
+                          title={textItem.convTitle}
                         >
                           <ExternalLink size={10} />
-                          <span>{t.convTitle}</span>
+                          <span>{textItem.convTitle}</span>
                         </Link>
-                        {t.hasImages && (
+                        {textItem.hasImages && (
                           <span className={styles.attachmentTag}>
                             <ImageIcon size={10} /> +media
                           </span>
                         )}
-                        {t.model && (
+                        {textItem.model && (
                           <span className={styles.modelTag}>
-                            {t.model.split("/").pop()}
+                            {textItem.model.split("/").pop()}
                           </span>
                         )}
-                        {t.timestamp && (
+                        {textItem.timestamp && (
                           <span className={styles.time}>
-                            {new Date(t.timestamp).toLocaleDateString()}
+                            {new Date(textItem.timestamp).toLocaleDateString()}
                           </span>
                         )}
                       </div>
                       <ChatPreviewComponent
                         messages={[
                           {
-                            role: t.origin === "ai" ? "assistant" : "user",
-                            content: t.content,
-                            model: t.model,
-                            estimatedCost: t.estimatedCost,
+                            role: textItem.origin === "ai" ? "assistant" : "user",
+                            content: textItem.content,
+                            model: textItem.model,
+                            estimatedCost: textItem.estimatedCost,
                           },
                         ]}
                         readOnly
@@ -322,9 +322,9 @@ export default function TextPageComponent({
           <FilterBarComponent>
             <SearchInputComponent
               value={searchInput}
-              onChange={(v: any) => {
-                setSearchInput(v);
-                setSearch(v);
+              onChange={(value: any) => {
+                setSearchInput(value);
+                setSearch(value);
                 setPage(1);
               }}
               placeholder="Search text…"
@@ -336,15 +336,15 @@ export default function TextPageComponent({
               groups={[
                 {
                   label: "Source",
-                  items: ORIGIN_FILTERS.map((f) => ({
-                    key: f.key,
-                    icon: f.icon,
-                    title: f.label,
+                  items: ORIGIN_FILTERS.map((filterOption) => ({
+                    key: filterOption.key,
+                    icon: filterOption.icon,
+                    title: filterOption.label,
                   })),
                   activeKeys: origin === "all" ? null : origin,
                   isSingleSelect: true,
-                  onToggle: (v) => {
-                    setOrigin(v || "all");
+                  onToggle: (value) => {
+                    setOrigin(value || "all");
                     setPage(1);
                   },
                 },
@@ -355,14 +355,14 @@ export default function TextPageComponent({
                   ],
                   activeKeys: showFavoritesOnly ? "favorites" : null,
                   isSingleSelect: true,
-                  onToggle: (v) => setShowFavoritesOnly(v === "favorites"),
+                  onToggle: (value) => setShowFavoritesOnly(value === "favorites"),
                 },
               ]}
               dateRange={!externalDateRange ? dateRange : undefined}
               onDateChange={
                 !externalDateRange
-                  ? (v) => {
-                      setInternalDateRange(v);
+                  ? (value) => {
+                      setInternalDateRange(value);
                       setPage(1);
                     }
                   : undefined
@@ -373,8 +373,8 @@ export default function TextPageComponent({
             <SearchFilterComponent
               options={providers}
               value={provider}
-              onChange={(v) => {
-                setProvider(v);
+              onChange={(value) => {
+                setProvider(value);
                 setModel("");
                 setPage(1);
               }}
@@ -385,12 +385,12 @@ export default function TextPageComponent({
             <SearchFilterComponent
               options={
                 provider
-                  ? models.filter((m) => m.startsWith(provider + "/"))
+                  ? models.filter((modelName) => modelName.startsWith(provider + "/"))
                   : models
               }
               value={model}
-              onChange={(v) => {
-                setModel(v);
+              onChange={(value) => {
+                setModel(value);
                 setPage(1);
               }}
               placeholder="All Models"
@@ -403,11 +403,11 @@ export default function TextPageComponent({
           {/* Text List */}
           {!loading && (
             <div className={styles.textList}>
-              {displayTexts.map((t, i) => {
-                const textKey = getTextKey(t, i);
+              {displayTexts.map((textItem, index) => {
+                const textKey = getTextKey(textItem, index);
                 const isFav = favoriteKeys.includes(textKey);
                 return (
-                  <div key={`${t.convId}-${i}`} className={styles.textCard}>
+                  <div key={`${textItem.convId}-${index}`} className={styles.textCard}>
                     <div className={styles.textHeader}>
                       <button
                         className={`${styles.favoriteButton} ${isFav ? styles.favoriteButtonActive : ""}`}
@@ -419,9 +419,9 @@ export default function TextPageComponent({
                         <Star size={11} fill={isFav ? "currentColor" : "none"} />
                       </button>
                       <span
-                        className={`${styles.roleBadge} ${t.origin === "ai" ? styles.roleAi : styles.roleUser}`}
+                        className={`${styles.roleBadge} ${textItem.origin === "ai" ? styles.roleAi : styles.roleUser}`}
                       >
-                        {t.origin === "ai" ? (
+                        {textItem.origin === "ai" ? (
                           <>
                             <Sparkles size={10} /> Response
                           </>
@@ -432,36 +432,36 @@ export default function TextPageComponent({
                         )}
                       </span>
                       <Link
-                        href={`${convBasePath}/${t.convId}`}
+                        href={`${convBasePath}/${textItem.convId}`}
                         className={styles.conversationLink}
-                        title={t.convTitle}
+                        title={textItem.convTitle}
                       >
                         <ExternalLink size={10} />
-                        <span>{t.convTitle}</span>
+                        <span>{textItem.convTitle}</span>
                       </Link>
-                      {t.hasImages && (
+                      {textItem.hasImages && (
                         <span className={styles.attachmentTag}>
                           <ImageIcon size={10} /> +media
                         </span>
                       )}
-                      {t.model && (
+                      {textItem.model && (
                         <span className={styles.modelTag}>
-                          {t.model.split("/").pop()}
+                          {textItem.model.split("/").pop()}
                         </span>
                       )}
-                      {t.timestamp && (
+                      {textItem.timestamp && (
                         <span className={styles.time}>
-                          {new Date(t.timestamp).toLocaleDateString()}
+                          {new Date(textItem.timestamp).toLocaleDateString()}
                         </span>
                       )}
                     </div>
                     <ChatPreviewComponent
                       messages={[
                         {
-                          role: t.origin === "ai" ? "assistant" : "user",
-                          content: t.content,
-                          model: t.model,
-                          estimatedCost: t.estimatedCost,
+                          role: textItem.origin === "ai" ? "assistant" : "user",
+                          content: textItem.content,
+                          model: textItem.model,
+                          estimatedCost: textItem.estimatedCost,
                         },
                       ]}
                       readOnly

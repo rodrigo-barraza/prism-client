@@ -63,7 +63,7 @@ const SAMPLE_SEEDS = [
       {
         role: "assistant",
         content:
-          "Umm, I-I think that was in 48 BC, b-but I'm not sure, I'm sorry.",
+          "Umm, I-I think that was in 48 BC, b-but I'message not sure, I'message sorry.",
       },
     ],
     category: "Chat",
@@ -227,7 +227,7 @@ export default function SynthesisComponent() {
     // Load favorites
     PrismService.getFavorites("model")
       .then((favs: { key: string }[]) =>
-        setFavoriteKeys(favs.map((f: { key: string }) => f.key)),
+        setFavoriteKeys(favs.map((favorite: { key: string }) => favorite.key)),
       )
       .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -236,10 +236,10 @@ export default function SynthesisComponent() {
   const handleToggleFavorite = useCallback(
     async (key: string) => {
       if (favoriteKeys.includes(key)) {
-        setFavoriteKeys((prev) => prev.filter((k: string) => k !== key));
+        setFavoriteKeys((previous) => previous.filter((k: string) => k !== key));
         PrismService.removeFavorite("model", key).catch(() => {});
       } else {
-        setFavoriteKeys((prev) => [...prev, key]);
+        setFavoriteKeys((previous) => [...previous, key]);
         const [provider, ...rest] = key.split(":");
         PrismService.addFavorite("model", key, {
           provider,
@@ -284,8 +284,8 @@ export default function SynthesisComponent() {
       msgs.push({ role: "system", content: systemPrompt.trim() });
     }
     // Filter out any internal _streaming flag
-    for (const m of generatedMessages) {
-      msgs.push({ role: m.role, content: m.content });
+    for (const message of generatedMessages) {
+      msgs.push({ role: message.role, content: message.content });
     }
     return msgs;
   }, [systemPrompt, generatedMessages]);
@@ -312,14 +312,14 @@ export default function SynthesisComponent() {
 
   // -- Seed message management -----------------------------------
   const addSeedMessage = useCallback((role: Message["role"] = "user") => {
-    setSeedMessages((prev) => [...prev, { role, content: "" }]);
+    setSeedMessages((previous) => [...previous, { role, content: "" }]);
   }, []);
 
   const updateSeedMessage = useCallback(
     (index: number, field: keyof Message, value: string) => {
-      setSeedMessages((prev) =>
-        prev.map((m: Message, i: number) =>
-          i === index ? { ...m, [field]: value } : m,
+      setSeedMessages((previous) =>
+        previous.map((message: Message, i: number) =>
+          i === index ? { ...message, [field]: value } : message,
         ),
       );
     },
@@ -327,8 +327,8 @@ export default function SynthesisComponent() {
   );
 
   const removeSeedMessage = useCallback((index: number) => {
-    setSeedMessages((prev) =>
-      prev.filter((_: unknown, i: number) => i !== index),
+    setSeedMessages((previous) =>
+      previous.filter((_: unknown, i: number) => i !== index),
     );
   }, []);
 
@@ -336,7 +336,7 @@ export default function SynthesisComponent() {
     (seed: { system: string; messages: Message[]; category: string }) => {
       setSystemPrompt(seed.system);
 
-      setSeedMessages(seed.messages.map((m: Message) => ({ ...m })));
+      setSeedMessages(seed.messages.map((message: Message) => ({ ...message })));
       setCategory(seed.category);
       setGeneratedMessages([]);
       setTemplateExpanded(false);
@@ -359,8 +359,8 @@ export default function SynthesisComponent() {
 
     // Start with seed messages as the conversation so far
     const conversation = seedMessages
-      .filter((m: Message) => m.content && m.content.trim())
-      .map((m: Message) => ({ role: m.role, content: m.content }));
+      .filter((message: Message) => message.content && message.content.trim())
+      .map((message: Message) => ({ role: message.role, content: message.content }));
 
     setGeneratedMessages([...conversation]);
 
@@ -480,10 +480,10 @@ export default function SynthesisComponent() {
           // We fix this by ensuring the first message is always role "user".
           let simulatorHistory: Message[];
           if (conversation.length > 0) {
-            const swapped = conversation.map((m: Message) => ({
+            const swapped = conversation.map((message: Message) => ({
               role:
-                m.role === "user" ? ("assistant" as const) : ("user" as const),
-              content: m.content,
+                message.role === "user" ? ("assistant" as const) : ("user" as const),
+              content: message.content,
             }));
             // If the swapped history starts with "assistant", prepend a
             // contextual user message so the template stays happy.
@@ -627,7 +627,7 @@ export default function SynthesisComponent() {
             category,
             targetTurns: Number(targetTurns),
             seedMessages: seedMessages.filter(
-              (m: Message) => m.content && m.content.trim(),
+              (message: Message) => message.content && message.content.trim(),
             ),
             settings: {
               provider: settings.provider,
@@ -648,9 +648,9 @@ export default function SynthesisComponent() {
         (!(error instanceof Error) || error.name !== "AbortError") &&
         !abortedRef.current
       ) {
-        setGeneratedMessages((prev) => [
-          ...prev.filter(
-            (m: any) => !(m as Message & { _streaming?: boolean })._streaming,
+        setGeneratedMessages((previous) => [
+          ...previous.filter(
+            (message: any) => !(message as Message & { _streaming?: boolean })._streaming,
           ),
           {
             role: "assistant",
@@ -684,9 +684,9 @@ export default function SynthesisComponent() {
     abortRef.current = null;
     setIsGenerating(false);
     // Clean up any in-flight streaming messages
-    setGeneratedMessages((prev) =>
-      prev.filter(
-        (m: any) => !(m as Message & { _streaming?: boolean })._streaming,
+    setGeneratedMessages((previous) =>
+      previous.filter(
+        (message: any) => !(message as Message & { _streaming?: boolean })._streaming,
       ),
     );
   }, []);
@@ -733,7 +733,7 @@ export default function SynthesisComponent() {
       if (run.conversationId) {
         try {
           const full = await PrismService.getConversation(run.conversationId);
-          const msgs = (full.messages || []).filter((m) => m.role !== "system");
+          const msgs = (full.messages || []).filter((message) => message.role !== "system");
           setGeneratedMessages(msgs);
           if (msgs.length > 0) setLeftTab("output");
         } catch {
@@ -753,18 +753,18 @@ export default function SynthesisComponent() {
   const handleDeleteHistory = useCallback(async (id: string) => {
     try {
       await PrismService.deleteSynthesisRun(id);
-      setSynthesisConversations((prev) =>
-        prev.filter((c: SynthesisRun) => c.id !== id),
+      setSynthesisConversations((previous) =>
+        previous.filter((conversation: SynthesisRun) => conversation.id !== id),
       );
       // If the deleted run is currently active, clear the view
-      setActiveHistoryId((prev) => {
-        if (prev === id) {
+      setActiveHistoryId((previous) => {
+        if (previous === id) {
           setGeneratedMessages([]);
           setConversationId(null);
           setLeftTab("config");
           return null;
         }
-        return prev;
+        return previous;
       });
     } catch (error: unknown | Error) {
       console.error("Failed to delete synthesis run:", error);
@@ -784,9 +784,9 @@ export default function SynthesisComponent() {
   // -- Edit generated message ------------------------------------
   const updateGeneratedMessage = useCallback(
     (index: number, content: string) => {
-      setGeneratedMessages((prev) =>
-        prev.map((m: Message, i: number) =>
-          i === index ? { ...m, content } : m,
+      setGeneratedMessages((previous) =>
+        previous.map((message: Message, i: number) =>
+          i === index ? { ...message, content } : message,
         ),
       );
     },
@@ -794,8 +794,8 @@ export default function SynthesisComponent() {
   );
 
   const removeGeneratedMessage = useCallback((index: number) => {
-    setGeneratedMessages((prev) =>
-      prev.filter((_: unknown, i: number) => i !== index),
+    setGeneratedMessages((previous) =>
+      previous.filter((_: unknown, i: number) => i !== index),
     );
   }, []);
 

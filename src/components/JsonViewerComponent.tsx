@@ -86,7 +86,7 @@ function JsonNode({
   if (isExpandable) {
     const entries = (
       type === "array"
-        ? (value as any[]).map((v, i) => [i, v])
+        ? (value as any[]).map((itemValue, i) => [i, itemValue])
         : Object.entries(value)
     ) as [any, any][];
     const bracket = type === "array" ? ["[", "]"] : ["{", "}"];
@@ -96,7 +96,7 @@ function JsonNode({
       <div className={styles.node}>
         <div
           className={styles.jsonRow}
-          onClick={() => !isEmpty && setExpanded((prev) => !prev)}
+          onClick={() => !isEmpty && setExpanded((previousExpandedState) => !previousExpandedState)}
           style={{ cursor: isEmpty ? "default" : "pointer" }}
         >
           {!isEmpty && (
@@ -132,11 +132,11 @@ function JsonNode({
         {expanded && (
           <>
             <div className={styles.children}>
-              {entries.map(([k, v]: [any, any], i: number) => (
+              {entries.map(([nodeKey, nodeValue]: [any, any], i: number) => (
                 <JsonNode
-                  key={k}
-                  keyName={type === "array" ? undefined : k}
-                  value={v}
+                  key={nodeKey}
+                  keyName={type === "array" ? undefined : nodeKey}
+                  value={nodeValue}
                   depth={depth + 1}
                   defaultCollapsed={defaultCollapsed}
                   isLast={i === entries.length - 1}

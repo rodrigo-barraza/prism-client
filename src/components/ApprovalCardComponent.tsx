@@ -64,10 +64,10 @@ export default function ApprovalCardComponent({
       {argEntries.length > 0 && (
         <div className={styles.args}>
           {argEntries.map(([key, value]) => {
-            const strVal =
+            const stringValue =
               typeof value === "string" ? value : JSON.stringify(value);
             const truncated =
-              strVal.length > 120 ? strVal.slice(0, 117) + "..." : strVal;
+              stringValue.length > 120 ? stringValue.slice(0, 117) + "..." : stringValue;
             return (
               <div key={key} className={styles.argumentRow}>
                 <span className={styles.argumentKey}>{key}</span>

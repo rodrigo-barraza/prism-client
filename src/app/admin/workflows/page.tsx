@@ -139,8 +139,8 @@ function AdminWorkflowsPageInner() {
 
   const handleUpdateNodePosition = useCallback(
     (nodeId: string, position: { x: number; y: number }) => {
-      setLocalNodes((prev) =>
-        prev.map((n) => (n.id === nodeId ? { ...n, position } : n)),
+      setLocalNodes((previousNodes) =>
+        previousNodes.map((node) => (node.id === nodeId ? { ...node, position } : node)),
       );
     },
     [],

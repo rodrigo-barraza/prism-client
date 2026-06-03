@@ -21,7 +21,7 @@ import styles from "./DrawingCanvasComponent.module.css";
 // ── Type Definitions ──────────────────────────────────────────
 
 interface DrawingCanvasProps {
-  src?: string;
+  backgroundImageSourceUrl?: string;
   onSave: (dataUrl: string) => void;
   onClose: () => void;
 }
@@ -96,7 +96,7 @@ const CANVAS_H = 600;
  *   onClose()    – close without saving
  */
 export default function DrawingCanvas({
-  src,
+  backgroundImageSourceUrl,
   onSave,
   onClose,
 }: DrawingCanvasProps) {
@@ -106,27 +106,27 @@ export default function DrawingCanvas({
 
   const [tool, setTool] = useState<ToolId>("pen");
   const [color, setColor] = useState(COLORS[0].value);
-  const [sizeIdx, setSizeIdx] = useState(1);
+  const [sizeIndex, setSizeIndex] = useState(1);
   const [drawing, setDrawing] = useState(false);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ w: CANVAS_W, h: CANVAS_H });
-  const [displaySize, setDisplaySize] = useState({ w: 0, h: 0 });
-  const [bgReady, setBgReady] = useState(!src);
+  const [canvasSize, setCanvasSize] = useState({ width: CANVAS_W, height: CANVAS_H });
+  const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 });
+  const [bgReady, setBgReady] = useState(!backgroundImageSourceUrl);
 
   // Compute fitted display dimensions from canvas size + viewport
   useEffect(() => {
     const fit = () => {
       const maxW = window.innerWidth * 0.85;
       const maxH = window.innerHeight - 220; // room for toolbar + bottom bar
-      const ratio = canvasSize.w / canvasSize.h;
-      let w = Math.min(canvasSize.w, maxW);
-      let h = w / ratio;
-      if (h > maxH) {
-        h = maxH;
-        w = h * ratio;
+      const ratio = canvasSize.width / canvasSize.height;
+      let fitWidth = Math.min(canvasSize.width, maxW);
+      let fitHeight = fitWidth / ratio;
+      if (fitHeight > maxH) {
+        fitHeight = maxH;
+        fitWidth = fitHeight * ratio;
       }
-      setDisplaySize({ w: Math.round(w), h: Math.round(h) });
+      setDisplaySize({ width: Math.round(fitWidth), height: Math.round(fitHeight) });
     };
     fit();
     window.addEventListener("resize", fit);
@@ -135,11 +135,11 @@ export default function DrawingCanvas({
 
   // Load background image (edit mode)
   useEffect(() => {
-    if (!src) return;
+    if (!backgroundImageSourceUrl) return;
     const image = new Image();
     image.crossOrigin = "anonymous";
     image.onload = () => {
-      setCanvasSize({ w: image.naturalWidth, h: image.naturalHeight });
+      setCanvasSize({ width: image.naturalWidth, height: image.naturalHeight });
       setBgReady(true);
 
       // Draw background onto the bg canvas
@@ -152,15 +152,15 @@ export default function DrawingCanvas({
         context?.drawImage(image, 0, 0);
       });
     };
-    image.src = src;
-  }, [src]);
+    image.src = backgroundImageSourceUrl;
+  }, [backgroundImageSourceUrl]);
 
   // Set drawing canvas size when canvasSize changes
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    canvas.width = canvasSize.w;
-    canvas.height = canvasSize.h;
+    canvas.width = canvasSize.width;
+    canvas.height = canvasSize.height;
   }, [canvasSize]);
 
   // Escape key
@@ -267,7 +267,7 @@ export default function DrawingCanvas({
       setCurrentStroke({
         tool: isEraser ? "eraser" : "pen",
         color,
-        width: SIZES[sizeIdx].width,
+        width: SIZES[sizeIndex].width,
         eraser: isEraser,
         points: [position],
       });
@@ -275,7 +275,7 @@ export default function DrawingCanvas({
       setCurrentStroke({
         tool,
         color,
-        width: SIZES[sizeIdx].width,
+        width: SIZES[sizeIndex].width,
         eraser: false,
         start: position,
         end: position,
@@ -318,7 +318,7 @@ export default function DrawingCanvas({
         : true; // shape strokes always have start & end set
 
     if (isValid) {
-      setStrokes((prev) => [...prev, currentStroke]);
+      setStrokes((previousStrokes) => [...previousStrokes, currentStroke]);
     }
     setCurrentStroke(null);
     setDrawing(false);
@@ -326,18 +326,18 @@ export default function DrawingCanvas({
 
   /* -- Actions -- */
 
-  const handleUndo = () => setStrokes((prev) => prev.slice(0, -1));
+  const handleUndo = () => setStrokes((previousStrokes) => previousStrokes.slice(0, -1));
   const handleClear = () => setStrokes([]);
 
   const handleSave = () => {
     const offscreen = document.createElement("canvas");
-    offscreen.width = canvasSize.w;
-    offscreen.height = canvasSize.h;
+    offscreen.width = canvasSize.width;
+    offscreen.height = canvasSize.height;
     const context = offscreen.getContext("2d");
     if (!context) return;
 
     // Draw background
-    if (src && bgCanvasRef.current) {
+    if (backgroundImageSourceUrl && bgCanvasRef.current) {
       context.drawImage(bgCanvasRef.current, 0, 0);
     } else {
       context.fillStyle = "#ffffff";
@@ -365,14 +365,14 @@ export default function DrawingCanvas({
       <div className={styles.toolbar}>
         {/* Tool buttons */}
         <div className={styles.toolGroup}>
-          {TOOLS.map((t) => {
-            const Icon = t.icon;
+          {TOOLS.map((toolOption) => {
+            const Icon = toolOption.icon;
             return (
               <button
-                key={t.id}
-                className={`${styles.toolButton} ${tool === t.id ? styles.toolBtnActive : ""}`}
-                onClick={() => setTool(t.id)}
-                title={t.label}
+                key={toolOption.id}
+                className={`${styles.toolButton} ${tool === toolOption.id ? styles.toolBtnActive : ""}`}
+                onClick={() => setTool(toolOption.id)}
+                title={toolOption.label}
               >
                 <Icon size={14} />
               </button>
@@ -383,19 +383,19 @@ export default function DrawingCanvas({
         {/* Colors */}
         <div className={styles.toolGroup}>
           <span className={styles.toolLabel}>Color</span>
-          {COLORS.map((c) => (
+          {COLORS.map((colorOption) => (
             <button
-              key={c.value}
-              className={`${styles.swatch} ${color === c.value && tool !== "eraser" ? styles.swatchActive : ""}`}
+              key={colorOption.value}
+              className={`${styles.swatch} ${color === colorOption.value && tool !== "eraser" ? styles.swatchActive : ""}`}
               style={{
-                background: c.value,
-                border: c.value === "#000000" ? "2px solid #555" : undefined,
+                background: colorOption.value,
+                border: colorOption.value === "#000000" ? "2px solid #555" : undefined,
               }}
               onClick={() => {
-                setColor(c.value);
+                setColor(colorOption.value);
                 if (tool === "eraser") setTool("pen");
               }}
-              title={c.label}
+              title={colorOption.label}
             />
           ))}
         </div>
@@ -403,16 +403,16 @@ export default function DrawingCanvas({
         {/* Sizes */}
         <div className={styles.toolGroup}>
           <span className={styles.toolLabel}>Size</span>
-          {SIZES.map((s, i) => (
+          {SIZES.map((sizeOption, i) => (
             <button
-              key={s.label}
-              className={`${styles.sizeButton} ${sizeIdx === i ? styles.sizeBtnActive : ""}`}
-              onClick={() => setSizeIdx(i)}
-              title={s.label}
+              key={sizeOption.label}
+              className={`${styles.sizeButton} ${sizeIndex === i ? styles.sizeBtnActive : ""}`}
+              onClick={() => setSizeIndex(i)}
+              title={sizeOption.label}
             >
               <span
                 className={styles.sizeDot}
-                style={{ width: s.dot, height: s.dot }}
+                style={{ width: sizeOption.dot, height: sizeOption.dot }}
               />
             </button>
           ))}
@@ -447,12 +447,12 @@ export default function DrawingCanvas({
         {/* Visible canvas */}
         <div
           className={styles.canvasWrapper}
-          style={{ width: displaySize.w, height: displaySize.h }}
+          style={{ width: displaySize.width, height: displaySize.height }}
         >
           {/* Background: show source image or white */}
-          {src ? (
+          {backgroundImageSourceUrl ? (
             <img
-              src={src}
+              src={backgroundImageSourceUrl}
               alt="Background"
               className={styles.backgroundImage}
               draggable={false}
@@ -481,7 +481,7 @@ export default function DrawingCanvas({
           Cancel
         </button>
         <button className={styles.saveButton} onClick={handleSave}>
-          <Save size={15} /> {src ? "Save Changes" : "Use Drawing"}
+          <Save size={15} /> {backgroundImageSourceUrl ? "Save Changes" : "Use Drawing"}
         </button>
       </div>
     </div>,

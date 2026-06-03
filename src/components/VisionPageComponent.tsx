@@ -119,7 +119,7 @@ export default function VisionPageComponent() {
     });
     PrismService.getFavorites("model")
       .then((favs: Array<{ key: string }>) =>
-        setFavorites(favs.map((f) => f.key)),
+        setFavorites(favs.map((favorite) => favorite.key)),
       )
       .catch(() => {});
   }, []);
@@ -132,8 +132,8 @@ export default function VisionPageComponent() {
     const filteredModels: Record<string, ModelOption[]> = {};
 
     for (const [provider, models] of Object.entries(textModels)) {
-      const visionModels = models.filter((m) =>
-        m.inputTypes?.includes("image"),
+      const visionModels = models.filter((modelOption) =>
+        modelOption.inputTypes?.includes("image"),
       );
       if (visionModels.length > 0) {
         filteredModels[provider] = visionModels;
@@ -161,7 +161,7 @@ export default function VisionPageComponent() {
 
   const stopSource = useCallback(() => {
     if (streamRef.current) {
-      (streamRef.current as MediaStream).getTracks().forEach((t) => t.stop());
+      (streamRef.current as MediaStream).getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     if (videoRef.current) {
@@ -317,11 +317,11 @@ export default function VisionPageComponent() {
     setTimeout(() => setShowFlash(false), 250);
 
     const resultId = Date.now();
-    setSnapshotCount((c) => c + 1);
+    setSnapshotCount((previousCount) => previousCount + 1);
     setIsCapturing(true);
 
     // Add placeholder result
-    setResults((prev) => [
+    setResults((previousResults) => [
       {
         id: resultId,
         timestamp: new Date(),
@@ -331,7 +331,7 @@ export default function VisionPageComponent() {
         provider: settings.provider,
         model: settings.model,
       },
-      ...prev,
+      ...previousResults,
     ]);
 
     try {
@@ -352,30 +352,30 @@ export default function VisionPageComponent() {
         },
         {
           onChunk: (content: string) => {
-            setResults((prev) =>
-              prev.map((r) =>
-                r.id === resultId ? { ...r, text: r.text + content } : r,
+            setResults((previousResults) =>
+              previousResults.map((resultItem) =>
+                resultItem.id === resultId ? { ...resultItem, text: resultItem.text + content } : resultItem,
               ),
             );
           },
           onDone: () => {
-            setResults((prev) =>
-              prev.map((r) =>
-                r.id === resultId ? { ...r, streaming: false } : r,
+            setResults((previousResults) =>
+              previousResults.map((resultItem) =>
+                resultItem.id === resultId ? { ...resultItem, streaming: false } : resultItem,
               ),
             );
             setIsCapturing(false);
           },
           onError: (error: Error) => {
-            setResults((prev) =>
-              prev.map((r) =>
-                r.id === resultId
+            setResults((previousResults) =>
+              previousResults.map((resultItem) =>
+                resultItem.id === resultId
                   ? {
-                      ...r,
-                      text: r.text || `Error: ${error.message}`,
+                      ...resultItem,
+                      text: resultItem.text || `Error: ${error.message}`,
                       streaming: false,
                     }
-                  : r,
+                  : resultItem,
               ),
             );
             setIsCapturing(false);
@@ -387,11 +387,11 @@ export default function VisionPageComponent() {
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      setResults((prev) =>
-        prev.map((r) =>
-          r.id === resultId
-            ? { ...r, text: `Error: ${errorMessage}`, streaming: false }
-            : r,
+      setResults((previousResults) =>
+        previousResults.map((resultItem) =>
+          resultItem.id === resultId
+            ? { ...resultItem, text: `Error: ${errorMessage}`, streaming: false }
+            : resultItem,
         ),
       );
       setIsCapturing(false);
@@ -559,13 +559,13 @@ export default function VisionPageComponent() {
               previousMessages.map((message) => {
                 if (message.id !== assistantMessageId) return message;
                 const existingToolCall = message.toolCalls?.find(
-                  (tc: any) => tc.id === toolCall.id,
+                  (toolCallItem: any) => toolCallItem.id === toolCall.id,
                 );
                 if (existingToolCall) {
                   return {
                     ...message,
-                    toolCalls: message.toolCalls.map((tc: any) =>
-                      tc.id === toolCall.id ? { ...tc, ...toolCall } : tc,
+                    toolCalls: message.toolCalls.map((toolCallItem: any) =>
+                      toolCallItem.id === toolCall.id ? { ...toolCallItem, ...toolCall } : toolCallItem,
                     ),
                   };
                 }
@@ -630,17 +630,17 @@ export default function VisionPageComponent() {
   }, []);
 
   const handleToggleFavorite = useCallback(async (key: string) => {
-    setFavorites((prev) => {
-      if (prev.includes(key)) {
+    setFavorites((previousFavorites) => {
+      if (previousFavorites.includes(key)) {
         PrismService.removeFavorite("model", key).catch(() => {});
-        return prev.filter((k) => k !== key);
+        return previousFavorites.filter((favoriteKey) => favoriteKey !== key);
       }
       const [provider, ...rest] = key.split(":");
       PrismService.addFavorite("model", key, {
         provider,
         name: rest.join(":"),
       }).catch(() => {});
-      return [...prev, key];
+      return [...previousFavorites, key];
     });
   }, []);
 
@@ -671,16 +671,16 @@ export default function VisionPageComponent() {
           <div className={styles.sourceContent}>
             {/* Source type buttons */}
             <div className={styles.sourceSelector}>
-              {SOURCE_TYPES.map((src) => {
-                const Icon = src.icon;
+              {SOURCE_TYPES.map((source) => {
+                const Icon = source.icon;
                 return (
                   <button
-                    key={src.key}
-                    className={`${styles.sourceButton} ${sourceType === src.key ? styles.sourceBtnActive : ""}`}
-                    onClick={() => handleSourceSelect(src.key)}
+                    key={source.key}
+                    className={`${styles.sourceButton} ${sourceType === source.key ? styles.sourceBtnActive : ""}`}
+                    onClick={() => handleSourceSelect(source.key)}
                   >
                     <Icon size={14} />
-                    {src.label}
+                    {source.label}
                   </button>
                 );
               })}
@@ -1079,26 +1079,26 @@ export default function VisionPageComponent() {
                             message.toolCalls.length > 0 && (
                               <div className={styles.chatToolCalls}>
                                 {message.toolCalls.map(
-                                  (tc: any, index: number) => (
+                                  (toolCallItem: any, index: number) => (
                                     <div
                                       key={index}
                                       className={styles.chatToolCallBadge}
                                     >
                                       <Cpu size={10} />
-                                      <span>{tc.name}</span>
-                                      {tc.status === "calling" && (
+                                      <span>{toolCallItem.name}</span>
+                                      {toolCallItem.status === "calling" && (
                                         <span
                                           className={styles.toolStatusRunning}
                                         >
                                           running
                                         </span>
                                       )}
-                                      {tc.status === "done" && (
+                                      {toolCallItem.status === "done" && (
                                         <span className={styles.toolStatusDone}>
                                           done
                                         </span>
                                       )}
-                                      {tc.status === "error" && (
+                                      {toolCallItem.status === "error" && (
                                         <span
                                           className={styles.toolStatusError}
                                         >

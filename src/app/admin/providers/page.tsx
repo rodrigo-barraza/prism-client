@@ -88,10 +88,10 @@ export default function ProvidersPage() {
   // Aggregate by provider
   const providers = useMemo(() => {
     const map: Record<string, ProviderStat> = {};
-    modelStats.forEach((m: ModelStat) => {
-      if (!map[m.provider]) {
-        map[m.provider] = {
-          provider: m.provider,
+    modelStats.forEach((model: ModelStat) => {
+      if (!map[model.provider]) {
+        map[model.provider] = {
+          provider: model.provider,
           totalRequests: 0,
           totalCost: 0,
           totalTokens: 0,
@@ -101,66 +101,66 @@ export default function ProvidersPage() {
           _latencyCount: 0,
         };
       }
-      const providerData = map[m.provider];
-      providerData.totalRequests += m.totalRequests;
-      providerData.totalCost += m.totalCost;
-      providerData.totalTokens += m.totalTokens;
-      providerData._latencySum += (m.avgLatency || 0) * m.totalRequests;
-      providerData._latencyCount += m.totalRequests;
-      providerData.models.push(m);
+      const providerData = map[model.provider];
+      providerData.totalRequests += model.totalRequests;
+      providerData.totalCost += model.totalCost;
+      providerData.totalTokens += model.totalTokens;
+      providerData._latencySum += (model.avgLatency || 0) * model.totalRequests;
+      providerData._latencyCount += model.totalRequests;
+      providerData.models.push(model);
     });
 
     return Object.values(map)
-      .map((p) => ({
-        ...p,
-        avgLatency: p._latencyCount ? p._latencySum / p._latencyCount : 0,
-        models: p.models.sort((a, b) => b.totalRequests - a.totalRequests),
+      .map((provider) => ({
+        ...provider,
+        avgLatency: provider._latencyCount ? provider._latencySum / provider._latencyCount : 0,
+        models: provider.models.sort((modelA, modelB) => modelB.totalRequests - modelA.totalRequests),
       }))
-      .sort((a, b) => b.totalRequests - a.totalRequests);
+      .sort((providerA, providerB) => providerB.totalRequests - providerA.totalRequests);
   }, [modelStats]);
 
   const totalRequests =
-    providers.reduce((s: number, p) => s + p.totalRequests, 0) || 1;
+    providers.reduce((sum: number, provider) => sum + provider.totalRequests, 0) || 1;
 
   const modelColumns = useMemo(
     () => [
       {
         key: "model",
         label: "Model",
-        render: (m: ModelStat) => (
+        render: (model: ModelStat) => (
           <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
-            {m.model}
+            {model.model}
           </span>
         ),
       },
       {
         key: "totalRequests",
         label: "Requests",
-        render: (m: ModelStat) => formatNumber(m.totalRequests),
+        render: (model: ModelStat) => formatNumber(model.totalRequests),
         align: "right" as const,
       },
       {
         key: "totalTokens",
         label: "Tokens",
-        render: (m: ModelStat) => formatNumber(m.totalTokens),
+        render: (model: ModelStat) => formatNumber(model.totalTokens),
         align: "right" as const,
       },
       {
         key: "avgTokensPerSec",
         label: "Tok/s",
-        render: (m: ModelStat) => formatTokensPerSec(m.avgTokensPerSec),
+        render: (model: ModelStat) => formatTokensPerSec(model.avgTokensPerSec),
         align: "right" as const,
       },
       {
         key: "totalCost",
         label: "Cost",
-        render: (m: ModelStat) => formatCost(m.totalCost),
+        render: (model: ModelStat) => formatCost(model.totalCost),
         align: "right" as const,
       },
       {
         key: "avgLatency",
         label: "Avg Latency",
-        render: (m: ModelStat) => formatLatency(m.avgLatency),
+        render: (model: ModelStat) => formatLatency(model.avgLatency),
         align: "right" as const,
       },
     ],
@@ -198,18 +198,18 @@ export default function ProvidersPage() {
       {loading && <LoadingMessage message="Loading provider data..." />}
 
       <div className={styles.providerList}>
-        {providers.map((p, i: number) => {
-          const color = PROVIDER_COLORS[i % PROVIDER_COLORS.length];
-          const share = ((p.totalRequests / totalRequests) * 100).toFixed(1);
-          const isExpanded = expandedProvider === p.provider;
-          const providerLimits = rateLimits[p.provider];
+        {providers.map((provider, providerIndex: number) => {
+          const color = PROVIDER_COLORS[providerIndex % PROVIDER_COLORS.length];
+          const share = ((provider.totalRequests / totalRequests) * 100).toFixed(1);
+          const isExpanded = expandedProvider === provider.provider;
+          const providerLimits = rateLimits[provider.provider];
 
           return (
-            <div key={p.provider} className={styles.providerCard}>
+            <div key={provider.provider} className={styles.providerCard}>
               <button
                 className={styles.providerHeader}
                 onClick={() =>
-                  setExpandedProvider(isExpanded ? null : p.provider)
+                  setExpandedProvider(isExpanded ? null : provider.provider)
                 }
               >
                 <div className={styles.providerName}>
@@ -217,9 +217,9 @@ export default function ProvidersPage() {
                     className={styles.providerDot}
                     style={{ background: color }}
                   />
-                  <span>{resolveProviderLabel(p.provider)}</span>
+                  <span>{resolveProviderLabel(provider.provider)}</span>
                   <span className={styles.modelCount}>
-                    {p.models.length} models
+                    {provider.models.length} models
                   </span>
                   {providerLimits && (
                     <span className={styles.rateLimitBadge}>
@@ -230,19 +230,19 @@ export default function ProvidersPage() {
                 <div className={styles.providerStats}>
                   <span className={styles.statItem}>
                     <span className={styles.statValue}>
-                      {formatNumber(p.totalRequests)}
+                      {formatNumber(provider.totalRequests)}
                     </span>
                     <span className={styles.statLabel}>requests</span>
                   </span>
                   <span className={styles.statItem}>
                     <span className={styles.statValue}>
-                      {formatCost(p.totalCost)}
+                      {formatCost(provider.totalCost)}
                     </span>
                     <span className={styles.statLabel}>cost</span>
                   </span>
                   <span className={styles.statItem}>
                     <span className={styles.statValue}>
-                      {formatLatency(p.avgLatency)}
+                      {formatLatency(provider.avgLatency)}
                     </span>
                     <span className={styles.statLabel}>avg latency</span>
                   </span>
@@ -266,9 +266,9 @@ export default function ProvidersPage() {
                 <div className={styles.modelList}>
                   <TableComponent
                     columns={modelColumns}
-                    data={p.models}
-                    getRowKey={(m: ModelStat, index: number) =>
-                      `${m.model}-${index}`
+                    data={provider.models}
+                    getRowKey={(model: ModelStat, modelIndex: number) =>
+                      `${model.model}-${modelIndex}`
                     }
                   />
                 </div>

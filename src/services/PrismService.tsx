@@ -177,10 +177,10 @@ export default class PrismService {
     const existingModels = { ...textToText.models };
     for (const [provider, providerModels] of Object.entries(localModels)) {
       const existing = existingModels[provider] || [];
-      const existingKeys = new Set(existing.map((m: ModelOption) => m.name));
+      const existingKeys = new Set(existing.map((modelOption: ModelOption) => modelOption.name));
       const merged = [...existing];
-      for (const m of providerModels) {
-        if (!existingKeys.has(m.name)) merged.push(m);
+      for (const modelOption of providerModels) {
+        if (!existingKeys.has(modelOption.name)) merged.push(modelOption);
       }
       existingModels[provider] = merged;
     }
@@ -1194,11 +1194,11 @@ export default class PrismService {
                 );
               }
               PrismService._dispatchSSE(data, callbacks);
-            } catch (parseErr: unknown) {
+            } catch (parseError: unknown) {
               if (json.length > 0) {
                 console.warn(
                   `[PrismService] SSE JSON parse failed (${json.length} chars):`,
-                  getErrorMessage(parseErr),
+                  getErrorMessage(parseError),
                   json.slice(0, 200),
                 );
               }
@@ -1599,7 +1599,7 @@ export default class PrismService {
     params: Record<string, string | number | boolean> = {},
   ): Promise<MediaListResponse> {
     const stringParams: Record<string, string> = {};
-    for (const [k, v] of Object.entries(params)) stringParams[k] = String(v);
+    for (const [key, value] of Object.entries(params)) stringParams[key] = String(value);
     const query = new URLSearchParams(stringParams).toString();
     return PrismService._request<MediaListResponse>(
       `/media${query ? `?${query}` : ""}`,
@@ -1621,7 +1621,7 @@ export default class PrismService {
     params: Record<string, string | number | boolean> = {},
   ): Promise<TextListResponse> {
     const stringParams: Record<string, string> = {};
-    for (const [k, v] of Object.entries(params)) stringParams[k] = String(v);
+    for (const [key, value] of Object.entries(params)) stringParams[key] = String(value);
     const query = new URLSearchParams(stringParams).toString();
     return PrismService._request<TextListResponse>(
       `/text${query ? `?${query}` : ""}`,
@@ -1711,7 +1711,7 @@ export default class PrismService {
     callbacks: {
       onProgress?: (percentage: number) => void;
       onComplete?: () => void;
-      onError?: (err: Error) => void;
+      onError?: (error: Error) => void;
     } = {},
   ): () => void {
     const { onProgress, onComplete, onError } = callbacks;
@@ -1723,7 +1723,7 @@ export default class PrismService {
       // Client-side synthetic progress (asymptotic: approaches 95% over ~15s)
       const EXPECTED_LOAD_MS = 15_000;
       const startTime = Date.now();
-      let lastPct = 0;
+      let lastPercentage = 0;
       const progressInterval = setInterval(() => {
         if (controller.signal.aborted) {
           clearInterval(progressInterval);
@@ -1734,8 +1734,8 @@ export default class PrismService {
           0.95,
           elapsed / (elapsed + EXPECTED_LOAD_MS),
         );
-        if (percentage > lastPct + 0.005) {
-          lastPct = percentage;
+        if (percentage > lastPercentage + 0.005) {
+          lastPercentage = percentage;
           if (onProgress) onProgress(percentage);
         }
       }, 300);

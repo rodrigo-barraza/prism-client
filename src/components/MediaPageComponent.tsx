@@ -265,7 +265,7 @@ export default function MediaPageComponent({
                 className={styles.listThumbAudio}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
-                <AudioPlayerRecorderComponent src={resolvedUrl} compact />
+                <AudioPlayerRecorderComponent sourceUrl={resolvedUrl} compact />
               </div>
             ) : m.mediaType === "pdf" && resolvedUrl ? (
               <iframe

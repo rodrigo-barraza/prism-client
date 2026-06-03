@@ -194,12 +194,12 @@ export default function AdminAgentViewerComponent() {
     const filteredTextModels: Record<string, ModelOption[]> = {};
 
     for (const [provider, models] of Object.entries(textModelsMap)) {
-      const fcModels = models.filter((m) => m.tools?.includes("Tool Calling"));
+      const fcModels = models.filter((model) => model.tools?.includes("Tool Calling"));
       if (fcModels.length > 0) filteredTextModels[provider] = fcModels;
     }
 
     const filteredProviderList = (config.providerList || []).filter(
-      (p) => filteredTextModels[p],
+      (provider) => filteredTextModels[provider],
     );
 
     return {
@@ -252,14 +252,14 @@ export default function AdminAgentViewerComponent() {
         // Restore settings from the last assistant message
         const lastAssistant = [...(full.messages || [])]
           .reverse()
-          .find((m) => m.role === "assistant" && m.provider);
+          .find((message) => message.role === "assistant" && message.provider);
         if (lastAssistant) {
           const gs = (lastAssistant.generationSettings || {}) as Record<
             string,
             unknown
           >;
-          setSettings((prev) => {
-            const next = { ...prev };
+          setSettings((previousSettings) => {
+            const next = { ...previousSettings };
             if (lastAssistant.provider) next.provider = lastAssistant.provider;
             if (lastAssistant.model) next.model = lastAssistant.model;
             if (gs.temperature !== undefined)
@@ -393,7 +393,7 @@ export default function AdminAgentViewerComponent() {
                   modalities: (backendSessionStats?.modalities
                     ? Object.fromEntries(
                         Object.entries(backendSessionStats.modalities).map(
-                          ([k, v]) => [k, Boolean(v)],
+                          ([key, value]) => [key, Boolean(value)],
                         ),
                       )
                     : modalities) as Record<string, boolean>,
@@ -487,7 +487,7 @@ export default function AdminAgentViewerComponent() {
 
         <MessageList
           messages={messages.filter(
-            (m) => m.role === "user" || m.role === "assistant",
+            (message) => message.role === "user" || message.role === "assistant",
           )}
           isGenerating={false}
           streamingOutputs={new Map()}
@@ -513,7 +513,7 @@ export default function AdminAgentViewerComponent() {
       <header className={styles.viewerHeader}>
         <button
           className={`${styles.panelToggle} ${!showLeft ? styles.panelToggleHidden : ""}`}
-          onClick={() => setShowLeft((v) => !v)}
+          onClick={() => setShowLeft((visible) => !visible)}
           title={showLeft ? "Hide settings" : "Show settings"}
         >
           {showLeft ? <PanelLeftClose size={15} /> : <PanelLeft size={15} />}
@@ -535,7 +535,7 @@ export default function AdminAgentViewerComponent() {
 
         <button
           className={`${styles.panelToggle} ${!showRight ? styles.panelToggleHidden : ""}`}
-          onClick={() => setShowRight((v) => !v)}
+          onClick={() => setShowRight((visible) => !visible)}
           title={showRight ? "Hide sessions" : "Show sessions"}
         >
           {showRight ? <PanelRightClose size={15} /> : <PanelRight size={15} />}

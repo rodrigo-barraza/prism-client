@@ -104,14 +104,14 @@ function NodePorts({
       {/* Input ports */}
       {inputTypes.map((portId: string, i: number) => {
         const compound = parseCompoundPort(portId);
-        const baseMod = compound ? compound.modality : portId;
+        const baseModality = compound ? compound.modality : portId;
         const portY =
           portStartY + i * PORT_SECTION_HEIGHT + PORT_SECTION_HEIGHT / 2;
         const color =
-          (MODALITY_COLORS as Record<string, string>)[baseMod] || "#888";
+          (MODALITY_COLORS as Record<string, string>)[baseModality] || "#888";
         const isCompatible =
           connecting &&
-          getBaseModality(connecting.sourceModality) === baseMod &&
+          getBaseModality(connecting.sourceModality) === baseModality &&
           connecting.sourceNodeId !== node.id;
         const isHovered =
           hoveredPort?.nodeId === node.id &&
@@ -128,27 +128,27 @@ function NodePorts({
               label?: string;
             }
           >
-        )[baseMod]?.icon;
+        )[baseModality]?.icon;
         const hasPrismSource = connections.some(
-          (c) =>
-            c.targetNodeId === node.id &&
-            c.targetModality === portId &&
-            (nodeStatuses[c.sourceNodeId] === "running" ||
-              nodeStatuses[c.sourceNodeId] === "done"),
+          (connection) =>
+            connection.targetNodeId === node.id &&
+            connection.targetModality === portId &&
+            (nodeStatuses[connection.sourceNodeId] === "running" ||
+              nodeStatuses[connection.sourceNodeId] === "done"),
         );
         const hasDoneSource =
           hasPrismSource &&
           connections.some(
-            (c) =>
-              c.targetNodeId === node.id &&
-              c.targetModality === portId &&
-              nodeStatuses[c.sourceNodeId] === "done",
+            (connection) =>
+              connection.targetNodeId === node.id &&
+              connection.targetModality === portId &&
+              nodeStatuses[connection.sourceNodeId] === "done",
           ) &&
           !connections.some(
-            (c) =>
-              c.targetNodeId === node.id &&
-              c.targetModality === portId &&
-              nodeStatuses[c.sourceNodeId] === "running",
+            (connection) =>
+              connection.targetNodeId === node.id &&
+              connection.targetModality === portId &&
+              nodeStatuses[connection.sourceNodeId] === "running",
           );
 
         let label =
@@ -163,7 +163,7 @@ function NodePorts({
                 label?: string;
               }
             >
-          )[baseMod]?.label || baseMod;
+          )[baseModality]?.label || baseModality;
         if (compound && isConversationNode) {
           const message = nodeMessages[compound.index];
           const roleLabel =
@@ -172,14 +172,14 @@ function NodePorts({
             `#${compound.index}`;
           const roleCount = nodeMessages
             .slice(0, compound.index)
-            .filter((m) => m.role === message?.role).length;
+            .filter((messageItem) => messageItem.role === message?.role).length;
           const numberedRole =
             roleCount > 0 ? `${roleLabel} ${roleCount + 1}` : roleLabel;
           if (message?.role === "system") {
             label = numberedRole;
           } else {
-            const modLabel = baseMod !== "text" ? `${label}s` : label;
-            label = `${numberedRole} ${modLabel}`;
+            const modalityLabel = baseModality !== "text" ? `${label}s` : label;
+            label = `${numberedRole} ${modalityLabel}`;
           }
         }
 
@@ -632,7 +632,7 @@ function ModelNode(props: ModelNodeProps) {
   const width = getNodeWidth(node);
 
   const modalityIcons = (node.rawInputTypes || node.inputTypes || []).filter(
-    (t: string) => t !== "conversation",
+    (modalityType: string) => modalityType !== "conversation",
   );
   const modalityAreaWidth = modalityIcons.length * MODALITY_ICON_WIDTH;
 
@@ -935,7 +935,7 @@ function AssetNode(props: AssetNodeProps) {
 
   const isConversation = node.modality === "conversation";
   const conversationModalities = isConversation
-    ? (node.supportedModalities || ["text"]).filter((t) => t !== "conversation")
+    ? (node.supportedModalities || ["text"]).filter((modalityType) => modalityType !== "conversation")
     : [];
   const modalityAreaWidth = conversationModalities.length * MODALITY_ICON_WIDTH;
 
@@ -1139,7 +1139,7 @@ function AssetNode(props: AssetNodeProps) {
                         )}
                         {node.receivedOutputs.audio && (
                           <AudioPlayerRecorderComponent
-                            src={PrismService.getFileUrl(
+                            sourceUrl={PrismService.getFileUrl(
                               node.receivedOutputs.audio as string,
                             )}
                             compact
@@ -1230,7 +1230,7 @@ function AssetNode(props: AssetNodeProps) {
                           />
                         ) : node.modality === "audio" ? (
                           <AudioPlayerRecorderComponent
-                            src={PrismService.getFileUrl(
+                            sourceUrl={PrismService.getFileUrl(
                               node.content as string,
                             )}
                             square
@@ -1391,11 +1391,11 @@ function ToolNode(props: ToolNodeProps) {
   }>;
   const disabledTools = new Set(node.disabledTools || []);
   const enabledBuiltIn = builtInTools.filter(
-    (t: { name: string }) => !disabledTools.has(t.name),
+    (toolItem: { name: string }) => !disabledTools.has(toolItem.name),
   ).length;
   const enabledCustom = customToolsList.filter(
-    (t: { name?: string; _id?: string }) =>
-      !disabledTools.has(t.name || t._id || ""),
+    (toolItem: { name?: string; _id?: string }) =>
+      !disabledTools.has(toolItem.name || toolItem._id || ""),
   ).length;
   const totalEnabled = enabledBuiltIn + enabledCustom;
   const totalTools = builtInTools.length + customToolsList.length;
@@ -1415,14 +1415,14 @@ function ToolNode(props: ToolNodeProps) {
   const MAX_PILLS = 6;
   const allToolNames = [
     ...builtInTools
-      .filter((t: { name: string }) => !disabledTools.has(t.name))
-      .map((t: { name: string }) => t.name),
+      .filter((toolItem: { name: string }) => !disabledTools.has(toolItem.name))
+      .map((toolItem: { name: string }) => toolItem.name),
     ...customToolsList
       .filter(
-        (t: { name?: string; _id?: string }) =>
-          !disabledTools.has(t.name || t._id || ""),
+        (toolItem: { name?: string; _id?: string }) =>
+          !disabledTools.has(toolItem.name || toolItem._id || ""),
       )
-      .map((t: { name?: string; _id?: string }) => t.name || ""),
+      .map((toolItem: { name?: string; _id?: string }) => toolItem.name || ""),
   ];
   const displayedTools = allToolNames.slice(0, MAX_PILLS);
   const remainingCount = allToolNames.length - displayedTools.length;

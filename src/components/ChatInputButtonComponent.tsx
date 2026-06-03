@@ -44,7 +44,7 @@ function RotatingUploadIcon({ types, size = 18 }: RotatingUploadIconProps) {
     const interval = setInterval(() => {
       setIsTransitioning(true);
       setTimeout(() => {
-        setActiveIndex((prev) => (prev + 1) % allTypes.length);
+        setActiveIndex((previousIndex) => (previousIndex + 1) % allTypes.length);
         setIsTransitioning(false);
       }, 300);
     }, 3000);

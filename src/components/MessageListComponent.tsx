@@ -93,9 +93,9 @@ function splitRawContent(raw: string | undefined | null): {
 } {
   if (!raw) return { prefix: "", rest: "" };
   if (raw.startsWith("[System Context]")) {
-    const splitIdx = raw.indexOf("\n\n[User Message]\n");
-    if (splitIdx !== -1) {
-      const length = splitIdx + "\n\n[User Message]\n".length;
+    const splitIndex = raw.indexOf("\n\n[User Message]\n");
+    if (splitIndex !== -1) {
+      const length = splitIndex + "\n\n[User Message]\n".length;
       return { prefix: raw.substring(0, length), rest: raw.substring(length) };
     }
     const altSplit = raw.indexOf("[User Message]\n");
@@ -222,9 +222,9 @@ function ThinkingBlock({
 
   const handleToggle = () => {
     if (isStreaming) {
-      setStreamClosed((v) => !v);
+      setStreamClosed((previousClosedState) => !previousClosedState);
     } else {
-      setManualOpen((v) => !v);
+      setManualOpen((previousOpenState) => !previousOpenState);
     }
   };
 
@@ -384,7 +384,7 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
   if (cat === "audio") {
     return (
       <div className={styles.audioCard}>
-        <AudioPlayerRecorderComponent src={sourceUrl} compact />
+        <AudioPlayerRecorderComponent sourceUrl={sourceUrl} compact />
       </div>
     );
   }
@@ -624,7 +624,7 @@ export interface MessageListProps {
   workerToolActivity?: Record<string, WorkerToolActivityItem> | null;
   headerContent?: React.ReactNode;
   systemPrompt?: string | null;
-  onSystemPromptEdit?: (val: string) => void;
+  onSystemPromptEdit?: (editedPromptValue: string) => void;
   planProposal?: { plan: string; steps?: string[]; status?: string } | null;
   onPlanApprove?: () => void;
   onPlanReject?: () => void;
@@ -667,7 +667,7 @@ export default function MessageList({
   onMentionFileOpen,
 }: MessageListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [localLightboxSrc, setLocalLightboxSrc] = useState<string | null>(null);
+  const [localLightboxSourceUrl, setLocalLightboxSourceUrl] = useState<string | null>(null);
   const knownPathsSet = useMemo(
     () => (knownPaths ? new Set(knownPaths) : null),
     [knownPaths],
@@ -800,16 +800,16 @@ export default function MessageList({
     if (onImageClick) {
       onImageClick(url);
     } else {
-      setLocalLightboxSrc(url);
+      setLocalLightboxSourceUrl(url);
     }
   };
 
   const cleanMessageContent = (content: string | undefined | null): string => {
     if (!content) return "";
     if (content.startsWith("[System Context]")) {
-      const splitIdx = content.indexOf("\n\n[User Message]\n");
-      if (splitIdx !== -1) {
-        return content.substring(splitIdx + "\n\n[User Message]\n".length);
+      const splitIndex = content.indexOf("\n\n[User Message]\n");
+      if (splitIndex !== -1) {
+        return content.substring(splitIndex + "\n\n[User Message]\n".length);
       }
       const altSplit = content.indexOf("[User Message]\n");
       if (altSplit !== -1) {
@@ -825,66 +825,66 @@ export default function MessageList({
   };
 
   const getCleanAndRaw = (content: string, rawContent?: string) => {
-    let cleanVal = content || "";
-    let rawVal = rawContent || content || "";
+    let cleanedContentValue = content || "";
+    let rawContentValue = rawContent || content || "";
 
     const contentIsDirty =
-      cleanVal.startsWith("[System Context]") ||
-      cleanVal.startsWith("[System Context - Local Time:");
+      cleanedContentValue.startsWith("[System Context]") ||
+      cleanedContentValue.startsWith("[System Context - Local Time:");
     const rawIsDirty =
-      rawVal.startsWith("[System Context]") ||
-      rawVal.startsWith("[System Context - Local Time:");
+      rawContentValue.startsWith("[System Context]") ||
+      rawContentValue.startsWith("[System Context - Local Time:");
 
     if (contentIsDirty && !rawIsDirty) {
-      cleanVal = rawVal;
-      rawVal = content;
+      cleanedContentValue = rawContentValue;
+      rawContentValue = content;
     } else if (!contentIsDirty && rawIsDirty) {
-      cleanVal = content;
-      rawVal = rawVal;
+      cleanedContentValue = content;
+      rawContentValue = rawContentValue;
     } else if (contentIsDirty && rawIsDirty) {
-      // Both are dirty, clean one for cleanVal
-      cleanVal = cleanMessageContent(content);
+      // Both are dirty, clean one for cleanedContentValue
+      cleanedContentValue = cleanMessageContent(content);
     } else {
       // Neither is dirty
-      cleanVal = content;
-      rawVal = rawContent || content;
+      cleanedContentValue = content;
+      rawContentValue = rawContent || content;
     }
 
-    return { clean: cleanVal, raw: rawVal };
+    return { clean: cleanedContentValue, raw: rawContentValue };
   };
 
   const hasSystemContextMessage = useMemo(() => {
     return messages.some(
-      (m) =>
-        m.role === "user" &&
-        (m.content?.startsWith("[System Context]") ||
-          m.rawContent?.startsWith("[System Context]") ||
-          m.content?.startsWith("[System Context - Local Time:") ||
-          m.rawContent?.startsWith("[System Context - Local Time:")),
+      (message) =>
+        message.role === "user" &&
+        (message.content?.startsWith("[System Context]") ||
+          message.rawContent?.startsWith("[System Context]") ||
+          message.content?.startsWith("[System Context - Local Time:") ||
+          message.rawContent?.startsWith("[System Context - Local Time:")),
     );
   }, [messages]);
 
   const displayMessages = useMemo(() => {
-    return messages.map((m) => {
-      if (m.role === "user") {
-        const { clean, raw } = getCleanAndRaw(m.content || "", m.rawContent);
+    return messages.map((message) => {
+      if (message.role === "user") {
+        const { clean, raw } = getCleanAndRaw(message.content || "", message.rawContent);
         return {
-          ...m,
+          ...message,
           content: showRaw ? raw : clean,
         };
       }
-      return m;
+      return message;
     });
   }, [messages, showRaw]);
 
   // -- Sticky last user message (pinned header) -------------
-  const [isUserMsgScrolledPast, setIsUserMsgScrolledPast] = useState(false);
-  const lastUserMsgRef = useRef<HTMLDivElement | null>(null);
-  const lastUserMsgIndexRef = useRef<number>(-1);
-  const scrollingToUserMsgRef = useRef<boolean>(false);
+  const [isUserMessageScrolledPast, setIsUserMessageScrolledPast] = useState(false);
+  const lastUserMessageRef = useRef<HTMLDivElement | null>(null);
+  const lastUserMessageIndexRef = useRef<number>(-1);
+  const scrollingToUserMessageRef = useRef<boolean>(false);
 
   // Find the last user message
-  const lastUserMsgIndex = useMemo(() => {
+  const lastUserMessageIndex = useMemo(() => {
     for (let i = displayMessages.length - 1; i >= 0; i--) {
       if (
         displayMessages[i].role === "user" &&
@@ -898,9 +898,9 @@ export default function MessageList({
 
   // IntersectionObserver for scroll-past detection
   useEffect(() => {
-    lastUserMsgIndexRef.current = lastUserMsgIndex;
-    const node = lastUserMsgRef.current;
-    if (!node || lastUserMsgIndex < 0) {
+    lastUserMessageIndexRef.current = lastUserMessageIndex;
+    const node = lastUserMessageRef.current;
+    if (!node || lastUserMessageIndex < 0) {
       return;
     }
 
@@ -916,14 +916,14 @@ export default function MessageList({
     const observer = new IntersectionObserver(
       ([entry]: IntersectionObserverEntry[]) => {
         // Suppress during programmatic scroll-to to prevent stutter
-        if (scrollingToUserMsgRef.current) return;
+        if (scrollingToUserMessageRef.current) return;
         // Show sticky when user message is NOT intersecting
         // AND the element is above the viewport (scrolled past)
         const rootTop = entry.rootBounds ? entry.rootBounds.top : 0;
         const scrolledPast =
           !entry.isIntersecting &&
           entry.boundingClientRect.bottom < rootTop + 20;
-        setIsUserMsgScrolledPast(scrolledPast);
+        setIsUserMessageScrolledPast(scrolledPast);
       },
       {
         root: scrollParent,
@@ -935,24 +935,24 @@ export default function MessageList({
     observer.observe(node);
     return () => {
       observer.disconnect();
-      setIsUserMsgScrolledPast(false);
+      setIsUserMessageScrolledPast(false);
     };
-  }, [lastUserMsgIndex]);
+  }, [lastUserMessageIndex]);
 
   // Derive sticky message data from the boolean flag
-  const stickyUserMsg = useMemo(() => {
-    if (!isUserMsgScrolledPast || lastUserMsgIndex < 0) return null;
-    const message = displayMessages[lastUserMsgIndex];
+  const stickyUserMessage = useMemo(() => {
+    if (!isUserMessageScrolledPast || lastUserMessageIndex < 0) return null;
+    const message = displayMessages[lastUserMessageIndex];
     if (!message) return null;
     return {
       content: message.content,
       images: message.images,
-      index: lastUserMsgIndex,
+      index: lastUserMessageIndex,
     };
-  }, [isUserMsgScrolledPast, lastUserMsgIndex, displayMessages]);
+  }, [isUserMessageScrolledPast, lastUserMessageIndex, displayMessages]);
 
   const handleStickyClick = useCallback(() => {
-    const node = lastUserMsgRef.current;
+    const node = lastUserMessageRef.current;
     if (!node) return;
     // Walk up to the nearest scrollable ancestor
     let scrollParent = node.parentElement;
@@ -964,7 +964,7 @@ export default function MessageList({
     if (!scrollParent) return;
 
     // Suppress observer during scroll to prevent stutter from layout shifts
-    scrollingToUserMsgRef.current = true;
+    scrollingToUserMessageRef.current = true;
 
     const nodeRect = node.getBoundingClientRect();
     const parentRect = scrollParent.getBoundingClientRect();
@@ -974,19 +974,19 @@ export default function MessageList({
     // Re-enable observer after scroll completes — it will naturally
     // detect the element is visible and dismiss the sticky header
     setTimeout(() => {
-      scrollingToUserMsgRef.current = false;
+      scrollingToUserMessageRef.current = false;
       // Manually check if element is now visible and dismiss sticky
       const rect = node.getBoundingClientRect();
       const pRect = scrollParent.getBoundingClientRect();
       if (rect.top >= pRect.top) {
-        setIsUserMsgScrolledPast(false);
+        setIsUserMessageScrolledPast(false);
       }
     }, 600);
   }, []);
 
   const toggleDeletedExpanded = (index: number) => {
-    setExpandedDeletedSet((prev) => {
-      const next = new Set(prev);
+    setExpandedDeletedSet((previousExpandedSet) => {
+      const next = new Set(previousExpandedSet);
       if (next.has(index)) next.delete(index);
       else next.add(index);
       return next;
@@ -1008,9 +1008,9 @@ export default function MessageList({
         if (lastModel && lastModel !== message.model) {
           // Model changed! Show swap before the user's turn that led to this,
           // or before this assistant message if no user message preceded it.
-          const swapIdx =
+          const swapIndex =
             prospectiveSwapIndex !== null ? prospectiveSwapIndex : i;
-          array[swapIdx] = true;
+          array[swapIndex] = true;
         }
         lastModel = message.model;
         prospectiveSwapIndex = null;
@@ -1062,7 +1062,7 @@ export default function MessageList({
         meta[i] = { isContinuation: false, isLastInGroup: true };
         continue;
       }
-      const prevIsAssistant =
+      const previousIsAssistant =
         i > 0 &&
         displayMessages[i - 1].role === "assistant" &&
         !displayMessages[i - 1].deleted;
@@ -1071,7 +1071,7 @@ export default function MessageList({
         displayMessages[i + 1].role === "assistant" &&
         !displayMessages[i + 1].deleted;
       meta[i] = {
-        isContinuation: prevIsAssistant && !swapBefore[i],
+        isContinuation: previousIsAssistant && !swapBefore[i],
         isLastInGroup:
           !nextIsAssistant ||
           (i < displayMessages.length - 1 && swapBefore[i + 1]),
@@ -1084,48 +1084,48 @@ export default function MessageList({
     <div ref={containerReference} className={styles.messagesList}>
       {/* -- Sticky pinned user message -- */}
       <div
-        className={styles.stickyUserMsg}
+        className={styles.stickyUserMessage}
         onMouseEnter={(e: React.MouseEvent) =>
-          stickyUserMsg &&
+          stickyUserMessage &&
           SoundService.playHoverButton({ event: e.nativeEvent })
         }
         onClick={(e: React.MouseEvent) => {
-          if (stickyUserMsg) {
+          if (stickyUserMessage) {
             SoundService.playClickButton({ event: e.nativeEvent });
             handleStickyClick();
           }
         }}
         style={{
-          visibility: stickyUserMsg ? "visible" : "hidden",
-          opacity: stickyUserMsg ? 1 : 0,
-          pointerEvents: stickyUserMsg ? "auto" : "none",
+          visibility: stickyUserMessage ? "visible" : "hidden",
+          opacity: stickyUserMessage ? 1 : 0,
+          pointerEvents: stickyUserMessage ? "auto" : "none",
           transition: "opacity 0.2s ease, visibility 0.2s ease",
         }}
       >
-        <div className={styles.stickyUserMsgInner}>
-          <div className={styles.stickyUserMsgAvatar}>
+        <div className={styles.stickyUserMessageInner}>
+          <div className={styles.stickyUserMessageAvatar}>
             <User size={12} />
           </div>
-          <div className={styles.stickyUserMsgContent}>
-            {stickyUserMsg?.images && stickyUserMsg.images.length > 0 && (
-              <span className={styles.stickyUserMsgBadge}>
-                {stickyUserMsg.images.length} attachment
-                {stickyUserMsg.images.length > 1 ? "s" : ""}
+          <div className={styles.stickyUserMessageContent}>
+            {stickyUserMessage?.images && stickyUserMessage.images.length > 0 && (
+              <span className={styles.stickyUserMessageBadge}>
+                {stickyUserMessage.images.length} attachment
+                {stickyUserMessage.images.length > 1 ? "s" : ""}
               </span>
             )}
-            <span className={styles.stickyUserMsgText}>
-              {stickyUserMsg?.content
+            <span className={styles.stickyUserMessageText}>
+              {stickyUserMessage?.content
                 ? renderContentWithMentions(
-                    stickyUserMsg.content.length > 200
-                      ? stickyUserMsg.content.slice(0, 200) + "…"
-                      : stickyUserMsg.content,
+                    stickyUserMessage.content.length > 200
+                      ? stickyUserMessage.content.slice(0, 200) + "…"
+                      : stickyUserMessage.content,
                     knownPathsSet,
                     onMentionFileOpen,
                   )
                 : "(no text)"}
             </span>
           </div>
-          <ChevronDown size={14} className={styles.stickyUserMsgChevron} />
+          <ChevronDown size={14} className={styles.stickyUserMessageChevron} />
         </div>
       </div>
       {hasSystemPrompt && (
@@ -1293,11 +1293,11 @@ export default function MessageList({
                       </button>
                     </div>
                     {groupIndices.map((gi: number) => {
-                      const gMsg = displayMessages[gi];
+                      const groupMessage = displayMessages[gi];
                       const gRoleClass =
-                        gMsg.role === "user"
+                        groupMessage.role === "user"
                           ? styles.userNode
-                          : gMsg.role === "system"
+                          : groupMessage.role === "system"
                             ? styles.systemNode
                             : styles.assistantNode;
 
@@ -1331,19 +1331,19 @@ export default function MessageList({
                                 mini
                                 tooltip="Message role"
                               >
-                                {gMsg.role === "user" ? "User" : "Model"}
+                                {groupMessage.role === "user" ? "User" : "Model"}
                               </BadgeComponent>
-                              {gMsg.model && (
+                              {groupMessage.model && (
                                 <BadgeComponent
                                   type="model"
-                                  models={[gMsg.model]}
+                                  models={[groupMessage.model]}
                                   mini
                                 />
                               )}
-                              {gMsg.timestamp && (
+                              {groupMessage.timestamp && (
                                 <BadgeComponent
                                   type="dateTime"
-                                  date={gMsg.timestamp}
+                                  date={groupMessage.timestamp}
                                 />
                               )}
                               <div
@@ -1358,9 +1358,9 @@ export default function MessageList({
                                     className={styles.actionButton}
                                   />
                                 )}
-                                {gMsg.content && (
+                                {groupMessage.content && (
                                   <CopyButtonComponent
-                                    text={gMsg.content}
+                                    text={groupMessage.content}
                                     tooltip="Copy raw text"
                                     className={styles.actionButton}
                                   />
@@ -1374,31 +1374,31 @@ export default function MessageList({
                                 <div
                                   className={`${styles.avatar} ${styles.deletedAvatar}`}
                                 >
-                                  {gMsg.role === "user" ? (
+                                  {groupMessage.role === "user" ? (
                                     <User size={16} />
-                                  ) : gMsg.role === "system" ? (
+                                  ) : groupMessage.role === "system" ? (
                                     "S"
                                   ) : (
                                     <Bot size={16} />
                                   )}
                                 </div>
                                 <div className={styles.content}>
-                                  {gMsg.thinking && (
+                                  {groupMessage.thinking && (
                                     <ThinkingBlock
-                                      thinking={gMsg.thinking}
+                                      thinking={groupMessage.thinking}
                                       isStreaming={false}
                                     />
                                   )}
-                                  {gMsg.toolCalls &&
-                                    gMsg.toolCalls.length > 0 && (
+                                  {groupMessage.toolCalls &&
+                                    groupMessage.toolCalls.length > 0 && (
                                       <ToolCallsBlockComponent
-                                        toolCalls={gMsg.toolCalls}
+                                        toolCalls={groupMessage.toolCalls}
                                         workerToolActivity={workerToolActivity}
                                       />
                                     )}
-                                  {gMsg.images && gMsg.images.length > 0 && (
+                                  {groupMessage.images && groupMessage.images.length > 0 && (
                                     <div className={styles.imagePreviewRow}>
-                                      {gMsg.images.map(
+                                      {groupMessage.images.map(
                                         (rawUrl: string, j: number) => {
                                           const resolvedUrl =
                                             PrismService.getFileUrl(rawUrl);
@@ -1424,22 +1424,22 @@ export default function MessageList({
                                       )}
                                     </div>
                                   )}
-                                  {gMsg.content ? (
-                                    <MarkdownContent content={gMsg.content} />
+                                  {groupMessage.content ? (
+                                    <MarkdownContent content={groupMessage.content} />
                                   ) : null}
-                                  {gMsg.role === "assistant" &&
-                                    (gMsg.usage || gMsg.provider) && (
+                                  {groupMessage.role === "assistant" &&
+                                    (groupMessage.usage || groupMessage.provider) && (
                                       <div className={styles.metaBadges}>
-                                        {gMsg.provider && (
+                                        {groupMessage.provider && (
                                           <BadgeComponent
                                             type="providers"
-                                            providers={[gMsg.provider]}
+                                            providers={[groupMessage.provider]}
                                           />
                                         )}
-                                        {gMsg.model && (
+                                        {groupMessage.model && (
                                           <BadgeComponent
                                             type="model"
-                                            models={[gMsg.model]}
+                                            models={[groupMessage.model]}
                                           />
                                         )}
                                       </div>
@@ -1514,8 +1514,8 @@ export default function MessageList({
                 return (
                   <div
                     ref={
-                      i === lastUserMsgIndex && message.role === "user"
-                        ? lastUserMsgRef
+                      i === lastUserMessageIndex && message.role === "user"
+                        ? lastUserMessageRef
                         : undefined
                     }
                     className={`${styles.message} ${roleClass}${coalesce?.isContinuation ? ` ${styles.continuationMessage}` : ""}`}
@@ -1659,10 +1659,10 @@ export default function MessageList({
                             ) {
                               const toolIdSet = new Set(seg.toolIds || []);
                               const segmentTools = message.toolCalls.filter(
-                                (tc: ToolCallEvent) => {
-                                  if (!toolIdSet.has(tc.id)) return false;
-                                  if (renderedToolIds.has(tc.id)) return false;
-                                  renderedToolIds.add(tc.id);
+                                (toolCall: ToolCallEvent) => {
+                                  if (!toolIdSet.has(toolCall.id)) return false;
+                                  if (renderedToolIds.has(toolCall.id)) return false;
+                                  renderedToolIds.add(toolCall.id);
                                   return true;
                                 },
                               );
@@ -1781,7 +1781,7 @@ export default function MessageList({
                             const visibleSegs = segs
                               .map((s, index) => ({
                                 seg: s,
-                                origIdx: index,
+                                originalIndex: index,
                               }))
                               .filter(
                                 ({ seg }: { seg: ContentSegment }) =>
@@ -1794,7 +1794,7 @@ export default function MessageList({
                               isStreaming && lastSeg?.type === "thinking";
 
                             // Find the last text segment among visible segs for cursor
-                            const lastVisibleTextIdx = (() => {
+                            const lastVisibleTextIndex = (() => {
                               for (
                                 let k = visibleSegs.length - 1;
                                 k >= 0;
@@ -1824,15 +1824,15 @@ export default function MessageList({
                                   (
                                     {
                                       seg,
-                                      origIdx,
-                                    }: { seg: ContentSegment; origIdx: number },
+                                      originalIndex,
+                                    }: { seg: ContentSegment; originalIndex: number },
                                     vi: number,
                                   ) => {
                                     const isLastText =
-                                      vi === lastVisibleTextIdx;
+                                      vi === lastVisibleTextIndex;
                                     return (
                                       <React.Fragment key={`vis-${vi}`}>
-                                        {renderSeg(seg, origIdx, {
+                                        {renderSeg(seg, originalIndex, {
                                           isLastText,
                                         })}
                                       </React.Fragment>
@@ -1849,7 +1849,7 @@ export default function MessageList({
 
                           // No thinking — render all segments inline (tools interleaved with text)
                           // Find the last text segment to place streaming cursor
-                          const lastTextIdx = (() => {
+                          const lastTextIndex = (() => {
                             for (let k = segs.length - 1; k >= 0; k--) {
                               if (segs[k].type === "text") return k;
                             }
@@ -1857,7 +1857,7 @@ export default function MessageList({
                           })();
                           return segs.map((seg, si) =>
                             renderSeg(seg, si, {
-                              isLastText: si === lastTextIdx,
+                              isLastText: si === lastTextIndex,
                             }),
                           );
                         })()
@@ -2217,7 +2217,7 @@ export default function MessageList({
                         message.role === "assistant" &&
                         (planProposal.status === "pending"
                           ? i === messages.length - 1
-                          : message.toolCalls?.some((t) => t.name === "exit_plan_mode")) &&
+                          : message.toolCalls?.some((toolCall) => toolCall.name === "exit_plan_mode")) &&
                         !message.contentSegments?.some(
                           (s) => s.type === "plan",
                         ) && (
@@ -2236,10 +2236,10 @@ export default function MessageList({
           </React.Fragment>
         );
       })}
-      {localLightboxSrc && (
+      {localLightboxSourceUrl && (
         <ImagePreviewComponent
-          src={localLightboxSrc}
-          onClose={() => setLocalLightboxSrc(null)}
+          src={localLightboxSourceUrl}
+          onClose={() => setLocalLightboxSourceUrl(null)}
           readOnly={true}
         />
       )}

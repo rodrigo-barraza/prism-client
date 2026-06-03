@@ -162,10 +162,10 @@ export interface RowData {
  * Format a per-million-token pricing rate with clean precision.
  * e.g. 2.5 → "$2.50", 0.15 → "$0.15", 10 → "$10.00"
  */
-function formatPricingRate(n: number | null | undefined): string {
-  if (n == null) return "—";
+function formatPricingRate(rateValue: number | null | undefined): string {
+  if (rateValue == null) return "—";
   // Use up to 4 decimals but strip unnecessary trailing zeros, min 2 decimals
-  const formatted = n.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+  const formatted = rateValue.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
   const [int, dec = ""] = formatted.split(".");
   const padded = dec.padEnd(2, "0");
   return `$${int}.${padded}`;
@@ -174,9 +174,9 @@ function formatPricingRate(n: number | null | undefined): string {
 /**
  * Parse a size display string like "7.5 GB", "500 MB", "120 KB" back to bytes.
  */
-function parseSize(str: string | null | undefined): number {
-  if (!str) return 0;
-  const match = str.match(/([\d.]+)\s*(GB|MB|KB)/i);
+function parseSize(sizeString: string | null | undefined): number {
+  if (!sizeString) return 0;
+  const match = sizeString.match(/([\d.]+)\s*(GB|MB|KB)/i);
   if (!match) return 0;
   const value = parseFloat(match[1]);
   const unit = match[2].toUpperCase();
@@ -218,24 +218,24 @@ function ModalityCell({
   if (!inputTypes?.length && !outputTypes?.length) return "—";
   return (
     <span className={styles.modalities}>
-      {(inputTypes || []).map((t: string) => {
+      {(inputTypes || []).map((inputType: string) => {
         const modalityEntry = (
           MODALITY_ICONS as Record<
             string,
             { icon: React.ElementType; label: string }
           >
-        )[t];
+        )[inputType];
         if (!modalityEntry) return null;
         const Icon = modalityEntry.icon;
         return (
           <TooltipComponent
-            key={`in-${t}`}
+            key={`in-${inputType}`}
             label={modalityEntry.label}
             position="top"
           >
             <Icon
               size={12}
-              style={{ color: (MODALITY_COLORS as Record<string, string>)[t] }}
+              style={{ color: (MODALITY_COLORS as Record<string, string>)[inputType] }}
             />
           </TooltipComponent>
         );
@@ -246,24 +246,24 @@ function ModalityCell({
         outputTypes.length > 0 && (
           <ArrowRight size={10} className={styles.modalityArrow} />
         )}
-      {(outputTypes || []).map((t: string) => {
+      {(outputTypes || []).map((outputType: string) => {
         const modalityEntry = (
           MODALITY_ICONS as Record<
             string,
             { icon: React.ElementType; label: string }
           >
-        )[t];
+        )[outputType];
         if (!modalityEntry) return null;
         const Icon = modalityEntry.icon;
         return (
           <TooltipComponent
-            key={`out-${t}`}
+            key={`out-${outputType}`}
             label={modalityEntry.label}
             position="top"
           >
             <Icon
               size={12}
-              style={{ color: (MODALITY_COLORS as Record<string, string>)[t] }}
+              style={{ color: (MODALITY_COLORS as Record<string, string>)[outputType] }}
             />
           </TooltipComponent>
         );
@@ -308,9 +308,9 @@ function normalizeModel(model: RawModel): NormalizedModel {
 /**
  * Extract a quantization tag from the end of a label, e.g. "(Q8_0)", "(Q4_K_M)", "(IQ3_XXS)".
  */
-function extractQuantization(str: string | null | undefined): string | null {
-  if (!str) return null;
-  const match = str.match(/\(([A-Za-z][\dA-Za-z_]+)\)\s*$/);
+function extractQuantization(quantizationString: string | null | undefined): string | null {
+  if (!quantizationString) return null;
+  const match = quantizationString.match(/\(([A-Za-z][\dA-Za-z_]+)\)\s*$/);
   if (!match) return null;
   // Must start with a known quant prefix
   if (/^[QqIiFf][\d_A-Za-z]+$/.test(match[1])) return match[1];
@@ -320,18 +320,18 @@ function extractQuantization(str: string | null | undefined): string | null {
 /**
  * Strip a trailing quantization suffix from a label string.
  */
-function stripQuantSuffix(str: string | null | undefined): string {
-  if (!str) return "";
-  return str.replace(/\s*\([A-Za-z][\dA-Za-z_]+\)\s*$/, "").trim();
+function stripQuantSuffix(quantizationString: string | null | undefined): string {
+  if (!quantizationString) return "";
+  return quantizationString.replace(/\s*\([A-Za-z][\dA-Za-z_]+\)\s*$/, "").trim();
 }
 
 /**
  * Parse a params string like "27B", "1.7B", "30B-A3B", "0.6B" into a number (in billions).
  */
-function parseParams(str: string | null | undefined): number {
-  if (!str) return 0;
-  const match = str.match(/([\d.]+)\s*[Bb]/);
-  return match ? parseFloat(match[1]) : parseFloat(str) || 0;
+function parseParams(paramsString: string | null | undefined): number {
+  if (!paramsString) return 0;
+  const match = paramsString.match(/([\d.]+)\s*[Bb]/);
+  return match ? parseFloat(match[1]) : parseFloat(paramsString) || 0;
 }
 
 /**
@@ -374,8 +374,8 @@ function buildRow(rawModel: RawModel, favorites: string[] = []): RowData {
     _benchAgent: rawModel._benchAgent || null,
   };
   // Arena columns
-  for (const col of ARENA_COLUMNS) {
-    row[col.key] = rawModel.arena?.[col.dataKey] ?? 0;
+  for (const column of ARENA_COLUMNS) {
+    row[column.key] = rawModel.arena?.[column.dataKey] ?? 0;
   }
   return row;
 }
@@ -453,7 +453,7 @@ function buildStatsColumns({
       "totalCost",
       "avgLatency",
     ];
-    return allColumns.filter((c) => COMPACT_KEYS.includes(c.key));
+    return allColumns.filter((column) => COMPACT_KEYS.includes(column.key));
   }
   return allColumns;
 }
@@ -531,13 +531,13 @@ export default function ModelsTableComponent({
     const totalRequests =
       (totalRequestsProp ??
         models.reduce(
-          (s: number, m: RawModel) => s + (m.totalRequests || 0),
+          (sum: number, model: RawModel) => sum + (model.totalRequests || 0),
           0,
         )) ||
       1;
     const totalCost =
       (totalCostProp ??
-        models.reduce((s: number, m: RawModel) => s + (m.totalCost || 0), 0)) ||
+        models.reduce((sum: number, model: RawModel) => sum + (model.totalCost || 0), 0)) ||
       1;
 
     const columns = buildStatsColumns({
@@ -553,7 +553,7 @@ export default function ModelsTableComponent({
         maxHeight={maxHeight ?? 420}
         columns={columns as any}
         data={models}
-        getRowKey={(m: RawModel, i: number) => `${m.provider}-${m.model}-${i}`}
+        getRowKey={(model: RawModel, index: number) => `${model.provider}-${model.model}-${index}`}
         emptyText={emptyText || "No data yet"}
         storageKey="models-stats"
       />
@@ -647,14 +647,14 @@ function ModelsTableInner({
   // Discover all providers from models (ordered by PROVIDER_LABELS definition)
   const allProviders = useMemo(() => {
     const set = new Set<string>();
-    for (const m of models) {
-      const providerKey = normalizeModel(m).provider;
+    for (const model of models) {
+      const providerKey = normalizeModel(model).provider;
       if (providerKey) set.add(providerKey);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
-    return [...set].sort((a: string, b: string) => {
-      const ai = labelOrder.indexOf(a);
-      const bi = labelOrder.indexOf(b);
+    return [...set].sort((itemA: string, itemB: string) => {
+      const ai = labelOrder.indexOf(itemA);
+      const bi = labelOrder.indexOf(itemB);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
     });
   }, [models]);
@@ -662,14 +662,14 @@ function ModelsTableInner({
   // Discover all unique modalities from models (ordered by MODALITY_ICONS definition)
   const allModalities = useMemo(() => {
     const set = new Set<string>();
-    for (const m of models) {
-      for (const t of m.inputTypes || []) set.add(t);
-      for (const t of m.outputTypes || []) set.add(t);
+    for (const model of models) {
+      for (const inputType of model.inputTypes || []) set.add(inputType);
+      for (const outputType of model.outputTypes || []) set.add(outputType);
     }
     const iconOrder = Object.keys(MODALITY_ICONS);
-    return [...set].sort((a: string, b: string) => {
-      const ai = iconOrder.indexOf(a);
-      const bi = iconOrder.indexOf(b);
+    return [...set].sort((itemA: string, itemB: string) => {
+      const ai = iconOrder.indexOf(itemA);
+      const bi = iconOrder.indexOf(itemB);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
     });
   }, [models]);
@@ -677,49 +677,49 @@ function ModelsTableInner({
   // Discover all unique tools from models (ordered by TOOL_ICONS definition)
   const allTools = useMemo(() => {
     const set = new Set<string>();
-    for (const m of models) {
-      for (const t of m.tools || []) set.add(t);
+    for (const model of models) {
+      for (const toolName of model.tools || []) set.add(toolName);
     }
     const iconOrder = Object.keys(TOOL_ICONS);
-    return [...set].sort((a: string, b: string) => {
-      const ai = iconOrder.indexOf(a);
-      const bi = iconOrder.indexOf(b);
+    return [...set].sort((itemA: string, itemB: string) => {
+      const ai = iconOrder.indexOf(itemA);
+      const bi = iconOrder.indexOf(itemB);
       return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
     });
   }, [models]);
 
   // Apply favorites filter → modality filter → tool filter → provider filter → search
   const favFiltered = showFavoritesOnly
-    ? models.filter((m: RawModel) => {
-        const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
+    ? models.filter((model: RawModel) => {
+        const key = `${normalizeModel(model).provider}:${normalizeModel(model).key}`;
         return favorites.includes(key);
       })
     : models;
 
   const modalityFiltered = activeModality
     ? favFiltered.filter(
-        (m: RawModel) =>
-          (m.inputTypes || []).includes(activeModality) ||
-          (m.outputTypes || []).includes(activeModality),
+        (model: RawModel) =>
+          (model.inputTypes || []).includes(activeModality) ||
+          (model.outputTypes || []).includes(activeModality),
       )
     : favFiltered;
 
   const toolFiltered = activeTool
-    ? modalityFiltered.filter((m: RawModel) =>
-        (m.tools || []).includes(activeTool),
+    ? modalityFiltered.filter((model: RawModel) =>
+        (model.tools || []).includes(activeTool),
       )
     : modalityFiltered;
 
   const providerFiltered = activeProvider
     ? toolFiltered.filter(
-        (m: RawModel) => normalizeModel(m).provider === activeProvider,
+        (model: RawModel) => normalizeModel(model).provider === activeProvider,
       )
     : toolFiltered;
 
   const filtered = searchQuery.trim()
-    ? providerFiltered.filter((m: RawModel) => {
+    ? providerFiltered.filter((model: RawModel) => {
         const normalizedSearch = searchQuery.trim().toLowerCase();
-        const norm = normalizeModel(m);
+        const norm = normalizeModel(model);
         return (
           norm.key.toLowerCase().includes(normalizedSearch) ||
           norm.name.toLowerCase().includes(normalizedSearch) ||
@@ -733,54 +733,54 @@ function ModelsTableInner({
 
   // Build flat row objects for TableComponent
   const tableData = useMemo(
-    () => filtered.map((m: RawModel) => buildRow(m, favorites)),
+    () => filtered.map((model: RawModel) => buildRow(model, favorites)),
     [filtered, favorites],
   );
 
   // Detect which optional columns have data
-  const hasYear = filtered.some((m: RawModel) => m.year);
-  const hasSize = filtered.some((m: RawModel) => normalizeModel(m).size);
-  const hasParams = filtered.some((m: RawModel) => normalizeModel(m).params);
+  const hasYear = filtered.some((model: RawModel) => model.year);
+  const hasSize = filtered.some((model: RawModel) => normalizeModel(model).size);
+  const hasParams = filtered.some((model: RawModel) => normalizeModel(model).params);
   const hasContext = filtered.some(
-    (m: RawModel) => normalizeModel(m).contextLength,
+    (model: RawModel) => normalizeModel(model).contextLength,
   );
   const hasQuant = filtered.some(
-    (m: RawModel) => normalizeModel(m).quantization,
+    (model: RawModel) => normalizeModel(model).quantization,
   );
-  const hasBpw = filtered.some(
-    (m: RawModel) => normalizeModel(m).bitsPerWeight != null,
+  const hasBitsPerWeight = filtered.some(
+    (model: RawModel) => normalizeModel(model).bitsPerWeight != null,
   );
   const hasArch = filtered.some(
-    (m: RawModel) => normalizeModel(m).architecture,
+    (model: RawModel) => normalizeModel(model).architecture,
   );
   const hasPublisher = filtered.some(
-    (m: RawModel) => normalizeModel(m).publisher,
+    (model: RawModel) => normalizeModel(model).publisher,
   );
   const hasInputPrice = filtered.some(
-    (m: RawModel) => m.pricing?.inputPerMillion != null,
+    (model: RawModel) => model.pricing?.inputPerMillion != null,
   );
   const hasOutputPrice = filtered.some(
-    (m: RawModel) => m.pricing?.outputPerMillion != null,
+    (model: RawModel) => model.pricing?.outputPerMillion != null,
   );
   const hasModalities = filtered.some(
-    (m: RawModel) =>
-      (m.inputTypes?.length ?? 0) > 0 || (m.outputTypes?.length ?? 0) > 0,
+    (model: RawModel) =>
+      (model.inputTypes?.length ?? 0) > 0 || (model.outputTypes?.length ?? 0) > 0,
   );
-  const hasTools = filtered.some((m: RawModel) => (m.tools?.length ?? 0) > 0);
+  const hasTools = filtered.some((model: RawModel) => (model.tools?.length ?? 0) > 0);
   const hasModelType = filtered.some(
-    (m: RawModel) => normalizeModel(m).modelType,
+    (model: RawModel) => normalizeModel(model).modelType,
   );
-  const hasUsage = filtered.some((m: RawModel) => (m.usageCount ?? 0) > 0);
+  const hasUsage = filtered.some((model: RawModel) => (model.usageCount ?? 0) > 0);
   const hasTokens = filtered.some(
-    (m: RawModel) => (m.totalInputTokens || 0) + (m.totalOutputTokens || 0) > 0,
+    (model: RawModel) => (model.totalInputTokens || 0) + (model.totalOutputTokens || 0) > 0,
   );
   const hasActions = !!renderActions;
   const hasSelection = !!selectedKeys && !!onToggleSelect;
   const isFull = mode === "full";
   const isBenchmark = mode === "benchmark";
 
-  const arenaCols = ARENA_COLUMNS.filter((col) =>
-    filtered.some((m: RawModel) => m.arena && m.arena[col.dataKey] != null),
+  const arenaColumns = ARENA_COLUMNS.filter((column) =>
+    filtered.some((model: RawModel) => model.arena && model.arena[column.dataKey] != null),
   );
 
   // Build dynamic columns array for TableComponent
@@ -790,19 +790,19 @@ function ModelsTableInner({
     // Check if all currently visible/filtered models are selected
     const allSelected =
       filtered.length > 0 &&
-      filtered.every((m: RawModel) => {
-        const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
+      filtered.every((model: RawModel) => {
+        const key = `${normalizeModel(model).provider}:${normalizeModel(model).key}`;
         return selectedKeys.has(key);
       });
     // Toggle: if all selected, deselect all visible; otherwise select all visible
-    for (const m of filtered) {
-      const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
+    for (const model of filtered) {
+      const key = `${normalizeModel(model).provider}:${normalizeModel(model).key}`;
       if (allSelected) {
         // Only deselect if currently selected
-        if (selectedKeys.has(key)) onToggleSelect(m);
+        if (selectedKeys.has(key)) onToggleSelect(model);
       } else {
         // Only select if not already selected
-        if (!selectedKeys.has(key)) onToggleSelect(m);
+        if (!selectedKeys.has(key)) onToggleSelect(model);
       }
     }
   }, [filtered, selectedKeys, onToggleSelect]);
@@ -816,14 +816,14 @@ function ModelsTableInner({
     if (hasSelection && selectedKeys) {
       const allSelected =
         filtered.length > 0 &&
-        filtered.every((m: RawModel) => {
-          const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
+        filtered.every((model: RawModel) => {
+          const key = `${normalizeModel(model).provider}:${normalizeModel(model).key}`;
           return selectedKeys.has(key);
         });
       const someSelected =
         !allSelected &&
-        filtered.some((m: RawModel) => {
-          const key = `${normalizeModel(m).provider}:${normalizeModel(m).key}`;
+        filtered.some((model: RawModel) => {
+          const key = `${normalizeModel(model).provider}:${normalizeModel(model).key}`;
           return selectedKeys.has(key);
         });
 
@@ -1175,7 +1175,7 @@ function ModelsTableInner({
     if (isFull && hasUsage) {
       const usageTotal =
         filtered.reduce(
-          (s: number, m: RawModel) => s + (m.usageCount || 0),
+          (sum: number, model: RawModel) => sum + (model.usageCount || 0),
           0,
         ) || 1;
       cols.push({
@@ -1206,7 +1206,7 @@ function ModelsTableInner({
     if (hasUsage && !isFull) {
       const usageTotal =
         filtered.reduce(
-          (s: number, m: RawModel) => s + (m.usageCount || 0),
+          (sum: number, model: RawModel) => sum + (model.usageCount || 0),
           0,
         ) || 1;
       cols.push({
@@ -1356,7 +1356,7 @@ function ModelsTableInner({
       });
     }
 
-    if (hasBpw) {
+    if (hasBitsPerWeight) {
       cols.push({
         key: "bpw",
         label: "BPW",
@@ -1473,13 +1473,13 @@ function ModelsTableInner({
     }
 
     if (!isBenchmark) {
-      for (const arenaCol of arenaCols) {
+      for (const arenaColumn of arenaColumns) {
         cols.push({
-          key: arenaCol.key,
-          label: arenaCol.label,
-          description: `LMArena ${arenaCol.label} benchmark ELO score`,
+          key: arenaColumn.key,
+          label: arenaColumn.label,
+          description: `LMArena ${arenaColumn.label} benchmark ELO score`,
           align: "right",
-          render: (row: RowData) => row._raw.arena?.[arenaCol.dataKey] ?? "—",
+          render: (row: RowData) => row._raw.arena?.[arenaColumn.dataKey] ?? "—",
         });
       }
     }
@@ -1499,7 +1499,7 @@ function ModelsTableInner({
     hasSize,
     hasParams,
     hasQuant,
-    hasBpw,
+    hasBitsPerWeight,
     hasArch,
     hasPublisher,
     hasInputPrice,
@@ -1510,7 +1510,7 @@ function ModelsTableInner({
     onToggleSelect,
     handleSelectAll,
     renderActions,
-    arenaCols,
+    arenaColumns,
     loadingModelKey,
     isFull,
     isBenchmark,
@@ -1545,7 +1545,7 @@ function ModelsTableInner({
                     activeKeys: showFavoritesOnly ? "favorites" : null,
                     isSingleSelect: true,
                     onToggle: () =>
-                      setShowFavoritesOnly((prev: boolean) => !prev),
+                      setShowFavoritesOnly((previousFavoritesOnly: boolean) => !previousFavoritesOnly),
                   },
                 ]
               : []),
@@ -1554,20 +1554,20 @@ function ModelsTableInner({
                   {
                     label: "Modality",
                     items: allModalities
-                      .map((t: string) => {
+                      .map((modality: string) => {
                         const modalityEntry = (
                           MODALITY_ICONS as Record<
                             string,
                             { icon: React.ElementType; label: string }
                           >
-                        )[t];
+                        )[modality];
                         return modalityEntry
                           ? {
-                              key: t,
+                              key: modality,
                               icon: modalityEntry.icon as React.ComponentType<any>,
                               color: (
                                 MODALITY_COLORS as Record<string, string>
-                              )[t],
+                              )[modality],
                               title: modalityEntry.label,
                             }
                           : null;
@@ -1587,16 +1587,16 @@ function ModelsTableInner({
                   {
                     label: "Tools",
                     items: allTools
-                      .map((t: string) => {
+                      .map((toolName: string) => {
                         const Icon = (
                           TOOL_ICONS as Record<string, React.ElementType>
-                        )[t];
+                        )[toolName];
                         return Icon
                           ? {
-                              key: t,
+                              key: toolName,
                               icon: Icon as React.ComponentType<any>,
-                              color: (TOOL_COLORS as Record<string, string>)[t],
-                              title: t,
+                              color: (TOOL_COLORS as Record<string, string>)[toolName],
+                              title: toolName,
                             }
                           : null;
                       })
@@ -1614,10 +1614,10 @@ function ModelsTableInner({
               ? [
                   {
                     label: "Providers",
-                    items: allProviders.map((p: string) => ({
-                      key: p,
-                      icon: () => <ProviderLogo provider={p} size={13} />,
-                      title: resolveProviderLabel(p),
+                    items: allProviders.map((provider: string) => ({
+                      key: provider,
+                      icon: () => <ProviderLogo provider={provider} size={13} />,
+                      title: resolveProviderLabel(provider),
                     })),
                     activeKeys: activeProvider,
                     isSingleSelect: true,

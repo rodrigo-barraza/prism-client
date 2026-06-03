@@ -84,7 +84,7 @@ export default class ToolsApiService {
   static async getToolCalls(
     params: Record<string, string | number | boolean> = {},
   ): Promise<ToolCallListResponse> {
-    const entries = Object.entries(params).map(([k, v]) => [k, String(v)]);
+    const entries = Object.entries(params).map(([key, value]) => [key, String(value)]);
     const query = new URLSearchParams(entries).toString();
     return ToolsApiService._fetch<ToolCallListResponse>(
       `/admin/tool-calls${query ? `?${query}` : ""}`,
@@ -97,7 +97,7 @@ export default class ToolsApiService {
   static async getToolCallStats(
     params: Record<string, string | number | boolean> = {},
   ): Promise<ToolCallStatsResponse> {
-    const entries = Object.entries(params).map(([k, v]) => [k, String(v)]);
+    const entries = Object.entries(params).map(([key, value]) => [key, String(value)]);
     const query = new URLSearchParams(entries).toString();
     return ToolsApiService._fetch<ToolCallStatsResponse>(
       `/admin/tool-calls/stats${query ? `?${query}` : ""}`,

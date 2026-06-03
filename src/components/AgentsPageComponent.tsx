@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
 import PrismService from "../services/PrismService";
 import type { CustomAgent, AgentPersona, SerializedPolicy, ToolSchema } from "../types/types";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
@@ -38,6 +39,35 @@ const EMPTY_AGENT: EditableAgent = {
   usesCodingGuidelines: false,
 };
 
+function resolveAgentDisplayName(
+  agentId: string | null,
+  builtInAgents: AgentPersona[],
+  customAgents: EditableAgent[],
+): string | null {
+  if (!agentId) return null;
+  const builtIn = builtInAgents.find((agent) => agent.id === agentId);
+  if (builtIn) return builtIn.name;
+  const custom = customAgents.find((agent) => String(agent._id) === agentId);
+  if (custom) return custom.name;
+  return null;
+}
+
+function resolveAgentIdFromName(
+  agentName: string,
+  builtInAgents: AgentPersona[],
+  customAgents: EditableAgent[],
+): { agentId: string; isCustom: boolean } | null {
+  const builtIn = builtInAgents.find(
+    (agent) => agent.name.toLowerCase() === agentName.toLowerCase(),
+  );
+  if (builtIn) return { agentId: builtIn.id, isCustom: false };
+  const custom = customAgents.find(
+    (agent) => agent.name.toLowerCase() === agentName.toLowerCase(),
+  );
+  if (custom) return { agentId: String(custom._id), isCustom: true };
+  return null;
+}
+
 export default function AgentsPageComponent() {
   const [builtInAgents, setBuiltInAgents] = useState<AgentPersona[]>([]);
   const [customAgents, setCustomAgents] = useState<EditableAgent[]>([]);
@@ -49,6 +79,22 @@ export default function AgentsPageComponent() {
   const [isSaving, setIsSaving] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [hasRestoredFromUrl, setHasRestoredFromUrl] = useState(false);
+
+  const searchParameters = useSearchParams();
+  const pathname = usePathname();
+
+  const updateUrlAgentParameter = useCallback(
+    (agentName: string | null) => {
+      if (agentName) {
+        const encodedName = encodeURIComponent(agentName);
+        window.history.replaceState(null, "", `${pathname}?agent=${encodedName}`);
+      } else {
+        window.history.replaceState(null, "", pathname);
+      }
+    },
+    [pathname],
+  );
 
   const fetchInitialData = useCallback(async () => {
     setIsLoading(true);
@@ -63,15 +109,42 @@ export default function AgentsPageComponent() {
       setCustomAgents((customAgentsResult as EditableAgent[]) || []);
       setAvailableTools(toolsResult || []);
 
-      if (personasResult && personasResult.length > 0 && !selectedAgentId && !isCreateMode) {
-        setSelectedAgentId(personasResult[0].id);
+      const urlAgentName = searchParameters.get("agent");
+      const allBuiltIn = personasResult || [];
+      const allCustom = (customAgentsResult as EditableAgent[]) || [];
+
+      if (urlAgentName && !hasRestoredFromUrl) {
+        const resolved = resolveAgentIdFromName(urlAgentName, allBuiltIn, allCustom);
+        if (resolved) {
+          setSelectedAgentId(resolved.agentId);
+          if (resolved.isCustom) {
+            const foundCustomAgent = allCustom.find(
+              (agent) => String(agent._id) === resolved.agentId,
+            );
+            if (foundCustomAgent) {
+              setEditingAgent({
+                ...foundCustomAgent,
+                enabledTools: foundCustomAgent.enabledTools || [],
+                policies: foundCustomAgent.policies || [],
+              });
+            }
+          }
+          setHasRestoredFromUrl(true);
+          return;
+        }
+      }
+
+      if (allBuiltIn.length > 0 && !selectedAgentId && !isCreateMode) {
+        const firstAgentId = allBuiltIn[0].id;
+        setSelectedAgentId(firstAgentId);
+        updateUrlAgentParameter(allBuiltIn[0].name);
       }
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
-  }, [selectedAgentId, isCreateMode]);
+  }, [selectedAgentId, isCreateMode, searchParameters, hasRestoredFromUrl, updateUrlAgentParameter]);
 
   useEffect(() => {
     fetchInitialData();
@@ -92,12 +165,15 @@ export default function AgentsPageComponent() {
             enabledTools: foundCustomAgent.enabledTools || [],
             policies: foundCustomAgent.policies || [],
           });
+          updateUrlAgentParameter(foundCustomAgent.name);
         }
       } else {
         setEditingAgent(null);
+        const agentDisplayName = resolveAgentDisplayName(agentId, builtInAgents, customAgents);
+        updateUrlAgentParameter(agentDisplayName);
       }
     },
-    [customAgents],
+    [customAgents, builtInAgents, updateUrlAgentParameter],
   );
 
   const handleCreateNewAgent = useCallback(() => {
@@ -106,7 +182,8 @@ export default function AgentsPageComponent() {
     setIsConfirmingDelete(false);
     setErrorMessage(null);
     setEditingAgent({ ...EMPTY_AGENT, enabledTools: [] });
-  }, []);
+    updateUrlAgentParameter(null);
+  }, [updateUrlAgentParameter]);
 
   const handleCancelEdit = useCallback(() => {
     setIsCreateMode(false);
@@ -118,8 +195,9 @@ export default function AgentsPageComponent() {
     } else {
       setSelectedAgentId(null);
       setEditingAgent(null);
+      updateUrlAgentParameter(null);
     }
-  }, [builtInAgents, customAgents, handleSelectAgent]);
+  }, [builtInAgents, customAgents, handleSelectAgent, updateUrlAgentParameter]);
 
   const updateField = useCallback(
     <K extends keyof EditableAgent>(field: K, value: EditableAgent[K]) => {
@@ -152,13 +230,14 @@ export default function AgentsPageComponent() {
         const customAgentsResult = await PrismService.getCustomAgents();
         setCustomAgents((customAgentsResult as EditableAgent[]) || []);
         setErrorMessage(null);
+        updateUrlAgentParameter(editingAgent.name);
       }
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
       setIsSaving(false);
     }
-  }, [editingAgent, isCreateMode, handleSelectAgent]);
+  }, [editingAgent, isCreateMode, handleSelectAgent, updateUrlAgentParameter]);
 
   const handleDeleteAgent = useCallback(async () => {
     if (!editingAgent?._id) return;
@@ -176,13 +255,14 @@ export default function AgentsPageComponent() {
       } else {
         setSelectedAgentId(null);
         setEditingAgent(null);
+        updateUrlAgentParameter(null);
       }
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     } finally {
       setIsSaving(false);
     }
-  }, [editingAgent, builtInAgents, handleSelectAgent]);
+  }, [editingAgent, builtInAgents, handleSelectAgent, updateUrlAgentParameter]);
 
   const handleDuplicateAgent = useCallback(
     (sourceAgent: AgentPersona) => {
@@ -206,8 +286,9 @@ export default function AgentsPageComponent() {
         usesDirectoryTree: sourceAgent.usesDirectoryTree,
         usesCodingGuidelines: sourceAgent.usesCodingGuidelines,
       });
+      updateUrlAgentParameter(null);
     },
-    [],
+    [updateUrlAgentParameter],
   );
 
   if (isLoading) {
