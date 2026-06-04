@@ -488,7 +488,7 @@ function useCoinAnimation({ agent, size }: { agent?: string | ClientAgent | null
     const animationFrameId = requestAnimationFrame(() => {
       if (!textureCanvasReference.current) return;
       const iconSize = TEXTURE_SIZE * 0.55;
-      const offset = (TEXTURE_SIZE - iconSize) / 2;
+      const iconOffset = (TEXTURE_SIZE - iconSize) / 2;
       const context = (textureCanvasReference.current as HTMLCanvasElement).getContext("2d");
       if (!context) return;
 
@@ -496,15 +496,15 @@ function useCoinAnimation({ agent, size }: { agent?: string | ClientAgent | null
         "img",
       );
       if (imageElement) {
-        const drawImg = () => {
-          context.drawImage(imageElement, offset, offset, iconSize, iconSize);
+        const drawAvatarImage = () => {
+          context.drawImage(imageElement, 0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
           if (textureReference.current)
             (textureReference.current as { needsUpdate: boolean }).needsUpdate = true;
         };
         if (imageElement.complete && imageElement.naturalWidth > 0) {
-          drawImg();
+          drawAvatarImage();
         } else {
-          imageElement.onload = drawImg;
+          imageElement.onload = drawAvatarImage;
         }
         return;
       }
@@ -521,7 +521,7 @@ function useCoinAnimation({ agent, size }: { agent?: string | ClientAgent | null
       image.onload = () => {
         URL.revokeObjectURL(objectUrl);
         if (!textureCanvasReference.current) return;
-        context.drawImage(image, offset, offset, iconSize, iconSize);
+        context.drawImage(image, iconOffset, iconOffset, iconSize, iconSize);
         if (textureReference.current)
           (textureReference.current as { needsUpdate: boolean }).needsUpdate = true;
       };
