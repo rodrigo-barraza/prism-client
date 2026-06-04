@@ -24,7 +24,9 @@ import styles from "./AgentPickerComponent.module.css";
 
 /** Image-based agent icons (rendered as <img> instead of SVG). */
 const AGENT_IMAGES: Record<string, string> = {
-  OMNI: "/omni-agent-logo.png",
+  OMNI: "/omni-agent-avatar.png",
+  STICKERS: "/clankerbox-agent-avatar.png",
+  OOG: "/oog-agent-avatar.jpg",
 };
 
 /**
