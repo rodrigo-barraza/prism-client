@@ -219,6 +219,7 @@ export default function AgentsDetailPanelComponent({
   const currentAccentColor = editingAgent?.color || selectedBuiltInAgent?.color || "#6366f1";
 
   const fileInputReference = useRef<HTMLInputElement | null>(null);
+  const heroAvatarInputReference = useRef<HTMLInputElement | null>(null);
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [isIdentifierCopied, setIsIdentifierCopied] = useState(false);
 
@@ -243,6 +244,9 @@ export default function AgentsDetailPanelComponent({
     if (fileInputReference.current) {
       fileInputReference.current.value = "";
     }
+    if (heroAvatarInputReference.current) {
+      heroAvatarInputReference.current.value = "";
+    }
   };
 
   const handleCropCancel = () => {
@@ -250,7 +254,14 @@ export default function AgentsDetailPanelComponent({
     if (fileInputReference.current) {
       fileInputReference.current.value = "";
     }
+    if (heroAvatarInputReference.current) {
+      heroAvatarInputReference.current.value = "";
+    }
   };
+
+  const handleRemoveCustomAvatar = useCallback(() => {
+    onUpdateField("avatar", "");
+  }, [onUpdateField]);
 
   return (
     <div className={styles["page-content-area"]}>
@@ -264,17 +275,64 @@ export default function AgentsDetailPanelComponent({
         }
       >
         <div className={styles["content-hero-content"]}>
-          <div className={styles["agent-avatar-wrapper"]}>
-            <BadgeComponent
-              type="agent"
-              agent={{
-                id: editingAgent?.agentId || selectedBuiltInAgent?.id || "NEW",
-                icon: editingAgent?.icon || selectedBuiltInAgent?.icon || "Bot",
-                avatar: editingAgent?.avatar || selectedBuiltInAgent?.avatar || "",
-                color: currentAccentColor,
-              }}
-              size={64}
-            />
+          <div className={`${styles["agent-avatar-wrapper"]} ${editingAgent ? styles["agent-avatar-wrapper--editable"] : ""}`}>
+            {editingAgent ? (
+              <>
+                <button
+                  type="button"
+                  className={styles["avatar-upload-trigger"]}
+                  onClick={() => heroAvatarInputReference.current?.click()}
+                  title={editingAgent.avatar ? "Change custom avatar" : "Upload custom avatar"}
+                >
+                  <BadgeComponent
+                    type="agent"
+                    agent={{
+                      id: editingAgent.agentId || "NEW",
+                      icon: editingAgent.icon || "Bot",
+                      avatar: editingAgent.avatar || "",
+                      color: currentAccentColor,
+                    }}
+                    size={64}
+                  />
+                  <div className={styles["avatar-upload-overlay"]}>
+                    <Camera size={20} />
+                    <span className={styles["avatar-upload-overlay-label"]}>
+                      {editingAgent.avatar ? "Change" : "Upload"}
+                    </span>
+                  </div>
+                </button>
+                <input
+                  ref={heroAvatarInputReference}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className={styles["avatar-hidden-file-input"]}
+                />
+                {editingAgent.avatar &&
+                  (editingAgent.avatar.startsWith("data:") ||
+                    editingAgent.avatar.startsWith("http")) && (
+                  <button
+                    type="button"
+                    className={styles["avatar-remove-button"]}
+                    onClick={handleRemoveCustomAvatar}
+                    title="Remove custom avatar"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </>
+            ) : (
+              <BadgeComponent
+                type="agent"
+                agent={{
+                  id: selectedBuiltInAgent?.id || "NEW",
+                  icon: selectedBuiltInAgent?.icon || "Bot",
+                  avatar: selectedBuiltInAgent?.avatar || "",
+                  color: currentAccentColor,
+                }}
+                size={64}
+              />
+            )}
           </div>
           <div className={styles["profile-text-content-container"]}>
             <h2 className={styles["profile-title-text"]}>
