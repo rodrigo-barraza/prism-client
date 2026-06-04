@@ -26,7 +26,7 @@ import styles from "./AgentsPageComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import InfoBannerComponent from "./InfoBannerComponent";
-import { CUSTOM_MODEL_NAME } from "../config";
+
 
 
 interface CuratedColorOption {
@@ -314,15 +314,15 @@ export default function AgentsDetailPanelComponent({
             onSave();
           }}
         >
-          {/* Custom Model Name (Read Only) */}
+          {/* Agent Identifier (Read Only) */}
           <div className={styles["form-group-container"]}>
-            <label htmlFor="input-custom-model-name">Custom Model Name</label>
+            <label htmlFor="input-agent-identifier">Identifier</label>
             <InputComponent
-              id="input-custom-model-name"
+              id="input-agent-identifier"
               type="text"
-              value={CUSTOM_MODEL_NAME}
+              value={editingAgent.agentId || ""}
               readOnly={true}
-              placeholder="No custom model name configured"
+              placeholder="Generated on save"
             />
           </div>
 
@@ -726,15 +726,15 @@ export default function AgentsDetailPanelComponent({
       ) : selectedBuiltInAgent ? (
         /* -- Built-In Profile Presentation (Info panel) -- */
         <div className={styles["form-layout-container"]}>
-          {/* Custom Model Name (Read Only) */}
+          {/* Agent Identifier (Read Only) */}
           <div className={styles["form-group-container"]}>
-            <label htmlFor="input-custom-model-name-builtin">Custom Model Name</label>
+            <label htmlFor="input-agent-identifier-builtin">Identifier</label>
             <InputComponent
-              id="input-custom-model-name-builtin"
+              id="input-agent-identifier-builtin"
               type="text"
-              value={CUSTOM_MODEL_NAME}
+              value={selectedBuiltInAgent.id || ""}
               readOnly={true}
-              placeholder="No custom model name configured"
+              placeholder="No identifier available"
             />
           </div>
 
