@@ -291,9 +291,9 @@ export default function AgentsDetailPanelComponent({
                   variant="primary"
                   icon={Bot}
                   onClick={() => {
-                    const agentId = selectedBuiltInAgent?.id || selectedCustomAgent?._id || editingAgent?._id;
-                    if (agentId) {
-                      router.push(`/chat?agent=${encodeURIComponent(String(agentId))}`);
+                    const agentIdentifier = selectedBuiltInAgent?.id || selectedCustomAgent?.agentId || editingAgent?.agentId;
+                    if (agentIdentifier) {
+                      router.push(`/chat?agent=${encodeURIComponent(String(agentIdentifier))}`);
                     }
                   }}
                 >
