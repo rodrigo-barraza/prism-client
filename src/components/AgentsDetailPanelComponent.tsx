@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bot,
   Wrench,
   X,
+  Check,
   AlertCircle,
   PlusCircle,
   Copy,
@@ -219,6 +220,15 @@ export default function AgentsDetailPanelComponent({
 
   const fileInputReference = useRef<HTMLInputElement | null>(null);
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [isIdentifierCopied, setIsIdentifierCopied] = useState(false);
+
+  const handleCopyIdentifier = useCallback((identifierValue: string) => {
+    if (!identifierValue) return;
+    navigator.clipboard.writeText(identifierValue).then(() => {
+      setIsIdentifierCopied(true);
+      setTimeout(() => setIsIdentifierCopied(false), 1800);
+    });
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -317,13 +327,24 @@ export default function AgentsDetailPanelComponent({
           {/* Agent Identifier (Read Only) */}
           <div className={styles["form-group-container"]}>
             <label htmlFor="input-agent-identifier">Identifier</label>
-            <InputComponent
-              id="input-agent-identifier"
-              type="text"
-              value={editingAgent.agentId || ""}
-              readOnly={true}
-              placeholder="Generated on save"
-            />
+            <div className={styles["identifier-input-row"]}>
+              <InputComponent
+                id="input-agent-identifier"
+                type="text"
+                value={editingAgent.agentId || ""}
+                readOnly={true}
+                placeholder="Generated on save"
+              />
+              {editingAgent.agentId && (
+                <IconButtonComponent
+                  icon={isIdentifierCopied ? <Check size={13} /> : <Copy size={13} />}
+                  onClick={() => handleCopyIdentifier(editingAgent.agentId || "")}
+                  tooltip={isIdentifierCopied ? "Copied!" : "Copy Identifier"}
+                  className={styles["identifier-copy-button"]}
+                  data-is-copied={isIdentifierCopied}
+                />
+              )}
+            </div>
           </div>
 
           {/* Identity prompt block */}
@@ -729,13 +750,24 @@ export default function AgentsDetailPanelComponent({
           {/* Agent Identifier (Read Only) */}
           <div className={styles["form-group-container"]}>
             <label htmlFor="input-agent-identifier-builtin">Identifier</label>
-            <InputComponent
-              id="input-agent-identifier-builtin"
-              type="text"
-              value={selectedBuiltInAgent.id || ""}
-              readOnly={true}
-              placeholder="No identifier available"
-            />
+            <div className={styles["identifier-input-row"]}>
+              <InputComponent
+                id="input-agent-identifier-builtin"
+                type="text"
+                value={selectedBuiltInAgent.id || ""}
+                readOnly={true}
+                placeholder="No identifier available"
+              />
+              {selectedBuiltInAgent.id && (
+                <IconButtonComponent
+                  icon={isIdentifierCopied ? <Check size={13} /> : <Copy size={13} />}
+                  onClick={() => handleCopyIdentifier(selectedBuiltInAgent.id || "")}
+                  tooltip={isIdentifierCopied ? "Copied!" : "Copy Identifier"}
+                  className={styles["identifier-copy-button"]}
+                  data-is-copied={isIdentifierCopied}
+                />
+              )}
+            </div>
           </div>
 
           <InfoBannerComponent variant="info">

@@ -592,5 +592,28 @@
   object-fit: cover;
 }
 
+/* ── Identifier Copy Row ─────────────────────────────────────── */
 
+.identifier-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.identifier-input-row > *:first-child {
+  flex: 1;
+  min-inline-size: 0;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.identifier-copy-button {
+  flex-shrink: 0;
+  transition:
+    color 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.identifier-copy-button[data-is-copied="true"] {
+  color: var(--color-success, #22c55e);
+}
