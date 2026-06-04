@@ -364,6 +364,10 @@
   cursor: help;
 }
 
+.attentionDot.informational {
+  background: var(--color-info, oklch(0.62 0.18 255));
+}
+
 /* ── Badge ── */
 
 .badge {
