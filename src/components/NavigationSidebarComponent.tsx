@@ -244,7 +244,7 @@ export default function NavigationSidebarComponent({
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLocal, setIsLocal] = useState(false);
-  const [isSettingsComplete, setIsSettingsComplete] = useState(true);
+  const [settingsWarningCount, setSettingsWarningCount] = useState<number>(0);
   const [cronJobNotificationsCount, setCronJobNotificationsCount] = useState(0);
 
   const clearCronJobNotifications = useCallback(() => {
@@ -280,38 +280,48 @@ export default function NavigationSidebarComponent({
   useEffect(() => {
     if (mode !== "user") return;
 
-    const checkSettingsComplete = (settingsData: PrismSettings | null) => {
+    const updateSettingsWarningCount = (settingsData: PrismSettings | null) => {
       if (!settingsData) {
-        setIsSettingsComplete(true);
+        setSettingsWarningCount(0);
         return;
       }
       const memoryConfig = settingsData.memory || {};
       const creativeConfig = settingsData.creative || {};
 
-      const isMemoryComplete =
-        !!memoryConfig.extractionModel &&
-        !!memoryConfig.consolidationModel &&
-        !!memoryConfig.embeddingModel;
+      let warningCount = 0;
+      if (!memoryConfig.extractionModel) {
+        warningCount++;
+      }
+      if (!memoryConfig.consolidationModel) {
+        warningCount++;
+      }
+      if (!memoryConfig.embeddingModel) {
+        warningCount++;
+      }
+      if (!creativeConfig.imageModel) {
+        warningCount++;
+      }
+      if (!creativeConfig.visionModel) {
+        warningCount++;
+      }
+      if (!creativeConfig.textToSpeechModel) {
+        warningCount++;
+      }
+      if (!creativeConfig.speechToTextModel) {
+        warningCount++;
+      }
 
-      const isCreativeComplete =
-        !!creativeConfig.imageModel &&
-        !!creativeConfig.visionModel;
-
-      const isAudioComplete =
-        !!creativeConfig.textToSpeechModel &&
-        !!creativeConfig.speechToTextModel;
-
-      setIsSettingsComplete(isMemoryComplete && isCreativeComplete && isAudioComplete);
+      setSettingsWarningCount(warningCount);
     };
 
     PrismService.getSettings()
-      .then(checkSettingsComplete)
+      .then(updateSettingsWarningCount)
       .catch(() => {});
 
     const handleSettingsUpdated = (event: Event) => {
       const customEvent = event as CustomEvent<PrismSettings>;
       if (customEvent.detail) {
-        checkSettingsComplete(customEvent.detail);
+        updateSettingsWarningCount(customEvent.detail);
       }
     };
 
@@ -816,12 +826,12 @@ export default function NavigationSidebarComponent({
                                   {item.label}
                                 </span>
                                  {item.href === "/settings" &&
-                                   !isSettingsComplete && (
+                                   settingsWarningCount > 0 && (
                                      <span
                                        className={styles.attentionDot}
-                                       title="Settings need to be configured"
+                                       title={`${settingsWarningCount} setting${settingsWarningCount > 1 ? "s" : ""} need${settingsWarningCount === 1 ? "s" : ""} to be configured`}
                                      >
-                                       !
+                                       {settingsWarningCount}
                                      </span>
                                    )}
                                 {item.href === "/scheduled-tasks" &&
@@ -1008,12 +1018,12 @@ export default function NavigationSidebarComponent({
                           <span className={styles.navigationLabel}>
                             {item.label}
                           </span>
-                           {item.href === "/settings" && !isSettingsComplete && (
+                           {item.href === "/settings" && settingsWarningCount > 0 && (
                              <span
                                className={styles.attentionDot}
-                               title="Settings need to be configured"
+                               title={`${settingsWarningCount} setting${settingsWarningCount > 1 ? "s" : ""} need${settingsWarningCount === 1 ? "s" : ""} to be configured`}
                              >
-                               !
+                               {settingsWarningCount}
                              </span>
                            )}
                           {item.href === "/scheduled-tasks" && cronJobNotificationsCount > 0 && (
