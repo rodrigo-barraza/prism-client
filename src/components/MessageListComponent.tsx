@@ -1548,7 +1548,7 @@ export default function MessageList({
                               ? "User"
                               : message.role === "system"
                                 ? "System"
-                                : "Model"}
+                                : activeAgent?.name || "Model"}
                             {message.timestamp && (
                               <BadgeComponent
                                 type="dateTime"
