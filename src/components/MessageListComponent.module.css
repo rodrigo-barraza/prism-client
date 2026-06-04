@@ -44,6 +44,13 @@
   box-shadow: 0 2px 8px oklch(0.0% 0.0 0.0 / 0.2);
 }
 
+.avatar img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
 /* ── Role node avatar variants ── */
 .userNode .avatar {
   background: var(--background-surface);

@@ -10,7 +10,6 @@ import {
   Palette,
   Volume2,
   Lock,
-  AlertTriangle,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import type { PrismSettings } from "../types/types";
@@ -240,7 +239,7 @@ export default function SettingsSidebarNavigationComponent({
                     className={styles["incomplete-warning-badge"]}
                     title="Not all models are configured"
                   >
-                    <AlertTriangle size={10} />
+                    !
                   </span>
                 )}
                 {isActive && (

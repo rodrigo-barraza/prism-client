@@ -1162,6 +1162,7 @@ export default function ToolsPageComponent() {
         value={search}
         onChange={setSearch}
         placeholder="Search tools by name, description, or label…"
+        compact
         className={styles["tools-search"]}
       />
 

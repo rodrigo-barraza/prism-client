@@ -30,7 +30,8 @@ import StreamingCursorComponent from "./StreamingCursorComponent";
 
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 
-import BadgeComponent from "./BadgeComponent";
+import BadgeComponent, { type ClientAgent } from "./BadgeComponent";
+import { renderAgentIcon } from "./AgentPickerComponent";
 
 import {
   CopyButtonComponent,
@@ -635,6 +636,7 @@ export interface MessageListProps {
   onRestore?: (index: number) => void;
   onEdit?: (index: number, content: string) => void;
   onRerun?: (index: number) => void;
+  activeAgent?: ClientAgent | null;
   onImageClick?: (url: string) => void;
   onDocClick?: (url: string) => void;
   onMentionFileOpen?: (path: string) => void;
@@ -658,6 +660,7 @@ export default function MessageList({
   knownPaths,
   showRaw = false,
 
+  activeAgent,
   onDelete,
   onRestore,
   onEdit,
@@ -1529,6 +1532,8 @@ export default function MessageList({
                           <User size={16} />
                         ) : message.role === "system" ? (
                           "S"
+                        ) : activeAgent ? (
+                          renderAgentIcon(activeAgent, 16)
                         ) : (
                           <Bot size={16} />
                         )}

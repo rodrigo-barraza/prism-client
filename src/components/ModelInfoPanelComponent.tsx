@@ -109,6 +109,18 @@ export default function ModelInfoPanel({
         />
       )}
 
+      {/* Model Description */}
+      {selectedModelDef.description && (
+        <div className={styles.section} style={{ paddingBottom: 8 }}>
+          <div className={styles.sectionHeader}>Description</div>
+          <div className={styles.modalityRow}>
+            <span className={styles.modalityName} style={{ opacity: 0.8, lineHeight: 1.5, fontSize: "0.75rem" }}>
+              {selectedModelDef.description}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Modalities */}
       {(() => {
         const allTypes = ["text", "image", "audio", "video", "pdf"];

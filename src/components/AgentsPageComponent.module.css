@@ -297,6 +297,12 @@
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
 }
 
+.agent-avatar-wrapper img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
 .profile-title-text {
   font-size: 1.5rem;
   font-weight: 700;
@@ -572,5 +578,17 @@
   height: 20px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.use-agent-actions-wrapper {
+  display: flex;
+  gap: 8px;
+  padding-block: 14px;
+  padding-inline: 40px;
+  border-block-end: 1px solid var(--calculated-border-color);
+  background: color-mix(in srgb, var(--background-surface) 60%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  flex-shrink: 0;
 }
 

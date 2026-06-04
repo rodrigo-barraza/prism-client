@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bot,
   Wrench,
@@ -211,6 +212,7 @@ export default function AgentsDetailPanelComponent({
   onConfirmDeleteToggle,
   onDuplicateAgent,
 }: AgentsDetailPanelComponentProps) {
+  const router = useRouter();
   const currentAccentColor = editingAgent?.color || selectedBuiltInAgent?.color || "#6366f1";
 
   const fileInputReference = useRef<HTMLInputElement | null>(null);
@@ -284,6 +286,24 @@ export default function AgentsDetailPanelComponent({
           </div>
         </div>
       </section>
+
+      {/* -- Use Agent Actions -- */}
+      {!isCreateMode && (selectedBuiltInAgent || selectedCustomAgent || (editingAgent && editingAgent._id)) && (
+        <div className={styles["use-agent-actions-wrapper"]}>
+          <ButtonComponent
+            variant="primary"
+            icon={Bot}
+            onClick={() => {
+              const agentId = selectedBuiltInAgent?.id || selectedCustomAgent?._id || editingAgent?._id;
+              if (agentId) {
+                router.push(`/chat?agent=${encodeURIComponent(String(agentId))}`);
+              }
+            }}
+          >
+            Use in Chat
+          </ButtonComponent>
+        </div>
+      )}
 
       {/* -- Main Profile Body (Form/Info) -- */}
       {editingAgent ? (

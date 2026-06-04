@@ -130,6 +130,10 @@
   gap: 8px;
 }
 
+.formGroup > div[class*="dropdown"] {
+  width: 100%;
+}
+
 .formGroup label {
   font-size: 0.8125rem;
   color: var(--text-secondary);

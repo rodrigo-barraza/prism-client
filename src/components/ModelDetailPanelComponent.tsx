@@ -119,6 +119,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
       providerLabel: resolveProviderLabel(provider),
       modelType: model.modelType || null,
       year: model.year || null,
+      description: model.description || null,
       contextLength: model.contextLength || model.max_context_length || null,
       maxOutputTokens: model.maxOutputTokens || null,
       inputTypes: model.inputTypes || [],
@@ -254,7 +255,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 router.push("/chat");
               }}
             >
-              Use in Agents
+              Use in Chat
             </ButtonComponent>
           </div>
 
@@ -315,6 +316,21 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               )}
             </div>
           </div>
+
+          {modelDetail.description && (
+            <>
+              <div className={styles.divider} />
+              <div className={styles.section}>
+                <div className={styles.sectionTitle}>
+                  <Info size={12} />
+                  Description
+                </div>
+                <div className={styles.descriptionText}>
+                  {modelDetail.description}
+                </div>
+              </div>
+            </>
+          )}
 
           <div className={styles.divider} />
 

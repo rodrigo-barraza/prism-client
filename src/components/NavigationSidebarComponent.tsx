@@ -20,7 +20,6 @@ import {
   Menu,
   X,
   FolderOpen,
-  AlertCircle,
   CircleUser,
   LogOut,
   Users,
@@ -796,7 +795,7 @@ export default function NavigationSidebarComponent({
                                       className={styles.attentionDot}
                                       title="Memory models need to be configured"
                                     >
-                                      <AlertCircle size={13} />
+                                      !
                                     </span>
                                   )}
                                 {item.href === "/scheduled-tasks" &&
@@ -987,7 +986,7 @@ export default function NavigationSidebarComponent({
                               className={styles.attentionDot}
                               title="Memory models need to be configured"
                             >
-                              <AlertCircle size={13} />
+                              !
                             </span>
                           )}
                           {item.href === "/scheduled-tasks" && cronJobNotificationsCount > 0 && (

@@ -546,6 +546,14 @@
 
 /* ── Responsive ─────────────────────────────────────── */
 
+.descriptionText {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 6px;
+  word-wrap: break-word;
+}
+
 @media (max-width: 520px) {
   .panel {
     width: 100vw;

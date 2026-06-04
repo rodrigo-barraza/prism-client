@@ -4,10 +4,6 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 14px 18px;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-md);
 }
 
 .filterRow {

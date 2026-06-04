@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   BookText,
   Plus,
@@ -10,14 +10,20 @@ import {
   Check,
   Save,
   X,
+  LayoutGrid,
+  List,
+  Table,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import {
   PaginationComponent,
   SearchInputComponent,
+  SegmentedControlComponent,
+  TableComponent,
 } from "@rodrigo-barraza/components-library";
 
 import { LoadingMessage } from "./StateMessageComponent";
+import { usePersistedState } from "../hooks/usePersistedState";
 import styles from "./PromptsPageComponent.module.css";
 
 interface PromptDocument {
@@ -30,6 +36,17 @@ interface PromptDocument {
 }
 
 const PAGE_SIZE = 30;
+
+const ESTIMATED_TOKENS_PER_WORD = 1.33;
+
+function countWords(text: string): number {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function estimateTokens(text: string): number {
+  return Math.ceil(countWords(text) * ESTIMATED_TOKENS_PER_WORD);
+}
 
 export default function PromptsPageComponent() {
   const [prompts, setPrompts] = useState<PromptDocument[]>([]);
@@ -48,6 +65,15 @@ export default function PromptsPageComponent() {
   const [formContent, setFormContent] = useState("");
   const [formTags, setFormTags] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  const [viewMode, setViewMode] = usePersistedState("prompts-page:view-mode", "card");
+
+  const [modalPrompt, setModalPrompt] = useState<PromptDocument | null>(null);
+  const [modalEditMode, setModalEditMode] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalContent, setModalContent] = useState("");
+  const [modalTags, setModalTags] = useState("");
+  const [isModalSaving, setIsModalSaving] = useState(false);
 
   const loadPrompts = useCallback(async () => {
     try {
@@ -148,7 +174,94 @@ export default function PromptsPageComponent() {
     }
   };
 
+  const openPromptModal = (prompt: PromptDocument) => {
+    setModalPrompt(prompt);
+    setModalEditMode(false);
+    setModalTitle(prompt.title);
+    setModalContent(prompt.content);
+    setModalTags((prompt.tags || []).join(", "));
+  };
+
+  const closePromptModal = () => {
+    setModalPrompt(null);
+    setModalEditMode(false);
+    setIsModalSaving(false);
+  };
+
+  const handleModalSave = async () => {
+    if (!modalPrompt || !modalTitle.trim() || !modalContent.trim()) return;
+    setIsModalSaving(true);
+    try {
+      const tags = modalTags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+      await PrismService.updatePrompt(modalPrompt.id, {
+        title: modalTitle.trim(),
+        content: modalContent.trim(),
+        tags,
+      });
+      closePromptModal();
+      loadPrompts();
+    } catch (error: unknown) {
+      console.error("Failed to update prompt:", error);
+      setIsModalSaving(false);
+    }
+  };
+
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const tableColumns = useMemo(() => [
+    {
+      key: "title",
+      label: "Title",
+      sortable: true,
+      sortValue: (row: PromptDocument) => row.title.toLowerCase(),
+      render: (row: PromptDocument) => (
+        <span className={styles["table-title-cell"]}>{row.title}</span>
+      ),
+    },
+    {
+      key: "tags",
+      label: "Tags",
+      render: (row: PromptDocument) => (
+        <div className={styles["table-tags-cell"]}>
+          {row.tags?.map((tag) => (
+            <span key={tag} className={styles["tag-badge"]}>{tag}</span>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "words",
+      label: "Words",
+      sortable: true,
+      sortValue: (row: PromptDocument) => countWords(row.content),
+      render: (row: PromptDocument) => (
+        <span className={styles["table-stat-cell"]}>{countWords(row.content).toLocaleString()}</span>
+      ),
+    },
+    {
+      key: "tokens",
+      label: "Est. Tokens",
+      sortable: true,
+      sortValue: (row: PromptDocument) => estimateTokens(row.content),
+      render: (row: PromptDocument) => (
+        <span className={styles["table-stat-cell"]}>~{estimateTokens(row.content).toLocaleString()}</span>
+      ),
+    },
+    {
+      key: "updatedAt",
+      label: "Updated",
+      sortable: true,
+      sortValue: (row: PromptDocument) => row.updatedAt || "",
+      render: (row: PromptDocument) => (
+        <span className={styles["prompt-timestamp"]}>
+          {row.updatedAt ? new Date(row.updatedAt).toLocaleDateString() : "—"}
+        </span>
+      ),
+    },
+  ], []);
 
   const renderForm = (mode: "create" | "edit") => (
     <div className={styles["form-card"]}>
@@ -202,6 +315,167 @@ export default function PromptsPageComponent() {
     </div>
   );
 
+  const renderPromptCard = (prompt: PromptDocument) => {
+    const isEditing = editingPromptId === prompt.id;
+    const isDeleting = deletingPromptId === prompt.id;
+    const isCopied = copiedPromptId === prompt.id;
+    const wordCount = countWords(prompt.content);
+    const tokenEstimate = estimateTokens(prompt.content);
+
+    if (isEditing) {
+      return (
+        <div key={prompt.id}>{renderForm("edit")}</div>
+      );
+    }
+
+    return (
+      <div
+        key={prompt.id}
+        className={styles["prompt-card"]}
+        onClick={() => openPromptModal(prompt)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openPromptModal(prompt);
+          }
+        }}
+      >
+        <div className={styles["prompt-card-header"]}>
+          <span className={styles["prompt-title"]}>
+            {prompt.title}
+          </span>
+          {prompt.tags?.map((tag) => (
+            <span key={tag} className={styles["tag-badge"]}>
+              {tag}
+            </span>
+          ))}
+          <span className={styles["metric-badge"]} title="Word count">
+            {wordCount.toLocaleString()} words
+          </span>
+          <span className={styles["metric-badge"]} title="Estimated tokens">
+            ~{tokenEstimate.toLocaleString()} tokens
+          </span>
+          {prompt.updatedAt && (
+            <span className={styles["prompt-timestamp"]}>
+              {new Date(prompt.updatedAt).toLocaleDateString()}
+            </span>
+          )}
+          <div
+            className={styles["prompt-actions"]}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className={`${styles["action-button"]} ${styles["action-button-copy"]} ${isCopied ? styles["is-copied-state"] : ""}`}
+              onClick={() => handleCopyToClipboard(prompt)}
+              title={isCopied ? "Copied!" : "Copy to clipboard"}
+            >
+              {isCopied ? <Check size={13} /> : <Copy size={13} />}
+            </button>
+            <button
+              className={styles["action-button"]}
+              onClick={() => handleEdit(prompt)}
+              title="Edit prompt"
+            >
+              <Pencil size={13} />
+            </button>
+            <button
+              className={`${styles["action-button"]} ${styles["action-button-danger"]}`}
+              onClick={() => setDeletingPromptId(prompt.id)}
+              title="Delete prompt"
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        </div>
+        <div className={styles["prompt-content"]}>
+          {prompt.content}
+        </div>
+        {isDeleting && (
+          <div
+            className={styles["delete-confirmation-overlay"]}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <span>Delete this prompt?</span>
+            <button
+              className={styles["delete-confirm-button"]}
+              onClick={() => handleDelete(prompt.id)}
+            >
+              Delete
+            </button>
+            <button
+              className={styles["delete-cancel-button"]}
+              onClick={() => setDeletingPromptId(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderListItem = (prompt: PromptDocument) => {
+    const isCopied = copiedPromptId === prompt.id;
+    const wordCount = countWords(prompt.content);
+    const tokenEstimate = estimateTokens(prompt.content);
+
+    return (
+      <div
+        key={prompt.id}
+        className={styles["list-item"]}
+        onClick={() => openPromptModal(prompt)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openPromptModal(prompt);
+          }
+        }}
+      >
+        <span className={styles["list-item-title"]}>{prompt.title}</span>
+        <div className={styles["list-item-tags"]}>
+          {prompt.tags?.map((tag) => (
+            <span key={tag} className={styles["tag-badge"]}>{tag}</span>
+          ))}
+        </div>
+        <span className={styles["metric-badge"]}>{wordCount.toLocaleString()} words</span>
+        <span className={styles["metric-badge"]}>~{tokenEstimate.toLocaleString()} tokens</span>
+        <span className={styles["prompt-timestamp"]}>
+          {prompt.updatedAt ? new Date(prompt.updatedAt).toLocaleDateString() : ""}
+        </span>
+        <div
+          className={styles["prompt-actions"]}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            className={`${styles["action-button"]} ${styles["action-button-copy"]} ${isCopied ? styles["is-copied-state"] : ""}`}
+            onClick={() => handleCopyToClipboard(prompt)}
+            title={isCopied ? "Copied!" : "Copy to clipboard"}
+          >
+            {isCopied ? <Check size={13} /> : <Copy size={13} />}
+          </button>
+          <button
+            className={styles["action-button"]}
+            onClick={() => handleEdit(prompt)}
+            title="Edit prompt"
+          >
+            <Pencil size={13} />
+          </button>
+          <button
+            className={`${styles["action-button"]} ${styles["action-button-danger"]}`}
+            onClick={() => setDeletingPromptId(prompt.id)}
+            title="Delete prompt"
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -250,88 +524,49 @@ export default function PromptsPageComponent() {
           className={styles["search-wrapper"]}
         />
 
+        <div className={styles["view-controls-row"]}>
+          <SegmentedControlComponent
+            value={viewMode}
+            onChange={setViewMode}
+            compact
+            segments={[
+              { value: "card", icon: <LayoutGrid size={14} />, label: "Cards" },
+              { value: "list", icon: <List size={14} />, label: "List" },
+              { value: "table", icon: <Table size={14} />, label: "Table" },
+            ]}
+          />
+        </div>
+
         {/* Create Form */}
         {isCreating && renderForm("create")}
 
         {isLoading && <LoadingMessage message="Loading prompts..." />}
 
-        {/* Prompt List */}
-        {!isLoading && (
+        {/* Card View */}
+        {!isLoading && viewMode === "card" && (
           <div className={styles["prompt-list"]}>
-            {prompts.map((prompt) => {
-              const isEditing = editingPromptId === prompt.id;
-              const isDeleting = deletingPromptId === prompt.id;
-              const isCopied = copiedPromptId === prompt.id;
+            {prompts.map((prompt) => renderPromptCard(prompt))}
+          </div>
+        )}
 
-              if (isEditing) {
-                return (
-                  <div key={prompt.id}>{renderForm("edit")}</div>
-                );
-              }
+        {/* List View */}
+        {!isLoading && viewMode === "list" && (
+          <div className={styles["prompt-list-view"]}>
+            {prompts.map((prompt) => renderListItem(prompt))}
+          </div>
+        )}
 
-              return (
-                <div key={prompt.id} className={styles["prompt-card"]}>
-                  <div className={styles["prompt-card-header"]}>
-                    <span className={styles["prompt-title"]}>
-                      {prompt.title}
-                    </span>
-                    {prompt.tags?.map((tag) => (
-                      <span key={tag} className={styles["tag-badge"]}>
-                        {tag}
-                      </span>
-                    ))}
-                    {prompt.updatedAt && (
-                      <span className={styles["prompt-timestamp"]}>
-                        {new Date(prompt.updatedAt).toLocaleDateString()}
-                      </span>
-                    )}
-                    <div className={styles["prompt-actions"]}>
-                      <button
-                        className={`${styles["action-button"]} ${styles["action-button-copy"]} ${isCopied ? styles["is-copied-state"] : ""}`}
-                        onClick={() => handleCopyToClipboard(prompt)}
-                        title={isCopied ? "Copied!" : "Copy to clipboard"}
-                      >
-                        {isCopied ? <Check size={13} /> : <Copy size={13} />}
-                      </button>
-                      <button
-                        className={styles["action-button"]}
-                        onClick={() => handleEdit(prompt)}
-                        title="Edit prompt"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        className={`${styles["action-button"]} ${styles["action-button-danger"]}`}
-                        onClick={() => setDeletingPromptId(prompt.id)}
-                        title="Delete prompt"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className={styles["prompt-content"]}>
-                    {prompt.content}
-                  </div>
-                  {isDeleting && (
-                    <div className={styles["delete-confirmation-overlay"]}>
-                      <span>Delete this prompt?</span>
-                      <button
-                        className={styles["delete-confirm-button"]}
-                        onClick={() => handleDelete(prompt.id)}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        className={styles["delete-cancel-button"]}
-                        onClick={() => setDeletingPromptId(null)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+        {/* Table View */}
+        {!isLoading && viewMode === "table" && (
+          <div className={styles["table-wrapper"]}>
+            <TableComponent
+              columns={tableColumns as any}
+              data={prompts}
+              getRowKey={(row: PromptDocument) => row.id}
+              emptyText="No prompts found."
+              onRowClick={(row: PromptDocument) => openPromptModal(row)}
+              storageKey="prompts-table"
+            />
           </div>
         )}
 
@@ -363,6 +598,118 @@ export default function PromptsPageComponent() {
           onPageChange={setPage}
         />
       </div>
+
+      {/* Prompt Detail Modal */}
+      {modalPrompt && (
+        <div
+          className={styles["modal-overlay"]}
+          onClick={closePromptModal}
+        >
+          <div
+            className={styles["modal-container"]}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles["modal-header"]}>
+              {modalEditMode ? (
+                <input
+                  type="text"
+                  className={styles["modal-title-input"]}
+                  value={modalTitle}
+                  onChange={(event) => setModalTitle(event.target.value)}
+                  autoFocus
+                />
+              ) : (
+                <h2 className={styles["modal-title"]}>{modalPrompt.title}</h2>
+              )}
+              <div className={styles["modal-header-actions"]}>
+                {modalEditMode ? (
+                  <>
+                    <button
+                      className={styles["form-action-save"]}
+                      onClick={handleModalSave}
+                      disabled={isModalSaving || !modalTitle.trim() || !modalContent.trim()}
+                    >
+                      <Save size={13} />
+                      Save
+                    </button>
+                    <button
+                      className={styles["form-action-cancel"]}
+                      onClick={() => {
+                        setModalEditMode(false);
+                        setModalTitle(modalPrompt.title);
+                        setModalContent(modalPrompt.content);
+                        setModalTags((modalPrompt.tags || []).join(", "));
+                      }}
+                    >
+                      <X size={13} />
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className={styles["modal-edit-button"]}
+                    onClick={() => setModalEditMode(true)}
+                  >
+                    <Pencil size={13} />
+                    Edit
+                  </button>
+                )}
+                <button
+                  className={styles["modal-close-button"]}
+                  onClick={closePromptModal}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            <div className={styles["modal-meta"]}>
+              {modalPrompt.tags?.map((tag) => (
+                <span key={tag} className={styles["tag-badge"]}>{tag}</span>
+              ))}
+              <span className={styles["metric-badge"]}>
+                {countWords(modalEditMode ? modalContent : modalPrompt.content).toLocaleString()} words
+              </span>
+              <span className={styles["metric-badge"]}>
+                ~{estimateTokens(modalEditMode ? modalContent : modalPrompt.content).toLocaleString()} tokens
+              </span>
+              {modalPrompt.updatedAt && (
+                <span className={styles["prompt-timestamp"]}>
+                  Updated {new Date(modalPrompt.updatedAt).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+
+            {modalEditMode ? (
+              <div className={styles["modal-edit-body"]}>
+                <div className={styles["form-field"]}>
+                  <label className={styles["form-label"]}>Content</label>
+                  <textarea
+                    className={styles["modal-textarea"]}
+                    value={modalContent}
+                    onChange={(event) => setModalContent(event.target.value)}
+                    rows={16}
+                  />
+                </div>
+                <div className={styles["form-field"]}>
+                  <label className={styles["form-label"]}>Tags (comma-separated)</label>
+                  <input
+                    type="text"
+                    className={styles["form-input"]}
+                    value={modalTags}
+                    onChange={(event) => setModalTags(event.target.value)}
+                    placeholder="e.g. coding, creative, analysis"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className={styles["modal-content"]}>
+                {modalPrompt.content}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

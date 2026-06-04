@@ -2493,6 +2493,22 @@ export default function ChatSessionComponent({
                 });
             }
 
+            // Increment scheduled task notification badge when agent creates a cron job
+            if (
+              toolData.status === "done" &&
+              toolData.name === "create_cron_job"
+            ) {
+              const currentNotificationCount = parseInt(
+                localStorage.getItem("cron-job-notifications-count") || "0",
+                10,
+              );
+              localStorage.setItem(
+                "cron-job-notifications-count",
+                String(currentNotificationCount + 1),
+              );
+              window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
+            }
+
             // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
             if (
               toolData.status !== "calling" &&
@@ -5123,6 +5139,7 @@ export default function ChatSessionComponent({
           isGenerating={isGenerating}
           streamingOutputs={streamingOutputs}
           workerToolActivity={workerToolActivity}
+          activeAgent={activeAgentData}
           knownPaths={knownPaths}
           onMentionFileOpen={(relativePath: string) => {
             const absPath = currentWorkspace?.path

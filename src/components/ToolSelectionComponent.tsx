@@ -577,6 +577,7 @@ export default function ToolSelectionComponent({
         value={toolSearch}
         onChange={setToolSearch}
         placeholder="Search tools..."
+        compact
         className={styles.toolsSearch}
       />
 
