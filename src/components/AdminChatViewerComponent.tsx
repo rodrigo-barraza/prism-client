@@ -857,7 +857,7 @@ export default function AdminChatViewerComponent({
     if (!isSelectedAgent) {
       tabs.push({
         key: "params",
-        icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
+        icon: <span className={tabBarStyles.tabEmojiIcon}>🎚︎</span>,
         tooltip: "Parameters",
       });
     }

@@ -70,6 +70,7 @@ const nextConfig: NextConfig = {
     TOOLS_SERVICE_URL: TOOLS_SERVICE_URL,
     MINIO_PUBLIC_URL: secrets.MINIO_PUBLIC_URL,
     PRISM_SERVICE_MINIO_BUCKET_NAME: secrets.PRISM_SERVICE_MINIO_BUCKET_NAME,
+    CUSTOM_MODEL_NAME: process.env.CUSTOM_MODEL_NAME || secrets.CUSTOM_MODEL_NAME || "",
 
     // Explicit NEXT_PUBLIC_ variables for Turbopack client-side injection
     NEXT_PUBLIC_PRISM_CLIENT_DOMAIN: PRISM_CLIENT_DOMAIN,
@@ -81,6 +82,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_MINIO_PUBLIC_URL: secrets.MINIO_PUBLIC_URL,
     NEXT_PUBLIC_PRISM_SERVICE_MINIO_BUCKET_NAME:
       secrets.PRISM_SERVICE_MINIO_BUCKET_NAME,
+    NEXT_PUBLIC_CUSTOM_MODEL_NAME: process.env.CUSTOM_MODEL_NAME || secrets.CUSTOM_MODEL_NAME || "",
   },
 
   // ── Rewrite Proxy ──────────────────────────────────────────

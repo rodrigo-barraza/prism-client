@@ -355,3 +355,13 @@
     transform: scale(1.05);
   }
 }
+
+.toolsSection[data-read-only="true"] .toolRow,
+.toolsSection[data-read-only="true"] .bulkCheckboxRow {
+  cursor: default;
+}
+
+.toolsSection[data-read-only="true"] .toolRow:hover,
+.toolsSection[data-read-only="true"] .bulkCheckboxRow:hover {
+  background: transparent;
+}

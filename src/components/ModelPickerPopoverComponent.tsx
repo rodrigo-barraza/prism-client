@@ -9,7 +9,6 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
-import { Search, X } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import PrismService from "../services/PrismService";
 import ModelsTableComponent from "./ModelsTableComponent";
@@ -22,6 +21,7 @@ import { LOCAL_PROVIDERS } from "../constants";
 import styles from "./ModelPickerPopoverComponent.module.css";
 import {
   CloseButtonComponent,
+  SearchInputComponent,
   SelectComponent,
 } from "@rodrigo-barraza/components-library";
 
@@ -614,30 +614,18 @@ export default function ModelPickerPopoverComponent({
           >
             {/* Header: search + close */}
             <div className={styles.popoverHeader}>
-              <Search size={16} className={styles.searchIcon} />
-              <input
+              <SearchInputComponent
                 ref={searchRef}
-                className={styles.searchInput}
-                placeholder="Type to filter models…"
+                id="input-model-picker-search"
                 value={search}
-                onChange={(
-                  e: React.ChangeEvent<
-                    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                  >,
-                ) => {
-                  setSearch(e.target.value);
+                onChange={(value: string) => {
+                  setSearch(value);
                   setHighlightIndex(-1);
                 }}
+                placeholder="Type to filter models…"
+                compact
+                className={styles["popover-search-input"]}
               />
-              {search && (
-                <button
-                  className={styles.searchClear}
-                  onClick={() => setSearch("")}
-                  title="Clear"
-                >
-                  <X size={14} />
-                </button>
-              )}
               <CloseButtonComponent onClick={() => setOpen(false)} size={16} />
             </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, usePathname } from "next/navigation";
 import PrismService from "../services/PrismService";
 import type { CustomAgent, AgentPersona, SerializedPolicy, ToolSchema } from "../types/types";
@@ -153,6 +153,14 @@ export default function AgentsPageComponent() {
 
   const handleSelectAgent = useCallback(
     (agentId: string, isCustom: boolean) => {
+      if (agentId === "new-agent-draft") {
+        setSelectedAgentId("new-agent-draft");
+        setIsCreateMode(true);
+        setIsConfirmingDelete(false);
+        setErrorMessage(null);
+        return;
+      }
+
       setSelectedAgentId(agentId);
       setIsCreateMode(false);
       setIsConfirmingDelete(false);
@@ -178,7 +186,7 @@ export default function AgentsPageComponent() {
   );
 
   const handleCreateNewAgent = useCallback(() => {
-    setSelectedAgentId(null);
+    setSelectedAgentId("new-agent-draft");
     setIsCreateMode(true);
     setIsConfirmingDelete(false);
     setErrorMessage(null);
@@ -307,6 +315,18 @@ export default function AgentsPageComponent() {
     );
   }
 
+  const sidebarCustomAgents = useMemo(() => {
+    if (isCreateMode && editingAgent) {
+      return [{ ...editingAgent, _id: "new-agent-draft" }, ...customAgents];
+    }
+    if (editingAgent && editingAgent._id) {
+      return customAgents.map((agent) =>
+        String(agent._id) === String(editingAgent._id) ? editingAgent : agent,
+      );
+    }
+    return customAgents;
+  }, [isCreateMode, editingAgent, customAgents]);
+
   const selectedBuiltInAgent = builtInAgents.find((agent) => agent.id === selectedAgentId);
   const selectedCustomAgent = customAgents.find((agent) => String(agent._id) === selectedAgentId);
 
@@ -316,10 +336,11 @@ export default function AgentsPageComponent() {
       leftPanel={
         <AgentsSidebarPanelComponent
           builtInAgents={builtInAgents}
-          customAgents={customAgents}
+          customAgents={sidebarCustomAgents}
           selectedAgentId={selectedAgentId}
           onSelectAgent={handleSelectAgent}
           onCreateNewAgent={handleCreateNewAgent}
+          availableTools={availableTools}
         />
       }
       leftTitle="Agents"

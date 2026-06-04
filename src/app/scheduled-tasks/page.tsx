@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { usePersistedState } from "../../hooks/usePersistedState";
+import { useRouter } from "next/navigation";
 
 import {
   ArrowUpDown,
@@ -20,6 +21,7 @@ import {
   List,
   CalendarDays,
   Pencil,
+  History,
 } from "lucide-react";
 import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 import PrismService from "../../services/PrismService";
@@ -36,7 +38,8 @@ import {
   TableComponent,
   BadgeComponent,
 } from "@rodrigo-barraza/components-library";
-import { AgentPersona, PrismConfig, ModelOption } from "../../types/types";
+import { AgentPersona, PrismConfig, ModelOption, CustomTool, ToolSchema } from "../../types/types";
+import ToolBadgeComponent from "../../components/ToolBadgeComponent";
 import AgentPickerComponent from "../../components/AgentPickerComponent";
 import { getErrorMessage } from "../../utils/errorMessage";
 import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComponent";
@@ -131,6 +134,7 @@ interface CronJobDetailPanelProps {
   onEdit: (task: Task) => void;
   agentName: string;
   formatScheduleText: (task: Task) => string;
+  allToolNames: string[];
 }
 
 function CronJobDetailPanel({
@@ -142,7 +146,69 @@ function CronJobDetailPanel({
   onEdit,
   agentName,
   formatScheduleText,
+  allToolNames,
 }: CronJobDetailPanelProps) {
+  const router = useRouter();
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+
+  const parsePromptWithToolBadges = useCallback((promptText: string) => {
+    if (!promptText) return "";
+    if (!allToolNames || allToolNames.length === 0) return promptText;
+
+    const sortedToolNames = [...allToolNames].sort(
+      (firstToolName, secondToolName) => secondToolName.length - firstToolName.length
+    );
+
+    const escapedNames = sortedToolNames.map(
+      (toolName) => toolName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    );
+
+    const regex = new RegExp(`\\b(${escapedNames.join("|")})\\b`, "g");
+
+    const parts = promptText.split(regex);
+    if (parts.length <= 1) {
+      return promptText;
+    }
+
+    return parts.map((textSegment, segmentIndex) => {
+      if (segmentIndex % 2 === 1) {
+        return (
+          <span key={segmentIndex} className={styles["inline-tool-badge-wrapper"]}>
+            <ToolBadgeComponent name={textSegment} variant="default" />
+          </span>
+        );
+      }
+      return textSegment;
+    });
+  }, [allToolNames]);
+
+  const loadHistory = useCallback(() => {
+    setIsLoadingHistory(true);
+    PrismService.getTaskConversations(task.project, task.id)
+      .then((data) => {
+        setConversations(data.items || []);
+      })
+      .catch((error) => {
+        console.error("Failed to load task conversation history:", error);
+      })
+      .finally(() => {
+        setIsLoadingHistory(false);
+      });
+  }, [task.id, task.project]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  const handleRunNow = async () => {
+    await onTrigger(task);
+    // Wait a brief period for the backend to create the conversation, then refresh.
+    setTimeout(() => {
+      loadHistory();
+    }, 1000);
+  };
+
   // Close on Escape
   useEffect(() => {
     const handleKeyDown = (clickEvent: KeyboardEvent) => {
@@ -197,7 +263,7 @@ function CronJobDetailPanel({
               </button>
               <button
                 className={`${styles.detailActionButton} ${styles.detailTriggerButton}`}
-                onClick={() => onTrigger(task)}
+                onClick={handleRunNow}
                 title="Run scheduled task now"
               >
                 <Play size={14} /> Run Now
@@ -244,8 +310,58 @@ function CronJobDetailPanel({
               Prompt
             </div>
             <div className={styles.detailPromptBlock}>
-              {task.prompt}
+              {parsePromptWithToolBadges(task.prompt)}
             </div>
+          </section>
+
+          {/* Execution History */}
+          <section className={styles.detailSection}>
+            <div className={styles.detailSectionTitle}>
+              <History size={12} /> Execution History
+            </div>
+            {isLoadingHistory ? (
+              <div className={styles["history-loading"]}>
+                <Loader2 className={styles.spin} size={16} /> Loading execution history...
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className={styles["history-empty"]}>
+                No past runs found for this task.
+              </div>
+            ) : (
+              <div className={styles["history-list"]}>
+                {conversations.map((conv) => (
+                  <button
+                    key={conv.id}
+                    className={styles["history-item"]}
+                    onClick={() => {
+                      router.push(`/chat?session=${conv.id}&agent=${conv.agent || "NONE"}`);
+                      onClose();
+                    }}
+                  >
+                    <div className={styles["history-item-details"]}>
+                      <div className={styles["history-item-title"]}>
+                        {conv.title || "Untitled Run"}
+                      </div>
+                      <div className={styles["history-item-metadata"]}>
+                        <span>{new Date(conv.createdAt).toLocaleString()}</span>
+                        {conv.totalCost > 0 && (
+                          <span className={styles["history-item-cost"]}>
+                            ${conv.totalCost.toFixed(4)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles["history-item-status"]}>
+                      {conv.isGenerating ? (
+                        <span className={styles["status-generating"]}>Running...</span>
+                      ) : (
+                        <span className={styles["status-completed"]}>Completed</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* Configuration / Metadata */}
@@ -317,6 +433,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const [activeSortKeys, setActiveSortKeys] = useState<string[]>(["createdAt"]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [allToolNames, setAllToolNames] = useState<string[]>([]);
 
   // New task form state
   const [formName, setFormName] = useState("");
@@ -500,6 +617,41 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
         setFavoriteKeys(favs.map((favorite) => favorite.key as string));
       } catch (error) {
         console.error("Failed to load favorite models", error);
+      }
+
+      // Fetch built-in and custom tool names for inline badge parsing
+      try {
+        const builtInSchemas = await PrismService.getBuiltInToolSchemas().catch(() => [] as ToolSchema[]);
+        const customToolSchemas = await PrismService.getCustomTools().catch(() => [] as CustomTool[]);
+        const agentToolNames = fetchedAgents.flatMap((agent) => agent.enabledToolNames || []);
+        
+        const canonicalCapabilities = [
+          "Thinking",
+          "Tool Calling",
+          "Web Search",
+          "Google Search",
+          "Web Fetch",
+          "Code Execution",
+          "Computer Use",
+          "File Search",
+          "URL Context",
+          "Image Generation",
+          "googleSearch",
+        ];
+        
+        const combinedNames = new Set<string>([
+          ...canonicalCapabilities,
+          ...builtInSchemas.map((schema) => schema.name),
+          ...customToolSchemas.map((schema) => schema.name),
+          ...agentToolNames,
+        ]);
+        
+        const cleanNames = Array.from(combinedNames).filter(
+          (toolName) => typeof toolName === "string" && toolName.trim().length > 0
+        );
+        setAllToolNames(cleanNames);
+      } catch (toolError) {
+        console.error("Failed to load tool names for badge parsing", toolError);
       }
     } catch (error: unknown) {
       console.error(error);
@@ -1882,6 +2034,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   "Direct Chat"
                 }
                 formatScheduleText={formatScheduleText}
+                allToolNames={allToolNames}
               />
             )}
           </div>

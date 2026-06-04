@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Infinity,
   Palette,
+  Search,
 } from "lucide-react";
 import { SelectComponent } from "@rodrigo-barraza/components-library";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
@@ -100,6 +101,7 @@ export default function AgentPickerComponent({
 }: any) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [searchQuery, setSearchQuery] = useState("");
   const triggerRef = useRef<any>(null);
 
   // Move "NONE" / "Agentless" to the bottom of the list
@@ -110,6 +112,17 @@ export default function AgentPickerComponent({
       return 0;
     });
   }, [agents]);
+
+  const filteredAgents = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return sortedAgents;
+    return sortedAgents.filter((agent: any) => {
+      const nameMatches = agent.name?.toLowerCase().includes(query);
+      const descriptionMatches = agent.description?.toLowerCase().includes(query);
+      const idMatches = agent.id?.toLowerCase().includes(query);
+      return nameMatches || descriptionMatches || idMatches;
+    });
+  }, [searchQuery, sortedAgents]);
 
   const activeAgent = addMode
     ? null
@@ -134,10 +147,11 @@ export default function AgentPickerComponent({
     [onAddAgent],
   );
 
-  // Reset highlighted index when popover closes
+  // Reset highlighted index and search query when popover closes
   useEffect(() => {
     if (!isPopoverOpen) {
       setHighlightedIndex(-1);
+      setSearchQuery("");
     }
   }, [isPopoverOpen]);
 
@@ -153,7 +167,7 @@ export default function AgentPickerComponent({
       if (event.key === "ArrowDown") {
         event.preventDefault();
         setHighlightedIndex((previousIndex) => {
-          const maximumIndex = sortedAgents.length - 1;
+          const maximumIndex = filteredAgents.length - 1;
           if (maximumIndex < 0) return -1;
           const nextIndex =
             previousIndex < maximumIndex ? previousIndex + 1 : 0;
@@ -166,7 +180,7 @@ export default function AgentPickerComponent({
       if (event.key === "ArrowUp") {
         event.preventDefault();
         setHighlightedIndex((previousIndex) => {
-          const maximumIndex = sortedAgents.length - 1;
+          const maximumIndex = filteredAgents.length - 1;
           if (maximumIndex < 0) return -1;
           const nextIndex =
             previousIndex > 0 ? previousIndex - 1 : maximumIndex;
@@ -178,8 +192,8 @@ export default function AgentPickerComponent({
 
       if (event.key === "Enter") {
         event.preventDefault();
-        if (highlightedIndex >= 0 && highlightedIndex < sortedAgents.length) {
-          const selectedAgent = sortedAgents[highlightedIndex];
+        if (highlightedIndex >= 0 && highlightedIndex < filteredAgents.length) {
+          const selectedAgent = filteredAgents[highlightedIndex];
           SoundService.playClickButton({});
           if (addMode) {
             handleAdd(selectedAgent);
@@ -195,7 +209,7 @@ export default function AgentPickerComponent({
   }, [
     isPopoverOpen,
     highlightedIndex,
-    sortedAgents,
+    filteredAgents,
     addMode,
     handleSelect,
     handleAdd,
@@ -211,8 +225,8 @@ export default function AgentPickerComponent({
   // When an item is highlighted (hovered or keyboard-navigated), that agent spins.
   // Otherwise, the currently selected/active agent spins.
   const spinningAgentId =
-    highlightedIndex >= 0 && highlightedIndex < sortedAgents.length
-      ? sortedAgents[highlightedIndex].id
+    highlightedIndex >= 0 && highlightedIndex < filteredAgents.length
+      ? filteredAgents[highlightedIndex].id
       : activeAgentId;
 
   // -- Add-mode trigger label ----------------------------------
@@ -276,78 +290,100 @@ export default function AgentPickerComponent({
               onClick={() => setIsPopoverOpen(false)}
             />
             <div className={styles.popover} role="listbox">
-              {sortedAgents.map((agent: any, agentIndex: number) => {
-                const isActive = !addMode && agent.id === activeAgentId;
-                const isHighlighted = agentIndex === highlightedIndex;
-                const shouldAnimate = agent.id === spinningAgentId;
+              <div className={styles["agent-search-container"]}>
+                <div className={styles["agent-search-icon"]}>
+                  <Search size={14} />
+                </div>
+                <input
+                  type="text"
+                  className={styles["agent-search-input-field"]}
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search agents..."
+                  onClick={(event) => event.stopPropagation()}
+                  autoFocus
+                />
+              </div>
+              <div className={styles["agent-list-scrollable-container"]}>
+                {filteredAgents.length === 0 ? (
+                  <div className={styles["no-agents-found-message"]}>
+                    No agents found
+                  </div>
+                ) : (
+                  filteredAgents.map((agent: any, agentIndex: number) => {
+                    const isActive = !addMode && agent.id === activeAgentId;
+                    const isHighlighted = agentIndex === highlightedIndex;
+                    const shouldAnimate = agent.id === spinningAgentId;
 
-                return (
-                  <button
-                    key={agent.id}
-                    className={styles.agentItem}
-                    data-is-active-state={isActive}
-                    data-is-highlighted-state={isHighlighted}
-                    role="option"
-                    aria-selected={isActive}
-                    onMouseEnter={(mouseEvent) => {
-                      setHighlightedIndex(agentIndex);
-                      SoundService.playHover({ event: mouseEvent.nativeEvent });
-                    }}
-                    onMouseLeave={() => {
-                      setHighlightedIndex(-1);
-                    }}
-                    onClick={(mouseEvent) => {
-                      SoundService.playClickButton({
-                        event: mouseEvent.nativeEvent,
-                      });
-                      if (addMode) {
-                        handleAdd(agent);
-                      } else {
-                        handleSelect(agent.id);
-                      }
-                    }}
-                    type="button"
-                    style={
-                      agent.color
-                        ? ({
-                            "--agent-accent": agent.color,
-                          } as React.CSSProperties)
-                        : undefined
-                    }
-                  >
-                    <BadgeComponent
-                      type="agent"
-                      agent={agent}
-                      animation={shouldAnimate}
-                    />
-                    <div className={styles.agentInfo}>
-                      <div className={styles.agentName}>{agent.name}</div>
-                      <div className={styles.agentMeta}>
-                        {agent.id !== "NONE" && (
-                          <span className={styles.toolBadge}>
-                            <Wrench size={9} />
-                            {agent.toolCount === -1
-                              ? "All tools"
-                              : `${agent.toolCount} tools`}
+                    return (
+                      <button
+                        key={agent.id}
+                        className={styles.agentItem}
+                        data-is-active-state={isActive}
+                        data-is-highlighted-state={isHighlighted}
+                        role="option"
+                        aria-selected={isActive}
+                        onMouseEnter={(mouseEvent) => {
+                          setHighlightedIndex(agentIndex);
+                          SoundService.playHover({ event: mouseEvent.nativeEvent });
+                        }}
+                        onMouseLeave={() => {
+                          setHighlightedIndex(-1);
+                        }}
+                        onClick={(mouseEvent) => {
+                          SoundService.playClickButton({
+                            event: mouseEvent.nativeEvent,
+                          });
+                          if (addMode) {
+                            handleAdd(agent);
+                          } else {
+                            handleSelect(agent.id);
+                          }
+                        }}
+                        type="button"
+                        style={
+                          agent.color
+                            ? ({
+                                "--agent-accent": agent.color,
+                              } as React.CSSProperties)
+                            : undefined
+                        }
+                      >
+                        <BadgeComponent
+                          type="agent"
+                          agent={agent}
+                          animation={shouldAnimate}
+                        />
+                        <div className={styles.agentInfo}>
+                          <div className={styles.agentName}>{agent.name}</div>
+                          <div className={styles.agentMeta}>
+                            {agent.id !== "NONE" && (
+                              <span className={styles.toolBadge}>
+                                <Wrench size={9} />
+                                {agent.toolCount === -1
+                                  ? "All tools"
+                                  : `${agent.toolCount} tools`}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {addMode ? (
+                          <span className={styles.addButton}>
+                            <Plus size={12} />
+                            Add
                           </span>
-                        )}
-                      </div>
-                    </div>
-                    {addMode ? (
-                      <span className={styles.addButton}>
-                        <Plus size={12} />
-                        Add
-                      </span>
-                    ) : isActive ? (
-                      <Check
-                        size={14}
-                        className={styles.activeCheck}
-                        style={agent.color ? { color: agent.color } : undefined}
-                      />
-                    ) : null}
-                  </button>
-                );
-              })}
+                        ) : isActive ? (
+                          <Check
+                            size={14}
+                            className={styles.activeCheck}
+                            style={agent.color ? { color: agent.color } : undefined}
+                          />
+                        ) : null}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </>
         )}

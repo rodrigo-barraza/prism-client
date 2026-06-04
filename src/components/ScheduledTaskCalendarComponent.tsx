@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,6 +10,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import styles from "./ScheduledTaskCalendarComponent.module.css";
+
 
 interface ScheduledTask {
   id: string;
@@ -43,6 +44,8 @@ interface CalendarEvent {
   scheduleType: ScheduledTask["scheduleType"];
   timeLabel: string;
   isEnabled: boolean;
+  scheduleTime?: string;
+  cronExpression?: string;
 }
 
 interface CalendarDay {
@@ -387,6 +390,8 @@ function getEventsForDate(
         scheduleType: task.scheduleType,
         timeLabel,
         isEnabled: task.enabled,
+        scheduleTime: task.scheduleTime,
+        cronExpression: task.cronExpression,
       });
     }
   }
@@ -447,24 +452,137 @@ function classNames(...values: (string | false | null | undefined)[]): string {
   return values.filter(Boolean).join(" ");
 }
 
+function getCronHours(cronExpression: string): number[] {
+  const fields = cronExpression.trim().split(/\s+/);
+  if (fields.length < 2) return [];
+  const [, hourField] = fields;
+  if (hourField === "*") {
+    return [];
+  }
+  return parseCronField(hourField, 0, 23);
+}
+
+function buildWeekGrid(
+  focusedDate: Date,
+  tasks: ScheduledTask[],
+): CalendarDay[] {
+  const today = new Date();
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth();
+  const todayDate = today.getDate();
+
+  const dayOfWeek = focusedDate.getDay();
+  const sundayDate = new Date(focusedDate);
+  sundayDate.setDate(focusedDate.getDate() - dayOfWeek);
+
+  const calendarDays: CalendarDay[] = [];
+
+  for (let cellIndex = 0; cellIndex < 7; cellIndex++) {
+    const currentDate = new Date(sundayDate);
+    currentDate.setDate(sundayDate.getDate() + cellIndex);
+
+    const isToday =
+      currentDate.getFullYear() === todayYear &&
+      currentDate.getMonth() === todayMonth &&
+      currentDate.getDate() === todayDate;
+
+    calendarDays.push({
+      date: currentDate,
+      dayOfMonth: currentDate.getDate(),
+      isCurrentMonth: true,
+      isToday,
+      events: getEventsForDate(tasks, currentDate),
+    });
+  }
+
+  return calendarDays;
+}
+
+function doesEventMatchHour(event: CalendarEvent, hourIndex: number): boolean {
+  if (event.scheduleType === "hourly") {
+    return false;
+  }
+  if (event.scheduleType === "cron" && event.cronExpression) {
+    const cronHours = getCronHours(event.cronExpression);
+    if (cronHours.length === 0 || cronHours.length > 12) {
+      return false;
+    }
+    return cronHours.includes(hourIndex);
+  }
+  if (event.scheduleTime) {
+    const eventHour = parseInt(event.scheduleTime.split(":")[0], 10);
+    return eventHour === hourIndex;
+  }
+  return false;
+}
+
+function formatHourLabel(hourIndex: number): string {
+  const meridiem = hourIndex >= 12 ? "PM" : "AM";
+  const displayHour = hourIndex % 12 || 12;
+  return `${String(displayHour).padStart(2, "0")}:00 ${meridiem}`;
+}
+
+function formatWeekRangeLabel(focusedDate: Date): string {
+  const sunday = new Date(
+    focusedDate.getFullYear(),
+    focusedDate.getMonth(),
+    focusedDate.getDate() - focusedDate.getDay()
+  );
+  const saturday = new Date(
+    sunday.getFullYear(),
+    sunday.getMonth(),
+    sunday.getDate() + 6
+  );
+
+  const startMonth = MONTH_NAMES[sunday.getMonth()];
+  const endMonth = MONTH_NAMES[saturday.getMonth()];
+  const startYear = sunday.getFullYear();
+  const endYear = saturday.getFullYear();
+
+  if (startYear !== endYear) {
+    return `${startMonth} ${sunday.getDate()}, ${startYear} – ${endMonth} ${saturday.getDate()}, ${endYear}`;
+  }
+  if (startMonth !== endMonth) {
+    return `${startMonth} ${sunday.getDate()} – ${endMonth} ${saturday.getDate()}, ${startYear}`;
+  }
+  return `${startMonth} ${sunday.getDate()} – ${saturday.getDate()}, ${startYear}`;
+}
+
+function formatDayLabel(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function ScheduledTaskCalendarComponent({
   tasks,
   onEventClick,
 }: ScheduledTaskCalendarComponentProps) {
-  const today = new Date();
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [focusedDate, setFocusedDate] = useState(() => new Date());
+  const [activeView, setActiveView] = useState<"month" | "week" | "day">("month");
   const [popoverDayKey, setPopoverDayKey] = useState<string | null>(null);
+  const timelineContainerReference = useRef<HTMLDivElement>(null);
 
   const enabledTasks = useMemo(
     () => tasks.filter((task) => task.scheduleType !== "trigger"),
     [tasks],
   );
 
-  const calendarGrid = useMemo(
-    () => buildCalendarGrid(viewYear, viewMonth, enabledTasks),
-    [viewYear, viewMonth, enabledTasks],
-  );
+  const calendarGrid = useMemo(() => {
+    if (activeView === "month") {
+      return buildCalendarGrid(
+        focusedDate.getFullYear(),
+        focusedDate.getMonth(),
+        enabledTasks,
+      );
+    } else if (activeView === "week") {
+      return buildWeekGrid(focusedDate, enabledTasks);
+    }
+    return [];
+  }, [activeView, focusedDate, enabledTasks]);
 
   const activeScheduleTypes = useMemo(() => {
     const typeSet = new Set<string>();
@@ -474,44 +592,100 @@ export default function ScheduledTaskCalendarComponent({
     return SCHEDULE_TYPE_KEYS.filter((type) => typeSet.has(type));
   }, [enabledTasks]);
 
-  const navigateToPreviousMonth = useCallback(() => {
-    setViewMonth((previousMonth) => {
-      if (previousMonth === 0) {
-        setViewYear((previousYear) => previousYear - 1);
-        return 11;
-      }
-      return previousMonth - 1;
-    });
-    setPopoverDayKey(null);
-  }, []);
+  const dayEvents = useMemo(
+    () => getEventsForDate(enabledTasks, focusedDate),
+    [enabledTasks, focusedDate],
+  );
 
-  const navigateToNextMonth = useCallback(() => {
-    setViewMonth((previousMonth) => {
-      if (previousMonth === 11) {
-        setViewYear((previousYear) => previousYear + 1);
-        return 0;
+  const allDayEvents = useMemo(() => {
+    return dayEvents.filter((event) => {
+      if (event.scheduleType === "hourly") {
+        return true;
       }
-      return previousMonth + 1;
+      if (event.scheduleType === "cron" && event.cronExpression) {
+        const cronHours = getCronHours(event.cronExpression);
+        return cronHours.length === 0 || cronHours.length > 12;
+      }
+      return false;
     });
-    setPopoverDayKey(null);
-  }, []);
+  }, [dayEvents]);
 
   const navigateToPreviousYear = useCallback(() => {
-    setViewYear((previousYear) => previousYear - 1);
+    setFocusedDate((previousDate) => {
+      const newDate = new Date(previousDate);
+      newDate.setFullYear(previousDate.getFullYear() - 1);
+      return newDate;
+    });
     setPopoverDayKey(null);
   }, []);
 
   const navigateToNextYear = useCallback(() => {
-    setViewYear((previousYear) => previousYear + 1);
+    setFocusedDate((previousDate) => {
+      const newDate = new Date(previousDate);
+      newDate.setFullYear(previousDate.getFullYear() + 1);
+      return newDate;
+    });
     setPopoverDayKey(null);
   }, []);
 
+  const navigateToPrevious = useCallback(() => {
+    setFocusedDate((previousDate) => {
+      const newDate = new Date(previousDate);
+      if (activeView === "month") {
+        newDate.setMonth(previousDate.getMonth() - 1);
+      } else if (activeView === "week") {
+        newDate.setDate(previousDate.getDate() - 7);
+      } else if (activeView === "day") {
+        newDate.setDate(previousDate.getDate() - 1);
+      }
+      return newDate;
+    });
+    setPopoverDayKey(null);
+  }, [activeView]);
+
+  const navigateToNext = useCallback(() => {
+    setFocusedDate((previousDate) => {
+      const newDate = new Date(previousDate);
+      if (activeView === "month") {
+        newDate.setMonth(previousDate.getMonth() + 1);
+      } else if (activeView === "week") {
+        newDate.setDate(previousDate.getDate() + 7);
+      } else if (activeView === "day") {
+        newDate.setDate(previousDate.getDate() + 1);
+      }
+      return newDate;
+    });
+    setPopoverDayKey(null);
+  }, [activeView]);
+
   const navigateToToday = useCallback(() => {
-    const currentDate = new Date();
-    setViewYear(currentDate.getFullYear());
-    setViewMonth(currentDate.getMonth());
+    setFocusedDate(new Date());
     setPopoverDayKey(null);
   }, []);
+
+  useEffect(() => {
+    if (activeView === "day" && timelineContainerReference.current) {
+      let firstEventHour = 8;
+      for (let hourIndex = 0; hourIndex < 24; hourIndex++) {
+        const hasEvents = dayEvents.some((event) =>
+          doesEventMatchHour(event, hourIndex),
+        );
+        if (hasEvents) {
+          firstEventHour = hourIndex;
+          break;
+        }
+      }
+
+      const targetElement = timelineContainerReference.current.querySelector(
+        `[data-hour-index="${firstEventHour}"]`,
+      );
+      if (targetElement) {
+        timelineContainerReference.current.scrollTop = (
+          targetElement as HTMLElement
+        ).offsetTop;
+      }
+    }
+  }, [activeView, focusedDate, dayEvents]);
 
   return (
     <div className={styles["calendar-container"]}>
@@ -528,22 +702,68 @@ export default function ScheduledTaskCalendarComponent({
           </button>
           <button
             className={styles["calendar-navigation-button"]}
-            onClick={navigateToPreviousMonth}
-            title="Previous month"
-            aria-label="Navigate to previous month"
+            onClick={navigateToPrevious}
+            title="Previous"
+            aria-label="Navigate previous"
           >
             <ChevronLeft size={16} />
           </button>
         </nav>
 
         <div className={styles["calendar-title-group"]}>
-          <span className={styles["calendar-month-label"]}>
-            {MONTH_NAMES[viewMonth]}
-          </span>
-          <span className={styles["calendar-year-label"]}>{viewYear}</span>
+          {activeView === "month" && (
+            <>
+              <span className={styles["calendar-month-label"]}>
+                {MONTH_NAMES[focusedDate.getMonth()]}
+              </span>
+              <span className={styles["calendar-year-label"]}>
+                {focusedDate.getFullYear()}
+              </span>
+            </>
+          )}
+          {activeView === "week" && (
+            <span className={styles["calendar-month-label"]}>
+              {formatWeekRangeLabel(focusedDate)}
+            </span>
+          )}
+          {activeView === "day" && (
+            <span className={styles["calendar-month-label"]}>
+              {formatDayLabel(focusedDate)}
+            </span>
+          )}
         </div>
 
         <nav className={styles["calendar-navigation-group"]}>
+          <div className={styles["calendar-view-toggle-group"]}>
+            <button
+              className={classNames(
+                styles["view-toggle-button"],
+                activeView === "month" && styles["is-active-state"],
+              )}
+              onClick={() => setActiveView("month")}
+            >
+              Month
+            </button>
+            <button
+              className={classNames(
+                styles["view-toggle-button"],
+                activeView === "week" && styles["is-active-state"],
+              )}
+              onClick={() => setActiveView("week")}
+            >
+              Week
+            </button>
+            <button
+              className={classNames(
+                styles["view-toggle-button"],
+                activeView === "day" && styles["is-active-state"],
+              )}
+              onClick={() => setActiveView("day")}
+            >
+              Day
+            </button>
+          </div>
+
           <button
             className={styles["calendar-today-button"]}
             onClick={navigateToToday}
@@ -554,9 +774,9 @@ export default function ScheduledTaskCalendarComponent({
           </button>
           <button
             className={styles["calendar-navigation-button"]}
-            onClick={navigateToNextMonth}
-            title="Next month"
-            aria-label="Navigate to next month"
+            onClick={navigateToNext}
+            title="Next"
+            aria-label="Navigate next"
           >
             <ChevronRight size={16} />
           </button>
@@ -572,144 +792,312 @@ export default function ScheduledTaskCalendarComponent({
       </header>
 
       {/* ── Weekday Labels ── */}
-      <div className={styles["calendar-weekday-row"]}>
-        {WEEKDAY_LABELS.map((dayLabel) => (
-          <div key={dayLabel} className={styles["calendar-weekday-cell"]}>
-            {dayLabel}
-          </div>
-        ))}
-      </div>
+      {activeView !== "day" && (
+        <div className={styles["calendar-weekday-row"]}>
+          {WEEKDAY_LABELS.map((dayLabel) => (
+            <div key={dayLabel} className={styles["calendar-weekday-cell"]}>
+              {dayLabel}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── Days Grid ── */}
-      <div className={styles["calendar-days-grid"]}>
-        {calendarGrid.map((calendarDay) => {
-          const dayKey = calendarDay.date.toISOString().split("T")[0];
-          const isPopoverOpen = popoverDayKey === dayKey;
-          const visibleEvents = calendarDay.events.slice(
-            0,
-            MAX_VISIBLE_EVENTS_PER_DAY,
-          );
-          const overflowCount =
-            calendarDay.events.length - MAX_VISIBLE_EVENTS_PER_DAY;
+      {activeView !== "day" && (
+        <div
+          className={classNames(
+            styles["calendar-days-grid"],
+            activeView === "week" && styles["is-week-view-grid"],
+          )}
+        >
+          {calendarGrid.map((calendarDay) => {
+            const dayKey = calendarDay.date.toISOString().split("T")[0];
+            const isPopoverOpen = popoverDayKey === dayKey;
+            const maxVisibleEvents =
+              activeView === "week" ? 8 : MAX_VISIBLE_EVENTS_PER_DAY;
+            const visibleEvents = calendarDay.events.slice(
+              0,
+              maxVisibleEvents,
+            );
+            const overflowCount =
+              calendarDay.events.length - maxVisibleEvents;
 
-          return (
-            <div
-              key={dayKey}
-              className={classNames(
-                styles["calendar-day-cell"],
-                !calendarDay.isCurrentMonth && styles["is-outside-month"],
-                calendarDay.isToday && styles["is-today-cell"],
-              )}
-            >
-              <div className={styles["calendar-day-number"]}>
-                {calendarDay.dayOfMonth}
-              </div>
-
-              {calendarDay.events.length > 0 && (
-                <div className={styles["calendar-events-list"]}>
-                  {visibleEvents.map((event, eventIndex) => (
-                    <div
-                      key={`${event.taskId}-${eventIndex}`}
-                      className={classNames(
-                        styles["calendar-event-chip"],
-                        getColorVariantClassName(event.scheduleType),
-                        !event.isEnabled && styles["is-disabled-task"],
-                      )}
-                      title={`${event.taskName}${event.timeLabel ? ` — ${event.timeLabel}` : ""}`}
-                      style={{ animationDelay: `${eventIndex * 30}ms`, cursor: "pointer" }}
-                      onClick={(clickEvent) => {
-                        clickEvent.stopPropagation();
-                        onEventClick?.(event.taskId);
-                      }}
-                    >
-                      <span
-                        className={classNames(
-                          styles["calendar-event-chip-dot"],
-                          getColorVariantClassName(event.scheduleType),
-                        )}
-                      />
-                      <span className={styles["calendar-event-chip-label"]}>
-                        {event.taskName}
-                      </span>
-                    </div>
-                  ))}
-
-                  {overflowCount > 0 && (
-                    <button
-                      className={styles["calendar-overflow-badge"]}
-                      onClick={(clickEvent) => {
-                        clickEvent.stopPropagation();
-                        setPopoverDayKey(isPopoverOpen ? null : dayKey);
-                      }}
-                    >
-                      +{overflowCount} more
-                    </button>
-                  )}
+            return (
+              <div
+                key={dayKey}
+                className={classNames(
+                  styles["calendar-day-cell"],
+                  !calendarDay.isCurrentMonth && styles["is-outside-month"],
+                  calendarDay.isToday && styles["is-today-cell"],
+                )}
+                style={{ cursor: activeView === "month" ? "default" : "pointer" }}
+                onClick={() => {
+                  setFocusedDate(calendarDay.date);
+                  setActiveView("day");
+                }}
+              >
+                <div className={styles["calendar-day-number"]}>
+                  {calendarDay.dayOfMonth}
                 </div>
+
+                {calendarDay.events.length > 0 && (
+                  <div className={styles["calendar-events-list"]}>
+                    {visibleEvents.map((event, eventIndex) => (
+                      <div
+                        key={`${event.taskId}-${eventIndex}`}
+                        className={classNames(
+                          styles["calendar-event-chip"],
+                          getColorVariantClassName(event.scheduleType),
+                          !event.isEnabled && styles["is-disabled-task"],
+                        )}
+                        title={`${event.taskName}${event.timeLabel ? ` — ${event.timeLabel}` : ""}`}
+                        style={{
+                          animationDelay: `${eventIndex * 30}ms`,
+                          cursor: "pointer",
+                        }}
+                        onClick={(clickEvent) => {
+                          clickEvent.stopPropagation();
+                          onEventClick?.(event.taskId);
+                        }}
+                      >
+                        <span
+                          className={classNames(
+                            styles["calendar-event-chip-dot"],
+                            getColorVariantClassName(event.scheduleType),
+                          )}
+                        />
+                        <span className={styles["calendar-event-chip-label"]}>
+                          {event.taskName}
+                        </span>
+                      </div>
+                    ))}
+
+                    {overflowCount > 0 && (
+                      <button
+                        className={styles["calendar-overflow-badge"]}
+                        onClick={(clickEvent) => {
+                          clickEvent.stopPropagation();
+                          setPopoverDayKey(isPopoverOpen ? null : dayKey);
+                        }}
+                      >
+                        +{overflowCount} more
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Day Popover ── */}
+                {isPopoverOpen && (
+                  <>
+                    <div
+                      className={styles["calendar-day-popover-backdrop"]}
+                      onClick={(clickEvent) => {
+                        clickEvent.stopPropagation();
+                        setPopoverDayKey(null);
+                      }}
+                    />
+                    <div
+                      className={styles["calendar-day-popover"]}
+                      onClick={(clickEvent) => clickEvent.stopPropagation()}
+                    >
+                      <div className={styles["calendar-popover-header"]}>
+                        <span className={styles["calendar-popover-date-label"]}>
+                          {formatPopoverDateLabel(calendarDay.date)}
+                        </span>
+                        <button
+                          className={styles["calendar-popover-close-button"]}
+                          onClick={(clickEvent) => {
+                            clickEvent.stopPropagation();
+                            setPopoverDayKey(null);
+                          }}
+                          aria-label="Close popover"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                      <div className={styles["calendar-popover-events-list"]}>
+                        {calendarDay.events.map((event, eventIndex) => (
+                          <div
+                            key={`${event.taskId}-${eventIndex}`}
+                            className={classNames(
+                              styles["calendar-popover-event-item"],
+                              !event.isEnabled && styles["is-disabled-task"],
+                            )}
+                            onClick={() => {
+                              setPopoverDayKey(null);
+                              onEventClick?.(event.taskId);
+                            }}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <span
+                              className={classNames(
+                                styles["calendar-popover-event-dot"],
+                                getColorVariantClassName(event.scheduleType),
+                              )}
+                            />
+                            <span
+                              className={styles["calendar-popover-event-name"]}
+                            >
+                              {event.taskName}
+                            </span>
+                            {event.timeLabel && (
+                              <span
+                                className={styles["calendar-popover-event-time"]}
+                              >
+                                {event.timeLabel}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Day View ── */}
+      {activeView === "day" && (
+        <div className={styles["calendar-day-view-container"]}>
+          {dayEvents.length === 0 ? (
+            <div className={styles["calendar-day-view-empty-state"]}>
+              <CalendarDays
+                className={styles["calendar-day-view-empty-icon"]}
+                size={48}
+              />
+              <p className={styles["calendar-day-view-empty-text"]}>
+                No tasks scheduled for this day
+              </p>
+            </div>
+          ) : (
+            <>
+              {allDayEvents.length > 0 && (
+                <section className={styles["calendar-all-day-section"]}>
+                  <h4 className={styles["calendar-day-section-title"]}>
+                    All-Day & Recurring Tasks
+                  </h4>
+                  <div className={styles["calendar-all-day-events-list"]}>
+                    {allDayEvents.map((event, eventIndex) => (
+                      <div
+                        key={`${event.taskId}-${eventIndex}`}
+                        className={classNames(
+                          styles["calendar-event-chip"],
+                          getColorVariantClassName(event.scheduleType),
+                          !event.isEnabled && styles["is-disabled-task"],
+                        )}
+                        title={`${event.taskName} — ${event.timeLabel}`}
+                        style={{
+                          animationDelay: `${eventIndex * 30}ms`,
+                          cursor: "pointer",
+                          padding: "6px 12px",
+                        }}
+                        onClick={() => onEventClick?.(event.taskId)}
+                      >
+                        <span
+                          className={classNames(
+                            styles["calendar-event-chip-dot"],
+                            getColorVariantClassName(event.scheduleType),
+                          )}
+                        />
+                        <span
+                          className={styles["calendar-event-chip-label"]}
+                          style={{ fontSize: "0.6875rem" }}
+                        >
+                          {event.taskName} ({event.timeLabel})
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               )}
 
-              {/* ── Day Popover ── */}
-              {isPopoverOpen && (
-                <>
-                  <div
-                    className={styles["calendar-day-popover-backdrop"]}
-                    onClick={() => setPopoverDayKey(null)}
-                  />
-                  <div className={styles["calendar-day-popover"]}>
-                    <div className={styles["calendar-popover-header"]}>
-                      <span className={styles["calendar-popover-date-label"]}>
-                        {formatPopoverDateLabel(calendarDay.date)}
-                      </span>
-                      <button
-                        className={styles["calendar-popover-close-button"]}
-                        onClick={() => setPopoverDayKey(null)}
-                        aria-label="Close popover"
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                    <div className={styles["calendar-popover-events-list"]}>
-                      {calendarDay.events.map((event, eventIndex) => (
-                        <div
-                          key={`${event.taskId}-${eventIndex}`}
-                          className={classNames(
-                            styles["calendar-popover-event-item"],
-                            !event.isEnabled && styles["is-disabled-task"],
-                          )}
-                          onClick={() => {
-                            setPopoverDayKey(null);
-                            onEventClick?.(event.taskId);
-                          }}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <span
-                            className={classNames(
-                              styles["calendar-popover-event-dot"],
-                              getColorVariantClassName(event.scheduleType),
-                            )}
-                          />
-                          <span
-                            className={styles["calendar-popover-event-name"]}
+              <div
+                className={styles["calendar-timeline-container"]}
+                ref={timelineContainerReference}
+              >
+                {Array.from({ length: 24 }).map((_, hourIndex) => {
+                  const eventsForHour = dayEvents.filter((event) =>
+                    doesEventMatchHour(event, hourIndex),
+                  );
+
+                  return (
+                    <div
+                      key={hourIndex}
+                      className={styles["calendar-timeline-hour-row"]}
+                      data-hour-index={hourIndex}
+                    >
+                      <div className={styles["calendar-timeline-hour-label"]}>
+                        {formatHourLabel(hourIndex)}
+                      </div>
+                      <div className={styles["calendar-timeline-hour-content"]}>
+                        {eventsForHour.length > 0 ? (
+                          <div
+                            className={styles["calendar-timeline-events-wrapper"]}
                           >
-                            {event.taskName}
-                          </span>
-                          {event.timeLabel && (
-                            <span
-                              className={styles["calendar-popover-event-time"]}
-                            >
-                              {event.timeLabel}
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                            {eventsForHour.map((event, eventIndex) => (
+                              <div
+                                key={`${event.taskId}-${eventIndex}`}
+                                className={classNames(
+                                  styles["calendar-timeline-event-card"],
+                                  getColorVariantClassName(event.scheduleType),
+                                  !event.isEnabled && styles["is-disabled-task"],
+                                )}
+                                onClick={() => onEventClick?.(event.taskId)}
+                                title={`Click to view details for ${event.taskName}`}
+                              >
+                                <div
+                                  className={
+                                    styles["calendar-timeline-event-card-header"]
+                                  }
+                                >
+                                  <span
+                                    className={
+                                      styles["calendar-timeline-event-card-name"]
+                                    }
+                                  >
+                                    {event.taskName}
+                                  </span>
+                                  <span
+                                    className={
+                                      styles["calendar-timeline-event-card-time"]
+                                    }
+                                  >
+                                    {event.timeLabel}
+                                  </span>
+                                </div>
+                                <div
+                                  className={
+                                    styles["calendar-timeline-event-card-details"]
+                                  }
+                                >
+                                  <span
+                                    className={
+                                      styles["calendar-timeline-event-card-badge"]
+                                    }
+                                  >
+                                    {event.scheduleType}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div
+                            className={styles["calendar-timeline-empty-line"]}
+                          />
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* ── Legend ── */}
       {activeScheduleTypes.length > 0 && (

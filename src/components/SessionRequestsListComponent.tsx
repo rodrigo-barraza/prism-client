@@ -50,8 +50,11 @@ export default function SessionRequestsListComponent({
       return (
         <div className={styles.container}>
           <div className={styles.emptyState}>
-            <AlertCircle size={14} />
-            <span>{error}</span>
+            <div className={styles.emptyIcon}>
+              <AlertCircle size={24} />
+            </div>
+            <div className={styles.emptyTitle}>Failed to load requests</div>
+            <div className={styles.emptySubtitle}>{error}</div>
           </div>
         </div>
       );
@@ -66,8 +69,13 @@ export default function SessionRequestsListComponent({
     return (
       <div className={styles.container}>
         <div className={styles.emptyState}>
-          <Activity size={14} />
-          <span>No requests yet</span>
+          <div className={styles.emptyIcon}>
+            <Activity size={24} />
+          </div>
+          <div className={styles.emptyTitle}>No requests</div>
+          <div className={styles.emptySubtitle}>
+            No requests have been made in this session yet.
+          </div>
         </div>
       </div>
     );

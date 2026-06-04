@@ -639,9 +639,9 @@ function ModelsTableInner({
   getRowClassName: getRowClassNameProp,
 }: ModelsTableInnerProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeProvider, setActiveProvider] = useState<string | null>(null);
-  const [activeModality, setActiveModality] = useState<string | null>(null);
-  const [activeTool, setActiveTool] = useState<string | null>(null);
+  const [activeProviders, setActiveProviders] = useState<Set<string>>(new Set());
+  const [activeModalities, setActiveModalities] = useState<Set<string>>(new Set());
+  const [activeTools, setActiveTools] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   // Discover all providers from models (ordered by PROVIDER_LABELS definition)
@@ -696,23 +696,23 @@ function ModelsTableInner({
       })
     : models;
 
-  const modalityFiltered = activeModality
+  const modalityFiltered = activeModalities.size > 0
     ? favFiltered.filter(
         (model: RawModel) =>
-          (model.inputTypes || []).includes(activeModality) ||
-          (model.outputTypes || []).includes(activeModality),
+          (model.inputTypes || []).some((type) => activeModalities.has(type)) ||
+          (model.outputTypes || []).some((type) => activeModalities.has(type)),
       )
     : favFiltered;
 
-  const toolFiltered = activeTool
+  const toolFiltered = activeTools.size > 0
     ? modalityFiltered.filter((model: RawModel) =>
-        (model.tools || []).includes(activeTool),
+        (model.tools || []).some((tool) => activeTools.has(tool)),
       )
     : modalityFiltered;
 
-  const providerFiltered = activeProvider
-    ? toolFiltered.filter(
-        (model: RawModel) => normalizeModel(model).provider === activeProvider,
+  const providerFiltered = activeProviders.size > 0
+    ? toolFiltered.filter((model: RawModel) =>
+        activeProviders.has(normalizeModel(model).provider),
       )
     : toolFiltered;
 
@@ -1576,9 +1576,15 @@ function ModelsTableInner({
                       (item): item is NonNullable<typeof item> =>
                         item !== null,
                     ),
-                  activeKeys: activeModality,
-                  isSingleSelect: true,
-                  onToggle: setActiveModality,
+                  activeKeys: activeModalities,
+                  onToggle: (key: string | null) => {
+                    if (!key) return;
+                    setActiveModalities((previousModalities) => {
+                      const nextModalities = new Set(previousModalities);
+                      nextModalities.has(key) ? nextModalities.delete(key) : nextModalities.add(key);
+                      return nextModalities;
+                    });
+                  },
                 },
               ]
             : []),
@@ -1604,9 +1610,15 @@ function ModelsTableInner({
                       (item): item is NonNullable<typeof item> =>
                         item !== null,
                     ),
-                  activeKeys: activeTool,
-                  isSingleSelect: true,
-                  onToggle: setActiveTool,
+                  activeKeys: activeTools,
+                  onToggle: (key: string | null) => {
+                    if (!key) return;
+                    setActiveTools((previousTools) => {
+                      const nextTools = new Set(previousTools);
+                      nextTools.has(key) ? nextTools.delete(key) : nextTools.add(key);
+                      return nextTools;
+                    });
+                  },
                 },
               ]
             : []),
@@ -1619,9 +1631,15 @@ function ModelsTableInner({
                     icon: () => <ProviderLogo provider={provider} size={13} />,
                     title: resolveProviderLabel(provider),
                   })),
-                  activeKeys: activeProvider,
-                  isSingleSelect: true,
-                  onToggle: setActiveProvider,
+                  activeKeys: activeProviders,
+                  onToggle: (key: string | null) => {
+                    if (!key) return;
+                    setActiveProviders((previousProviders) => {
+                      const nextProviders = new Set(previousProviders);
+                      nextProviders.has(key) ? nextProviders.delete(key) : nextProviders.add(key);
+                      return nextProviders;
+                    });
+                  },
                 },
               ]
             : []),

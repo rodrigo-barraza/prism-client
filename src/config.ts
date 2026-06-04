@@ -90,3 +90,9 @@ const MINIO_BUCKET =
   process.env.PRISM_SERVICE_MINIO_BUCKET_NAME;
 export const MINIO_URL =
   MINIO_ROOT && MINIO_BUCKET ? `${MINIO_ROOT}/${MINIO_BUCKET}` : null;
+
+export const CUSTOM_MODEL_NAME =
+  process.env.NEXT_PUBLIC_CUSTOM_MODEL_NAME ||
+  process.env.CUSTOM_MODEL_NAME ||
+  "";
+

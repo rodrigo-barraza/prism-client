@@ -993,6 +993,22 @@ export default class PrismService {
     return PrismService._request<any[]>("/scheduled-tasks/all", { method: "GET" });
   }
 
+  static async getTaskConversations(
+    project: string,
+    taskId: string,
+    limit = 50,
+  ): Promise<AgentSessionListResponse> {
+    const queryString = new URLSearchParams();
+    queryString.set("type", "agent");
+    queryString.set("project", project);
+    queryString.set("taskId", taskId);
+    queryString.set("limit", String(limit));
+    return PrismService._request<AgentSessionListResponse>(
+      `/conversations?${queryString}`,
+      { method: "GET" },
+    );
+  }
+
   /**
    * Create a cron job.
    */

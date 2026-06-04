@@ -4396,7 +4396,7 @@ export default function ChatSessionComponent({
           },
           {
             key: "params",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🎚️</span>,
+            icon: <span className={tabBarStyles.tabEmojiIcon}>🎚︎</span>,
             tooltip: "Parameters",
           },
           ...(!isNoAgent &&

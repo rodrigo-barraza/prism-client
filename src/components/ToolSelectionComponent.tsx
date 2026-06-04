@@ -62,9 +62,10 @@ interface ToolSchema {
 interface ToolSelectionProps {
   availableTools?: ToolSchema[];
   enabledTools?: string[];
-  onEnabledToolsChange: (tools: string[]) => void;
+  onEnabledToolsChange?: (tools: string[]) => void;
   coreToolsLocked?: boolean;
   lockedOffTools?: Map<string, string>;
+  readOnly?: boolean;
 }
 
 // -- Domain icon mapping (mirrors CustomToolsPanel) --------------
@@ -253,6 +254,7 @@ export default function ToolSelectionComponent({
   onEnabledToolsChange,
   coreToolsLocked = true,
   lockedOffTools = new Map(),
+  readOnly = false,
 }: ToolSelectionProps) {
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set<string>());
@@ -358,7 +360,7 @@ export default function ToolSelectionComponent({
   // -- Tool toggling --------------------------------------------
   const toggleTool = useCallback(
     (toolName: string) => {
-      if (lockedOffTools.has(toolName)) {
+      if (readOnly || lockedOffTools.has(toolName)) {
         return;
       }
       const tools = enabledTools || [];
@@ -369,22 +371,24 @@ export default function ToolSelectionComponent({
         }
       }
       if (resolved.has(toolName)) {
-        onEnabledToolsChange(tools.filter((entry) => entry !== toolName));
+        onEnabledToolsChange?.(tools.filter((entry) => entry !== toolName));
       } else {
-        onEnabledToolsChange([...tools, toolName]);
+        onEnabledToolsChange?.([...tools, toolName]);
       }
     },
-    [enabledTools, lockedOffTools, onEnabledToolsChange],
+    [readOnly, enabledTools, lockedOffTools, onEnabledToolsChange],
   );
 
   const selectAllTools = useCallback(() => {
+    if (readOnly) return;
     const selectableTools = configurableTools.filter((tool) => !lockedOffTools.has(tool.name));
-    onEnabledToolsChange(selectableTools.map((tool) => tool.name));
-  }, [configurableTools, lockedOffTools, onEnabledToolsChange]);
+    onEnabledToolsChange?.(selectableTools.map((tool) => tool.name));
+  }, [readOnly, configurableTools, lockedOffTools, onEnabledToolsChange]);
 
   const deselectAllTools = useCallback(() => {
-    onEnabledToolsChange([]);
-  }, [onEnabledToolsChange]);
+    if (readOnly) return;
+    onEnabledToolsChange?.([]);
+  }, [readOnly, onEnabledToolsChange]);
 
   // -- Filtering ------------------------------------------------
   const query = toolSearch.toLowerCase().trim();
@@ -524,14 +528,15 @@ export default function ToolSelectionComponent({
   // -- Toggle all tools in a group ------------------------------
   const toggleGroupTools = useCallback(
     (groupKey: string, groupTools: ToolSchema[]) => {
+      if (readOnly) return;
       const currentTools = enabledTools || [];
       const isDomain = groupMode === "domain";
       const isLabel = groupMode === "label";
       const prefix = isDomain
-        ? `domain:${groupKey}`
-        : isLabel
-          ? `label:${groupKey}`
-          : `tier:${groupKey}`;
+          ? `domain:${groupKey}`
+          : isLabel
+              ? `label:${groupKey}`
+              : `tier:${groupKey}`;
 
       const resolved = resolveEnabledTools(currentTools);
       const selectableGroupTools = groupTools.filter((tool) => !lockedOffTools.has(tool.name));
@@ -542,36 +547,36 @@ export default function ToolSelectionComponent({
 
       if (groupKey === "core") {
         if (allSelectableEnabled) {
-          onEnabledToolsChange(
-            currentTools.filter((enabledToolEntry) => !selectableGroupNames.includes(enabledToolEntry)),
+          onEnabledToolsChange?.(
+              currentTools.filter((enabledToolEntry) => !selectableGroupNames.includes(enabledToolEntry)),
           );
         } else {
           const cleaned = currentTools.filter((enabledToolEntry) => !selectableGroupNames.includes(enabledToolEntry));
-          onEnabledToolsChange([...cleaned, ...selectableGroupNames]);
+          onEnabledToolsChange?.([...cleaned, ...selectableGroupNames]);
         }
         return;
       }
 
       const hasGroupRef = currentTools.includes(prefix);
       if (hasGroupRef || allSelectableEnabled) {
-        onEnabledToolsChange(
-          currentTools.filter((enabledToolEntry) => enabledToolEntry !== prefix && !selectableGroupNames.includes(enabledToolEntry)),
+        onEnabledToolsChange?.(
+            currentTools.filter((enabledToolEntry) => enabledToolEntry !== prefix && !selectableGroupNames.includes(enabledToolEntry)),
         );
       } else {
         const cleaned = currentTools.filter((enabledToolEntry) => !selectableGroupNames.includes(enabledToolEntry));
         if (hasActiveSearch) {
-          onEnabledToolsChange([...cleaned, ...selectableGroupNames]);
+          onEnabledToolsChange?.([...cleaned, ...selectableGroupNames]);
         } else {
-          onEnabledToolsChange([...cleaned, prefix]);
+          onEnabledToolsChange?.([...cleaned, prefix]);
         }
       }
     },
-    [enabledTools, groupMode, query, resolveEnabledTools, onEnabledToolsChange, lockedOffTools],
+    [readOnly, enabledTools, groupMode, query, resolveEnabledTools, onEnabledToolsChange, lockedOffTools],
   );
 
   // -- Render ---------------------------------------------------
   return (
-    <div className={styles.toolsSection}>
+    <div className={styles.toolsSection} data-read-only={readOnly}>
       {/* Search — pinned above scroll */}
       <SearchInputComponent
         value={toolSearch}
@@ -598,21 +603,43 @@ export default function ToolSelectionComponent({
 
       <div className={styles.toolsListWrapper}>
 
-        {/* Master select-all checkbox */}
-        {groupMode !== "selected" && (
+        {/* Master select-all / deselect-all checkbox */}
+        {(groupMode !== "selected" || selectedGroupedByDomain.length > 0) && (
           <div className={styles.bulkCheckboxRow}>
             <CheckboxComponent
               size="compact"
-              checked={selectableConfigurableTools.length > 0 && enabledConfigurableCount === selectableConfigurableTools.length}
-              indeterminate={enabledConfigurableCount > 0 && enabledConfigurableCount < selectableConfigurableTools.length}
+              checked={
+                groupMode === "selected"
+                  ? true
+                  : selectableConfigurableTools.length > 0 &&
+                    enabledConfigurableCount === selectableConfigurableTools.length
+              }
+              indeterminate={
+                groupMode === "selected"
+                  ? false
+                  : enabledConfigurableCount > 0 &&
+                    enabledConfigurableCount < selectableConfigurableTools.length
+              }
+              disabled={
+                readOnly ||
+                (groupMode === "selected" && enabledConfigurableCount === 0)
+              }
               onChange={() => {
-                if (enabledConfigurableCount === selectableConfigurableTools.length) {
+                if (readOnly) return;
+                if (
+                  groupMode === "selected" ||
+                  enabledConfigurableCount === selectableConfigurableTools.length
+                ) {
                   deselectAllTools();
                 } else {
                   selectAllTools();
                 }
               }}
-              label={<span className={styles.bulkCheckboxLabel}>Select All</span>}
+              label={
+                <span className={styles.bulkCheckboxLabel}>
+                  {groupMode === "selected" ? "Deselect All" : "Select All"}
+                </span>
+              }
             />
             <span className={styles.domainCount}>
               {totalEnabledCount}/{totalToolsCount}
@@ -648,7 +675,11 @@ export default function ToolSelectionComponent({
                       size="compact"
                       checked={selectableCoreTools.length > 0 && enabledCoreCount === selectableCoreTools.length}
                       indeterminate={enabledCoreCount > 0 && enabledCoreCount < selectableCoreTools.length}
-                      onChange={() => toggleGroupTools("core", coreTools)}
+                      disabled={readOnly}
+                      onChange={() => {
+                        if (readOnly) return;
+                        toggleGroupTools("core", coreTools);
+                      }}
                     />
                   </span>
                 </>
@@ -688,7 +719,11 @@ export default function ToolSelectionComponent({
                           size="compact"
                           className={styles.toolCheckbox}
                           checked={resolvedEnabledSet.has(tool.name)}
-                          onChange={() => toggleTool(tool.name)}
+                          disabled={readOnly}
+                          onChange={() => {
+                            if (readOnly) return;
+                            toggleTool(tool.name);
+                          }}
                           label={
                             <span className={styles.toolName}>
                               {renderToolName(tool.name)}
@@ -762,7 +797,11 @@ export default function ToolSelectionComponent({
                               size="compact"
                               checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length}
                               indeterminate={groupEnabled > 0 && groupEnabled < selectableGroupTools.length}
-                              onChange={() => toggleGroupTools(isCoreDomain ? "core" : groupKey, tools)}
+                              disabled={readOnly}
+                              onChange={() => {
+                                if (readOnly) return;
+                                toggleGroupTools(isCoreDomain ? "core" : groupKey, tools);
+                              }}
                             />
                           </span>
                         </>
@@ -820,7 +859,11 @@ export default function ToolSelectionComponent({
                                     size="compact"
                                     className={styles.toolCheckbox}
                                     checked={resolvedEnabledSet.has(tool.name)}
-                                    onChange={() => toggleTool(tool.name)}
+                                    disabled={readOnly}
+                                    onChange={() => {
+                                      if (readOnly) return;
+                                      toggleTool(tool.name);
+                                    }}
                                     label={
                                       <span className={styles.toolName}>
                                         {renderToolName(tool.name)}
@@ -893,7 +936,11 @@ export default function ToolSelectionComponent({
                       size="compact"
                       checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length}
                       indeterminate={groupEnabled > 0 && groupEnabled < selectableGroupTools.length}
-                      onChange={() => toggleGroupTools(groupKey, tools)}
+                      disabled={readOnly}
+                      onChange={() => {
+                        if (readOnly) return;
+                        toggleGroupTools(groupKey, tools);
+                      }}
                     />
                   </span>
                 </div>
@@ -932,7 +979,11 @@ export default function ToolSelectionComponent({
                                 size="compact"
                                 className={styles.toolCheckbox}
                                 checked={resolvedEnabledSet.has(tool.name)}
-                                onChange={() => toggleTool(tool.name)}
+                                disabled={readOnly}
+                                onChange={() => {
+                                  if (readOnly) return;
+                                  toggleTool(tool.name);
+                                }}
                                 label={
                                   <span className={styles.toolName}>
                                     {renderToolName(tool.name)}

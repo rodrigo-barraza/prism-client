@@ -1,12 +1,5 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-block-size: 0;
-  block-size: 100%;
-  overflow-y: auto;
-  padding: 20px;
-  padding-block-end: 40px;
+  composes: container from "./PanelShared.module.css";
 }
 
 .card {
@@ -153,10 +146,17 @@
 /* ── Empty State ── */
 
 .emptyState {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 16px 10px;
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  composes: emptyState from "./PanelShared.module.css";
+}
+
+.emptyIcon {
+  composes: emptyIcon from "./PanelShared.module.css";
+}
+
+.emptyTitle {
+  composes: emptyTitle from "./PanelShared.module.css";
+}
+
+.emptySubtitle {
+  composes: emptySubtitle from "./PanelShared.module.css";
 }

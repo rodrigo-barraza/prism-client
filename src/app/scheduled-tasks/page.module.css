@@ -1163,3 +1163,100 @@
   color: var(--calculated-text-inverse) !important;
   font-weight: 600;
 }
+
+.history-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  padding: 16px;
+  background: var(--background-base);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--calculated-border-subtle);
+}
+
+.history-empty {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 16px;
+  background: var(--background-base);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--calculated-border-subtle);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-block: 2px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast) ease;
+}
+
+.history-item:hover {
+  background: color-mix(in srgb, var(--accent-primary) 6%, var(--background-elevated));
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--calculated-shadow-sm);
+}
+
+.history-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-item-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.history-item-metadata {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.history-item-cost {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.history-item-status {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.status-generating {
+  color: var(--accent-primary);
+}
+
+.status-completed {
+  color: var(--text-muted);
+}
+
+.inline-tool-badge-wrapper {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-inline: 4px;
+}
+

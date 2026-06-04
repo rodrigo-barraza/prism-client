@@ -26,6 +26,8 @@ import styles from "./AgentsPageComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import InfoBannerComponent from "./InfoBannerComponent";
+import { CUSTOM_MODEL_NAME } from "../config";
+
 
 interface CuratedColorOption {
   hex: string;
@@ -264,46 +266,44 @@ export default function AgentsDetailPanelComponent({
               size={64}
             />
           </div>
-          <div>
+          <div className={styles["profile-text-content-container"]}>
             <h2 className={styles["profile-title-text"]}>
-              {isCreateMode
-                ? editingAgent?.name || "New Custom Persona"
+              {editingAgent
+                ? editingAgent.name || (isCreateMode ? "New Custom Persona" : "")
                 : selectedCustomAgent?.name || selectedBuiltInAgent?.name || ""}
             </h2>
             <p className={styles["profile-subtitle-text"]}>
-              {isCreateMode
-                ? "Define system prompt overrides and capabilities"
+              {editingAgent
+                ? editingAgent.description || (isCreateMode ? "Define system prompt overrides and capabilities" : "")
                 : selectedCustomAgent?.description || selectedBuiltInAgent?.description || ""}
             </p>
-            <span className={styles["profile-badge-label"]}>
-              <Bot size={12} style={{ marginRight: 4 }} />
-              {isCreateMode
-                ? "Custom Draft"
-                : selectedCustomAgent
-                  ? "Custom Agent"
-                  : "System Built-In"}
-            </span>
+            <div className={styles["profile-badge-and-actions-container"]}>
+              <span className={styles["profile-badge-label"]}>
+                <Bot size={12} style={{ marginRight: 4 }} />
+                {isCreateMode
+                  ? "Custom Draft"
+                  : selectedCustomAgent
+                    ? "Custom Agent"
+                    : "System Built-In"}
+              </span>
+              {!isCreateMode && (selectedBuiltInAgent || selectedCustomAgent || (editingAgent && editingAgent._id)) && (
+                <ButtonComponent
+                  variant="primary"
+                  icon={Bot}
+                  onClick={() => {
+                    const agentId = selectedBuiltInAgent?.id || selectedCustomAgent?._id || editingAgent?._id;
+                    if (agentId) {
+                      router.push(`/chat?agent=${encodeURIComponent(String(agentId))}`);
+                    }
+                  }}
+                >
+                  Use in Chat
+                </ButtonComponent>
+              )}
+            </div>
           </div>
         </div>
       </section>
-
-      {/* -- Use Agent Actions -- */}
-      {!isCreateMode && (selectedBuiltInAgent || selectedCustomAgent || (editingAgent && editingAgent._id)) && (
-        <div className={styles["use-agent-actions-wrapper"]}>
-          <ButtonComponent
-            variant="primary"
-            icon={Bot}
-            onClick={() => {
-              const agentId = selectedBuiltInAgent?.id || selectedCustomAgent?._id || editingAgent?._id;
-              if (agentId) {
-                router.push(`/chat?agent=${encodeURIComponent(String(agentId))}`);
-              }
-            }}
-          >
-            Use in Chat
-          </ButtonComponent>
-        </div>
-      )}
 
       {/* -- Main Profile Body (Form/Info) -- */}
       {editingAgent ? (
@@ -314,6 +314,18 @@ export default function AgentsDetailPanelComponent({
             onSave();
           }}
         >
+          {/* Custom Model Name (Read Only) */}
+          <div className={styles["form-group-container"]}>
+            <label htmlFor="input-custom-model-name">Custom Model Name</label>
+            <InputComponent
+              id="input-custom-model-name"
+              type="text"
+              value={CUSTOM_MODEL_NAME}
+              readOnly={true}
+              placeholder="No custom model name configured"
+            />
+          </div>
+
           {/* Identity prompt block */}
           <div className={styles["form-group-container"]}>
             <label htmlFor="input-agent-name">Agent Name</label>
@@ -714,6 +726,18 @@ export default function AgentsDetailPanelComponent({
       ) : selectedBuiltInAgent ? (
         /* -- Built-In Profile Presentation (Info panel) -- */
         <div className={styles["form-layout-container"]}>
+          {/* Custom Model Name (Read Only) */}
+          <div className={styles["form-group-container"]}>
+            <label htmlFor="input-custom-model-name-builtin">Custom Model Name</label>
+            <InputComponent
+              id="input-custom-model-name-builtin"
+              type="text"
+              value={CUSTOM_MODEL_NAME}
+              readOnly={true}
+              placeholder="No custom model name configured"
+            />
+          </div>
+
           <InfoBannerComponent variant="info">
             This is a built-in system agent persona. To customize it, click the duplicate button
             below to clone its toolset configuration into a new custom persona.
@@ -744,24 +768,16 @@ export default function AgentsDetailPanelComponent({
           </div>
 
           {/* Allowed tools list */}
-          <div className={styles["form-group-container"]}>
-            <label>Enabled System Tools ({
+          <ToolSelectionComponent
+            availableTools={availableTools}
+            enabledTools={
               selectedBuiltInAgent.enabledToolNames?.includes("*")
-                ? availableTools.length
-                : (selectedBuiltInAgent.enabledToolNames?.length || 0)
-            })</label>
-            <div className={styles["tool-grid-layout"]}>
-              {(selectedBuiltInAgent.enabledToolNames?.includes("*")
                 ? availableTools.map((tool) => tool.name)
-                : (selectedBuiltInAgent.enabledToolNames || [])
-              ).map((toolName) => (
-                <div key={toolName} className={styles["tool-badge-item"]}>
-                  <Wrench size={10} style={{ opacity: 0.6 }} />
-                  <span>{toolName}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+                : selectedBuiltInAgent.enabledToolNames || []
+            }
+            coreToolsLocked={true}
+            readOnly={true}
+          />
 
           {/* Duplicate button element */}
           <div className={styles["form-actions-footer"]}>

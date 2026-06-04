@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { Plus, Wrench } from "lucide-react";
-import type { AgentPersona } from "../types/types";
+import type { AgentPersona, ToolSchema } from "../types/types";
 import BadgeComponent from "./BadgeComponent";
 import { SearchInputComponent, ButtonComponent } from "@rodrigo-barraza/components-library";
 import styles from "./AgentsPageComponent.module.css";
@@ -26,6 +26,7 @@ interface AgentsSidebarPanelComponentProps {
   selectedAgentId: string | null;
   onSelectAgent: (agentId: string, isCustom: boolean) => void;
   onCreateNewAgent: () => void;
+  availableTools?: ToolSchema[];
 }
 
 export default function AgentsSidebarPanelComponent({
@@ -34,9 +35,63 @@ export default function AgentsSidebarPanelComponent({
   selectedAgentId,
   onSelectAgent,
   onCreateNewAgent,
+  availableTools = [],
 }: AgentsSidebarPanelComponentProps) {
   const [activeTab, setActiveTab] = useState<AgentSidebarTab>("custom");
   const [searchQuery, setSearchQuery] = useState("");
+
+  const builtInOnlyAgents = useMemo(() => {
+    return builtInAgents.filter((agent) => !agent.custom);
+  }, [builtInAgents]);
+
+  const getToolsCount = useCallback(
+    (agentSummary: EditableAgentSummary | AgentPersona) => {
+      const agentId = (agentSummary as EditableAgentSummary).agentId || (agentSummary as AgentPersona).id;
+      const matchingPersona = builtInAgents.find((persona) => persona.id === agentId);
+      if (matchingPersona) {
+        if (matchingPersona.toolCount === -1) {
+          return availableTools.length;
+        }
+        return matchingPersona.toolCount;
+      }
+
+      const enabledToolsList = (agentSummary as EditableAgentSummary).enabledTools || (agentSummary as AgentPersona).enabledToolNames || [];
+      if (enabledToolsList.includes("*")) {
+        return availableTools.length;
+      }
+      const coreToolsCount = availableTools.filter((tool) => tool.system).length;
+
+      const resolvedToolsSet = new Set<string>();
+      for (const entry of enabledToolsList) {
+        if (entry.startsWith("label:")) {
+          const labelName = entry.slice(6);
+          for (const tool of availableTools) {
+            if (tool.labels?.includes(labelName)) {
+              resolvedToolsSet.add(tool.name);
+            }
+          }
+        } else if (entry.startsWith("domain:")) {
+          const domainName = entry.slice(7);
+          for (const tool of availableTools) {
+            if (tool.domain === domainName) {
+              resolvedToolsSet.add(tool.name);
+            }
+          }
+        } else if (entry.startsWith("tier:")) {
+          const tierName = entry.slice(5);
+          for (const tool of availableTools) {
+            if (tool.intelligenceTier === tierName) {
+              resolvedToolsSet.add(tool.name);
+            }
+          }
+        } else {
+          resolvedToolsSet.add(entry);
+        }
+      }
+      return resolvedToolsSet.size + coreToolsCount;
+    },
+    [builtInAgents, availableTools],
+  );
 
   const filteredCustomAgents = useMemo(() => {
     if (!searchQuery.trim()) return customAgents;
@@ -49,14 +104,14 @@ export default function AgentsSidebarPanelComponent({
   }, [customAgents, searchQuery]);
 
   const filteredBuiltInAgents = useMemo(() => {
-    if (!searchQuery.trim()) return builtInAgents;
+    if (!searchQuery.trim()) return builtInOnlyAgents;
     const normalizedQuery = searchQuery.toLowerCase().trim();
-    return builtInAgents.filter(
+    return builtInOnlyAgents.filter(
       (agent) =>
         agent.name.toLowerCase().includes(normalizedQuery) ||
         agent.description.toLowerCase().includes(normalizedQuery),
     );
-  }, [builtInAgents, searchQuery]);
+  }, [builtInOnlyAgents, searchQuery]);
 
   return (
     <>
@@ -78,7 +133,7 @@ export default function AgentsSidebarPanelComponent({
           type="button"
         >
           Built-in
-          <span className={styles["tab-count-badge"]}>{builtInAgents.length}</span>
+          <span className={styles["tab-count-badge"]}>{builtInOnlyAgents.length}</span>
         </button>
       </div>
 
@@ -143,8 +198,8 @@ export default function AgentsSidebarPanelComponent({
                       <span className={styles["agent-name-text"]}>{agent.name}</span>
                       <span className={styles["agent-description-text"]}>{agent.description}</span>
                       <span className={styles["agent-badge-tag"]}>
-                        <Wrench size={8} style={{ marginRight: 2 }} />
-                        {agent.enabledTools?.length || 0} tools
+                        <Wrench size={8} style={{ marginInlineEnd: 2 }} />
+                        {getToolsCount(agent)} tools
                       </span>
                     </div>
                   </button>
@@ -186,6 +241,10 @@ export default function AgentsSidebarPanelComponent({
                     <div className={styles["agent-info-container"]}>
                       <span className={styles["agent-name-text"]}>{agent.name}</span>
                       <span className={styles["agent-description-text"]}>{agent.description}</span>
+                      <span className={styles["agent-badge-tag"]}>
+                        <Wrench size={8} style={{ marginInlineEnd: 2 }} />
+                        {getToolsCount(agent)} tools
+                      </span>
                     </div>
                   </button>
                 );

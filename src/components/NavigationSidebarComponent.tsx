@@ -244,7 +244,7 @@ export default function NavigationSidebarComponent({
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLocal, setIsLocal] = useState(false);
-  const [memoryConfigured, setMemoryConfigured] = useState(true);
+  const [isSettingsComplete, setIsSettingsComplete] = useState(true);
   const [cronJobNotificationsCount, setCronJobNotificationsCount] = useState(0);
 
   const clearCronJobNotifications = useCallback(() => {
@@ -276,32 +276,42 @@ export default function NavigationSidebarComponent({
     };
   }, []);
 
-  // Fetch memory settings to determine if action is needed on /settings
+  // Fetch settings to determine if action is needed on /settings
   useEffect(() => {
     if (mode !== "user") return;
 
-    const checkMemoryConfig = (s: PrismSettings | null) => {
-      const memoryData = (s?.memory || {}) as Record<string, string>;
-      setMemoryConfigured(
-        Boolean(
-          memoryData.extractionProvider &&
-          memoryData.extractionModel &&
-          memoryData.consolidationProvider &&
-          memoryData.consolidationModel &&
-          memoryData.embeddingProvider &&
-          memoryData.embeddingModel,
-        ),
-      );
+    const checkSettingsComplete = (settingsData: PrismSettings | null) => {
+      if (!settingsData) {
+        setIsSettingsComplete(true);
+        return;
+      }
+      const memoryConfig = settingsData.memory || {};
+      const creativeConfig = settingsData.creative || {};
+
+      const isMemoryComplete =
+        !!memoryConfig.extractionModel &&
+        !!memoryConfig.consolidationModel &&
+        !!memoryConfig.embeddingModel;
+
+      const isCreativeComplete =
+        !!creativeConfig.imageModel &&
+        !!creativeConfig.visionModel;
+
+      const isAudioComplete =
+        !!creativeConfig.textToSpeechModel &&
+        !!creativeConfig.speechToTextModel;
+
+      setIsSettingsComplete(isMemoryComplete && isCreativeComplete && isAudioComplete);
     };
 
     PrismService.getSettings()
-      .then(checkMemoryConfig)
+      .then(checkSettingsComplete)
       .catch(() => {});
 
     const handleSettingsUpdated = (event: Event) => {
       const customEvent = event as CustomEvent<PrismSettings>;
       if (customEvent.detail) {
-        checkMemoryConfig(customEvent.detail);
+        checkSettingsComplete(customEvent.detail);
       }
     };
 
@@ -805,15 +815,15 @@ export default function NavigationSidebarComponent({
                                 <span className={styles.navigationLabel}>
                                   {item.label}
                                 </span>
-                                {item.href === "/settings" &&
-                                  !memoryConfigured && (
-                                    <span
-                                      className={styles.attentionDot}
-                                      title="Memory models need to be configured"
-                                    >
-                                      !
-                                    </span>
-                                  )}
+                                 {item.href === "/settings" &&
+                                   !isSettingsComplete && (
+                                     <span
+                                       className={styles.attentionDot}
+                                       title="Settings need to be configured"
+                                     >
+                                       !
+                                     </span>
+                                   )}
                                 {item.href === "/scheduled-tasks" &&
                                   cronJobNotificationsCount > 0 && (
                                     <span
@@ -997,14 +1007,14 @@ export default function NavigationSidebarComponent({
                           <span className={styles.navigationLabel}>
                             {item.label}
                           </span>
-                          {item.href === "/settings" && !memoryConfigured && (
-                            <span
-                              className={styles.attentionDot}
-                              title="Memory models need to be configured"
-                            >
-                              !
-                            </span>
-                          )}
+                           {item.href === "/settings" && !isSettingsComplete && (
+                             <span
+                               className={styles.attentionDot}
+                               title="Settings need to be configured"
+                             >
+                               !
+                             </span>
+                           )}
                           {item.href === "/scheduled-tasks" && cronJobNotificationsCount > 0 && (
                             <span
                               className={styles["cron-job-notification-badge"]}

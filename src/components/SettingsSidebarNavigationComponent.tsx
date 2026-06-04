@@ -39,47 +39,46 @@ interface SettingsSidebarNavigationProps {
   onActiveSectionChange?: (sectionId: string) => void;
 }
 
-function computeSectionWarnings(settings: PrismSettings | null): Set<string> {
-  const warnings = new Set<string>();
+function computeSectionWarnings(settings: PrismSettings | null): Record<string, number> {
+  const warnings: Record<string, number> = {};
   if (!settings) return warnings;
 
   const memoryConfig = settings.memory || {};
-  const isMemoryComplete =
-    !!memoryConfig.extractionProvider &&
-    !!memoryConfig.extractionModel &&
-    !!memoryConfig.consolidationProvider &&
-    !!memoryConfig.consolidationModel &&
-    !!memoryConfig.embeddingProvider &&
-    !!memoryConfig.embeddingModel;
-  const hasAnyMemoryModel =
-    !!memoryConfig.extractionModel ||
-    !!memoryConfig.consolidationModel ||
-    !!memoryConfig.embeddingModel;
-  if (!isMemoryComplete && hasAnyMemoryModel) {
-    warnings.add("memory-models");
+  let memoryMissingCount = 0;
+  if (!memoryConfig.extractionModel) {
+    memoryMissingCount++;
+  }
+  if (!memoryConfig.consolidationModel) {
+    memoryMissingCount++;
+  }
+  if (!memoryConfig.embeddingModel) {
+    memoryMissingCount++;
+  }
+  if (memoryMissingCount > 0) {
+    warnings["memory-models"] = memoryMissingCount;
   }
 
   const creativeConfig = settings.creative || {};
-  const isCreativeComplete =
-    !!creativeConfig.imageProvider &&
-    !!creativeConfig.imageModel &&
-    !!creativeConfig.visionProvider &&
-    !!creativeConfig.visionModel;
-  const hasAnyCreativeModel =
-    !!creativeConfig.imageModel || !!creativeConfig.visionModel;
-  if (!isCreativeComplete && hasAnyCreativeModel) {
-    warnings.add("creative-tools");
+  let creativeMissingCount = 0;
+  if (!creativeConfig.imageModel) {
+    creativeMissingCount++;
+  }
+  if (!creativeConfig.visionModel) {
+    creativeMissingCount++;
+  }
+  if (creativeMissingCount > 0) {
+    warnings["creative-tools"] = creativeMissingCount;
   }
 
-  const isAudioComplete =
-    !!creativeConfig.textToSpeechProvider &&
-    !!creativeConfig.textToSpeechModel &&
-    !!creativeConfig.speechToTextProvider &&
-    !!creativeConfig.speechToTextModel;
-  const hasAnyAudioModel =
-    !!creativeConfig.textToSpeechModel || !!creativeConfig.speechToTextModel;
-  if (!isAudioComplete && hasAnyAudioModel) {
-    warnings.add("audio-tools");
+  let audioMissingCount = 0;
+  if (!creativeConfig.textToSpeechModel) {
+    audioMissingCount++;
+  }
+  if (!creativeConfig.speechToTextModel) {
+    audioMissingCount++;
+  }
+  if (audioMissingCount > 0) {
+    warnings["audio-tools"] = audioMissingCount;
   }
 
   return warnings;
@@ -99,8 +98,8 @@ export default function SettingsSidebarNavigationComponent({
   const [activeSectionId, setActiveSectionId] = useState<string>(
     resolvedInitialSection,
   );
-  const [sectionWarnings, setSectionWarnings] = useState<Set<string>>(
-    new Set(),
+  const [sectionWarnings, setSectionWarnings] = useState<Record<string, number>>(
+    {},
   );
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isUserScrolling = useRef(true);
@@ -234,7 +233,8 @@ export default function SettingsSidebarNavigationComponent({
         {SETTINGS_SECTIONS.map((section) => {
           const IconComponent = section.icon;
           const isActive = activeSectionId === section.id;
-          const hasWarning = sectionWarnings.has(section.id);
+          const warningCount = sectionWarnings[section.id] || 0;
+          const hasWarning = warningCount > 0;
           return (
             <li key={section.id}>
               <button
@@ -249,9 +249,9 @@ export default function SettingsSidebarNavigationComponent({
                 {hasWarning && (
                   <span
                     className={styles["incomplete-warning-badge"]}
-                    title="Not all models are configured"
+                    title={`${warningCount} model${warningCount > 1 ? "s" : ""} still need to be set`}
                   >
-                    !
+                    {warningCount}
                   </span>
                 )}
                 {isActive && (
