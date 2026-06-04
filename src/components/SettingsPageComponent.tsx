@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Brain,
   Network,
-  Bot,
   RotateCcw,
   Check,
   FolderOpen,
@@ -37,7 +36,6 @@ import WorkspaceService, { type WorkspaceValidateResponse } from "../services/Wo
 import { useWorkspace } from "./WorkspaceContextComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
-import CustomAgentsPanel, { type AvailableTool } from "./CustomAgentsPanelComponent";
 import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
 import {
@@ -49,7 +47,7 @@ import {
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./SettingsPageComponent.module.css";
 
-import type { PrismSettings, AgenticHarness, MCPServer, PrismConfig, CustomAgent } from "../types/types";
+import type { PrismSettings, AgenticHarness, MCPServer, PrismConfig } from "../types/types";
 
 interface LocalWorkspace {
   id?: string;
@@ -77,7 +75,6 @@ interface LocalAgent {
  *
  * Exposes:
  *   - "Workspaces" section with agent connection status + workspace management
- *   - "Custom Agents" section for user-defined personas
  *   - "Memory Models" section for extraction, consolidation, and embedding
  *   - "Agent Defaults" section for subagent/worker model configuration
  */
@@ -88,8 +85,6 @@ export default function SettingsPageComponent() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [customAgents, setCustomAgents] = useState<CustomAgent[]>([]);
-  const [availableTools, setAvailableTools] = useState<AvailableTool[]>([]);
   const [harnesses, setHarnesses] = useState<AgenticHarness[]>([]);
   const [expandedGuide, setExpandedGuide] = useState<"download" | "docker" | "local" | null>(null);
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
@@ -138,14 +133,6 @@ export default function SettingsPageComponent() {
     PrismService.getSettings().then(setSettings).catch(console.error);
 
     PrismService.getSettingsDefaults().then(setDefaults).catch(console.error);
-
-    // Fetch custom agents
-    PrismService.getCustomAgents().then(setCustomAgents).catch(console.error);
-
-    // Fetch all available tools (unfiltered) for the tool picker
-    PrismService.getBuiltInToolSchemas()
-      .then(setAvailableTools)
-      .catch(console.error);
 
     // Fetch available harnesses
     PrismService.getHarnesses().then(setHarnesses).catch(console.error);
@@ -491,16 +478,6 @@ export default function SettingsPageComponent() {
     setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
     await persistSettings(updated);
   }, [settings, defaults, persistSettings]);
-
-  // -- Custom agents refresh ------------------------------------------
-  const loadCustomAgents = useCallback(async () => {
-    try {
-      const list = await PrismService.getCustomAgents();
-      setCustomAgents(list);
-    } catch (error: unknown) {
-      console.error("Failed to load custom agents:", error);
-    }
-  }, []);
 
   // -- MCP servers refresh --------------------------------------------
   const loadMCPServers = useCallback(async () => {
@@ -1706,21 +1683,6 @@ export default function SettingsPageComponent() {
             </div>
           </div>
         </CardComponent.Body>
-      </CardComponent>
-
-      {/* -- Custom Agents Section ------------------------------------ */}
-      <CardComponent className={styles.section} data-settings-section="custom-agents">
-        <CardComponent.Header
-          icon={Bot}
-          title="Custom Agents"
-          subtitle="Create your own agent personas with custom prompts and tools"
-        />
-
-        <CustomAgentsPanel
-          agents={customAgents}
-          onAgentsChange={loadCustomAgents}
-          availableTools={availableTools}
-        />
       </CardComponent>
 
       {/* -- Security & Sandboxing Section ---------------------------- */}

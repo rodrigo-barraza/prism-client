@@ -345,6 +345,12 @@
   font-size: var(--font-size-xs);
 }
 
+.table-actions-cell {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 /* ── Create / Edit Form ────────────────────────────────────── */
 
 .form-card {
@@ -623,7 +629,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 14px;
+  padding-block: 6px;
+  padding-inline: 14px;
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
@@ -636,6 +643,36 @@
   &:hover {
     background: var(--background-elevated);
     color: var(--text-primary);
+  }
+}
+
+.modal-copy-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-block: 6px;
+  padding-inline: 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--background-elevated);
+    color: var(--text-primary);
+  }
+
+  &.is-copied-state {
+    color: var(--color-success, oklch(62.7% 0.194 149.6));
+    border-color: var(--color-success, oklch(62.7% 0.194 149.6));
+    background-color: oklch(62.7% 0.194 149.6 / 0.08);
   }
 }
 

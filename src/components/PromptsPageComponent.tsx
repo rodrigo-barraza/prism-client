@@ -164,7 +164,7 @@ export default function PromptsPageComponent() {
     }
   };
 
-  const handleCopyToClipboard = async (prompt: PromptDocument) => {
+  const handleCopyToClipboard = useCallback(async (prompt: PromptDocument) => {
     try {
       await navigator.clipboard.writeText(prompt.content);
       setCopiedPromptId(prompt.id);
@@ -172,7 +172,7 @@ export default function PromptsPageComponent() {
     } catch {
       /* clipboard API may fail in non-secure contexts */
     }
-  };
+  }, []);
 
   const openPromptModal = (prompt: PromptDocument) => {
     setModalPrompt(prompt);
@@ -261,7 +261,28 @@ export default function PromptsPageComponent() {
         </span>
       ),
     },
-  ], []);
+    {
+      key: "actions",
+      label: "",
+      render: (row: PromptDocument) => {
+        const isCopied = copiedPromptId === row.id;
+        return (
+          <div
+            className={styles["table-actions-cell"]}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className={`${styles["action-button"]} ${styles["action-button-copy"]} ${isCopied ? styles["is-copied-state"] : ""}`}
+              onClick={() => handleCopyToClipboard(row)}
+              title={isCopied ? "Copied!" : "Copy to clipboard"}
+            >
+              {isCopied ? <Check size={13} /> : <Copy size={13} />}
+            </button>
+          </div>
+        );
+      },
+    },
+  ], [copiedPromptId, handleCopyToClipboard]);
 
   const renderForm = (mode: "create" | "edit") => (
     <div className={styles["form-card"]}>
@@ -646,13 +667,32 @@ export default function PromptsPageComponent() {
                     </button>
                   </>
                 ) : (
-                  <button
-                    className={styles["modal-edit-button"]}
-                    onClick={() => setModalEditMode(true)}
-                  >
-                    <Pencil size={13} />
-                    Edit
-                  </button>
+                  <>
+                    <button
+                      className={`${styles["modal-copy-button"]} ${copiedPromptId === modalPrompt.id ? styles["is-copied-state"] : ""}`}
+                      onClick={() => handleCopyToClipboard(modalPrompt)}
+                      title={copiedPromptId === modalPrompt.id ? "Copied!" : "Copy to clipboard"}
+                    >
+                      {copiedPromptId === modalPrompt.id ? (
+                        <>
+                          <Check size={13} />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={13} />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                    <button
+                      className={styles["modal-edit-button"]}
+                      onClick={() => setModalEditMode(true)}
+                    >
+                      <Pencil size={13} />
+                      Edit
+                    </button>
+                  </>
                 )}
                 <button
                   className={styles["modal-close-button"]}

@@ -2342,6 +2342,22 @@ export default function ChatSessionComponent({
               setTasksRefreshKey((k) => k + 1);
             }
 
+            // Increment scheduled task notification badge when agent creates a cron job
+            if (
+              data.status === "done" &&
+              toolData.name === "create_cron_job"
+            ) {
+              const currentNotificationCount = parseInt(
+                localStorage.getItem("cron-job-notifications-count") || "0",
+                10,
+              );
+              localStorage.setItem(
+                "cron-job-notifications-count",
+                String(currentNotificationCount + 1),
+              );
+              window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
+            }
+
             // Auto-refresh memories panel when upsert_memory completes
             if (
               data.status !== "calling" &&

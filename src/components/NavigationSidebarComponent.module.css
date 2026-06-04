@@ -52,8 +52,7 @@
 
   & .navigationLabel,
   & .badge,
-  & .attentionDot,
-  & .cron-job-notification-badge {
+  & .attentionDot {
     display: none;
   }
 
@@ -710,18 +709,3 @@
   }
 }
 
-.cron-job-notification-badge {
-  margin-inline-start: auto;
-  min-width: 18px;
-  height: 18px;
-  padding-block: 0;
-  padding-inline: 5px;
-  border-radius: 50%;
-  background-color: oklch(55% 0.2 260);
-  color: white;
-  font-size: 0.625rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}

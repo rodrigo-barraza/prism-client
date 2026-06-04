@@ -827,7 +827,8 @@ export default function NavigationSidebarComponent({
                                 {item.href === "/scheduled-tasks" &&
                                   cronJobNotificationsCount > 0 && (
                                     <span
-                                      className={styles["cron-job-notification-badge"]}
+                                      className={styles.attentionDot}
+                                      title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
                                     >
                                       {cronJobNotificationsCount}
                                     </span>
@@ -1017,7 +1018,8 @@ export default function NavigationSidebarComponent({
                            )}
                           {item.href === "/scheduled-tasks" && cronJobNotificationsCount > 0 && (
                             <span
-                              className={styles["cron-job-notification-badge"]}
+                              className={styles.attentionDot}
+                              title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
                             >
                               {cronJobNotificationsCount}
                             </span>
