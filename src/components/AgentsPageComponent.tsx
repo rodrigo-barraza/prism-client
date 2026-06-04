@@ -301,6 +301,18 @@ export default function AgentsPageComponent() {
     [updateUrlAgentParameter],
   );
 
+  const sidebarCustomAgents = useMemo(() => {
+    if (isCreateMode && editingAgent) {
+      return [{ ...editingAgent, _id: "new-agent-draft" }, ...customAgents];
+    }
+    if (editingAgent && editingAgent._id) {
+      return customAgents.map((agent) =>
+        String(agent._id) === String(editingAgent._id) ? editingAgent : agent,
+      );
+    }
+    return customAgents;
+  }, [isCreateMode, editingAgent, customAgents]);
+
   if (isLoading) {
     return (
       <ThreePanelLayout
@@ -314,18 +326,6 @@ export default function AgentsPageComponent() {
       </ThreePanelLayout>
     );
   }
-
-  const sidebarCustomAgents = useMemo(() => {
-    if (isCreateMode && editingAgent) {
-      return [{ ...editingAgent, _id: "new-agent-draft" }, ...customAgents];
-    }
-    if (editingAgent && editingAgent._id) {
-      return customAgents.map((agent) =>
-        String(agent._id) === String(editingAgent._id) ? editingAgent : agent,
-      );
-    }
-    return customAgents;
-  }, [isCreateMode, editingAgent, customAgents]);
 
   const selectedBuiltInAgent = builtInAgents.find((agent) => agent.id === selectedAgentId);
   const selectedCustomAgent = customAgents.find((agent) => String(agent._id) === selectedAgentId);
