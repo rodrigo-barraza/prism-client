@@ -639,10 +639,16 @@
 
 .calendar-timeline-events-wrapper {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 6px;
   padding-block: 4px;
   width: 100%;
+}
+
+.calendar-timeline-events-wrapper > .calendar-timeline-event-card {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .calendar-timeline-empty-line {
@@ -729,6 +735,10 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .calendar-timeline-event-card-time {

@@ -95,6 +95,11 @@
   );
 }
 
+/* Avatar images must not carry their own border-radius */
+.badgeInner img {
+  border-radius: 0;
+}
+
 /* Ensure SVGs fill the badge space */
 .badgeInner svg {
   display: block;
