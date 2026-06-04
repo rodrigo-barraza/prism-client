@@ -111,6 +111,18 @@ export default function SettingsSidebarNavigationComponent({
         setSectionWarnings(computeSectionWarnings(loadedSettings));
       })
       .catch(console.error);
+
+    const handleSettingsUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<PrismSettings>;
+      if (customEvent.detail) {
+        setSectionWarnings(computeSectionWarnings(customEvent.detail));
+      }
+    };
+
+    window.addEventListener("prism-settings-updated", handleSettingsUpdated);
+    return () => {
+      window.removeEventListener("prism-settings-updated", handleSettingsUpdated);
+    };
   }, []);
 
   useEffect(() => {

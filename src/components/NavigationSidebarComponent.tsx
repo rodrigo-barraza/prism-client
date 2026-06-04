@@ -11,6 +11,7 @@ import React, {
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import PrismService from "../services/PrismService";
+import type { PrismSettings } from "../types/types";
 import {
   ScrollText,
   ShieldCheck,
@@ -278,21 +279,36 @@ export default function NavigationSidebarComponent({
   // Fetch memory settings to determine if action is needed on /settings
   useEffect(() => {
     if (mode !== "user") return;
+
+    const checkMemoryConfig = (s: PrismSettings | null) => {
+      const memoryData = (s?.memory || {}) as Record<string, string>;
+      setMemoryConfigured(
+        Boolean(
+          memoryData.extractionProvider &&
+          memoryData.extractionModel &&
+          memoryData.consolidationProvider &&
+          memoryData.consolidationModel &&
+          memoryData.embeddingProvider &&
+          memoryData.embeddingModel,
+        ),
+      );
+    };
+
     PrismService.getSettings()
-      .then((s) => {
-        const memoryData = (s?.memory || {}) as Record<string, string>;
-        setMemoryConfigured(
-          Boolean(
-            memoryData.extractionProvider &&
-            memoryData.extractionModel &&
-            memoryData.consolidationProvider &&
-            memoryData.consolidationModel &&
-            memoryData.embeddingProvider &&
-            memoryData.embeddingModel,
-          ),
-        );
-      })
+      .then(checkMemoryConfig)
       .catch(() => {});
+
+    const handleSettingsUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<PrismSettings>;
+      if (customEvent.detail) {
+        checkMemoryConfig(customEvent.detail);
+      }
+    };
+
+    window.addEventListener("prism-settings-updated", handleSettingsUpdated);
+    return () => {
+      window.removeEventListener("prism-settings-updated", handleSettingsUpdated);
+    };
   }, [mode]);
 
   useEffect(() => {

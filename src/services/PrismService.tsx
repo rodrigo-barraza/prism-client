@@ -813,10 +813,16 @@ export default class PrismService {
   static async updateSettings(
     data: Partial<PrismSettings>,
   ): Promise<PrismSettings> {
-    return PrismService._request<PrismSettings>("/settings", {
+    const updatedSettings = await PrismService._request<PrismSettings>("/settings", {
       method: "PUT",
       body: data,
     });
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("prism-settings-updated", { detail: updatedSettings })
+      );
+    }
+    return updatedSettings;
   }
 
   /**
