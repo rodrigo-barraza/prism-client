@@ -95,6 +95,12 @@
   flex-shrink: 0;
 }
 
+.sidebar-search-wrapper input:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
 /* ── Sidebar Elements ────────────────────────────────────────── */
 
 .sidebar-header-section {
