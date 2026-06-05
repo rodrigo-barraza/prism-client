@@ -1497,6 +1497,24 @@ export default function ChatSessionComponent({
     [builtInTools],
   );
 
+  const isWorkspaceTabVisible = useMemo(() => {
+    return (
+      !isNoAgent &&
+      ((currentWorkspace &&
+        hasFileOperations &&
+        (currentWorkspace.path !== "/workspace" ||
+          currentWorkspace.isAgentServed ||
+          workspaces.some((workspace) => workspace.path !== "/workspace"))) ||
+        !!unavailableWorkspace)
+    );
+  }, [isNoAgent, currentWorkspace, hasFileOperations, workspaces, unavailableWorkspace]);
+
+  useEffect(() => {
+    if (leftTab === "workspace" && !isWorkspaceTabVisible) {
+      setLeftTab("settings");
+    }
+  }, [leftTab, isWorkspaceTabVisible]);
+
   // -- Memoize filtered messages for MessageList to prevent ref churn --
   const filteredMessages = useMemo(
     () => messages.filter((message) => message.role === "user" || message.role === "assistant"),
@@ -4418,8 +4436,7 @@ export default function ChatSessionComponent({
             icon: <span className={tabBarStyles.tabEmojiIcon}>🎚︎</span>,
             tooltip: "Parameters",
           },
-          ...(!isNoAgent &&
-          ((currentWorkspace && hasFileOperations) || unavailableWorkspace)
+          ...(isWorkspaceTabVisible
             ? [
                 {
                   key: "workspace",

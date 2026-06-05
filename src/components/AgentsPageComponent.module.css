@@ -456,7 +456,7 @@
   display: flex;
   flex-direction: column;
   gap: 28px;
-  max-inline-size: 800px;
+  inline-size: 100%;
 }
 
 .form-group-container {
@@ -513,7 +513,35 @@
   color: var(--text-tertiary);
 }
 
-/* Footer and action controls */
+/* Sticky save/cancel footer — always visible at bottom of scroll viewport */
+.form-actions-sticky-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-block: 16px;
+  padding-inline: 40px;
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 10;
+  background: oklch(from var(--background-base) l c h / 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-block-start: 1px solid var(--calculated-border-color);
+  margin-inline: -40px;
+  margin-block-start: 16px;
+}
+
+/* Danger zone — non-sticky, natural flow at bottom of form */
+.form-actions-danger-zone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid color-mix(in srgb, var(--color-danger, #ef4444) 20%, var(--calculated-border-color));
+}
+
+/* Original form-actions-footer kept for built-in agent duplicate button */
 .form-actions-footer {
   display: flex;
   align-items: center;

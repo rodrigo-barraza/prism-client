@@ -759,55 +759,13 @@ export default function AgentsDetailPanelComponent({
             </div>
           )}
 
-          {/* Actions Controls footer */}
-          <div className={styles["form-actions-footer"]}>
-            {!isCreateMode && (
-              <>
-                {isConfirmingDelete ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--color-danger)",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Confirm Delete?
-                    </span>
-                    <ButtonComponent
-                      id="button-confirm-delete"
-                      variant="destructive"
-                      onClick={onDeleteAgent}
-                      disabled={isSaving}
-                    >
-                      Yes, Delete
-                    </ButtonComponent>
-                    <ButtonComponent
-                      variant="disabled"
-                      onClick={() => onConfirmDeleteToggle(false)}
-                      disabled={isSaving}
-                    >
-                      Cancel
-                    </ButtonComponent>
-                  </div>
-                ) : (
-                  <ButtonComponent
-                    id="button-delete-agent"
-                    variant="destructive"
-                    onClick={() => onConfirmDeleteToggle(true)}
-                    disabled={isSaving}
-                  >
-                    Delete Agent
-                  </ButtonComponent>
-                )}
-              </>
-            )}
-
+          {/* Sticky Save/Cancel footer */}
+          <div className={styles["form-actions-sticky-footer"]}>
             <ButtonComponent
               variant="disabled"
               onClick={onCancelEdit}
               disabled={isSaving}
-              style={{ marginInlineStart: isCreateMode ? "auto" : undefined }}
+              style={{ marginInlineStart: "auto" }}
             >
               Cancel
             </ButtonComponent>
@@ -820,6 +778,49 @@ export default function AgentsDetailPanelComponent({
               {isSaving ? "Saving..." : isCreateMode ? "Create Persona" : "Save Changes"}
             </ButtonComponent>
           </div>
+
+          {/* Delete zone (non-sticky, stays at bottom of form) */}
+          {!isCreateMode && (
+            <div className={styles["form-actions-danger-zone"]}>
+              {isConfirmingDelete ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "var(--color-danger)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Confirm Delete?
+                  </span>
+                  <ButtonComponent
+                    id="button-confirm-delete"
+                    variant="destructive"
+                    onClick={onDeleteAgent}
+                    disabled={isSaving}
+                  >
+                    Yes, Delete
+                  </ButtonComponent>
+                  <ButtonComponent
+                    variant="disabled"
+                    onClick={() => onConfirmDeleteToggle(false)}
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </ButtonComponent>
+                </div>
+              ) : (
+                <ButtonComponent
+                  id="button-delete-agent"
+                  variant="destructive"
+                  onClick={() => onConfirmDeleteToggle(true)}
+                  disabled={isSaving}
+                >
+                  Delete Agent
+                </ButtonComponent>
+              )}
+            </div>
+          )}
         </form>
       ) : selectedBuiltInAgent ? (
         /* -- Built-In Profile Presentation (Info panel) -- */

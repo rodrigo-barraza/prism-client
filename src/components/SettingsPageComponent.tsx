@@ -491,7 +491,7 @@ export default function SettingsPageComponent() {
 
   // -- Derived workspace data -----------------------------------------
   const localStaticRoots = wsWorkspaces.filter(
-    (workspace: LocalWorkspace) => workspace.isPinned && !workspace.isAgentServed,
+    (workspace: LocalWorkspace) => workspace.isPinned && !workspace.isAgentServed && workspace.path !== "/workspace",
   );
   const userRoots = wsWorkspaces.filter(
     (workspace: LocalWorkspace) => !workspace.isPinned && !workspace.isAgentServed,
