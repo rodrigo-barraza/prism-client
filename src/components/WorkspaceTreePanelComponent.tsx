@@ -156,6 +156,7 @@ export default function WorkspaceTreePanelComponent({
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
   const [treeData, setTreeData] = useState<WorkspaceTreeResponse | null>(null);
   const [treeLoading, setTreeLoading] = useState(false);
+  const [hasTreeFetchFailed, setHasTreeFetchFailed] = useState<boolean>(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -214,12 +215,14 @@ export default function WorkspaceTreePanelComponent({
   const fetchTree = useCallback(async () => {
     if (!currentWorkspace?.path) return;
     setTreeLoading(true);
+    setHasTreeFetchFailed(false);
     try {
       const data = await WorkspaceService.tree(currentWorkspace.path);
       setTreeData(data);
       autoExpandRoots(data?.tree);
     } catch {
       setTreeData(null);
+      setHasTreeFetchFailed(true);
     } finally {
       setTreeLoading(false);
     }
@@ -231,6 +234,7 @@ export default function WorkspaceTreePanelComponent({
     try {
       const data = await WorkspaceService.tree(currentWorkspace.path);
       setTreeData(data);
+      setHasTreeFetchFailed(false);
     } catch {
       // Keep existing tree on transient failure
     }
@@ -238,14 +242,15 @@ export default function WorkspaceTreePanelComponent({
 
   // Fetch on mount
   useEffect(() => {
-    if (!treeData && !treeLoading) {
+    if (!treeData && !treeLoading && !hasTreeFetchFailed) {
       fetchTree();
     }
-  }, [treeData, treeLoading, fetchTree]);
+  }, [treeData, treeLoading, hasTreeFetchFailed, fetchTree]);
 
   // Reset tree + expanded state when workspace changes
   useEffect(() => {
     setTreeData(null);
+    setHasTreeFetchFailed(false);
     expandedPathsRef.current = new Set();
     autoExpandedRef.current = false;
     setSearchQuery("");
@@ -475,7 +480,7 @@ export default function WorkspaceTreePanelComponent({
           (!treeData.tree || treeData.tree.length === 0) && (
             <div className={styles.treeLoading}>Empty directory</div>
           )}
-        {!treeLoading && !treeData && (
+        {!treeLoading && hasTreeFetchFailed && (
           <div className={styles.treeLoading}>Unable to load tree</div>
         )}
       </div>
