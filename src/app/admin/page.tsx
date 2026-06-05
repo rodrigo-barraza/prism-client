@@ -85,6 +85,9 @@ interface ProviderAggregationComputed extends ProviderAggregation {
 export default function DashboardPage() {
   const searchParams = useSearchParams();
   const projectFilter = searchParams.get("project") || null;
+  const providerFilter = searchParams.get("provider") || null;
+  const modelFilter = searchParams.get("model") || null;
+  const workspaceFilter = searchParams.get("workspace") || null;
   const { dateRange, agentFilter } = useAdminHeader();
   const [stats, setStats] = useState<IrisDashboardStats | null>(null);
   const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
@@ -122,6 +125,9 @@ export default function DashboardPage() {
       const filterParams: Record<string, string> = { ...dateParams };
       if (projectFilter) filterParams.project = projectFilter;
       if (agentFilter) filterParams.agent = agentFilter;
+      if (providerFilter) filterParams.provider = providerFilter;
+      if (modelFilter) filterParams.model = modelFilter;
+      if (workspaceFilter) filterParams.workspace = workspaceFilter;
 
       const [
         statsData,
@@ -209,7 +215,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateParams, timelineHours, projectFilter, agentFilter, timelineGranularity]);
+  }, [dateParams, timelineHours, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter, timelineGranularity]);
 
   // Live dashboard updates via Change Streams (debounced to 2s).
   // Falls back to 60s polling if Change Streams aren't available.
