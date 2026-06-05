@@ -10,7 +10,7 @@ import {
 import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderersComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
-import { renderToolName } from "@rodrigo-barraza/utilities-library";
+import { renderToolName, formatLatencyMs } from "@rodrigo-barraza/utilities-library";
 import type { ToolCallEvent } from "../types/types";
 import type { WorkerToolActivityItem } from "./MessageListComponent";
 import styles from "./ToolCallsBlockComponent.module.css";
@@ -105,6 +105,11 @@ export default function ToolCallsBlockComponent({
                   <Icon size={13} />
                 </span>
                 <span className={styles.toolCallName}>{name}</span>
+                {toolCall.durationMs != null && toolCall.durationMs > 0 && (
+                  <span className={styles["tool-call-latency"]}>
+                    ({formatLatencyMs(toolCall.durationMs)})
+                  </span>
+                )}
 
                 {/* Worker tool badges — show which tools a spawned agent used */}
                 {/* TODO(cleanup): Remove "team_create" once historical sessions have aged out */}

@@ -1123,21 +1123,6 @@ export default function ToolsPageComponent() {
       }
       leftTitle="Domains"
       title="Tools"
-      headerMeta={
-        <div className={styles.statsBadges}>
-          <div className={styles.statBadge}>
-            <span className={styles.statValue}>{tools.length}</span> tools
-          </div>
-          <div className={styles.statBadge}>
-            <span className={styles.statValue}>{allDomains.length}</span>{" "}
-            domains
-          </div>
-          <div className={styles.statBadge}>
-            <span className={styles.statValue}>{allLabels.length}</span>{" "}
-            labels
-          </div>
-        </div>
-      }
       headerControls={
         <button
           className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
@@ -1159,6 +1144,20 @@ export default function ToolsPageComponent() {
             <p className={styles.subtitle}>
               All available tool schemas from the Tools API — used for agentic function calling.
             </p>
+          </div>
+        </div>
+
+        <div className={styles.statsBadges}>
+          <div className={styles.statBadge}>
+            <span className={styles.statValue}>{tools.length}</span> tools
+          </div>
+          <div className={styles.statBadge}>
+            <span className={styles.statValue}>{allDomains.length}</span>{" "}
+            domains
+          </div>
+          <div className={styles.statBadge}>
+            <span className={styles.statValue}>{allLabels.length}</span>{" "}
+            labels
           </div>
         </div>
 

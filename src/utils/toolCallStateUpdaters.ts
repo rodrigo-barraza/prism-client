@@ -25,6 +25,7 @@ export interface ToolExecutionInput {
   args?: Record<string, unknown>;
   result?: unknown;
   status: string; // "calling" | "done" | "error"
+  durationMs?: number;
 }
 
 // ─── Snapshot helpers passed from the streaming closure ──────────
@@ -85,6 +86,7 @@ export function applyToolExecutionToMessages(
           status: toolInput.status,
           result: toolInput.result,
           args: toolInput.args || {},
+          durationMs: toolInput.durationMs || (tc.timestamp ? Date.now() - tc.timestamp : undefined),
         };
       }
       return tc;
@@ -153,6 +155,7 @@ export function applyToolExecutionToActivity(
           status: toolInput.status,
           result: toolInput.result,
           args: toolInput.args || {},
+          durationMs: toolInput.durationMs || (activity.timestamp ? Date.now() - activity.timestamp : undefined),
         };
       }
       return activity;
@@ -208,6 +211,7 @@ export function applyToolCallToMessages(
           ...(toolData.args && Object.keys(toolData.args).length > 0
             ? { args: toolData.args }
             : {}),
+          durationMs: toolData.durationMs || (tc.timestamp ? Date.now() - tc.timestamp : undefined),
         };
       }
       return tc;

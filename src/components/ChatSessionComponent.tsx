@@ -2281,6 +2281,7 @@ export default function ChatSessionComponent({
                   args: toolData.args,
                   status: data.status as string,
                   result: toolData.result,
+                  durationMs: toolData.durationMs,
                 },
               );
               return next ?? previousPixelSize;
@@ -2324,6 +2325,7 @@ export default function ChatSessionComponent({
                   args: toolData.args,
                   status: data.status as string,
                   result: toolData.result,
+                  durationMs: toolData.durationMs,
                 },
                 execSnapshot,
               ) as ClientMessage[];
@@ -2896,6 +2898,7 @@ export default function ChatSessionComponent({
                       ...toolCall,
                       status: data.status === "done" ? "done" : "error",
                       result: toolData.result,
+                      durationMs: toolData.durationMs,
                     };
                   }
                   return toolCall;

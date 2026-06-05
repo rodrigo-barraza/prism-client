@@ -537,6 +537,7 @@ export interface TransformedSSEData {
     name?: string;
     args?: Record<string, unknown>;
     result?: unknown;
+    durationMs?: number;
   };
   toolCall?: {
     id?: string;
@@ -663,6 +664,7 @@ export interface ToolCallEvent {
   thoughtSignature?: string;
   _sourceModel?: string;
   timestamp?: number;
+  durationMs?: number;
 }
 
 // ─── Web Search ─────────────────────────────────────────────
