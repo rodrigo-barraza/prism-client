@@ -2,11 +2,14 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { usePersistedState } from "../../../hooks/usePersistedState";
-import { Download } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { Download, ExternalLink } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ToolsApiService from "../../../services/ToolsApiService";
+import IrisService from "../../../services/IrisService";
+import type { IrisRequestEntry } from "../../../services/IrisService";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
 import {
+  BadgeComponent,
   ButtonComponent,
   PaginationComponent,
   TableComponent,
@@ -21,7 +24,7 @@ import {
 } from "../../../components/FilterBarComponent";
 import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import { formatNumber, formatLatencyMs, formatDateTime, formatFileSize } from "@rodrigo-barraza/utilities-library";
+import { formatNumber, formatLatencyMs, formatDateTime, formatFileSize, formatCost } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import { getToolRequestsColumns, ToolCallRecord } from "./toolRequestsColumns";
 import styles from "./page.module.css";
@@ -50,6 +53,7 @@ const DOMAIN_OPTIONS = [
 ];
 
 export default function ToolRequestsPage() {
+  const router = useRouter();
   const { setControls, setTitleBadge, dateRange } = useAdminHeader();
   const [toolCalls, setToolCalls] = useState<ToolCallRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -59,6 +63,8 @@ export default function ToolRequestsPage() {
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
   const [selectedCall, setSelectedCall] = useState<ToolCallRecord | null>(null);
+  const [associatedRequest, setAssociatedRequest] = useState<IrisRequestEntry | null>(null);
+  const [loadingAssociatedRequest, setLoadingAssociatedRequest] = useState(false);
 
   const urlSearchParameters = useSearchParams();
   const highlightedToolCallId = urlSearchParameters.get("id");
@@ -77,6 +83,26 @@ export default function ToolRequestsPage() {
       isCancelled = true;
     };
   }, [highlightedToolCallId]);
+
+  useEffect(() => {
+    if (!selectedCall?.callerRequestId || selectedCall.callerRequestId === "—") {
+      setAssociatedRequest(null);
+      return;
+    }
+    let isCancelled = false;
+    setLoadingAssociatedRequest(true);
+    IrisService.getRequest(selectedCall.callerRequestId)
+      .then((requestData) => {
+        if (!isCancelled) setAssociatedRequest(requestData);
+      })
+      .catch(() => {
+        if (!isCancelled) setAssociatedRequest(null);
+      })
+      .finally(() => {
+        if (!isCancelled) setLoadingAssociatedRequest(false);
+      });
+    return () => { isCancelled = true; };
+  }, [selectedCall?.callerRequestId]);
   const [filterDomain, setFilterDomain] = usePersistedState("tool-requests:filter-domain", "");
   const [filterSuccess, setFilterSuccess] = usePersistedState("tool-requests:filter-success", "");
   const [filters, setFilters] = useState({
@@ -391,6 +417,43 @@ export default function ToolRequestsPage() {
       >
         {selectedCall && (
           <>
+            {/* Associated Request */}
+            <div className={styles.detailSection}>
+              <div className={styles.detailSectionTitle}>Associated Request</div>
+              {loadingAssociatedRequest ? (
+                <span style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Loading…</span>
+              ) : associatedRequest ? (
+                <div
+                  className={styles.associatedRequestCard}
+                  onClick={() => router.push(`/admin/requests?id=${associatedRequest.requestId || associatedRequest._id}`)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div className={styles.associatedRequestRow}>
+                    <BadgeComponent variant="provider">{associatedRequest.provider || "—"}</BadgeComponent>
+                    <BadgeComponent variant="info">{associatedRequest.operation || associatedRequest.endpoint || "—"}</BadgeComponent>
+                    {associatedRequest.agent && (
+                      <BadgeComponent variant="accent">{associatedRequest.agent}</BadgeComponent>
+                    )}
+                  </div>
+                  <div className={styles.associatedRequestRow}>
+                    <span className={styles.associatedRequestModel}>{associatedRequest.model || "—"}</span>
+                    {associatedRequest.estimatedCost != null && (
+                      <span className={styles.associatedRequestCost}>{formatCost(associatedRequest.estimatedCost)}</span>
+                    )}
+                    {associatedRequest.timestamp && (
+                      <span className={styles.associatedRequestTimestamp}>{formatDateTime(associatedRequest.timestamp)}</span>
+                    )}
+                    <ExternalLink size={12} style={{ opacity: 0.5, marginInlineStart: "auto" }} />
+                  </div>
+                </div>
+              ) : (
+                <span style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>
+                  {selectedCall.callerRequestId ? "Request not found" : "No associated request"}
+                </span>
+              )}
+            </div>
+
             {selectedCall.args && Object.keys(selectedCall.args).length > 0 && (
               <div className={styles.detailSection}>
                 <JsonViewerComponent

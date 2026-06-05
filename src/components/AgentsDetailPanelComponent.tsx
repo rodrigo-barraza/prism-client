@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bot,
@@ -223,6 +223,19 @@ export default function AgentsDetailPanelComponent({
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [isIdentifierCopied, setIsIdentifierCopied] = useState(false);
 
+  const toolsCount = useMemo(() => {
+    if (!editingAgent && selectedBuiltInAgent) {
+      return selectedBuiltInAgent.toolCount;
+    }
+    const coreToolsCount = availableTools.filter((tool) => tool.system === true).length;
+    const enabledConfigurableToolsCount = ((editingAgent || selectedCustomAgent)?.enabledTools || [])
+      .filter((toolName) => {
+        const foundTool = availableTools.find((availableTool) => availableTool.name === toolName);
+        return foundTool ? !foundTool.system : true;
+      }).length;
+    return coreToolsCount + enabledConfigurableToolsCount;
+  }, [editingAgent, selectedBuiltInAgent, selectedCustomAgent, availableTools]);
+
   const handleCopyIdentifier = useCallback((identifierValue: string) => {
     if (!identifierValue) return;
     navigator.clipboard.writeText(identifierValue).then(() => {
@@ -346,14 +359,20 @@ export default function AgentsDetailPanelComponent({
                 : selectedCustomAgent?.description || selectedBuiltInAgent?.description || ""}
             </p>
             <div className={styles["profile-badge-and-actions-container"]}>
-              <span className={styles["profile-badge-label"]}>
-                <Bot size={12} style={{ marginRight: 4 }} />
-                {isCreateMode
-                  ? "Custom Draft"
-                  : selectedCustomAgent
-                    ? "Custom Agent"
-                    : "System Built-In"}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span className={styles["profile-badge-label"]}>
+                  <Bot size={12} style={{ marginRight: 4 }} />
+                  {isCreateMode
+                    ? "Custom Draft"
+                    : selectedCustomAgent
+                      ? "Custom Agent"
+                      : "System Built-In"}
+                </span>
+                <BadgeComponent
+                  type="tools"
+                  count={toolsCount}
+                />
+              </div>
               {!isCreateMode && (selectedBuiltInAgent || selectedCustomAgent || (editingAgent && editingAgent._id)) && (
                 <ButtonComponent
                   variant="primary"

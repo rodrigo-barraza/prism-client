@@ -5149,7 +5149,12 @@ export default function ChatSessionComponent({
             }
             title={emptyState.title}
             subtitle={emptyState.subtitle}
-          />
+          >
+            <BadgeComponent
+              type="tools"
+              count={allToolSchemas.length}
+            />
+          </EmptyStateComponent>
         )}
 
         <MessageList
