@@ -356,7 +356,6 @@
   block-size: 16px;
   border-radius: 50%;
   background: var(--color-warning, oklch(0.82 0.17 85));
-  outline: 2px solid white;
   color: white;
   font-size: 0.625rem;
   font-weight: 700;
@@ -366,7 +365,6 @@
 
 .attentionDot.informational {
   background: var(--color-info, oklch(0.62 0.18 255));
-  outline: 1px solid rgba(255, 255, 255, 0.75);
 }
 
 /* ── Badge ── */
