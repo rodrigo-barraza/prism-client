@@ -11,7 +11,7 @@
   align-items: center;
   gap: 4px;
   padding: 2px 7px;
-  border-radius: var(--border-radius);
+  border-radius: var(--button-border-radius);
   font-size: 0.5625rem;
   font-weight: 600;
   letter-spacing: 0.3px;

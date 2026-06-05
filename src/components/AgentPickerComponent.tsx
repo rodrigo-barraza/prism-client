@@ -14,9 +14,8 @@ import {
   MessageSquare,
   Infinity,
   Palette,
-  Search,
 } from "lucide-react";
-import { SelectComponent } from "@rodrigo-barraza/components-library";
+import { SelectComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
 import BadgeComponent from "./BadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
@@ -290,20 +289,14 @@ export default function AgentPickerComponent({
               onClick={() => setIsPopoverOpen(false)}
             />
             <div className={styles.popover} role="listbox">
-              <div className={styles["agent-search-container"]}>
-                <div className={styles["agent-search-icon"]}>
-                  <Search size={14} />
-                </div>
-                <input
-                  type="text"
-                  className={styles["agent-search-input-field"]}
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search agents..."
-                  onClick={(event) => event.stopPropagation()}
-                  autoFocus
-                />
-              </div>
+              <SearchInputComponent
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search agents…"
+                autoFocus
+                compact
+                onClick={(event: React.MouseEvent) => event.stopPropagation()}
+              />
               <div className={styles["agent-list-scrollable-container"]}>
                 {filteredAgents.length === 0 ? (
                   <div className={styles["no-agents-found-message"]}>
