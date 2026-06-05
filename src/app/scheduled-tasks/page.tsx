@@ -1034,9 +1034,12 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
             {/* Header */}
             <header className={styles.header}>
               <div className={styles.headerTopRow}>
-                <div className={styles.headerTitleRow}>
-                  <Clock className={styles.headerIcon} />
-                  <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
+                <div className={styles.headerLeft}>
+                  <div className={styles.headerTitleRow}>
+                    <Clock className={styles.headerIcon} />
+                    <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
+                  </div>
+                  <p className={styles.headerSubtitle}>Automate background agent workflows on a schedule</p>
                   <span className={styles.badge}>
                     {filteredTasks.length} total
                   </span>

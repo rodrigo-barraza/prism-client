@@ -114,6 +114,13 @@
   color: var(--text-primary);
 }
 
+.headerSubtitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  letter-spacing: -0.01em;
+}
+
 .badge {
   font-size: var(--font-size-xs);
   font-weight: 500;
