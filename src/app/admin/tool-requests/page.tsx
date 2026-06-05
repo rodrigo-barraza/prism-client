@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { usePersistedState } from "../../../hooks/usePersistedState";
 import { Download } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import ToolsApiService from "../../../services/ToolsApiService";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
 import {
@@ -58,6 +59,24 @@ export default function ToolRequestsPage() {
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
   const [selectedCall, setSelectedCall] = useState<ToolCallRecord | null>(null);
+
+  const urlSearchParameters = useSearchParams();
+  const highlightedToolCallId = urlSearchParameters.get("id");
+
+  useEffect(() => {
+    if (!highlightedToolCallId) return;
+    let isCancelled = false;
+    ToolsApiService.getToolCall(highlightedToolCallId)
+      .then((toolCallData) => {
+        if (!isCancelled) {
+          setSelectedCall(toolCallData as ToolCallRecord);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isCancelled = true;
+    };
+  }, [highlightedToolCallId]);
   const [filterDomain, setFilterDomain] = usePersistedState("tool-requests:filter-domain", "");
   const [filterSuccess, setFilterSuccess] = usePersistedState("tool-requests:filter-success", "");
   const [filters, setFilters] = useState({
@@ -65,6 +84,7 @@ export default function ToolRequestsPage() {
     domain: filterDomain,
     success: filterSuccess,
     callerAgent: "",
+    callerRequestId: "",
   });
 
   const LIMIT = 50;
@@ -123,6 +143,7 @@ export default function ToolRequestsPage() {
       domain: "",
       success: "",
       callerAgent: "",
+      callerRequestId: "",
     });
     setFilterDomain("");
     setFilterSuccess("");
@@ -294,6 +315,15 @@ export default function ToolRequestsPage() {
             value={filters.domain}
             onChange={(value: string) => handleFilterChange("domain", value)}
             options={DOMAIN_OPTIONS}
+          />
+        </FilterGroupComponent>
+        <FilterGroupComponent label="Request ID">
+          <FilterInputComponent
+            placeholder="Search request ID..."
+            value={filters.callerRequestId}
+            onChange={(value: string) =>
+              handleFilterChange("callerRequestId", value)
+            }
           />
         </FilterGroupComponent>
         <FilterGroupComponent label="Agent">

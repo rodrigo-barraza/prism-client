@@ -92,6 +92,13 @@ export default class ToolsApiService {
   }
 
   /**
+   * Get a single tool-call log entry by ID.
+   */
+  static async getToolCall(id: string): Promise<ToolCallLogEntry> {
+    return ToolsApiService._fetch<ToolCallLogEntry>(`/admin/tool-calls/${id}`);
+  }
+
+  /**
    * Get aggregated tool-call statistics.
    */
   static async getToolCallStats(

@@ -7,12 +7,14 @@ import {
   GitBranch,
   FolderOpen,
   Filter,
+  Wrench,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import HistoryItemComponent from "../../../components/HistoryItemComponent";
 import JsonViewerComponent from "../../../components/JsonViewerComponent";
 import IrisService from "../../../services/IrisService";
 import PrismService from "../../../services/PrismService";
+import ToolsApiService from "../../../services/ToolsApiService";
 import { formatNumber, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import { getErrorMessage } from "../../../utils/errorMessage";
@@ -79,6 +81,13 @@ interface RequestAssociations {
     conversationCount?: number;
     updatedAt?: string;
     createdAt?: string;
+  }>;
+  toolCalls?: Array<{
+    _id: string;
+    toolName?: string;
+    elapsedMs?: number;
+    timestamp?: string;
+    success?: boolean;
   }>;
 }
 
@@ -260,13 +269,21 @@ export default function RequestsPage() {
     }
     let cancelled = false;
     setLoadingAssociations(true);
-    IrisService.getRequestAssociations(selectedRequest.requestId)
-      .then((data) => {
-        if (!cancelled) setAssociations(data as unknown as RequestAssociations);
+    Promise.all([
+      IrisService.getRequestAssociations(selectedRequest.requestId),
+      ToolsApiService.getToolCalls({ callerRequestId: selectedRequest.requestId }).catch(() => ({ toolCalls: [] }))
+    ])
+      .then(([associationsData, toolCallsData]) => {
+        if (!cancelled) {
+          setAssociations({
+            ...associationsData,
+            toolCalls: toolCallsData.toolCalls || [],
+          } as unknown as RequestAssociations);
+        }
       })
       .catch(() => {
         if (!cancelled)
-          setAssociations({ conversations: [], workflows: [], sessions: [] });
+          setAssociations({ conversations: [], workflows: [], sessions: [], toolCalls: [] });
       })
       .finally(() => {
         if (!cancelled) setLoadingAssociations(false);
@@ -677,6 +694,50 @@ export default function RequestsPage() {
                             }}
                             icon={FolderOpen}
                             onClick={() => router.push("/admin/traces")}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <span className={styles.associationEmpty}>—</span>
+                    )}
+                  </div>
+                  <div className={styles.associationGroup}>
+                    <span className={styles.associationGroupLabel}>
+                      <Wrench size={12} /> Tool Requests
+                    </span>
+                    {associations?.toolCalls &&
+                    associations.toolCalls.length > 0 ? (
+                      <div className={styles.associationList}>
+                        {associations.toolCalls.map((toolCall) => (
+                          <HistoryItemComponent
+                            key={toolCall._id}
+                            item={{
+                              id: toolCall._id,
+                              title: toolCall.toolName || "Untitled Tool",
+                              tags: [
+                                {
+                                  label: toolCall.elapsedMs != null ? `${toolCall.elapsedMs.toFixed(0)} ms` : "—",
+                                  style: {
+                                    background: "var(--background-elevated)",
+                                    color: "var(--text-muted)",
+                                  },
+                                },
+                                {
+                                  label: toolCall.success ? "Success" : "Error",
+                                  style: {
+                                    background: toolCall.success
+                                      ? "var(--accent-primary-subtle)"
+                                      : "var(--danger-subtle)",
+                                    color: toolCall.success
+                                      ? "var(--accent-primary)"
+                                      : "var(--danger)",
+                                  },
+                                },
+                              ],
+                              updatedAt: toolCall.timestamp,
+                            }}
+                            icon={Wrench}
+                            onClick={() => router.push(`/admin/tool-requests?id=${toolCall._id}`)}
                           />
                         ))}
                       </div>
