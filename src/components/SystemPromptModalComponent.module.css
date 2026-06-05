@@ -22,19 +22,4 @@
   letter-spacing: 0.4px;
 }
 
-.deleteButton {
-  align-self: flex-start;
-  padding: 8px 14px;
-  background: none;
-  border: 1px solid var(--color-danger, var(--color-danger));
-  color: var(--color-danger, var(--color-danger));
-  border-radius: var(--border-radius-sm);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all 0.15s;
-}
 
-.deleteButton:hover {
-  background: var(--color-danger, var(--color-danger));
-  color: white;
-}

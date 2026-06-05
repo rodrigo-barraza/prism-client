@@ -32,8 +32,8 @@
 /* ── Sidebars ──────────────────────────────────────── */
 
 .left-sidebar-panel {
-  inline-size: 320px;
-  min-inline-size: 320px;
+  inline-size: var(--left-sidebar-width, 320px);
+  min-inline-size: var(--left-sidebar-min-width, 320px);
   block-size: 100%;
   border-inline-end: 1px solid var(--calculated-border-color);
   background: var(--background-surface);
@@ -111,8 +111,8 @@
 }
 
 .right-sidebar-panel {
-  inline-size: 320px;
-  min-inline-size: 320px;
+  inline-size: var(--right-sidebar-width, 320px);
+  min-inline-size: var(--right-sidebar-min-width, 320px);
   block-size: 100%;
   border-inline-start: 1px solid var(--calculated-border-color);
   background: var(--background-surface);

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Plus } from "lucide-react";
 import {
+  ButtonComponent,
   SelectComponent,
   TextAreaComponent,
   InputComponent,
@@ -215,9 +216,9 @@ export default function SystemPromptModal({
         </div>
 
         {selectedId && (
-          <button className={styles.deleteButton} onClick={handleDelete}>
+          <ButtonComponent variant="destructive" size="small" onClick={handleDelete}>
             Delete this instruction
-          </button>
+          </ButtonComponent>
         )}
       </div>
     </ModalComponent>

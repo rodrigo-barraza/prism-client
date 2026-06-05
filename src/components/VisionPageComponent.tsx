@@ -25,10 +25,11 @@ import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ProviderLogo from "./ProviderLogosComponent";
 import {
   InputComponent,
-  PageHeaderComponent,
   TextAreaComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./VisionPageComponent.module.css";
+import ThreePanelLayout from "./ThreePanelLayoutComponent";
+import NavigationSidebarComponent from "./NavigationSidebarComponent";
 
 // ── Source type definitions ───────────────────────────────────────
 const SOURCE_TYPES = [
@@ -683,154 +684,152 @@ export default function VisionPageComponent() {
 
   // ── Render ─────────────────────────────────────────────────────
   return (
-    <div className={styles.wrapper}>
-      <PageHeaderComponent
+    <div className={styles.visionLayoutWrapper}>
+      <ThreePanelLayout
+        navSidebar={<NavigationSidebarComponent mode="user" />}
         title="Vision"
-        subtitle="Real-time AI-powered video analysis"
-      />
-
-      <div className={styles.splitLayout}>
-        {/* ── Left: Source Panel ─────────────────────────────────── */}
-        <div className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <Video size={15} className={styles.panelTitleIcon} />
-            <span className={styles.panelTitle}>Video Source</span>
-            {isAnalyzing && (
-              <span className={styles.statusActive}>
-                <Eye size={10} /> Active
-              </span>
-            )}
-          </div>
-
-          <div className={styles.sourceContent}>
-            {/* Source type buttons */}
-            <div className={styles.sourceSelector}>
-              {SOURCE_TYPES.map((source) => {
-                const Icon = source.icon;
-                return (
-                  <button
-                    key={source.key}
-                    className={`${styles.sourceButton} ${sourceType === source.key ? styles.sourceBtnActive : ""}`}
-                    onClick={() => handleSourceSelect(source.key)}
-                  >
-                    <Icon size={14} />
-                    {source.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* IP Camera URL input */}
-            {sourceType === "ipcam" && (
-              <div className={styles.urlInputRow}>
-                <InputComponent
-                  type="text"
-                  placeholder="rtsp://user:pass@192.168.1.100/stream1 or http://…/mjpeg"
-                  value={ipCamUrl}
-                  onChange={(
-                    e: React.ChangeEvent<HTMLInputElement>,
-                  ) => setIpCamUrl(e.target.value)}
-                />
-                <button
-                  className={styles.urlConnectButton}
-                  onClick={() => startIpCamera(ipCamUrl)}
-                  disabled={!ipCamUrl.trim()}
-                >
-                  Connect
-                </button>
-              </div>
-            )}
-
-            {/* Video preview — single persistent element to avoid ref-swapping race conditions */}
-            <div
-              className={`${styles.videoContainer} ${!isStreaming ? styles.videoContainerHidden : ""}`}
-            >
-              <video
-                ref={videoRef}
-                className={styles.videoElement}
-                autoPlay
-                playsInline
-                muted
-                onLoadedMetadata={handleVideoMetadata}
-              />
-              <canvas ref={canvasRef} className={styles.canvasHidden} />
-
-              {/* Live indicator */}
-              {isStreaming && (
-                <div className={styles.liveIndicator}>
-                  <span className={styles.liveDot} />
-                  LIVE
-                </div>
-              )}
-
-              {/* Resolution badge */}
-              {resolution && (
-                <div className={styles.resolutionBadge}>{resolution}</div>
-              )}
-
-              {/* Screenshot flash */}
-              {showFlash && <div className={styles.screenshotFlash} />}
-
-              {/* Analyzing overlay */}
-              {isCapturing && (
-                <div className={styles.analyzingOverlay}>
-                  <div className={styles.analyzingBadge}>
-                    <Loader2 size={14} className={styles.spinIcon} />
-                    Analyzing…
-                  </div>
-                </div>
-              )}
-
-              {/* Snapshot counter */}
-              {snapshotCount > 0 && (
-                <div className={styles.snapshotCounter}>#{snapshotCount}</div>
-              )}
-
-              {/* Progress ring */}
+        leftPanel={
+          <div className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <Video size={15} className={styles.panelTitleIcon} />
+              <span className={styles.panelTitle}>Video Source</span>
               {isAnalyzing && (
-                <div className={styles.captureProgress}>
-                  <svg
-                    className={styles.captureProgressRing}
-                    viewBox="0 0 32 32"
-                  >
-                    <circle
-                      className={styles.captureProgressTrack}
-                      cx="16"
-                      cy="16"
-                      r="14"
-                    />
-                    <circle
-                      className={styles.captureProgressFill}
-                      cx="16"
-                      cy="16"
-                      r="14"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={
-                        circumference - captureProgress * circumference
-                      }
-                    />
-                  </svg>
-                </div>
+                <span className={styles.statusActive}>
+                  <Eye size={10} /> Active
+                </span>
               )}
             </div>
 
-            {/* Empty state — no source selected */}
-            {!isStreaming && (
-              <div className={styles.emptySource}>
-                <div className={styles.emptyIcon}>
-                  <Scan size={36} />
-                </div>
-                <span className={styles.emptyLabel}>
-                  Select a video source above to begin.
-                  <br />
-                  Webcam, screen capture, or IP camera.
-                </span>
+            <div className={styles.sourceContent}>
+              {/* Source type buttons */}
+              <div className={styles.sourceSelector}>
+                {SOURCE_TYPES.map((source) => {
+                  const Icon = source.icon;
+                  return (
+                    <button
+                      key={source.key}
+                      className={`${styles.sourceButton} ${sourceType === source.key ? styles.sourceBtnActive : ""}`}
+                      onClick={() => handleSourceSelect(source.key)}
+                    >
+                      <Icon size={14} />
+                      {source.label}
+                    </button>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* ── Right: Vision Center Panel ─────────────────────────── */}
+              {/* IP Camera URL input */}
+              {sourceType === "ipcam" && (
+                <div className={styles.urlInputRow}>
+                  <InputComponent
+                    type="text"
+                    placeholder="rtsp://user:pass@192.168.1.100/stream1 or http://…/mjpeg"
+                    value={ipCamUrl}
+                    onChange={(
+                      e: React.ChangeEvent<HTMLInputElement>,
+                    ) => setIpCamUrl(e.target.value)}
+                  />
+                  <button
+                    className={styles.urlConnectButton}
+                    onClick={() => startIpCamera(ipCamUrl)}
+                    disabled={!ipCamUrl.trim()}
+                  >
+                    Connect
+                  </button>
+                </div>
+              )}
+
+              {/* Video preview — single persistent element to avoid ref-swapping race conditions */}
+              <div
+                className={`${styles.videoContainer} ${!isStreaming ? styles.videoContainerHidden : ""}`}
+              >
+                <video
+                  ref={videoRef}
+                  className={styles.videoElement}
+                  autoPlay
+                  playsInline
+                  muted
+                  onLoadedMetadata={handleVideoMetadata}
+                />
+                <canvas ref={canvasRef} className={styles.canvasHidden} />
+
+                {/* Live indicator */}
+                {isStreaming && (
+                  <div className={styles.liveIndicator}>
+                    <span className={styles.liveDot} />
+                    LIVE
+                  </div>
+                )}
+
+                {/* Resolution badge */}
+                {resolution && (
+                  <div className={styles.resolutionBadge}>{resolution}</div>
+                )}
+
+                {/* Screenshot flash */}
+                {showFlash && <div className={styles.screenshotFlash} />}
+
+                {/* Analyzing overlay */}
+                {isCapturing && (
+                  <div className={styles.analyzingOverlay}>
+                    <div className={styles.analyzingBadge}>
+                      <Loader2 size={14} className={styles.spinIcon} />
+                      Analyzing…
+                    </div>
+                  </div>
+                )}
+
+                {/* Snapshot counter */}
+                {snapshotCount > 0 && (
+                  <div className={styles.snapshotCounter}>#{snapshotCount}</div>
+                )}
+
+                {/* Progress ring */}
+                {isAnalyzing && (
+                  <div className={styles.captureProgress}>
+                    <svg
+                      className={styles.captureProgressRing}
+                      viewBox="0 0 32 32"
+                    >
+                      <circle
+                        className={styles.captureProgressTrack}
+                        cx="16"
+                        cy="16"
+                        r="14"
+                      />
+                      <circle
+                        className={styles.captureProgressFill}
+                        cx="16"
+                        cy="16"
+                        r="14"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={
+                          circumference - captureProgress * circumference
+                        }
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              {/* Empty state — no source selected */}
+              {!isStreaming && (
+                <div className={styles.emptySource}>
+                  <div className={styles.emptyIcon}>
+                    <Scan size={36} />
+                  </div>
+                  <span className={styles.emptyLabel}>
+                    Select a video source above to begin.
+                    <br />
+                    Webcam, screen capture, or IP camera.
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        }
+        leftTitle="Video Source"
+      >
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
             <Eye size={15} className={styles.panelTitleIcon} />
@@ -1200,7 +1199,7 @@ export default function VisionPageComponent() {
             </div>
           )}
         </div>
-      </div>
+      </ThreePanelLayout>
     </div>
   );
 }

@@ -12,7 +12,12 @@ import {
   Wrench,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import { InputComponent } from "@rodrigo-barraza/components-library";
+import {
+  ButtonComponent,
+  CloseButtonComponent,
+  IconButtonComponent,
+  InputComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./MCPServersPanelComponent.module.css";
 import type { MCPServer } from "@/types/types";
 import type { ReactNode } from "react";
@@ -70,10 +75,14 @@ export default function MCPServersPanel({
         onActionsChange(null);
       } else {
         onActionsChange(
-          <button className={styles.addButton} onClick={handleCreate}>
-            <Plus size={12} />
+          <ButtonComponent
+            variant="primary"
+            size="small"
+            icon={Plus}
+            onClick={handleCreate}
+          >
             Add
-          </button>,
+          </ButtonComponent>,
         );
       }
     }
@@ -194,9 +203,7 @@ export default function MCPServersPanel({
       <div className={styles.container}>
         <div className={styles.formHeader}>
           <h3>{isNew ? "Add MCP Server" : "Edit Server"}</h3>
-          <button className={styles.cancelButton} onClick={handleCancel}>
-            <X size={16} />
-          </button>
+          <CloseButtonComponent onClick={handleCancel} />
         </div>
 
         <div className={styles.form}>
@@ -347,17 +354,19 @@ export default function MCPServersPanel({
           {error && <div className={styles.errorMsg}>{error}</div>}
 
           <div className={styles.formActions}>
-            <button
-              className={styles.saveButton}
+            <ButtonComponent
+              variant="primary"
+              size="small"
+              icon={Save}
               onClick={handleSave}
               disabled={saving || !editingServer.name?.trim()}
+              fullWidth
             >
-              <Save size={14} />
               {saving ? "Saving..." : isNew ? "Add Server" : "Save Changes"}
-            </button>
-            <button className={styles.cancelFormButton} onClick={handleCancel}>
+            </ButtonComponent>
+            <ButtonComponent variant="disabled" size="small" onClick={handleCancel}>
               Cancel
-            </button>
+            </ButtonComponent>
           </div>
         </div>
       </div>
@@ -381,10 +390,13 @@ export default function MCPServersPanel({
             servers to give the agent access to databases, APIs, and more.
           </div>
           {!readOnly && (
-            <button className={styles.addButton} onClick={handleCreate}>
-              <Plus size={12} />
+            <ButtonComponent
+              variant="primary"
+              icon={Plus}
+              onClick={handleCreate}
+            >
               Add your first server
-            </button>
+            </ButtonComponent>
           )}
         </div>
       )}
@@ -437,20 +449,17 @@ export default function MCPServersPanel({
                       {isConnecting ? "Connecting..." : "Connect"}
                     </button>
                   )}
-                  <button
-                    className={styles.actionButton}
+                  <IconButtonComponent
+                    icon={<Edit3 size={13} />}
                     onClick={() => handleEdit(server)}
-                    title="Edit server"
-                  >
-                    <Edit3 size={13} />
-                  </button>
-                  <button
-                    className={`${styles.actionButton} ${styles.deleteButton}`}
+                    tooltip="Edit server"
+                  />
+                  <IconButtonComponent
+                    icon={<Trash2 size={13} />}
                     onClick={() => handleDelete(serverId)}
-                    title="Delete server"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                    tooltip="Delete server"
+                    variant="destructive"
+                  />
                 </div>
               )}
             </div>
@@ -473,18 +482,20 @@ export default function MCPServersPanel({
                 <span className={styles.confirmLabel}>
                   Delete &ldquo;{server.name}&rdquo;?
                 </span>
-                <button
-                  className={`${styles.confirmButton} ${styles.confirmBtnYes}`}
+                <ButtonComponent
+                  variant="destructive"
+                  size="small"
                   onClick={() => confirmDelete(serverId)}
                 >
                   Delete
-                </button>
-                <button
-                  className={`${styles.confirmButton} ${styles.confirmBtnNo}`}
+                </ButtonComponent>
+                <ButtonComponent
+                  variant="disabled"
+                  size="small"
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel
-                </button>
+                </ButtonComponent>
               </div>
             )}
           </div>

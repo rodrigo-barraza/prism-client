@@ -32,6 +32,7 @@
 .panel {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-height: 0;
   overflow: hidden;
   background: var(--background-base);
@@ -1109,4 +1110,11 @@
     transform: scale(1.05);
     box-shadow: 0 4px 12px oklch(0% 0 0 / 0.15);
   }
+}
+
+/* ── Vision Layout Wrapper ─────────────────────────────────────── */
+.visionLayoutWrapper {
+  display: contents;
+  --left-sidebar-width: 50%;
+  --left-sidebar-min-width: 400px;
 }

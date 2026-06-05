@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import {
+  ButtonComponent,
+  CloseButtonComponent,
+  IconButtonComponent,
   PaginationComponent,
   SearchInputComponent,
   SegmentedControlComponent,
@@ -271,13 +274,12 @@ export default function PromptsPageComponent() {
             className={styles["table-actions-cell"]}
             onClick={(event) => event.stopPropagation()}
           >
-            <button
-              className={`${styles["action-button"]} ${styles["action-button-copy"]} ${isCopied ? styles["is-copied-state"] : ""}`}
+            <IconButtonComponent
+              icon={isCopied ? <Check size={13} /> : <Copy size={13} />}
               onClick={() => handleCopyToClipboard(row)}
-              title={isCopied ? "Copied!" : "Copy to clipboard"}
-            >
-              {isCopied ? <Check size={13} /> : <Copy size={13} />}
-            </button>
+              tooltip={isCopied ? "Copied!" : "Copy to clipboard"}
+              active={isCopied}
+            />
           </div>
         );
       },
@@ -320,18 +322,18 @@ export default function PromptsPageComponent() {
         </div>
       </div>
       <div className={styles["form-actions"]}>
-        <button
-          className={styles["form-action-save"]}
+        <ButtonComponent
+          variant="primary"
+          size="small"
+          icon={Save}
           onClick={mode === "create" ? handleCreate : handleUpdate}
           disabled={isSaving || !formTitle.trim() || !formContent.trim()}
         >
-          <Save size={13} />
           {mode === "create" ? "Create" : "Save"}
-        </button>
-        <button className={styles["form-action-cancel"]} onClick={resetForm}>
-          <X size={13} />
+        </ButtonComponent>
+        <ButtonComponent variant="disabled" size="small" icon={X} onClick={resetForm}>
           Cancel
-        </button>
+        </ButtonComponent>
       </div>
     </div>
   );
@@ -387,27 +389,23 @@ export default function PromptsPageComponent() {
             className={styles["prompt-actions"]}
             onClick={(event) => event.stopPropagation()}
           >
-            <button
-              className={`${styles["action-button"]} ${styles["action-button-copy"]} ${isCopied ? styles["is-copied-state"] : ""}`}
+            <IconButtonComponent
+              icon={isCopied ? <Check size={13} /> : <Copy size={13} />}
               onClick={() => handleCopyToClipboard(prompt)}
-              title={isCopied ? "Copied!" : "Copy to clipboard"}
-            >
-              {isCopied ? <Check size={13} /> : <Copy size={13} />}
-            </button>
-            <button
-              className={styles["action-button"]}
+              tooltip={isCopied ? "Copied!" : "Copy to clipboard"}
+              active={isCopied}
+            />
+            <IconButtonComponent
+              icon={<Pencil size={13} />}
               onClick={() => handleEdit(prompt)}
-              title="Edit prompt"
-            >
-              <Pencil size={13} />
-            </button>
-            <button
-              className={`${styles["action-button"]} ${styles["action-button-danger"]}`}
+              tooltip="Edit prompt"
+            />
+            <IconButtonComponent
+              icon={<Trash2 size={13} />}
               onClick={() => setDeletingPromptId(prompt.id)}
-              title="Delete prompt"
-            >
-              <Trash2 size={13} />
-            </button>
+              tooltip="Delete prompt"
+              variant="destructive"
+            />
           </div>
         </div>
         <div className={styles["prompt-content"]}>
@@ -419,18 +417,20 @@ export default function PromptsPageComponent() {
             onClick={(event) => event.stopPropagation()}
           >
             <span>Delete this prompt?</span>
-            <button
-              className={styles["delete-confirm-button"]}
+            <ButtonComponent
+              variant="destructive"
+              size="small"
               onClick={() => handleDelete(prompt.id)}
             >
               Delete
-            </button>
-            <button
-              className={styles["delete-cancel-button"]}
+            </ButtonComponent>
+            <ButtonComponent
+              variant="disabled"
+              size="small"
               onClick={() => setDeletingPromptId(null)}
             >
               Cancel
-            </button>
+            </ButtonComponent>
           </div>
         )}
       </div>
@@ -471,27 +471,23 @@ export default function PromptsPageComponent() {
           className={styles["prompt-actions"]}
           onClick={(event) => event.stopPropagation()}
         >
-          <button
-            className={`${styles["action-button"]} ${styles["action-button-copy"]} ${isCopied ? styles["is-copied-state"] : ""}`}
+          <IconButtonComponent
+            icon={isCopied ? <Check size={13} /> : <Copy size={13} />}
             onClick={() => handleCopyToClipboard(prompt)}
-            title={isCopied ? "Copied!" : "Copy to clipboard"}
-          >
-            {isCopied ? <Check size={13} /> : <Copy size={13} />}
-          </button>
-          <button
-            className={styles["action-button"]}
+            tooltip={isCopied ? "Copied!" : "Copy to clipboard"}
+            active={isCopied}
+          />
+          <IconButtonComponent
+            icon={<Pencil size={13} />}
             onClick={() => handleEdit(prompt)}
-            title="Edit prompt"
-          >
-            <Pencil size={13} />
-          </button>
-          <button
-            className={`${styles["action-button"]} ${styles["action-button-danger"]}`}
+            tooltip="Edit prompt"
+          />
+          <IconButtonComponent
+            icon={<Trash2 size={13} />}
             onClick={() => setDeletingPromptId(prompt.id)}
-            title="Delete prompt"
-          >
-            <Trash2 size={13} />
-          </button>
+            tooltip="Delete prompt"
+            variant="destructive"
+          />
         </div>
       </div>
     );
@@ -518,16 +514,17 @@ export default function PromptsPageComponent() {
             </div>
           </div>
           {!isCreating && !editingPromptId && (
-            <button
-              className={styles["create-button"]}
+            <ButtonComponent
+              variant="primary"
+              size="small"
+              icon={Plus}
               onClick={() => {
                 resetForm();
                 setIsCreating(true);
               }}
             >
-              <Plus size={14} />
               New Prompt
-            </button>
+            </ButtonComponent>
           )}
         </div>
       </div>
@@ -598,16 +595,16 @@ export default function PromptsPageComponent() {
             <p className={styles["empty-state-description"]}>
               Create your first prompt to start building your personal prompt library.
             </p>
-            <button
-              className={styles["create-button"]}
+            <ButtonComponent
+              variant="primary"
+              icon={Plus}
               onClick={() => {
                 resetForm();
                 setIsCreating(true);
               }}
             >
-              <Plus size={14} />
               Create Your First Prompt
-            </button>
+            </ButtonComponent>
           </div>
         )}
 
@@ -645,16 +642,19 @@ export default function PromptsPageComponent() {
               <div className={styles["modal-header-actions"]}>
                 {modalEditMode ? (
                   <>
-                    <button
-                      className={styles["form-action-save"]}
+                    <ButtonComponent
+                      variant="primary"
+                      size="small"
+                      icon={Save}
                       onClick={handleModalSave}
                       disabled={isModalSaving || !modalTitle.trim() || !modalContent.trim()}
                     >
-                      <Save size={13} />
                       Save
-                    </button>
-                    <button
-                      className={styles["form-action-cancel"]}
+                    </ButtonComponent>
+                    <ButtonComponent
+                      variant="disabled"
+                      size="small"
+                      icon={X}
                       onClick={() => {
                         setModalEditMode(false);
                         setModalTitle(modalPrompt.title);
@@ -662,44 +662,30 @@ export default function PromptsPageComponent() {
                         setModalTags((modalPrompt.tags || []).join(", "));
                       }}
                     >
-                      <X size={13} />
                       Cancel
-                    </button>
+                    </ButtonComponent>
                   </>
                 ) : (
                   <>
-                    <button
-                      className={`${styles["modal-copy-button"]} ${copiedPromptId === modalPrompt.id ? styles["is-copied-state"] : ""}`}
+                    <ButtonComponent
+                      variant="disabled"
+                      size="small"
+                      icon={copiedPromptId === modalPrompt.id ? Check : Copy}
                       onClick={() => handleCopyToClipboard(modalPrompt)}
-                      title={copiedPromptId === modalPrompt.id ? "Copied!" : "Copy to clipboard"}
                     >
-                      {copiedPromptId === modalPrompt.id ? (
-                        <>
-                          <Check size={13} />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy size={13} />
-                          Copy
-                        </>
-                      )}
-                    </button>
-                    <button
-                      className={styles["modal-edit-button"]}
+                      {copiedPromptId === modalPrompt.id ? "Copied" : "Copy"}
+                    </ButtonComponent>
+                    <ButtonComponent
+                      variant="disabled"
+                      size="small"
+                      icon={Pencil}
                       onClick={() => setModalEditMode(true)}
                     >
-                      <Pencil size={13} />
                       Edit
-                    </button>
+                    </ButtonComponent>
                   </>
                 )}
-                <button
-                  className={styles["modal-close-button"]}
-                  onClick={closePromptModal}
-                >
-                  <X size={16} />
-                </button>
+                <CloseButtonComponent onClick={closePromptModal} />
               </div>
             </div>
 
