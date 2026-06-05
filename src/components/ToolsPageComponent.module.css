@@ -545,6 +545,13 @@
   filter: drop-shadow(0 1px 2px oklch(0.0% 0.0 0.0 / 0.15));
 }
 
+.toolRowEmojiImage {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .toolRowName {
   font-size: 0.8125rem;
   font-weight: 600;
@@ -653,6 +660,13 @@
   font-size: 1.5rem;
   line-height: 1;
   filter: drop-shadow(0 1px 2px oklch(0.0% 0.0 0.0 / 0.15));
+}
+
+.detailEmojiImage {
+  width: 1.875rem;
+  height: 1.875rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .detailTitle {
@@ -783,7 +797,7 @@
   background: var(--accent-primary);
   color: var(--color-white);
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;

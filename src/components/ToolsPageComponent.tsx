@@ -316,7 +316,11 @@ function ToolDetailModal({
           <div className={styles.detailTitleBlock}>
             <div className={styles.detailCleanName}>
               {tool.emoji && (
-                <span className={styles.detailEmoji}>{tool.emoji}</span>
+                tool.emoji.startsWith("http") ? (
+                  <img src={tool.emoji} alt={tool.name} className={styles.detailEmojiImage} />
+                ) : (
+                  <span className={styles.detailEmoji}>{tool.emoji}</span>
+                )
               )}
               {cleanName}
             </div>
@@ -675,7 +679,11 @@ function ToolRow({
   return (
     <div className={styles.toolRow} onClick={() => onClick(tool)}>
       {tool.emoji ? (
-        <span className={styles.toolRowEmoji}>{tool.emoji}</span>
+        tool.emoji.startsWith("http") ? (
+          <img src={tool.emoji} alt={tool.name} className={styles.toolRowEmojiImage} />
+        ) : (
+          <span className={styles.toolRowEmoji}>{tool.emoji}</span>
+        )
       ) : (
         <span className={styles.toolRowEmoji} />
       )}
@@ -883,7 +891,11 @@ export default function ToolsPageComponent() {
         width: "40px",
         render: (row: ClientToolSchema) => (
           row.emoji ? (
-            <span style={{ fontSize: "1.1rem" }}>{row.emoji}</span>
+            row.emoji.startsWith("http") ? (
+              <img src={row.emoji} alt={row.name} style={{ width: "1.25rem", height: "1.25rem", objectFit: "contain" }} />
+            ) : (
+              <span style={{ fontSize: "1.1rem" }}>{row.emoji}</span>
+            )
           ) : (
             <Wrench size={14} style={{ opacity: 0.4 }} />
           )
