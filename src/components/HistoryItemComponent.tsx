@@ -35,6 +35,7 @@ interface HistoryItem {
   tags?: HistoryItemTag[];
   username?: string;
   agent?: string | AgentRef;
+  parentAgentSessionId?: string | null;
 }
 
 interface HistoryItemProps {
@@ -234,6 +235,11 @@ export default function HistoryItemComponent({
                   </span>
                 );
               })()}
+            {item.parentAgentSessionId && (
+              <span className={styles['worker-hat-emoji']} title="Worker/Sub Agent">
+                👷
+              </span>
+            )}
           </div>
         </div>
 
