@@ -849,7 +849,7 @@ export default function AdminChatViewerComponent({
     }> = [
       {
         key: "settings",
-        icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
+        icon: <span className={tabBarStyles['tab-emoji-icon']}>🛠︎</span>,
         tooltip: "Settings",
       },
     ];
@@ -857,14 +857,14 @@ export default function AdminChatViewerComponent({
     if (!isSelectedAgent) {
       tabs.push({
         key: "params",
-        icon: <span className={tabBarStyles.tabEmojiIcon}>🎚︎</span>,
+        icon: <span className={tabBarStyles['tab-emoji-icon']}>🎚︎</span>,
         tooltip: "Parameters",
       });
     }
 
     tabs.push({
       key: "info",
-      icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
+      icon: <span className={tabBarStyles['tab-emoji-icon']}>📄</span>,
       tooltip: "Info",
     });
 
@@ -873,13 +873,13 @@ export default function AdminChatViewerComponent({
       tabs.push(
         {
           key: "workers",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
+          icon: <span className={tabBarStyles['tab-emoji-icon']}>🤖</span>,
           ...badgeProps(workersCount),
           tooltip: "Workers",
         },
         {
           key: "requests",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
+          icon: <span className={tabBarStyles['tab-emoji-icon']}>📊</span>,
           ...badgeProps(backendSessionStats?.requestCount || 0),
           tooltip: "Requests",
         },
@@ -903,31 +903,31 @@ export default function AdminChatViewerComponent({
       tabs.push(
         {
           key: "tools",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
+          icon: <span className={tabBarStyles['tab-emoji-icon']}>🔧</span>,
           ...badgeProps(allToolCount),
           tooltip: "Tools",
         },
         {
           key: "skills",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>,
+          icon: <span className={tabBarStyles['tab-emoji-icon']}>📖</span>,
           ...badgeProps(skills.filter((s) => s.enabled).length),
           tooltip: "Skills",
         },
         {
           key: "rules",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>📏</span>,
+          icon: <span className={tabBarStyles['tab-emoji-icon']}>📏</span>,
           ...badgeProps(rules.filter((r) => r.enabled).length),
           tooltip: "Rules",
         },
         {
           key: "memories",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
+          icon: <span className={tabBarStyles['tab-emoji-icon']}>🧠</span>,
           ...badgeProps(totalMemoriesCount),
           tooltip: "Memories",
         },
         {
           key: "tasks",
-          icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>,
+          icon: <span className={tabBarStyles['tab-emoji-icon']}>✅</span>,
           ...badgeProps(tasksCount),
           tooltip: "Tasks",
         },
@@ -1270,22 +1270,22 @@ export default function AdminChatViewerComponent({
             </div>
           }
         >
-          <div className={chatStyles.container}>
+          <div className={chatStyles['container']}>
             {/* -- Chat header bar -- */}
-            <div className={chatStyles.chatHeader}>
-              <div className={chatStyles.chatHeaderTitle}>
-                <span className={chatStyles.chatHeaderTitleText}>
+            <div className={chatStyles['chat-header']}>
+              <div className={chatStyles['chat-header-title']}>
+                <span className={chatStyles['chat-header-title-text']}>
                   {convTitle}
                 </span>
               </div>
-              <div className={chatStyles.chatHeaderActions}>
+              <div className={chatStyles['chat-header-actions']}>
                 {hasSystemContextMessage && (
-                  <div className={chatStyles.debugToggleContainer}>
+                  <div className={chatStyles['debug-toggle-container']}>
                     <ButtonComponent
                       variant={!showRaw ? "tonal" : "text"}
                       size="small"
                       onClick={() => setShowRaw(false)}
-                      className={chatStyles.debugToggleButton}
+                      className={chatStyles['debug-toggle-button']}
                     >
                       Clean
                     </ButtonComponent>
@@ -1293,7 +1293,7 @@ export default function AdminChatViewerComponent({
                       variant={showRaw ? "tonal" : "text"}
                       size="small"
                       onClick={() => setShowRaw(true)}
-                      className={chatStyles.debugToggleButton}
+                      className={chatStyles['debug-toggle-button']}
                     >
                       Raw
                     </ButtonComponent>

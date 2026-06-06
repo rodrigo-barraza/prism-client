@@ -99,14 +99,14 @@ export default function RunHistorySidebarComponent({
         tabs={[
           {
             key: "general",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
+            icon: <span className={tabBarStyles['tab-emoji-icon']}>🛠︎</span>,
             tooltip: "General",
             badge: selectedModels.length + agentInstances.length,
             badgeDisabled: selectedModels.length + agentInstances.length === 0,
           },
           {
             key: "history",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>📜</span>,
+            icon: <span className={tabBarStyles['tab-emoji-icon']}>📜</span>,
             tooltip: "Run History",
             badge: runHistory.length,
             badgeDisabled: runHistory.length === 0,

@@ -475,8 +475,8 @@ export default function AdminAgentViewerComponent() {
 
   // -- Center: chat area (read-only) ---------------------------
   const chatContent = (
-    <div className={chatStyles.container}>
-      <div className={chatStyles.messagesList}>
+    <div className={chatStyles['container']}>
+      <div className={chatStyles['messages-list']}>
         {!activeId && (
           <EmptyStateComponent
             icon={<Bot size={40} />}

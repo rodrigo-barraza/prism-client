@@ -194,8 +194,8 @@ export function createMentionBadge(
 ) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
-  const classes = [badgeStyles.mentionBadge];
-  if (opts.stale) classes.push(badgeStyles.mentionBadgeStale);
+  const classes = [badgeStyles['mention-badge']];
+  if (opts.stale) classes.push(badgeStyles['mention-badge-stale']);
   badge.className = classes.join(" ");
   badge.dataset.mentionPath = path;
   badge.dataset.mentionType = type || "file";
@@ -236,7 +236,7 @@ export function createMentionBadge(
 export function createSlashCommandBadge(ruleName: string) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
-  badge.className = badgeStyles.slashCommandBadge;
+  badge.className = badgeStyles['slash-command-badge'];
   badge.dataset.slashCommand = ruleName;
   badge.title = `Rule: /${ruleName} — click to remove`;
   badge.textContent = `⚡ /${ruleName}`;

@@ -45,6 +45,7 @@ import stopwatchStyles from "./StopwatchBadgeComponent.module.css";
 import messageStyles from "./MessageCountBadgeComponent.module.css";
 import wordStyles from "./WordBadgeComponent.module.css";
 import toolStyles from "./ToolCountBadgeComponent.module.css";
+import toolItemStyles from "./ToolBadgeComponent.module.css";
 import modelStyles from "./ModelBadgeComponent.module.css";
 import providersStyles from "./ProvidersBadgeComponent.module.css";
 import modelTypeStyles from "./ModelTypeBadgeComponent.module.css";
@@ -557,7 +558,7 @@ function CoinStaticRenderer({ agent, size }: { agent?: string | ClientAgent | nu
 
   return (
     <span ref={coinWrapperReference} data-is-typing-state="false">
-      <span ref={iconCanvasReference} className={agentStyles.hiddenIcon}>
+      <span ref={iconCanvasReference} className={agentStyles['hidden-icon']}>
         {renderAgentIcon(agent, Math.round(TEXTURE_SIZE * 0.5))}
       </span>
       <ThreeCanvasComponent
@@ -568,7 +569,7 @@ function CoinStaticRenderer({ agent, size }: { agent?: string | ClientAgent | nu
         alpha
         antialias
         toneMapping="None"
-        className={agentStyles.coinCanvas}
+        className={agentStyles['coin-canvas']}
         style={{ width: size, height: size }}
       />
     </span>
@@ -657,7 +658,7 @@ function StopwatchBadge({
   return (
     <TooltipComponent label={tooltipLabel} position="top">
       <span
-        className={`${stopwatchStyles.badge} ${showPulse ? stopwatchStyles.live : ""} ${className}`}
+        className={`${stopwatchStyles['badge']} ${showPulse ? stopwatchStyles['live'] : ""} ${className}`}
       >
         <IconComponent size={11} />
         {formatElapsedTime(displaySeconds)}
@@ -762,11 +763,11 @@ export default function BadgeComponent(props: BadgeProps) {
       if (liveTokensPerSecond !== null && liveTokensPerSecond !== undefined) {
         const variant =
           isActivelyGenerating || turnActive
-            ? throughputStyles.live
-            : throughputStyles.stale;
+            ? throughputStyles['live']
+            : throughputStyles['stale'];
         return (
-          <span className={`${throughputStyles.badge} ${variant}`}>
-            <GaugeIcon size={10} className={throughputStyles.icon} />
+          <span className={`${throughputStyles['badge']} ${variant}`}>
+            <GaugeIcon size={10} className={throughputStyles['icon']} />
             {liveTokensPerSecond.toFixed(1)} tok/s
           </span>
         );
@@ -774,9 +775,9 @@ export default function BadgeComponent(props: BadgeProps) {
       if (averageTokensPerSecond != null) {
         return (
           <span
-            className={`${throughputStyles.badge} ${throughputStyles.average}`}
+            className={`${throughputStyles['badge']} ${throughputStyles['average']}`}
           >
-            <GaugeIcon size={10} className={throughputStyles.icon} />
+            <GaugeIcon size={10} className={throughputStyles['icon']} />
             {averageTokensPerSecond.toFixed(1)} tok/s
           </span>
         );
@@ -888,7 +889,7 @@ export default function BadgeComponent(props: BadgeProps) {
       }
 
       const iconSize = mini ? 8 : 10;
-      const cls = `${modelStyles.badge} ${mini ? modelStyles.mini : ""} ${noHover ? modelStyles.noHover : ""} ${className}`;
+      const cls = `${modelStyles['badge']} ${mini ? modelStyles['mini'] : ""} ${noHover ? modelStyles['no-hover'] : ""} ${className}`;
       const resolvedProvider =
         provider || (providers?.length === 1 ? providers[0] : null);
       const providerIcon = resolvedProvider ? (
@@ -908,18 +909,18 @@ export default function BadgeComponent(props: BadgeProps) {
               {hasCleanName ? (
                 <>
                   <span
-                    className={`${modelStyles.modelName} ${modelStyles.modelNameClean}`}
+                    className={`${modelStyles['model-name']} ${modelStyles['model-name-clean']}`}
                   >
                     {cleanName}
                   </span>
                   <span
-                    className={`${modelStyles.modelName} ${modelStyles.modelNameRaw}`}
+                    className={`${modelStyles['model-name']} ${modelStyles['model-name-raw']}`}
                   >
                     {rawName}
                   </span>
                 </>
               ) : (
-                <span className={modelStyles.modelName}>{rawName}</span>
+                <span className={modelStyles['model-name']}>{rawName}</span>
               )}
             </span>
           </TooltipComponent>
@@ -944,7 +945,7 @@ export default function BadgeComponent(props: BadgeProps) {
       }
 
       const iconSize = mini ? 8 : 10;
-      const cls = `${providersStyles.badge} ${mini ? providersStyles.mini : ""} ${className}`;
+      const cls = `${providersStyles['badge']} ${mini ? providersStyles['mini'] : ""} ${className}`;
       const displayLabel = (key: string) => resolveProviderLabel(key);
 
       if (providers.length === 1) {
@@ -952,7 +953,7 @@ export default function BadgeComponent(props: BadgeProps) {
           <TooltipComponent label={displayLabel(providers[0])} position="top">
             <span className={cls}>
               <ProviderLogo provider={providers[0]} size={iconSize} />
-              <span className={providersStyles.providerName}>
+              <span className={providersStyles['provider-name']}>
                 {displayLabel(providers[0])}
               </span>
             </span>
@@ -985,7 +986,7 @@ export default function BadgeComponent(props: BadgeProps) {
             label: modelType,
           };
       const Icon = meta.icon;
-      const cls = `${modelTypeStyles.badge} ${modelTypeStyles[modelType] || ""} ${mini ? modelTypeStyles.mini : ""} ${className}`;
+      const cls = `${modelTypeStyles['badge']} ${modelTypeStyles[modelType] || ""} ${mini ? modelTypeStyles['mini'] : ""} ${className}`;
 
       return (
         <TooltipComponent label={`${meta.label} model`} position="top">
@@ -1003,7 +1004,7 @@ export default function BadgeComponent(props: BadgeProps) {
       if (!project) return null;
       return (
         <TooltipComponent label={`Project: ${project}`} position="top">
-          <span className={`${projectStyles.badge} ${className}`}>
+          <span className={`${projectStyles['badge']} ${className}`}>
             <FolderKanban size={10} />
             {project}
           </span>
@@ -1017,7 +1018,7 @@ export default function BadgeComponent(props: BadgeProps) {
       if (!username || username === "unknown") return null;
       return (
         <TooltipComponent label={`User: ${username}`} position="top">
-          <span className={`${userStyles.badge} ${className}`}>
+          <span className={`${userStyles['badge']} ${className}`}>
             <UserIcon size={10} />
             {username}
           </span>
@@ -1081,11 +1082,11 @@ export default function BadgeComponent(props: BadgeProps) {
         return (
           <TooltipComponent label={tooltipContent} position="top">
             <span
-              className={`${agentStyles.badge} ${agentStyles["multi-agent-badge"]} ${className}`}
+              className={`${agentStyles['badge']} ${agentStyles["multi-agent-badge"]} ${className}`}
               style={{ width: size, height: size }}
             >
               <span
-                className={agentStyles.badgeInner}
+                className={agentStyles['badge-inner']}
                 style={{
                   background: "linear-gradient(135deg, var(--background-elevated) 0%, var(--background-surface) 100%)",
                   border: "1px solid var(--calculated-border-color)",
@@ -1106,7 +1107,7 @@ export default function BadgeComponent(props: BadgeProps) {
 
       if (animation) {
         return (
-          <span className={`${agentStyles.coinWrap} ${className}`}>
+          <span className={`${agentStyles['coin-wrap']} ${className}`}>
             <CoinStaticRenderer key={agentId} agent={normalizedAgent} size={size} />
           </span>
         );
@@ -1121,12 +1122,12 @@ export default function BadgeComponent(props: BadgeProps) {
 
       return (
         <span
-          className={`${agentStyles.badge} ${className}`}
+          className={`${agentStyles['badge']} ${className}`}
           data-agent-identifier={agentId}
           style={outerStyle}
         >
           <span
-            className={agentStyles.badgeInner}
+            className={agentStyles['badge-inner']}
             data-agent-identifier={agentId}
             style={gradientStyle}
           >
@@ -1165,9 +1166,9 @@ export default function BadgeComponent(props: BadgeProps) {
         resolvedType === "file" && !isStale && typeof onFileOpen === "function";
 
       const className = [
-        mentionStyles.mentionBadge,
-        isStale && mentionStyles.mentionBadgeStale,
-        isClickable && mentionStyles.mentionBadgeClickable,
+        mentionStyles['mention-badge'],
+        isStale && mentionStyles['mention-badge-stale'],
+        isClickable && mentionStyles['mention-badge-clickable'],
       ]
         .filter(Boolean)
         .join(" ");
@@ -1199,7 +1200,7 @@ export default function BadgeComponent(props: BadgeProps) {
           role={isClickable ? "button" : undefined}
           tabIndex={isClickable ? 0 : undefined}
         >
-          <Icon size={10} className={mentionStyles.mentionIcon} />
+          <Icon size={10} className={mentionStyles['mention-icon']} />
           {displayName}
         </span>
       );
@@ -1215,7 +1216,7 @@ export default function BadgeComponent(props: BadgeProps) {
 
       const badge = (
         <span
-          className={`${toolStyles.badge}${active ? ` ${toolStyles.badgeActive}` : ""}`}
+          className={`${toolItemStyles['badge']}${active ? ` ${toolItemStyles['badge-active']}` : ""}`}
           style={{
             color,
             borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
@@ -1223,10 +1224,10 @@ export default function BadgeComponent(props: BadgeProps) {
         >
           <Icon size={10} />
           {!isCompact && (
-            <span className={toolStyles.label}>{displayName}</span>
+            <span className={toolItemStyles['label']}>{displayName}</span>
           )}
           {count != null && count > 1 && (
-            <span className={toolStyles.count}>×{count}</span>
+            <span className={toolItemStyles['count']}>×{count}</span>
           )}
         </span>
       );
@@ -1289,7 +1290,7 @@ export function ToolBadgeRow({
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
-    <div className={toolStyles.badgeRow}>
+    <div className={toolItemStyles['badge-row']}>
       {Object.entries(tools)
         .sort(([, a]: [string, number], [, b]: [string, number]) => b - a)
         .map(([name, count]: [string, number]) => (
@@ -1337,7 +1338,7 @@ export function ModelToolsRow({
   if (activeTools.length === 0) return null;
 
   return (
-    <div className={`${toolStyles.badgeRow} ${className || ""}`}>
+    <div className={`${toolItemStyles['badge-row']} ${className || ""}`}>
       {activeTools.map((def) => {
         const raw = tools[def.key];
         const count = typeof raw === "number" ? raw : 0;

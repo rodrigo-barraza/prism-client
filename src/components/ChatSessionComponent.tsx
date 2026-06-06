@@ -3890,9 +3890,9 @@ export default function ChatSessionComponent({
   const handleNewChatGlitch = useCallback(() => {
     const element = chatNewBtnRef.current;
     if (element) {
-      element.classList.remove(chatStyles.chatHeaderNewBtnRainbow);
+      element.classList.remove(chatStyles['chat-header-new-btn-rainbow']);
       void element.offsetWidth;
-      element.classList.add(chatStyles.chatHeaderNewBtnRainbow);
+      element.classList.add(chatStyles['chat-header-new-btn-rainbow']);
 
       setChatGlitchLabel(glitchText());
       if (chatGlitchInterval.current) clearInterval(chatGlitchInterval.current);
@@ -3902,7 +3902,7 @@ export default function ChatSessionComponent({
 
       if (chatRainbowTimer.current) clearTimeout(chatRainbowTimer.current);
       chatRainbowTimer.current = setTimeout(() => {
-        element.classList.remove(chatStyles.chatHeaderNewBtnRainbow);
+        element.classList.remove(chatStyles['chat-header-new-btn-rainbow']);
         if (chatGlitchInterval.current)
           clearInterval(chatGlitchInterval.current);
         chatGlitchInterval.current = null;
@@ -4471,33 +4471,33 @@ export default function ChatSessionComponent({
         tabs={[
           {
             key: "settings",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🛠︎</span>,
+            icon: <span className={tabBarStyles['tab-emoji-icon']}>🛠︎</span>,
             tooltip: "Settings",
           },
           {
             key: "params",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🎚︎</span>,
+            icon: <span className={tabBarStyles['tab-emoji-icon']}>🎚︎</span>,
             tooltip: "Parameters",
           },
           ...(isWorkspaceTabVisible
             ? [
                 {
                   key: "workspace",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>📂</span>,
+                  icon: <span className={tabBarStyles['tab-emoji-icon']}>📂</span>,
                   tooltip: "Workspace",
                 },
               ]
             : []),
           {
             key: "info",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>📄</span>,
+            icon: <span className={tabBarStyles['tab-emoji-icon']}>📄</span>,
             tooltip: "Info",
           },
           ...(!isNoAgent
             ? [
                 {
                   key: "workers",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>🤖</span>,
+                  icon: <span className={tabBarStyles['tab-emoji-icon']}>🤖</span>,
                   ...badgeProps(workersCount, "workers"),
                   badgeRainbow: Object.values(workerToolActivity).some(
                     (worker: WorkerActivityEntry) =>
@@ -4511,7 +4511,7 @@ export default function ChatSessionComponent({
             : []),
           {
             key: "requests",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>📊</span>,
+            icon: <span className={tabBarStyles['tab-emoji-icon']}>📊</span>,
             ...badgeProps(
               backendSessionStats?.requestCount || 0,
               "requests",
@@ -4991,7 +4991,7 @@ export default function ChatSessionComponent({
         tabs={[
           {
             key: "tools",
-            icon: <span className={tabBarStyles.tabEmojiIcon}>🔧</span>,
+            icon: <span className={tabBarStyles['tab-emoji-icon']}>🔧</span>,
             ...badgeProps(allToolSchemas.length, "tools"),
             tooltip: "Tools",
             tooltipDisabled: !settings.functionCallingEnabled,
@@ -5000,7 +5000,7 @@ export default function ChatSessionComponent({
             ? [
                 {
                   key: "skills",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>📖</span>,
+                  icon: <span className={tabBarStyles['tab-emoji-icon']}>📖</span>,
                   ...badgeProps(
                     skills.filter((s) => s.enabled).length,
                     "skills",
@@ -5009,7 +5009,7 @@ export default function ChatSessionComponent({
                 },
                 {
                   key: "rules",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>📏</span>,
+                  icon: <span className={tabBarStyles['tab-emoji-icon']}>📏</span>,
                   ...badgeProps(
                     rules.filter((rule) => rule.enabled).length,
                     "rules",
@@ -5020,7 +5020,7 @@ export default function ChatSessionComponent({
                   ? [
                       {
                         key: "memories",
-                        icon: <span className={tabBarStyles.tabEmojiIcon}>🧠</span>,
+                        icon: <span className={tabBarStyles['tab-emoji-icon']}>🧠</span>,
                         ...badgeProps(totalMemoriesCount, "memories"),
                         tooltip: "Memories",
                       },
@@ -5028,7 +5028,7 @@ export default function ChatSessionComponent({
                   : []),
                 {
                   key: "tasks",
-                  icon: <span className={tabBarStyles.tabEmojiIcon}>✅</span>,
+                  icon: <span className={tabBarStyles['tab-emoji-icon']}>✅</span>,
                   ...badgeProps(tasksCount, "tasks"),
                   tooltip: "Tasks",
                 },
@@ -5130,20 +5130,20 @@ export default function ChatSessionComponent({
 
   // -- Center: chat area ---------------------------------------
   const chatContent = (
-    <div className={chatStyles.container}>
+    <div className={chatStyles['container']}>
       {/* -- Chat header bar (always visible "New Session") -- */}
-      <div className={chatStyles.chatHeader}>
-        <div className={chatStyles.chatHeaderTitle}>
-          <span className={chatStyles.chatHeaderTitleText}>{title || ""}</span>
+      <div className={chatStyles['chat-header']}>
+        <div className={chatStyles['chat-header-title']}>
+          <span className={chatStyles['chat-header-title-text']}>{title || ""}</span>
         </div>
-        <div className={chatStyles.chatHeaderActions}>
+        <div className={chatStyles['chat-header-actions']}>
           {hasSystemContextMessage && (
-            <div className={chatStyles.debugToggleContainer}>
+            <div className={chatStyles['debug-toggle-container']}>
               <ButtonComponent
                 variant={!showRaw ? "tonal" : "text"}
                 size="small"
                 onClick={() => setShowRaw(false)}
-                className={chatStyles.debugToggleButton}
+                className={chatStyles['debug-toggle-button']}
               >
                 Clean
               </ButtonComponent>
@@ -5151,7 +5151,7 @@ export default function ChatSessionComponent({
                 variant={showRaw ? "tonal" : "text"}
                 size="small"
                 onClick={() => setShowRaw(true)}
-                className={chatStyles.debugToggleButton}
+                className={chatStyles['debug-toggle-button']}
               >
                 Raw
               </ButtonComponent>
@@ -5164,7 +5164,7 @@ export default function ChatSessionComponent({
             icon={chatGlitchLabel ? undefined : Plus}
             onClick={handleNewChatGlitch}
             disabled={messages.length === 0 && !activeId}
-            className={`${chatStyles.chatHeaderNewButton} ${chatGlitchLabel ? chatStyles.chatHeaderNewBtnGlitch : ""}`}
+            className={`${chatStyles['chat-header-new-button']} ${chatGlitchLabel ? chatStyles['chat-header-new-btn-glitch'] : ""}`}
             title="Start a new session"
           >
             {chatGlitchLabel || "New Session"}
@@ -5186,7 +5186,7 @@ export default function ChatSessionComponent({
       />
       {/* Messages */}
       <div
-        className={`${chatStyles.messagesList} ${agentBackgroundImage ? chatStyles.hasBackground : ""}`}
+        className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""}`}
         ref={messagesListRef}
         style={
           agentBackgroundImage
@@ -5458,11 +5458,11 @@ export default function ChatSessionComponent({
       })()}
 
       <div
-        className={`${chatStyles.inputWrapper} ${!settings.provider || !settings.model ? chatStyles.inputWrapperDisabled : ""}`}
+        className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model ? chatStyles['input-wrapper-disabled'] : ""}`}
       >
         <form
           onSubmit={handleSend}
-          className={`${chatStyles.inputBox} ${isDragging ? chatStyles.inputBoxDragActive : ""} ${isGenerating ? chatStyles.inputBoxGenerating : ""}`}
+          className={`${chatStyles['input-box']} ${isDragging ? chatStyles['input-box-drag-active'] : ""} ${isGenerating ? chatStyles['input-box-generating'] : ""}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -5470,9 +5470,9 @@ export default function ChatSessionComponent({
           onPaste={handlePaste}
         >
           {queuedNextTurn && (
-            <div className={chatStyles.queuedMessage}>
-              <div className={chatStyles.queuedHeader}>
-                <div className={chatStyles.queuedHeaderLeft}>
+            <div className={chatStyles['queued-message']}>
+              <div className={chatStyles['queued-header']}>
+                <div className={chatStyles['queued-header-left']}>
                   <CornerDownLeft size={14} />
                   <span>Queued for next turn</span>
                 </div>
@@ -5483,19 +5483,19 @@ export default function ChatSessionComponent({
                     setPendingImages(queuedNextTurn.images);
                     setQueuedNextTurn(null);
                   }}
-                  className={chatStyles.removeAttachment}
+                  className={chatStyles['remove-attachment']}
                   title="Edit queue"
                 >
                   <X size={14} />
                 </button>
               </div>
               {queuedNextTurn.text && (
-                <div className={chatStyles.queuedText}>
+                <div className={chatStyles['queued-text']}>
                   {queuedNextTurn.text}
                 </div>
               )}
               {queuedNextTurn.images?.length > 0 && (
-                <div className={chatStyles.queuedImagesCount}>
+                <div className={chatStyles['queued-images-count']}>
                   <Paperclip size={12} /> {queuedNextTurn.images.length}{" "}
                   image(s)
                 </div>
@@ -5503,7 +5503,7 @@ export default function ChatSessionComponent({
             </div>
           )}
           {isDragging && (
-            <div className={chatStyles.dragOverlay}>
+            <div className={chatStyles['drag-overlay']}>
               <Paperclip size={20} />
               <span>
                 Drop {[...supportedInputModalities].join(", ")} files here
@@ -5511,20 +5511,20 @@ export default function ChatSessionComponent({
             </div>
           )}
           {(pendingImages.length > 0 || pendingFiles.length > 0) && (
-            <div className={chatStyles.pendingImages}>
+            <div className={chatStyles['pending-images']}>
               {pendingImages.map((dataUrl, i) => (
-                <div key={`img-${i}`} className={chatStyles.pendingAttachmentWrap}>
+                <div key={`img-${i}`} className={chatStyles['pending-attachment-wrap']}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={dataUrl}
                     alt="Attached"
-                    className={chatStyles.pendingImg}
+                    className={chatStyles['pending-img']}
                     onClick={() => setLightboxSourceUrl(dataUrl)}
                   />
                   <button
                     type="button"
                     onClick={() => removeImage(i)}
-                    className={chatStyles.removeAttachment}
+                    className={chatStyles['remove-attachment']}
                   >
                     <X size={14} />
                   </button>
@@ -5538,8 +5538,8 @@ export default function ChatSessionComponent({
                   : pendingFile.modality === "document" ? FileSpreadsheet
                   : File;
                 return (
-                  <div key={`file-${i}`} className={chatStyles.pendingAttachmentWrap}>
-                    <div className={chatStyles.pendingFileThumb}>
+                  <div key={`file-${i}`} className={chatStyles['pending-attachment-wrap']}>
+                    <div className={chatStyles['pending-file-thumb']}>
                       <FileIcon size={20} />
                       <span style={{ fontSize: "0.5625rem", textOverflow: "ellipsis", overflow: "hidden", maxWidth: 56, whiteSpace: "nowrap" }}>
                         {pendingFile.name.length > 10
@@ -5550,7 +5550,7 @@ export default function ChatSessionComponent({
                     <button
                       type="button"
                       onClick={() => removeFile(i)}
-                      className={chatStyles.removeAttachment}
+                      className={chatStyles['remove-attachment']}
                     >
                       <X size={14} />
                     </button>
@@ -5560,7 +5560,7 @@ export default function ChatSessionComponent({
             </div>
           )}
           {/* Active rule badges are now inline in the contentEditable */}
-          <div className={chatStyles.inputRow}>
+          <div className={chatStyles['input-row']}>
             {supportsAnyFileInput && (
               <>
                 <input
@@ -5588,7 +5588,7 @@ export default function ChatSessionComponent({
               contentEditable
               role="textbox"
               aria-multiline="true"
-              className={chatStyles.editableInput}
+              className={chatStyles['editable-input']}
               onInput={handleInputChange}
               onKeyDown={handleKeyDown}
               onPaste={handleEditablePaste}
@@ -5619,18 +5619,18 @@ export default function ChatSessionComponent({
                 if (filteredRules.length === 0) return null;
                 return (
                   <div
-                    className={chatStyles.mentionDropdown}
+                    className={chatStyles['mention-dropdown']}
                     style={{
                       borderColor:
                         "color-mix(in srgb, var(--color-amber) 30%, var(--calculated-border-color))",
                     }}
                   >
-                    <div className={chatStyles.mentionList}>
+                    <div className={chatStyles['mention-list']}>
                       {filteredRules.map((rule) => (
                         <button
                           key={rule.id || rule._id?.toString()}
                           type="button"
-                          className={chatStyles.mentionItem}
+                          className={chatStyles['mention-item']}
                           onMouseDown={(event) => {
                             event.preventDefault();
                             const element = textareaRef.current;
@@ -5679,13 +5679,13 @@ export default function ChatSessionComponent({
               })()}
             {/* ── Mention Autocomplete Dropdown ── */}
             {mentionOpen && mentionResults.length > 0 && (
-              <div className={chatStyles.mentionDropdown}>
-                <div className={chatStyles.mentionList} ref={mentionListRef}>
+              <div className={chatStyles['mention-dropdown']}>
+                <div className={chatStyles['mention-list']} ref={mentionListRef}>
                   {mentionResults.map((entry, i) => (
                     <button
                       key={entry.path}
                       type="button"
-                      className={`${chatStyles.mentionItem} ${i === mentionIndex ? chatStyles.mentionItemActive : ""}`}
+                      className={`${chatStyles['mention-item']} ${i === mentionIndex ? chatStyles['mention-item-active'] : ""}`}
                       onMouseDown={(e: React.MouseEvent) => {
                         e.preventDefault();
                         applyMention(entry);
@@ -5697,7 +5697,7 @@ export default function ChatSessionComponent({
                       ) : (
                         <File size={12} />
                       )}
-                      <span className={chatStyles.mentionItemPath}>
+                      <span className={chatStyles['mention-item-path']}>
                         {entry.path}
                       </span>
                     </button>
