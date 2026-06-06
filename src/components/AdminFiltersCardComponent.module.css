@@ -6,10 +6,17 @@
   border-radius: var(--border-radius-md);
   padding: 16px 20px;
   transition: border-color var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 
   &:hover {
     border-color: oklch(from var(--calculated-border-color) l c h / 0.6);
   }
+}
+
+.search-input {
+  width: 100%;
 }
 
 .filters-grid {

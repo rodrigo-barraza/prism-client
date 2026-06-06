@@ -30,7 +30,6 @@ import {
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../utils/utilities";
-import { edgePath } from "./WorkflowNodeConstantsComponent";
 
 import styles from "./SessionGraphPageComponent.module.css";
 
@@ -60,7 +59,7 @@ interface GraphNode {
   y: number;
   velocityX: number;
   velocityY: number;
-  count?: number;
+  sequenceNumber?: number;
   metadata?: Record<string, unknown>;
 }
 
@@ -99,15 +98,47 @@ const NODE_LABELS: Record<NodeCategory, string> = {
   embedding: "Embedding",
 };
 
+const TIER_ORDER: Record<NodeCategory, number> = {
+  project: 0,
+  user: 0,
+  session: 1,
+  agent: 2,
+  tool: 2,
+  request: 3,
+  model: 4,
+  embedding: 4,
+  provider: 5,
+};
+
+function straightEdgePath(
+  sourceX: number,
+  sourceY: number,
+  sourceRadius: number,
+  targetX: number,
+  targetY: number,
+  targetRadius: number,
+): string {
+  const deltaX = targetX - sourceX;
+  const deltaY = targetY - sourceY;
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+
+  const unitX = deltaX / distance;
+  const unitY = deltaY / distance;
+
+  const startX = sourceX + unitX * sourceRadius;
+  const startY = sourceY + unitY * sourceRadius;
+  const endX = targetX - unitX * targetRadius;
+  const endY = targetY - unitY * targetRadius;
+
+  return `M ${startX} ${startY} L ${endX} ${endY}`;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    Graph Builder — converts session data into nodes + edges
 
-    Topology:
-      Session ─→ Agent ─→ Request Operation (× N) ─→ Model ─→ Provider
-                                                       └─→ Tool (× N)
-                   └─→ Request Operation (× N) ─→ Embedding Model ─→ Embedding Provider
-     Session ─→ Project
-     Session ─→ User
+    Topology (top-to-bottom):
+      Project ─→ Session ─→ Agent ─→ Request #N ─→ Model ─→ Provider
+                               └─→ Tool (× N)
    ═══════════════════════════════════════════════════════════════════ */
 
 function buildGraphFromSession(
@@ -126,7 +157,7 @@ function buildGraphFromSession(
     category: NodeCategory,
     radius: number,
     metadata?: Record<string, unknown>,
-    count?: number,
+    sequenceNumber?: number,
   ) => {
     if (nodeIdSet.has(id)) return;
     nodeIdSet.add(id);
@@ -140,7 +171,7 @@ function buildGraphFromSession(
       velocityX: 0,
       velocityY: 0,
       metadata,
-      count,
+      sequenceNumber,
     });
   };
 
@@ -171,16 +202,16 @@ function buildGraphFromSession(
     },
   );
 
-  // Project node — connects to session
+  // Project node — connects to session (tier 0 → tier 1)
   if (session.project) {
     const projectNodeId = `project:${session.project}`;
     addNode(projectNodeId, session.project, "project", 22, {
       project: session.project,
     });
-    addEdge(sessionNodeId, projectNodeId, 0.8);
+    addEdge(projectNodeId, sessionNodeId, 0.8);
   }
 
-  // Agent node — connects to session (central hub for models, tools, operations)
+  // Agent node — connects to session (tier 1 → tier 2)
   const agentNodeId = session.agent
     ? `agent:${session.agent}`
     : `agent:default`;
@@ -195,52 +226,87 @@ function buildGraphFromSession(
   }
   addEdge(sessionNodeId, agentNodeId, 0.9);
 
-  // Aggregate data from requests — separate LLM vs embedding requests
-  const llmModelCounts: Record<string, { count: number; cost: number; tokens: number; providers: Set<string> }> = {};
-  const embeddingModelCounts: Record<string, { count: number; cost: number; tokens: number; providers: Set<string> }> = {};
-  const toolCounts: Record<string, number> = {};
+  // Collect unique providers across all requests
+  const providerNodeIds = new Set<string>();
+  const toolNodeIds = new Set<string>();
+  const modelNodeIds = new Set<string>();
   const userSet = new Set<string>();
-  const modelToOperationsMap = new Map<string, Set<string>>();
-  const toolNameToModelNodeIdsMap = new Map<string, Set<string>>();
 
-  for (const request of sessionRequests) {
+  // Tool usage tracking across all requests (for tool → agent edges)
+  const toolCounts: Record<string, number> = {};
+
+  // Sort requests by timestamp for sequencing
+  const sortedRequests = [...sessionRequests].sort((requestA, requestB) => {
+    const timestampA = requestA.timestamp ? new Date(requestA.timestamp).getTime() : 0;
+    const timestampB = requestB.timestamp ? new Date(requestB.timestamp).getTime() : 0;
+    return timestampA - timestampB;
+  });
+
+  // Build individual request nodes with sequence numbers
+  for (let requestIndex = 0; requestIndex < sortedRequests.length; requestIndex++) {
+    const request = sortedRequests[requestIndex];
+    const sequenceNumber = requestIndex + 1;
     const isEmbeddingRequest = request.operation?.startsWith("embed:");
+    const operationLabel = request.operation || "unknown";
+    const requestNodeId = `request:${request._id || requestIndex}`;
 
+    addNode(
+      requestNodeId,
+      `#${sequenceNumber} ${operationLabel}`,
+      "request",
+      16,
+      {
+        operation: operationLabel,
+        estimatedCost: request.estimatedCost,
+        inputTokens: request.inputTokens,
+        outputTokens: request.outputTokens,
+        duration: request.duration,
+        timestamp: request.timestamp,
+        status: request.status,
+      },
+      sequenceNumber,
+    );
+
+    // Agent → Request (tier 2 → tier 3)
+    addEdge(agentNodeId, requestNodeId, 0.5);
+
+    // Request → Model (tier 3 → tier 4)
     if (request.model) {
-      const targetCounts = isEmbeddingRequest ? embeddingModelCounts : llmModelCounts;
-      if (!targetCounts[request.model]) {
-        targetCounts[request.model] = { count: 0, cost: 0, tokens: 0, providers: new Set() };
-      }
-      targetCounts[request.model].count += 1;
-      targetCounts[request.model].cost += request.estimatedCost || 0;
-      targetCounts[request.model].tokens +=
-        (request.inputTokens || 0) + (request.outputTokens || 0);
-      if (request.provider) {
-        targetCounts[request.model].providers.add(request.provider);
-      }
+      const modelNodeId = isEmbeddingRequest
+        ? `embedding:${request.model}`
+        : `model:${request.model}`;
+      const modelCategory: NodeCategory = isEmbeddingRequest ? "embedding" : "model";
 
-      const operationName = request.operation || "unknown";
-      if (!modelToOperationsMap.has(request.model)) {
-        modelToOperationsMap.set(request.model, new Set());
+      if (!modelNodeIds.has(modelNodeId)) {
+        modelNodeIds.add(modelNodeId);
+        addNode(modelNodeId, cleanModelName(request.model), modelCategory, 20, {
+          fullModelName: request.model,
+        });
       }
-      modelToOperationsMap.get(request.model)!.add(operationName);
+      addEdge(requestNodeId, modelNodeId, 0.9);
+
+      // Model → Provider (tier 4 → tier 5)
+      if (request.provider) {
+        const providerNodeId = `provider:${request.provider}`;
+        if (!providerNodeIds.has(providerNodeId)) {
+          providerNodeIds.add(providerNodeId);
+          addNode(providerNodeId, resolveProviderLabel(request.provider) || request.provider, "provider", 18, {
+            provider: request.provider,
+          });
+        }
+        addEdge(modelNodeId, providerNodeId, 0.7);
+      }
     }
-    if (request.username) {
-      userSet.add(request.username);
-    }
+
+    // Track tools per-request
     if (request.toolApiNames?.length) {
       for (const toolName of request.toolApiNames) {
         toolCounts[toolName] = (toolCounts[toolName] || 0) + 1;
-        if (request.model) {
-          const modelNodeId = isEmbeddingRequest
-            ? `embedding:${request.model}`
-            : `model:${request.model}`;
-          if (!toolNameToModelNodeIdsMap.has(toolName)) {
-            toolNameToModelNodeIdsMap.set(toolName, new Set());
-          }
-          toolNameToModelNodeIdsMap.get(toolName)!.add(modelNodeId);
-        }
       }
+    }
+
+    if (request.username) {
+      userSet.add(request.username);
     }
   }
 
@@ -253,217 +319,66 @@ function buildGraphFromSession(
     }
   }
 
-  // LLM Model nodes — Request → Model → Provider
-  for (const [modelName, modelData] of Object.entries(llmModelCounts)) {
-    const modelNodeId = `model:${modelName}`;
-    const normalizedRadius = Math.min(26, 14 + Math.sqrt(modelData.count) * 3);
-    addNode(modelNodeId, cleanModelName(modelName), "model", normalizedRadius, {
-      fullModelName: modelName,
-      requestCount: modelData.count,
-      totalCost: modelData.cost,
-      totalTokens: modelData.tokens,
-    }, modelData.count);
-
-    const associatedOperations = modelToOperationsMap.get(modelName);
-    if (associatedOperations && associatedOperations.size > 0) {
-      for (const operationName of associatedOperations) {
-        addEdge(`request:${operationName}`, modelNodeId, 0.9);
-      }
-    } else {
-      addEdge(agentNodeId, modelNodeId, 0.9);
-    }
-
-    // Model → Provider
-    for (const providerName of modelData.providers) {
-      const providerNodeId = `provider:${providerName}`;
-      addNode(providerNodeId, resolveProviderLabel(providerName) || providerName, "provider", 18, {
-        provider: providerName,
-      });
-      addEdge(modelNodeId, providerNodeId, 0.7);
-    }
-  }
-
-  // Embedding Model nodes — Request → Embedding Model → Embedding Provider
-  for (const [modelName, modelData] of Object.entries(embeddingModelCounts)) {
-    const embeddingNodeId = `embedding:${modelName}`;
-    const normalizedRadius = Math.min(22, 13 + Math.sqrt(modelData.count) * 2);
-    addNode(embeddingNodeId, cleanModelName(modelName), "embedding", normalizedRadius, {
-      fullModelName: modelName,
-      requestCount: modelData.count,
-      totalCost: modelData.cost,
-      totalTokens: modelData.tokens,
-    }, modelData.count);
-
-    const associatedOperations = modelToOperationsMap.get(modelName);
-    if (associatedOperations && associatedOperations.size > 0) {
-      for (const operationName of associatedOperations) {
-        addEdge(`request:${operationName}`, embeddingNodeId, 0.7);
-      }
-    } else {
-      addEdge(agentNodeId, embeddingNodeId, 0.7);
-    }
-
-    // Embedding Model → Provider (unified with LLM provider nodes)
-    for (const providerName of modelData.providers) {
-      const providerNodeId = `provider:${providerName}`;
-      addNode(providerNodeId, resolveProviderLabel(providerName) || providerName, "provider", 18, {
-        provider: providerName,
-      });
-      addEdge(embeddingNodeId, providerNodeId, 0.6);
-    }
-  }
-
-  // Tool nodes — connect to Model or Agent fallback
+  // Tool nodes — connect to Agent (tier 2, same as agent)
   const toolEntries = Object.entries(toolCounts).sort(
     ([, countA], [, countB]) => countB - countA,
   );
   for (const [toolName, usageCount] of toolEntries.slice(0, 20)) {
     const toolNodeId = `tool:${toolName}`;
+    toolNodeIds.add(toolNodeId);
     const normalizedRadius = Math.min(22, 12 + Math.sqrt(usageCount) * 2);
     addNode(toolNodeId, toolName, "tool", normalizedRadius, {
       toolName,
       usageCount,
-    }, usageCount);
-
-    const associatedModelNodeIds = toolNameToModelNodeIdsMap.get(toolName);
-    if (associatedModelNodeIds && associatedModelNodeIds.size > 0) {
-      for (const modelNodeId of associatedModelNodeIds) {
-        addEdge(modelNodeId, toolNodeId, 0.7);
-      }
-    } else {
-      addEdge(agentNodeId, toolNodeId, 0.7);
-    }
+    });
+    addEdge(agentNodeId, toolNodeId, 0.7);
   }
 
-  // User nodes — connect to Session
+  // User nodes — connect to Session (tier 0, same as project)
   for (const userName of userSet) {
     const userNodeId = `user:${userName}`;
     addNode(userNodeId, userName, "user", 18, { username: userName });
-    addEdge(sessionNodeId, userNodeId, 0.5);
-  }
-
-  // Request operation nodes — connect to Agent (iterations/operations are agent-driven)
-  const operationCounts: Record<string, { count: number; cost: number }> = {};
-  for (const request of sessionRequests) {
-    const operation = request.operation || "unknown";
-    if (!operationCounts[operation]) {
-      operationCounts[operation] = { count: 0, cost: 0 };
-    }
-    operationCounts[operation].count += 1;
-    operationCounts[operation].cost += request.estimatedCost || 0;
-  }
-
-  for (const [operation, operationData] of Object.entries(operationCounts)) {
-    const requestGroupNodeId = `request:${operation}`;
-    const normalizedRadius = Math.min(20, 12 + Math.sqrt(operationData.count) * 2);
-    addNode(
-      requestGroupNodeId,
-      `${operation} (${operationData.count})`,
-      "request",
-      normalizedRadius,
-      {
-        operation,
-        requestCount: operationData.count,
-        totalCost: operationData.cost,
-      },
-      operationData.count,
-    );
-    addEdge(agentNodeId, requestGroupNodeId, 0.5);
+    addEdge(userNodeId, sessionNodeId, 0.5);
   }
 
   return { nodes, edges };
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   Force-Directed Layout Simulation (simple Euler integration)
+   Hierarchical Tiered Layout — positions nodes in horizontal rows
+   arranged top-to-bottom by their category tier.
    ═══════════════════════════════════════════════════════════════════ */
 
-function initializeNodePositions(
-  graphNodes: GraphNode[],
-  centerX: number,
-  centerY: number,
-): void {
-  const sessionNode = graphNodes.find((node) => node.category === "session");
-  if (sessionNode) {
-    sessionNode.x = centerX;
-    sessionNode.y = centerY;
-  }
-
-  const orbitNodes = graphNodes.filter((node) => node.category !== "session");
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-
-  for (let index = 0; index < orbitNodes.length; index++) {
-    const distance = 120 + Math.sqrt(index) * 55;
-    const angle = index * goldenAngle;
-    orbitNodes[index].x = centerX + Math.cos(angle) * distance;
-    orbitNodes[index].y = centerY + Math.sin(angle) * distance;
-  }
-}
-
-function simulateForceLayout(
+function applyHierarchicalLayout(
   graphData: GraphData,
-  iterations: number,
-  centerX: number,
-  centerY: number,
+  canvasWidth: number,
+  canvasHeight: number,
 ): void {
-  const { nodes: graphNodes, edges: graphEdges } = graphData;
-  const damping = 0.85;
-  const repulsionStrength = 2800;
-  const attractionStrength = 0.012;
-  const centerGravity = 0.002;
+  const { nodes: graphNodes } = graphData;
+  if (graphNodes.length === 0) return;
 
-  for (let iteration = 0; iteration < iterations; iteration++) {
-    // Repulsion between all node pairs
-    for (let outerIndex = 0; outerIndex < graphNodes.length; outerIndex++) {
-      for (let innerIndex = outerIndex + 1; innerIndex < graphNodes.length; innerIndex++) {
-        const nodeA = graphNodes[outerIndex];
-        const nodeB = graphNodes[innerIndex];
-        const deltaX = nodeB.x - nodeA.x;
-        const deltaY = nodeB.y - nodeA.y;
-        const distanceSquared = deltaX * deltaX + deltaY * deltaY + 1;
-        const repulsionForce = repulsionStrength / distanceSquared;
-        const distance = Math.sqrt(distanceSquared);
-        const forceX = (deltaX / distance) * repulsionForce;
-        const forceY = (deltaY / distance) * repulsionForce;
-        nodeA.velocityX -= forceX;
-        nodeA.velocityY -= forceY;
-        nodeB.velocityX += forceX;
-        nodeB.velocityY += forceY;
-      }
-    }
+  const tierBuckets: Map<number, GraphNode[]> = new Map();
 
-    // Attraction along edges
-    const nodeMap = new Map(graphNodes.map((node) => [node.id, node]));
-    for (const edge of graphEdges) {
-      const sourceNode = nodeMap.get(edge.source);
-      const targetNode = nodeMap.get(edge.target);
-      if (!sourceNode || !targetNode) continue;
-      const deltaX = targetNode.x - sourceNode.x;
-      const deltaY = targetNode.y - sourceNode.y;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) + 1;
-      const idealDistance = 160;
-      const displacement = distance - idealDistance;
-      const attractionForce = displacement * attractionStrength * (edge.strength || 1);
-      const forceX = (deltaX / distance) * attractionForce;
-      const forceY = (deltaY / distance) * attractionForce;
-      sourceNode.velocityX += forceX;
-      sourceNode.velocityY += forceY;
-      targetNode.velocityX -= forceX;
-      targetNode.velocityY -= forceY;
-    }
+  for (const node of graphNodes) {
+    const tier = TIER_ORDER[node.category] ?? 3;
+    if (!tierBuckets.has(tier)) tierBuckets.set(tier, []);
+    tierBuckets.get(tier)!.push(node);
+  }
 
-    // Center gravity
-    for (const node of graphNodes) {
-      node.velocityX += (centerX - node.x) * centerGravity;
-      node.velocityY += (centerY - node.y) * centerGravity;
-    }
+  const sortedTiers = [...tierBuckets.keys()].sort((tierA, tierB) => tierA - tierB);
+  const tierCount = sortedTiers.length;
+  const verticalSpacing = Math.max(120, (canvasHeight - 100) / Math.max(tierCount, 1));
+  const startY = 80;
 
-    // Apply velocity with damping
-    for (const node of graphNodes) {
-      node.velocityX *= damping;
-      node.velocityY *= damping;
-      node.x += node.velocityX;
-      node.y += node.velocityY;
+  for (let tierIndex = 0; tierIndex < sortedTiers.length; tierIndex++) {
+    const tierKey = sortedTiers[tierIndex];
+    const tierNodes = tierBuckets.get(tierKey)!;
+    const tierY = startY + tierIndex * verticalSpacing;
+    const horizontalSpacing = Math.max(80, canvasWidth / (tierNodes.length + 1));
+
+    for (let nodeIndex = 0; nodeIndex < tierNodes.length; nodeIndex++) {
+      tierNodes[nodeIndex].x = (nodeIndex + 1) * horizontalSpacing;
+      tierNodes[nodeIndex].y = tierY;
     }
   }
 }
@@ -478,6 +393,7 @@ export default function SessionGraphPageComponent() {
   const providerFilter = searchParams.get("provider") || null;
   const modelFilter = searchParams.get("model") || null;
   const workspaceFilter = searchParams.get("workspace") || null;
+  const searchQuery = searchParams.get("search") || null;
   const { setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const dateParams = useMemo(
     () => buildDateRangeParams(dateRange),
@@ -585,6 +501,7 @@ export default function SessionGraphPageComponent() {
       if (providerFilter) params.provider = providerFilter;
       if (modelFilter) params.model = modelFilter;
       if (workspaceFilter) params.workspace = workspaceFilter;
+      if (searchQuery) params.search = searchQuery;
 
       const response = await IrisService.getAgentSessions(params);
       setSessions(response.data || []);
@@ -594,7 +511,7 @@ export default function SessionGraphPageComponent() {
     } finally {
       setIsSessionsLoading(false);
     }
-  }, [sessionPage, dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter]);
+  }, [sessionPage, dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter, searchQuery]);
 
   useEffect(() => {
     loadSessions();
@@ -627,16 +544,10 @@ export default function SessionGraphPageComponent() {
         requestsList,
       );
 
-      // Initialize positions and run simulation
+      // Apply hierarchical tiered layout
       const canvasWidth = dimensions.width;
       const canvasHeight = dimensions.height;
-      initializeNodePositions(graph.nodes, canvasWidth / 2, canvasHeight / 2);
-      simulateForceLayout(
-        graph,
-        200,
-        canvasWidth / 2,
-        canvasHeight / 2,
-      );
+      applyHierarchicalLayout(graph, canvasWidth, canvasHeight);
 
       setGraphData(graph);
       setZoom(1);
@@ -1202,6 +1113,10 @@ export default function SessionGraphPageComponent() {
                     const baseOpacity = 0.15 + (edge.strength || 0.5) * 0.2;
                     const edgeOpacity = isEdgeSelected ? 0.95 : baseOpacity;
                     const edgeColor = NODE_COLORS[targetNode.category] || "oklch(0.6 0 0)";
+                    const pathData = straightEdgePath(
+                      sourceNode.x, sourceNode.y, sourceNode.radius,
+                      targetNode.x, targetNode.y, targetNode.radius,
+                    );
 
                     return (
                       <g
@@ -1210,7 +1125,7 @@ export default function SessionGraphPageComponent() {
                       >
                         {/* Interactive invisible hit area */}
                         <path
-                          d={edgePath(sourceNode.x, sourceNode.y, targetNode.x, targetNode.y)}
+                          d={pathData}
                           stroke="transparent"
                           strokeWidth={8}
                           fill="none"
@@ -1218,7 +1133,7 @@ export default function SessionGraphPageComponent() {
                         />
                         {/* Visible connection path */}
                         <path
-                          d={edgePath(sourceNode.x, sourceNode.y, targetNode.x, targetNode.y)}
+                          d={pathData}
                           stroke={edgeColor}
                           strokeWidth={isEdgeSelected ? 2.5 : 1.5}
                           strokeOpacity={edgeOpacity}
@@ -1276,8 +1191,8 @@ export default function SessionGraphPageComponent() {
                           strokeOpacity={0.5}
                         />
 
-                        {/* Count badge */}
-                        {node.count && node.count > 1 && (
+                        {/* Sequence number badge for requests */}
+                        {node.sequenceNumber != null && node.category === "request" && (
                           <>
                             <circle
                               cx={node.x + node.radius * 0.7}
@@ -1296,7 +1211,7 @@ export default function SessionGraphPageComponent() {
                               fontSize={8}
                               fontWeight={600}
                             >
-                              {node.count > 99 ? "99+" : node.count}
+                              {node.sequenceNumber > 99 ? "99+" : node.sequenceNumber}
                             </text>
                           </>
                         )}
@@ -1512,20 +1427,46 @@ export default function SessionGraphPageComponent() {
                     {selectedNode.category === "request" && (
                       <div className={styles["node-detail-popover-section"]}>
                         <div className={styles["node-detail-popover-section-title"]}>
-                          Request Group
+                          Request Details
                         </div>
+                        {selectedNode.sequenceNumber != null && (
+                          <DetailRow
+                            label="Sequence"
+                            value={`#${selectedNode.sequenceNumber}`}
+                          />
+                        )}
                         <DetailRow
                           label="Operation"
                           value={String(selectedNode.metadata?.operation || "—")}
                         />
                         <DetailRow
-                          label="Count"
-                          value={formatNumber(Number(selectedNode.metadata?.requestCount || 0))}
+                          label="Cost"
+                          value={formatCost(Number(selectedNode.metadata?.estimatedCost || 0))}
                         />
-                        <DetailRow
-                          label="Total Cost"
-                          value={formatCost(Number(selectedNode.metadata?.totalCost || 0))}
-                        />
+                        {Number(selectedNode.metadata?.inputTokens || 0) > 0 && (
+                          <DetailRow
+                            label="Input Tokens"
+                            value={formatNumber(Number(selectedNode.metadata?.inputTokens))}
+                          />
+                        )}
+                        {Number(selectedNode.metadata?.outputTokens || 0) > 0 && (
+                          <DetailRow
+                            label="Output Tokens"
+                            value={formatNumber(Number(selectedNode.metadata?.outputTokens))}
+                          />
+                        )}
+                        {Number(selectedNode.metadata?.duration || 0) > 0 && (
+                          <DetailRow
+                            label="Duration"
+                            value={formatElapsedTime(Number(selectedNode.metadata?.duration))}
+                          />
+                        )}
+                        {selectedNode.metadata?.timestamp != null && (
+                          <DetailRow
+                            label="Timestamp"
+                            value={formatTimeAgo(String(selectedNode.metadata.timestamp))}
+                          />
+                        )}
                       </div>
                     )}
 
