@@ -151,13 +151,13 @@ const ADMIN_NAV_SECTIONS: NavigationSection[] = [
         showBadge: "requests",
       },
       { href: "/admin/tool-requests", label: "Tool Requests", icon: Wrench },
-      { href: "/admin/tools", label: "Tools", icon: Wrench },
       {
         href: "/admin/traces",
         label: "Traces",
         icon: FolderOpen,
         showBadge: "traces",
       },
+      { href: "/admin/users", label: "Users", icon: Users },
     ],
   },
   {
@@ -171,8 +171,8 @@ const ADMIN_NAV_SECTIONS: NavigationSection[] = [
       },
       { href: "/admin/providers", label: "Providers", icon: Layers },
       { href: "/admin/models", label: "Models", icon: Server },
+      { href: "/admin/tools", label: "Tools", icon: Wrench },
       { href: "/admin/scheduled-tasks", label: "Scheduled Tasks", icon: Clock },
-      { href: "/admin/users", label: "Users", icon: Users },
     ],
   },
   {
@@ -180,6 +180,8 @@ const ADMIN_NAV_SECTIONS: NavigationSection[] = [
     items: [
       { href: "/admin/media", label: "Media", icon: ImageIcon, showBadge: "media" },
       { href: "/admin/text", label: "Text", icon: Type, showBadge: "text" },
+      { href: "/admin/prompts", label: "Prompts", icon: BookText },
+      { href: "/admin/vision", label: "Vision", icon: Eye },
     ],
   },
   {
