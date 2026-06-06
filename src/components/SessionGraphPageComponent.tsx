@@ -46,7 +46,8 @@ type NodeCategory =
   | "user"
   | "project"
   | "provider"
-  | "agent";
+  | "agent"
+  | "embedding";
 
 interface GraphNode {
   id: string;
@@ -81,6 +82,7 @@ const NODE_COLORS: Record<NodeCategory, string> = {
   project: "oklch(0.72 0.15 120)",
   provider: "oklch(0.68 0.14 200)",
   agent: "oklch(0.72 0.16 300)",
+  embedding: "oklch(0.70 0.13 75)",
 };
 
 const NODE_LABELS: Record<NodeCategory, string> = {
@@ -92,10 +94,19 @@ const NODE_LABELS: Record<NodeCategory, string> = {
   project: "Project",
   provider: "Provider",
   agent: "Agent",
+  embedding: "Embedding",
 };
 
 /* ═══════════════════════════════════════════════════════════════════
    Graph Builder — converts session data into nodes + edges
+
+   Topology:
+     Session ─→ Agent ─→ Model ─→ Provider
+                  ├─→ Tool (× N)
+                  ├─→ Request Operation (× N)
+                  └─→ Embedding Model ─→ Embedding Provider
+     Session ─→ Project
+     Session ─→ User
    ═══════════════════════════════════════════════════════════════════ */
 
 function buildGraphFromSession(
@@ -106,6 +117,7 @@ function buildGraphFromSession(
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
   const nodeIdSet = new Set<string>();
+  const edgeKeySet = new Set<string>();
 
   const addNode = (
     id: string,
@@ -132,6 +144,9 @@ function buildGraphFromSession(
   };
 
   const addEdge = (source: string, target: string, strength = 1) => {
+    const edgeKey = `${source}→${target}`;
+    if (edgeKeySet.has(edgeKey)) return;
+    edgeKeySet.add(edgeKey);
     edges.push({ source, target, strength });
   };
 
@@ -155,7 +170,7 @@ function buildGraphFromSession(
     },
   );
 
-  // Project node
+  // Project node — connects to session
   if (session.project) {
     const projectNodeId = `project:${session.project}`;
     addNode(projectNodeId, session.project, "project", 22, {
@@ -164,33 +179,42 @@ function buildGraphFromSession(
     addEdge(sessionNodeId, projectNodeId, 0.8);
   }
 
-  // Agent node
+  // Agent node — connects to session (central hub for models, tools, operations)
+  const agentNodeId = session.agent
+    ? `agent:${session.agent}`
+    : `agent:default`;
   if (session.agent) {
-    const agentNodeId = `agent:${session.agent}`;
-    addNode(agentNodeId, session.agent, "agent", 20, {
+    addNode(agentNodeId, session.agent, "agent", 24, {
       agent: session.agent,
     });
-    addEdge(sessionNodeId, agentNodeId, 0.8);
+  } else {
+    addNode(agentNodeId, "Default Agent", "agent", 24, {
+      agent: "default",
+    });
   }
+  addEdge(sessionNodeId, agentNodeId, 0.9);
 
-  // Aggregate data from requests
-  const modelCounts: Record<string, { count: number; cost: number; tokens: number }> = {};
+  // Aggregate data from requests — separate LLM vs embedding requests
+  const llmModelCounts: Record<string, { count: number; cost: number; tokens: number; providers: Set<string> }> = {};
+  const embeddingModelCounts: Record<string, { count: number; cost: number; tokens: number; providers: Set<string> }> = {};
   const toolCounts: Record<string, number> = {};
-  const providerSet = new Set<string>();
   const userSet = new Set<string>();
 
   for (const request of sessionRequests) {
+    const isEmbeddingRequest = request.operation?.startsWith("embed:");
+
     if (request.model) {
-      if (!modelCounts[request.model]) {
-        modelCounts[request.model] = { count: 0, cost: 0, tokens: 0 };
+      const targetCounts = isEmbeddingRequest ? embeddingModelCounts : llmModelCounts;
+      if (!targetCounts[request.model]) {
+        targetCounts[request.model] = { count: 0, cost: 0, tokens: 0, providers: new Set() };
       }
-      modelCounts[request.model].count += 1;
-      modelCounts[request.model].cost += request.estimatedCost || 0;
-      modelCounts[request.model].tokens +=
+      targetCounts[request.model].count += 1;
+      targetCounts[request.model].cost += request.estimatedCost || 0;
+      targetCounts[request.model].tokens +=
         (request.inputTokens || 0) + (request.outputTokens || 0);
-    }
-    if (request.provider) {
-      providerSet.add(request.provider);
+      if (request.provider) {
+        targetCounts[request.model].providers.add(request.provider);
+      }
     }
     if (request.username) {
       userSet.add(request.username);
@@ -211,8 +235,8 @@ function buildGraphFromSession(
     }
   }
 
-  // Model nodes
-  for (const [modelName, modelData] of Object.entries(modelCounts)) {
+  // LLM Model nodes — Agent → Model → Provider
+  for (const [modelName, modelData] of Object.entries(llmModelCounts)) {
     const modelNodeId = `model:${modelName}`;
     const normalizedRadius = Math.min(26, 14 + Math.sqrt(modelData.count) * 3);
     addNode(modelNodeId, cleanModelName(modelName), "model", normalizedRadius, {
@@ -221,29 +245,42 @@ function buildGraphFromSession(
       totalCost: modelData.cost,
       totalTokens: modelData.tokens,
     }, modelData.count);
-    addEdge(sessionNodeId, modelNodeId, 0.9);
-  }
+    addEdge(agentNodeId, modelNodeId, 0.9);
 
-  // Provider nodes
-  for (const providerName of providerSet) {
-    const providerNodeId = `provider:${providerName}`;
-    addNode(providerNodeId, resolveProviderLabel(providerName) || providerName, "provider", 18, {
-      provider: providerName,
-    });
-    addEdge(sessionNodeId, providerNodeId, 0.6);
-
-    // Connect providers to their models
-    for (const request of sessionRequests) {
-      if (request.provider === providerName && request.model) {
-        const modelNodeId = `model:${request.model}`;
-        if (nodeIdSet.has(modelNodeId)) {
-          addEdge(providerNodeId, modelNodeId, 0.3);
-        }
-      }
+    // Model → Provider
+    for (const providerName of modelData.providers) {
+      const providerNodeId = `provider:${providerName}`;
+      addNode(providerNodeId, resolveProviderLabel(providerName) || providerName, "provider", 18, {
+        provider: providerName,
+      });
+      addEdge(modelNodeId, providerNodeId, 0.7);
     }
   }
 
-  // Tool nodes
+  // Embedding Model nodes — Agent → Embedding Model → Embedding Provider
+  for (const [modelName, modelData] of Object.entries(embeddingModelCounts)) {
+    const embeddingNodeId = `embedding:${modelName}`;
+    const normalizedRadius = Math.min(22, 13 + Math.sqrt(modelData.count) * 2);
+    addNode(embeddingNodeId, cleanModelName(modelName), "embedding", normalizedRadius, {
+      fullModelName: modelName,
+      requestCount: modelData.count,
+      totalCost: modelData.cost,
+      totalTokens: modelData.tokens,
+    }, modelData.count);
+    addEdge(agentNodeId, embeddingNodeId, 0.7);
+
+    // Embedding Model → Provider
+    for (const providerName of modelData.providers) {
+      const embeddingProviderNodeId = `provider:embed:${providerName}`;
+      addNode(embeddingProviderNodeId, resolveProviderLabel(providerName) || providerName, "provider", 16, {
+        provider: providerName,
+        isEmbeddingProvider: true,
+      });
+      addEdge(embeddingNodeId, embeddingProviderNodeId, 0.6);
+    }
+  }
+
+  // Tool nodes — connect to Agent
   const toolEntries = Object.entries(toolCounts).sort(
     ([, countA], [, countB]) => countB - countA,
   );
@@ -254,17 +291,17 @@ function buildGraphFromSession(
       toolName,
       usageCount,
     }, usageCount);
-    addEdge(sessionNodeId, toolNodeId, 0.7);
+    addEdge(agentNodeId, toolNodeId, 0.7);
   }
 
-  // User nodes
+  // User nodes — connect to Session
   for (const userName of userSet) {
     const userNodeId = `user:${userName}`;
     addNode(userNodeId, userName, "user", 18, { username: userName });
     addEdge(sessionNodeId, userNodeId, 0.5);
   }
 
-  // Request summary nodes — group by operation type instead of individual requests
+  // Request operation nodes — connect to Agent (iterations/operations are agent-driven)
   const operationCounts: Record<string, { count: number; cost: number }> = {};
   for (const request of sessionRequests) {
     const operation = request.operation || "unknown";
@@ -290,7 +327,7 @@ function buildGraphFromSession(
       },
       operationData.count,
     );
-    addEdge(sessionNodeId, requestGroupNodeId, 0.5);
+    addEdge(agentNodeId, requestGroupNodeId, 0.5);
   }
 
   return { nodes, edges };
@@ -423,6 +460,27 @@ export default function SessionGraphPageComponent() {
   const isDraggingRef = useRef(false);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  // ResizeObserver is used to dynamically update width and height
+  // when the wrapper elements are rendered or resized.
+  useEffect(() => {
+    const wrapper = canvasWrapperRef.current;
+    if (!wrapper) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!entries || entries.length === 0) return;
+      const { width, height } = entries[0].contentRect;
+      const actualWidth = width || wrapper.clientWidth || 800;
+      const actualHeight = height || wrapper.clientHeight || 600;
+      setDimensions({ width: actualWidth, height: actualHeight });
+    });
+
+    resizeObserver.observe(wrapper);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   // ── Aggregate stats from loaded sessions ──────────────────────
   const aggregateStats = useMemo(() => {
@@ -501,8 +559,8 @@ export default function SessionGraphPageComponent() {
       );
 
       // Initialize positions and run simulation
-      const canvasWidth = canvasWrapperRef.current?.clientWidth || 800;
-      const canvasHeight = canvasWrapperRef.current?.clientHeight || 600;
+      const canvasWidth = dimensions.width;
+      const canvasHeight = dimensions.height;
       initializeNodePositions(graph.nodes, canvasWidth / 2, canvasHeight / 2);
       simulateForceLayout(
         graph,
@@ -519,7 +577,7 @@ export default function SessionGraphPageComponent() {
     } finally {
       setIsGraphLoading(false);
     }
-  }, []);
+  }, [dimensions]);
 
   const handleSessionSelect = useCallback(
     (session: AgentSession) => {
@@ -618,8 +676,7 @@ export default function SessionGraphPageComponent() {
   }, [selectedNodeId, graphData]);
 
   // ── SVG viewbox transform ─────────────────────────────────────
-  const canvasWidth = canvasWrapperRef.current?.clientWidth || 800;
-  const canvasHeight = canvasWrapperRef.current?.clientHeight || 600;
+  const { width: canvasWidth, height: canvasHeight } = dimensions;
 
   const viewBoxTransform = useMemo(() => {
     const scaledWidth = canvasWidth / zoom;
@@ -989,7 +1046,9 @@ export default function SessionGraphPageComponent() {
                                         ? "◆"
                                         : node.category === "agent"
                                           ? "◎"
-                                          : "○"}
+                                          : node.category === "embedding"
+                                            ? "⬡"
+                                            : "○"}
                         </text>
                       </g>
                     );
@@ -1211,6 +1270,30 @@ export default function SessionGraphPageComponent() {
                         <DetailRow
                           label="Agent"
                           value={String(selectedNode.metadata?.agent || "—")}
+                        />
+                      </div>
+                    )}
+
+                    {selectedNode.category === "embedding" && (
+                      <div className={styles["node-detail-popover-section"]}>
+                        <div className={styles["node-detail-popover-section-title"]}>
+                          Embedding Model
+                        </div>
+                        <DetailRow
+                          label="Full Name"
+                          value={String(selectedNode.metadata?.fullModelName || "—")}
+                        />
+                        <DetailRow
+                          label="Requests"
+                          value={formatNumber(Number(selectedNode.metadata?.requestCount || 0))}
+                        />
+                        <DetailRow
+                          label="Total Cost"
+                          value={formatCost(Number(selectedNode.metadata?.totalCost || 0))}
+                        />
+                        <DetailRow
+                          label="Tokens Used"
+                          value={formatNumber(Number(selectedNode.metadata?.totalTokens || 0))}
                         />
                       </div>
                     )}

@@ -9,11 +9,12 @@ import {
 import BadgeComponent from "./BadgeComponent";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
 import { ToolSchema, CustomAgent, ToolUsageStat } from "../types/types";
 import { getErrorMessage } from "../utils/errorMessage";
+import { useAdminHeader } from "./AdminHeaderContextComponent";
 
 interface ClientToolSchema extends ToolSchema {
   emoji?: string;
@@ -728,6 +729,10 @@ function ToolRow({
 // -- Main Component -----------------------------------------------
 
 export default function ToolsPageComponent() {
+  const pathname = usePathname();
+  const isAdministratorMode = pathname.startsWith("/admin");
+  const adminHeader = useAdminHeader();
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [tools, setTools] = useState<ClientToolSchema[]>([]);
   const [agents, setAgents] = useState<AgentMinimal[]>([]);
@@ -818,6 +823,33 @@ export default function ToolsPageComponent() {
       setRefreshing(false);
     }
   }, [fetchTools]);
+
+  // -- Admin header controls & badge ---------------------------
+  const { setControls, setTitleBadge } = adminHeader;
+  useEffect(() => {
+    if (!isAdministratorMode) return;
+
+    setControls(
+      <button
+        className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
+        onClick={handleRefresh}
+        disabled={refreshing}
+        title="Re-fetch schemas from tools-api"
+      >
+        <RefreshCw /> Refresh
+      </button>,
+    );
+
+    return () => {
+      setControls(null);
+      setTitleBadge(null);
+    };
+  }, [isAdministratorMode, setControls, setTitleBadge, refreshing, handleRefresh]);
+
+  useEffect(() => {
+    if (!isAdministratorMode) return;
+    setTitleBadge(tools.length);
+  }, [isAdministratorMode, setTitleBadge, tools.length]);
 
   // -- Derived data ---------------------------------------------
   const allDomains = useMemo(() => extractDomains(tools), [tools]);
@@ -1097,10 +1129,11 @@ export default function ToolsPageComponent() {
   if (loading) {
     return (
       <ThreePanelLayout
-        navSidebar={<NavigationSidebarComponent mode="user" />}
+        navSidebar={isAdministratorMode ? null : <NavigationSidebarComponent mode="user" />}
         leftPanel={null}
         leftTitle="Domains"
         title="Tools"
+        hideHeader={isAdministratorMode}
       >
         <div className={styles.container}>
           <div className={styles.isLoadingState}>
@@ -1114,7 +1147,7 @@ export default function ToolsPageComponent() {
 
   return (
     <ThreePanelLayout
-      navSidebar={<NavigationSidebarComponent mode="user" />}
+      navSidebar={isAdministratorMode ? null : <NavigationSidebarComponent mode="user" />}
       leftPanel={
         <ToolsSidebarNavigationComponent
           domains={allDomains}
@@ -1123,15 +1156,18 @@ export default function ToolsPageComponent() {
       }
       leftTitle="Domains"
       title="Tools"
+      hideHeader={isAdministratorMode}
       headerControls={
-        <button
-          className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
-          onClick={handleRefresh}
-          disabled={refreshing}
-          title="Re-fetch schemas from tools-api"
-        >
-          <RefreshCw /> Refresh
-        </button>
+        isAdministratorMode ? null : (
+          <button
+            className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title="Re-fetch schemas from tools-api"
+          >
+            <RefreshCw /> Refresh
+          </button>
+        )
       }
     >
       <div className={styles.container} ref={scrollContainerRef}>

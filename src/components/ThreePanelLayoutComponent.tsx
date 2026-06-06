@@ -39,6 +39,7 @@ export interface ThreePanelLayoutProps {
   rightTitle?: string;
   sessionType?: string;
   title?: string;
+  hideHeader?: boolean;
 
   headerMeta?: React.ReactNode;
   headerControls?: React.ReactNode;
@@ -65,6 +66,7 @@ export default function ThreePanelLayout({
   headerControls = null,
   headerCenter = null,
   fileViewerPanel = null,
+  hideHeader = false,
   children,
 }: ThreePanelLayoutProps) {
   const resolvedRightTitle =
@@ -313,31 +315,33 @@ export default function ThreePanelLayout({
       {navSidebar}
       <div className={styles["layout-page-column"]}>
         {/* Full-width header */}
-        <LayoutHeaderComponent
-          title={title}
-          isMobile={isMobile}
-          metaContent={headerMeta}
-          centerContent={headerCenter}
-          controls={headerControls}
-          leadingToggle={{
-            isVisible: showLeft,
-            onToggle: toggleLeft,
-            visibleIcon: <PanelLeftClose size={16} />,
-            hiddenIcon: <PanelLeft size={16} />,
-            label: (leftTitle || "panel").toLowerCase(),
-          }}
-          trailingToggle={
-            rightPanel
-              ? {
-                  isVisible: showRight,
-                  onToggle: toggleRight,
-                  visibleIcon: <PanelRightClose size={16} />,
-                  hiddenIcon: <PanelRight size={16} />,
-                  label: resolvedRightTitle.toLowerCase(),
-                }
-              : undefined
-          }
-        />
+        {!hideHeader && (
+          <LayoutHeaderComponent
+            title={title}
+            isMobile={isMobile}
+            metaContent={headerMeta}
+            centerContent={headerCenter}
+            controls={headerControls}
+            leadingToggle={{
+              isVisible: showLeft,
+              onToggle: toggleLeft,
+              visibleIcon: <PanelLeftClose size={16} />,
+              hiddenIcon: <PanelLeft size={16} />,
+              label: (leftTitle || "panel").toLowerCase(),
+            }}
+            trailingToggle={
+              rightPanel
+                ? {
+                    isVisible: showRight,
+                    onToggle: toggleRight,
+                    visibleIcon: <PanelRightClose size={16} />,
+                    hiddenIcon: <PanelRight size={16} />,
+                    label: resolvedRightTitle.toLowerCase(),
+                  }
+                : undefined
+            }
+          />
+        )}
 
         {/* Body: sidebars + main content */}
         <div className={styles["layout-body-row"]}>

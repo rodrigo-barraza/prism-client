@@ -290,6 +290,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   }, []);
 
   const {
+    controls,
     titleBadge,
     sessionFilter,
     setSessionFilter,
@@ -328,7 +329,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         onNavClick={handleNavClick}
       />
       <div className={styles.mainArea}>
-        <LayoutHeaderComponent title={pageTitle}>
+        <LayoutHeaderComponent title={pageTitle} controls={controls}>
           {titleBadge != null && (
             <span className={styles.titleBadge}>{titleBadge}</span>
           )}
@@ -348,7 +349,14 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           )}
         </LayoutHeaderComponent>
         <div
-          className={`${styles.main} ${pathname.startsWith("/admin/chat") || pathname.startsWith("/admin/workflows") ? styles.noScroll : ""}`}
+          className={`${styles.main} ${
+            pathname.startsWith("/admin/chat") ||
+            pathname.startsWith("/admin/workflows") ||
+            pathname.startsWith("/admin/tools") ||
+            pathname.startsWith("/admin/sessions")
+              ? styles.noScroll
+              : ""
+          } ${pathname.startsWith("/admin/tools") ? styles["no-padding"] : ""}`}
         >
           {children}
         </div>
