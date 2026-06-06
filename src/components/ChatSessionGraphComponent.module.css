@@ -11,53 +11,6 @@
   overflow: hidden;
 }
 
-/* ── Info strip above the canvas ─────────────────────────────── */
-
-.graph-embed-info-strip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 16px;
-  border-bottom: 1px solid var(--calculated-border-color);
-  background: color-mix(in srgb, var(--background-surface) 90%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  flex-shrink: 0;
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-.graph-embed-info-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-}
-
-.graph-embed-info-right {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-variant-numeric: tabular-nums;
-}
-
-.graph-embed-info-separator {
-  opacity: 0.4;
-}
-
-.graph-embed-info-placeholder {
-  opacity: 0.5;
-  font-style: italic;
-}
-
-.graph-embed-zoom-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-inline-start: auto;
-}
-
 /* ── Canvas area fills remaining height ──────────────────────── */
 
 .graph-embed-canvas-area {

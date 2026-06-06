@@ -812,53 +812,25 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
   return (
     <div className={styles['graph-embed-wrapper']}>
-      {/* Graph info strip */}
-      <div className={styles['graph-embed-info-strip']}>
-        <span className={styles['graph-embed-info-left']}>
-          <Network size={12} />
-          {graphData
-            ? <>{graphData.nodes.length} nodes · {graphData.edges.length} edges</>
-            : <span className={styles['graph-embed-info-placeholder']}>Loading…</span>
-          }
-          {isLiveConnected && (
-            <span className={graphStyles['live-indicator']}>
-              <span className={graphStyles['live-indicator-dot']} />
-              LIVE
-            </span>
-          )}
-        </span>
-        {sessionStats && (
-          <span className={styles['graph-embed-info-right']}>
-            {formatNumber(sessionStats.requestCount || 0)} reqs
-            <span className={styles['graph-embed-info-separator']}>·</span>
-            {formatCost(sessionStats.totalCost || 0)}
-            {sessionStats.totalElapsedTime && sessionStats.totalElapsedTime > 0 && (
-              <>
-                <span className={styles['graph-embed-info-separator']}>·</span>
-                {formatElapsedTime(sessionStats.totalElapsedTime)}
-              </>
-            )}
-          </span>
-        )}
-        <span className={styles['graph-embed-zoom-controls']}>
-          <button className={graphStyles['zoom-button']} onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
-            <ZoomOut size={12} />
-          </button>
-          <button className={graphStyles['zoom-button']} onClick={handleZoomFit} title="Fit to view" aria-label="Fit to view">
-            <Maximize size={12} />
-          </button>
-          <button className={graphStyles['zoom-button']} onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
-            <ZoomIn size={12} />
-          </button>
-        </span>
-      </div>
-
       {/* Canvas */}
       <div
         className={`${graphStyles['graph-canvas-wrapper']} ${styles['graph-embed-canvas-area']}`}
         ref={canvasWrapperRef}
       >
         <StarfieldComponent className={graphStyles['starfield']} panX={panOffset.x} panY={panOffset.y} />
+
+        {/* Floating Zoom Controls */}
+        <div className={graphStyles['zoom-controls']}>
+          <button className={graphStyles['zoom-button']} onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
+            <ZoomIn size={14} />
+          </button>
+          <button className={graphStyles['zoom-button']} onClick={handleZoomFit} title="Fit to view" aria-label="Fit to view">
+            <Maximize size={14} />
+          </button>
+          <button className={graphStyles['zoom-button']} onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
+            <ZoomOut size={14} />
+          </button>
+        </div>
 
         {isLoading && (
           <div className={graphStyles['graph-empty-prompt']}>
