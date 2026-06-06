@@ -33,7 +33,6 @@ import {
   FileSpreadsheet,
   Volume2,
   Video,
-  Network,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, {
@@ -89,6 +88,8 @@ import UserQuestionCardComponent from "./UserQuestionCardComponent";
 import StatusBarComponent from "./StatusBarComponent";
 import PixelTransitionComponent from "./PixelTransitionComponent";
 import ChatSessionGraphComponent from "./ChatSessionGraphComponent";
+import ChatViewModeControlComponent from "./ChatViewModeControlComponent";
+import type { ChatViewMode } from "./ChatViewModeControlComponent";
 
 import { buildToolSchemas } from "../utils/FunctionCallingUtilities";
 import {
@@ -116,7 +117,6 @@ import {
   ButtonComponent,
   EmptyStateComponent,
   layoutHeaderStyles,
-  SegmentedControlComponent,
   TabBarComponent,
   tabBarStyles,
   ToastComponent,
@@ -5141,25 +5141,17 @@ export default function ChatSessionComponent({
           <span className={chatStyles['chat-header-title-text']}>{title || ""}</span>
         </div>
         <div className={chatStyles['chat-header-actions']}>
-          <div className={chatStyles['debug-toggle-container']}>
-            <SegmentedControlComponent
-              value={chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean"}
-              onChange={(segment: string) => {
-                if (segment === "nodes") {
+          <ChatViewModeControlComponent
+              viewMode={chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean"}
+              onViewModeChange={(mode: ChatViewMode) => {
+                if (mode === "nodes") {
                   setChatAreaTab("nodes");
                 } else {
                   setChatAreaTab("chat");
-                  setShowRaw(segment === "raw");
+                  setShowRaw(mode === "raw");
                 }
               }}
-              compact
-              segments={[
-                { value: "clean", label: "Clean" },
-                { value: "raw", label: "Raw" },
-                { value: "nodes", icon: <Network size={12} />, label: "Nodes" },
-              ]}
             />
-          </div>
           <ButtonComponent
             ref={chatNewBtnRef}
             variant="primary"

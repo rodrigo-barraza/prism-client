@@ -38,6 +38,9 @@ import WorkersPanel from "./WorkersPanelComponent";
 import SessionRequestsListComponent from "./SessionRequestsListComponent";
 import RulesPanel from "./RulesPanelComponent";
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
+import ChatSessionGraphComponent from "./ChatSessionGraphComponent";
+import ChatViewModeControlComponent from "./ChatViewModeControlComponent";
+import type { ChatViewMode } from "./ChatViewModeControlComponent";
 
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import {
@@ -46,7 +49,6 @@ import {
   TabBarComponent,
   tabBarStyles,
   ButtonComponent,
-  SegmentedControlComponent,
 } from "@rodrigo-barraza/components-library";
 
 import AgentPickerComponent from "./AgentPickerComponent";
@@ -166,6 +168,7 @@ export default function AdminChatViewerComponent({
   >(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
+  const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">("chat");
   const [config, setConfig] = useState<PrismConfig | null>(null);
 
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
@@ -1281,21 +1284,26 @@ export default function AdminChatViewerComponent({
               </div>
               <div className={chatStyles['chat-header-actions']}>
                 {hasSystemContextMessage && (
-                  <div className={chatStyles['debug-toggle-container']}>
-                    <SegmentedControlComponent
-                      value={showRaw ? "raw" : "clean"}
-                      onChange={(segment: string) => setShowRaw(segment === "raw")}
-                      compact
-                      segments={[
-                        { value: "clean", label: "Clean" },
-                        { value: "raw", label: "Raw" },
-                      ]}
-                    />
-                  </div>
+                  <ChatViewModeControlComponent
+                    viewMode={chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean"}
+                    onViewModeChange={(mode: ChatViewMode) => {
+                      if (mode === "nodes") {
+                        setChatAreaTab("nodes");
+                      } else {
+                        setChatAreaTab("chat");
+                        setShowRaw(mode === "raw");
+                      }
+                    }}
+                  />
                 )}
               </div>
             </div>
 
+            {/* Nodes tab — inline session graph */}
+            {chatAreaTab === "nodes" && isSelectedAgent && selectedId && (
+              <ChatSessionGraphComponent sessionId={selectedId} />
+            )}
+            {chatAreaTab !== "nodes" && (
             <div className={styles['viewer-body']} ref={viewerBodyRef}>
               {!selectedEntry && !loadingDetail ? (
                 <div className={styles['empty-viewer']}>
@@ -1327,6 +1335,7 @@ export default function AdminChatViewerComponent({
                 />
               )}
             </div>
+            )}
           </div>
         </ThreePanelLayout>
       </div>
