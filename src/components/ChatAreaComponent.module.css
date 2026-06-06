@@ -54,7 +54,6 @@
   gap: 6px;
   margin-right: 6px;
 }
-
 .debug-toggle-button {
   height: 28px !important;
   min-height: 28px !important;
@@ -75,6 +74,7 @@
 .debug-toggle-button:active {
   transform: translateY(0);
 }
+
 
 .chat-header-actions {
   display: flex;

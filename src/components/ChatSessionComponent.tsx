@@ -116,6 +116,7 @@ import {
   ButtonComponent,
   EmptyStateComponent,
   layoutHeaderStyles,
+  SegmentedControlComponent,
   TabBarComponent,
   tabBarStyles,
   ToastComponent,
@@ -5141,37 +5142,23 @@ export default function ChatSessionComponent({
         </div>
         <div className={chatStyles['chat-header-actions']}>
           <div className={chatStyles['debug-toggle-container']}>
-            {hasSystemContextMessage && chatAreaTab === "chat" && (
-              <>
-                <ButtonComponent
-                  variant={!showRaw ? "tonal" : "text"}
-                  size="small"
-                  onClick={() => setShowRaw(false)}
-                  className={chatStyles['debug-toggle-button']}
-                >
-                  Clean
-                </ButtonComponent>
-                <ButtonComponent
-                  variant={showRaw ? "tonal" : "text"}
-                  size="small"
-                  onClick={() => setShowRaw(true)}
-                  className={chatStyles['debug-toggle-button']}
-                >
-                  Raw
-                </ButtonComponent>
-              </>
-            )}
-            <ButtonComponent
-              variant={chatAreaTab === "nodes" ? "tonal" : "text"}
-              size="small"
-              onClick={() => setChatAreaTab(chatAreaTab === "nodes" ? "chat" : "nodes")}
-              className={chatStyles['debug-toggle-button']}
-              title="View session as node graph"
-              id="chat-area-tab-nodes"
-            >
-              <Network size={12} />
-              Nodes
-            </ButtonComponent>
+            <SegmentedControlComponent
+              value={chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean"}
+              onChange={(segment: string) => {
+                if (segment === "nodes") {
+                  setChatAreaTab("nodes");
+                } else {
+                  setChatAreaTab("chat");
+                  setShowRaw(segment === "raw");
+                }
+              }}
+              compact
+              segments={[
+                { value: "clean", label: "Clean" },
+                { value: "raw", label: "Raw" },
+                { value: "nodes", icon: <Network size={12} />, label: "Nodes" },
+              ]}
+            />
           </div>
           <ButtonComponent
             ref={chatNewBtnRef}

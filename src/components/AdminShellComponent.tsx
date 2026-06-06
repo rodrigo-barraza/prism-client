@@ -352,8 +352,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           className={`${styles['main']} ${
             pathname.startsWith("/admin/chat") ||
             pathname.startsWith("/admin/workflows") ||
-            pathname.startsWith("/admin/tools") ||
-            pathname.startsWith("/admin/sessions")
+            pathname.startsWith("/admin/tools")
               ? styles['no-scroll']
               : ""
           } ${pathname.startsWith("/admin/tools") ? styles["no-padding"] : ""}`}
