@@ -1340,13 +1340,16 @@ export default class PrismService {
       case "plan_proposal":
         onPlanProposal?.(data);
         break;
-      // Worker agent events — forwarded from spawned sub-agents
+      // Sub-agent events — forwarded from spawned sub-agents
+      case "sub_agent_tool_execution":
       case "worker_tool_execution":
         onWorkerToolExecution?.(data);
         break;
+      case "sub_agent_tool_output":
       case "worker_tool_output":
         onWorkerToolOutput?.(data);
         break;
+      case "sub_agent_status":
       case "worker_status":
         onWorkerStatus?.(data);
         break;
