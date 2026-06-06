@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Star, DollarSign } from "lucide-react";
+import { Star, DollarSign, Bot } from "lucide-react";
 import ProviderLogo, {
   PROVIDER_LABELS,
   resolveProviderLabel,
@@ -34,6 +34,7 @@ interface HistoryListItem {
   modelNames?: string[];
   username?: string;
   agent?: string | { id: string; name?: string };
+  parentAgentSessionId?: string | null;
 }
 
 interface FilterItem {
@@ -149,6 +150,7 @@ export default function HistoryList({
   );
   const [activeCostTiers, setActiveCostTiers] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [shouldHideSubAgents, setShouldHideSubAgents] = useState(false);
   const [localDateRange, setLocalDateRange] = useState({ from: "", to: "" });
 
   const dateRange =
@@ -214,8 +216,15 @@ export default function HistoryList({
     return COST_TIERS.filter((tier) => presentTierKeys.has(tier.key));
   }, [items]);
 
+  const hasSubAgents = useMemo(() => {
+    return (items || []).some((item) => !!item.parentAgentSessionId);
+  }, [items]);
+
   const filtered = useMemo(() => {
     return (items || []).filter((item: HistoryListItem) => {
+      if (shouldHideSubAgents && item.parentAgentSessionId) {
+        return false;
+      }
       if (showFavoritesOnly && onToggleFavorite) {
         if (!(favorites || []).includes(item.id)) return false;
       }
@@ -276,6 +285,7 @@ export default function HistoryList({
     favorites,
     onToggleFavorite,
     dateRange,
+    shouldHideSubAgents,
   ]);
 
   // -- Infinite scroll via IntersectionObserver -----------------
@@ -327,6 +337,24 @@ export default function HistoryList({
                     activeKeys: showFavoritesOnly ? "favorites" : null,
                     isSingleSelect: true,
                     onToggle: () => setShowFavoritesOnly((v) => !v),
+                  },
+                ]
+              : []),
+            ...(hasSubAgents
+              ? [
+                  {
+                    label: "Sub-Agents",
+                    items: [
+                      {
+                        key: "hide-subagents",
+                        icon: Bot,
+                        title: "Hide Sub-Agents",
+                        color: "#a855f7",
+                      },
+                    ],
+                    activeKeys: shouldHideSubAgents ? "hide-subagents" : null,
+                    isSingleSelect: true,
+                    onToggle: () => setShouldHideSubAgents((value) => !value),
                   },
                 ]
               : []),

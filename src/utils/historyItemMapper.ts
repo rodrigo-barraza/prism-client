@@ -24,6 +24,7 @@ export interface MappedHistoryItem {
   modelNames: string[];
   modelName: string | null;
   agent?: string | AgentRef;
+  parentAgentSessionId?: string | null;
   searchText?: string;
 }
 
@@ -92,6 +93,7 @@ export function mapConversationToHistoryItem(
     modelNames,
     modelName: conversation.model || conversation.settings?.model || null,
     agent: conversation.agent,
+    parentAgentSessionId: conversation.parentAgentSessionId || null,
     searchText: [
       conversation.project || "",
       conversation.username || "",
@@ -157,6 +159,7 @@ export function mapAgentSessionToHistoryItem(
     modelName: session.model || null,
     modalities,
     agent: session.agent,
+    parentAgentSessionId: session.parentAgentSessionId || null,
     tags,
   };
 }

@@ -358,6 +358,8 @@ export interface Conversation {
   modalities?: Record<string, number>;
   /** Backend-enriched: tool call counts by tool name */
   toolCounts?: Record<string, number>;
+  /** Backend-enriched: parent agent session ID if spawned as sub-agent */
+  parentAgentSessionId?: string | null;
 }
 
 export interface ConversationListResponse {
@@ -384,6 +386,7 @@ export interface AgentSession {
   settings?: PrismSettings;
   createdAt: string;
   updatedAt: string;
+  parentAgentSessionId?: string | null;
 }
 
 export interface AgentSessionListResponse {
