@@ -34,7 +34,6 @@ import {
   Volume2,
   Video,
   Network,
-  MessageSquare,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, {
@@ -5140,50 +5139,40 @@ export default function ChatSessionComponent({
         <div className={chatStyles['chat-header-title']}>
           <span className={chatStyles['chat-header-title-text']}>{title || ""}</span>
         </div>
-        {/* -- Tab switcher: Chat / Nodes -- */}
-        <div className={chatStyles['chat-header-tab-switcher']}>
-          <button
-            id="chat-area-tab-chat"
-            className={`${chatStyles['chat-header-tab-button']} ${chatAreaTab === "chat" ? chatStyles['chat-header-tab-button-active'] : ""}`}
-            onClick={() => setChatAreaTab("chat")}
-            aria-pressed={chatAreaTab === "chat"}
-            title="View conversation messages"
-          >
-            <MessageSquare size={12} />
-            Chat
-          </button>
-          <button
-            id="chat-area-tab-nodes"
-            className={`${chatStyles['chat-header-tab-button']} ${chatAreaTab === "nodes" ? chatStyles['chat-header-tab-button-active'] : ""}`}
-            onClick={() => setChatAreaTab("nodes")}
-            aria-pressed={chatAreaTab === "nodes"}
-            title="View session as node graph"
-          >
-            <Network size={12} />
-            Nodes
-          </button>
-        </div>
         <div className={chatStyles['chat-header-actions']}>
-          {hasSystemContextMessage && chatAreaTab === "chat" && (
-            <div className={chatStyles['debug-toggle-container']}>
-              <ButtonComponent
-                variant={!showRaw ? "tonal" : "text"}
-                size="small"
-                onClick={() => setShowRaw(false)}
-                className={chatStyles['debug-toggle-button']}
-              >
-                Clean
-              </ButtonComponent>
-              <ButtonComponent
-                variant={showRaw ? "tonal" : "text"}
-                size="small"
-                onClick={() => setShowRaw(true)}
-                className={chatStyles['debug-toggle-button']}
-              >
-                Raw
-              </ButtonComponent>
-            </div>
-          )}
+          <div className={chatStyles['debug-toggle-container']}>
+            {hasSystemContextMessage && chatAreaTab === "chat" && (
+              <>
+                <ButtonComponent
+                  variant={!showRaw ? "tonal" : "text"}
+                  size="small"
+                  onClick={() => setShowRaw(false)}
+                  className={chatStyles['debug-toggle-button']}
+                >
+                  Clean
+                </ButtonComponent>
+                <ButtonComponent
+                  variant={showRaw ? "tonal" : "text"}
+                  size="small"
+                  onClick={() => setShowRaw(true)}
+                  className={chatStyles['debug-toggle-button']}
+                >
+                  Raw
+                </ButtonComponent>
+              </>
+            )}
+            <ButtonComponent
+              variant={chatAreaTab === "nodes" ? "tonal" : "text"}
+              size="small"
+              onClick={() => setChatAreaTab(chatAreaTab === "nodes" ? "chat" : "nodes")}
+              className={chatStyles['debug-toggle-button']}
+              title="View session as node graph"
+              id="chat-area-tab-nodes"
+            >
+              <Network size={12} />
+              Nodes
+            </ButtonComponent>
+          </div>
           <ButtonComponent
             ref={chatNewBtnRef}
             variant="primary"
@@ -5202,19 +5191,21 @@ export default function ChatSessionComponent({
       {chatAreaTab === "nodes" && (
         <ChatSessionGraphComponent sessionId={activeId} />
       )}
-      <PixelTransitionComponent
-        phase={pixelTransition}
-        duration={
-          pixelTransition === "in" ? PIXEL_IN_DURATION : pixelOutDuration
-        }
-        maxBlockSize={72}
-        onComplete={() => {
-          if (pixelTransition === "in") {
-            setPixelTransition(null);
+      {chatAreaTab !== "nodes" && (
+        <PixelTransitionComponent
+          phase={pixelTransition}
+          duration={
+            pixelTransition === "in" ? PIXEL_IN_DURATION : pixelOutDuration
           }
-        }}
-        targetRef={messagesListRef}
-      />
+          maxBlockSize={72}
+          onComplete={() => {
+            if (pixelTransition === "in") {
+              setPixelTransition(null);
+            }
+          }}
+          targetRef={messagesListRef}
+        />
+      )}
       {/* Messages (hidden when Nodes tab is active) */}
       <div
         className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""} ${chatAreaTab === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
@@ -5473,6 +5464,7 @@ export default function ChatSessionComponent({
             liveStreamingBurstTokens / (liveStreamingBurstElapsed / 1000);
         }
 
+        if (chatAreaTab === "nodes") return null;
         return (
           <StatusBarComponent
             active={isGenerating}
@@ -5489,7 +5481,7 @@ export default function ChatSessionComponent({
       })()}
 
       <div
-        className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model ? chatStyles['input-wrapper-disabled'] : ""}`}
+        className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model ? chatStyles['input-wrapper-disabled'] : ""} ${chatAreaTab === "nodes" ? chatStyles['input-wrapper-hidden'] : ""}`}
       >
         <form
           onSubmit={handleSend}
