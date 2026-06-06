@@ -725,11 +725,11 @@ export default function SessionGraphPageComponent() {
 
       const hasUpdates = Object.keys(updates).length > 0;
       if (hasUpdates) {
-        setGraphData((prev) => {
-          if (!prev) return null;
+        setGraphData((previousGraphData) => {
+          if (!previousGraphData) return null;
           return {
-            ...prev,
-            nodes: prev.nodes.map((node) =>
+            ...previousGraphData,
+            nodes: previousGraphData.nodes.map((node) =>
               updates[node.id] ? { ...node, x: updates[node.id].x, y: updates[node.id].y } : node
             ),
           };
@@ -830,11 +830,11 @@ export default function SessionGraphPageComponent() {
         const newX = svgPos.x - draggedNode.offsetX;
         const newY = svgPos.y - draggedNode.offsetY;
 
-        setGraphData((prev) => {
-          if (!prev) return null;
+        setGraphData((previousGraphData) => {
+          if (!previousGraphData) return null;
           return {
-            ...prev,
-            nodes: prev.nodes.map((node) =>
+            ...previousGraphData,
+            nodes: previousGraphData.nodes.map((node) =>
               node.id === draggedNode.id ? { ...node, x: newX, y: newY } : node
             ),
           };
@@ -872,11 +872,11 @@ export default function SessionGraphPageComponent() {
         const newX = svgPos.x - draggedNode.offsetX;
         const newY = svgPos.y - draggedNode.offsetY;
 
-        setGraphData((prev) => {
-          if (!prev) return null;
+        setGraphData((previousGraphData) => {
+          if (!previousGraphData) return null;
           return {
-            ...prev,
-            nodes: prev.nodes.map((node) =>
+            ...previousGraphData,
+            nodes: previousGraphData.nodes.map((node) =>
               node.id === draggedNode.id ? { ...node, x: newX, y: newY } : node
             ),
           };
