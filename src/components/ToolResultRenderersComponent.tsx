@@ -31,6 +31,7 @@ import {
   Zap,
   Download,
   Music,
+  Volume2,
 } from "lucide-react";
 
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
@@ -206,6 +207,8 @@ export interface ParsedToolResult {
   layerCount?: number;
   totalKeyframes?: number;
   isAppend?: boolean;
+  voice?: string;
+  durationEstimate?: number;
 }
 
 export interface RendererProps {
@@ -889,6 +892,59 @@ function AudioGeneratorRenderer({ result, args }: RendererProps) {
           label={hasError ? "Error" : `${totalDuration.toFixed(2)}s`}
         />
       </div>
+      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {audioSource && <AudioPlayerRecorderComponent sourceUrl={audioSource} />}
+    </div>
+  );
+}
+
+// -- 8.6. Text-to-Speech Renderer --------------------------------------
+
+function TextToSpeechRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />
+
+  const audioSource = useMemo(() => {
+    if (parsed.audioRef) {
+      return PrismService.getFileUrl(parsed.audioRef);
+    }
+    if (!parsed.audio?.data) return null;
+    const mimeType = parsed.audio.mimeType || "audio/wav";
+    return `data:${mimeType};base64,${parsed.audio.data}`;
+  }, [parsed]);
+
+  const hasError = !!parsed.error;
+  const voiceLabel = parsed.voice ? String(parsed.voice) : null;
+  const durationEstimate =
+    typeof parsed.durationEstimate === "number" ? parsed.durationEstimate : null;
+  const inputText =
+    typeof args?.text === "string" ? args.text : null;
+
+  return (
+    <div className={styles.rendererBlock}>
+      <div className={styles.rendererHeader}>
+        <Volume2 size={13} />
+        <span className={styles.rendererTitle}>
+          {voiceLabel ? `Voice: ${voiceLabel}` : "Text-to-Speech"}
+        </span>
+        {durationEstimate != null && (
+          <StatusBadge
+            success={!hasError}
+            label={hasError ? "Error" : `~${durationEstimate.toFixed(1)}s`}
+          />
+        )}
+        {!hasError && !durationEstimate && (
+          <StatusBadge success={true} label="Generated" />
+        )}
+      </div>
+      {inputText && (
+        <div className={styles.inputArgRow}>
+          <span className={styles.inputArgKey}>text</span>
+          <span className={styles.inputArgValue}>
+            {inputText.length > 120 ? inputText.slice(0, 120) + "…" : inputText}
+          </span>
+        </div>
+      )}
       {hasError && <div className={styles.errorText}>{parsed.error}</div>}
       {audioSource && <AudioPlayerRecorderComponent sourceUrl={audioSource} />}
     </div>
@@ -2246,6 +2302,10 @@ const TOOL_RESULT_REGISTRY = {
 
   // Audio Generation
   generate_audio: { Renderer: AudioGeneratorRenderer },
+
+  // Text-to-Speech
+  text_to_speech: { Renderer: TextToSpeechRenderer },
+  local_text_to_speech: { Renderer: TextToSpeechRenderer },
 
   // Coordinator
   create_team: { Renderer: TeamCreateRenderer },
