@@ -1134,35 +1134,40 @@ export default function ChatSessionComponent({
         const lastAssistant = [...(full.messages || [])]
           .reverse()
           .find((message) => message.role === "assistant" && message.provider);
-        if (lastAssistant) {
-          const gs = (lastAssistant.generationSettings || {}) as Record<
-            string,
-            string | number | boolean | undefined
-          >;
-          setSettings((previousSettings) => ({
-            ...previousSettings,
-            ...(lastAssistant.provider && { provider: lastAssistant.provider }),
-            ...(lastAssistant.model && { model: lastAssistant.model }),
-            ...(gs.temperature !== undefined && {
-              temperature: Number(gs.temperature),
-            }),
-            ...(gs.maxTokens !== undefined && {
-              maxTokens: Number(gs.maxTokens),
-            }),
-            ...(gs.thinkingEnabled !== undefined && {
-              thinkingEnabled: Boolean(gs.thinkingEnabled),
-            }),
-            ...(gs.reasoningEffort && {
-              reasoningEffort: String(gs.reasoningEffort),
-            }),
-            ...(gs.thinkingBudget && {
-              thinkingBudget: String(gs.thinkingBudget),
-            }),
-            ...(full.systemPrompt != null && {
-              systemPrompt: full.systemPrompt,
-            }),
-          }));
-        }
+        setSettings((previousSettings) => {
+          const nextSettings = { ...previousSettings };
+          if (lastAssistant) {
+            const gs = (lastAssistant.generationSettings || {}) as Record<
+              string,
+              string | number | boolean | undefined
+            >;
+            if (lastAssistant.provider) {
+              nextSettings.provider = lastAssistant.provider;
+            }
+            if (lastAssistant.model) {
+              nextSettings.model = lastAssistant.model;
+            }
+            if (gs.temperature !== undefined) {
+              nextSettings.temperature = Number(gs.temperature);
+            }
+            if (gs.maxTokens !== undefined) {
+              nextSettings.maxTokens = Number(gs.maxTokens);
+            }
+            if (gs.thinkingEnabled !== undefined) {
+              nextSettings.thinkingEnabled = Boolean(gs.thinkingEnabled);
+            }
+            if (gs.reasoningEffort) {
+              nextSettings.reasoningEffort = String(gs.reasoningEffort);
+            }
+            if (gs.thinkingBudget) {
+              nextSettings.thinkingBudget = String(gs.thinkingBudget);
+            }
+          }
+          if (full.systemPrompt != null) {
+            nextSettings.systemPrompt = full.systemPrompt;
+          }
+          return nextSettings;
+        });
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
       } catch (error: unknown) {
@@ -3603,6 +3608,12 @@ export default function ChatSessionComponent({
                 }
               }
               setMessages(displayMessages);
+              if (full.systemPrompt != null) {
+                setSettings((previousSettings) => ({
+                  ...previousSettings,
+                  systemPrompt: full.systemPrompt,
+                }));
+              }
             }
           } catch (error) {
             console.error(
@@ -4081,46 +4092,49 @@ export default function ChatSessionComponent({
         const lastAssistant = [...(full.messages || [])]
           .reverse()
           .find((message) => message.role === "assistant" && message.provider);
-        if (lastAssistant) {
-          const gs = lastAssistant.generationSettings || {};
-          // Session-level settings (from patchConversation) represent the
-          // user's latest explicit model choice and take priority over the
-          // last assistant message which may reflect a previous model.
-          const sessionSettings = full.settings as
-            | Partial<PrismSettings>
-            | undefined;
-          setSettings((previousSettings) => ({
-            ...previousSettings,
-            ...(lastAssistant.provider && { provider: lastAssistant.provider }),
-            ...(lastAssistant.model && { model: lastAssistant.model }),
-            ...(gs.temperature !== undefined && {
-              temperature: gs.temperature,
-            }),
-            ...(gs.maxTokens !== undefined && { maxTokens: gs.maxTokens }),
-            ...(gs.thinkingEnabled !== undefined && {
-              thinkingEnabled: gs.thinkingEnabled,
-            }),
-            ...(gs.reasoningEffort && { reasoningEffort: gs.reasoningEffort }),
-            ...(gs.thinkingBudget !== undefined && {
-              thinkingBudget: String(gs.thinkingBudget),
-            }),
-            // Conversations store systemPrompt at root — restore for Direct Chat
-            ...(full.systemPrompt != null && {
-              systemPrompt: full.systemPrompt,
-            }),
-            // Session-level settings override last-assistant-message values —
-            // the user may have changed the model without sending a message yet
-            ...(sessionSettings?.provider && {
-              provider: sessionSettings.provider,
-            }),
-            ...(sessionSettings?.model && { model: sessionSettings.model }),
-            ...(sessionSettings?.temperature !== undefined && {
-              temperature: sessionSettings.temperature,
-            }),
-          }));
-          // Model/agent URL params are stripped when conversation:change fires —
-          // the loaded session's data is the source of truth.
-        }
+        const sessionSettings = full.settings as
+          | Partial<PrismSettings>
+          | undefined;
+        setSettings((previousSettings) => {
+          const nextSettings = { ...previousSettings };
+          if (lastAssistant) {
+            const gs = lastAssistant.generationSettings || {};
+            if (lastAssistant.provider) {
+              nextSettings.provider = lastAssistant.provider;
+            }
+            if (lastAssistant.model) {
+              nextSettings.model = lastAssistant.model;
+            }
+            if (gs.temperature !== undefined) {
+              nextSettings.temperature = gs.temperature;
+            }
+            if (gs.maxTokens !== undefined) {
+              nextSettings.maxTokens = gs.maxTokens;
+            }
+            if (gs.thinkingEnabled !== undefined) {
+              nextSettings.thinkingEnabled = gs.thinkingEnabled;
+            }
+            if (gs.reasoningEffort) {
+              nextSettings.reasoningEffort = gs.reasoningEffort;
+            }
+            if (gs.thinkingBudget !== undefined) {
+              nextSettings.thinkingBudget = String(gs.thinkingBudget);
+            }
+          }
+          if (full.systemPrompt != null) {
+            nextSettings.systemPrompt = full.systemPrompt;
+          }
+          if (sessionSettings?.provider) {
+            nextSettings.provider = sessionSettings.provider;
+          }
+          if (sessionSettings?.model) {
+            nextSettings.model = sessionSettings.model;
+          }
+          if (sessionSettings?.temperature !== undefined) {
+            nextSettings.temperature = sessionSettings.temperature;
+          }
+          return nextSettings;
+        });
         setBackendSessionStats(full.stats || null);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
       }
@@ -5221,6 +5235,26 @@ export default function ChatSessionComponent({
         <MessageList
           messages={filteredMessages}
           showRaw={showRaw}
+          systemPrompt={showRaw ? settings.systemPrompt : undefined}
+          onSystemPromptEdit={
+            isNoAgent
+              ? (editedPromptValue: string) => {
+                  setSettings((previousSettings) => ({
+                    ...previousSettings,
+                    systemPrompt: editedPromptValue,
+                  }));
+                  if (activeId) {
+                    PrismService.patchConversation(
+                      activeId,
+                      { systemPrompt: editedPromptValue },
+                      agentProject || undefined,
+                    ).catch((error: unknown) => {
+                      console.error("Failed to patch conversation system prompt:", error);
+                    });
+                  }
+                }
+              : undefined
+          }
           isGenerating={isGenerating}
           streamingOutputs={streamingOutputs}
           workerToolActivity={workerToolActivity}
