@@ -581,10 +581,12 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
         setGraphData(graph);
         setZoom(1);
         setPanOffset({ x: 0, y: 0 });
-      } catch (error) {
-        if (!isCancelled) console.error("ChatSessionGraphComponent: failed to load graph:", error);
-      } finally {
-        if (!isCancelled) setIsLoading(false);
+        setIsLoading(false);
+      } catch {
+        // Session may not exist yet for a new conversation —
+        // keep isLoading true so the SSE cold-start bootstrap
+        // can populate the graph when the first request lands.
+        if (!isCancelled) setIsLoading(true);
       }
     };
 
@@ -599,10 +601,45 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     let pollInterval: ReturnType<typeof setInterval> | null = null;
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     let previousRequestCount = sessionRequestsRef.current.length;
+    let isBootstrapping = false;
+
+    const performColdStartBootstrap = async () => {
+      if (isBootstrapping) return;
+      isBootstrapping = true;
+      try {
+        const fetchedSession = await IrisService.getAgentSession(sessionId);
+        const [bootstrapStats, bootstrapRequestsResponse] = await Promise.all([
+          IrisService.getSessionStats(sessionId).catch(() => null),
+          IrisService.getSessionRequests(sessionId).catch(() => ({ requests: [] as IrisRequestEntry[] })),
+        ]);
+
+        const bootstrapRequests = bootstrapRequestsResponse.requests || [];
+        previousRequestCount = bootstrapRequests.length;
+
+        setSession(fetchedSession);
+        setSessionStats(bootstrapStats);
+        setSessionRequests(bootstrapRequests);
+
+        const graph = buildGraphFromSession(fetchedSession, bootstrapStats, bootstrapRequests);
+        applyHierarchicalLayout(graph, dimensions.width, dimensions.height);
+        setGraphData(graph);
+        setIsLoading(false);
+        startCollisionLoop(40);
+      } catch {
+        // Session not available yet — will retry on the next SSE event
+      } finally {
+        isBootstrapping = false;
+      }
+    };
 
     const performIncrementalRefresh = async () => {
       const activeSession = sessionRef.current;
-      if (!activeSession) return;
+
+      if (!activeSession) {
+        await performColdStartBootstrap();
+        return;
+      }
+
       const activeSessionId = activeSession.id || activeSession._id;
 
       try {
@@ -650,7 +687,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
       if (pollInterval) clearInterval(pollInterval);
       if (debounceTimer) clearTimeout(debounceTimer);
     };
-  }, [sessionId, incrementalGraphRebuild, startCollisionLoop]);
+  }, [sessionId, dimensions.width, dimensions.height, incrementalGraphRebuild, startCollisionLoop]);
 
   // ── Screen ↔ SVG coordinate helper ───────────────────────────
   const screenToSvg = useCallback(
